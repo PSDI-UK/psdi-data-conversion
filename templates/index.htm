@@ -1,0 +1,99 @@
+<!--
+  index.htm
+  Version 1.0, 24th January 2024
+-->
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PSDI Chemistry File Format Conversion Database</title>
+    <link href="{{url_for('static', filename='images/favicon.ico')}}" rel="icon" type="image/x-icon">
+    <link href="https://fonts.googleapis.com/css?family=Lato:400" rel="stylesheet" type="text/css">
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans+Condensed:700" rel="stylesheet" type="text/css">
+    <link rel="stylesheet" href="{{url_for('static', filename='styles/format.css')}}">
+  </head>
+
+  <body marginwidth="0">
+    <div class="navGrid" id="top">
+      <img src="{{url_for('static', filename='/images/PSDI_Logo_CMYK_282c.svg')}}" alt="PSDI logo">
+      <div class="middle">
+        <a href="mailto: psdi@soton.ac.uk" id="mail">Contact us</a>
+      </div>
+    </div>
+    <div class="smallGap"></div>
+    <form name="gui">
+      <h1>Chemistry File Format Conversion Database</h1>
+      <div class="medGap"></div>
+      <div class="grid">
+        <div>
+          <p>
+            <label for="searchFrom">Convert from:</label><br>
+            <input type="text" placeholder="-- type here to filter options --" size="12" id="searchFrom"><br>
+            <textarea rows="4" id="fromList" spellcheck="false"></textarea>
+          </p>
+        </div>
+        <div>
+          <p>
+            <label for="searchTo">Convert to:</label><br>
+            <input type="text" placeholder="-- type here to filter options --" size="12" id="searchTo"><br>
+            <textarea rows="4" id="toList" spellcheck="false"></textarea>
+          </p>
+        </div>
+        <div>
+          <p>
+            <label for="success">Conversion success:</label><br>
+            <input type="text" id="dummyText">
+            <textarea rows="4" id="success" spellcheck="false"></textarea>
+          </p>
+        </div>
+      </div>
+      <div class="normalText">
+        <br><h2>Converter details:</h2>
+        <p id="converter">
+          <span id="name"></span>
+          <br><span id="description"></span>
+          <br><span id="url"></span>
+          <a id="visit">Visit website</a>
+          <div id="radioButtons">
+            <span id="question"></span>
+            <label for="radioYes"><input type="radio" name="check" id="radioYes">Yes</label>
+            <label for="radioNo"><input type="radio" name="check" id="radioNo" checked="checked">No</label>
+          </div>
+        </p>
+        <p id="userInput">
+          <span id="message"></span>
+          <br><span id="message1"></span>
+          <br><input type="text" size="120" id="in">
+          <br><input type="button" value=" Enter " id="enter">
+          <input type="button" value="Cancel" id="cancel">
+        </p>
+        <p id="convertFile">
+          Select file to convert:
+          <br><input type="file" name="fileToUpload" id="fileToUpload"><br>
+          <input type="button" value=" Convert " name="uploadButton" id="uploadButton" disabled=true>
+        </p>
+        <input type="button" value="Show notes" id="noteButton">
+        <ol id="notes">
+          <li>You should satisfy yourself about the suitability of a converter. The information provided here is for guidance only.</li>
+          <li>There may be options applicable to conversions. Only default conversions have been tested.</li>
+          <li>An output file is considered complete if there are no obvious defects.</li>
+          <li>A file is considered incomplete if it explicitly asks the user for more information, contains NaNs (Not a Number), contains many zeros, or has other obvious defects.</li>
+          <li>Conversion is considered unsuccessful if there is no output file, or the file is empty or substantially empty. Such conversions are omitted from the database to save space.</li>
+          <li>Conversion success is deemed unknown if a converter supports the conversion, but it has not been tested by PSDI.</li>
+          <li>Other 'Conversion success' comments may appear, as appropriate.</li>
+        </ol>
+      </div>
+      <div class="largeGap"></div>
+    </form>
+
+    <script src="https://code.jquery.com/jquery-3.7.1.js"
+            integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4="
+            crossorigin="anonymous"></script>
+    {% for item in data %}
+        <script>const token = "{{item.token}}";</script>
+    {% endfor %}
+    <script src="{{url_for('static', filename='/javascript/node_modules/sql.js/dist/sql-wasm.js')}}"></script>
+    <script src="{{url_for('static', filename='/javascript/format.js')}}" type="module" language="JavaScript"></script>
+  </body>
+</html>

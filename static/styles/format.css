@@ -1,0 +1,189 @@
+/*
+  format.css
+  Version 1.0, 1st Febuary 2024
+*/
+
+/* Main heading, in a special very large white font. */
+h1 {
+    color: white;
+    font-size: 4.4vw;
+    font-family: 'Open Sans Condensed';
+    margin: -18px 0 0 0 /* top right bottom left */
+}
+
+/* Relative size of header font increased for smaller screens, bearing in mind that normal text size does not change. */
+@media (max-width: 430px) {
+    h1 {
+        font-size: 5.8vw;
+        margin: -4px 0 0 0 /* top right bottom left */
+    }
+}
+
+/* Sub-heading, in a larger than normal white sans serif font. */
+h2 {
+    color: white;
+    font-size: 18px;
+    font-family: 'Lato'
+}
+
+/* Padding and scaling for PSDI logo. */
+img {
+    padding: 8px;
+    max-width: 41%;
+    height: auto;
+}
+
+/* Relative maximum width reduced at 900px, since now relative to full screen width rather than half. */
+@media (max-width: 900px) {
+    img { max-width: 30.75% }
+}
+
+/* Padding for PSDI logo reduced to zero at 430px. */
+@media (max-width: 430px) {
+    img { padding: 0 }
+}
+
+/* Dark blue background, with content well away from the edge. */
+form {
+    background-color: #011e41;
+    padding: 50px
+}
+
+/* Content moved closer to the edge for smaller screens. */
+@media (max-width: 430px) {
+    form { padding: 10px }
+}
+
+/* Labels for drop-down text boxes. */
+label {
+    color: white;
+    font-family: 'Lato';
+    font-size: 14px
+}
+
+/* Light grey background and dark blue text for drop-down list. */
+select {
+    background-color: #e5e1e6;
+    color: #011e41;
+    font-size: 14px;
+    font-family: 'Lato'
+}
+
+/* Link to email. */
+a {
+    font-family: 'Lato';
+    color: #011e41;
+}
+
+/* Link to converter website. */
+#visit {
+    padding: 8px;
+    font-family: 'Lato';
+    color: #993366
+}
+
+/* Font size reduced at 430px. */
+@media (max-width: 430px) {
+    a { font-size: 14px }
+}
+
+/* Scrollbar, light grey background and dark blue text for text area. */
+textarea {
+    overflow-y: scroll;
+    background-color: #e5e1e6;
+    color: #011e41;
+    font-family: 'Lato';
+    font-size: 14px;
+    width: 310px;
+    resize: none
+}
+
+/* Hidden dummy elements to aid layout. */
+#dummyText { visibility: hidden }
+
+/* Converter details, user input and file conversion initially not displayed. */
+h2, #converter, #radioButtons, #userInput, #convertFile { display: none }
+
+/* Notes initially hidden. */
+#notes { visibility: hidden;
+         color: white;
+         font-family: 'Lato';
+         font-size: 14px
+}
+
+/* Magenta background for buttons. */
+#enter, #cancel, #uploadButton, #noteButton {
+    background-color: #993366;
+    color: white;
+    font-family: 'Lato';
+    font-size: 14px
+}
+
+/* Light grey background and dark blue text for text input. */
+#in {
+    background-color: #e5e1e6;
+    color: #011e41;
+    font-family: 'Lato';
+    font-size: 14px;
+    width: 310px
+}
+
+/* Light grey background and dark blue text for text input. */
+#searchTo, #searchFrom {
+    background-color: #e5e1e6;
+    color: #011e41;
+    font-family: 'Lato';
+    font-size: 14px;
+    width: 310px
+}
+
+/* Small vertical space. */
+.smallGap { padding: 2px }
+
+/* Medium vertical space. */
+.medGap { padding: 20px }
+
+/* Large vertical space. */
+.largeGap { padding: 140px }
+
+/* White sans serif font. */
+.normalText {
+    color: white;
+    font-family: 'Lato';
+    font-size: 14px
+}
+
+/* Grid for select label/elements. */
+.grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr
+}
+
+/* Select label/elements are stacked at <= 900px. */
+@media (max-width: 1070px) {
+  .grid { grid-template-columns: auto }
+  #dummyText { display: none }
+}
+
+/* Grid for logo and navigation. */
+.navGrid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    margin: 0 60px 0 60px /* top right bottom left */
+}
+
+/* Logo and navigation are stacked at <= 900px. */
+@media (max-width: 900px) {
+    .navGrid { grid-template-columns: auto }
+}
+
+/* Logo/navigation grid margins reduced at 430px */
+@media (max-width: 430px) {
+    .navGrid { margin: 0 18px 0 18px }
+}
+
+/* Navigation vertically aligned in the middle. */
+.middle {
+    align-self: center;
+    text-align: right
+}
