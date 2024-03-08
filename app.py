@@ -1,6 +1,6 @@
 
 #   format.py
-#   Version 1.0, 5th December 2023
+#   Version 1.0, 28th February 2024
 
 #   This script acts as a server for the Chemistry File Format Conversion Database website.
 
@@ -14,12 +14,12 @@ dt = str(datetime.now())
 token = hashlib.md5(dt.encode('utf8')).hexdigest()
 
 # Create directory 'uploads' if not extant.
-upDir = 'static/uploads'
+upDir = './uploads'
 if not os.path.exists(upDir) :
     os.mkdir(upDir)
 
 # Create directory 'downloads' if not extant.
-downDir = 'static/downloads'
+downDir = './static/downloads'
 if not os.path.exists(downDir) :
     os.mkdir(downDir)
 
@@ -42,7 +42,7 @@ def convert() :
             os.remove(file)
 
         f = request.files['fileToUpload']
-        f.save('static/uploads/' + f.filename)
+        f.save('uploads/' + f.filename)
         fname = f.filename.split(".")[0]  # E.g. ethane.mol --> ethane
 
         # Retrieve 'from' and 'to' file formats.
@@ -52,11 +52,21 @@ def convert() :
         obConversion = openbabel.OBConversion()
         obConversion.SetInAndOutFormats(fromFormat, toFormat)
 
+        # Retrieve 'from' and 'to' option flags.
+        fromFlags = request.form['from_flags']
+        toFlags = request.form['to_flags']
+
+        for char in fromFlags :
+            obConversion.AddOption(char, obConversion.INOPTIONS)
+
+        for char in toFlags :
+            obConversion.AddOption(char, obConversion.OUTOPTIONS)
+
         mol = openbabel.OBMol()
-        obConversion.ReadFile(mol, 'static/uploads/' + f.filename)
+        obConversion.ReadFile(mol, 'uploads/' + f.filename)
         obConversion.WriteFile(mol, 'static/downloads/' + fname + '.' + toFormat)
 
-        os.remove('static/uploads/' + f.filename)
+        os.remove('uploads/' + f.filename)
 
         return 'okay'
     else :

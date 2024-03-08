@@ -1,6 +1,6 @@
 /*
   format.css
-  Version 1.0, 1st Febuary 2024
+  Version 1.0, 27th Febuary 2024
 */
 
 /* Main heading, in a special very large white font. */
@@ -61,18 +61,10 @@ label {
     font-size: 14px
 }
 
-/* Light grey background and dark blue text for drop-down list. */
-select {
-    background-color: #e5e1e6;
-    color: #011e41;
-    font-size: 14px;
-    font-family: 'Lato'
-}
-
 /* Link to email. */
 a {
     font-family: 'Lato';
-    color: #011e41;
+    color: #011e41
 }
 
 /* Link to converter website. */
@@ -96,6 +88,20 @@ textarea {
     font-size: 14px;
     width: 310px;
     resize: none
+}
+
+/* Light grey back background, dark blue text and 330px width for the option flag select boxes. */
+select {
+    background-color: #e5e1e6;
+    color: #011e41;
+    font-size: 14px;
+    font-family: 'Lato';
+    width: 340px
+}
+
+/* Option flag select boxes (and their labels) are initially not displayed.*/
+#flags {
+    display: none
 }
 
 /* Hidden dummy elements to aid layout. */
@@ -153,16 +159,27 @@ h2, #converter, #radioButtons, #userInput, #convertFile { display: none }
     font-size: 14px
 }
 
-/* Grid for select label/elements. */
+/* Grid for textarea label/elements. */
 .grid {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr
 }
 
-/* Select label/elements are stacked at <= 900px. */
+/* Textarea label/elements are stacked at <= 1070px. */
 @media (max-width: 1070px) {
   .grid { grid-template-columns: auto }
   #dummyText { display: none }
+}
+
+/* Initially hidden grid for select label/elements. */
+.selGrid {
+    display: grid;
+    grid-template-columns: 1fr 1fr
+}
+
+/* Select label/elements are stacked at <= 800px. */
+@media (max-width: 800px) {
+    .selGrid { grid-template-columns: auto }
 }
 
 /* Grid for logo and navigation. */

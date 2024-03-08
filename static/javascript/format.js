@@ -1,6 +1,6 @@
 /*
   format.js
-  Version 1.0, 29th January 2024
+  Version 1.0, 7th March 2024
 
   This is the JavaScript which makes the gui work.
 */
@@ -18,23 +18,15 @@ $(document).ready(function() {
         db = new SQL.Database(format_db_byte_array);
 
         // Populates the "Convert from" selection list
-        var query = `SELECT DISTINCT Form.Extension, Form.Note
-                     FROM Formats Form, Converts_to Conv
-                     WHERE Form.ID=Conv.in_ID UNION
-                     SELECT DISTINCT Extension, Note
-                     FROM OBFormats
-                     WHERE Input="true"
-                     ORDER BY Extension, Note ASC`
+        var query = `SELECT DISTINCT Form.Extension, Form.Note FROM Formats Form, Converts_to Conv
+                     WHERE Form.ID=Conv.in_ID UNION SELECT DISTINCT Extension, Note
+                     FROM OBFormats WHERE Input="true" ORDER BY Extension, Note ASC`
         populateList(query, "from");
 
         // Populates the "Convert to" selection list
-        var query = `SELECT DISTINCT Form.Extension, Form.Note
-                     FROM Formats Form, Converts_to Conv
-                     WHERE Form.ID=Conv.out_ID UNION
-                     SELECT DISTINCT Extension, Note
-                     FROM OBFormats
-                     WHERE Output="true"
-                     ORDER BY Extension, Note ASC`
+        var query = `SELECT DISTINCT Form.Extension, Form.Note FROM Formats Form, Converts_to Conv
+                     WHERE Form.ID=Conv.out_ID UNION SELECT DISTINCT Extension, Note
+                     FROM OBFormats WHERE Output="true" ORDER BY Extension, Note ASC`
         populateList(query, "to");
     });
 
@@ -76,14 +68,30 @@ function findFormatID(sel) {
     return result[0].values;
 }
 
+// Finds ID from table OBFormats given Extension
+function findOBFormatID(sel) {
+    const str = $("#" + sel).val();   // e.g. "ins: ShelX"
+    const str_array = str.split(": ");
+    const ext = str_array[0];         // e.g. "ins"
+
+    try {
+        var result = db.exec(`SELECT ID FROM OBFormats WHERE Extension="${ext}"`);
+    }
+    catch (e) {
+        console.log(e);
+        return "";
+    }
+
+    return result[0].values;
+}
+
 // Checks for the existence of a selected file extension in table OBFormats
 function findExtension(sel) {
     alert("Top of findExtension");
     const ext = getFormat($("#" + sel).val()); // e.g. "ins: ShelX" --> "ins"
     alert("ext = " + ext);
     try {
-        var result = db.exec(`SELECT Extension FROM OBFormats
-                              WHERE Extension="${ext}"`);
+        var result = db.exec(`SELECT Extension FROM OBFormats WHERE Extension="${ext}"`);
         if (result.toString() == "") {
             return "";
         }
@@ -136,8 +144,7 @@ function populateConversionSuccess(event) {
             const ID_b = findFormatID("searchTo");
 
             const query = `SELECT Name, Degree_of_success FROM Converts_to
-                           WHERE in_ID=${ID_a} AND out_ID=${ID_b}
-                           ORDER BY Name ASC`
+                           WHERE in_ID=${ID_a} AND out_ID=${ID_b} ORDER BY Name ASC`
 
             populateList(query, "success");
         }
@@ -150,14 +157,12 @@ function populateConversionSuccess(event) {
                 conversionSuccessEmpty();
 
                 var query = `SELECT DISTINCT Extension, Note
-                             FROM OBFormats
-                             WHERE Input="true"`
+                             FROM OBFormats WHERE Input="true"`
 
                 var inputs = db.exec(query)[0].values;
 
                 query = `SELECT DISTINCT Extension, Note
-                         FROM OBFormats
-                         WHERE Output="true"`
+                         FROM OBFormats WHERE Output="true"`
 
                 var outputs = db.exec(query)[0].values;
 
@@ -204,6 +209,7 @@ function formatNotFound(element) {
     showTextInput();
     last_select = element.id;
 
+    $("#message").html("");
     $("#message1").html("Missing file format? If so, please enter the format, the format(s) " +
                         (element.attr('id') == "searchFrom" ? "to" : "from") + " which it should be converted and a reason.");
 
@@ -269,6 +275,9 @@ function hideOffer() {
     $("#question").css({display: "none"});
     $("#radioButtons").css({display: "none"});
     $("#convertFile").css({display: "none"});
+    $("#inFlags").empty();
+    $("#outFlags").empty();
+    $("#flags").css({display: "none"});
 }
 
 // Writes user input to a server-side file
@@ -287,13 +296,26 @@ function writeLog(message) {
 
 // Uploads a user-supplied file
 function submitFile() {
-    const file = $("#fileToUpload")[0].files[0];
+    const file = $("#fileToUpload")[0].files[0],
+          extension = file.name.split(".")[1];
+    
+    const from = $("#searchFrom").val(),    // e.g. "ins: ShelX"
+          from_format = from.split(": ")[0];
 
-    const from = $("#searchFrom").val();    // e.g. "ins: ShelX"
-    const from_format = from.split(": ")[0];
+    if (extension != from_format) {
+        alert("The file extension is not " + from_format + ": please select another file or change the 'from' format.");
+        return;
+    }
 
-    const to = $("#searchTo").val();
-    const to_format = to.split(": ")[0];
+    const to = $("#searchTo").val(),
+          to_format = to.split(": ")[0];
+
+    const read_flags_text = $("#inFlags").find(":selected").text(),
+          read_flags = extractFlags(read_flags_text);
+
+    const write_flags_text = $("#outFlags").find(":selected").text(),
+          write_flags = extractFlags(write_flags_text);
+
     const download_fname = file.name.split(".")[0] + "." + to_format;
 
     var form_data = new FormData();
@@ -301,14 +323,29 @@ function submitFile() {
     form_data.append("token", token);
     form_data.append("from", from_format);
     form_data.append("to", to_format);
+    form_data.append("from_flags", read_flags);
+    form_data.append("to_flags", write_flags);
     form_data.append("fileToUpload", file);
     form_data.append("upload_file", true);
 
-    convertFile(form_data, file, from, to, download_fname);
+    convertFile(form_data, download_fname);
+}
+
+// Retrieves option flags from selected text
+function extractFlags(flags_text) {
+    var flags = "",
+        regex = /:/g,
+        match = "";
+
+    while ((match = regex.exec(flags_text)) != null) {
+        flags += flags_text[match.index - 1];
+    }
+
+    return flags;
 }
 
 // Converts user-supplied file to another format and downloads the resulting file
-function convertFile(form_data, file, from, to, download_fname) {
+function convertFile(form_data, download_fname) {
     var jqXHR = $.ajax({
             url: `/convert/`,
             type: "POST",
@@ -382,6 +419,9 @@ function showConverterDetails(event) {
     }
 
     // Search textarea for "Open Babel"
+    this.selectionStart = 0;
+    this.selectionEnd = 0;
+
     while (this.selectionStart < text.length) {
         selectedText = getSelectedText(this);
         const name = selectedText.split(": ")[0];
@@ -447,11 +487,61 @@ function showFileConversionDetails(event) {
                             "color": "white",
                             "font-family": "Lato",
                             "font-size": "14px"});
+
+    var in_found = getFlags("in"),
+        out_found = getFlags("out");
+
+    if (in_found || out_found) {
+        $("#flags").css({display: "grid"});
+    }
+}
+
+// Retrieves read or write option flags associated with a file format
+function getFlags (type) {
+    var id = "",
+        query = ``,
+        el = $("#" + type + "Flags");
+
+    if (type == "in") {
+        id = findOBFormatID("searchFrom");
+
+        query = `SELECT DISTINCT Flag, Description FROM OBFlags_in
+                 WHERE ID IN (SELECT DISTINCT OBFlags_in_ID
+                              FROM OBFormat_to_Flags_in WHERE OBFormats_ID=${id})`;
+    }
+    else {
+        id = findOBFormatID("searchTo");
+
+        query = `SELECT DISTINCT Flag, Description FROM OBFlags_out
+                 WHERE ID IN (SELECT DISTINCT OBFlags_out_ID
+                              FROM OBFormat_to_Flags_out WHERE OBFormats_ID=${id})`;
+    }
+
+    try {
+        var result = db.exec(query)[0].values;
+        el.append(new Option("-- select if required --"));
+
+        for (var i = 0; i < result.length; i++) {
+            var row = result[i].join(": ");
+            el.append(new Option(row));
+        }
+
+        el.append(new Option(""));
+        return true;
+    }
+    catch (e) {
+        el.append(new Option("-- no option flags available --"));
+        el.append(new Option(""));
+        return false;
+    }
 }
 
 // Hides file selection and conversion elements
 function hideFileConversionDetails(event) {
     $("#convertFile").css({display: "none"});
+    $("#inFlags").empty();
+    $("#outFlags").empty();
+    $("#flags").css({display: "none"});
 }
 
 // File upload is allowed only if its extension matches the 'from' format
