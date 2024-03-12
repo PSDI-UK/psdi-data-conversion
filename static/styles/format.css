@@ -1,11 +1,11 @@
 /*
   format.css
-  Version 1.0, 27th Febuary 2024
+  Version 1.0, 11th March 2024
 */
 
-/* Main heading, in a special very large white font. */
+/* Main heading, in a special very large light grey font. */
 h1 {
-    color: white;
+    color: #e5e1e6;
     font-size: 4.4vw;
     font-family: 'Open Sans Condensed';
     margin: -18px 0 0 0 /* top right bottom left */
@@ -19,9 +19,9 @@ h1 {
     }
 }
 
-/* Sub-heading, in a larger than normal white sans serif font. */
+/* Sub-heading, in a larger than normal light grey sans serif font. */
 h2 {
-    color: white;
+    color: #e5e1e6;
     font-size: 18px;
     font-family: 'Lato'
 }
@@ -54,9 +54,9 @@ form {
     form { padding: 10px }
 }
 
-/* Labels for drop-down text boxes. */
+/* Labels for text boxes/areas. */
 label {
-    color: white;
+    color: #e5e1e6;
     font-family: 'Lato';
     font-size: 14px
 }
@@ -112,7 +112,7 @@ h2, #converter, #radioButtons, #userInput, #convertFile { display: none }
 
 /* Notes initially hidden. */
 #notes { visibility: hidden;
-         color: white;
+         color: #e5e1e6;
          font-family: 'Lato';
          font-size: 14px
 }
@@ -120,22 +120,13 @@ h2, #converter, #radioButtons, #userInput, #convertFile { display: none }
 /* Magenta background for buttons. */
 #enter, #cancel, #uploadButton, #noteButton {
     background-color: #993366;
-    color: white;
+    color: #e5e1e6;
     font-family: 'Lato';
     font-size: 14px
 }
 
 /* Light grey background and dark blue text for text input. */
-#in {
-    background-color: #e5e1e6;
-    color: #011e41;
-    font-family: 'Lato';
-    font-size: 14px;
-    width: 310px
-}
-
-/* Light grey background and dark blue text for text input. */
-#searchTo, #searchFrom {
+#in, #searchTo, #searchFrom {
     background-color: #e5e1e6;
     color: #011e41;
     font-family: 'Lato';
@@ -154,7 +145,7 @@ h2, #converter, #radioButtons, #userInput, #convertFile { display: none }
 
 /* White sans serif font. */
 .normalText {
-    color: white;
+    color: #e5e1e6;
     font-family: 'Lato';
     font-size: 14px
 }

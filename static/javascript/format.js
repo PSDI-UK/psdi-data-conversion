@@ -1,6 +1,6 @@
 /*
   format.js
-  Version 1.0, 7th March 2024
+  Version 1.0, 11th March 2024
 
   This is the JavaScript which makes the gui work.
 */
@@ -143,8 +143,8 @@ function populateConversionSuccess(event) {
             const ID_a = findFormatID("searchFrom");
             const ID_b = findFormatID("searchTo");
 
-            const query = `SELECT Name, Degree_of_success FROM Converts_to
-                           WHERE in_ID=${ID_a} AND out_ID=${ID_b} ORDER BY Name ASC`
+            const query = `SELECT C.Name, C_to.Degree_of_success FROM Converters C, Converts_to C_to
+                           WHERE C_to.in_ID=${ID_a} AND C_to.out_ID=${ID_b} AND C.ID=C_to.Converters_ID ORDER BY C.Name ASC`
 
             populateList(query, "success");
         }
@@ -398,18 +398,19 @@ function toggleNotes(event) {
 // Displays converter details given its name and offers an Open Babel conversion if available
 function showConverterDetails(event) {
     var selectedText = getSelectedText(this);
-    const text = this.value;
-    const str_array = selectedText.split(": ", 1);
-    const conv_name = str_array[0];                                                    // e.g. "Open Babel"
-    const result = db.exec(`SELECT * FROM Converters WHERE Name="${conv_name}"`);
+
+    const text = this.value,
+          str_array = selectedText.split(": ", 1),
+          conv_name = str_array[0],                                                    // e.g. "Open Babel"
+          result = db.exec(`SELECT * FROM Converters WHERE Name="${conv_name}"`);
 
     try {
-        $("#name").html("" + result[0].values[0][0]);
-        $("#description").html("" + result[0].values[0][1]);
-        $("#url").html("" + result[0].values[0][2]);
+        $("#name").html("" + result[0].values[0][1]);
+        $("#description").html("" + result[0].values[0][2]);
+        $("#url").html("" + result[0].values[0][3]);
 
         var visit = $("#visit");
-        visit.attr("href", "" + result[0].values[0][2]);
+        visit.attr("href", "" + result[0].values[0][3]);
 
         $("#converter").css({display: "block"});
         $("h2").css({display: "block"});
@@ -562,29 +563,38 @@ function checkExtension(event) {
 
 // Populates a selection list
 function populateList(query, sel) {
-    var el = $("#" + sel);
-    var successText = "-- select --";
-    var text = "-- select --\n";
+    var el = $("#" + sel),
+        successText = "-- select --",
+        text = "-- select --\n",
+        rows = [];
+
     const result = db.exec(query)[0].values;
+
+    while (result.length > 0) {
+        rows.push(result.pop().join(": "));
+    };
+
+    rows.sort(function(a, b) {
+        return a.toLowerCase().localeCompare(b.toLowerCase());
+    });
 
     fromList[0] = "-- select --\n";
     toList[0] = "-- select --\n";
 
-    for (var i = 0; i < result.length; i++) {
-        var row = result[i].join(": ");
+    for (var i = 0; i < rows.length; i++) {
 
         if ( sel == "success") {
-            successText += "\n" + row;
+            successText += "\n" + rows[i];
         }
 
-        text += row + "\n";
+        text += rows[i] + "\n";
 
         // This is for creating permanent arrays of options
         if (sel == "from") {  
-            fromList[i + 1] = row + "\n";
+            fromList[i + 1] = rows[i] + "\n";
         }
         else if (sel == "to") {
-            toList[i + 1] = row + "\n";
+            toList[i + 1] = rows[i] + "\n";
         }
     }
 
