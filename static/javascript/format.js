@@ -1,6 +1,6 @@
 /*
   format.js
-  Version 1.0, 11th March 2024
+  Version 1.0, 14th March 2024
 
   This is the JavaScript which makes the gui work.
 */
@@ -140,8 +140,8 @@ function populateConversionSuccess(event) {
     if (!(to_text == "-- select --" || to_text == "File format not found" ||
           from_text == "-- select --" || from_text == "File format not found")) {
         try {
-            const ID_a = findFormatID("searchFrom");
-            const ID_b = findFormatID("searchTo");
+            const ID_a = findFormatID("searchFrom"),
+                  ID_b = findFormatID("searchTo");
 
             const query = `SELECT C.Name, C_to.Degree_of_success FROM Converters C, Converts_to C_to
                            WHERE C_to.in_ID=${ID_a} AND C_to.out_ID=${ID_b} AND C.ID=C_to.Converters_ID ORDER BY C.Name ASC`
@@ -149,12 +149,13 @@ function populateConversionSuccess(event) {
             populateList(query, "success");
         }
         catch (e) {
-            const ID_a = getFormat($("#searchFrom").val());
-            const ID_b = getFormat($("#searchTo").val());
+            const ID_a = getFormat($("#searchFrom").val()),
+                  ID_b = getFormat($("#searchTo").val());
+
+            var offerShown = false;
 
             if (ID_a.toString() != ID_b.toString() && ID_a != "" && ID_b != "") {
                 $("#success").html("-- select --");
-                conversionSuccessEmpty();
 
                 var query = `SELECT DISTINCT Extension, Note
                              FROM OBFormats WHERE Input="true"`
@@ -171,10 +172,15 @@ function populateConversionSuccess(event) {
                         for (var j = 0; j < outputs.length; j++) {
                             if (to_text == outputs[j].join(": ")) {
                                 showOffer();
+                                offerShown = true;
                                 break;
                             }
                         }
                     }
+                }
+
+                if (!offerShown) {
+                    conversionSuccessEmpty();
                 }
             }
             else {
@@ -263,7 +269,7 @@ function showOffer() {
     const from_format = getFormat($("#searchFrom").val());
     const to_format = getFormat($("#searchTo").val());
 
-    $("#question").html("Would you like to convert a file from " + from_format + " to " + to_format + " using Open Babel?");
+    $("#question").html("Would you like to convert a file from '" + from_format + "' to '" + to_format + "' using Open Babel?");
     $("#question").css({display: "inline"});
     $("#radioButtons").css({display: "inline"});
     $("#radioNo").prop("checked", true);
