@@ -1,6 +1,6 @@
 /*
   format.js
-  Version 1.0, 14th March 2024
+  Version 1.0, 18th March 2024
 
   This is the JavaScript which makes the gui work.
 */
@@ -19,14 +19,14 @@ $(document).ready(function() {
 
         // Populates the "Convert from" selection list
         var query = `SELECT DISTINCT Form.Extension, Form.Note FROM Formats Form, Converts_to Conv
-                     WHERE Form.ID=Conv.in_ID UNION SELECT DISTINCT Extension, Note
-                     FROM OBFormats WHERE Input="true" ORDER BY Extension, Note ASC`
+                     WHERE Form.ID=Conv.in_ID ORDER BY Extension, Note ASC`
+
         populateList(query, "from");
 
         // Populates the "Convert to" selection list
         var query = `SELECT DISTINCT Form.Extension, Form.Note FROM Formats Form, Converts_to Conv
-                     WHERE Form.ID=Conv.out_ID UNION SELECT DISTINCT Extension, Note
-                     FROM OBFormats WHERE Output="true" ORDER BY Extension, Note ASC`
+                     WHERE Form.ID=Conv.out_ID ORDER BY Extension, Note ASC`
+
         populateList(query, "to");
     });
 
@@ -66,43 +66,6 @@ function findFormatID(sel) {
     }
 
     return result[0].values;
-}
-
-// Finds ID from table OBFormats given Extension
-function findOBFormatID(sel) {
-    const str = $("#" + sel).val();   // e.g. "ins: ShelX"
-    const str_array = str.split(": ");
-    const ext = str_array[0];         // e.g. "ins"
-
-    try {
-        var result = db.exec(`SELECT ID FROM OBFormats WHERE Extension="${ext}"`);
-    }
-    catch (e) {
-        console.log(e);
-        return "";
-    }
-
-    return result[0].values;
-}
-
-// Checks for the existence of a selected file extension in table OBFormats
-function findExtension(sel) {
-    alert("Top of findExtension");
-    const ext = getFormat($("#" + sel).val()); // e.g. "ins: ShelX" --> "ins"
-    alert("ext = " + ext);
-    try {
-        var result = db.exec(`SELECT Extension FROM OBFormats WHERE Extension="${ext}"`);
-        if (result.toString() == "") {
-            return "";
-        }
-        else {
-            return result[0].values;
-        }
-    }
-    catch (e) {
-        console.log(e);
-        return "";
-    }
 }
 
 // Selects a file format; populates the "Conversion success" selection list given input and output IDs;
@@ -152,39 +115,8 @@ function populateConversionSuccess(event) {
             const ID_a = getFormat($("#searchFrom").val()),
                   ID_b = getFormat($("#searchTo").val());
 
-            var offerShown = false;
-
             if (ID_a.toString() != ID_b.toString() && ID_a != "" && ID_b != "") {
-                $("#success").html("-- select --");
-
-                var query = `SELECT DISTINCT Extension, Note
-                             FROM OBFormats WHERE Input="true"`
-
-                var inputs = db.exec(query)[0].values;
-
-                query = `SELECT DISTINCT Extension, Note
-                         FROM OBFormats WHERE Output="true"`
-
-                var outputs = db.exec(query)[0].values;
-
-                for (var i = 0; i < inputs.length; i++) {
-                    if (from_text == inputs[i].join(": ")) {
-                        for (var j = 0; j < outputs.length; j++) {
-                            if (to_text == outputs[j].join(": ")) {
-                                showOffer();
-                                offerShown = true;
-                                break;
-                            }
-                        }
-                    }
-                }
-
-                if (!offerShown) {
                     conversionSuccessEmpty();
-                }
-            }
-            else {
-                console.log(e + "\nNot necessarily a problem - unsupported conversions are not in the database.");
             }
         }
     }
@@ -510,23 +442,23 @@ function getFlags (type) {
         el = $("#" + type + "Flags");
 
     if (type == "in") {
-        id = findOBFormatID("searchFrom");
+        id = findFormatID("searchFrom");
 
         query = `SELECT DISTINCT Flag, Description FROM OBFlags_in
                  WHERE ID IN (SELECT DISTINCT OBFlags_in_ID
-                              FROM OBFormat_to_Flags_in WHERE OBFormats_ID=${id})`;
+                              FROM OBFormat_to_Flags_in WHERE Formats_ID=${id})`;
     }
     else {
-        id = findOBFormatID("searchTo");
+        id = findFormatID("searchTo");
 
         query = `SELECT DISTINCT Flag, Description FROM OBFlags_out
                  WHERE ID IN (SELECT DISTINCT OBFlags_out_ID
-                              FROM OBFormat_to_Flags_out WHERE OBFormats_ID=${id})`;
+                              FROM OBFormat_to_Flags_out WHERE Formats_ID=${id})`;
     }
 
     try {
         var result = db.exec(query)[0].values;
-        el.append(new Option("-- select if required --"));
+        el.append(new Option("-- select all required (shift click) --"));
 
         for (var i = 0; i < result.length; i++) {
             var row = result[i].join(": ");
