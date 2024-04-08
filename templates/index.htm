@@ -1,13 +1,13 @@
 <!--
   index.htm
-  Version 1.0, 18th March 2024
+  Version 1.0, 28th March 2024
 -->
 
 <!DOCTYPE html>
 <html>
   <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PSDI Chemistry File Format Conversion Database</title>
+    <title>PSDI Data Conversion Tool</title>
     <link href="{{url_for('static', filename='images/favicon.ico')}}" rel="icon" type="image/x-icon">
     <link href="https://fonts.googleapis.com/css?family=Lato:400" rel="stylesheet" type="text/css">
     <link href="https://fonts.googleapis.com/css?family=Open+Sans+Condensed:700" rel="stylesheet" type="text/css">
@@ -17,14 +17,15 @@
   <body marginwidth="0">
     <div class="navGrid" id="top">
       <img src="{{url_for('static', filename='/images/PSDI_Logo_CMYK_282c.svg')}}" alt="PSDI logo">
-      <div class="middle">
-        <a href="mailto: psdi@soton.ac.uk" id="mail">Contact us</a>
-      </div>
+      <h1>Data Conversion Tool</h1>
+    </div>
+<!--    <h1>Data Conversion Tool</h1>-->
+    <div class="middle">
+      <a href="mailto: psdi@soton.ac.uk" id="mail">Contact us</a>
     </div>
     <div class="smallGap"></div>
+    <h2>Format and Converter Selection</h2>
     <form name="gui">
-      <h1>Chemistry File Format Conversion Database</h1>
-      <div class="medGap"></div>
       <div class="grid">
         <div>
           <p>
@@ -49,7 +50,7 @@
         </div>
       </div>
       <div class="normalText">
-        <br><h2>Converter details:</h2>
+        <br><h3>Converter details:</h3>
         <p id="converter">
           <span id="name"></span>
           <br><span id="description"></span>
@@ -107,7 +108,6 @@
     {% for item in data %}
         <script>const token = "{{item.token}}";</script>
     {% endfor %}
-    <script src="{{url_for('static', filename='/javascript/node_modules/sql.js/dist/sql-wasm.js')}}"></script>
     <script src="{{url_for('static', filename='/javascript/format.js')}}" type="module" language="JavaScript"></script>
   </body>
 </html>

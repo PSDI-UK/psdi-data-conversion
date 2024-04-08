@@ -1,10 +1,10 @@
 
 #   format.py
-#   Version 1.0, 28th February 2024
+#   Version 1.0, 28th March 2024
 
 #   This script acts as a server for the Chemistry File Format Conversion Database website.
 
-import hashlib, os, glob
+import hashlib, os, glob, psycopg2
 from datetime import datetime
 from openbabel import openbabel
 from flask import Flask, request, render_template, abort
@@ -30,6 +30,43 @@ app = Flask(__name__)
 def website() :
     data = [{'token': token}]
     return render_template("index.htm", data=data)
+
+# Query the PostgreSQL database
+@app.route('/query/', methods=['POST'])
+def query() :
+    if request.form['token'] == token and token != '' :
+        # Establish a connection with the PostgreSQL database
+        try:
+            db_conn = psycopg2.connect(database="psdi")
+
+        except psycopg2.DatabaseError as Error:
+            print(f"Connection to database failed. {Error}")
+
+        # Query database
+        with db_conn.cursor() as cursor:
+            #cursor.execute("SELECT * FROM Converters")
+            cursor.execute(request.form['data'])
+            results = cursor.fetchall()
+
+        # Close connection to database
+        if db_conn:
+            db_conn.close()
+ 
+        # Construct a string from the array and return it
+        ansArray = []
+
+        for row in results :
+            line = ''
+
+            for el in row :
+                line += "£" + str(el)
+
+            ansArray.append(line)
+
+        return '$'.join(ansArray)
+    else :
+        # return http status code 405
+        abort(405)
 
 # Convert file to a different format and save to folder 'downloads'. Delete original file.
 # Note that downloading is achieved in format.js

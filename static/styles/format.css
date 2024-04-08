@@ -1,14 +1,14 @@
 /*
   format.css
-  Version 1.0, 11th March 2024
+  Version 1.0, 8th April 2024
 */
 
-/* Main heading, in a special very large light grey font. */
+/* Main heading, in a special very large blue font. */
 h1 {
-    color: #e5e1e6;
-    font-size: 4.4vw;
+    color: #011e41;
+    font-size: 4.8vw;
     font-family: 'Open Sans Condensed';
-    margin: -18px 0 0 0 /* top right bottom left */
+    margin: 2px 0 0 0 /* top right bottom left */
 }
 
 /* Relative size of header font increased for smaller screens, bearing in mind that normal text size does not change. */
@@ -22,6 +22,16 @@ h1 {
 /* Sub-heading, in a larger than normal light grey sans serif font. */
 h2 {
     color: #e5e1e6;
+    background-color: #011e41;
+    font-size: 4vw;
+    font-family: 'Open Sans Condensed';
+    padding: 50px;
+    margin: -18px 0 0 0 /* top right bottom left */
+}
+
+/* Sub-heading, in a larger than normal light grey sans serif font. */
+h3 {
+    color: #011e41;
     font-size: 18px;
     font-family: 'Lato'
 }
@@ -29,7 +39,7 @@ h2 {
 /* Padding and scaling for PSDI logo. */
 img {
     padding: 8px;
-    max-width: 41%;
+    max-width: 62%; // 41%
     height: auto;
 }
 
@@ -43,9 +53,9 @@ img {
     img { padding: 0 }
 }
 
-/* Dark blue background, with content well away from the edge. */
+/* White background, with content well away from the edge. */
 form {
-    background-color: #011e41;
+    background-color: white;
     padding: 50px
 }
 
@@ -56,7 +66,7 @@ form {
 
 /* Labels for text boxes/areas. */
 label {
-    color: #e5e1e6;
+    color: #011e41;
     font-family: 'Lato';
     font-size: 14px
 }
@@ -64,14 +74,14 @@ label {
 /* Link to email. */
 a {
     font-family: 'Lato';
-    color: #011e41
+    color: #0000ee
 }
 
 /* Link to converter website. */
 #visit {
     padding: 8px;
-    font-family: 'Lato';
-    color: #993366
+    font-family: 'Lato'
+    color: turquoise
 }
 
 /* Font size reduced at 430px. */
@@ -79,10 +89,10 @@ a {
     a { font-size: 14px }
 }
 
-/* Scrollbar, light grey background and dark blue text for text area. */
+/* Scrollbar and dark blue text for text area. */
 textarea {
     overflow-y: scroll;
-    background-color: #e5e1e6;
+    //background-color: #e5e1e6;
     color: #011e41;
     font-family: 'Lato';
     font-size: 14px;
@@ -90,9 +100,9 @@ textarea {
     resize: none
 }
 
-/* Light grey back background, dark blue text and 330px width for the option flag select boxes. */
+/* Dark blue text and 340px width for the option flag select boxes. */
 select {
-    background-color: #e5e1e6;
+    //background-color: #e5e1e6;
     color: #011e41;
     font-size: 14px;
     font-family: 'Lato';
@@ -108,26 +118,26 @@ select {
 #dummyText { visibility: hidden }
 
 /* Converter details, user input and file conversion initially not displayed. */
-h2, #converter, #radioButtons, #userInput, #convertFile { display: none }
+h3, #converter, #radioButtons, #userInput, #convertFile { display: none }
 
 /* Notes initially hidden. */
 #notes { visibility: hidden;
-         color: #e5e1e6;
+         color: #011e41;
          font-family: 'Lato';
          font-size: 14px
 }
 
-/* Magenta background for buttons. */
+/* Dark blue background and light grey text for buttons. */
 #enter, #cancel, #uploadButton, #noteButton {
-    background-color: #993366;
+    background-color: #011e41;
     color: #e5e1e6;
     font-family: 'Lato';
     font-size: 14px
 }
 
-/* Light grey background and dark blue text for text input. */
+/* Dark blue text for text input. */
 #in, #searchTo, #searchFrom {
-    background-color: #e5e1e6;
+    //background-color: #e5e1e6;
     color: #011e41;
     font-family: 'Lato';
     font-size: 14px;
@@ -145,7 +155,7 @@ h2, #converter, #radioButtons, #userInput, #convertFile { display: none }
 
 /* White sans serif font. */
 .normalText {
-    color: #e5e1e6;
+    color: #011e41;
     font-family: 'Lato';
     font-size: 14px
 }
@@ -176,7 +186,7 @@ h2, #converter, #radioButtons, #userInput, #convertFile { display: none }
 /* Grid for logo and navigation. */
 .navGrid {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr 2fr;
     margin: 0 60px 0 60px /* top right bottom left */
 }
 
@@ -193,5 +203,6 @@ h2, #converter, #radioButtons, #userInput, #convertFile { display: none }
 /* Navigation vertically aligned in the middle. */
 .middle {
     align-self: center;
-    text-align: right
+    text-align: right;
+    padding: 20px
 }

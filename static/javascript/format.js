@@ -1,34 +1,26 @@
 /*
   format.js
-  Version 1.0, 18th March 2024
+  Version 1.0, 8th April 2024
 
   This is the JavaScript which makes the gui work.
 */
 
-import format_db_byte_array from './byte.js';
-
 var fromList = new Array();
 var toList = new Array();
 var last_select = "";
-var db;
 
 $(document).ready(function() {
-    initSqlJs({
-        locateFile: filename => 'static/javascript/node_modules/sql.js/dist/sql-wasm.wasm'}).then(SQL => {
-        db = new SQL.Database(format_db_byte_array);
+    // Populates the "Convert from" selection list
+    var query = `SELECT DISTINCT Form.Extension, Form.Note FROM Formats Form, Converts_to Conv
+                 WHERE Form.ID=Conv.in_ID ORDER BY Extension, Note ASC`
 
-        // Populates the "Convert from" selection list
-        var query = `SELECT DISTINCT Form.Extension, Form.Note FROM Formats Form, Converts_to Conv
-                     WHERE Form.ID=Conv.in_ID ORDER BY Extension, Note ASC`
+    queryDatabase(query, "from", populateList);
 
-        populateList(query, "from");
+    // Populates the "Convert to" selection list
+    var query = `SELECT DISTINCT Form.Extension, Form.Note FROM Formats Form, Converts_to Conv
+                 WHERE Form.ID=Conv.out_ID ORDER BY Extension, Note ASC`
 
-        // Populates the "Convert to" selection list
-        var query = `SELECT DISTINCT Form.Extension, Form.Note FROM Formats Form, Converts_to Conv
-                     WHERE Form.ID=Conv.out_ID ORDER BY Extension, Note ASC`
-
-        populateList(query, "to");
-    });
+    queryDatabase(query, "to", populateList);
 
     $("#fromList").click(populateConversionSuccess);
     $("#toList").click(populateConversionSuccess);
@@ -43,30 +35,6 @@ $(document).ready(function() {
     $("#uploadButton").click(submitFile);
     $("#success").click(showConverterDetails);
 });
-
-// Database must be closed to avoid memory leak
-window.onbeforeunload = function() {
-    db.close();
-};
-
-// Finds ID from table Formats given Extension and Note
-function findFormatID(sel) {
-    const str = $("#" + sel).val();    // e.g. "ins: ShelX"
-    const str_array = str.split(": ");
-    const ext = str_array[0];          // e.g. "ins"
-    const note = str_array[1];         // e.g. "ShelX"
-
-    try {
-        var result = db.exec(`SELECT ID FROM Formats
-                              WHERE Extension="${ext}" AND Note="${note}"`);
-    }
-    catch (e) {
-        console.log(e);
-        return "";
-    }
-
-    return result[0].values;
-}
 
 // Selects a file format; populates the "Conversion success" selection list given input and output IDs;
 // and removes converter details and text input (if showing)
@@ -103,13 +71,22 @@ function populateConversionSuccess(event) {
     if (!(to_text == "-- select --" || to_text == "File format not found" ||
           from_text == "-- select --" || from_text == "File format not found")) {
         try {
-            const ID_a = findFormatID("searchFrom"),
-                  ID_b = findFormatID("searchTo");
+            const in_str = $("#searchFrom").val(), // e.g. "ins: ShelX"
+                  in_str_array = in_str.split(": "),
+                  in_ext = in_str_array[0],           // e.g. "ins"
+                  in_note = in_str_array[1];          // e.g. "ShelX"
+
+            const out_str = $("#searchTo").val(),
+                  out_str_array = out_str.split(": "),
+                  out_ext = out_str_array[0],
+                  out_note = out_str_array[1];
 
             const query = `SELECT C.Name, C_to.Degree_of_success FROM Converters C, Converts_to C_to
-                           WHERE C_to.in_ID=${ID_a} AND C_to.out_ID=${ID_b} AND C.ID=C_to.Converters_ID ORDER BY C.Name ASC`
+                           WHERE C_to.in_ID=(SELECT ID FROM Formats WHERE Extension = '${in_ext}' AND Note = '${in_note}')
+                           AND C_to.out_ID=(SELECT ID FROM Formats WHERE Extension = '${out_ext}' AND Note = '${out_note}')
+                           AND C.ID=C_to.Converters_ID ORDER BY C.Name ASC`
 
-            populateList(query, "success");
+            queryDatabase(query, "success", populateList);
         }
         catch (e) {
             const ID_a = getFormat($("#searchFrom").val()),
@@ -137,7 +114,7 @@ function getSelectedText(el) {
 // Hides converter details
 function hideConverterDetails() {
     $("#converter").css({display: "none"});
-    $("h2").css({display: "none"});
+    $("h3").css({display: "none"});
 }
 
 // Prompts the user for feedback if "File format not found" is selected
@@ -150,15 +127,6 @@ function formatNotFound(element) {
     $("#message").html("");
     $("#message1").html("Missing file format? If so, please enter the format, the format(s) " +
                         (element.attr('id') == "searchFrom" ? "to" : "from") + " which it should be converted and a reason.");
-
-    $("#enter").css({"background-color": "#993366",
-                     "color": "white",
-                     "font-family": "Lato",
-                     "font-size": "14px"});
-    $("#cancel").css({"background-color": "#993366",
-                      "color": "white",
-                      "font-family": "Lato",
-                      "font-size": "14px"});
 }
 
 // Prompts the user for feedback if the "Conversion success" selection list is empty
@@ -223,6 +191,25 @@ function writeLog(message) {
     var jqXHR = $.get(`/data/`, {
             'token': token,
             'data': message
+        })
+        .fail(function(e) {
+            // For debugging
+            console.log("Error writing to log");
+            console.log(e.status);
+            console.log(e.responseText);
+        })
+}
+
+// $$$$$$$$$$ write separate function for debugging $$$$$$$$$$$
+
+// Queries the PostgreSQL database
+function queryDatabase(query, sel, callback) {
+    var jqXHR = $.post(`/query/`, {
+            'token': token,
+            'data': query
+        })
+        .done(response => {
+            callback(response, sel);
         })
         .fail(function(e) {
             // For debugging
@@ -333,50 +320,79 @@ function toggleNotes(event) {
     }
 }
 
-// Displays converter details given its name and offers an Open Babel conversion if available
+// Displays converter details given its name
 function showConverterDetails(event) {
     var selectedText = getSelectedText(this);
 
-    const text = this.value,
-          str_array = selectedText.split(": ", 1),
-          conv_name = str_array[0],                                                    // e.g. "Open Babel"
-          result = db.exec(`SELECT * FROM Converters WHERE Name="${conv_name}"`);
+    const str_array = selectedText.split(": ", 1),
+          conv_name = str_array[0];                                     // e.g. "Open Babel"
+
+    const query = `SELECT * FROM Converters WHERE Name='${conv_name}'`;
+
+    queryDatabase(query, this, displayConverterDetails);
+}
+
+// Displays converter details and offers an Open Babel conversion if available 
+function displayConverterDetails(response, el) {
+    var count = 0,
+        str = '';
+
+    response += '£';
 
     try {
-        $("#name").html("" + result[0].values[0][1]);
-        $("#description").html("" + result[0].values[0][2]);
-        $("#url").html("" + result[0].values[0][3]);
+        for (var i = 1; i < response.length; i++) {
+            if (response[i] == '£') {
+                if (count == 1) {
+                    $("#name").html(str);
+                }
+                else if (count == 2) {
+                    $("#description").html(str);
+                }
+                else if (count == 3) {
+                    $("#url").html(str);
+                    break;
+                }
+
+                count += 1;
+                str = '';
+            }
+            else {
+                str += response[i];
+            }
+        }
 
         var visit = $("#visit");
-        visit.attr("href", "" + result[0].values[0][3]);
+        visit.attr("href", str);
 
         $("#converter").css({display: "block"});
-        $("h2").css({display: "block"});
+        $("h3").css({display: "block"});
     }
     catch (e) {
         // No need for error message if no options shown
     }
 
     // Search textarea for "Open Babel"
-    this.selectionStart = 0;
-    this.selectionEnd = 0;
+    const text = el.value;
 
-    while (this.selectionStart < text.length) {
-        selectedText = getSelectedText(this);
-        const name = selectedText.split(": ")[0];
+    el.selectionStart = 0;
+    el.selectionEnd = 0;
+
+    while (el.selectionStart < text.length) {
+        const selectedText = getSelectedText(el),
+              name = selectedText.split(": ")[0];
 
         if (name == "Open Babel") {
             showOffer();
             break;
         }
 
-        this.selectionEnd += 1;
-        this.selectionStart = this.selectionEnd;
+        el.selectionEnd += 1;
+        el.selectionStart = el.selectionEnd;
     }
 
-    this.selectionStart = -1;
-    this.selectionEnd = -1;
-    this.blur();
+    el.selectionStart = -1;
+    el.selectionEnd = -1;
+    el.blur();
 }
 
 // Only options having user filter input as a substring (case insensitive) are included in the selection list
@@ -422,10 +438,6 @@ function getFormat(str) {
 // Shows file selection and conversion elements
 function showFileConversionDetails(event) {
     $("#convertFile").css({display: "block"});
-    $("#uploadButton").css({"background-color": "#993366",
-                            "color": "white",
-                            "font-family": "Lato",
-                            "font-size": "14px"});
 
     var in_found = getFlags("in"),
         out_found = getFlags("out");
@@ -437,42 +449,62 @@ function showFileConversionDetails(event) {
 
 // Retrieves read or write option flags associated with a file format
 function getFlags (type) {
-    var id = "",
-        query = ``,
-        el = $("#" + type + "Flags");
+    var query = ``;
 
     if (type == "in") {
-        id = findFormatID("searchFrom");
+        // $$$$$$$$$ MAKE A FUNCTION FOR THIS? $$$$$$$$$
+        const in_str = $("#searchFrom").val(),   // e.g. "ins: ShelX"
+              in_str_array = in_str.split(": "),
+              in_ext = in_str_array[0],          // e.g. "ins"
+              in_note = in_str_array[1];         // e.g. "ShelX"
 
         query = `SELECT DISTINCT Flag, Description FROM OBFlags_in
-                 WHERE ID IN (SELECT DISTINCT OBFlags_in_ID
-                              FROM OBFormat_to_Flags_in WHERE Formats_ID=${id})`;
+                 WHERE ID IN (SELECT DISTINCT OBFlags_in_ID FROM OBFormat_to_Flags_in
+                              WHERE Formats_ID=(SELECT ID FROM Formats WHERE Extension = '${in_ext}' AND Note = '${in_note}'))`;
     }
     else {
-        id = findFormatID("searchTo");
+        const out_str = $("#searchTo").val(),      // e.g. "ins: ShelX"
+              out_str_array = out_str.split(": "),
+              out_ext = out_str_array[0],          // e.g. "ins"
+              out_note = out_str_array[1];         // e.g. "ShelX"
 
         query = `SELECT DISTINCT Flag, Description FROM OBFlags_out
-                 WHERE ID IN (SELECT DISTINCT OBFlags_out_ID
-                              FROM OBFormat_to_Flags_out WHERE Formats_ID=${id})`;
+                 WHERE ID IN (SELECT DISTINCT OBFlags_out_ID FROM OBFormat_to_Flags_out
+                              WHERE Formats_ID=(SELECT ID FROM Formats WHERE Extension = '${out_ext}' AND Note = '${out_note}'))`;
     }
 
     try {
-        var result = db.exec(query)[0].values;
-        el.append(new Option("-- select all required (shift click) --"));
-
-        for (var i = 0; i < result.length; i++) {
-            var row = result[i].join(": ");
-            el.append(new Option(row));
-        }
-
-        el.append(new Option(""));
+        queryDatabase(query, type, populateFlagBox);
         return true;
     }
     catch (e) {
-        el.append(new Option("-- no option flags available --"));
-        el.append(new Option(""));
         return false;
     }
+}
+
+//
+function populateFlagBox(response, type) {
+    var el = $("#" + type + "Flags"),
+        flag = '';
+
+    for (var i = 1; i < response.length; i++) {
+        if (response[i] == '£' && response[i - 1] != '$') {
+            flag += ': ';
+        }
+        else if (response[i] == '$') {
+            el.append(new Option(flag));
+            flag = '';
+        }
+        else if (i == response.length - 1) { // $$$$$$$$ PUT A '$' AT THE END OF 'response' instead? $$$$$$$$
+            flag += response[i];
+            el.append(new Option(flag));
+        }
+        else if (response[i] != '£') {
+            flag += response[i];
+        }
+    }
+
+    el.append(new Option(""));
 }
 
 // Hides file selection and conversion elements
@@ -500,17 +532,29 @@ function checkExtension(event) {
 }
 
 // Populates a selection list
-function populateList(query, sel) {
+function populateList(response, sel) {
     var el = $("#" + sel),
         successText = "-- select --",
         text = "-- select --\n",
+        format = '',
         rows = [];
 
-    const result = db.exec(query)[0].values;
-
-    while (result.length > 0) {
-        rows.push(result.pop().join(": "));
-    };
+    for (var i = 1; i < response.length; i++) {
+        if (response[i] == '£' && response[i - 1] != '$') {
+            format += ': ';
+        }
+        else if (response[i] == '$') {
+            rows.push(format);
+            format = '';
+        }
+        else if (i == response.length - 1) {
+            format += response[i];
+            rows.push(format);
+        }
+        else if (response[i] != '£') {
+            format += response[i];
+        }
+    }
 
     rows.sort(function(a, b) {
         return a.toLowerCase().localeCompare(b.toLowerCase());
