@@ -1,6 +1,6 @@
 
 #   format.py
-#   Version 1.0, 28th March 2024
+#   Version 1.0, 8th April 2024
 
 #   This script acts as a server for the Chemistry File Format Conversion Database website.
 
@@ -37,7 +37,8 @@ def query() :
     if request.form['token'] == token and token != '' :
         # Establish a connection with the PostgreSQL database
         try:
-            db_conn = psycopg2.connect(database="psdi")
+            db_conn = psycopg2.connect(dbname="psdi", user="psdi", password="SharkCat1", \
+                                                            host="psdi.postgres.database.azure.com", port=5432)
 
         except psycopg2.DatabaseError as Error:
             print(f"Connection to database failed. {Error}")
