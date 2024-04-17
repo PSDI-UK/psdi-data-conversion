@@ -1,9 +1,9 @@
 /*
   format.css
-  Version 1.0, 8th April 2024
+  Version 1.0, 17th April 2024
 */
 
-/* Main heading, in a special very large blue font. */
+/* Main heading, in a special very large dark blue font. */
 h1 {
     color: #011e41;
     font-size: 4.8vw;
@@ -13,10 +13,7 @@ h1 {
 
 /* Relative size of header font increased for smaller screens, bearing in mind that normal text size does not change. */
 @media (max-width: 430px) {
-    h1 {
-        font-size: 5.8vw;
-        margin: -4px 0 0 0 /* top right bottom left */
-    }
+    h1 { font-size: 5.8vw }
 }
 
 /* Sub-heading, in a larger than normal light grey sans serif font. */
@@ -29,7 +26,12 @@ h2 {
     margin: -18px 0 0 0 /* top right bottom left */
 }
 
-/* Sub-heading, in a larger than normal light grey sans serif font. */
+/* Relative size of sub-header font increased for smaller screens, bearing in mind that normal text size does not change. */
+@media (max-width: 430px) {
+    h2 { font-size: 4.8vw }
+}
+
+/* Sub-heading, in a larger than normal dark blue sans serif font. */
 h3 {
     color: #011e41;
     font-size: 18px;
@@ -39,7 +41,7 @@ h3 {
 /* Padding and scaling for PSDI logo. */
 img {
     padding: 8px;
-    max-width: 62%; // 41%
+    max-width: 62%;
     height: auto;
 }
 
@@ -48,15 +50,23 @@ img {
     img { max-width: 30.75% }
 }
 
-/* Padding for PSDI logo reduced to zero at 430px. */
+/* Padding for PSDI logo and sub-heading reduced at 430px. */
 @media (max-width: 430px) {
     img { padding: 0 }
+    h2 { padding-left: 10px }
+}
+
+/* Padding for sub-heading gradually reduced to 20px at 200px screen width. */
+@media (max-width: 2400px) and (min-width: 200px) {
+    h2 { padding-top: calc(25px + (100vw - 700px) * (25 - 100) / (200 - 2400));
+         padding-bottom: calc(25px + (100vw - 700px) * (25 - 100) / (200 - 2400)) }
 }
 
 /* White background, with content well away from the edge. */
 form {
     background-color: white;
-    padding: 50px
+    padding: 50px;
+    padding-top: 20px
 }
 
 /* Content moved closer to the edge for smaller screens. */
@@ -71,28 +81,30 @@ label {
     font-size: 14px
 }
 
-/* Link to email. */
-a {
+/* Unvisited link colour. */
+a:link {
     font-family: 'Lato';
-    color: #0000ee
+    color: #0000ee;
+    padding-left: 20px
 }
 
-/* Link to converter website. */
-#visit {
-    padding: 8px;
-    font-family: 'Lato'
-    color: turquoise
-}
+/* Visited link colour. */
+a:visited { color: #551a8b }
+
+/* No underline when hovering over link. */
+a:hover { text-decoration: none }
 
 /* Font size reduced at 430px. */
 @media (max-width: 430px) {
     a { font-size: 14px }
 }
 
+/* Padding for link to converter website. */
+#visit { padding-left: 2px }
+
 /* Scrollbar and dark blue text for text area. */
 textarea {
     overflow-y: scroll;
-    //background-color: #e5e1e6;
     color: #011e41;
     font-family: 'Lato';
     font-size: 14px;
@@ -102,23 +114,23 @@ textarea {
 
 /* Dark blue text and 340px width for the option flag select boxes. */
 select {
-    //background-color: #e5e1e6;
     color: #011e41;
     font-size: 14px;
     font-family: 'Lato';
     width: 340px
 }
 
-/* Option flag select boxes (and their labels) are initially not displayed.*/
-#flags {
-    display: none
-}
-
 /* Hidden dummy elements to aid layout. */
 #dummyText { visibility: hidden }
 
+
 /* Converter details, user input and file conversion initially not displayed. */
-h3, #converter, #radioButtons, #userInput, #convertFile { display: none }
+//h3, #converter, #radioButtons, #userInput { display: none }
+
+/* Converter details, user input and file conversion initially not displayed. */
+h3, #converter, #radioButtons { display: none }
+
+#heading { display: block }
 
 /* Notes initially hidden. */
 #notes { visibility: hidden;
@@ -137,7 +149,6 @@ h3, #converter, #radioButtons, #userInput, #convertFile { display: none }
 
 /* Dark blue text for text input. */
 #in, #searchTo, #searchFrom {
-    //background-color: #e5e1e6;
     color: #011e41;
     font-family: 'Lato';
     font-size: 14px;

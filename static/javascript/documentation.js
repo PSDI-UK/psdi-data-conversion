@@ -1,44 +1,28 @@
 /*
-  format.js
+  documentation.js
   Version 1.0, 15th April 2024
 
-  This is the JavaScript which makes the Format and Converter Selection gui work.
+  This is the JavaScript which makes the documentation.htm gui work.
 */
 
+var token = "";
 var fromList = new Array();
 var toList = new Array();
 var last_select = "";
 
 $(document).ready(function() {
-    // Populates the "Convert from" selection list
-    var query = `SELECT DISTINCT Form.Extension, Form.Note FROM Formats Form, Converts_to Conv
-                 WHERE Form.ID=Conv.in_ID ORDER BY Extension, Note ASC`
+    token = sessionStorage.getItem("token");
 
-    queryDatabase(query, "from", populateList);
+//    getFlags("in", sessionStorage.getItem("in_str"));
+  //  getFlags("out", sessionStorage.getItem("out_str"));
 
-    // Populates the "Convert to" selection list
-    var query = `SELECT DISTINCT Form.Extension, Form.Note FROM Formats Form, Converts_to Conv
-                 WHERE Form.ID=Conv.out_ID ORDER BY Extension, Note ASC`
+    $("#message").html(sessionStorage.getItem("message"));
+    $("#message1").html(sessionStorage.getItem("message1"));
 
-    queryDatabase(query, "to", populateList);
-    sessionStorage.setItem("token", token);
-    sessionStorage.setItem("in_str", "");
-    sessionStorage.setItem("out_str", "");
-    sessionStorage.setItem("message", "");
-    sessionStorage.setItem("message1", "");
-
-    $("#fromList").click(populateConversionSuccess);
-    $("#toList").click(populateConversionSuccess);
-    $("#searchTo").keyup(filterOptions);
-    $("#searchFrom").keyup(filterOptions);
     $("#enter").click(submitUserInput);
-    $("#cancel").click(hideTextInput);
-    $("#noteButton").click(toggleNotes);
-    $("#radioYes").click(goToConversionPage);
-    $("#radioNo").click(hideFileConversionDetails);
-    $("#fileToUpload").change(checkExtension);
-    $("#uploadButton").click(submitFile);
-    $("#success").click(showConverterDetails);
+//    $("#cancel").click(hideTextInput);
+//    $("#fileToUpload").change(checkExtension);
+  //  $("#uploadButton").click(submitFile);
 });
 
 // Selects a file format; populates the "Conversion success" selection list given input and output IDs;
@@ -55,9 +39,6 @@ function populateConversionSuccess(event) {
 
     const from_text = $("#searchFrom").val();
     const to_text = $("#searchTo").val();
-
-    sessionStorage.setItem("in_str", from_text);
-    sessionStorage.setItem("out_str", to_text);
 
     if (!(from_text == "File format not found" || to_text == "File format not found")) {
         hideConverterDetails();
@@ -132,22 +113,15 @@ function formatNotFound(element) {
     showTextInput();
     last_select = element.id;
 
-//    $("#message").html("");
-  //  $("#message1").html("Missing file format? If so, please enter the format, the format(s) " +
-    //                    (element.attr('id') == "searchFrom" ? "to" : "from") + " which it should be converted and a reason.");
-
-    sessionStorage.setItem("message", "");
-    sessionStorage.setItem("message1", "Missing file format? If so, please enter the format, the format(s) " +
-                           (element.attr('id') == "searchFrom" ? "to" : "from") + " which it should be converted and a reason.");
+    $("#message").html("");
+    $("#message1").html("Missing file format? If so, please enter the format, the format(s) " +
+                        (element.attr('id') == "searchFrom" ? "to" : "from") + " which it should be converted and a reason.");
 }
 
 // Prompts the user for feedback if the "Conversion success" selection list is empty
 function conversionSuccessEmpty() {
-//    $("#message").html("Missing conversion? If you believe that this conversion should be supported, please enter a reason.");
-  //  $("#message1").html("The displayed 'from' and 'to' formats will be automatically added to your message.");
-
-    sessionStorage.setItem("message", "Missing conversion? If you believe that this conversion should be supported, please enter a reason.");
-    sessionStorage.setItem("message1", "The displayed 'from' and 'to' formats will be automatically added to your message.");
+    $("#message").html("Missing conversion? If you believe that this conversion should be supported, please enter a reason.");
+    $("#message1").html("The displayed 'from' and 'to' formats will be automatically added to your message.");
 
     $("#success").disabled = true;
     showTextInput();
@@ -184,7 +158,7 @@ function showOffer() {
     const from_format = getFormat($("#searchFrom").val());
     const to_format = getFormat($("#searchTo").val());
 
-    $("#question").html("Would you like to convert a file from '" + from_format + "' to '" + to_format + "' on this site using Open Babel?");
+    $("#question").html("Would you like to convert a file from '" + from_format + "' to '" + to_format + "' using Open Babel?");
     $("#question").css({display: "inline"});
     $("#radioButtons").css({display: "inline"});
     $("#radioNo").prop("checked", true);
@@ -450,16 +424,6 @@ function getFormat(str) {
     return str_array[0];               // e.g. "ins"
 }
 
-// Stores chosen formats and switches to the Conversion page
-function goToConversionPage(event) {
-    const a = $("<a>")
-          .attr("href", `static/content/convert.htm`)
-          .appendTo("body");
-
-    a[0].click();
-    a.remove();
-}
-
 // Shows file selection and conversion elements
 function showFileConversionDetails(event) {
     $("#convertFile").css({display: "block"});
@@ -473,13 +437,12 @@ function showFileConversionDetails(event) {
 }
 
 // Retrieves read or write option flags associated with a file format
-function getFlags (type) {
+function getFlags (type, str) {
     var query = ``;
 
     if (type == "in") {
         // $$$$$$$$$ MAKE A FUNCTION FOR THIS? $$$$$$$$$
-        const in_str = $("#searchFrom").val(),   // e.g. "ins: ShelX"
-              in_str_array = in_str.split(": "),
+        const in_str_array = str.split(": "),
               in_ext = in_str_array[0],          // e.g. "ins"
               in_note = in_str_array[1];         // e.g. "ShelX"
 
@@ -488,8 +451,7 @@ function getFlags (type) {
                               WHERE Formats_ID=(SELECT ID FROM Formats WHERE Extension = '${in_ext}' AND Note = '${in_note}'))`;
     }
     else {
-        const out_str = $("#searchTo").val(),      // e.g. "ins: ShelX"
-              out_str_array = out_str.split(": "),
+        const out_str_array = str.split(": "),
               out_ext = out_str_array[0],          // e.g. "ins"
               out_note = out_str_array[1];         // e.g. "ShelX"
 
@@ -507,7 +469,7 @@ function getFlags (type) {
     }
 }
 
-// $$$$$$$$$$ COMMENT NEEDED HERE $$$$$$$$$$
+// Populates a read or write option flag box
 function populateFlagBox(response, type) {
     var el = $("#" + type + "Flags"),
         flag = '';
@@ -617,13 +579,6 @@ function populateList(response, sel) {
     }
     else {
         el.html(successText);
-
-        const ID_a = getFormat($("#searchFrom").val()),
-              ID_b = getFormat($("#searchTo").val());
-
-        if (ID_a.toString() != ID_b.toString() && ID_a != "" && ID_b != "") {
-            conversionSuccessEmpty();
-        }
     }
 }
 

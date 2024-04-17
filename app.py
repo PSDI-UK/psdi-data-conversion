@@ -1,6 +1,6 @@
 
-#   format.py
-#   Version 1.0, 8th April 2024
+#   app.py
+#   Version 1.0, 17th April 2024
 
 #   This script acts as a server for the Chemistry File Format Conversion Database website.
 
@@ -14,7 +14,7 @@ dt = str(datetime.now())
 token = hashlib.md5(dt.encode('utf8')).hexdigest()
 
 # Create directory 'uploads' if not extant.
-upDir = './uploads'
+upDir = './static/uploads'
 if not os.path.exists(upDir) :
     os.mkdir(upDir)
 
@@ -37,8 +37,9 @@ def query() :
     if request.form['token'] == token and token != '' :
         # Establish a connection with the PostgreSQL database
         try:
+            #db_conn = psycopg2.connect(database="format")
             db_conn = psycopg2.connect(dbname="psdi", user="psdi", password="SharkCat1", \
-                                                            host="psdi.postgres.database.azure.com", port=5432)
+                                       host="psdi.postgres.database.azure.com", port=5432)
 
         except psycopg2.DatabaseError as Error:
             print(f"Connection to database failed. {Error}")
@@ -80,7 +81,7 @@ def convert() :
             os.remove(file)
 
         f = request.files['fileToUpload']
-        f.save('uploads/' + f.filename)
+        f.save('static/uploads/' + f.filename)
         fname = f.filename.split(".")[0]  # E.g. ethane.mol --> ethane
 
         # Retrieve 'from' and 'to' file formats.
@@ -101,10 +102,10 @@ def convert() :
             obConversion.AddOption(char, obConversion.OUTOPTIONS)
 
         mol = openbabel.OBMol()
-        obConversion.ReadFile(mol, 'uploads/' + f.filename)
+        obConversion.ReadFile(mol, 'static/uploads/' + f.filename)
         obConversion.WriteFile(mol, 'static/downloads/' + fname + '.' + toFormat)
 
-        os.remove('uploads/' + f.filename)
+        os.remove('static/uploads/' + f.filename)
 
         return 'okay'
     else :

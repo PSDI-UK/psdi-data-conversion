@@ -1,0 +1,86 @@
+<!--
+  convert.htm
+  Version 1.0, 17th April 2024
+-->
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PSDI Data Conversion Tool</title>
+    <link href="../images/favicon.ico" rel="icon" type="image/x-icon">
+    <link href="https://fonts.googleapis.com/css?family=Lato:400" rel="stylesheet" type="text/css">
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans+Condensed:700" rel="stylesheet" type="text/css">
+    <link rel="stylesheet" href="../styles/format.css">
+  </head>
+
+  <body marginwidth="0">
+    <div class="navGrid" id="top">
+      <img src="../images/PSDI_Logo_CMYK_282c.svg" alt="PSDI logo">
+      <h1>Data Conversion Tool</h1>
+    </div>
+    <div class="middle">
+      <a href="/">Home</a>
+      <a href="">Conversion</a>
+      <a href="report.htm">Report Missing Format/Conversion</a>
+      <a href="feedback.htm">Provide Feedback</a>
+      <a href="documentation.htm">Documentation</a>
+      <a href="mailto: psdi@soton.ac.uk" id="mail">Contact</a>
+    </div>
+    <div class="smallGap"></div>
+    <h2>Conversion</h2>
+    <form name="gui">
+      <div class="normalText">
+<!--        <br><h3>Converter details:</h3>
+        <p id="converter">
+          <span id="name"></span>
+          <br><span id="description"></span>
+          <br><span id="url"></span>
+          <a id="visit">Visit website</a>
+          <div id="radioButtons">
+            <span id="question"></span>
+            <label for="radioYes"><input type="radio" name="check" id="radioYes">Yes</label>
+            <label for="radioNo"><input type="radio" name="check" id="radioNo" checked="checked">No</label>
+          </div>
+        </p>-->
+<!--        <p id="userInput">
+          <span id="message"></span>
+          <br><span id="message1"></span>
+          <br><input type="text" size="120" id="in">
+          <br><input type="button" value=" Enter " id="enter">
+          <input type="button" value="Cancel" id="cancel">
+        </p>-->
+        <p>The option flag boxes below may or may not be populated, depending on the conversion and the degree of completion of the database. One or more input or output flags may be selected if required (shift click for multiple selections). Click on 'Choose file' and then select an input file of the correct format (and extension). Clicking on 'Convert' uploads and converts the file. The output file is automatically downloaded. If any issues are encountered (e.g., the output file does not download), please email us by clicking on 'Contact' in the navigation bar. In due course it will be possible to report such issues by clicking on 'Provide Feedback.'</p>
+        <h3 id="heading"></h3>
+        <div id="flags" class="selGrid">
+          <div id="inFlagList">
+            <p>
+              <label for="inFlags">Read (input) option flags:</label><br>
+              <select id="inFlags" size="4" multiple="multiple"></select>
+            </p>
+          </div>
+          <div id="outFlagList">
+            <p>
+              <label for="outFlags">Write (output) option flags:</label><br>
+              <select id="outFlags" size="4" multiple="multiple"></select>
+            </p>
+          </div>
+        </div>
+        <p id="convertFile">
+          Select file to convert:
+          <br><input type="file" name="fileToUpload" id="fileToUpload"><br>
+          <input type="button" value=" Convert " name="uploadButton" id="uploadButton" disabled=true>
+        </p>
+      </div>
+      <div class="largeGap"></div>
+    </form>
+
+    <script src="https://code.jquery.com/jquery-3.7.1.js"
+            integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4="
+            crossorigin="anonymous"></script>
+<!--    {% for item in data %}
+        <script>const token = "{{item.token}}";</script>
+    {% endfor %}-->
+    <script src="../javascript/convert.js" type="module" language="JavaScript"></script>
+  </body>
+</html>
