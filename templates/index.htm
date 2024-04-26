@@ -1,6 +1,6 @@
 <!--
   index.htm
-  Version 1.0, 17th April 2024
+  Version 1.0, 26th April 2024
 -->
 
 <!DOCTYPE html>
@@ -21,7 +21,6 @@
     </div>
     <div class="middle">
       <a href="/">Home</a>
-      <a href="../static/content/convert.htm">Conversion</a>
       <a href="../static/content/report.htm">Report Missing Format/Conversion</a>
       <a href="../static/content/feedback.htm">Provide Feedback</a>
       <a href="../static/content/documentation.htm">Documentation</a>
@@ -30,29 +29,29 @@
     <div class="smallGap"></div>
     <h2>Format and Converter Selection</h2>
     <form name="gui">
-      <p class="normalText">Select 'from' and 'to' file formats in the first two boxes, in either order. Typing where indicated filters the options (case insensitive); for example, typing 'can' or 'NON' reduces the number of options to one: 'can: Canonical SMILES.' When both formats have been selected, converters supporting this conversion appear in the third box along with an indication of conversion success (many conversions have not yet been tested). Selecting a converter displays information about it, along with a link to a relevant website. Irrespective of the selected converter, an Open Babel conversion is offered if it supports the conversion. Clicking on the 'Yes' radio button or on the 'Conversion' link in the navigation bar takes us to the 'Conversion' page. If a file format has not been found, or if there are no converters supporting a required conversion, please click on 'Report Missing Format/Conversion' in the navigation bar.</p>
+      <p class="normalText">Select 'from' and 'to' file formats in the 'Convert from/to' boxes, in either order. Typing where indicated filters the options (case insensitive); for example, typing 'can' or 'NON' reduces the number of options to one: 'can: Canonical SMILES.' When both formats have been selected, converters able to carry out this conversion appear in the 'Conversion options' box along with an indication of conversion success (many conversions have not yet been tested) and whether or not the converter is supported on this site. Selecting a converter displays information about it, along with a link to a relevant website. Irrespective of the selected converter, an Open Babel conversion is offered if it can be carried out. Clicking on the 'Yes' button takes us to the 'Conversion' page. If a file format has not been found, or if there are no converters supporting a required conversion, please click on 'Report Missing Format/Conversion' in the navigation bar.</p>
       <div class="grid">
         <div>
           <p>
-            <label for="searchFrom">Convert from:</label><br>
+            <label for="searchFrom" id="fromLabel">Convert from:</label><br>
             <input type="text" placeholder="-- type here to filter options --" size="12" id="searchFrom"><br>
-            <textarea rows="4" id="fromList" spellcheck="false"></textarea>
+            <select size="4" id="fromList"></select>
           </p>
         </div>
         <div>
           <p>
-            <label for="searchTo">Convert to:</label><br>
+            <label for="searchTo" id="toLabel">Convert to:</label><br>
             <input type="text" placeholder="-- type here to filter options --" size="12" id="searchTo"><br>
-            <textarea rows="4" id="toList" spellcheck="false"></textarea>
+            <select size="4" id="toList"></select>
           </p>
         </div>
-        <div>
-          <p>
-            <label for="success">Conversion success:</label><br>
-            <input type="text" id="dummyText">
-            <textarea rows="4" id="success" spellcheck="false"></textarea>
-          </p>
-        </div>
+      </div>
+      <input type="button" value=" Reset " name="resetButton" id="resetButton">
+      <div>
+        <p>
+          <label for="success">Conversion options:</label><br>
+          <select size="4" id="success"></select>
+        </p>
       </div>
       <div class="normalText">
         <br><h3>Converter details:</h3>
@@ -60,50 +59,15 @@
           <span id="name"></span>
           <br><span id="description"></span>
           <br><span id="url"></span>
-          <br>To find out how to carry out the conversion using this converter,
-          <a id="visit">visit website.</a>
+          <br><span id="info"></span>
+          <a id="visit">this website.</a>
           <div id="radioButtons">
             <span id="question"></span>
-            <label for="radioYes"><input type="radio" name="check" id="radioYes">Yes</label>
-            <label for="radioNo"><input type="radio" name="check" id="radioNo" checked="checked">No</label>
+<!--            <label for="radioYes"><input type="radio" name="check" id="radioYes">Yes</label>-->
+<!--          <label for="radioNo"><input type="radio" name="check" id="radioNo" checked="checked">No</label>-->
+            <input type="button" value=" Yes " name="yesButton" id="yesButton">
           </div>
         </p>
-<!--        <p id="userInput">
-          <span id="message"></span>
-          <br><span id="message1"></span>
-          <br><input type="text" size="120" id="in">
-          <br><input type="button" value=" Enter " id="enter">
-          <input type="button" value="Cancel" id="cancel">
-        </p>-->
-<!--        <div id="flags" class="selGrid">
-          <div id="inFlagList">
-            <p>
-              <label for="inFlags">Read (input) option flags:</label><br>
-              <select id="inFlags" size="4" multiple="multiple"></select>
-            </p>
-          </div>
-          <div id="outFlagList">
-            <p>
-              <label for="outFlags">Write (output) option flags:</label><br>
-              <select id="outFlags" size="4" multiple="multiple"></select>
-            </p>
-          </div>
-        </div>-->
-<!--        <p id="convertFile">
-          Select file to convert:
-          <br><input type="file" name="fileToUpload" id="fileToUpload"><br>
-          <input type="button" value=" Convert " name="uploadButton" id="uploadButton" disabled=true>
-        </p>-->
-<!--        <input type="button" value="Show notes" id="noteButton">
-        <ol id="notes">
-          <li>You should satisfy yourself about the suitability of a converter. The information provided here is for guidance only.</li>
-          <li>There may be options applicable to conversions. Only default conversions have been tested.</li>
-          <li>An output file is considered complete if there are no obvious defects.</li>
-          <li>A file is considered incomplete if it explicitly asks the user for more information, contains NaNs (Not a Number), contains many zeros, or has other obvious defects.</li>
-          <li>Conversion is considered unsuccessful if there is no output file, or the file is empty or substantially empty. Such conversions are omitted from the database to save space.</li>
-          <li>Conversion success is deemed unknown if a converter supports the conversion, but it has not been tested by PSDI.</li>
-          <li>Other 'Conversion success' comments may appear, as appropriate.</li>
-        </ol>-->
       </div>
       <div class="largeGap"></div>
     </form>

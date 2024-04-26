@@ -1,6 +1,6 @@
 <!--
   convert.htm
-  Version 1.0, 17th April 2024
+  Version 1.0, 26th April 2024
 -->
 
 <!DOCTYPE html>
@@ -21,7 +21,6 @@
     </div>
     <div class="middle">
       <a href="/">Home</a>
-      <a href="">Conversion</a>
       <a href="report.htm">Report Missing Format/Conversion</a>
       <a href="feedback.htm">Provide Feedback</a>
       <a href="documentation.htm">Documentation</a>
@@ -31,38 +30,21 @@
     <h2>Conversion</h2>
     <form name="gui">
       <div class="normalText">
-<!--        <br><h3>Converter details:</h3>
-        <p id="converter">
-          <span id="name"></span>
-          <br><span id="description"></span>
-          <br><span id="url"></span>
-          <a id="visit">Visit website</a>
-          <div id="radioButtons">
-            <span id="question"></span>
-            <label for="radioYes"><input type="radio" name="check" id="radioYes">Yes</label>
-            <label for="radioNo"><input type="radio" name="check" id="radioNo" checked="checked">No</label>
-          </div>
-        </p>-->
-<!--        <p id="userInput">
-          <span id="message"></span>
-          <br><span id="message1"></span>
-          <br><input type="text" size="120" id="in">
-          <br><input type="button" value=" Enter " id="enter">
-          <input type="button" value="Cancel" id="cancel">
-        </p>-->
-        <p>The option flag boxes below may or may not be populated, depending on the conversion and the degree of completion of the database. One or more input or output flags may be selected if required (shift click for multiple selections). Click on 'Choose file' and then select an input file of the correct format (and extension). Clicking on 'Convert' uploads and converts the file. The output file is automatically downloaded. If any issues are encountered (e.g., the output file does not download), please email us by clicking on 'Contact' in the navigation bar. In due course it will be possible to report such issues by clicking on 'Provide Feedback.'</p>
+        <p>Zero to two option flag boxes may be displayed, depending on the conversion and the degree of completion of the database. Further information may be displayed underneath the boxes if available. One or more input or output flags may be selected if required (shift click for multiple selections). To undo all selections in a box, click just underneath the final option. Click on 'Choose file' and then select an input file of the correct format (and extension). Clicking on 'Convert' uploads and converts the file. The output file is automatically downloaded. If any issues are encountered (e.g., the output file does not download), please email us by clicking on 'Contact' in the navigation bar. In due course it will be possible to report such issues by clicking on 'Provide Feedback.'</p>
         <h3 id="heading"></h3>
         <div id="flags" class="selGrid">
           <div id="inFlagList">
             <p>
-              <label for="inFlags">Read (input) option flags:</label><br>
+              <label for="inFlags">Read (input) option flags (select all required):</label><br>
               <select id="inFlags" size="4" multiple="multiple"></select>
+              <div id = inFlagInfo></div>
             </p>
           </div>
           <div id="outFlagList">
             <p>
-              <label for="outFlags">Write (output) option flags:</label><br>
+              <label for="outFlags">Write (output) option flags (select all required):</label><br>
               <select id="outFlags" size="4" multiple="multiple"></select>
+              <div id = outFlagInfo></div>
             </p>
           </div>
         </div>

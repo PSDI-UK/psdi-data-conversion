@@ -1,6 +1,6 @@
 /*
   convert.js
-  Version 1.0, 17th April 2024
+  Version 1.0, 26th April 2024
 
   This is the JavaScript which makes the convert.htm gui work.
 */
@@ -27,7 +27,7 @@ $(document).ready(function() {
     out_ext = out_str_array[0];
     const out_note = out_str_array[1];
 
-    $("#heading").html("Convert from " + in_ext + " (" + in_note + ") to " + out_ext + " (" + out_note + ") using Open Babel");
+    $("#heading").html("Convert from \'" + in_ext + "\' (" + in_note + ") to \'" + out_ext + "\' (" + out_note + ") using Open Babel");
 
     getFlags("in", in_str);
     getFlags("out", out_str);
@@ -213,7 +213,7 @@ function queryDatabase(query, sel, callback) {
         })
         .fail(function(e) {
             // For debugging
-            console.log("Error writing to log");
+            console.log("Error querying database");
             console.log(e.status);
             console.log(e.responseText);
         })
@@ -224,18 +224,11 @@ function submitFile() {
     const file = $("#fileToUpload")[0].files[0],
           extension = file.name.split(".")[1];
     
-//    const from = $("#searchFrom").val(),    // e.g. "ins: ShelX"
-  //        from_format = from.split(": ")[0];
-
-//    if (extension != from_format) {
     if (extension != in_ext) {
-//        alert("The file extension is not " + from_format + ": please select another file or change the 'from' format.");
-        alert("The file extension is not " + in_ext + ": please select another file or change the 'from' format.");
+        alert("The file extension is not " + in_ext + ": please select another file or change the 'from' format on the 'Home' page.");
+        $("#uploadButton").css({"background-color": "#e5e1e6", "color": "gray"});
         return;
     }
-
-//    const to = $("#searchTo").val(),
-  //        to_format = to.split(": ")[0];
 
     const read_flags_text = $("#inFlags").find(":selected").text(),
           read_flags = extractFlags(read_flags_text);
@@ -243,15 +236,12 @@ function submitFile() {
     const write_flags_text = $("#outFlags").find(":selected").text(),
           write_flags = extractFlags(write_flags_text);
 
-//    const download_fname = file.name.split(".")[0] + "." + to_format;
     const download_fname = file.name.split(".")[0] + "." + out_ext;
 
     var form_data = new FormData();
 
     form_data.append("token", token);
-//    form_data.append("from", from_format);
     form_data.append("from", in_ext);
-//    form_data.append("to", to_format);
     form_data.append("to", out_ext);
     form_data.append("from_flags", read_flags);
     form_data.append("to_flags", write_flags);
@@ -291,10 +281,17 @@ function convertFile(form_data, download_fname) {
                 a.remove();
                 },
             error: function(data) {
-                alert("ajax error, FormData: " + data);
+                //alert("ajax error, FormData: " + data);
                 }
             })
+            .done(response => {
+                alert("To the best of our knowledge, this conversion has worked. Your output file should download automatically " +
+                      "when you close this alert. Please report any problems by clicking on 'Contact' in the navigation bar.");
+            })
             .fail(function(e) {
+                alert("This conversion has failed. Please provide feedback on the conversion " +
+                      "that you were attempting by clicking on 'Contact' in the navigation bar.");
+
                 // For debugging
                 console.log("Error converting file");
                 console.log(e.status);
@@ -462,7 +459,7 @@ function getFlags (type, str) {
               in_ext = in_str_array[0],          // e.g. "ins"
               in_note = in_str_array[1];         // e.g. "ShelX"
 
-        query = `SELECT DISTINCT Flag, Description FROM OBFlags_in
+        query = `SELECT DISTINCT Flag, Description, Further_info FROM OBFlags_in
                  WHERE ID IN (SELECT DISTINCT OBFlags_in_ID FROM OBFormat_to_Flags_in
                               WHERE Formats_ID=(SELECT ID FROM Formats WHERE Extension = '${in_ext}' AND Note = '${in_note}'))`;
     }
@@ -471,7 +468,7 @@ function getFlags (type, str) {
               out_ext = out_str_array[0],          // e.g. "ins"
               out_note = out_str_array[1];         // e.g. "ShelX"
 
-        query = `SELECT DISTINCT Flag, Description FROM OBFlags_out
+        query = `SELECT DISTINCT Flag, Description, Further_info FROM OBFlags_out
                  WHERE ID IN (SELECT DISTINCT OBFlags_out_ID FROM OBFormat_to_Flags_out
                               WHERE Formats_ID=(SELECT ID FROM Formats WHERE Extension = '${out_ext}' AND Note = '${out_note}'))`;
     }
@@ -488,26 +485,55 @@ function getFlags (type, str) {
 // Populates a read or write option flag box
 function populateFlagBox(response, type) {
     var el = $("#" + type + "Flags"),
-        flag = '';
+        disp = $("#" + type + "FlagList"),
+        flag = '',
+        info = '<p>',
+        count = 0;
 
-    for (var i = 1; i < response.length; i++) {
-        if (response[i] == '£' && response[i - 1] != '$') {
-            flag += ': ';
-        }
-        else if (response[i] == '$') {
-            el.append(new Option(flag));
-            flag = '';
-        }
-        else if (i == response.length - 1) { // $$$$$$$$ PUT A '$' AT THE END OF 'response' instead? $$$$$$$$
-            flag += response[i];
-            el.append(new Option(flag));
-        }
-        else if (response[i] != '£') {
-            flag += response[i];
+    if (response.length != 0) {
+        disp.css({display: "inline"});
+        response += '$';
+
+        for (var i = 1; i < response.length; i++) {
+            if (response[i] == '$') {                 // End of all information about a particular option flag
+                const original_length = info.length;
+                info = info.replace(/.: N\/A/, '');   // Ensures 'N/A' not displayed
+
+                if (info.length == original_length) {
+                    info += '</p><p>';
+                }
+
+                count = -1;
+            }
+            else if (count == 2) {                    // End of what appears in the flag box for a particular option flag
+                el.append(new Option(flag));
+                info += response[i];                  // Start of further information about a particular option flag
+                flag = '';
+                count++;
+            }
+            else if (count == 3) {                    // Adds to further information
+                info += response[i];                  
+            }
+            else if (response[i] == '£' && response[i - 1] != '$' && count == 0) {
+                flag += ': ';                         // Break between flag and its description
+                info += ': ';
+                count++;
+            }
+            else if (response[i] == '£') {            // Acknowledges change from one piece of data to another
+                count++;
+            }
+            else if (response[i] != '£') {            // Adds to what appears in the flag box
+                flag += response[i];
+
+                if (count == 0) {
+                    info += response[i];              // Adds flag to start of further information
+                }
+            }
         }
     }
 
     el.append(new Option(""));
+    $("#" + type + "FlagInfo").html(info);
 }
 
 // Hides file selection and conversion elements
@@ -523,15 +549,15 @@ function checkExtension(event) {
     const file_name = this.files[0].name;
     const file_name_array = file_name.split(".");
     const extension = file_name_array[1];
-//    const from_format = getFormat($("#searchFrom").val());
 
-//    if (extension != from_format) {
     if (extension != in_ext) {
+        $("#uploadButton").css({"background-color": "#e5e1e6", "color": "gray"});
         $("#uploadButton").prop({disabled: true});
-//        alert("The file extension is not " + from_format + ": please select another file or change the 'from' format.");
-        alert("The file extension is not " + in_ext + ": please select another file or change the 'from' format.");
+        alert("The file extension is not " + in_ext + ": please select another file or change the 'from' format on the 'Home' page.");
     }
     else {
+        $("#uploadButton").css("background-color", "#011e41"); // TODO: COMBINE TWO LINES
+        $("#uploadButton").css("color", "#e5e1e6");
         $("#uploadButton").prop({disabled: false});
     }
 }

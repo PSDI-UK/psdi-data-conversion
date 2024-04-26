@@ -1,6 +1,6 @@
 /*
   format.css
-  Version 1.0, 17th April 2024
+  Version 1.0, 26th April 2024
 */
 
 /* Main heading, in a special very large dark blue font. */
@@ -102,16 +102,6 @@ a:hover { text-decoration: none }
 /* Padding for link to converter website. */
 #visit { padding-left: 2px }
 
-/* Scrollbar and dark blue text for text area. */
-textarea {
-    overflow-y: scroll;
-    color: #011e41;
-    font-family: 'Lato';
-    font-size: 14px;
-    width: 310px;
-    resize: none
-}
-
 /* Dark blue text and 340px width for the option flag select boxes. */
 select {
     color: #011e41;
@@ -120,19 +110,23 @@ select {
     width: 340px
 }
 
+/* 315px width for the data format select boxes. */
+#fromList, #toList { width: 318px }
+
+/* Option flag select boxes and their labels initially not displayed. */
+#inFlagList, #outFlagList { display: none }
+
 /* Hidden dummy elements to aid layout. */
 #dummyText { visibility: hidden }
 
 
 /* Converter details, user input and file conversion initially not displayed. */
-//h3, #converter, #radioButtons, #userInput { display: none }
-
-/* Converter details, user input and file conversion initially not displayed. */
 h3, #converter, #radioButtons { display: none }
 
+/* Heading for Conversion page. */
 #heading { display: block }
 
-/* Notes initially hidden. */
+/* Notes initially hidden. DELETE IN DUE COURSE */
 #notes { visibility: hidden;
          color: #011e41;
          font-family: 'Lato';
@@ -140,11 +134,17 @@ h3, #converter, #radioButtons { display: none }
 }
 
 /* Dark blue background and light grey text for buttons. */
-#enter, #cancel, #uploadButton, #noteButton {
+#enter, #cancel, #uploadButton, #noteButton, #resetButton, #yesButton {
     background-color: #011e41;
     color: #e5e1e6;
     font-family: 'Lato';
     font-size: 14px
+}
+
+/* Upload button (Convert) initially greyed out.*/
+#uploadButton {
+    background-color: #e5e1e6;
+    color: gray
 }
 
 /* Dark blue text for text input. */
@@ -153,6 +153,14 @@ h3, #converter, #radioButtons { display: none }
     font-family: 'Lato';
     font-size: 14px;
     width: 310px
+}
+
+/* Width of 'Conversion options' and 'Missing format/conversion' box */
+#success, #in { width: calc(637px + (33.33% - 318px)) }
+
+/* Width reduced at 1070px. */
+@media (max-width: 1070px) {
+    #success, #in { width: 318px }
 }
 
 /* Small vertical space. */

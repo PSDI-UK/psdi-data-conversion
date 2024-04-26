@@ -1,6 +1,6 @@
 /*
   report.js
-  Version 1.0, 15th April 2024
+  Version 1.0, 26th April 2024
 
   This is the JavaScript which makes the report.htm gui work.
 */
@@ -13,16 +13,10 @@ var last_select = "";
 $(document).ready(function() {
     token = sessionStorage.getItem("token");
 
-//    getFlags("in", sessionStorage.getItem("in_str"));
-  //  getFlags("out", sessionStorage.getItem("out_str"));
-
-    $("#message").html(sessionStorage.getItem("message"));
-    $("#message1").html(sessionStorage.getItem("message1"));
+//    $("#message").html(sessionStorage.getItem("message"));
+  //  $("#message1").html(sessionStorage.getItem("message1"));
 
     $("#enter").click(submitUserInput);
-//    $("#cancel").click(hideTextInput);
-//    $("#fileToUpload").change(checkExtension);
-  //  $("#uploadButton").click(submitFile);
 });
 
 // Selects a file format; populates the "Conversion success" selection list given input and output IDs;
@@ -135,21 +129,10 @@ function showTextInput() {
 
 // Submits user input
 function submitUserInput() {
-    const from = sessionStorage.getItem("in_str"),
-          to = sessionStorage.getItem("out_str"),
-          reason = $("#in").val();
-    var input = '';
+    const reason = $("#in").val();
 
     if (reason != "") {
-        if (from == "File format not found" || to == "File format not found") {
-            input = reason;
-        }
-        else {
-            input = 'From ' + from + ' to ' + to + '   ' + reason;
-        }
-
-        writeLog(input);
-//        hideTextInput();
+        writeLog(reason);
     }
 }
 
@@ -181,7 +164,12 @@ function writeLog(message) {
             'token': token,
             'data': message
         })
+        .done(response => {
+            alert("Report received!");
+        })
         .fail(function(e) {
+            alert("Reporting failed. Please provide feedback by clicking on 'Contact' in the navigation bar.");
+
             // For debugging
             console.log("Error writing to log");
             console.log(e.status);
