@@ -1,6 +1,6 @@
 /*
   format.css
-  Version 1.0, 26th April 2024
+  Version 1.0, 13th May 2024
 */
 
 /* Main heading, in a special very large dark blue font. */
@@ -110,15 +110,14 @@ select {
     width: 340px
 }
 
-/* 315px width for the data format select boxes. */
-#fromList, #toList { width: 318px }
+/* 310px width for the data format and report type select boxes. */
+#fromList, #toList, #reason { width: 310px }
 
 /* Option flag select boxes and their labels initially not displayed. */
 #inFlagList, #outFlagList { display: none }
 
 /* Hidden dummy elements to aid layout. */
 #dummyText { visibility: hidden }
-
 
 /* Converter details, user input and file conversion initially not displayed. */
 h3, #converter, #radioButtons { display: none }
@@ -148,19 +147,26 @@ h3, #converter, #radioButtons { display: none }
 }
 
 /* Dark blue text for text input. */
-#in, #searchTo, #searchFrom {
+#in, #searchTo, #searchFrom, #missingFormat {
     color: #011e41;
     font-family: 'Lato';
     font-size: 14px;
-    width: 310px
+    width: 303px
 }
 
-/* Width of 'Conversion options' and 'Missing format/conversion' box */
-#success, #in { width: calc(637px + (33.33% - 318px)) }
+/* Width of 'Conversion options' box */ 
+#success { width: calc(621px + (33.33% - 310px)) }
+
+/* Width of 'Missing format/conversion' text input */ 
+#in { width: calc(613px + (33.33% - 310px)) }
+
+/* Format boxes, reset button, text input box and report button initially not displayed on the 'Report' page */
+#formats, #userInput, #missing { display: none }
 
 /* Width reduced at 1070px. */
 @media (max-width: 1070px) {
-    #success, #in { width: 318px }
+    #success { width: 310px }
+    #in { width: 303px }
 }
 
 /* Small vertical space. */

@@ -1,8 +1,8 @@
 
 #   app.py
-#   Version 1.0, 17th April 2024
+#   Version 1.0, 7th May 2024
 
-#   This script acts as a server for the Chemistry File Format Conversion Database website.
+#   This script acts as a server for the PSDI Data Conversion Tool website.
 
 import hashlib, os, glob, psycopg2
 from datetime import datetime
@@ -46,26 +46,32 @@ def query() :
 
         # Query database
         with db_conn.cursor() as cursor:
-            #cursor.execute("SELECT * FROM Converters")
             cursor.execute(request.form['data'])
-            results = cursor.fetchall()
+
+            if request.form['data'].startswith('SELECT') :
+                results = cursor.fetchall()
+            else :
+                db_conn.commit()
 
         # Close connection to database
         if db_conn:
             db_conn.close()
  
-        # Construct a string from the array and return it
-        ansArray = []
+        if request.form['data'].startswith('SELECT') :
+            # Construct a string from the array and return it
+            ansArray = []
 
-        for row in results :
-            line = ''
+            for row in results :
+                line = ''
 
-            for el in row :
-                line += "£" + str(el)
+                for el in row :
+                    line += "£" + str(el)
 
-            ansArray.append(line)
+                ansArray.append(line)
 
-        return '$'.join(ansArray)
+            return '$'.join(ansArray)
+        else :
+            return 'true'
     else :
         # return http status code 405
         abort(405)

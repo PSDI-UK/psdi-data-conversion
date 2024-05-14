@@ -1,6 +1,6 @@
 <!--
   report.htm
-  Version 1.0, 23rd April 2024
+  Version 1.0, 7th May 2024
 -->
 
 <!DOCTYPE html>
@@ -30,13 +30,42 @@
     <h2>Report Missing Format/Conversion</h2>
     <form name="gui">
       <div class="normalText">
-        <p><b>Missing file format?</b> If so, please enter the missing format, the formats(s) to which or from which it should be converted, and a reason.
-        <p><b>Missing conversion?</b> If so, please enter the 'to' and 'from' formats, and a reason.
-        <p><b>Finally:</b> click on 'Report.'</p>
+        <p>Select the type of report (missing file format or conversion) and then follow the instructions that appear.
+        <p><b>Finally:</b> click on 'Report.'</p><br>
+        <select id="reason">
+          <option value="placeholder">-- select type of report --</option>
+          <option value="format">Missing file format</option>
+          <option value="conversion">Missing conversion</option>
+        </select>
+        <div id="missing"><br>
+          <br>Enter the missing format, including file extension(s). [2 to 100 chars.]
+          <br><input type="text" id="missingFormat">
+        </div>
+        <div id="formats">
+          <br>Select/change 'to' and 'from' formats as required.
+          <div class="grid">
+            <div>
+              <p>
+                <label for="searchFrom" id="fromLabel">Convert from:</label><br>
+                <input type="text" placeholder="-- type here to filter options --" id="searchFrom"><br>
+                <select size="4" id="fromList"></select>
+              </p>
+            </div>
+            <div>
+              <p>
+                <label for="searchTo" id="toLabel">Convert to:</label><br>
+                <input type="text" placeholder="-- type here to filter options --" id="searchTo"><br>
+                <select size="4" id="toList"></select>
+              </p>
+            </div>
+          </div>
+          <input type="button" value=" Reset " name="resetButton" id="resetButton">
+        </div>
+        <select id="success"></select> <!-- Not for display. For convenience only. -->
         <p id="userInput">
           <span id="message"></span>
           <br><span id="message1"></span>
-          <br><input type="text" size="120" id="in">
+          <br><input type="text" id="in">
           <br><input type="button" value=" Report " id="enter">
         </p>
       <div class="largeGap"></div>
