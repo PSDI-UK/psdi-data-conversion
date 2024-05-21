@@ -1,6 +1,6 @@
 /*
   convert.js
-  Version 1.0, 26th April 2024
+  Version 1.0, 16th May 2024
 
   This is the JavaScript which makes the convert.htm gui work.
 */
@@ -36,156 +36,7 @@ $(document).ready(function() {
     $("#uploadButton").click(submitFile);
 });
 
-// Selects a file format; populates the "Conversion success" selection list given input and output IDs;
-// and removes converter details and text input (if showing)
-function populateConversionSuccess(event) {
-    const selectedText = getSelectedText(this);
-
-    if (this.id == "fromList") {
-        $("#searchFrom").val(selectedText);
-    }
-    else {
-        $("#searchTo").val(selectedText);
-    }
-
-    const from_text = $("#searchFrom").val();
-    const to_text = $("#searchTo").val();
-
-    if (!(from_text == "File format not found" || to_text == "File format not found")) {
-        hideConverterDetails();
-        hideTextInput();
-    }
-    else if (from_text == "File format not found") {
-        formatNotFound($("#searchFrom"));
-    }
-    else {
-        formatNotFound($("#searchTo"));
-    }
-
-    this.selectionStart = -1;
-    this.selectionEnd = -1;
-    this.blur();
-    emptySuccess();
-    hideOffer();
-
-    if (!(to_text == "-- select --" || to_text == "File format not found" ||
-          from_text == "-- select --" || from_text == "File format not found")) {
-        try {
-            const in_str = $("#searchFrom").val(), // e.g. "ins: ShelX"
-                  in_str_array = in_str.split(": "),
-                  in_ext = in_str_array[0],           // e.g. "ins"
-                  in_note = in_str_array[1];          // e.g. "ShelX"
-
-            const out_str = $("#searchTo").val(),
-                  out_str_array = out_str.split(": "),
-                  out_ext = out_str_array[0],
-                  out_note = out_str_array[1];
-
-            const query = `SELECT C.Name, C_to.Degree_of_success FROM Converters C, Converts_to C_to
-                           WHERE C_to.in_ID=(SELECT ID FROM Formats WHERE Extension = '${in_ext}' AND Note = '${in_note}')
-                           AND C_to.out_ID=(SELECT ID FROM Formats WHERE Extension = '${out_ext}' AND Note = '${out_note}')
-                           AND C.ID=C_to.Converters_ID ORDER BY C.Name ASC`
-
-            queryDatabase(query, "success", populateList);
-        }
-        catch (e) {
-            const ID_a = getFormat($("#searchFrom").val()),
-                  ID_b = getFormat($("#searchTo").val());
-
-            if (ID_a.toString() != ID_b.toString() && ID_a != "" && ID_b != "") {
-                    conversionSuccessEmpty();
-            }
-        }
-    }
-}
-
-// Retrieve selected text from the "Conversion success" textarea
-function getSelectedText(el) {
-    const text = el.value;
-    const before = text.substring(0, el.selectionStart);
-    const after = text.substring(el.selectionEnd, text.length);
-
-    el.selectionStart = before.lastIndexOf("\n") >= 0 ? before.lastIndexOf("\n") + 1 : 0;
-    el.selectionEnd = after.indexOf("\n") >= 0 ? el.selectionEnd + after.indexOf("\n") : text.length;
-
-    return el.value.substring(el.selectionStart, el.selectionEnd);
-}
-
-// Hides converter details
-function hideConverterDetails() {
-    $("#converter").css({display: "none"});
-    $("h3").css({display: "none"});
-}
-
-// Prompts the user for feedback if "File format not found" is selected
-function formatNotFound(element) {
-    emptySuccess();
-    hideConverterDetails();
-    showTextInput();
-    last_select = element.id;
-
-    $("#message").html("");
-    $("#message1").html("Missing file format? If so, please enter the format, the format(s) " +
-                        (element.attr('id') == "searchFrom" ? "to" : "from") + " which it should be converted and a reason.");
-}
-
-// Prompts the user for feedback if the "Conversion success" selection list is empty
-function conversionSuccessEmpty() {
-    $("#message").html("Missing conversion? If you believe that this conversion should be supported, please enter a reason.");
-    $("#message1").html("The displayed 'from' and 'to' formats will be automatically added to your message.");
-
-    $("#success").disabled = true;
-    showTextInput();
-    last_select = "success";
-}
-
-// Shows the text input element and associated buttons and prompt
-function showTextInput() {
-    $("#userInput").css({display: "block"});
-}
-
-// Submits user input
-function submitUserInput() {
-    const from = $("#searchFrom").val();
-    const to = $("#searchTo").val();
-    const reason = $("#in").val();
-    var input = '';
-
-    if (reason != "") {
-        if (last_select == "success") {
-            input = 'From ' + from + ' to ' + to + '   ' + reason;
-        }
-        else {
-            input = reason;
-        }
-
-        writeLog(input);
-        hideTextInput();
-    }
-}
-
-// Show Open Babel conversion offer
-function showOffer() {
-    const from_format = getFormat($("#searchFrom").val());
-    const to_format = getFormat($("#searchTo").val());
-
-    $("#question").html("Would you like to convert a file from '" + from_format + "' to '" + to_format + "' using Open Babel?");
-    $("#question").css({display: "inline"});
-    $("#radioButtons").css({display: "inline"});
-    $("#radioNo").prop("checked", true);
-}
-
-// Hide Open Babel conversion offer
-function hideOffer() {
-    $("#converter").css({display: "none"});
-    $("#question").css({display: "none"});
-    $("#radioButtons").css({display: "none"});
-    $("#convertFile").css({display: "none"});
-    $("#inFlags").empty();
-    $("#outFlags").empty();
-    $("#flags").css({display: "none"});
-}
-
+// $$$$$$$$$$ Retained in case of future need to write to a log file $$$$$$$$$$
 // Writes user input to a server-side file
 function writeLog(message) {
     var jqXHR = $.get(`/data/`, {
@@ -222,7 +73,14 @@ function queryDatabase(query, sel, callback) {
 // Uploads a user-supplied file
 function submitFile() {
     const file = $("#fileToUpload")[0].files[0],
+          fname = file.name.split(".")[0],
           extension = file.name.split(".")[1];
+
+    var quality = sessionStorage.getItem("success"),
+        start = quality.indexOf(':') + 2,
+        finish = quality.lastIndexOf('(') - 1;
+
+    quality = quality.substring(start, finish);
     
     if (extension != in_ext) {
         alert("The file extension is not " + in_ext + ": please select another file or change the 'from' format on the 'Home' page.");
@@ -243,12 +101,15 @@ function submitFile() {
     form_data.append("token", token);
     form_data.append("from", in_ext);
     form_data.append("to", out_ext);
+    form_data.append("from_full", sessionStorage.getItem("in_str"));
+    form_data.append("to_full", sessionStorage.getItem("out_str"));
+    form_data.append("success", quality);
     form_data.append("from_flags", read_flags);
     form_data.append("to_flags", write_flags);
     form_data.append("fileToUpload", file);
     form_data.append("upload_file", true);
 
-    convertFile(form_data, download_fname);
+    convertFile(form_data, download_fname, fname);
 }
 
 // Retrieves option flags from selected text
@@ -265,21 +126,40 @@ function extractFlags(flags_text) {
 }
 
 // Converts user-supplied file to another format and downloads the resulting file
-function convertFile(form_data, download_fname) {
+function convertFile(form_data, download_fname, fname) {
     var jqXHR = $.ajax({
             url: `/convert/`,
             type: "POST",
             data: form_data,
             processData: false,
             contentType: false,
-            success: function() {
-                const a = $("<a>")
-                      .attr("href", `../downloads/${download_fname}`)
-                      .attr("download", download_fname)
-                      .appendTo("body");
-                a[0].click();
-                a.remove();
-                },
+            success: async function() {
+                const delay = ms => new Promise(response => setTimeout(response, ms));
+
+                downloadFile(`../downloads/${fname}.log.txt`, fname + '.log.txt')
+                await delay(300);
+                downloadFile(`../downloads/${download_fname}`, download_fname)
+                await delay(300);
+
+                var fdata = new FormData();
+
+                fdata.append("filename", download_fname);
+                fdata.append("logname", fname + '.log.txt');
+
+                $.ajax({
+                    url: `/delete/`,
+                    type: "POST",
+                    data: fdata,
+                    processData: false,
+                    contentType: false
+                })
+                .fail(function(e) {
+                    // For debugging
+                    console.log("Error deleting remote files after download");
+                    console.log(e.status);
+                    console.log(e.responseText);
+                })
+            },
             error: function(data) {
                 //alert("ajax error, FormData: " + data);
                 }
@@ -299,154 +179,14 @@ function convertFile(form_data, download_fname) {
             })
 }
 
-// Hides the text input element and associated buttons and prompt
-function hideTextInput() {
-    $("#in").val("");
-    $("#userInput").css({display: "none"});
-
-    if (!($("#searchFrom").val() == "File format not found" ||
-          $("#searchTo").val() == "File format not found")) {
-        $("#success").prop({disabled: false});
-    }
-}
-
-// Shows notes if hidden; hides notes if shown. Button text changed as appropriate.
-function toggleNotes(event) {
-    if (this.value == "Show notes") {
-        this.value = "Hide notes";
-        $("#notes").css({visibility: "visible"});
-    }
-    else {
-        this.value = "Show notes";
-        $("#notes").css({visibility: "hidden"});
-    }
-}
-
-// Displays converter details given its name
-function showConverterDetails(event) {
-    var selectedText = getSelectedText(this);
-
-    const str_array = selectedText.split(": ", 1),
-          conv_name = str_array[0];                                     // e.g. "Open Babel"
-
-    const query = `SELECT * FROM Converters WHERE Name='${conv_name}'`;
-
-    queryDatabase(query, this, displayConverterDetails);
-}
-
-// Displays converter details and offers an Open Babel conversion if available 
-function displayConverterDetails(response, el) {
-    var count = 0,
-        str = '';
-
-    response += '£';
-
-    try {
-        for (var i = 1; i < response.length; i++) {
-            if (response[i] == '£') {
-                if (count == 1) {
-                    $("#name").html(str);
-                }
-                else if (count == 2) {
-                    $("#description").html(str);
-                }
-                else if (count == 3) {
-                    $("#url").html(str);
-                    break;
-                }
-
-                count += 1;
-                str = '';
-            }
-            else {
-                str += response[i];
-            }
-        }
-
-        var visit = $("#visit");
-        visit.attr("href", str);
-
-        $("#converter").css({display: "block"});
-        $("h3").css({display: "block"});
-    }
-    catch (e) {
-        // No need for error message if no options shown
-    }
-
-    // Search textarea for "Open Babel"
-    const text = el.value;
-
-    el.selectionStart = 0;
-    el.selectionEnd = 0;
-
-    while (el.selectionStart < text.length) {
-        const selectedText = getSelectedText(el),
-              name = selectedText.split(": ")[0];
-
-        if (name == "Open Babel") {
-            showOffer();
-            break;
-        }
-
-        el.selectionEnd += 1;
-        el.selectionStart = el.selectionEnd;
-    }
-
-    el.selectionStart = -1;
-    el.selectionEnd = -1;
-    el.blur();
-}
-
-// Only options having user filter input as a substring (case insensitive) are included in the selection list
-function filterOptions(event) {
-    const str = this.value.toLowerCase();
-    var box;
-    var list;
-    var text = "-- select --\n";
-
-    if (this.id == "searchFrom") {
-        box = document.getElementById("fromList");
-        list = fromList;
-    }
-    else {
-        box = document.getElementById("toList");
-        list = toList;
-    }
-
-    for (var i = 1; i < list.length - 1; i++) {
-        if (list[i].toLowerCase().includes(str)) {
-            text += list[i];
-        }
-    }
-
-    text += "File format not found";
-    box.value = text;
-    emptySuccess();
-    hideConverterDetails();
-    hideOffer();
-}
-
-// Empties the "Conversion success" textarea
-function emptySuccess() {
-    $("#success").html("");
-}
-
-// Retrieves a file format from a string (e.g. "ins: ShelX") from a selection list
-function getFormat(str) {
-    const str_array = str.split(": ");
-    return str_array[0];               // e.g. "ins"
-}
-
-// Shows file selection and conversion elements
-function showFileConversionDetails(event) {
-    $("#convertFile").css({display: "block"});
-
-    var in_found = getFlags("in"),
-        out_found = getFlags("out");
-
-    if (in_found || out_found) {
-        $("#flags").css({display: "grid"});
-    }
+// A link is created, clicked and removed, resulting in the download of a file
+function downloadFile(path, filename) {
+    const a = $("<a>")
+          .attr("href", path)
+          .attr("download", filename)
+          .appendTo("body");
+    a[0].click();
+    a.remove();
 }
 
 // Retrieves read or write option flags associated with a file format
@@ -536,14 +276,6 @@ function populateFlagBox(response, type) {
     $("#" + type + "FlagInfo").html(info);
 }
 
-// Hides file selection and conversion elements
-function hideFileConversionDetails(event) {
-    $("#convertFile").css({display: "none"});
-    $("#inFlags").empty();
-    $("#outFlags").empty();
-    $("#flags").css({display: "none"});
-}
-
 // File upload is allowed only if its extension matches the 'from' format
 function checkExtension(event) {
     const file_name = this.files[0].name;
@@ -559,70 +291,6 @@ function checkExtension(event) {
         $("#uploadButton").css("background-color", "#011e41"); // TODO: COMBINE TWO LINES
         $("#uploadButton").css("color", "#e5e1e6");
         $("#uploadButton").prop({disabled: false});
-    }
-}
-
-// Populates a selection list
-function populateList(response, sel) {
-    var el = $("#" + sel),
-        successText = "-- select --",
-        text = "-- select --\n",
-        format = '',
-        rows = [];
-
-    for (var i = 1; i < response.length; i++) {
-        if (response[i] == '£' && response[i - 1] != '$') {
-            format += ': ';
-        }
-        else if (response[i] == '$') {
-            rows.push(format);
-            format = '';
-        }
-        else if (i == response.length - 1) {
-            format += response[i];
-            rows.push(format);
-        }
-        else if (response[i] != '£') {
-            format += response[i];
-        }
-    }
-
-    rows.sort(function(a, b) {
-        return a.toLowerCase().localeCompare(b.toLowerCase());
-    });
-
-    fromList[0] = "-- select --\n";
-    toList[0] = "-- select --\n";
-
-    for (var i = 0; i < rows.length; i++) {
-
-        if ( sel == "success") {
-            successText += "\n" + rows[i];
-        }
-
-        text += rows[i] + "\n";
-
-        // This is for creating permanent arrays of options
-        if (sel == "from") {  
-            fromList[i + 1] = rows[i] + "\n";
-        }
-        else if (sel == "to") {
-            toList[i + 1] = rows[i] + "\n";
-        }
-    }
-
-    text += "File format not found";
-
-    if (sel == "from") {
-        $("#fromList").html(text);
-        fromList[fromList.length] = "File format not found";
-    }
-    else if (sel == "to") {
-        $("#toList").html(text);
-        toList[toList.length] = "File format not found";
-    }
-    else {
-        el.html(successText);
     }
 }
 

@@ -1,6 +1,6 @@
 /*
   format.js
-  Version 1.0, 13th May 2024
+  Version 1.0, 16th May 2024
 
   This is the JavaScript which makes the Format and Converter Selection gui work.
 */
@@ -18,6 +18,7 @@ $(document).ready(function() {
     sessionStorage.setItem("token", token);
     sessionStorage.setItem("in_str", "");
     sessionStorage.setItem("out_str", "");
+    sessionStorage.setItem("success", "");
 
     $("#fromList").click(populateConversionSuccess);
     $("#toList").click(populateConversionSuccess);
@@ -146,6 +147,8 @@ function queryDatabase(query, sel, callback) {
 // Displays converter details given its name
 function showConverterDetails(event) {
     var selectedText = getSelectedText(this);
+
+    sessionStorage.setItem("success", selectedText);
 
     const str_array = selectedText.split(": ", 1),
           conv_name = str_array[0];                                     // e.g. "Open Babel"
