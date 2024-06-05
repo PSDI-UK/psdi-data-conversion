@@ -1,141 +1,143 @@
 /*
-  format.js
+  accessibility.js
   Version 1.0, 31st May 2024
 
-  This is the JavaScript which makes the Format and Converter Selection gui work.
+  This is the JavaScript which makes the Accessibility gui work.
 */
 
 var fromList = new Array(),
     toList = new Array();
 
 $(document).ready(function() {
-    // Populates the "Convert from" and "Convert to" selection lists
-    var query = `SELECT DISTINCT Extension, Note FROM Formats ORDER BY Extension, Note ASC`
-
-    queryDatabase(query, "from", populateList);
-    queryDatabase(query, "to", populateList);
-
     const font = sessionStorage.getItem("font"),
+          fontOpt = sessionStorage.getItem("fontOpt"),
           size = sessionStorage.getItem("size"),
+          sizeOpt = sessionStorage.getItem("sizeOpt"),
           weight = sessionStorage.getItem("weight"),
+          weightOpt = sessionStorage.getItem("weightOpt"),
           letter = sessionStorage.getItem("letter"),
+          letterOpt = sessionStorage.getItem("letterOpt"),
           line = sessionStorage.getItem("line"),
+          lineOpt = sessionStorage.getItem("lineOpt"),
           colour = sessionStorage.getItem("colour"),
-          back = sessionStorage.getItem("back");
-
-    sessionStorage.setItem("token", token);
-    sessionStorage.setItem("in_str", "");
-    sessionStorage.setItem("out_str", "");
-    sessionStorage.setItem("success", "");
+          colourOpt = sessionStorage.getItem("colourOpt"),
+          back = sessionStorage.getItem("back"),
+          backOpt = sessionStorage.getItem("backOpt");
 
     if (font != null) {
-        $(".normalText, .middle, h3, #resetButton, #yesButton").css({
+        $(".normalText, .middle, #applyButton").css({
             fontFamily: font,
             fontSize: size,
             fontWeight: weight,
             letterSpacing: letter
         });
 
-        $(".normalText, .middle").css({lineHeight: line});
-        $(".normalText").css({color: colour});
+        $(".normalText").css({
+            lineHeight: line,
+            color: colour
+        });
+
+        $(".middle").css({lineHeight: line});
         $("h1, h2").css({letterSpacing: letter});
-        $("h1, h3").css({color: colour});
-        $("h3").css({fontSize: Number(size.substring(0, 2)) + 4 + 'px'});
-        $("form, select, #searchFrom, #searchTo, #upper").css({background: back});
+        $("h1").css({color: colour});
+        $("form, select, #upper").css({background: back});
+
+        $("#font").val(fontOpt).change();
+        $("#size").val(sizeOpt).change();
+        $("#weight").val(weightOpt).change();
+        $("#letter").val(letterOpt).change();
+        $("#line").val(lineOpt).change();
+        $("#colour").val(colourOpt).change();
+        $("#background").val(backOpt).change();
     }
 
-/*    $("#font").change(changeFont);
-    $("#background").change(changeBackground);
+    $("#font").change(changeFont);
     $("#size").change(changeFontSize);
+    $("#weight").change(changeFontWeight);
     $("#letter").change(changeLetterSpacing);
-    $("#line").change(changeLineSpacing);           */
-    $("#fromList").click(populateConversionSuccess);
+    $("#line").change(changeLineSpacing);
+    $("#colour").change(changeFontColour);
+    $("#background").change(changeBackground);
+    $("#applyButton").click(applySettings);
+/*    $("#fromList").click(populateConversionSuccess);
     $("#toList").click(populateConversionSuccess);
     $("#searchTo").keyup(filterOptions);
     $("#searchFrom").keyup(filterOptions);
     $("#yesButton").click(goToConversionPage);
     $("#success").click(showConverterDetails);
-    $("#resetButton").click(resetAll);
+    $("#resetButton").click(resetAll);         */
 });
 
 // Changes the font for accessibility purposes and ensures that the correct default line spacing is applied.
-/*function changeFont(event) {
+function changeFont(event) {
     const font = $("#font").find(":selected").text(),
           line = $("#line").find(":selected").text();
 
-    var text = $(".normalText");
+    var text = $(".normalText, .middle, #applyButton");
 
     switch (font) {
         case 'Arial':
-            text.css({fontFamily: 'Arial, sans-serif'});
-
             if (line == 'Default') {
                 text.css({lineHeight: 1.145});
             }
 
+            text.css({fontFamily: 'Arial, sans-serif'});
             break;
 
         case 'Comic Sans':
-            text.css({fontFamily: 'Comic Sans MS, Comic Sans, sans-serif'});
-
             if (line == 'Default') {
                 text.css({lineHeight: 1.4});
             }
 
+            text.css({fontFamily: 'Comic Sans MS, Comic Sans, sans-serif'});
             break;
 
         case 'Lexend':
-            text.css({fontFamily: 'Lexend, sans-serif'});
-
             if (line == 'Default') {
                 text.css({lineHeight: 1.3});
             }
 
+            text.css({fontFamily: 'Lexend, sans-serif'});
             break;
 
         case 'Open Sans':
-            text.css({fontFamily: 'Open Sans, sans-serif'});
-
             if (line == 'Default') {
                 text.css({lineHeight: 1.4});
             }
 
+            text.css({fontFamily: 'Open Sans, sans-serif'});
             break;
 
         case 'Tahoma':
-            text.css({fontFamily: 'Tahoma, sans-serif'});
-
             if (line == 'Default') {
                 text.css({lineHeight: 1.25});
             }
 
+            text.css({fontFamily: 'Tahoma, sans-serif'});
             break;
 
         case 'Trebuchet':
-            text.css({fontFamily: 'Trebuchet MS, Trebuchet, sans-serif'});
-
             if (line == 'Default') {
                 text.css({lineHeight: 1.2});
             }
 
+            text.css({fontFamily: 'Trebuchet MS, Trebuchet, sans-serif'});
             break;
 
         case 'Verdana':
-            text.css({fontFamily: 'Verdana, sans-serif'});
-
             if (line == 'Default') {
                 text.css({lineHeight: 1.25});
             }
 
+            text.css({fontFamily: 'Verdana, sans-serif'});
             break;
 
         default:
-            text.css({fontFamily: 'Lato, sans-serif'});
-
             if (line == 'Default') {
                 text.css({lineHeight: 1.218});
             }
 
+            text.css({fontFamily: 'Lato, sans-serif'});
             break;
     }
 }
@@ -143,7 +145,7 @@ $(document).ready(function() {
 // Changes the letter spacing for accessibility purposes.
 function changeLetterSpacing(event) {
     const space = $("#letter").find(":selected").text();
-    var text = $(".normalText");
+    var text = $(".normalText, .middle, #applyButton, h1, h2");
 
     switch (space) {
         case '0.5':
@@ -183,7 +185,7 @@ function changeLetterSpacing(event) {
 // Changes the line spacing for accessibility purposes.
 function changeLineSpacing(event) {
     const space = $("#line").find(":selected").text();
-    var text = $(".normalText");
+    var text = $(".normalText, .middle");
 
     switch (space) {
         case '1.1':
@@ -253,7 +255,7 @@ function changeLineSpacing(event) {
 // Changes the font size for accessibility purposes.
 function changeFontSize(event) {
     const size = $("#size").find(":selected").text();
-    var text = $(".normalText");
+    var text = $(".normalText, .middle, #applyButton");
 
     switch (size) {
         case '15':
@@ -290,6 +292,58 @@ function changeFontSize(event) {
     }
 }
 
+// Changes the font weight for accessibility purposes.
+function changeFontWeight(event) {
+    const weight = $("#weight").find(":selected").text();
+    var text = $(".normalText, .middle, #applyButton");
+
+    switch (weight) {
+        case 'Bold':
+            text.css({fontWeight: 'bold'});
+            break;
+
+        default:
+            text.css({fontWeight: 'normal'});
+            break;
+    }
+}
+
+// Changes the font colour for accessibility purposes.
+function changeFontColour(event) {
+    const colour = $("#colour").find(":selected").text();
+    var text = $(".normalText, h1");
+
+    switch (colour) {
+        case 'Black':
+            text.css({color: 'black'});
+            break;
+
+        case 'Red':
+            text.css({color: 'red'});
+            break;
+
+        case 'Orange':
+            text.css({color: 'orange'});
+            break;
+
+        case 'Green':
+            text.css({color: 'green'});
+            break;
+
+        case 'Purple':
+            text.css({color: 'purple'});
+            break;
+
+        case 'Brown':
+            text.css({color: 'brown'});
+            break;
+
+        default:
+            text.css({color: '#011e41'});
+            break;
+    }
+}
+
 // Changes the background colour for accessibility purposes. Font colour is black when background colour is not white.
 function changeBackground(event) {
     const colour = $("#background").find(":selected").text();
@@ -297,43 +351,45 @@ function changeBackground(event) {
 
     switch (colour) {
         case 'Mustard':
-            $("form").css({
-                background: '#eddd6e',
-                color: 'black'
-            });
-
+            $("form, select, #upper").css({background: '#eddd6e'});
             break;
 
         case 'Peach':
-            $("form").css({
-                background: '#edd1b0',
-                color: 'black'
-            });
-
+            $("form, select, #upper").css({background: '#edd1b0'});
             break;
 
-        case 'Lime':
-            $("form").css({
-                background: '#f8fd89',
-                color: 'black'
-            });
-
+        case 'Lemon':
+            $("form, select, #upper").css({background: '#f8fd89'});
             break;
 
         default:
-            $("form").css({
-                background: 'white',
-                color: '#011e41'
-            });
-
+            $("form, select, #upper").css({background: 'white'});
             break;
-
     }
-}                                    */
+}
+
+// Applies accessibility settings to the entire website.
+function applySettings(event) {
+    sessionStorage.setItem("font", $(".normalText").css('fontFamily'));
+    sessionStorage.setItem("size", $(".normalText").css('fontSize'));
+    sessionStorage.setItem("weight", $(".normalText").css('fontWeight'));
+    sessionStorage.setItem("letter", $(".normalText").css('letterSpacing'));
+    sessionStorage.setItem("line", $(".normalText").css('lineHeight'));
+    sessionStorage.setItem("colour", $(".normalText").css('color'));
+    sessionStorage.setItem("back", $("form").css('background'));
+
+    sessionStorage.setItem("fontOpt", $("#font").find(":selected").text());
+    sessionStorage.setItem("sizeOpt", $("#size").find(":selected").text());
+    sessionStorage.setItem("weightOpt", $("#weight").find(":selected").text());
+    sessionStorage.setItem("letterOpt", $("#letter").find(":selected").text());
+    sessionStorage.setItem("lineOpt", $("#line").find(":selected").text());
+    sessionStorage.setItem("colourOpt", $("#colour").find(":selected").text());
+    sessionStorage.setItem("backOpt", $("#background").find(":selected").text());
+}
 
 // Selects a file format; populates the "Conversion success" selection list given input and output IDs;
 // and removes converter details and text input (if showing)
-function populateConversionSuccess(event) {
+/*function populateConversionSuccess(event) {
     const selectedText = getSelectedText(this);
 
     if (this.id == "fromList") {
@@ -378,11 +434,11 @@ function populateConversionSuccess(event) {
         // Can do without an error message if the 'Conversion options' box remains empty;
         // however, consider a greyed-out message inside the box (using some of the commented out code below).
     }
-}
+}     */
 
 // Retrieve selected text from the "Conversion success" textarea
 // $$$$$$$$$$ Can delete this PROVIDED the mobile 'phone select box issue can be solved without it? BUT NEED TO DO IT ANOTHER WAY!! $$$$$$$$$$
-function getSelectedText(el) {
+/*function getSelectedText(el) {
     const text = el.value,
           before = text.substring(0, el.selectionStart),
           after = text.substring(el.selectionEnd, text.length);
@@ -391,16 +447,16 @@ function getSelectedText(el) {
     el.selectionEnd = after.indexOf("\n") >= 0 ? el.selectionEnd + after.indexOf("\n") : text.length;
 
     return el.value.substring(el.selectionStart, el.selectionEnd);
-}
+} */
 
 // Hides converter details
-function hideConverterDetails() {
+/*function hideConverterDetails() {
     $("#converter").css({display: "none"});
     $("h3").css({display: "none"});
-}
+} */
 
 // Show Open Babel conversion offer
-function showOffer() {
+/*function showOffer() {
     const from_format = getFormat($("#searchFrom").val()),
           to_format = getFormat($("#searchTo").val()),
           quest = "ould you like to convert a file from '" + from_format + "' to '" + to_format + "' on this site using Open Babel?";
@@ -418,19 +474,19 @@ function showOffer() {
 
     $("#question").css({display: "inline"});
     $("#radioButtons").css({display: "inline"}); // $$$$$$$$$$ TODO: 'radioButtons' is no longer an appropriate id $$$$$$$$$$
-}
+} */
 
 // Hide Open Babel conversion offer
-function hideOffer() {
+/*function hideOffer() {
     $("#converter").css({display: "none"});
     $("#question").css({display: "none"});
     $("#radioButtons").css({display: "none"});
-}
+} */
 
 // $$$$$$$$$$ write separate function for debugging $$$$$$$$$$$
 
 // Queries the PostgreSQL database
-function queryDatabase(query, sel, callback) {
+/*function queryDatabase(query, sel, callback) {
     var jqXHR = $.post(`/query/`, {
             'token': token,
             'data': query
@@ -444,10 +500,10 @@ function queryDatabase(query, sel, callback) {
             console.log(e.status);
             console.log(e.responseText);
         })
-}
+} */
 
 // Displays converter details given its name
-function showConverterDetails(event) {
+/*function showConverterDetails(event) {
     var selectedText = getSelectedText(this);
 
     sessionStorage.setItem("success", selectedText);
@@ -458,10 +514,10 @@ function showConverterDetails(event) {
     const query = `SELECT * FROM Converters WHERE Name='${conv_name}'`;
 
     queryDatabase(query, this, displayConverterDetails);
-}
+} */
 
 // Displays converter details and offers an Open Babel conversion if available 
-function displayConverterDetails(response, el) {
+/*function displayConverterDetails(response, el) {
     var count = 0,
         str = '';
 
@@ -518,10 +574,10 @@ function displayConverterDetails(response, el) {
     el.selectionStart = -1;
     el.selectionEnd = -1;
     el.blur();
-}
+} */
 
 // Only options having user filter input as a substring (case insensitive) are included in the selection list
-function filterOptions(event) {
+/*function filterOptions(event) {
     const str = this.value.toLowerCase();
     var box, list,
         count = 0,
@@ -556,31 +612,31 @@ function filterOptions(event) {
     emptySuccess();
     hideConverterDetails();
     hideOffer();
-}
+} */
 
 // Empties the "Conversion success" textarea     $$$$$ textarea? $$$$$
-function emptySuccess() {
+/*function emptySuccess() {
     $("#success").html("");
-}
+} */
 
 // Retrieves a file format from a string (e.g. "ins: ShelX") from a selection list
-function getFormat(str) {
+/*function getFormat(str) {
     const str_array = str.split(": ");
     return str_array[0];               // e.g. "ins"
-}
+} */
 
 // Stores chosen formats and switches to the Conversion page
-function goToConversionPage(event) {
+/*function goToConversionPage(event) {
     const a = $("<a>")
           .attr("href", `static/content/convert.htm`)
           .appendTo("body");
 
     a[0].click();
     a.remove();
-}
+} */
 
 // Populates a selection list
-function populateList(response, sel) {
+/*function populateList(response, sel) {
     var el = $("#" + sel),
         successText = "",
         format = '',
@@ -634,13 +690,13 @@ function populateList(response, sel) {
         $("#fromLabel").html("Convert from (" + fromList.length + "):");
         $("#toLabel").html("Convert to (" + toList.length + "):");
     }
-}
+} */
 
 // Resets the filtering, format list and converter list boxes
-function resetAll() {
+/*function resetAll() {
     $("#searchFrom").val("");
     $("#searchFrom").keyup();
 
     $("#searchTo").val("");
     $("#searchTo").keyup();
-}
+} */

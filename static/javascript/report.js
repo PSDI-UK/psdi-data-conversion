@@ -1,6 +1,6 @@
 /*
   report.js
-  Version 1.0, 13th May 2024
+  Version 1.0, 31st May 2024
 
   This is the JavaScript which makes the report.htm gui work.
 */
@@ -19,6 +19,28 @@ $(document).ready(function() {
 
     queryDatabase(query, "from", populateList);
     queryDatabase(query, "to", populateList);
+
+    const font = sessionStorage.getItem("font"),
+          size = sessionStorage.getItem("size"),
+          weight = sessionStorage.getItem("weight"),
+          letter = sessionStorage.getItem("letter"),
+          line = sessionStorage.getItem("line"),
+          colour = sessionStorage.getItem("colour"),
+          back = sessionStorage.getItem("back");
+
+    if (font != null) {
+        $(".normalText, .middle, #resetButton, #reportButton").css({
+            fontFamily: font,
+            fontSize: size,
+            fontWeight: weight,
+            letterSpacing: letter
+        });
+
+        $(".normalText, .middle").css({lineHeight: line});
+        $(".normalText, h1").css({color: colour});
+        $("h1, h2").css({letterSpacing: letter});
+        $("form, select, #upper, #missingFormat, #searchFrom, #searchTo, #in").css({background: back});
+    }
 
     $("#searchFrom").val(sessionStorage.getItem("in_str"));
     $("#searchTo").val(sessionStorage.getItem("out_str"));

@@ -1,6 +1,6 @@
 /*
   convert.js
-  Version 1.0, 16th May 2024
+  Version 1.0, 31st May 2024
 
   This is the JavaScript which makes the convert.htm gui work.
 */
@@ -14,6 +14,30 @@ var token = "",
 
 $(document).ready(function() {
     token = sessionStorage.getItem("token");
+
+    const font = sessionStorage.getItem("font"),
+          size = sessionStorage.getItem("size"),
+          weight = sessionStorage.getItem("weight"),
+          letter = sessionStorage.getItem("letter"),
+          line = sessionStorage.getItem("line"),
+          colour = sessionStorage.getItem("colour"),
+          back = sessionStorage.getItem("back");
+
+    if (font != null) {
+        $(".normalText, .middle, h3, #uploadButton").css({
+            fontFamily: font,
+            fontSize: size,
+            fontWeight: weight,
+            letterSpacing: letter
+        });
+
+        $(".normalText, .middle").css({lineHeight: line});
+        $(".normalText").css({color: colour});
+        $("h1, h2").css({letterSpacing: letter});
+        $("h1, h3").css({color: colour});
+        $("h3").css({fontSize: Number(size.substring(0, 2)) + 4 + 'px'});
+        $("form, #upper, #inFlags, #outFlags").css({background: back});
+    }
 
     const in_str = sessionStorage.getItem("in_str"),
           out_str = sessionStorage.getItem("out_str");

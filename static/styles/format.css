@@ -1,6 +1,6 @@
 /*
   format.css
-  Version 1.0, 13th May 2024
+  Version 1.0, 5th June 2024
 */
 
 /* Main heading, in a special very large dark blue font. */
@@ -102,19 +102,25 @@ a:hover { text-decoration: none }
 /* Padding for link to converter website. */
 #visit { padding-left: 2px }
 
-/* Dark blue text and 340px width for the option flag select boxes. */
+/* Dark blue text and 310px width select boxes. */ /* Was 310px, and 340px for flag boxes */
 select {
     color: #011e41;
     font-size: 14px;
     font-family: 'Lato';
-    width: 340px
+    width: 310px
 }
 
-/* 310px width for the data format and report type select boxes. */
-#fromList, #toList, #reason { width: 310px }
+/* 850px width for some select boxes for accessibility purposes. */
+#fromList, #toList, #success, #inFlags, #outFlags { width: 850px }
+
+/* 310px width for the data format select boxes. */
+/*#fromList, #toList { width: 310px }*/
+
+/* 420px width for the report type select box. */
+#reason { width: 420px }
 
 /* Option flag select boxes and their labels initially not displayed. */
-#inFlagList, #outFlagList { display: none }
+/*#inFlagList, #outFlagList { display: none }*/
 
 /* Hidden dummy elements to aid layout. */
 #dummyText { visibility: hidden }
@@ -126,14 +132,14 @@ h3, #converter, #radioButtons { display: none }
 #heading { display: block }
 
 /* Notes initially hidden. DELETE IN DUE COURSE */
-#notes { visibility: hidden;
+/*#notes { visibility: hidden;
          color: #011e41;
          font-family: 'Lato';
          font-size: 14px
-}
+}*/
 
 /* Dark blue background and light grey text for buttons. */
-#enter, #cancel, #uploadButton, #noteButton, #resetButton, #yesButton {
+#uploadButton, #resetButton, #yesButton, #reportButton, #applyButton {
     background-color: #011e41;
     color: #e5e1e6;
     font-family: 'Lato';
@@ -146,19 +152,19 @@ h3, #converter, #radioButtons { display: none }
     color: gray
 }
 
-/* Dark blue text for text input. */
+/* Dark blue text for text input. */ /* Was 303px */
 #in, #searchTo, #searchFrom, #missingFormat {
     color: #011e41;
     font-family: 'Lato';
     font-size: 14px;
-    width: 303px
+    width: 843px
 }
 
 /* Width of 'Conversion options' box */ 
-#success { width: calc(621px + (33.33% - 310px)) }
+/*#success { width: calc(621px + (33.33% - 310px)) }*/
 
 /* Width of 'Missing format/conversion' text input */ 
-#in { width: calc(613px + (33.33% - 310px)) }
+/*#in { width: calc(613px + (33.33% - 310px)) }*/
 
 /* Format boxes, reset button, text input box and report button initially not displayed on the 'Report' page */
 #formats, #userInput, #missing { display: none }
@@ -188,7 +194,7 @@ h3, #converter, #radioButtons { display: none }
 /* Grid for textarea label/elements. */
 .grid {
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr
+    grid-template-columns: 1fr 1fr 1fr 
 }
 
 /* Textarea label/elements are stacked at <= 1070px. */
