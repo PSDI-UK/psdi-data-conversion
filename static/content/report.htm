@@ -1,6 +1,6 @@
 <!--
   report.htm
-  Version 1.0, 31st May 2024
+  Version 1.0, 19th June 2024
 -->
 
 <!DOCTYPE html>
@@ -40,13 +40,23 @@
           <option value="format">Missing file format</option>
           <option value="conversion">Missing conversion</option>
         </select>
-        <div id="missing"><br>
-          <br>Enter the missing format, including file extension(s). [2 to 100 chars.]
-          <br><input type="text" class="normalText" id="missingFormat">
-        </div>
+        <div class="medGap"></div>
         <div id="formats">
-          <br>Select/change 'to' and 'from' formats as required.
-          <!--<div class="grid">--><!--DELETE LINE IN DUE COURSE-->
+            <div>
+              <p>
+                <label for="formatList" class="normalText" id="formatLabel">Check that the format is not present in the list. If it is, consider reporting a missing conversion.</label><br>
+                <input type="text" placeholder="-- type here to filter options --" class="normalText" id="searchFormats"><br>
+                <select size="4" class="normalText" id="formatList"></select>
+              </p>
+            </div>
+          <input type="button" value=" Reset " name="resetButton" id="resetButton">
+        </div>
+        <div id="missing"><br>
+          <br>Enter the name of the missing file format including the file extension(s) [max 100 characters].
+          <br><input type="text" placeholder="-- type here --" class="normalText" id="missingFormat">
+        </div>
+        <div id="in_out_formats">
+          <br>Select the required 'to' and 'from' formats below.
             <div>
               <p>
                 <label for="searchFrom" class="normalText" id="fromLabel">Convert from:</label><br>
@@ -62,14 +72,13 @@
                 <select size="4" class="normalText" id="toList"></select>
               </p>
             </div>
-          <!--</div>--><!--DELETE LINE IN DUE COURSE-->
-          <input type="button" value=" Reset " name="resetButton" id="resetButton">
+          <input type="button" value=" Reset " name="resetButton2" id="resetButton2">
         </div>
         <select id="success"></select> <!-- Not for display. For convenience only. -->
         <p id="userInput">
           <span id="message"></span>
           <br><span id="message1"></span>
-          <br><input type="text" class="normalText" id="in">
+          <br><input type="text" placeholder="-- type here --" class="normalText" id="in">
           <br><input type="button" value=" Report " id="reportButton">
         </p>
       <div class="largeGap"></div>

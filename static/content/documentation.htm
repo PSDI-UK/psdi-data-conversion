@@ -1,6 +1,6 @@
 <!--
   documentation.htm
-  Version 1.0, 31st May 2024
+  Version 1.0, 19th June 2024
 -->
 
 <!DOCTYPE html>
@@ -33,45 +33,16 @@
     <h2>Documentation</h2>
     <form name="gui">
       <div class="normalText">
-        <p>Content will be added to this documentation page in due course.</p>
-        <br><h3>Converter details:</h3>
-        <p id="converter">
-          <span id="name"></span>
-          <br><span id="description"></span>
-          <br><span id="url"></span>
-          <a id="visit">Visit website</a>
-          <div id="radioButtons">
-            <span id="question"></span>
-            <label for="radioYes"><input type="radio" name="check" id="radioYes">Yes</label>
-            <label for="radioNo"><input type="radio" name="check" id="radioNo" checked="checked">No</label>
-          </div>
-        </p>
-<!--        <p id="userInput">
-          <span id="message"></span>
-          <br><span id="message1"></span>
-          <br><input type="text" size="120" id="in">
-          <br><input type="button" value=" Enter " id="enter">
-          <input type="button" value="Cancel" id="cancel">
-        </p>-->
-<!--        <div id="flags" class="selGrid">
-          <div id="inFlagList">
-            <p>
-              <label for="inFlags">Read (input) option flags:</label><br>
-              <select id="inFlags" size="4" multiple="multiple"></select>
-            </p>
-          </div>
-          <div id="outFlagList">
-            <p>
-              <label for="outFlags">Write (output) option flags:</label><br>
-              <select id="outFlags" size="4" multiple="multiple"></select>
-            </p>
-          </div>
-        </div>
-        <p id="convertFile">
-          Select file to convert:
-          <br><input type="file" name="fileToUpload" id="fileToUpload"><br>
-          <input type="button" value=" Convert " name="uploadButton" id="uploadButton" disabled=true>
-        </p>-->
+        <h3>Format and Converter Selection</h3>
+        <p>Select 'from' and 'to' file formats in the 'Convert from/to' boxes, in either order. Typing where indicated filters the options (case insensitive); for example, typing 'can' or 'NON' reduces the number of options to one: 'can: Canonical SMILES.' If you change your mind about a conversion, it is advisable to click on the 'Reset' button. When both formats have been selected, converters able to carry out this conversion appear in the 'Conversion options' box along with an indication of conversion success (many conversions have not yet been tested) and whether or not the converter is supported on this site. Selecting a converter displays information about it, along with a link to a relevant website. Irrespective of the selected converter, an Open Babel conversion is offered if it can be carried out. Clicking on the 'Yes' button takes us to the 'Conversion' page. If a file format has not been found, or if there are no converters supporting a required conversion, please click on 'Report Missing Format/Conversion' in the navigation bar.</p><br>
+        <h3>Conversion</h3>
+        <p>Zero to two option flag boxes may be displayed, depending on the conversion and the degree of completion of the database. Further information may be displayed underneath the boxes if available. One or more input or output flags may be selected if required (shift click for multiple selections). To undo all selections in a box, click just underneath the final option. Click on 'Choose file' and then select an input file of the correct format (and extension). Clicking on 'Convert' uploads and converts the file. The output file is automatically downloaded. If any issues are encountered (e.g., the output file does not download), please click on 'Provide Feedback' in the navigation bar.</p><br>
+        <h3>Report Missing Format/Conversion</h3>
+        <p>Select the type of report (missing file format or conversion) and then follow the instructions that appear. Finally, click on 'Report.'</p><br>
+        <h3>Provide feedback</h3>
+        <p>To report issues other than missing formats or conversions, please click on the 'Feedback form' link. The form will open in a new tab.</p><br>
+        <h3>Accessibility</h3>
+        <p>Select accessibility settings below as required, in any order. Each new setting immediately comes into effect on this page only, in the first instance. Once the appearance of the page is satisfactory, clicking on the 'Apply' button applies the settings to the entire website. Leaving the page without clicking on 'Apply' results in the changes being lost. Note that page appearance may vary slightly according to the browser used.</p>
       </div>
       <div class="largeGap"></div>
     </form>
@@ -79,9 +50,6 @@
     <script src="https://code.jquery.com/jquery-3.7.1.js"
             integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4="
             crossorigin="anonymous"></script>
-<!--    {% for item in data %}
-        <script>const token = "{{item.token}}";</script>
-    {% endfor %}-->
     <script src="../javascript/documentation.js" type="module" language="JavaScript"></script>
   </body>
 </html>

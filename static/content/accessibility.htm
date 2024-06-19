@@ -1,6 +1,6 @@
 <!--
   accessibility.htm
-  Version 1.0, 5th June 2024
+  Version 1.0, 7th June 2024
 -->
 
 <!DOCTYPE html>
@@ -131,57 +131,17 @@
           </p>
         </div>
       </div>
+      <input type="button" value=" Reset " name="resetButton" id="resetButton">
       <div>
         <br><span class="normalText">Apply chosen settings to the entire website:</span>
         <input type="button" value=" Apply " name="applyButton" id="applyButton">
       </div>
       <div class="largeGap"></div>
     </form>
-<!--        <div>
-          <p>
-            <label for="searchFrom" class="normalText" id="fromLabel">Convert from:</label><br>
-            <input type="text" placeholder="-- type here to filter options --" size="12" id="searchFrom"><br>
-            <select size="4" id="fromList"></select>
-          </p>
-        </div>
-        <div>
-          <p>
-            <label for="searchTo" class="normalText" id="toLabel">Convert to:</label><br>
-            <input type="text" placeholder="-- type here to filter options --" size="12" id="searchTo"><br>
-            <select size="4" id="toList"></select>
-          </p>
-        </div>
-      <input type="button" value=" Reset " name="resetButton" id="resetButton">
-      <div>
-        <p>
-          <label for="success" class="normalText">Conversion options:</label><br>
-          <select size="4" id="success"></select>
-        </p>
-      </div>
-      <div class="normalText">
-        <br><h3>Converter details:</h3>
-        <p id="converter">
-          <span id="name"></span>
-          <br><span id="description"></span>
-          <br><span id="url"></span>
-          <br><span id="info"></span>
-          <a id="visit">this website.</a>
-          <div id="radioButtons">
-            <span id="question"></span>
-            <label for="radioYes"><input type="radio" name="check" id="radioYes">Yes</label>
-          <label for="radioNo"><input type="radio" name="check" id="radioNo" checked="checked">No</label>
-            <input type="button" value=" Yes " name="yesButton" id="yesButton">
-          </div>
-        </p>
-      </div>
--->
 
     <script src="https://code.jquery.com/jquery-3.7.1.js"
             integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4="
             crossorigin="anonymous"></script>
-<!--    {% for item in data %}
-        <script>const token = "{{item.token}}";</script>
-    {% endfor %}-->
     <script src="../javascript/accessibility.js" type="module" language="JavaScript"></script>
   </body>
 </html>

@@ -1,13 +1,14 @@
 /*
   report.js
-  Version 1.0, 31st May 2024
+  Version 1.0, 19th June 2024
 
   This is the JavaScript which makes the report.htm gui work.
 */
 
 var token = "",
     fromList = new Array(),
-    toList = new Array();
+    toList = new Array(),
+    formatList = new Array();
 
 $(document).ready(function() {
     token = sessionStorage.getItem("token");
@@ -19,6 +20,7 @@ $(document).ready(function() {
 
     queryDatabase(query, "from", populateList);
     queryDatabase(query, "to", populateList);
+    queryDatabase(query, "format", populateList);
 
     const font = sessionStorage.getItem("font"),
           size = sessionStorage.getItem("size"),
@@ -29,7 +31,7 @@ $(document).ready(function() {
           back = sessionStorage.getItem("back");
 
     if (font != null) {
-        $(".normalText, .middle, #resetButton, #reportButton").css({
+        $(".normalText, .middle, #resetButton, #resetButton2, #reportButton").css({
             fontFamily: font,
             fontSize: size,
             fontWeight: weight,
@@ -39,19 +41,22 @@ $(document).ready(function() {
         $(".normalText, .middle").css({lineHeight: line});
         $(".normalText, h1").css({color: colour});
         $("h1, h2").css({letterSpacing: letter});
-        $("form, select, #upper, #missingFormat, #searchFrom, #searchTo, #in").css({background: back});
+        $("form, select, #upper, #missingFormat, #searchFrom, #searchTo, #searchFormats, #in").css({background: back});
     }
 
-    $("#searchFrom").val(sessionStorage.getItem("in_str"));
-    $("#searchTo").val(sessionStorage.getItem("out_str"));
+//    $("#searchFrom").val(sessionStorage.getItem("in_str")); // $$$$$ CHECK if can remove these items from entire website $$$$$
+  //  $("#searchTo").val(sessionStorage.getItem("out_str"));
 
     $("#reason").change(display);
     $("#fromList").click(populateConversionSuccess);
     $("#toList").click(populateConversionSuccess);
+    $("#formatList").click(populateConversionSuccess);
     $("#searchTo").keyup(filterOptions);
     $("#searchFrom").keyup(filterOptions);
+    $("#searchFormats").keyup(filterOptions);
     $("#resetButton").click(resetAll);
-    $("#enter").click(submitUserInput);
+    $("#resetButton2").click(resetAll);
+    $("#reportButton").click(submitUserInput);
 });
 
 // Included in this file for convenience. When the 'Report' button is clicked, a user's missing conversion report
@@ -62,8 +67,11 @@ function populateConversionSuccess(event) {
     if (this.id == "fromList") {
         $("#searchFrom").val(selectedText);
     }
-    else {
+    else if (this.id == "toList") {
         $("#searchTo").val(selectedText);
+    }
+    else {
+        $("#searchFormats").val(selectedText);
     }
 
     const from_text = $("#searchFrom").val();
@@ -264,9 +272,13 @@ function filterOptions(event) {
         box = $("#fromList");
         list = fromList;
     }
-    else {
+    else if (this.id == "searchTo") {
         box = $("#toList");
         list = toList;
+    }
+    else {
+        box = $("#formatList");
+        list = formatList;
     }
 
     box.children().remove();
@@ -279,10 +291,13 @@ function filterOptions(event) {
     }
 
     if (this.id == "searchFrom") {
-        $("#fromLabel").html("Convert from (" + count + "):");
+        $("#fromLabel").html("Select format to convert from (" + count + "):");
+    }
+    else if (this.id == "searchTo") {
+        $("#toLabel").html("Select format to convert to (" + count + "):");
     }
     else {
-        $("#toLabel").html("Convert to (" + count + "):");
+        $("#formatLabel").html("Check that the format is not present in the list. If it is, consider reporting a missing conversion. (" + count + ")");
     }
 
     $("#success").prop({disabled: true});
@@ -345,39 +360,53 @@ function populateList(response, sel) {
             $("#toList").append($('<option>', { text: rows[i] }));
             toList[i] = rows[i] + "\n";
         }
+        else if (sel == "format") {
+            $("#formatList").append($('<option>', { text: rows[i] }));
+            formatList[i] = rows[i] + "\n";
+        }
     }
 
     if (sel != "success") {
-        $("#fromLabel").html("Convert from (" + fromList.length + "):");
-        $("#toLabel").html("Convert to (" + toList.length + "):");
+        $("#fromLabel").html("Select format to convert from (" + fromList.length + "):");
+        $("#toLabel").html("Select format to convert to (" + toList.length + "):");
+        $("#formatLabel").html("Check that the format is not present in the list. If it is, consider reporting a missing conversion. (" + toList.length + ")");
     }
 }
 
-// Resets the filtering, format list and converter list boxes
+// Resets the filtering and format list boxes
 function resetAll() {
     $("#searchFrom").val("");
     $("#searchFrom").keyup();
 
     $("#searchTo").val("");
     $("#searchTo").keyup();
+
+    $("#searchFormats").val("");
+    $("#searchFormats").keyup();
 }
 
-
+// Displays format or conversion related content as appropriate
 function display(event) {
     const selectedText = getSelectedText(this);
 
+    $("#in").val("");
+    $("#missingFormat").val("");
+
     if (selectedText == "conversion") {
-        $("#formats").css({display: "block"});
+        $("#in_out_formats").css({display: "block"});
+        $("#formats").css({display: "none"});
         $("#missing").css({display: "none"});
-        $("#message").html("Enter a reason. [10 to 500 chars.]");
+        $("#message").css({display: "inline"});
+        $("#message").html("Explain why the conversion is required and provide a link to appropriate documentation if possible [max 500 characters].");
         $("#message1").html("The displayed 'from' and 'to' formats will be automatically submitted with your message.");
         $("#userInput").css({display: "block"});
     }
     else if (selectedText == "format") {
-        $("#formats").css({display: "none"});
+        $("#formats").css({display: "block"});
+        $("#in_out_formats").css({display: "none"});
         $("#missing").css({display: "block"});
-        $("#message").html("Enter the format(s) from/to which it should be converted and a reason. [10 to 500 chars.]");
-        $("#message1").html("If possible, provide a link to appropriate documentation.");
+        $("#message").css({display: "none"});
+        $("#message1").html("Enter details of the file conversions expected for this format and provide a link to appropriate documentation if possible [max 500 characters].");
         $("#userInput").css({display: "block"});
     }
     else {

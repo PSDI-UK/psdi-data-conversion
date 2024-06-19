@@ -35,8 +35,13 @@ $(document).ready(function() {
 
         $(".normalText").css({color: colour});
         $("h1, h2").css({letterSpacing: letter});
-        $("h1").css({color: colour});
+        $("h1, h3").css({color: colour});
         $("form, #upper").css({background: back});
+        $("h3").css({display: "block",
+                     fontFamily: font,
+                     fontSize: Number(size.substring(0, 2)) + 4 + 'px',
+                     letterSpacing: letter
+        });
     }
 
     $("#message").html(sessionStorage.getItem("message"));

@@ -1,6 +1,6 @@
 /*
   format.js
-  Version 1.0, 31st May 2024
+  Version 1.0, 18th June 2024
 
   This is the JavaScript which makes the Format and Converter Selection gui work.
 */
@@ -9,10 +9,16 @@ var fromList = new Array(),
     toList = new Array();
 
 $(document).ready(function() {
-    // Populates the "Convert from" and "Convert to" selection lists
-    var query = `SELECT DISTINCT Extension, Note FROM Formats ORDER BY Extension, Note ASC`
+    // Populates the "Convert from" selection list
+    var query = `SELECT DISTINCT Form.Extension, Form.Note FROM Formats Form, Converts_to Conv
+                 WHERE Form.ID = Conv.in_ID ORDER BY Form.Extension, Form.Note ASC`
 
     queryDatabase(query, "from", populateList);
+
+    // Populates the "Convert to" selection list
+    var query = `SELECT DISTINCT Form.Extension, Form.Note FROM Formats Form, Converts_to Conv
+                 WHERE Form.ID = Conv.out_ID ORDER BY Form.Extension, Form.Note ASC`
+
     queryDatabase(query, "to", populateList);
 
     const font = sessionStorage.getItem("font"),
@@ -44,11 +50,6 @@ $(document).ready(function() {
         $("form, select, #searchFrom, #searchTo, #upper").css({background: back});
     }
 
-/*    $("#font").change(changeFont);
-    $("#background").change(changeBackground);
-    $("#size").change(changeFontSize);
-    $("#letter").change(changeLetterSpacing);
-    $("#line").change(changeLineSpacing);           */
     $("#fromList").click(populateConversionSuccess);
     $("#toList").click(populateConversionSuccess);
     $("#searchTo").keyup(filterOptions);
@@ -58,283 +59,12 @@ $(document).ready(function() {
     $("#resetButton").click(resetAll);
 });
 
-// Changes the font for accessibility purposes and ensures that the correct default line spacing is applied.
-/*function changeFont(event) {
-    const font = $("#font").find(":selected").text(),
-          line = $("#line").find(":selected").text();
-
-    var text = $(".normalText");
-
-    switch (font) {
-        case 'Arial':
-            text.css({fontFamily: 'Arial, sans-serif'});
-
-            if (line == 'Default') {
-                text.css({lineHeight: 1.145});
-            }
-
-            break;
-
-        case 'Comic Sans':
-            text.css({fontFamily: 'Comic Sans MS, Comic Sans, sans-serif'});
-
-            if (line == 'Default') {
-                text.css({lineHeight: 1.4});
-            }
-
-            break;
-
-        case 'Lexend':
-            text.css({fontFamily: 'Lexend, sans-serif'});
-
-            if (line == 'Default') {
-                text.css({lineHeight: 1.3});
-            }
-
-            break;
-
-        case 'Open Sans':
-            text.css({fontFamily: 'Open Sans, sans-serif'});
-
-            if (line == 'Default') {
-                text.css({lineHeight: 1.4});
-            }
-
-            break;
-
-        case 'Tahoma':
-            text.css({fontFamily: 'Tahoma, sans-serif'});
-
-            if (line == 'Default') {
-                text.css({lineHeight: 1.25});
-            }
-
-            break;
-
-        case 'Trebuchet':
-            text.css({fontFamily: 'Trebuchet MS, Trebuchet, sans-serif'});
-
-            if (line == 'Default') {
-                text.css({lineHeight: 1.2});
-            }
-
-            break;
-
-        case 'Verdana':
-            text.css({fontFamily: 'Verdana, sans-serif'});
-
-            if (line == 'Default') {
-                text.css({lineHeight: 1.25});
-            }
-
-            break;
-
-        default:
-            text.css({fontFamily: 'Lato, sans-serif'});
-
-            if (line == 'Default') {
-                text.css({lineHeight: 1.218});
-            }
-
-            break;
-    }
-}
-
-// Changes the letter spacing for accessibility purposes.
-function changeLetterSpacing(event) {
-    const space = $("#letter").find(":selected").text();
-    var text = $(".normalText");
-
-    switch (space) {
-        case '0.5':
-            text.css({letterSpacing: '0.5px'});
-            break;
-
-        case '1.0':
-            text.css({letterSpacing: '1px'});
-            break;
-
-        case '1.5':
-            text.css({letterSpacing: '1.5px'});
-            break;
-
-        case '2.0':
-            text.css({letterSpacing: '2px'});
-            break;
-
-        case '2.5':
-            text.css({letterSpacing: '2.5px'});
-            break;
-
-        case '3.0':
-            text.css({letterSpacing: '3px'});
-            break;
-
-        case '3.5':
-            text.css({letterSpacing: '3.5px'});
-            break;
-
-        default:
-            text.css({letterSpacing: '0px'});
-            break;
-    }
-}
-
-// Changes the line spacing for accessibility purposes.
-function changeLineSpacing(event) {
-    const space = $("#line").find(":selected").text();
-    var text = $(".normalText");
-
-    switch (space) {
-        case '1.1':
-            text.css({lineHeight: 1.1});
-            break;
-
-        case '1.2':
-            text.css({lineHeight: 1.2});
-            break;
-
-        case '1.3':
-            text.css({lineHeight: 1.3});
-            break;
-
-        case '1.4':
-            text.css({lineHeight: 1.4});
-            break;
-
-        case '1.5':
-            text.css({lineHeight: 1.5});
-            break;
-
-        case '1.6':
-            text.css({lineHeight: 1.6});
-            break;
-
-        case '1.7':
-            text.css({lineHeight: 1.7});
-            break;
-
-        // Ensures that the correct default line spacing is applied to the current font.
-        default:
-            const font = $("#font").find(":selected").text();
-
-            switch (font) {
-                case 'Arial':
-                    text.css({lineHeight: 1.145});
-                    break;
-
-                case 'Comic Sans':
-                case 'Open Sans':
-                    text.css({lineHeight: 1.4});
-                    break;
-
-                case 'Lexend':
-                    text.css({lineHeight: 1.3});
-                    break;
-
-                case 'Tahoma':
-                case 'Verdana':
-                    text.css({lineHeight: 1.25});
-                    break;
-
-                case 'Trebuchet':
-                    text.css({lineHeight: 1.2});
-                    break;
-
-                default:
-                    text.css({lineHeight: 1.218});
-                    break;
-            }
-
-            break;
-    }
-}
-
-// Changes the font size for accessibility purposes.
-function changeFontSize(event) {
-    const size = $("#size").find(":selected").text();
-    var text = $(".normalText");
-
-    switch (size) {
-        case '15':
-            text.css({fontSize: '15px'});
-            break;
-
-        case '16':
-            text.css({fontSize: '16px'});
-            break;
-
-        case '17':
-            text.css({fontSize: '17px'});
-            break;
-
-        case '18':
-            text.css({fontSize: '18px'});
-            break;
-
-        case '19':
-            text.css({fontSize: '19px'});
-            break;
-
-        case '20':
-            text.css({fontSize: '20px'});
-            break;
-
-        case '21':
-            text.css({fontSize: '21px'});
-            break;
-
-        default:
-            text.css({fontSize: '14px'});
-            break;
-    }
-}
-
-// Changes the background colour for accessibility purposes. Font colour is black when background colour is not white.
-function changeBackground(event) {
-    const colour = $("#background").find(":selected").text();
-    var text = $(".normalText");
-
-    switch (colour) {
-        case 'Mustard':
-            $("form").css({
-                background: '#eddd6e',
-                color: 'black'
-            });
-
-            break;
-
-        case 'Peach':
-            $("form").css({
-                background: '#edd1b0',
-                color: 'black'
-            });
-
-            break;
-
-        case 'Lime':
-            $("form").css({
-                background: '#f8fd89',
-                color: 'black'
-            });
-
-            break;
-
-        default:
-            $("form").css({
-                background: 'white',
-                color: '#011e41'
-            });
-
-            break;
-
-    }
-}                                    */
-
 // Selects a file format; populates the "Conversion success" selection list given input and output IDs;
-// and removes converter details and text input (if showing)
+// filters the output format list when an input format is selected, and vice versa (formats not convertible
+// to/from the selected format are removed); and removes converter details and text input (if showing)
 function populateConversionSuccess(event) {
     const selectedText = getSelectedText(this);
+    var filterQuery = ``;
 
     if (this.id == "fromList") {
         $("#searchFrom").val(selectedText);
@@ -343,8 +73,8 @@ function populateConversionSuccess(event) {
         $("#searchTo").val(selectedText);
     }
 
-    const from_text = $("#searchFrom").val();
-    const to_text = $("#searchTo").val();
+    const from_text = $("#searchFrom").val(),
+          to_text = $("#searchTo").val();
 
     sessionStorage.setItem("in_str", from_text);
     sessionStorage.setItem("out_str", to_text);
@@ -352,6 +82,7 @@ function populateConversionSuccess(event) {
     this.selectionStart = -1;
     this.selectionEnd = -1;
     this.blur();
+
     emptySuccess();
     hideConverterDetails();
     hideOffer();
@@ -367,6 +98,23 @@ function populateConversionSuccess(event) {
               out_ext = out_str_array[0],
               out_note = out_str_array[1];
 
+        if (this.id == "fromList") { // && !isOption(out_str, "toList")) {
+            filterQuery = `SELECT DISTINCT Extension, Note FROM Formats WHERE ID IN (SELECT out_id FROM Converts_to
+                           WHERE in_id = (SELECT ID FROM Formats WHERE Extension = '${in_ext}' AND Note = '${in_note}'))
+                           ORDER BY Extension, Note ASC`
+            toList = [];
+            $("#toList").children().remove();
+            queryDatabase(filterQuery, "to", populateList);
+        }
+        else if (this.id == "toList") { // && !isOption(in_str, "fromList")) {
+            filterQuery = `SELECT DISTINCT Extension, Note FROM Formats WHERE ID IN (SELECT in_id FROM Converts_to
+                           WHERE out_id = (SELECT ID FROM Formats WHERE Extension = '${out_ext}' AND Note = '${out_note}'))
+                           ORDER BY Extension, Note ASC`
+            fromList = [];
+            $("#fromList").children().remove();
+            queryDatabase(filterQuery, "from", populateList);
+        }
+
         const query = `SELECT C.Name, C_to.Degree_of_success FROM Converters C, Converts_to C_to
                        WHERE C_to.in_ID=(SELECT ID FROM Formats WHERE Extension = '${in_ext}' AND Note = '${in_note}')
                        AND C_to.out_ID=(SELECT ID FROM Formats WHERE Extension = '${out_ext}' AND Note = '${out_note}')
@@ -378,6 +126,19 @@ function populateConversionSuccess(event) {
         // Can do without an error message if the 'Conversion options' box remains empty;
         // however, consider a greyed-out message inside the box (using some of the commented out code below).
     }
+}
+
+// Returns 'true' if textbox text is exactly the same as a select box option
+function isOption(str, boxId) {
+    var isOption = false;
+
+    $("#" + boxId + " > option").each(function() {
+        if (str == this.text) {
+            isOption = true;
+        }
+    });
+
+    return isOption;
 }
 
 // Retrieve selected text from the "Conversion success" textarea
@@ -520,7 +281,7 @@ function displayConverterDetails(response, el) {
     el.blur();
 }
 
-// Only options having user filter input as a substring (case insensitive) are included in the selection list
+// Only options having user filter input as a substring (case insensitive) are included in the selection list $$$$$$$$$$ REVISE $$$$$$$$$$
 function filterOptions(event) {
     const str = this.value.toLowerCase();
     var box, list,
@@ -528,10 +289,20 @@ function filterOptions(event) {
         text = "";
 
     if (this.id == "searchFrom") {
+        var query = `SELECT DISTINCT Form.Extension, Form.Note FROM Formats Form, Converts_to Conv
+                     WHERE Form.ID = Conv.out_ID ORDER BY Form.Extension, Form.Note ASC`
+        toList = [];
+        $("#toList").children().remove();
+        queryDatabase(query, "to", populateList);
         box = $("#fromList");
         list = fromList;
     }
     else {
+        var query = `SELECT DISTINCT Form.Extension, Form.Note FROM Formats Form, Converts_to Conv
+                     WHERE Form.ID = Conv.in_ID ORDER BY Form.Extension, Form.Note ASC`
+        fromList = [];
+        $("#fromList").children().remove();
+        queryDatabase(query, "from", populateList);
         box = $("#toList");
         list = toList;
     }
@@ -546,16 +317,57 @@ function filterOptions(event) {
     }
 
     if (this.id == "searchFrom") {
-        $("#fromLabel").html("Convert from (" + count + "):");
+        $("#fromLabel").html("Select format to convert from (" + count + "):");
     }
     else {
-        $("#toLabel").html("Convert to (" + count + "):");
+        $("#toLabel").html("Select format to convert to (" + count + "):");
     }
 
-    $("#success").prop({disabled: true});
     emptySuccess();
     hideConverterDetails();
     hideOffer();
+}
+
+// Only options having user filter input as a substring (case insensitive) are included in the slection list
+function filter(id) {
+    try {
+        const str = $("#" + id).val().toLowerCase();
+        var box, list,
+            count = 0,
+            text = "";
+
+        if (id == "searchFrom") {
+            box = $("#fromList");
+            list = fromList;
+        }
+        else {
+            box = $("#toList");
+            list = toList;
+        }
+
+        box.children().remove();
+
+        for (var i = 0; i < list.length; i++) {
+            if (list[i].toLowerCase().includes(str)) {
+                box.append($('<option>', { text: list[i] }));
+                count += 1;
+            }
+        }
+
+        if (id == "searchFrom") {
+            $("#fromLabel").html("Select format to convert from (" + count + "):");
+        }
+        else {
+            $("#toLabel").html("Select format to convert to (" + count + "):");
+        }
+
+        emptySuccess();
+        hideConverterDetails();
+        hideOffer();
+    }
+    catch (e) {
+        // No need for an error message here. No need to filter if text box is empty.
+    }
 }
 
 // Empties the "Conversion success" textarea     $$$$$ textarea? $$$$$
@@ -581,6 +393,9 @@ function goToConversionPage(event) {
 
 // Populates a selection list
 function populateList(response, sel) {
+    const in_str = $("#searchFrom").val(), // e.g. "ins: ShelX"
+          out_str = $("#searchTo").val();
+
     var el = $("#" + sel),
         successText = "",
         format = '',
@@ -607,40 +422,64 @@ function populateList(response, sel) {
         return a.toLowerCase().localeCompare(b.toLowerCase());
     });
 
-    $("#success").prop({disabled: true});
-
     for (var i = 0; i < rows.length; i++) {
         const support = rows[i].substring(0, 10) == "Open Babel" ? " (supported)" : " (unsupported)";
 
         if ( sel == "success") {
-            if (rows.length > 0) {
-                $("#success").prop({disabled: false});
-            }
-
             $("#success").append($('<option>', { text: "" + rows[i] + support }));
         }
 
         if (sel == "from") {
-            $("#fromList").append($('<option>', { text: rows[i] }));
+            $("#fromList").append($('<option>', { value: rows[i], text: rows[i] }));
             fromList[i] = rows[i] + "\n";
         }
         else if (sel == "to") {
-            $("#toList").append($('<option>', { text: rows[i] }));
+            $("#toList").append($('<option>', { value: rows[i], text: rows[i] }));
             toList[i] = rows[i] + "\n";
         }
     }
 
-    if (sel != "success") {
-        $("#fromLabel").html("Convert from (" + fromList.length + "):");
-        $("#toLabel").html("Convert to (" + toList.length + "):");
+    if (sel == "from") {
+        $("#fromLabel").html("Select format to convert from (" + $("#fromList").children('option').length + "):");
+    }
+    else {
+        $("#toLabel").html("Select format to convert to (" + $("#toList").children('option').length + "):");
+    }
+
+    if (sel == "from" && !isOption(out_str, "toList")) {
+        filter("searchFrom");
+        $("#fromLabel").html("Select format to convert from (" + $("#fromList").children('option').length + "):");
+    }
+    else if (sel == "to" && !isOption(in_str, "fromList")) {
+        filter("searchTo");
+        $("#toLabel").html("Select format to convert to (" + $("#toList").children('option').length + "):");
+    }
+
+    if (sel == "from") {
+        $("#fromList option[value='" + in_str + "']").prop('selected', 'selected');
+    }
+    else {
+        $("#toList option[value='" + out_str + "']").prop('selected', 'selected');
     }
 }
 
 // Resets the filtering, format list and converter list boxes
 function resetAll() {
-    $("#searchFrom").val("");
-    $("#searchFrom").keyup();
+    $("#fromList").children().remove();
+    $("#toList").children().remove();
 
+    // Populates the "Convert from" selection list
+    var query = `SELECT DISTINCT Form.Extension, Form.Note FROM Formats Form, Converts_to Conv
+                 WHERE Form.ID = Conv.in_ID ORDER BY Form.Extension, Form.Note ASC`
+
+    queryDatabase(query, "from", populateList);
+
+    // Populates the "Convert to" selection list
+    var query = `SELECT DISTINCT Form.Extension, Form.Note FROM Formats Form, Converts_to Conv
+                 WHERE Form.ID = Conv.out_ID ORDER BY Form.Extension, Form.Note ASC`
+
+    queryDatabase(query, "to", populateList);
+
+    $("#searchFrom").val("");
     $("#searchTo").val("");
-    $("#searchTo").keyup();
 }

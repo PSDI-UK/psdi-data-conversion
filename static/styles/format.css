@@ -1,6 +1,6 @@
 /*
   format.css
-  Version 1.0, 5th June 2024
+  Version 1.0, 19th June 2024
 */
 
 /* Main heading, in a special very large dark blue font. */
@@ -111,7 +111,7 @@ select {
 }
 
 /* 850px width for some select boxes for accessibility purposes. */
-#fromList, #toList, #success, #inFlags, #outFlags { width: 850px }
+#fromList, #toList, #formatList, #success, #inFlags, #outFlags { width: 850px }
 
 /* 310px width for the data format select boxes. */
 /*#fromList, #toList { width: 310px }*/
@@ -139,7 +139,7 @@ h3, #converter, #radioButtons { display: none }
 }*/
 
 /* Dark blue background and light grey text for buttons. */
-#uploadButton, #resetButton, #yesButton, #reportButton, #applyButton {
+#uploadButton, #resetButton, #resetButton2, #yesButton, #reportButton, #applyButton {
     background-color: #011e41;
     color: #e5e1e6;
     font-family: 'Lato';
@@ -153,7 +153,7 @@ h3, #converter, #radioButtons { display: none }
 }
 
 /* Dark blue text for text input. */ /* Was 303px */
-#in, #searchTo, #searchFrom, #missingFormat {
+#in, #searchTo, #searchFrom, #missingFormat, #searchFormats {
     color: #011e41;
     font-family: 'Lato';
     font-size: 14px;
@@ -167,7 +167,7 @@ h3, #converter, #radioButtons { display: none }
 /*#in { width: calc(613px + (33.33% - 310px)) }*/
 
 /* Format boxes, reset button, text input box and report button initially not displayed on the 'Report' page */
-#formats, #userInput, #missing { display: none }
+#formats, #in_out_formats, #userInput, #missing { display: none }
 
 /* Width reduced at 1070px. */
 @media (max-width: 1070px) {
