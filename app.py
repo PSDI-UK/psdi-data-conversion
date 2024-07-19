@@ -1,8 +1,8 @@
 
 #   app.py
-#   Version 1.0, 21st May 2024
+#   Version 1.0, 4th July 2024
 
-#   This script acts as a server for the PSDI Data Conversion Tool website.
+#   This script acts as a server for the PSDI Data Conversion Service website.
 
 import hashlib, os, glob, psycopg2, py.io
 from psycopg2 import sql
@@ -31,6 +31,47 @@ app = Flask(__name__)
 def website() :
     data = [{'token': token}]
     return render_template("index.htm", data=data)
+
+# Convert file (cURL)
+@app.route('/conv/', methods=['POST'])
+def conv() :
+    f = request.files['file']
+    f.save('static/uploads/' + f.filename)
+    fname = f.filename.split(".")[0]  # E.g. ethane.mol --> ethane
+
+    fromFormat = request.form['from']
+    toFormat = request.form['to']
+
+    mol = openbabel.OBMol()
+
+    obConversion = openbabel.OBConversion()
+    obConversion.SetInAndOutFormats(fromFormat, toFormat)
+
+    # Retrieve 'from' and 'to' option flags.
+    fromFlags = request.form['from_flags']
+    toFlags = request.form['to_flags']
+
+    for char in fromFlags :
+        obConversion.AddOption(char, obConversion.INOPTIONS)
+
+    for char in toFlags :
+        obConversion.AddOption(char, obConversion.OUTOPTIONS)
+
+    stdouterrOB = py.io.StdCaptureFD(in_=False)
+
+    obConversion.ReadFile(mol, 'static/uploads/' + f.filename)
+    obConversion.WriteFile(mol, 'static/downloads/' + fname + '.' + toFormat)
+
+    #quality = request.form['success']
+    quality = getQuality(fromFormat, toFormat)
+    converter = 'Open Babel'           # $$$$$$$$$$ TODO: Replace hard coding when more than one converter option. $$$$$$$$$$
+    out,err = stdouterrOB.reset()
+
+    log(fromFormat, toFormat, converter, fname, quality, out, err)
+
+    stdouterrOB.done()
+
+    return '\nConverting from ' + fname + '.' + fromFormat + ' to ' + fname + '.' + toFormat +'\n'
 
 # Query the PostgreSQL database
 @app.route('/query/', methods=['POST'])
@@ -76,13 +117,45 @@ def query() :
         # return http status code 405
         abort(405)
 
-# Delete any files remaining in folder 'downloads'
+# Query the PostgreSQL database to obtain conversion quality
+def getQuality(fromExt, toExt) :
+    # Establish a connection with the PostgreSQL database
+    try:
+        #db_conn = psycopg2.connect(database="format")
+        db_conn = psycopg2.connect(dbname="psdi", user="psdi", password="SharkCat1", \
+                                   host="psdi.postgres.database.azure.com", port=5432)
+    except psycopg2.DatabaseError as Error:
+        print(f"Connection to database failed. {Error}")
+
+    # Query database
+    query = "SELECT Degree_of_success FROM Converts_to WHERE Converters_id = (SELECT ID FROM Converters WHERE Name = 'Open Babel') \
+             AND in_ID = (SELECT ID FROM Formats WHERE Extension = %s) \
+             AND out_ID = (SELECT ID FROM Formats WHERE Extension = %s)"
+    data = (fromExt, toExt)
+
+    with db_conn.cursor() as cursor:
+        cursor.execute(query, data)
+        quality = cursor.fetchall()
+
+    # Close connection to database
+    if db_conn:
+        db_conn.close()
+
+    return str(quality[0][0])
+ 
+# Delete files in folder 'downloads'
 @app.route('/delete/', methods=['POST'])
 def delete() :
     os.remove('static/downloads/' + request.form['filename'])
     os.remove('static/downloads/' + request.form['logname'])
 
     return 'okay'
+
+# Delete file (cURL)
+@app.route('/del/', methods=['POST'])
+def deleteFile() :
+    os.remove(request.form['filepath'])
+    return 'Server-side file ' + request.form['filepath'] + ' deleted\n'
 
 # Convert file to a different format and save to folder 'downloads'. Delete original file.
 # Note that downloading is achieved in format.js

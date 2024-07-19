@@ -5,9 +5,6 @@
   This is the JavaScript which makes the Accessibility gui work.
 */
 
-var fromList = new Array(),
-    toList = new Array();
-
 $(document).ready(function() {
     const font = sessionStorage.getItem("font"),
           fontOpt = sessionStorage.getItem("fontOpt"),
@@ -60,13 +57,6 @@ $(document).ready(function() {
     $("#background").change(changeBackground);
     $("#resetButton").click(resetSelections);
     $("#applyButton").click(applySettings);
-/*    $("#fromList").click(populateConversionSuccess);
-    $("#toList").click(populateConversionSuccess);
-    $("#searchTo").keyup(filterOptions);
-    $("#searchFrom").keyup(filterOptions);
-    $("#yesButton").click(goToConversionPage);
-    $("#success").click(showConverterDetails);
-    $("#resetButton").click(resetAll);         */
 });
 
 // Changes the font for accessibility purposes and ensures that the correct default line spacing is applied.

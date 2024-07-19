@@ -1,6 +1,6 @@
 /*
   format.css
-  Version 1.0, 19th June 2024
+  Version 1.0, 27th June 2024
 */
 
 /* Main heading, in a special very large dark blue font. */
@@ -102,7 +102,7 @@ a:hover { text-decoration: none }
 /* Padding for link to converter website. */
 #visit { padding-left: 2px }
 
-/* Dark blue text and 310px width select boxes. */ /* Was 310px, and 340px for flag boxes */
+/* Dark blue text and 310px width select boxes. */
 select {
     color: #011e41;
     font-size: 14px;
@@ -113,30 +113,22 @@ select {
 /* 850px width for some select boxes for accessibility purposes. */
 #fromList, #toList, #formatList, #success, #inFlags, #outFlags { width: 850px }
 
-/* 310px width for the data format select boxes. */
-/*#fromList, #toList { width: 310px }*/
-
 /* 420px width for the report type select box. */
 #reason { width: 420px }
 
-/* Option flag select boxes and their labels initially not displayed. */
-/*#inFlagList, #outFlagList { display: none }*/
+/* Width of select box begins to reduce at 530px. */
+@media (max-width: 530px) {
+    #reason { width: 100% }
+}
 
 /* Hidden dummy elements to aid layout. */
 #dummyText { visibility: hidden }
 
 /* Converter details, user input and file conversion initially not displayed. */
-h3, #converter, #radioButtons { display: none }
+#converter, #offer { display: none }
 
 /* Heading for Conversion page. */
 #heading { display: block }
-
-/* Notes initially hidden. DELETE IN DUE COURSE */
-/*#notes { visibility: hidden;
-         color: #011e41;
-         font-family: 'Lato';
-         font-size: 14px
-}*/
 
 /* Dark blue background and light grey text for buttons. */
 #uploadButton, #resetButton, #resetButton2, #yesButton, #reportButton, #applyButton {
@@ -160,20 +152,18 @@ h3, #converter, #radioButtons { display: none }
     width: 843px
 }
 
-/* Width of 'Conversion options' box */ 
-/*#success { width: calc(621px + (33.33% - 310px)) }*/
+/* Width of select boxes begins to reduce at 950px. */
+@media (max-width: 950px) {
+    #fromList, #toList, #success, #inFlags, #outFlags, #formatList { width: 100% }
+}
 
-/* Width of 'Missing format/conversion' text input */ 
-/*#in { width: calc(613px + (33.33% - 310px)) }*/
+/* Width of text boxes begins to reduce at 950px. */
+@media (max-width: 950px) {
+    #searchFrom, #searchTo, #searchFormats, #in, #missingFormat { width: calc(100% - 7px) }
+}
 
 /* Format boxes, reset button, text input box and report button initially not displayed on the 'Report' page */
 #formats, #in_out_formats, #userInput, #missing { display: none }
-
-/* Width reduced at 1070px. */
-@media (max-width: 1070px) {
-    #success { width: 310px }
-    #in { width: 303px }
-}
 
 /* Small vertical space. */
 .smallGap { padding: 2px }

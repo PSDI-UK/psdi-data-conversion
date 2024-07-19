@@ -1,6 +1,6 @@
 /*
   format.js
-  Version 1.0, 18th June 2024
+  Version 1.0, 26th June 2024
 
   This is the JavaScript which makes the Format and Converter Selection gui work.
 */
@@ -172,20 +172,20 @@ function showOffer() {
         $("#question").html("W" + quest);
     }
     else {
-        $("#info").html("This converter is not currently supported on our website; however, you can find out how to use it at");
+        $("#info").html("This converter is not supported on our website; however, you can find out how to use it at");
         $("#visit").html("this website.");
         $("#question").html("As an alternative, w" + quest);
     }
 
     $("#question").css({display: "inline"});
-    $("#radioButtons").css({display: "inline"}); // $$$$$$$$$$ TODO: 'radioButtons' is no longer an appropriate id $$$$$$$$$$
+    $("#offer").css({display: "inline"});
 }
 
 // Hide Open Babel conversion offer
 function hideOffer() {
     $("#converter").css({display: "none"});
     $("#question").css({display: "none"});
-    $("#radioButtons").css({display: "none"});
+    $("#offer").css({display: "none"});
 }
 
 // $$$$$$$$$$ write separate function for debugging $$$$$$$$$$$
@@ -211,14 +211,16 @@ function queryDatabase(query, sel, callback) {
 function showConverterDetails(event) {
     var selectedText = getSelectedText(this);
 
-    sessionStorage.setItem("success", selectedText);
+    if (selectedText != "") {
+        sessionStorage.setItem("success", selectedText);
 
-    const str_array = selectedText.split(": ", 1),
-          conv_name = str_array[0];                                     // e.g. "Open Babel"
+        const str_array = selectedText.split(": ", 1),
+              conv_name = str_array[0];                                     // e.g. "Open Babel"
 
-    const query = `SELECT * FROM Converters WHERE Name='${conv_name}'`;
+        const query = `SELECT * FROM Converters WHERE Name='${conv_name}'`;
 
-    queryDatabase(query, this, displayConverterDetails);
+        queryDatabase(query, this, displayConverterDetails);
+    }
 }
 
 // Displays converter details and offers an Open Babel conversion if available 
@@ -426,7 +428,7 @@ function populateList(response, sel) {
         const support = rows[i].substring(0, 10) == "Open Babel" ? " (supported)" : " (unsupported)";
 
         if ( sel == "success") {
-            $("#success").append($('<option>', { text: "" + rows[i] + support }));
+            $("#success").append($('<option>', { text: rows[i] + support }));
         }
 
         if (sel == "from") {
@@ -439,27 +441,22 @@ function populateList(response, sel) {
         }
     }
 
-    if (sel == "from") {
-        $("#fromLabel").html("Select format to convert from (" + $("#fromList").children('option').length + "):");
-    }
-    else {
-        $("#toLabel").html("Select format to convert to (" + $("#toList").children('option').length + "):");
-    }
-
     if (sel == "from" && !isOption(out_str, "toList")) {
         filter("searchFrom");
-        $("#fromLabel").html("Select format to convert from (" + $("#fromList").children('option').length + "):");
     }
     else if (sel == "to" && !isOption(in_str, "fromList")) {
         filter("searchTo");
-        $("#toLabel").html("Select format to convert to (" + $("#toList").children('option').length + "):");
     }
 
     if (sel == "from") {
+        $("#fromLabel").html("Select format to convert from (" + $("#fromList").children('option').length + "):");
         $("#fromList option[value='" + in_str + "']").prop('selected', 'selected');
+        $("#fromList").hide().show();
     }
-    else {
+    else if (sel == "to") {
+        $("#toLabel").html("Select format to convert to (" + $("#toList").children('option').length + "):");
         $("#toList option[value='" + out_str + "']").prop('selected', 'selected');
+        $("#toList").hide().show();
     }
 }
 

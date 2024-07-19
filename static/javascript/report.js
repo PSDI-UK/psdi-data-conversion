@@ -1,6 +1,6 @@
 /*
   report.js
-  Version 1.0, 19th June 2024
+  Version 1.0, 26th June 2024
 
   This is the JavaScript which makes the report.htm gui work.
 */
@@ -192,16 +192,8 @@ function submitUserInput() {
     }
 }
 
-// Hide Open Babel conversion offer
-function hideOffer() {
-    $("#converter").css({display: "none"});
-    $("#question").css({display: "none"});
-    $("#radioButtons").css({display: "none"});
-    $("#convertFile").css({display: "none"});
-    $("#inFlags").empty();
-    $("#outFlags").empty();
-    $("#flags").css({display: "none"});
-}
+// Hide Open Babel conversion offer (not required to do anything on this page)
+function hideOffer() {}
 
 // Writes user input to a server-side file
 // $$$$$$$$$$ Retain for now in case logging to file is required for some other purpose $$$$$$$$$$
