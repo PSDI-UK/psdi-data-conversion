@@ -1,6 +1,6 @@
 
 #   app.py
-#   Version 1.0, 4th July 2024
+#   Version 1.0, 17th September 2024
 
 #   This script acts as a server for the PSDI Data Conversion Service website.
 
@@ -32,22 +32,37 @@ def website() :
     data = [{'token': token}]
     return render_template("index.htm", data=data)
 
+# Convert file to a different format and save to folder 'downloads'. Delete original file.
+# Note that downloading is achieved in format.js
+@app.route('/convert/', methods=['POST'])
+def convert() :
+    if request.form['token'] == token and token != '' :
+        return convertFile('fileToUpload')
+    else :
+        # return http status code 405
+        abort(405)
+
 # Convert file (cURL)
 @app.route('/conv/', methods=['POST'])
 def conv() :
-    f = request.files['file']
+    return convertFile('file')
+
+# Convert the uploaded file to the required format, generating atomic coordinates if required
+def convertFile(file) :
+    f = request.files[file]
     f.save('static/uploads/' + f.filename)
     fname = f.filename.split(".")[0]  # E.g. ethane.mol --> ethane
 
+    # Retrieve 'from' and 'to' file formats
     fromFormat = request.form['from']
     toFormat = request.form['to']
 
-    mol = openbabel.OBMol()
+    stdouterrOB = py.io.StdCaptureFD(in_=False)
 
     obConversion = openbabel.OBConversion()
     obConversion.SetInAndOutFormats(fromFormat, toFormat)
 
-    # Retrieve 'from' and 'to' option flags.
+    # Retrieve 'from' and 'to' option flags
     fromFlags = request.form['from_flags']
     toFlags = request.form['to_flags']
 
@@ -57,19 +72,64 @@ def conv() :
     for char in toFlags :
         obConversion.AddOption(char, obConversion.OUTOPTIONS)
 
-    stdouterrOB = py.io.StdCaptureFD(in_=False)
-
+    mol = openbabel.OBMol()
     obConversion.ReadFile(mol, 'static/uploads/' + f.filename)
+
+    # Retrieve coordinate calculation type (Gen2D, Gen3D, neither)
+    calcType = request.form['coordinates']
+
+    option = 'N/A'
+
+    # Calculate atomic coordinates
+    if calcType != 'neither' :
+        # Retrieve coordinate calculation option (fastest, fast, medium, better, best)
+        option = request.form['coordOption']
+
+        gen = openbabel.OBOp.FindType(calcType)
+        gen.Do(mol, option)
+
     obConversion.WriteFile(mol, 'static/downloads/' + fname + '.' + toFormat)
 
-    #quality = request.form['success']
-    quality = getQuality(fromFormat, toFormat)
+    inSize = os.path.getsize('static/uploads/' + f.filename)
+    outSize = os.path.getsize('static/downloads/' + fname + '.' + toFormat)
+
+    # Website only (i.e., not command line option)
+    if file != 'file' :
+        os.remove('static/uploads/' + f.filename)
+        fromFormat = request.form['from_full']
+        toFormat = request.form['to_full']
+        quality = request.form['success']
+    else :
+        quality = getQuality(fromFormat, toFormat)
+
     converter = 'Open Babel'           # $$$$$$$$$$ TODO: Replace hard coding when more than one converter option. $$$$$$$$$$
     out,err = stdouterrOB.reset()
 
-    log(fromFormat, toFormat, converter, fname, quality, out, err)
+    if err.find('Error') > -1 :
+        error_log(fromFormat, toFormat, converter, fname, calcType, option, fromFlags, toFlags, err)
+        stdouterrOB.done()
+
+        # return http status code 405
+        abort(405)
+    else :
+        log(fromFormat, toFormat, converter, fname, calcType, option, fromFlags, toFlags, quality, out, err)
 
     stdouterrOB.done()
+
+    query = sql.SQL("INSERT INTO {table} ({ident}, {datetime}, {convFrom}, {convTo}, {conv}, {filename}, {fromSize}, {toSize}, {success}) " \
+                    "VALUES ((SELECT COALESCE(MAX({ident}), 0) FROM {table}) + 1, %s, %s, %s, %s, %s, %s, %s, %s)").format(
+                table=sql.Identifier('conversion_log'),
+                ident=sql.Identifier('id'),
+                datetime=sql.Identifier('date'),
+                convFrom=sql.Identifier('convert_from'),
+                convTo=sql.Identifier('convert_to'),
+                conv=sql.Identifier('converter'),
+                filename=sql.Identifier('file_name'),
+                fromSize=sql.Identifier('from_file_size'),
+                toSize=sql.Identifier('to_file_size'),
+                success=sql.Identifier('success_status'))
+    values = [get_date_time(), fromFormat, toFormat, converter, fname, inSize, outSize, quality]
+    logConversion(query, values)
 
     return '\nConverting from ' + fname + '.' + fromFormat + ' to ' + fname + '.' + toFormat +'\n'
 
@@ -157,79 +217,6 @@ def deleteFile() :
     os.remove(request.form['filepath'])
     return 'Server-side file ' + request.form['filepath'] + ' deleted\n'
 
-# Convert file to a different format and save to folder 'downloads'. Delete original file.
-# Note that downloading is achieved in format.js
-@app.route('/convert/', methods=['POST'])
-def convert() :
-    if request.form['token'] == token and token != '' :
-        f = request.files['fileToUpload']
-        f.save('static/uploads/' + f.filename)
-        fname = f.filename.split(".")[0]  # E.g. ethane.mol --> ethane
-
-        # Retrieve 'from' and 'to' file formats.
-        fromFormat = request.form['from']
-        toFormat = request.form['to']
-
-        stdouterrOB = py.io.StdCaptureFD(in_=False)
-
-        obConversion = openbabel.OBConversion()
-        obConversion.SetInAndOutFormats(fromFormat, toFormat)
-
-        # Retrieve 'from' and 'to' option flags.
-        fromFlags = request.form['from_flags']
-        toFlags = request.form['to_flags']
-
-        for char in fromFlags :
-            obConversion.AddOption(char, obConversion.INOPTIONS)
-
-        for char in toFlags :
-            obConversion.AddOption(char, obConversion.OUTOPTIONS)
-
-        mol = openbabel.OBMol()
-        obConversion.ReadFile(mol, 'static/uploads/' + f.filename)
-        obConversion.WriteFile(mol, 'static/downloads/' + fname + '.' + toFormat)
-
-        inSize = os.path.getsize('static/uploads/' + f.filename)
-        outSize = os.path.getsize('static/downloads/' + fname + '.' + toFormat)
-        os.remove('static/uploads/' + f.filename)
-
-        fromFull = request.form['from_full']
-        toFull = request.form['to_full']
-        quality = request.form['success']
-        converter = 'Open Babel'             # $$$$$$$$$$ TODO: Replace hard coding when more than one converter option. $$$$$$$$$$
-        out,err = stdouterrOB.reset()
-
-        if err.find('Error') > -1 :
-            error_log(fromFull, toFull, converter, fname, err)
-            stdouterrOB.done()
-
-            # return http status code 405
-            abort(405)
-        else :
-            log(fromFull, toFull, converter, fname, quality, out, err)
-
-        stdouterrOB.done()
-
-        query = sql.SQL("INSERT INTO {table} ({ident}, {datetime}, {convFrom}, {convTo}, {conv}, {filename}, {fromSize}, {toSize}, {success}) " \
-                        "VALUES ((SELECT COALESCE(MAX({ident}), 0) FROM {table}) + 1, %s, %s, %s, %s, %s, %s, %s, %s)").format(
-                    table=sql.Identifier('conversion_log'),
-                    ident=sql.Identifier('id'),
-                    datetime=sql.Identifier('date'),
-                    convFrom=sql.Identifier('convert_from'),
-                    convTo=sql.Identifier('convert_to'),
-                    conv=sql.Identifier('converter'),
-                    filename=sql.Identifier('file_name'),
-                    fromSize=sql.Identifier('from_file_size'),
-                    toSize=sql.Identifier('to_file_size'),
-                    success=sql.Identifier('success_status'))
-        values = [get_date_time(), fromFull, toFull, converter, fname, inSize, outSize, quality]
-
-        logConversion(query, values)
-        return 'okay'
-    else :
-        # return http status code 405
-        abort(405)
-
 # Retrieve current date as a string.
 def get_date() :
     today = datetime.today()    
@@ -245,11 +232,11 @@ def get_date_time() :
     return get_date() + ' ' + get_time()
 
 # Write conversion information to server-side file, ready for downloading to user.
-def log(fromFormat, toFormat, converter, fname, quality, out, err) :
-    message = create_message(fname, fromFormat, toFormat, converter) + \
-              'Quality:   ' + quality + '\n' \
-              'Success:   Assuming that the data provided was of the correct format, the conversion\n' \
-              '           was successful (to the best of our knowledge) subject to any warnings below.\n' + \
+def log(fromFormat, toFormat, converter, fname, calcType, option, fromFlags, toFlags, quality, out, err) :
+    message = create_message(fname, fromFormat, toFormat, converter, calcType, option, fromFlags, toFlags) + \
+              'Quality:       ' + quality + '\n' \
+              'Success:       Assuming that the data provided was of the correct format, the conversion\n' \
+              '               was successful (to the best of our knowledge) subject to any warnings below.\n' + \
               out + '\n' + err + '\n'
 
     f = open('static/downloads/' + fname + '.log.txt', 'w')
@@ -257,21 +244,40 @@ def log(fromFormat, toFormat, converter, fname, quality, out, err) :
     f.close()
 
 # Write conversion error information to server-side log file.
-def error_log(fromFormat, toFormat, converter, fname, err) :
-    message = create_message(fname, fromFormat, toFormat, converter) + err + '\n'
+def error_log(fromFormat, toFormat, converter, fname, calcType, option, fromFlags, toFlags, err) :
+    message = create_message(fname, fromFormat, toFormat, converter, calcType, option, fromFlags, toFlags) + err + '\n'
 
     f = open('error_log.txt', 'a')
     f.write(message)
     f.close()
 
 # Create message for log files.
-def create_message(fname, fromFormat, toFormat, converter) :
-    return 'Date:      ' + get_date() + '\n' \
-           'Time:      ' + get_time() + '\n' \
-           'File name: ' + fname + '\n' \
-           'From:      ' + fromFormat + '\n' \
-           'To:        ' + toFormat + '\n' \
-           'Converter: ' + converter + '\n'
+def create_message(fname, fromFormat, toFormat, converter, calcType, option, fromFlags, toFlags) :
+    str = ''
+
+    if calcType == 'neither' :
+        str = 'Coord. gen.:   none\n'
+    else :
+        str += 'Coord. gen.:   ' + calcType + '\n'
+
+    str += 'Coord. option: ' + option + '\n'
+
+    if fromFlags == '' :
+        str += 'Read options:  none\n'
+    else :
+        str += 'Read options:  ' + fromFlags  + '\n'
+
+    if toFlags == '' :
+        str += 'Write options: none\n'
+    else :
+        str += 'Write options: ' + toFlags  + '\n'
+
+    return 'Date:          ' + get_date() + '\n' \
+           'Time:          ' + get_time() + '\n' \
+           'File name:     ' + fname + '\n' \
+           'From:          ' + fromFormat + '\n' \
+           'To:            ' + toFormat + '\n' \
+           'Converter:     ' + converter + '\n' + str
 
 # Write to database table Conversion_Log.
 def logConversion(query, values) :

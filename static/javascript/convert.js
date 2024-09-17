@@ -1,6 +1,6 @@
 /*
   convert.js
-  Version 1.0, 31st May 2024
+  Version 1.0, 9th September 2024
 
   This is the JavaScript which makes the convert.htm gui work.
 */
@@ -56,6 +56,7 @@ $(document).ready(function() {
     getFlags("in", in_str);
     getFlags("out", out_str);
 
+    $('input[name="coordinates"]').change(coordOptionAvailability);
     $("#fileToUpload").change(checkExtension);
     $("#uploadButton").click(submitFile);
 });
@@ -118,6 +119,9 @@ function submitFile() {
     const write_flags_text = $("#outFlags").find(":selected").text(),
           write_flags = extractFlags(write_flags_text);
 
+    const coordinates = $('input[name="coordinates"]:checked').val();
+    const coordOption = $('input[name="coordOptions"]:checked').val();
+
     const download_fname = file.name.split(".")[0] + "." + out_ext;
 
     var form_data = new FormData();
@@ -130,6 +134,8 @@ function submitFile() {
     form_data.append("success", quality);
     form_data.append("from_flags", read_flags);
     form_data.append("to_flags", write_flags);
+    form_data.append("coordinates", coordinates);
+    form_data.append("coordOption", coordOption);
     form_data.append("fileToUpload", file);
     form_data.append("upload_file", true);
 
@@ -298,6 +304,18 @@ function populateFlagBox(response, type) {
 
     el.append(new Option(""));
     $("#" + type + "FlagInfo").html(info);
+}
+
+// Disable coordinate options if calculation type is 'neither,' otherwise enable
+function coordOptionAvailability(event) {
+    const calcType = $('input[name="coordinates"]:checked').val();
+
+    if (calcType == 'neither') {
+        $('input[name="coordOptions"]').prop({disabled: true}); 
+    }       
+    else {
+        $('input[name="coordOptions"]').prop({disabled: false}); 
+    }
 }
 
 // File upload is allowed only if its extension matches the 'from' format
