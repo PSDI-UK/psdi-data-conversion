@@ -3,12 +3,15 @@ name: tag-container-push
 run-name: tag-container-push
 
 on:
-  workflow_call:
-    outputs:
-      container_tag:
-        description: "Container Tag"
-        value: ${{ jobs.tag-container-push.outputs.container_tag }}
 #TU: limit to main branch only?
+  push:
+   
+#TU: Not sure if the 'outputs' section below is needed
+#  workflow_call:
+#    outputs:
+#      container_tag:
+#        description: "Container Tag"
+#        value: ${{ jobs.tag-container-push.outputs.container_tag }}
 
 
 jobs:
