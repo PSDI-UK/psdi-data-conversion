@@ -30,10 +30,22 @@ on:
 
 
 jobs:
+  run-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5 
+        with:
+          python-version: '3.9'
+      - name: Install selenium
+        run: pip install selenium
+      - name: Run tests
+        run: python run_tests.py
   tag-container-push:
     outputs:
       container_tag: ${{ steps.tag_version.outputs.new_tag }}
     runs-on: ubuntu-latest
+    needs: [run-tests]
     steps:
       - uses: actions/checkout@v4
       - name: Bump version and push tag
