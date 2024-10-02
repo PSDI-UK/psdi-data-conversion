@@ -1,6 +1,7 @@
 name: tag-container-push
-
 run-name: tag-container-push
+
+#TU: TODO: A version label is not created in the git log? Is this an issue?
 
 on:
 #TU: limit to main branch only?
@@ -35,7 +36,8 @@ jobs:
           body: ${{ steps.tag_version.outputs.changelog }}
       - name: Setup docker auth
         run: |
-          mkdir ~/.docker
+#TU: Fails on the runner I'm using so I've commented it out
+#          mkdir ~/.docker
           cat <<EOF > ~/.docker/config.json
           {
             "auths": {
