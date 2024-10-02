@@ -29,7 +29,7 @@ jobs:
 #TU: Need to remove the 'release_branches' line upon pull request
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          release_branches: tudev_ghr
+          release_branches: tudev_ghcr
       - name: Create a GitHub release
         uses: ncipollo/release-action@v1
         with:
