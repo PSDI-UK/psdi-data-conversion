@@ -35,9 +35,9 @@ jobs:
           name: Release ${{ steps.tag_version.outputs.new_tag }}
           body: ${{ steps.tag_version.outputs.changelog }}
       - name: Setup docker auth
-        run: |
-#TU: Fails on the runner I'm using so I've commented it out
+#TU: Fails on the runner I'm using so I've removed this from the 'run' below - it was the first command
 #          mkdir ~/.docker
+        run: |
           cat <<EOF > ~/.docker/config.json
           {
             "auths": {
