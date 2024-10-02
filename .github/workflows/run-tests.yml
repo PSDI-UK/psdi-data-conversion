@@ -19,6 +19,5 @@ jobs:
       - name: Install selenium
         run: pip install selenium
       - name: Run tests
-        run: |
-	  python run_tests.py
+        run: python run_tests.py
 
