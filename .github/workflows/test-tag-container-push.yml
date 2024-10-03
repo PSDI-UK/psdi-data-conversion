@@ -27,10 +27,9 @@ run-name: test-tag-container-push
 
 
 on:
-#TU: Need to change 'tudev_ghcr' to 'main' upon pull request
   push:
     branches:
-      - tudev_ghcr
+      - main
 
 jobs:
   run-tests:
@@ -52,10 +51,9 @@ jobs:
       - name: Bump version and push tag
         id: tag_version
         uses: mathieudutour/github-tag-action@v6.2
-#TU: Need to remove the 'release_branches' line upon pull request
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          release_branches: tudev_ghcr
+          release_branches: main
       - name: Create a GitHub release
         uses: ncipollo/release-action@v1
         with:
@@ -77,9 +75,8 @@ jobs:
           GIT_USERNAME: ${{ github.actor }}
           GIT_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
       - name: Docker build API
-#TU: Need to change namespace from 'tomlunderwood/psdi-data-conversion' to 'psdi-uk/psdi-data-conversion'
         env:
-          IMAGE_NAME: "ghcr.io/tomlunderwood/psdi-data-conversion/data-conversion:${{ steps.tag_version.outputs.new_tag }}"
+          IMAGE_NAME: "ghcr.io/PSDI-UK/psdi-data-conversion/data-conversion:${{ steps.tag_version.outputs.new_tag }}"
         run: |
           docker build -t $IMAGE_NAME .
           docker push $IMAGE_NAME
