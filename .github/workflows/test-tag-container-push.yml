@@ -76,7 +76,7 @@ jobs:
           GIT_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
       - name: Docker build API
         env:
-          IMAGE_NAME: "ghcr.io/PSDI-UK/psdi-data-conversion/data-conversion:${{ steps.tag_version.outputs.new_tag }}"
+          IMAGE_NAME: "ghcr.io/psdi-uk/psdi-data-conversion/data-conversion:${{ steps.tag_version.outputs.new_tag }}"
         run: |
           docker build -t $IMAGE_NAME .
           docker push $IMAGE_NAME
