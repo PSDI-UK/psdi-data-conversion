@@ -1,6 +1,6 @@
 <!--
   convert.htm
-  Version 1.0, 17th September 2024
+  Version 1.0, 11th October 2024
 -->
 
 <!DOCTYPE html>
@@ -33,26 +33,33 @@
     <h2>Conversion</h2>
     <form name="gui">
       <div class="normalText">
-        <p>Zero to two option flag boxes may be displayed, depending on the conversion and the degree of completion of the database. Further information may be displayed underneath the boxes if available. One or more input or output flags may be selected if required (shift click for multiple selections). To undo all selections in a box, click just underneath the final option. If 2 or 3-dimensional atomic coordinates need to be calculated (using Open Babel), select '2D' or '3D' and a speed/accuracy option ('fastest' is least accurate). Note that this calculation is not appropriate for all file formats, so in these cases selections will be ignored. Click on 'Choose file' and then select an input file of the correct format (and extension). Clicking on 'Convert' uploads and converts the file. The output file is automatically downloaded. If any issues are encountered (e.g., the output file does not download), please click on 'Provide Feedback' in the navigation bar.</p>
+        <p>Zero to two option flag select boxes and zero to two sets of option flag check boxes may be displayed, depending on the conversion and the degree of completion of the database. Further information may be displayed underneath the select boxes if available. One or more input or output flags may be selected if required (command click [Mac] or control click [Windows] for multiple select box selections). To undo all selections in a box, click just underneath the final option. Ticking a check box reveals a text box for entry of required information, along with further explanation if available. If 2- or 3-dimensional atomic coordinates need to be calculated (using Open Babel), select '2D' or '3D' and a speed/accuracy option ('fastest' is least accurate). Note that this calculation is not appropriate for all file formats, so in these cases selections will be ignored. Click on 'Choose file' and then select an input file of the correct format (and extension). Clicking on 'Convert' uploads and converts the file. The output file is automatically downloaded. If any issues are encountered (e.g., the output file does not download), please click on 'Provide Feedback' in the navigation bar.</p>
         <h3 id="heading"></h3>
         <div id="flags"> <!--class="selGrid">-->
           <div id="inFlagList">
             <p>
-              <label for="inFlags" class="normalText">Read (input) option flags (select all required):</label><br>
+              <label for="inFlags" class="normalText" id="in_label">Read (input) option flags (select all required):</label>
+              <div id="in_flag_break"></div>
               <select class="normalText" id="inFlags" size="4" multiple="multiple"></select>
               <div id = inFlagInfo></div>
             </p>
           </div>
           <div id="outFlagList">
             <p>
-              <label for="outFlags" class="normalText">Write (output) option flags (select all required):</label><br>
+              <label for="outFlags" class="normalText" id="out_label">Write (output) option flags (select all required):</label>
+              <div id="out_flag_break"></div>
               <select class="normalText" id="outFlags" size="4" multiple="multiple"></select>
               <div id = outFlagInfo></div>
             </p>
           </div>
         </div>
+        <span id="in_argLabel">Read (input) option flags requiring further information (select all required):</span>
+        <table id="in_argFlags"></table>
+        <div id="flag_break"><br /></div>
+        <span id="out_argLabel">Write (output) option flags requiring further information (select all required):</span>
+        <table id="out_argFlags"></table>
         <p>
-          <label for="coordinates" class="normalText">Select '2D' or '3D' if an Open Babel calculation of 2 or 3-dimensional atomic coordinates is required. Ensure that this calculation is suitable for your purpose.<br>For more information, visit<a href="https://openbabel.org/docs/3DStructureGen/SingleConformer.html#gen3d" target="_blank">this website.</a></label><br>
+          <label for="coordinates" class="normalText">Select '2D' or '3D' if an Open Babel calculation of 2- or 3-dimensional atomic coordinates is required. Ensure that this calculation is suitable for your purpose.<br>For more information, visit<a href="https://openbabel.org/docs/3DStructureGen/SingleConformer.html#gen3d" target="_blank">this website.</a></label><br>
           <input type="radio" name="coordinates" id="coordinates" value="Gen2D"> 2D
           <input type="radio" name="coordinates" id="coordinates" value="Gen3D"> 3D
           <input type="radio" name="coordinates" id="coordinates" value="neither" checked="checked"> neither

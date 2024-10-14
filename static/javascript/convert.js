@@ -1,13 +1,14 @@
 /*
   convert.js
-  Version 1.0, 9th September 2024
+  Version 1.0, 11th October 2024
 
   This is the JavaScript which makes the convert.htm gui work.
 */
 
+const fromList = new Array(),
+      toList = new Array();
+
 var token = "",
-    fromList = new Array(),
-    toList = new Array(),
     last_select = "",
     in_ext = "",
     out_ext = "";
@@ -55,6 +56,8 @@ $(document).ready(function() {
 
     getFlags("in", in_str);
     getFlags("out", out_str);
+    getFlags("in_arg", in_str);
+    getFlags("out_arg", out_str);
 
     $('input[name="coordinates"]').change(coordOptionAvailability);
     $("#fileToUpload").change(checkExtension);
@@ -95,6 +98,24 @@ function queryDatabase(query, sel, callback) {
         })
 }
 
+// On ticking a checkbox, a text box for entry of an option flag argument appears next to it. On unticking, the text box disappears.
+function enterArgument(event) {
+    var //flags_text = $('#' + this.id).val(),
+        arg_id = this.id.replace('check', 'text'),
+        arg_label_id = this.id.replace('check', 'label');
+
+    if ($('#' + this.id).is(':checked')) {
+        // Show appropriate text box and its label
+        $('#' + arg_id).show();
+        $('#' + arg_label_id).show();
+    }
+    else {
+        // Hide appropriate text box (empty) and its label
+        $('#' + arg_id).val('').hide();
+        $('#' + arg_label_id).hide();
+    }
+}
+
 // Uploads a user-supplied file
 function submitFile() {
     const file = $("#fileToUpload")[0].files[0],
@@ -119,10 +140,48 @@ function submitFile() {
     const write_flags_text = $("#outFlags").find(":selected").text(),
           write_flags = extractFlags(write_flags_text);
 
-    const coordinates = $('input[name="coordinates"]:checked').val();
-    const coordOption = $('input[name="coordOptions"]:checked').val();
+    var count = 0,
+        read_arg_flags = '',
+        write_arg_flags = '',
+        read_args = '',
+        write_args = '',
+        all_args_entered = true;
 
-    const download_fname = file.name.split(".")[0] + "." + out_ext;
+    const checked_in = $('input[name=in_arg_check]:checked'),
+          checked_out = $('input[name=out_arg_check]:checked');
+
+    checked_in.each(function() {
+        read_arg_flags += $("#" + this.id).val()[0];
+        const arg = $("#in_arg_text" + this.id.substring(this.id.length - 1, this.id.length)).val();
+
+        if (/\S/.test(arg)) {
+            read_args += arg.trim() + '£';
+        }
+        else {
+            all_args_entered = false;
+        }
+    })
+
+    checked_out.each(function() {
+        write_arg_flags += $("#" + this.id).val()[0];
+        const arg = $("#out_arg_text" + this.id.substring(this.id.length - 1, this.id.length)).val();
+
+        if (/\S/.test(arg)) {
+            write_args += arg.trim() + '£';
+        }
+        else {
+            all_args_entered = false;
+        }
+    })
+
+    if (!all_args_entered) {
+        alert('All ticked option flags need additional information to be entered into the associated text box.');
+        return;
+    }
+
+    const coordinates = $('input[name="coordinates"]:checked').val(),
+          coordOption = $('input[name="coordOptions"]:checked').val(),
+          download_fname = file.name.split(".")[0] + "." + out_ext;
 
     var form_data = new FormData();
 
@@ -134,6 +193,10 @@ function submitFile() {
     form_data.append("success", quality);
     form_data.append("from_flags", read_flags);
     form_data.append("to_flags", write_flags);
+    form_data.append("from_arg_flags", read_arg_flags);
+    form_data.append("from_args", read_args);
+    form_data.append("to_arg_flags", write_arg_flags);
+    form_data.append("to_args", write_args);
     form_data.append("coordinates", coordinates);
     form_data.append("coordOption", coordOption);
     form_data.append("fileToUpload", file);
@@ -145,11 +208,27 @@ function submitFile() {
 // Retrieves option flags from selected text
 function extractFlags(flags_text) {
     var flags = "",
-        regex = /:/g,
+        regex = /: /g,
         match = "";
 
     while ((match = regex.exec(flags_text)) != null) {
         flags += flags_text[match.index - 1];
+    }
+
+    return flags;
+}
+
+// Retrieves option flags requiring arguments from selected text
+function extractArgFlags(flags_text) {
+    var flags = "",
+        regex = /[.]/g,
+        match = "";
+
+    if (flags_text.length > 0)
+        flags += flags_text[0];
+
+    while ((match = regex.exec(flags_text)) != null && match.index < flags_text.length - 1) {
+        flags += flags_text[match.index + 1];
     }
 
     return flags;
@@ -231,24 +310,115 @@ function getFlags (type, str) {
 
         query = `SELECT DISTINCT Flag, Description, Further_info FROM OBFlags_in
                  WHERE ID IN (SELECT DISTINCT OBFlags_in_ID FROM OBFormat_to_Flags_in
-                              WHERE Formats_ID=(SELECT ID FROM Formats WHERE Extension = '${in_ext}' AND Note = '${in_note}'))`;
+                              WHERE Formats_ID=(SELECT ID FROM Formats WHERE Extension = '${in_ext}' AND Note = '${in_note}')) ORDER BY Flag ASC`;
     }
-    else {
+    else if (type == "out") {
         const out_str_array = str.split(": "),
               out_ext = out_str_array[0],          // e.g. "ins"
               out_note = out_str_array[1];         // e.g. "ShelX"
 
         query = `SELECT DISTINCT Flag, Description, Further_info FROM OBFlags_out
                  WHERE ID IN (SELECT DISTINCT OBFlags_out_ID FROM OBFormat_to_Flags_out
-                              WHERE Formats_ID=(SELECT ID FROM Formats WHERE Extension = '${out_ext}' AND Note = '${out_note}'))`;
+                              WHERE Formats_ID=(SELECT ID FROM Formats WHERE Extension = '${out_ext}' AND Note = '${out_note}')) ORDER BY Flag ASC`;
+    }
+    else if (type == "in_arg") {
+        const in_arg_str_array = str.split(": "),
+              in_arg_ext = in_arg_str_array[0],          // e.g. "ins"
+              in_arg_note = in_arg_str_array[1];         // e.g. "ShelX"
+
+        query = `SELECT DISTINCT Flag, Description, Further_info FROM OBArgFlags_in
+                 WHERE ID IN (SELECT DISTINCT OBArgFlags_in_ID FROM OBFormat_to_ArgFlags_in
+                              WHERE Formats_ID=(SELECT ID FROM Formats WHERE Extension = '${in_arg_ext}' AND Note = '${in_arg_note}')) ORDER BY Flag ASC`;
+    }
+    else if (type == "out_arg") {
+        const out_arg_str_array = str.split(": "),
+              out_arg_ext = out_arg_str_array[0],          // e.g. "ins"
+              out_arg_note = out_arg_str_array[1];         // e.g. "ShelX"
+
+        query = `SELECT DISTINCT Flag, Description, Further_info FROM OBArgFlags_out
+                 WHERE ID IN (SELECT DISTINCT OBArgFlags_out_ID FROM OBFormat_to_ArgFlags_out
+                              WHERE Formats_ID=(SELECT ID FROM Formats WHERE Extension = '${out_arg_ext}' AND Note = '${out_arg_note}')) ORDER BY Flag ASC`;
     }
 
     try {
-        queryDatabase(query, type, populateFlagBox);
+        if (type == "in" || type == "out") {
+            queryDatabase(query, type, populateFlagBox);
+        }
+        else {
+            queryDatabase(query, type, addCheckboxes);
+        }
+
         return true;
     }
     catch (e) {
         return false;
+    }
+}
+
+// Adds checkboxes for read or write option flags requiring an argument
+function addCheckboxes(response, type) {
+    var container = $("#" + type + "Flags"),
+        flag = '',
+        info = '',
+        count = 0,
+        flagCount = 0,
+        flagAdded = false;
+
+    if (response.length != 0) {
+        response += '$';
+        $("#" + type + "Label").show();
+
+        for (var i = 1; i < response.length; i++) {
+            if (response[i] == '$') {                 // End of all information about a particular option flag
+                const original_length = info.length;
+
+                info = info.replace(/.: N\/A/, '');
+                info = info.replace(/: N\/A/, '');
+                info = info.replace(/: /, '');
+
+                container.append("<tr><td><input type='checkbox' id= " + type + "_check" + flagCount + " name= " + type
+                                                                       + "_check value= " + flag + "></input></td><td>" + flag + "</td>" +
+                                     "<td><input type='text' class='normalText' id= " + type + "_text" + flagCount
+                                                                       + " placeholder='-- type info. here --'></input></td>" +
+                                     "<td><span id= " + type + "_label" + flagCount + ">" + info + "</span></td></tr>");
+
+                $('#' + type + '_text' + flagCount).hide();
+                $('#' + type + '_label' + flagCount).hide();
+                $('#' + type + '_check' + flagCount).change(enterArgument);
+
+                info = '';
+                flag = '';
+                count = -1;
+                flagCount++;
+            }
+            else if (count == 2) {                    // End of the checkbox value for a particular option flag
+                info += response[i];                  // Start of further information about a particular option flag
+                count++;
+            }
+            else if (count == 3) {                    // Adds to further information
+                info += response[i];
+            }
+            else if (response[i] == '£' && response[i - 1] != '$' && count == 0) {
+                flag += ': ';                         // Break between flag and its description
+                info += ': ';
+                flagAdded = false;
+                count++;
+            }
+            else if (response[i] == '£') {            // Acknowledges change from one piece of data to another
+                count++;
+            }
+            else if (response[i] != '£') {            // Adds to the checkbox value
+                flag += response[i];
+
+            }
+        }
+    }
+    else {
+        $("#" + type + "Label").hide(); 
+
+        if (type == 'in_arg') {
+            $("#flag_break").hide();
+        }
     }
 }
 
@@ -258,7 +428,8 @@ function populateFlagBox(response, type) {
         disp = $("#" + type + "FlagList"),
         flag = '',
         info = '<p>',
-        count = 0;
+        count = 0,
+        flagAdded = false;
 
     if (response.length != 0) {
         disp.css({display: "inline"});
@@ -287,6 +458,7 @@ function populateFlagBox(response, type) {
             else if (response[i] == '£' && response[i - 1] != '$' && count == 0) {
                 flag += ': ';                         // Break between flag and its description
                 info += ': ';
+                flagAdded = false;
                 count++;
             }
             else if (response[i] == '£') {            // Acknowledges change from one piece of data to another
@@ -300,6 +472,11 @@ function populateFlagBox(response, type) {
                 }
             }
         }
+    }
+    else {
+        $("#" + type + "_label").hide(); 
+        $("#" + type + "_flag_break").hide(); 
+        el.hide();
     }
 
     el.append(new Option(""));

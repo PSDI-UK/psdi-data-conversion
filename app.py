@@ -1,6 +1,6 @@
 
 #   app.py
-#   Version 1.0, 17th September 2024
+#   Version 1.0, 14th October 2024
 
 #   This script acts as a server for the PSDI Data Conversion Service website.
 
@@ -62,16 +62,39 @@ def convertFile(file) :
     obConversion = openbabel.OBConversion()
     obConversion.SetInAndOutFormats(fromFormat, toFormat)
 
-    # Retrieve 'from' and 'to' option flags
+    # Retrieve 'from' and 'to' option flags and arguments
     fromFlags = request.form['from_flags']
     toFlags = request.form['to_flags']
+    fromArgFlags = request.form['from_arg_flags']
+    toArgFlags = request.form['to_arg_flags']
+    fromArgs = request.form['from_args']
+    toArgs = request.form['to_args']
 
+    # Add option flags and arguments as appropriate
     for char in fromFlags :
         obConversion.AddOption(char, obConversion.INOPTIONS)
 
     for char in toFlags :
         obConversion.AddOption(char, obConversion.OUTOPTIONS)
 
+    readFlagsArgs = []
+    writeFlagsArgs = []
+
+    for char in fromArgFlags :
+        index = fromArgs.find('£')
+        arg = fromArgs[0:index]
+        fromArgs = fromArgs[index + 1:len(fromArgs)]
+        readFlagsArgs.append(char + "  " + arg)
+        obConversion.AddOption(char, obConversion.INOPTIONS, arg)
+
+    for char in toArgFlags :
+        index = toArgs.find('£')
+        arg = toArgs[0:index]
+        toArgs = toArgs[index + 1:len(toArgs)]
+        writeFlagsArgs.append(char + "  " + arg)
+        obConversion.AddOption(char, obConversion.OUTOPTIONS, arg)
+
+    # Read the file to be converted
     mol = openbabel.OBMol()
     obConversion.ReadFile(mol, 'static/uploads/' + f.filename)
 
@@ -88,8 +111,10 @@ def convertFile(file) :
         gen = openbabel.OBOp.FindType(calcType)
         gen.Do(mol, option)
 
+    # Write the converted file
     obConversion.WriteFile(mol, 'static/downloads/' + fname + '.' + toFormat)
 
+    # Determine values for logging purposes from here
     inSize = os.path.getsize('static/uploads/' + f.filename)
     outSize = os.path.getsize('static/downloads/' + fname + '.' + toFormat)
 
@@ -106,13 +131,13 @@ def convertFile(file) :
     out,err = stdouterrOB.reset()
 
     if err.find('Error') > -1 :
-        error_log(fromFormat, toFormat, converter, fname, calcType, option, fromFlags, toFlags, err)
+        error_log(fromFormat, toFormat, converter, fname, calcType, option, fromFlags, toFlags, readFlagsArgs, writeFlagsArgs, err)
         stdouterrOB.done()
 
         # return http status code 405
         abort(405)
     else :
-        log(fromFormat, toFormat, converter, fname, calcType, option, fromFlags, toFlags, quality, out, err)
+        log(fromFormat, toFormat, converter, fname, calcType, option, fromFlags, toFlags, readFlagsArgs, writeFlagsArgs, quality, out, err)
 
     stdouterrOB.done()
 
@@ -232,11 +257,11 @@ def get_date_time() :
     return get_date() + ' ' + get_time()
 
 # Write conversion information to server-side file, ready for downloading to user.
-def log(fromFormat, toFormat, converter, fname, calcType, option, fromFlags, toFlags, quality, out, err) :
-    message = create_message(fname, fromFormat, toFormat, converter, calcType, option, fromFlags, toFlags) + \
-              'Quality:       ' + quality + '\n' \
-              'Success:       Assuming that the data provided was of the correct format, the conversion\n' \
-              '               was successful (to the best of our knowledge) subject to any warnings below.\n' + \
+def log(fromFormat, toFormat, converter, fname, calcType, option, fromFlags, toFlags, readFlagsArgs, writeFlagsArgs, quality, out, err) :
+    message = create_message(fname, fromFormat, toFormat, converter, calcType, option, fromFlags, toFlags, readFlagsArgs, writeFlagsArgs) + \
+              'Quality:           ' + quality + '\n' \
+              'Success:           Assuming that the data provided was of the correct format, the conversion\n' \
+              '                   was successful (to the best of our knowledge) subject to any warnings below.\n' + \
               out + '\n' + err + '\n'
 
     f = open('static/downloads/' + fname + '.log.txt', 'w')
@@ -244,40 +269,64 @@ def log(fromFormat, toFormat, converter, fname, calcType, option, fromFlags, toF
     f.close()
 
 # Write conversion error information to server-side log file.
-def error_log(fromFormat, toFormat, converter, fname, calcType, option, fromFlags, toFlags, err) :
-    message = create_message(fname, fromFormat, toFormat, converter, calcType, option, fromFlags, toFlags) + err + '\n'
+def error_log(fromFormat, toFormat, converter, fname, calcType, option, fromFlags, toFlags, readFlagsArgs, writeFlagsArgs, err) :
+    message = create_message(fname, fromFormat, toFormat, converter, calcType, option, fromFlags, toFlags, readFlagsArgs, writeFlagsArgs) + err + '\n'
 
     f = open('error_log.txt', 'a')
     f.write(message)
     f.close()
 
 # Create message for log files.
-def create_message(fname, fromFormat, toFormat, converter, calcType, option, fromFlags, toFlags) :
+def create_message(fname, fromFormat, toFormat, converter, calcType, option, fromFlags, toFlags, readFlagsArgs, writeFlagsArgs) :
     str = ''
 
     if calcType == 'neither' :
-        str = 'Coord. gen.:   none\n'
+        str = 'Coord. gen.:       none\n'
     else :
-        str += 'Coord. gen.:   ' + calcType + '\n'
+        str += 'Coord. gen.:       ' + calcType + '\n'
 
-    str += 'Coord. option: ' + option + '\n'
+    str += 'Coord. option:     ' + option + '\n'
 
     if fromFlags == '' :
-        str += 'Read options:  none\n'
+        str += 'Read options:      none\n'
     else :
-        str += 'Read options:  ' + fromFlags  + '\n'
+        str += 'Read options:      ' + fromFlags  + '\n'
 
     if toFlags == '' :
-        str += 'Write options: none\n'
+        str += 'Write options:     none\n'
     else :
-        str += 'Write options: ' + toFlags  + '\n'
+        str += 'Write options:     ' + toFlags  + '\n'
 
-    return 'Date:          ' + get_date() + '\n' \
-           'Time:          ' + get_time() + '\n' \
-           'File name:     ' + fname + '\n' \
-           'From:          ' + fromFormat + '\n' \
-           'To:            ' + toFormat + '\n' \
-           'Converter:     ' + converter + '\n' + str
+    if len(readFlagsArgs) == 0 :
+        str += 'Read opts + args:  none\n'
+    else :
+        headingAdded = False
+
+        for pair in readFlagsArgs :
+            if not headingAdded :
+                str += 'Read opts + args:  ' + pair + '\n'
+                headingAdded = True
+            else :
+                str += '                   ' + pair + '\n'
+
+    if len(writeFlagsArgs) == 0 :
+        str += 'Write opts + args: none\n'
+    else :
+        headingAdded = False
+
+        for pair in writeFlagsArgs :
+            if not headingAdded :
+                str += 'Write opts + args: ' + pair + '\n'
+                headingAdded = True
+            else :
+                str += '                   ' + pair + '\n'
+
+    return 'Date:              ' + get_date() + '\n' \
+           'Time:              ' + get_time() + '\n' \
+           'File name:         ' + fname + '\n' \
+           'From:              ' + fromFormat + '\n' \
+           'To:                ' + toFormat + '\n' \
+           'Converter:         ' + converter + '\n' + str
 
 # Write to database table Conversion_Log.
 def logConversion(query, values) :

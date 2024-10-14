@@ -1,6 +1,6 @@
 /*
   format.css
-  Version 1.0, 27th June 2024
+  Version 1.0, 11th October 2024
 */
 
 /* Main heading, in a special very large dark blue font. */
@@ -111,7 +111,7 @@ select {
 }
 
 /* 850px width for some select boxes for accessibility purposes. */
-#fromList, #toList, #formatList, #success, #inFlags, #outFlags { width: 850px }
+#fromList, #toList, #formatList, #success, #inFlags, #outFlags, #outArgFlags { width: 850px }
 
 /* 420px width for the report type select box. */
 #reason { width: 420px }
