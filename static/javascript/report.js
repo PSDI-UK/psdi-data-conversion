@@ -5,6 +5,8 @@
   This is the JavaScript which makes the report.htm gui work.
 */
 
+import { getAllFormats, getConverters } from "./data.js";
+
 var token = "",
     fromList = new Array(),
     toList = new Array(),
@@ -16,11 +18,11 @@ $(document).ready(function() {
     $("#success").css({display: "none"});
 
     // Populates the "Convert from" and "Convert to" selection lists
-    var query = `SELECT DISTINCT Extension, Note FROM Formats ORDER BY Extension, Note ASC`
-
-    queryDatabase(query, "from", populateList);
-    queryDatabase(query, "to", populateList);
-    queryDatabase(query, "format", populateList);
+    getAllFormats().then((allFormats) => {
+        populateList(allFormats, "from");
+        populateList(allFormats, "to");
+        populateList(allFormats, "format");
+    });
 
     const font = sessionStorage.getItem("font"),
           size = sessionStorage.getItem("size"),
@@ -98,12 +100,9 @@ function populateConversionSuccess(event) {
               out_ext = out_str_array[0],
               out_note = out_str_array[1];
 
-        const query = `SELECT C.Name, C_to.Degree_of_success FROM Converters C, Converts_to C_to
-                       WHERE C_to.in_ID=(SELECT ID FROM Formats WHERE Extension = '${in_ext}' AND Note = '${in_note}')
-                       AND C_to.out_ID=(SELECT ID FROM Formats WHERE Extension = '${out_ext}' AND Note = '${out_note}')
-                       AND C.ID=C_to.Converters_ID ORDER BY C.Name ASC`
-
-        queryDatabase(query, "success", populateList);
+        getConverters(in_ext, in_note, out_ext, out_note).then((converters) => {
+            populateList(converters, "success");
+        });
     }
     catch (e) {
         // Can do without an error message if the 'Conversion options' box remains empty;
@@ -215,25 +214,6 @@ function hideOffer() {}
     //    })
 //}
 
-// $$$$$$$$$$ TODO: write separate function for debugging $$$$$$$$$$$
-
-// Queries the PostgreSQL database
-function queryDatabase(query, sel, callback) {
-    var jqXHR = $.post(`/query/`, {
-            'token': token,
-            'data': query
-        })
-        .done(response => {
-            callback(response, sel);
-        })
-        .fail(function(e) {
-            // For debugging
-            console.log("Error writing to log");
-            console.log(e.status);
-            console.log(e.responseText);
-        })
-}
-
 // Updates the PostgreSQL database
 function updateDatabase(query) {
     var jqXHR = $.post(`/query/`, {
@@ -304,27 +284,17 @@ function emptySuccess() {
 }
 
 // Populates a selection list
-function populateList(response, sel) {
-    var el = $("#" + sel),
-        successText = "",
-        format = '',
-        rows = [];
+function populateList(entries, sel) {
 
-    for (var i = 1; i < response.length; i++) {
-        if (response[i] == '£' && response[i - 1] != '$') {
-            format += ': ';
-        }
-        else if (response[i] == '$') {
-            rows.push(format);
-            format = '';
-        }
-        else if (i == response.length - 1) {
-            format += response[i];
-            rows.push(format);
-        }
-        else if (response[i] != '£') {
-            format += response[i];
-        }
+    let rows = [];
+
+    if ((sel === "from") || (sel === "to") || (sel === "format")) {
+
+        rows = entries.map(entry => `${entry.extension}: ${entry.note}`);
+
+    } else if (sel === "success") {
+
+        rows = entries.map(entry => `${entry.name}: ${entry.degree_of_success}`);
     }
 
     rows.sort(function(a, b) {

@@ -5,21 +5,22 @@
   This is the JavaScript which makes the Format and Converter Selection gui work.
 */
 
+import { getInputFormats, getOutputFormats, getOutputFormatsForInputFormat,
+    getInputFormatsForOutputFormat, getConverters, getConverterByName } from "./data.js";
+
 var fromList = new Array(),
     toList = new Array();
 
 $(document).ready(function() {
     // Populates the "Convert from" selection list
-    var query = `SELECT DISTINCT Form.Extension, Form.Note FROM Formats Form, Converts_to Conv
-                 WHERE Form.ID = Conv.in_ID ORDER BY Form.Extension, Form.Note ASC`
-
-    queryDatabase(query, "from", populateList);
+    getInputFormats().then((formats) => {
+        populateList(formats, "from");
+    });
 
     // Populates the "Convert to" selection list
-    var query = `SELECT DISTINCT Form.Extension, Form.Note FROM Formats Form, Converts_to Conv
-                 WHERE Form.ID = Conv.out_ID ORDER BY Form.Extension, Form.Note ASC`
-
-    queryDatabase(query, "to", populateList);
+    getOutputFormats().then((formats) => {
+        populateList(formats, "to");
+    });
 
     const font = sessionStorage.getItem("font"),
           size = sessionStorage.getItem("size"),
@@ -64,7 +65,7 @@ $(document).ready(function() {
 // to/from the selected format are removed); and removes converter details and text input (if showing)
 function populateConversionSuccess(event) {
     const selectedText = getSelectedText(this);
-    var filterQuery = ``;
+    let filterQuery = ``;
 
     if (this.id == "fromList") {
         $("#searchFrom").val(selectedText);
@@ -99,28 +100,19 @@ function populateConversionSuccess(event) {
               out_note = out_str_array[1];
 
         if (this.id == "fromList") { // && !isOption(out_str, "toList")) {
-            filterQuery = `SELECT DISTINCT Extension, Note FROM Formats WHERE ID IN (SELECT out_id FROM Converts_to
-                           WHERE in_id = (SELECT ID FROM Formats WHERE Extension = '${in_ext}' AND Note = '${in_note}'))
-                           ORDER BY Extension, Note ASC`
             toList = [];
             $("#toList").children().remove();
-            queryDatabase(filterQuery, "to", populateList);
+            getOutputFormatsForInputFormat(in_ext, in_note).then(formats => populateList(formats, "to"));
         }
         else if (this.id == "toList") { // && !isOption(in_str, "fromList")) {
-            filterQuery = `SELECT DISTINCT Extension, Note FROM Formats WHERE ID IN (SELECT in_id FROM Converts_to
-                           WHERE out_id = (SELECT ID FROM Formats WHERE Extension = '${out_ext}' AND Note = '${out_note}'))
-                           ORDER BY Extension, Note ASC`
             fromList = [];
             $("#fromList").children().remove();
-            queryDatabase(filterQuery, "from", populateList);
+            getInputFormatsForOutputFormat(out_ext, out_note).then(formats => populateList(formats, "from"));
         }
 
-        const query = `SELECT C.Name, C_to.Degree_of_success FROM Converters C, Converts_to C_to
-                       WHERE C_to.in_ID=(SELECT ID FROM Formats WHERE Extension = '${in_ext}' AND Note = '${in_note}')
-                       AND C_to.out_ID=(SELECT ID FROM Formats WHERE Extension = '${out_ext}' AND Note = '${out_note}')
-                       AND C.ID=C_to.Converters_ID ORDER BY C.Name ASC`
-
-        queryDatabase(query, "success", populateList);
+        getConverters(in_ext, in_note, out_ext, out_note).then((converters) => {
+            populateList(converters, "success");
+        });
     }
     catch (e) {
         // Can do without an error message if the 'Conversion options' box remains empty;
@@ -188,25 +180,6 @@ function hideOffer() {
     $("#offer").css({display: "none"});
 }
 
-// $$$$$$$$$$ write separate function for debugging $$$$$$$$$$$
-
-// Queries the PostgreSQL database
-function queryDatabase(query, sel, callback) {
-    var jqXHR = $.post(`/query/`, {
-            'token': token,
-            'data': query
-        })
-        .done(response => {
-            callback(response, sel);
-        })
-        .fail(function(e) {
-            // For debugging
-            console.log("Error writing to log");
-            console.log(e.status);
-            console.log(e.responseText);
-        })
-}
-
 // Displays converter details given its name
 function showConverterDetails(event) {
     var selectedText = getSelectedText(this);
@@ -217,70 +190,39 @@ function showConverterDetails(event) {
         const str_array = selectedText.split(": ", 1),
               conv_name = str_array[0];                                     // e.g. "Open Babel"
 
-        const query = `SELECT * FROM Converters WHERE Name='${conv_name}'`;
-
-        queryDatabase(query, this, displayConverterDetails);
-    }
-}
-
-// Displays converter details and offers an Open Babel conversion if available 
-function displayConverterDetails(response, el) {
-    var count = 0,
-        str = '';
-
-    response += '£';
-
-    try {
-        for (var i = 1; i < response.length; i++) {
-            if (response[i] == '£') {
-                if (count == 1) {
-                    $("#name").html(str);
-                }
-                else if (count == 2) {
-                    $("#description").html(str);
-                }
-                else if (count == 3) {
-                    $("#url").html(str);
-                    break;
-                }
-
-                count += 1;
-                str = '';
+        getConverterByName(conv_name).then((converter) => {
+            if (converter) {
+                $("#name").html(converter.name);
+                $("#description").html(converter.description);
+                $("#url").html(converter.url);
+                $("#visit").attr("href", converter.url);
+                $("#converter").css({display: "block"});
+                $("h3").css({display: "block"});
             }
-            else {
-                str += response[i];
-            }
+        });
+
+        const el = this;
+
+        // Search textarea for "Open Babel"     $$$$$ textarea? $$$$$
+        const text = el.value;
+
+        el.selectionStart = 0;
+        el.selectionEnd = 0;
+
+        while (el.selectionStart < text.length) {
+            const selectedText = getSelectedText(el),
+                name = selectedText.split(": ")[0];
+
+            showOffer();
+
+            el.selectionEnd += 1;
+            el.selectionStart = el.selectionEnd;
         }
 
-        var visit = $("#visit");
-        visit.attr("href", str);
-
-        $("#converter").css({display: "block"});
-        $("h3").css({display: "block"});
+        el.selectionStart = -1;
+        el.selectionEnd = -1;
+        el.blur();
     }
-    catch (e) {
-        // No need for error message if no options shown
-    }
-
-    // Search textarea for "Open Babel"     $$$$$ textarea? $$$$$
-    const text = el.value;
-
-    el.selectionStart = 0;
-    el.selectionEnd = 0;
-
-    while (el.selectionStart < text.length) {
-        const selectedText = getSelectedText(el),
-              name = selectedText.split(": ")[0];
-
-        showOffer();
-
-        el.selectionEnd += 1;
-        el.selectionStart = el.selectionEnd;
-    }
-
-    el.selectionStart = -1;
-    el.selectionEnd = -1;
-    el.blur();
 }
 
 // Only options having user filter input as a substring (case insensitive) are included in the selection list $$$$$$$$$$ REVISE $$$$$$$$$$
@@ -291,20 +233,14 @@ function filterOptions(event) {
         text = "";
 
     if (this.id == "searchFrom") {
-        var query = `SELECT DISTINCT Form.Extension, Form.Note FROM Formats Form, Converts_to Conv
-                     WHERE Form.ID = Conv.out_ID ORDER BY Form.Extension, Form.Note ASC`
         toList = [];
         $("#toList").children().remove();
-        queryDatabase(query, "to", populateList);
         box = $("#fromList");
         list = fromList;
     }
     else {
-        var query = `SELECT DISTINCT Form.Extension, Form.Note FROM Formats Form, Converts_to Conv
-                     WHERE Form.ID = Conv.in_ID ORDER BY Form.Extension, Form.Note ASC`
         fromList = [];
         $("#fromList").children().remove();
-        queryDatabase(query, "from", populateList);
         box = $("#toList");
         list = toList;
     }
@@ -394,30 +330,19 @@ function goToConversionPage(event) {
 }
 
 // Populates a selection list
-function populateList(response, sel) {
+function populateList(entries, sel) {
     const in_str = $("#searchFrom").val(), // e.g. "ins: ShelX"
           out_str = $("#searchTo").val();
 
-    var el = $("#" + sel),
-        successText = "",
-        format = '',
-        rows = [];
+    let rows;
 
-    for (var i = 1; i < response.length; i++) {
-        if (response[i] == '£' && response[i - 1] != '$') {
-            format += ': ';
-        }
-        else if (response[i] == '$') {
-            rows.push(format);
-            format = '';
-        }
-        else if (i == response.length - 1) {
-            format += response[i];
-            rows.push(format);
-        }
-        else if (response[i] != '£') {
-            format += response[i];
-        }
+    if ((sel === "from") || (sel === "to")) {
+
+        rows = entries.map(entry => `${entry.extension}: ${entry.note}`);
+
+    } else if (sel === "success") {
+
+        rows = entries.map(entry => `${entry.name}: ${entry.degree_of_success}`);
     }
 
     rows.sort(function(a, b) {
@@ -465,18 +390,12 @@ function resetAll() {
     $("#fromList").children().remove();
     $("#toList").children().remove();
 
-    // Populates the "Convert from" selection list
-    var query = `SELECT DISTINCT Form.Extension, Form.Note FROM Formats Form, Converts_to Conv
-                 WHERE Form.ID = Conv.in_ID ORDER BY Form.Extension, Form.Note ASC`
-
-    queryDatabase(query, "from", populateList);
-
-    // Populates the "Convert to" selection list
-    var query = `SELECT DISTINCT Form.Extension, Form.Note FROM Formats Form, Converts_to Conv
-                 WHERE Form.ID = Conv.out_ID ORDER BY Form.Extension, Form.Note ASC`
-
-    queryDatabase(query, "to", populateList);
-
     $("#searchFrom").val("");
     $("#searchTo").val("");
+
+    // Populates the "Convert from" selection list
+    getInputFormats().then(formats => populateList(formats, "from"));
+
+    // Populates the "Convert to" selection list
+    getOutputFormats().then(formats => populateList(formats, "to"));
 }
