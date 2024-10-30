@@ -469,6 +469,15 @@ body {
   margin          : 0;
 }
 
+*:has(> .max-width-box) {
+  display        : flex;
+  justify-content: center;
+}
+
+.max-width-box {
+  max-width: 1320px;
+}
+
 .lm-only {
   display: var(--lm-display);
 }
