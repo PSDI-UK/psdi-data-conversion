@@ -44,31 +44,6 @@ h3 {
   font-family: 'Lato'
 }
 
-/* Padding and scaling for PSDI logo. */
-img {
-  padding  : 8px;
-  max-width: 62%;
-  height   : auto;
-}
-
-/* Relative maximum width reduced at 900px, since now relative to full screen width rather than half. */
-@media (max-width: 900px) {
-  img {
-    max-width: 30.75%
-  }
-}
-
-/* Padding for PSDI logo and sub-heading reduced at 430px. */
-@media (max-width: 430px) {
-  img {
-    padding: 0
-  }
-
-  h2 {
-    padding-left: 10px
-  }
-}
-
 /* Padding for sub-heading gradually reduced to 20px at 200px screen width. */
 @media (max-width: 2400px) and (min-width: 200px) {
   h2 {
@@ -96,30 +71,6 @@ label {
   color      : #011e41;
   font-family: 'Lato';
   font-size  : 14px
-}
-
-/* Unvisited link colour. */
-a:link {
-  font-family : 'Lato';
-  color       : #0000ee;
-  padding-left: 20px
-}
-
-/* Visited link colour. */
-a:visited {
-  color: #551a8b
-}
-
-/* No underline when hovering over link. */
-a:hover {
-  text-decoration: none
-}
-
-/* Font size reduced at 430px. */
-@media (max-width: 430px) {
-  a {
-    font-size: 14px
-  }
 }
 
 /* Padding for link to converter website. */
@@ -321,12 +272,12 @@ select {
 }
 
 :root {
-  /* PSDI Common Style Definition            */
-  /* ----------------------------            */
-  /*                   */
-  /* This file defines the common PSDI style scheme. The variable    */
+  /* PSDI Common Style Definition                                            */
+  /* ----------------------------                                            */
+  /*                                                                         */
+  /* This file defines the common PSDI style scheme. The variable            */
   /* definitions here can be modified to alter this scheme, and they will be */
-  /* included and used appropriately by the various builders.    */
+  /* included and used appropriately by the various builders.                */
 
 
   /* Font */
@@ -501,9 +452,21 @@ select {
   --dm-display: inherit;
 }
 
+* {
+  box-sizing: border-box;
+}
+
 body {
-  color      : var(--ifm-font-color-base);
-  font-family: var(--ifm-font-family-base);
+  min-height      : 100vh;
+  font-family     : var(--ifm-font-family-base);
+  font-size       : var(--ifm-font-size-base);
+  background-color: var(--ifm-background-color);
+  color           : var(--ifm-font-color-base);
+  display         : flex;
+  flex-direction  : column;
+  justify-content : space-between;
+  padding         : 0;
+  margin          : 0;
 }
 
 .lm-only {
@@ -549,6 +512,19 @@ h5 {
 
 h6 {
   font-size: 1.25rem;
+}
+
+p {
+  margin: 0 0 1.25rem 0;
+}
+
+.text--center {
+  text-align: center;
+}
+
+ul {
+  list-style: none;
+  padding   : 0;
 }
 
 .hero,
@@ -669,14 +645,6 @@ a svg {
   flex-direction: column;
   align-items   : stretch;
   text-align    : left;
-}
-
-.footer .container-fluid {
-  padding: 0;
-}
-
-.footer .footer__bottom {
-  margin: 0;
 }
 
 .footer__links {
