@@ -5,225 +5,802 @@
 
 /* Main heading, in a special very large dark blue font. */
 h1 {
-    color: #011e41;
-    font-size: 4.8vw;
-    font-family: 'Open Sans Condensed';
-    margin: 2px 0 0 0 /* top right bottom left */
+  color      : #011e41;
+  font-size  : 4.8vw;
+  font-family: 'Open Sans Condensed';
+  margin     : 2px 0 0 0
+    /* top right bottom left */
 }
 
 /* Relative size of header font increased for smaller screens, bearing in mind that normal text size does not change. */
 @media (max-width: 430px) {
-    h1 { font-size: 5.8vw }
+  h1 {
+    font-size: 5.8vw
+  }
 }
 
 /* Sub-heading, in a larger than normal light grey sans serif font. */
 h2 {
-    color: #e5e1e6;
-    background-color: #011e41;
-    font-size: 4vw;
-    font-family: 'Open Sans Condensed';
-    padding: 50px;
-    margin: -18px 0 0 0 /* top right bottom left */
+  color           : #e5e1e6;
+  background-color: #011e41;
+  font-size       : 4vw;
+  font-family     : 'Open Sans Condensed';
+  padding         : 50px;
+  margin          : -18px 0 0 0
+    /* top right bottom left */
 }
 
 /* Relative size of sub-header font increased for smaller screens, bearing in mind that normal text size does not change. */
 @media (max-width: 430px) {
-    h2 { font-size: 4.8vw }
+  h2 {
+    font-size: 4.8vw
+  }
 }
 
 /* Sub-heading, in a larger than normal dark blue sans serif font. */
 h3 {
-    color: #011e41;
-    font-size: 18px;
-    font-family: 'Lato'
+  color      : #011e41;
+  font-size  : 18px;
+  font-family: 'Lato'
 }
 
 /* Padding and scaling for PSDI logo. */
 img {
-    padding: 8px;
-    max-width: 62%;
-    height: auto;
+  padding  : 8px;
+  max-width: 62%;
+  height   : auto;
 }
 
 /* Relative maximum width reduced at 900px, since now relative to full screen width rather than half. */
 @media (max-width: 900px) {
-    img { max-width: 30.75% }
+  img {
+    max-width: 30.75%
+  }
 }
 
 /* Padding for PSDI logo and sub-heading reduced at 430px. */
 @media (max-width: 430px) {
-    img { padding: 0 }
-    h2 { padding-left: 10px }
+  img {
+    padding: 0
+  }
+
+  h2 {
+    padding-left: 10px
+  }
 }
 
 /* Padding for sub-heading gradually reduced to 20px at 200px screen width. */
 @media (max-width: 2400px) and (min-width: 200px) {
-    h2 { padding-top: calc(25px + (100vw - 700px) * (25 - 100) / (200 - 2400));
-         padding-bottom: calc(25px + (100vw - 700px) * (25 - 100) / (200 - 2400)) }
+  h2 {
+    padding-top   : calc(25px + (100vw - 700px) * (25 - 100) / (200 - 2400));
+    padding-bottom: calc(25px + (100vw - 700px) * (25 - 100) / (200 - 2400))
+  }
 }
 
 /* White background, with content well away from the edge. */
 form {
-    background-color: white;
-    padding: 50px;
-    padding-top: 20px
+  background-color: white;
+  padding         : 50px;
+  padding-top     : 20px
 }
 
 /* Content moved closer to the edge for smaller screens. */
 @media (max-width: 430px) {
-    form { padding: 10px }
+  form {
+    padding: 10px
+  }
 }
 
 /* Labels for text boxes/areas. */
 label {
-    color: #011e41;
-    font-family: 'Lato';
-    font-size: 14px
+  color      : #011e41;
+  font-family: 'Lato';
+  font-size  : 14px
 }
 
 /* Unvisited link colour. */
 a:link {
-    font-family: 'Lato';
-    color: #0000ee;
-    padding-left: 20px
+  font-family : 'Lato';
+  color       : #0000ee;
+  padding-left: 20px
 }
 
 /* Visited link colour. */
-a:visited { color: #551a8b }
+a:visited {
+  color: #551a8b
+}
 
 /* No underline when hovering over link. */
-a:hover { text-decoration: none }
+a:hover {
+  text-decoration: none
+}
 
 /* Font size reduced at 430px. */
 @media (max-width: 430px) {
-    a { font-size: 14px }
+  a {
+    font-size: 14px
+  }
 }
 
 /* Padding for link to converter website. */
-#visit { padding-left: 2px }
+#visit {
+  padding-left: 2px
+}
 
 /* Dark blue text and 310px width select boxes. */
 select {
-    color: #011e41;
-    font-size: 14px;
-    font-family: 'Lato';
-    width: 310px
+  color      : #011e41;
+  font-size  : 14px;
+  font-family: 'Lato';
+  width      : 310px
 }
 
 /* 850px width for some select boxes for accessibility purposes. */
-#fromList, #toList, #formatList, #success, #inFlags, #outFlags, #outArgFlags { width: 850px }
+#fromList,
+#toList,
+#formatList,
+#success,
+#inFlags,
+#outFlags,
+#outArgFlags {
+  width: 850px
+}
 
 /* 420px width for the report type select box. */
-#reason { width: 420px }
+#reason {
+  width: 420px
+}
 
 /* Width of select box begins to reduce at 530px. */
 @media (max-width: 530px) {
-    #reason { width: 100% }
+  #reason {
+    width: 100%
+  }
 }
 
 /* Hidden dummy elements to aid layout. */
-#dummyText { visibility: hidden }
+#dummyText {
+  visibility: hidden
+}
 
 /* Converter details, user input and file conversion initially not displayed. */
-#converter, #offer { display: none }
+#converter,
+#offer {
+  display: none
+}
 
 /* Heading for Conversion page. */
-#heading { display: block }
+#heading {
+  display: block
+}
 
 /* Dark blue background and light grey text for buttons. */
-#uploadButton, #resetButton, #resetButton2, #yesButton, #reportButton, #applyButton {
-    background-color: #011e41;
-    color: #e5e1e6;
-    font-family: 'Lato';
-    font-size: 14px
+#uploadButton,
+#resetButton,
+#resetButton2,
+#yesButton,
+#reportButton,
+#applyButton {
+  background-color: #011e41;
+  color           : #e5e1e6;
+  font-family     : 'Lato';
+  font-size       : 14px
 }
 
 /* Upload button (Convert) initially greyed out.*/
 #uploadButton {
-    background-color: #e5e1e6;
-    color: gray
+  background-color: #e5e1e6;
+  color           : gray
 }
 
-/* Dark blue text for text input. */ /* Was 303px */
-#in, #searchTo, #searchFrom, #missingFormat, #searchFormats {
-    color: #011e41;
-    font-family: 'Lato';
-    font-size: 14px;
-    width: 843px
+/* Dark blue text for text input. */
+/* Was 303px */
+#in,
+#searchTo,
+#searchFrom,
+#missingFormat,
+#searchFormats {
+  color      : #011e41;
+  font-family: 'Lato';
+  font-size  : 14px;
+  width      : 843px
 }
 
 /* Width of select boxes begins to reduce at 950px. */
 @media (max-width: 950px) {
-    #fromList, #toList, #success, #inFlags, #outFlags, #formatList { width: 100% }
+
+  #fromList,
+  #toList,
+  #success,
+  #inFlags,
+  #outFlags,
+  #formatList {
+    width: 100%
+  }
 }
 
 /* Width of text boxes begins to reduce at 950px. */
 @media (max-width: 950px) {
-    #searchFrom, #searchTo, #searchFormats, #in, #missingFormat { width: calc(100% - 7px) }
+
+  #searchFrom,
+  #searchTo,
+  #searchFormats,
+  #in,
+  #missingFormat {
+    width: calc(100% - 7px)
+  }
 }
 
 /* Format boxes, reset button, text input box and report button initially not displayed on the 'Report' page */
-#formats, #in_out_formats, #userInput, #missing { display: none }
+#formats,
+#in_out_formats,
+#userInput,
+#missing {
+  display: none
+}
 
 /* Small vertical space. */
-.smallGap { padding: 2px }
+.smallGap {
+  padding: 2px
+}
 
 /* Medium vertical space. */
-.medGap { padding: 20px }
+.medGap {
+  padding: 20px
+}
 
 /* Large vertical space. */
-.largeGap { padding: 140px }
+.largeGap {
+  padding: 140px
+}
 
 /* White sans serif font. */
 .normalText {
-    color: #011e41;
-    font-family: 'Lato';
-    font-size: 14px
+  color      : #011e41;
+  font-family: 'Lato';
+  font-size  : 14px
 }
 
 /* Grid for textarea label/elements. */
 .grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr 
+  display              : grid;
+  grid-template-columns: 1fr 1fr 1fr
 }
 
 /* Textarea label/elements are stacked at <= 1070px. */
 @media (max-width: 1070px) {
-  .grid { grid-template-columns: auto }
-  #dummyText { display: none }
+  .grid {
+    grid-template-columns: auto
+  }
+
+  #dummyText {
+    display: none
+  }
 }
 
 /* Initially hidden grid for select label/elements. */
 .selGrid {
-    display: grid;
-    grid-template-columns: 1fr 1fr
+  display              : grid;
+  grid-template-columns: 1fr 1fr
 }
 
 /* Select label/elements are stacked at <= 800px. */
 @media (max-width: 800px) {
-    .selGrid { grid-template-columns: auto }
+  .selGrid {
+    grid-template-columns: auto
+  }
 }
 
 /* Grid for logo and navigation. */
 .navGrid {
-    display: grid;
-    grid-template-columns: 1fr 2fr;
-    margin: 0 60px 0 60px /* top right bottom left */
+  display              : grid;
+  grid-template-columns: 1fr 2fr;
+  margin               : 0 60px 0 60px
+    /* top right bottom left */
 }
 
 /* Logo and navigation are stacked at <= 900px. */
 @media (max-width: 900px) {
-    .navGrid { grid-template-columns: auto }
+  .navGrid {
+    grid-template-columns: auto
+  }
 }
 
 /* Logo/navigation grid margins reduced at 430px */
 @media (max-width: 430px) {
-    .navGrid { margin: 0 18px 0 18px }
+  .navGrid {
+    margin: 0 18px 0 18px
+  }
 }
 
 /* Navigation vertically aligned in the middle. */
 .middle {
-    align-self: center;
-    text-align: right;
-    padding: 20px
+  align-self: center;
+  text-align: right;
+  padding   : 20px
+}
+
+:root {
+  /* PSDI Common Style Definition            */
+  /* ----------------------------            */
+  /*                   */
+  /* This file defines the common PSDI style scheme. The variable    */
+  /* definitions here can be modified to alter this scheme, and they will be */
+  /* included and used appropriately by the various builders.    */
+
+
+  /* Font */
+  --ifm-font-size-base     : 1rem;
+  --ifm-line-height-base   : 1.65;
+  --ifm-font-family-base   : Lato, Helvetica, Arial, Lucida, sans-serif;
+  --ifm-heading-font-family: Oswald, Helvetica, Arial, Lucida, sans-serif;
+
+  /* Background and text colors */
+
+  --psdi-dark-text-color-body    : #000000;
+  --psdi-dark-text-color-heading : #041E42;
+  --psdi-light-text-color-body   : #ffffff;
+  --psdi-light-text-color-heading: #ffffff;
+
+  /* Default color (light mode) */
+  --psdi-text-color-default-body   : var(--psdi-dark-text-color-body);
+  --psdi-text-color-default-heading: var(--psdi-dark-text-color-heading);
+  --psdi-bg-color-default          : #ffffff;
+
+  /* Default color (dark mode) */
+  --psdi-dm-text-color-default-body   : var(--psdi-light-text-color-body);
+  --psdi-dm-text-color-default-heading: var(--psdi-light-text-color-heading);
+  --psdi-dm-bg-color-default          : #000000;
+
+  /* Primary color (light mode) - used for Hero panel and footer */
+  --psdi-bg-color-primary         : #041e42;
+  --psdi-bg-color-primary-dark    : #041b3b;
+  --psdi-bg-color-primary-darker  : #031938;
+  --psdi-bg-color-primary-darkest : #03152e;
+  --psdi-bg-color-primary-light   : #042149;
+  --psdi-bg-color-primary-lighter : #05224c;
+  --psdi-bg-color-primary-lightest: #052756;
+
+  /* Primary color (dark mode) */
+  --psdi-dm-bg-color-primary         : #96caf4;
+  --psdi-dm-bg-color-primary-dark    : #72b8f0;
+  --psdi-dm-bg-color-primary-darker  : #61afee;
+  --psdi-dm-bg-color-primary-darkest : #2b94e9;
+  --psdi-dm-bg-color-primary-light   : #badcf8;
+  --psdi-dm-bg-color-primary-lighter : #cbe5fa;
+  --psdi-dm-bg-color-primary-lightest: #ffffff;
+
+  /* Secondary color (light mode) */
+  --psdi-text-color-secondary-body   : var(--psdi-dark-text-color-body);
+  --psdi-text-color-secondary-heading: var(--psdi-dark-text-color-heading);
+  --psdi-bg-color-secondary          : #e5e1e6;
+  --psdi-bg-color-secondary-dark     : #cfc8d1;
+  --psdi-bg-color-secondary-darker   : #c5bcc7;
+  --psdi-bg-color-secondary-darkest  : #a497a8;
+  --psdi-bg-color-secondary-light    : #f0edf0;
+  --psdi-bg-color-secondary-lighter  : #fbfafb;
+  --psdi-bg-color-secondary-lightest : #ffffff;
+
+  /* Secondary color (dark mode) */
+  --psdi-dm-text-color-secondary-body   : var(--psdi-dark-text-color-body);
+  --psdi-dm-text-color-secondary-heading: var(--psdi-dark-text-color-heading);
+  --psdi-dm-bg-color-secondary          : #bbbbbb;
+  --psdi-dm-bg-color-secondary-dark     : #a8a8a8;
+  --psdi-dm-bg-color-secondary-darker   : #9f9f9f;
+  --psdi-dm-bg-color-secondary-darkest  : #838383;
+  --psdi-dm-bg-color-secondary-light    : #cecece;
+  --psdi-dm-bg-color-secondary-lighter  : #d7d7d7;
+  --psdi-dm-bg-color-secondary-lightest : #f3f3f3;
+
+  /* Success color */
+  --ifm-color-success         : #5aa2ae;
+  --ifm-color-success-dark    : #4e949f;
+  --ifm-color-success-darker  : #4a8c97;
+  --ifm-color-success-darkest : #3d737c;
+  --ifm-color-success-light   : #6cacb7;
+  --ifm-color-success-lighter : #75b1bb;
+  --ifm-color-success-lightest: #8fc0c8;
+
+  /* Info color */
+  --ifm-color-info         : #3d7cc9;
+  --ifm-color-info-dark    : #336fb8;
+  --ifm-color-info-darker  : #3069ae;
+  --ifm-color-info-darkest : #28578f;
+  --ifm-color-info-light   : #518acf;
+  --ifm-color-info-lighter : #5c91d2;
+  --ifm-color-info-lightest: #7aa6da;
+
+  /* Warning color */
+  --ifm-color-warning         : #ff9e18;
+  --ifm-color-warning-dark    : #fb9200;
+  --ifm-color-warning-darker  : #ed8a00;
+  --ifm-color-warning-darkest : #c37100;
+  --ifm-color-warning-light   : #ffaa34;
+  --ifm-color-warning-lighter : #ffb042;
+  --ifm-color-warning-lightest: #ffc16c;
+
+  /* Danger color */
+  --ifm-color-danger         : #993366;
+  --ifm-color-danger-dark    : #8a2e5c;
+  --ifm-color-danger-darker  : #822b57;
+  --ifm-color-danger-darkest : #6b2447;
+  --ifm-color-danger-light   : #a83870;
+  --ifm-color-danger-lighter : #b03b75;
+  --ifm-color-danger-lightest: #c24785;
+
+  /* Footer */
+  --ifm-footer-background-color: var(--ifm-color-primary);
+  --ifn-footer-title-color     : var(--ifm-font-color-base-inverse);
+  --ifm-footer-color           : var(--ifm-font-color-base-inverse);
+  --ifm-footer-link-color      : var(--ifm-font-color-base-inverse);
+  --ifm-footer-link-hover-color: var(--ifm-font-color-base-inverse);
+
+  /* Button color */
+  --ifm-button-background-color     : var(--psdi-bg-color-secondary);
+  --ifm-button-background-color-dark: var(--psdi-bg-color-secondary-dark);
+  --ifm-button-color                : var(--psdi-dark-text-color-heading);
+
+  /* Link styling */
+  --ifm-link-color             : inherit;
+  --ifm-link-hover-color       : inherit;
+  --ifm-navbar-link-hover-color: inherit;
+
+  /* Set specific colors to used based on light/dark-mode */
+  /* Define light mode here first, as default */
+  --ifm-background-color: var(--psdi-bg-color-default);
+
+  --ifm-color-primary         : var(--psdi-bg-color-primary);
+  --ifm-color-primary-dark    : var(--psdi-bg-color-primary-dark);
+  --ifm-color-primary-darker  : var(--psdi-bg-color-primary-darker);
+  --ifm-color-primary-darkest : var(--psdi-bg-color-primary-darkest);
+  --ifm-color-primary-light   : var(--psdi-bg-color-primary-light);
+  --ifm-color-primary-lighter : var(--psdi-bg-color-primary-lighter);
+  --ifm-color-primary-lightest: var(--psdi-bg-color-primary-lightest);
+
+  --ifm-color-secondary           : var(--psdi-bg-color-secondary);
+  --ifm-color-secondary-dark      : var(--psdi-bg-color-secondary-dark);
+  --ifm-background-color-secondary: var(--psdi-bg-color-secondary);
+
+  --ifm-font-color-base        : var(--psdi-dark-text-color-body);
+  --ifm-hero-text-color        : var(--psdi-light-text-color-body);
+  --ifm-heading-color          : var(--psdi-dark-text-color-heading);
+  --psdi-heading-color-inverse : var(--psdi-light-text-color-heading);
+  --ifm-font-color-secondary   : var(--psdi-text-color-secondary-body);
+  --ifm-heading-color-secondary: var(--psdi-dark-text-color-heading);
+
+  --lm-display: inherit;
+  --dm-display: none;
+
+}
+
+[data-theme='dark'] {
+
+  /* Set dark mode colors here */
+  --ifm-background-color: var(--psdi-dm-bg-color-default);
+
+  --ifm-color-primary         : var(--psdi-dm-bg-color-primary);
+  --ifm-color-primary-dark    : var(--psdi-dm-bg-color-primary-dark);
+  --ifm-color-primary-darker  : var(--psdi-dm-bg-color-primary-darker);
+  --ifm-color-primary-darkest : var(--psdi-dm-bg-color-primary-darkest);
+  --ifm-color-primary-light   : var(--psdi-dm-bg-color-primary-light);
+  --ifm-color-primary-lighter : var(--psdi-dm-bg-color-primary-lighter);
+  --ifm-color-primary-lightest: var(--psdi-dm-bg-color-primary-lightest);
+
+  --ifm-color-secondary           : var(--psdi-dm-bg-color-secondary);
+  --ifm-color-secondary-dark      : var(--psdi-dm-bg-color-secondary-dark);
+  --ifm-background-color-secondary: var(--psdi-dm-bg-color-secondary);
+
+  --ifm-font-color-base        : var(--psdi-light-text-color-body);
+  --ifm-hero-text-color        : var(--psdi-dark-text-color-body);
+  --ifm-heading-color          : var(--psdi-light-text-color-heading);
+  --psdi-heading-color-inverse : var(--psdi-dark-text-color-heading);
+  --ifm-font-color-secondary   : var(--psdi-dm-text-color-secondary-body);
+  --ifm-heading-color-secondary: var(--psdi-dark-text-color-heading);
+
+  --lm-display: none;
+  --dm-display: inherit;
+}
+
+body {
+  color      : var(--ifm-font-color-base);
+  font-family: var(--ifm-font-family-base);
+}
+
+.lm-only {
+  display: var(--lm-display);
+}
+
+.dm-only {
+  display: var(--dm-display);
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  color      : var(--ifm-heading-color);
+  font-family: var(--ifm-heading-font-family);
+  font-weight: bold;
+  line-height: 1.25;
+  margin     : 0 0 1rem 0;
+}
+
+h1 {
+  font-size: 3rem;
+}
+
+h2 {
+  font-size: 2.5rem;
+}
+
+h3 {
+  font-size: 2rem;
+}
+
+h4 {
+  font-size: 1.75rem;
+}
+
+h5 {
+  font-size: 1.5rem;
+}
+
+h6 {
+  font-size: 1.25rem;
+}
+
+.hero,
+.footer {
+  color: var(--ifm-hero-text-color);
+}
+
+.hero h1,
+.hero h2,
+.hero h3,
+.hero h4,
+.hero h5,
+.hero h6,
+.footer h1,
+.footer h2,
+.footer h3,
+.footer h4,
+.footer h5,
+.footer h6 {
+  color: var(--psdi-heading-color-inverse);
+}
+
+.secondary {
+  color: var(--ifm-font-color-secondary);
+}
+
+.secondary h1,
+.secondary h2,
+.secondary h3,
+.secondary h4,
+.secondary h5,
+.secondary h6 {
+  color: var(--ifm-heading-color-secondary);
+}
+
+/* Link styling - to match main page, we make links bold and make underline
+   disappear when hovered over, and don't show the extra icon. */
+a {
+  color          : inherit;
+  font-weight    : bold;
+  text-decoration: underline;
+}
+
+.content_knG7 a:hover,
+a:hover {
+  text-decoration: none;
+}
+
+/* For links which contain longer text content, don't underline any text in paragraphs,
+   but do underline (and remove on hover) in the headings */
+a:has(>h1),
+a:has(>h2),
+a:has(>h3),
+a:has(>h4),
+a:has(>h5),
+a:has(>h6) {
+  text-decoration: none;
+}
+
+a h1,
+a h2,
+a h3,
+a h4,
+a h5,
+a h6 {
+  text-decoration: underline;
+}
+
+a:hover h1,
+a:hover h2,
+a:hover h3,
+a:hover h4,
+a:hover h5,
+a:hover h6 {
+  text-decoration: none;
+}
+
+/* Don't display the icons Docusaurus adds to links */
+a svg {
+  display: none;
+}
+
+.navbar {
+  padding: 1rem 0;
+}
+
+.navbar__brand {
+  display       : flex;
+  flex-direction: row;
+  align-items   : center;
+  padding-right : 0 0.75rem;
+}
+
+.navbar__logo img {
+  width: 100%;
+}
+
+#__docusaurus .navbar__logo img {
+  height: 2rem;
+}
+
+.navbar__title {
+  display: none;
+}
+
+#__docusaurus .navbar__title {
+  display: unset;
+}
+
+.footer {
+  background-color: var(--ifm-color-primary);
+  color           : var(--ifm-hero-text-color);
+  padding         : 0.5rem 2rem 0.5rem 2rem;
+}
+
+.footer .max-width-box {
+  display       : flex;
+  flex-direction: column;
+  align-items   : stretch;
+  text-align    : left;
+}
+
+.footer .container-fluid {
+  padding: 0;
+}
+
+.footer .footer__bottom {
+  margin: 0;
+}
+
+.footer__links {
+  display        : flex;
+  flex-direction : row;
+  justify-content: center;
+  align-items    : flex-start;
+  margin         : 0;
+}
+
+#footer__links__left {
+  min-width            : 20rem;
+  flex                 : 1 1 60%;
+  display              : grid;
+  grid-template-columns: 40% 60%;
+  grid-template-rows   : 3rem 1rem auto 1rem;
+  margin-right         : 0;
+  padding-right        : 0;
+}
+
+#footer__links__right {
+  min-width            : 20rem;
+  flex                 : 1 1 40%;
+  display              : grid;
+  grid-template-columns: 50% 50%;
+  grid-template-rows   : 3rem 1rem auto 1rem;
+  margin-left          : 0;
+  padding-left         : 0;
+}
+
+.footer__title,
+.footer__col,
+.footer__bottom {
+  margin: 0 1rem;
+}
+
+.footer__title {
+  color          : var(--psdi-heading-color-inverse);
+  font-weight    : bold;
+  display        : flex;
+  flex-direction : column;
+  justify-content: flex-end;
+}
+
+.footer__title h6 {
+  padding: 0;
+  margin : 0;
+}
+
+.footer__hline,
+.footer__hline hr {
+  grid-column  : 1 / 6;
+  padding-left : 0;
+  padding-right: 0;
+  margin       : 0;
+}
+
+.footer__hline hr {
+  margin: 0.5rem 0;
+  height: 2px;
+}
+
+.max-width-box .footer__col {
+  margin : 0 1rem;
+  padding: 0;
+}
+
+.funding-text {
+  line-height: 1.5rem;
+}
+
+.footer__col:has(img) {
+  padding-top: 0rem;
+}
+
+.footer__items li {
+  line-height: 1.5rem;
+  padding    : 0.25rem 0;
+}
+
+.footer img {
+  max-height: 4rem;
+  max-width : 100%;
+}
+
+#footer-icon-list {
+  margin-top     : 0.5rem;
+  display        : flex;
+  flex-direction : row;
+  justify-content: left;
+  height         : 1.5rem;
+  gap            : 1rem;
+  flex-wrap      : wrap;
+}
+
+#footer-icon-list img {
+  height: 1.5rem;
+}
+
+.footer__hline.big-screen-only {
+  display   : block;
+  margin-top: -1rem;
+}
+
+.footer__hline.small-screen-only {
+  display: none;
+}
+
+@media (max-width: 700px) {
+  .footer__links {
+    flex-direction: column;
+    align-items   : stretch;
+  }
+
+  .footer__hline.big-screen-only {
+    display: none;
+  }
+
+  .footer__hline.small-screen-only {
+    display: block;
+  }
+}
+
+.footer__copyright__text {
+  line-height: 1.5rem;
+  padding    : 0;
 }
