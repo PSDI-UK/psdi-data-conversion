@@ -20,6 +20,37 @@
 </head>
 
 <body marginwidth="0">
+
+  <header class="header">
+    <div class="max-width-box navbar" id="psdi-backup-header">
+      <div class="header-left">
+        <a class="navbar__brand" href="#">
+          <div class="navbar__logo">
+            <img src="https://psdi-uk.github.io/css-template/images/PSDI_Logo-darktext.png"
+              alt="PSDI logo" class="lm-only">
+            <img src="https://psdi-uk.github.io/css-template/images/PSDI_Logo-lighttext.png"
+              alt="PSDI logo" class="dm-only">
+          </div>
+        </a>
+      </div>
+      <div class="navbar__items navbar__items--right">
+        <a href="#" class="navbar__item navbar__link">Data Search</a>
+        <a href="#" class="navbar__item navbar__link">What We Provide</a>
+        <a href="#" class="navbar__item navbar__link">Guidance</a>
+        <a href="#" class="navbar__item navbar__link">Community</a>
+        <a href="#" class="navbar__item navbar__link">About PSDI</a>
+        <button class="clean-btn color-mode-toggle"
+          title="Switch between dark and light mode (currently light mode)"
+          aria-label="Lightmode/darkmode toggle button">
+          <img src="https://psdi-uk.github.io/css-template/images/lightmode-toggle-lm.svg"
+            alt="Lightmode toggle icon" class="lm-only">
+          <img src="https://psdi-uk.github.io/css-template/images/lightmode-toggle-dm.svg"
+            alt="Darkmode toggle icon" class="dm-only">
+        </button>
+      </div>
+    </div>
+  </header>
+
   <div id="upper">
     <div class="navGrid" id="top">
       <img src="{{url_for('static', filename='/images/PSDI_Logo_CMYK_282c.svg')}}" alt="PSDI logo">

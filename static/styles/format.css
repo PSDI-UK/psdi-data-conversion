@@ -486,6 +486,59 @@ body {
   display: var(--dm-display);
 }
 
+.header .max-width-box {
+  display        : flex;
+  flex           : auto;
+  justify-content: space-around;
+  align-items    : center;
+}
+
+.header-left {
+  display       : flex;
+  flex          : 1 1 15%;
+  min-width     : 7.5rem;
+  max-width     : 15rem;
+  flex-direction: row;
+  align-items   : center;
+}
+
+.navbar__item {
+  padding    : 0.5rem 0.75rem;
+  font-weight: 500;
+}
+
+.navbar__items--right {
+  display        : flex;
+  flex           : 1 1 70%;
+  flex-direction : row;
+  flex-wrap      : wrap;
+  justify-content: right;
+  align-items    : center;
+}
+
+.clean-btn {
+  background     : none;
+  border         : none;
+  color          : inherit;
+  cursor         : pointer;
+  font-family    : inherit;
+  padding        : 0;
+  align-items    : center;
+  border-radius  : 50%;
+  display        : flex;
+  justify-content: center;
+  height         : 2rem;
+  width          : 2rem;
+}
+
+.clean-btn:hover {
+  background: var(--ifm-background-color-secondary);
+}
+
+.clean-btn:active {
+  background: inherit;
+}
+
 h1,
 h2,
 h3,
