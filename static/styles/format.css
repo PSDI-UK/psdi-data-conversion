@@ -457,13 +457,26 @@ select {
 }
 
 body {
-  color      : var(--ifm-font-color-base);
-  font-family: var(--ifm-font-family-base);
+  min-height      : 100vh;
+  font-family     : var(--ifm-font-family-base);
+  font-size       : var(--ifm-font-size-base);
+  background-color: var(--ifm-background-color);
+  color           : var(--ifm-font-color-base);
+  display         : flex;
+  flex-direction  : column;
+  justify-content : space-between;
+  padding         : 0;
+  margin          : 0;
 }
 
 *:has(> .max-width-box) {
   display        : flex;
   justify-content: center;
+}
+
+body>* {
+  flex-grow: 1;
+  padding  : 0.5rem 0;
 }
 
 .max-width-box {
@@ -542,6 +555,10 @@ h6 {
   margin     : 0 0 1rem 0;
 }
 
+.marginless_header {
+  margin: 0;
+}
+
 h1 {
   font-size: 3rem;
 }
@@ -582,6 +599,29 @@ ul {
 .hero,
 .footer {
   color: var(--ifm-hero-text-color);
+}
+
+.hero {
+  background-color: var(--ifm-color-primary);
+}
+
+.hero .max-width-box {
+  display       : flex;
+  flex-direction: column;
+  align-items   : center;
+  margin        : 2rem;
+}
+
+.hero__title {
+  font-size: 3rem;
+}
+
+.hero__subtitle {
+  font-size: 1.5rem;
+}
+
+.secondary {
+  background-color: var(--ifm-background-color-secondary);
 }
 
 .hero h1,

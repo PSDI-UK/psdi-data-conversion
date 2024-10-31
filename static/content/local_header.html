@@ -1,0 +1,69 @@
+<!-- This is the backup version of the header, in case the remote one fails to load. Ideally this should be
+    kept up to date with the remote one, but it's not a high priority. This should not be used as a basis for any
+    changes, and should only be pasted over with updated versions of the remote header. -->
+<div class="max-width-box navbar" id="psdi-backup-header">
+  <div class="header-left">
+    <a class="navbar__brand" href="https://psdidev2.azurewebsites.net/">
+      <div class="navbar__logo">
+        <img src="https://psdi-uk.github.io/css-template/images/PSDI_Logo-darktext.png"
+          alt="PSDI logo" class="lm-only">
+        <img src="https://psdi-uk.github.io/css-template/images/PSDI_Logo-lighttext.png"
+          alt="PSDI logo" class="dm-only">
+      </div>
+      <h5 class="navbar__title">Data Conversion Service</h5>
+    </a>
+  </div>
+  <div class="navbar__items navbar__items--right">
+    <a href="report.htm" class="navbar__item navbar__link">Report Missing Format/Conversion</a>
+    <a href="feedback.htm" class="navbar__item navbar__link">Provide Feedback</a>
+    <a href="documentation.htm" class="navbar__item navbar__link">Documentation</a>
+    <a href="documentation.htm" class="navbar__item navbar__link">Accessibility</a>
+    <a href="mailto: psdi@soton.ac.uk" class="navbar__item navbar__link" id="mail">Contact</a>
+    <button class="clean-btn color-mode-toggle"
+      title="Switch between dark and light mode (currently light mode)"
+      aria-label="Lightmode/darkmode toggle button">
+      <img src="https://psdi-uk.github.io/css-template/images/lightmode-toggle-lm.svg"
+        alt="Lightmode toggle icon" class="lm-only">
+      <img src="https://psdi-uk.github.io/css-template/images/lightmode-toggle-dm.svg"
+        alt="Darkmode toggle icon" class="dm-only">
+    </button>
+  </div>
+</div>
+<div id="psdi-header"></div>
+<script>
+  // Try to load the remote header
+  $("#psdi-header").load("https://psdi-uk.github.io/css-template/header.html",
+    function (response, status, xhr) {
+      // This is a callback function called after trying to load the remote header. It checks if it was loaded
+      // successfully, and if so, deletes the backup header, and fills in the new header with specific data
+      // for this site
+
+      if (status == "error") {
+        // Leave the backup as-is if we can't retrieve the remote header
+        return;
+      }
+
+      // Save the needed data from the backup header
+      let navbarBrandHref = $("#psdi-backup-header a.navbar__brand")[0].href;
+      let navbarTitle = $("#psdi-backup-header .navbar__title")[0].textContent;
+      let backupNavbarLinks = $("#psdi-backup-header .navbar__items--right")[0].childNodes;
+      const navbarLinks = Array();
+      Array.from(backupNavbarLinks).forEach(element => {
+        if (element.tagName === "A") {
+          navbarLinks.push(element);
+        }
+      });
+
+      // Remove the backup header now that we've saved the needed data
+      $("#psdi-backup-header").remove();
+
+      // Add this data to the new header
+      $("#psdi-header a.navbar__brand")[0].href = navbarBrandHref;
+      $("#psdi-header .navbar__title")[0].textContent = navbarTitle;
+
+      let links_parent = $("#psdi-header .navbar__items--right")[0];
+      let dm_button = $("#psdi-header .navbar__items--right>button")[0];
+      navbarLinks.forEach(element => { links_parent.insertBefore(element, dm_button); });
+
+    });
+</script>
