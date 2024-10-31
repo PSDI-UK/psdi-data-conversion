@@ -746,8 +746,6 @@ label {
   padding: 8rem;
 }
 
-.max-width-box p {}
-
 /* Grid for textarea label/elements. */
 .access-options {
   display        : flex;
