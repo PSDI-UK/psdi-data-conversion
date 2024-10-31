@@ -4,11 +4,15 @@
 
 #   This script acts as a server for the PSDI Data Conversion Service website.
 
-import hashlib, os, glob, psycopg2, py.io, json
+import hashlib, os, glob, psycopg2, py.io, json, re
+from multiprocessing import Lock
 from psycopg2 import sql
 from datetime import datetime
 from openbabel import openbabel
-from flask import Flask, request, render_template, abort
+from flask import Flask, request, render_template, abort, Response
+
+# A lock to prevent multiple threads logging at the same time.
+logLock = Lock()
 
 # Create a token by hashing the current date and time.
 dt = str(datetime.now())
@@ -141,66 +145,43 @@ def convertFile(file) :
 
     stdouterrOB.done()
 
-    query = sql.SQL("INSERT INTO {table} ({ident}, {datetime}, {convFrom}, {convTo}, {conv}, {filename}, {fromSize}, {toSize}, {success}) " \
-                    "VALUES ((SELECT COALESCE(MAX({ident}), 0) FROM {table}) + 1, %s, %s, %s, %s, %s, %s, %s, %s)").format(
-                table=sql.Identifier('conversion_log'),
-                ident=sql.Identifier('id'),
-                datetime=sql.Identifier('date'),
-                convFrom=sql.Identifier('convert_from'),
-                convTo=sql.Identifier('convert_to'),
-                conv=sql.Identifier('converter'),
-                filename=sql.Identifier('file_name'),
-                fromSize=sql.Identifier('from_file_size'),
-                toSize=sql.Identifier('to_file_size'),
-                success=sql.Identifier('success_status'))
-    values = [get_date_time(), fromFormat, toFormat, converter, fname, inSize, outSize, quality]
-    logConversion(query, values)
+    appendToLogFile("conversions", {
+        "datetime": get_date_time(),
+        "fromFormat": fromFormat,
+        "toFormat": toFormat,
+        "converter": converter,
+        "fname": fname,
+        "inSize": inSize,
+        "outSize": outSize,
+        "quality": quality,
+    })
 
     return '\nConverting from ' + fname + '.' + fromFormat + ' to ' + fname + '.' + toFormat +'\n'
 
-# Query the PostgreSQL database
-@app.route('/query/', methods=['POST'])
-def query() :
-    if request.form['token'] == token and token != '' :
-        # Establish a connection with the PostgreSQL database
-        try:
-            #db_conn = psycopg2.connect(database="format")
-            db_conn = psycopg2.connect(dbname="psdi", user="psdi", password="SharkCat1", \
-                                       host="psdi.postgres.database.azure.com", port=5432)
-        except psycopg2.DatabaseError as Error:
-            print(f"Connection to database failed. {Error}")
+# Take feedback data from the web app and log it.
+@app.route('/feedback/', methods=['POST'])
+def feedback() :
 
-        # Query database
-        with db_conn.cursor() as cursor:
-            cursor.execute(request.form['data'])
+    try:
 
-            if request.form['data'].startswith('SELECT') :
-                results = cursor.fetchall()
-            else :
-                db_conn.commit()
+        entry = {
+            "datetime": get_date_time(),
+        }
 
-        # Close connection to database
-        if db_conn:
-            db_conn.close()
- 
-        if request.form['data'].startswith('SELECT') :
-            # Construct a string from the array and return it
-            ansArray = []
+        report = json.loads(request.form['data'])
 
-            for row in results :
-                line = ''
+        for key in ["type", "missing", "reason", "from", "to"]:
+            if key in report:
+                entry[key] = str(report[key])
 
-                for el in row :
-                    line += "£" + str(el)
+        appendToLogFile("feedback", entry)
 
-                ansArray.append(line)
+        return Response(status=201)
 
-            return '$'.join(ansArray)
-        else :
-            return 'true'
-    else :
-        # return http status code 405
-        abort(405)
+    except:
+
+        return Response(status=400)
+
 
 # Query the JSON file to obtain conversion quality
 def getQuality(fromExt, toExt):
@@ -328,26 +309,18 @@ def create_message(fname, fromFormat, toFormat, converter, calcType, option, fro
            'To:                ' + toFormat + '\n' \
            'Converter:         ' + converter + '\n' + str
 
-# Write to database table Conversion_Log.
-def logConversion(query, values) :
-    # Establish a connection with the PostgreSQL database
+# Append data to a log file.
+def appendToLogFile(log_name, data):
+
+    logLock.acquire()
+
     try:
-        #db_conn = psycopg2.connect(database="format")
-        db_conn = psycopg2.connect(dbname="psdi", user="psdi", password="SharkCat1", \
-                                   host="psdi.postgres.database.azure.com", port=5432)
-    except psycopg2.DatabaseError as Error:
-        print(f"Connection to database failed. {Error}")
+        if re.match(r"^[a-z]+$", log_name):
+            with open(f"var/{log_name}.log", "a") as log_file:
+                log_file.write(f"{json.dumps(data)}\n")
 
-    # Query database
-    with db_conn.cursor() as cursor:
-        cursor.execute(query, values)
-        db_conn.commit()
-
-    # Close connection to database
-    if db_conn:
-        db_conn.close()
- 
-    return 'true'
+    finally:
+        logLock.release()
 
 # Check that the incoming token matches the one sent to the user (should mostly prevent spambots).
 # Write date- and time-stamped user input to server-side file 'user_responses'.

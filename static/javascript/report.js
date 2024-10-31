@@ -141,23 +141,16 @@ function submitUserInput() {
           to = $("#searchTo").val();
 
     var reason = $("#in").val(),
-        missing = $("#missingFormat").val(),
-        date = new Date(),
-        now = "";
-
-    now += date.toDateString();
-    now += " " + date.toTimeString();
-
-    reason = reason.replaceAll("'", "`");
-    missing = missing.replaceAll("'", "`");
+        missing = $("#missingFormat").val()
 
     if (reason.length > 9 && reason.length < 501) {
         if ($("#reason").val() == "format") {
             if (missing.length > 1 && missing.length < 101) {
-                const query = `INSERT INTO Missing_Format (ID, Date, Format, Reason, Reviewed)
-                               VALUES ((SELECT COALESCE(MAX(ID), 0) FROM Missing_Format) + 1, '${now}', '${missing}', '${reason}', 'no')`;
-
-                updateDatabase(query);
+                submitFeedback({
+                    type: "missingFormat",
+                    missing: missing,
+                    reason: reason
+                });
             }
             else {
                 alert("Please enter the missing format (2 to 100 characters).");
@@ -166,10 +159,12 @@ function submitUserInput() {
         else {
             if (from != "" && to != "") {
                 if ($("#success option").length == 0) {
-                    const query = `INSERT INTO Missing_Conversion (ID, Date, Convert_from, Convert_to, Reason, Reviewed)
-                               VALUES ((SELECT COALESCE(MAX(ID), 0) FROM Missing_Conversion) + 1, '${now}', '${from}', '${to}', '${reason}', 'no')`;
-
-                    updateDatabase(query);
+                    submitFeedback({
+                        type: "missingConversion",
+                        from: from,
+                        to: to,
+                        reason: reason
+                    });
                 }
                 else {
                     alert("At least one converter is capable of carrying out this conversion, therefore your report has not been sent. If you wish to send feedback about this conversion, please click on 'Contact' in the navigation bar.");
@@ -214,23 +209,21 @@ function hideOffer() {}
     //    })
 //}
 
-// Updates the PostgreSQL database
-function updateDatabase(query) {
-    var jqXHR = $.post(`/query/`, {
+// Submit feedback
+function submitFeedback(data) {
+    $.post(`/feedback/`, {
         'token': token,
-        'data': query
+        'data': JSON.stringify(data)
     })
-    .done(response => {
+    .done(() => {
         alert("Report received!");
     })
     .fail(function(e) {
         alert("Reporting failed. Please provide feedback by clicking on 'Contact' in the navigation bar.");
 
         // For debugging
-        console.log("Error writing to log");
-        console.log(e.status);
-        console.log(e.responseText);
-    })
+        console.error("Error submitting feedback", e.status, e.responseText);
+    });
 }
 
 // Only options having user filter input as a substring (case insensitive) are included in the selection list
