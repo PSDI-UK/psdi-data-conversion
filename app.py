@@ -4,7 +4,7 @@
 
 #   This script acts as a server for the PSDI Data Conversion Service website.
 
-import hashlib, os, glob, psycopg2, py.io
+import hashlib, os, glob, psycopg2, py.io, json
 from psycopg2 import sql
 from datetime import datetime
 from openbabel import openbabel
@@ -202,32 +202,32 @@ def query() :
         # return http status code 405
         abort(405)
 
-# Query the PostgreSQL database to obtain conversion quality
-def getQuality(fromExt, toExt) :
-    # Establish a connection with the PostgreSQL database
+# Query the JSON file to obtain conversion quality
+def getQuality(fromExt, toExt):
+
     try:
-        #db_conn = psycopg2.connect(database="format")
-        db_conn = psycopg2.connect(dbname="psdi", user="psdi", password="SharkCat1", \
-                                   host="psdi.postgres.database.azure.com", port=5432)
-    except psycopg2.DatabaseError as Error:
-        print(f"Connection to database failed. {Error}")
 
-    # Query database
-    query = "SELECT Degree_of_success FROM Converts_to WHERE Converters_id = (SELECT ID FROM Converters WHERE Name = 'Open Babel') \
-             AND in_ID = (SELECT ID FROM Formats WHERE Extension = %s) \
-             AND out_ID = (SELECT ID FROM Formats WHERE Extension = %s)"
-    data = (fromExt, toExt)
+        # Load JSON file.
+        with open("static/data/data.json") as datafile:
+            data = json.load(datafile)
 
-    with db_conn.cursor() as cursor:
-        cursor.execute(query, data)
-        quality = cursor.fetchall()
+        from_format = [d for d in data["formats"] if d["extension"] == fromExt]
+        to_format = [d for d in data["formats"] if d["extension"] == toExt]
+        open_babel = [d for d in data["converters"] if d["name"] == "Open Babel"]
 
-    # Close connection to database
-    if db_conn:
-        db_conn.close()
+        open_babel_id = open_babel[0]["id"]
+        from_id = from_format[0]["id"]
+        to_id = to_format[0]["id"]
 
-    return str(quality[0][0])
- 
+        converts_to = [d for d in data["converts_to"] if
+            d["converters_id"] == open_babel_id and d["in_id"] == from_id and d["out_id"] == to_id]
+
+        return converts_to[0]["degree_of_success"]
+
+    except:
+
+        return "unknown"
+
 # Delete files in folder 'downloads'
 @app.route('/delete/', methods=['POST'])
 def delete() :
