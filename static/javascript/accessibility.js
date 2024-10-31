@@ -5,6 +5,8 @@
   This is the JavaScript which makes the Accessibility gui work.
 */
 
+let r = document.querySelector(':root');
+
 $(document).ready(function() {
     const font = sessionStorage.getItem("font"),
           fontOpt = sessionStorage.getItem("fontOpt"),
@@ -16,8 +18,10 @@ $(document).ready(function() {
           letterOpt = sessionStorage.getItem("letterOpt"),
           line = sessionStorage.getItem("line"),
           lineOpt = sessionStorage.getItem("lineOpt"),
-          colour = sessionStorage.getItem("colour"),
-          colourOpt = sessionStorage.getItem("colourOpt"),
+          darkColour = sessionStorage.getItem("darkColour"),
+          darkColourOpt = sessionStorage.getItem("darkColourOpt"),
+          lightColour = sessionStorage.getItem("lightColour"),
+          lightColourOpt = sessionStorage.getItem("lightColourOpt"),
           back = sessionStorage.getItem("back"),
           backOpt = sessionStorage.getItem("backOpt");
 
@@ -29,14 +33,18 @@ $(document).ready(function() {
             letterSpacing: letter
         });
 
-        $(".normalText").css({
-            lineHeight: line,
-            color: colour
-        });
+        if (darkColour !== "default ") {
+            r.style.setProperty('--psdi-dark-text-color-body', darkColour);
+            r.style.setProperty('--psdi-dark-text-color-heading', darkColour);
+        }
+
+        if (lightColour !== "default ") {
+            r.style.setProperty('--psdi-dark-text-color-body', lightColour);
+            r.style.setProperty('--psdi-dark-text-color-heading', lightColour);
+        }
 
         $(".middle").css({lineHeight: line});
         $("h1, h2").css({letterSpacing: letter});
-        $("h1").css({color: colour});
         $("form, select, #upper").css({background: back});
 
         $("#font").val(fontOpt).change();
@@ -44,7 +52,8 @@ $(document).ready(function() {
         $("#weight").val(weightOpt).change();
         $("#letter").val(letterOpt).change();
         $("#line").val(lineOpt).change();
-        $("#colour").val(colourOpt).change();
+        $("#darkColour").val(darkColourOpt).change();
+        $("#lightColour").val(lightColourOpt).change();
         $("#background").val(backOpt).change();
     }
 
@@ -53,7 +62,8 @@ $(document).ready(function() {
     $("#weight").change(changeFontWeight);
     $("#letter").change(changeLetterSpacing);
     $("#line").change(changeLineSpacing);
-    $("#colour").change(changeFontColour);
+    $("#dark-colour").change(changeFontColourDark);
+    $("#light-colour").change(changeFontColourLight);
     $("#background").change(changeBackground);
     $("#resetButton").click(resetSelections);
     $("#applyButton").click(applySettings);
@@ -249,6 +259,10 @@ function changeFontSize(event) {
     var text = $(".normalText, .middle, #resetButton, #applyButton");
 
     switch (size) {
+        case '14':
+            text.css({fontSize: '14px'});
+            break;
+
         case '15':
             text.css({fontSize: '15px'});
             break;
@@ -278,7 +292,7 @@ function changeFontSize(event) {
             break;
 
         default:
-            text.css({fontSize: '14px'});
+            text.css({fontSize: '1rem'});
             break;
     }
 }
@@ -300,38 +314,65 @@ function changeFontWeight(event) {
 }
 
 // Changes the font colour for accessibility purposes.
-function changeFontColour(event) {
-    const colour = $("#colour").find(":selected").text();
-    var text = $(".normalText, h1");
+
+function changeFontColourDark(event) {
+    return changeFontColour(event, "dark");
+}
+
+function changeFontColourLight(event) {
+    return changeFontColour(event, "light");
+}
+
+function changeFontColour(event, lightOrDark="dark") {
+    const colour = $("#"+lightOrDark+"-colour").find(":selected").text();
+    var text = $(".normalText");
+    let new_colour;
 
     switch (colour) {
         case 'Black':
-            text.css({color: 'black'});
+            new_colour = 'black';
+            break;
+
+        case 'White':
+            new_colour = 'white';
             break;
 
         case 'Red':
-            text.css({color: 'red'});
+            new_colour = 'red';
             break;
 
         case 'Orange':
-            text.css({color: 'orange'});
+            new_colour = 'orange';
             break;
 
         case 'Green':
-            text.css({color: 'green'});
+            new_colour = 'green';
             break;
 
         case 'Purple':
-            text.css({color: 'purple'});
+            new_colour = 'purple';
             break;
 
         case 'Brown':
-            text.css({color: 'brown'});
+            new_colour = 'brown';
             break;
 
         default:
-            text.css({color: '#011e41'});
+            new_colour = 'default';
             break;
+    }
+
+    if (new_colour==='default') {
+        if (lightOrDark=="dark") {
+            r.style.setProperty('--psdi-'+lightOrDark+'-text-color-body', '#000000');
+            r.style.setProperty('--psdi-'+lightOrDark+'-text-color-heading', '#041E42');
+        } else {
+            r.style.setProperty('--psdi-'+lightOrDark+'-text-color-body', '#ffffff');
+            r.style.setProperty('--psdi-'+lightOrDark+'-text-color-heading', '#ffffff');
+        }
+    } else {
+        r.style.setProperty('--psdi-'+lightOrDark+'-text-color-body', new_colour);
+        r.style.setProperty('--psdi-'+lightOrDark+'-text-color-heading', new_colour);
     }
 }
 
@@ -371,7 +412,8 @@ function applySettings(event) {
     sessionStorage.setItem("weight", $(".normalText").css('fontWeight'));
     sessionStorage.setItem("letter", $(".normalText").css('letterSpacing'));
     sessionStorage.setItem("line", $(".normalText").css('lineHeight'));
-    sessionStorage.setItem("colour", $(".normalText").css('color'));
+    sessionStorage.setItem("darkColour", r.style.getPropertyValue('--psdi-dark-text-color-body'));
+    sessionStorage.setItem("lightColour", r.style.getPropertyValue('--psdi-light-text-color-body'));
     sessionStorage.setItem("back", $("form").css('background'));
 
     sessionStorage.setItem("fontOpt", $("#font").find(":selected").text());
@@ -379,7 +421,8 @@ function applySettings(event) {
     sessionStorage.setItem("weightOpt", $("#weight").find(":selected").text());
     sessionStorage.setItem("letterOpt", $("#letter").find(":selected").text());
     sessionStorage.setItem("lineOpt", $("#line").find(":selected").text());
-    sessionStorage.setItem("colourOpt", $("#colour").find(":selected").text());
+    sessionStorage.setItem("darkColourOpt", $("#dark-colour").find(":selected").text());
+    sessionStorage.setItem("lightColourOpt", $("#light-colour").find(":selected").text());
     sessionStorage.setItem("backOpt", $("#background").find(":selected").text());
 
     alert("The settings have been applied to the entire website.");
