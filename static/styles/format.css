@@ -3,244 +3,6 @@
   Version 1.0, 11th October 2024
 */
 
-/* Main heading, in a special very large dark blue font. */
-h1 {
-  color : #011e41;
-  margin: 2px 0 0 0
-    /* top right bottom left */
-}
-
-/* Sub-heading, in a larger than normal light grey sans serif font. */
-h2 {
-  color           : #e5e1e6;
-  background-color: #011e41;
-  padding         : 50px;
-  margin          : -18px 0 0 0
-    /* top right bottom left */
-}
-
-/* Sub-heading, in a larger than normal dark blue sans serif font. */
-h3 {
-  color: #011e41;
-}
-
-/* Padding for sub-heading gradually reduced to 20px at 200px screen width. */
-@media (max-width: 2400px) and (min-width: 200px) {
-  h2 {
-    padding-top   : calc(25px + (100vw - 700px) * (25 - 100) / (200 - 2400));
-    padding-bottom: calc(25px + (100vw - 700px) * (25 - 100) / (200 - 2400))
-  }
-}
-
-/* White background, with content well away from the edge. */
-form {
-  background-color: white;
-  padding         : 50px;
-  padding-top     : 20px
-}
-
-/* Content moved closer to the edge for smaller screens. */
-@media (max-width: 430px) {
-  form {
-    padding: 10px
-  }
-}
-
-/* Labels for text boxes/areas. */
-label {
-  color: #011e41;
-}
-
-/* Padding for link to converter website. */
-#visit {
-  padding-left: 2px
-}
-
-/* Dark blue text and 310px width select boxes. */
-select {
-  color: #011e41;
-  width: 310px
-}
-
-/* 850px width for some select boxes for accessibility purposes. */
-#fromList,
-#toList,
-#formatList,
-#success,
-#inFlags,
-#outFlags,
-#outArgFlags {
-  width: 850px
-}
-
-/* 420px width for the report type select box. */
-#reason {
-  width: 420px
-}
-
-/* Width of select box begins to reduce at 530px. */
-@media (max-width: 530px) {
-  #reason {
-    width: 100%
-  }
-}
-
-/* Hidden dummy elements to aid layout. */
-#dummyText {
-  visibility: hidden
-}
-
-/* Converter details, user input and file conversion initially not displayed. */
-#converter,
-#offer {
-  display: none
-}
-
-/* Heading for Conversion page. */
-#heading {
-  display: block
-}
-
-/* Dark blue background and light grey text for buttons. */
-#uploadButton,
-#resetButton,
-#resetButton2,
-#yesButton,
-#reportButton,
-#applyButton {
-  background-color: #011e41;
-  color           : #e5e1e6;
-}
-
-/* Upload button (Convert) initially greyed out.*/
-#uploadButton {
-  background-color: #e5e1e6;
-  color           : gray
-}
-
-/* Dark blue text for text input. */
-/* Was 303px */
-#in,
-#searchTo,
-#searchFrom,
-#missingFormat,
-#searchFormats {
-  color: #011e41;
-  width: 843px
-}
-
-/* Width of select boxes begins to reduce at 950px. */
-@media (max-width: 950px) {
-
-  #fromList,
-  #toList,
-  #success,
-  #inFlags,
-  #outFlags,
-  #formatList {
-    width: 100%
-  }
-}
-
-/* Width of text boxes begins to reduce at 950px. */
-@media (max-width: 950px) {
-
-  #searchFrom,
-  #searchTo,
-  #searchFormats,
-  #in,
-  #missingFormat {
-    width: calc(100% - 7px)
-  }
-}
-
-/* Format boxes, reset button, text input box and report button initially not displayed on the 'Report' page */
-#formats,
-#in_out_formats,
-#userInput,
-#missing {
-  display: none
-}
-
-/* Small vertical space. */
-.smallGap {
-  padding: 2px
-}
-
-/* Medium vertical space. */
-.medGap {
-  padding: 20px
-}
-
-/* Large vertical space. */
-.largeGap {
-  padding: 140px
-}
-
-/* White sans serif font. */
-.normalText {
-  color: #011e41;
-}
-
-/* Grid for textarea label/elements. */
-.grid {
-  display              : grid;
-  grid-template-columns: 1fr 1fr 1fr
-}
-
-/* Textarea label/elements are stacked at <= 1070px. */
-@media (max-width: 1070px) {
-  .grid {
-    grid-template-columns: auto
-  }
-
-  #dummyText {
-    display: none
-  }
-}
-
-/* Initially hidden grid for select label/elements. */
-.selGrid {
-  display              : grid;
-  grid-template-columns: 1fr 1fr
-}
-
-/* Select label/elements are stacked at <= 800px. */
-@media (max-width: 800px) {
-  .selGrid {
-    grid-template-columns: auto
-  }
-}
-
-/* Grid for logo and navigation. */
-.navGrid {
-  display              : grid;
-  grid-template-columns: 1fr 2fr;
-  margin               : 0 60px 0 60px
-    /* top right bottom left */
-}
-
-/* Logo and navigation are stacked at <= 900px. */
-@media (max-width: 900px) {
-  .navGrid {
-    grid-template-columns: auto
-  }
-}
-
-/* Logo/navigation grid margins reduced at 430px */
-@media (max-width: 430px) {
-  .navGrid {
-    margin: 0 18px 0 18px
-  }
-}
-
-/* Navigation vertically aligned in the middle. */
-.middle {
-  align-self: center;
-  text-align: right;
-  padding   : 20px
-}
-
 :root {
   /* PSDI Common Style Definition                                            */
   /* ----------------------------                                            */
@@ -847,4 +609,202 @@ a svg {
 .footer__copyright__text {
   line-height: 1.5rem;
   padding    : 0;
+}
+
+/* Custom style settings for this site */
+
+/* White background, with content well away from the edge. */
+
+form {
+  width      : 95%;
+  min-width  : 320px;
+  padding-top: 1rem;
+  align-self : center;
+}
+
+/* Labels for text boxes/areas. */
+label {
+  color: #011e41;
+}
+
+/* Padding for link to converter website. */
+#visit {
+  padding-left: 0.125rem;
+}
+
+/* 850px width for some select boxes for accessibility purposes. */
+#fromList,
+#toList,
+#formatList,
+#success,
+#inFlags,
+#outFlags,
+#outArgFlags {
+  width: 50rem;
+}
+
+/* 420px width for the report type select box. */
+#reason {
+  width: 25rem;
+}
+
+/* Width of select box begins to reduce at 530px. */
+@media (max-width: 530px) {
+  #reason {
+    width: 100%
+  }
+}
+
+/* Hidden dummy elements to aid layout. */
+#dummyText {
+  visibility: hidden
+}
+
+/* Converter details, user input and file conversion initially not displayed. */
+#converter,
+#offer {
+  display: none
+}
+
+/* Heading for Conversion page. */
+#heading {
+  display: block
+}
+
+/* Dark blue background and light grey text for buttons. */
+#uploadButton,
+#resetButton,
+#resetButton2,
+#yesButton,
+#reportButton,
+#applyButton {
+  background-color: #011e41;
+  color           : #e5e1e6;
+}
+
+/* Upload button (Convert) initially greyed out.*/
+#uploadButton {
+  background-color: #e5e1e6;
+  color           : gray
+}
+
+/* Dark blue text for text input. */
+#in,
+#searchTo,
+#searchFrom,
+#missingFormat,
+#searchFormats {
+  color: #011e41;
+  width: 50rem;
+}
+
+/* Width of select boxes begins to reduce at 950px. */
+@media (max-width: 50rem) {
+
+  #fromList,
+  #toList,
+  #success,
+  #inFlags,
+  #outFlags,
+  #formatList {
+    width: 100%
+  }
+}
+
+/* Width of text boxes begins to reduce at 950px. */
+@media (max-width: 50rem) {
+
+  #searchFrom,
+  #searchTo,
+  #searchFormats,
+  #in,
+  #missingFormat {
+    width: calc(100% - 0.5rem)
+  }
+}
+
+/* Format boxes, reset button, text input box and report button initially not displayed on the 'Report' page */
+#formats,
+#in_out_formats,
+#userInput,
+#missing {
+  display: none
+}
+
+/* Small vertical space. */
+.smallGap {
+  padding: 0.125rem;
+}
+
+/* Medium vertical space. */
+.medGap {
+  padding: 1rem;
+}
+
+/* Large vertical space. */
+.largeGap {
+  padding: 8rem;
+}
+
+.max-width-box p {}
+
+/* Grid for textarea label/elements. */
+.access-options {
+  display        : flex;
+  flex-direction : row;
+  justify-content: flex-start;
+  flex-wrap      : wrap;
+}
+
+.access-option-container {
+  flex        : 0 0 10rem;
+  padding-left: 0 1rem 0 1rem;
+}
+
+/* Dark blue text and 310px width select boxes. */
+select {
+  min-width: 5rem;
+  width    : 90%;
+}
+
+/* Initially hidden grid for select label/elements. */
+.selGrid {
+  display              : grid;
+  grid-template-columns: 1fr 1fr
+}
+
+/* Select label/elements are stacked at <= 800px. */
+@media (max-width: 800px) {
+  .selGrid {
+    grid-template-columns: auto
+  }
+}
+
+/* Grid for logo and navigation. */
+.navGrid {
+  display              : grid;
+  grid-template-columns: 1fr 2fr;
+  margin               : 0 4rem 0 4rem
+    /* top right bottom left */
+}
+
+/* Logo and navigation are stacked at <= 900px. */
+@media (max-width: 900px) {
+  .navGrid {
+    grid-template-columns: auto
+  }
+}
+
+/* Logo/navigation grid margins reduced at 430px */
+@media (max-width: 430px) {
+  .navGrid {
+    margin: 0 1rem 0 1rem
+  }
+}
+
+/* Navigation vertically aligned in the middle. */
+.middle {
+  align-self: center;
+  text-align: right;
+  padding   : 1rem
 }
