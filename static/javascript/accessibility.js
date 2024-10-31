@@ -39,8 +39,8 @@ $(document).ready(function() {
         }
 
         if (lightColour !== "default ") {
-            r.style.setProperty('--psdi-dark-text-color-body', lightColour);
-            r.style.setProperty('--psdi-dark-text-color-heading', lightColour);
+            r.style.setProperty('--psdi-light-text-color-body', lightColour);
+            r.style.setProperty('--psdi-light-text-color-heading', lightColour);
         }
 
         $(".middle").css({lineHeight: line});

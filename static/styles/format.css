@@ -622,11 +622,6 @@ form {
   align-self : center;
 }
 
-/* Labels for text boxes/areas. */
-label {
-  color: #011e41;
-}
-
 /* Padding for link to converter website. */
 #visit {
   padding-left: 0.125rem;
@@ -761,6 +756,7 @@ label {
 
 /* Dark blue text and 310px width select boxes. */
 select {
+  color    : inherit;
   min-width: 5rem;
   width    : 90%;
 }
