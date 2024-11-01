@@ -766,7 +766,8 @@ select {
   width    : 90%;
 }
 
-select#light-colour {
+select#light-colour,
+select#dark-background {
   background-color: var(--ifm-color-primary);
   color           : var(--psdi-light-text-color-body);
 }

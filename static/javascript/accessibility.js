@@ -22,8 +22,10 @@ $(document).ready(function() {
           darkColourOpt = sessionStorage.getItem("darkColourOpt"),
           lightColour = sessionStorage.getItem("lightColour"),
           lightColourOpt = sessionStorage.getItem("lightColourOpt"),
-          back = sessionStorage.getItem("back"),
-          backOpt = sessionStorage.getItem("backOpt");
+          lightBack = sessionStorage.getItem("lightBack"),
+          lightBackOpt = sessionStorage.getItem("lightBackOpt"),
+          darkBack = sessionStorage.getItem("darkBack"),
+          darkBackOpt = sessionStorage.getItem("darkBackOpt");
 
     if (font != null) {
 
@@ -45,7 +47,8 @@ $(document).ready(function() {
 
         r.style.setProperty('--ifm-line-height-base', line);
 
-        r.style.setProperty('--ifm-background-color', back);
+        r.style.setProperty('--ifm-background-color', lightBack);
+        r.style.setProperty('--ifm-color-primary', darkBack);
 
         $("#font").val(fontOpt).change();
         $("#size").val(sizeOpt).change();
@@ -53,9 +56,9 @@ $(document).ready(function() {
         $("#letter").val(letterOpt).change();
         $("#line").val(lineOpt).change();
         $("#dark-colour").val(darkColourOpt).change();
-        console.log("\""+lightColourOpt+"\"");
         $("#light-colour").val(lightColourOpt).change();
-        $("#background").val(backOpt).change();
+        $("#light-background").val(lightBackOpt).change();
+        $("#dark-background").val(darkBackOpt).change();
     }
 
     $("#font").change(changeFont);
@@ -65,7 +68,8 @@ $(document).ready(function() {
     $("#line").change(changeLineSpacing);
     $("#dark-colour").change(changeFontColourDark);
     $("#light-colour").change(changeFontColourLight);
-    $("#background").change(changeBackground);
+    $("#light-background").change(changeLightBackground);
+    $("#dark-background").change(changeDarkBackground);
     $("#resetButton").click(resetSelections);
     $("#applyButton").click(applySettings);
 });
@@ -197,8 +201,8 @@ function changeFontColour(event, lightOrDark="dark") {
 }
 
 // Changes the background colour for accessibility purposes.
-function changeBackground(event) {
-    const colour = $("#background").find(":selected").text();
+function changeLightBackground(event) {
+    const colour = $("#light-background").find(":selected").text();
 
     switch (colour) {
         case 'Grey':
@@ -223,9 +227,20 @@ function changeBackground(event) {
     }
 }
 
+// Changes the background colour for accessibility purposes.
+function changeDarkBackground(event) {
+    const colour = $("#dark-background").find(":selected").text();
+
+    if (colour=="Default") {
+        r.style.setProperty('--ifm-color-primary', "#041e42");
+    } else {
+        r.style.setProperty('--ifm-color-primary', "dark"+colour.toLowerCase());
+    }
+}
+
 // Reverts all select boxes to 'Default'
 function resetSelections(event) {
-    $("#font, #size, #weight, #letter, #line, #dark-colour, #light-colour, #background").val('Default').change();
+    $("#font, #size, #weight, #letter, #line, #dark-colour, #light-colour, #light-background, #dark-background").val('Default').change();
 }
 
 // Applies accessibility settings to the entire website.
@@ -237,7 +252,8 @@ function applySettings(event) {
     sessionStorage.setItem("line", r.style.getPropertyValue('--ifm-line-height-base'));
     sessionStorage.setItem("darkColour", r.style.getPropertyValue('--psdi-dark-text-color-body'));
     sessionStorage.setItem("lightColour", r.style.getPropertyValue('--psdi-light-text-color-body'));
-    sessionStorage.setItem("back", r.style.getPropertyValue('--ifm-background-color'));
+    sessionStorage.setItem("lightBack", r.style.getPropertyValue('--ifm-background-color'));
+    sessionStorage.setItem("darkBack", r.style.getPropertyValue('--ifm-color-primary'));
 
     sessionStorage.setItem("fontOpt", $("#font").find(":selected").text());
     sessionStorage.setItem("sizeOpt", $("#size").find(":selected").text());
@@ -246,8 +262,8 @@ function applySettings(event) {
     sessionStorage.setItem("lineOpt", $("#line").find(":selected").text());
     sessionStorage.setItem("darkColourOpt", $("#dark-colour").find(":selected").text());
     sessionStorage.setItem("lightColourOpt", $("#light-colour").find(":selected").text());
-    sessionStorage.setItem("backOpt", $("#background").find(":selected").text());
-    console.log(sessionStorage.getItem("backOpt"));
+    sessionStorage.setItem("lightBackOpt", $("#light-background").find(":selected").text());
+    sessionStorage.setItem("darkBackOpt", $("#dark-background").find(":selected").text());
 
     alert("The settings have been applied to the entire website.");
 }
