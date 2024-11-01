@@ -227,20 +227,22 @@ function showConverterDetails(event) {
 
 // Only options having user filter input as a substring (case insensitive) are included in the selection list $$$$$$$$$$ REVISE $$$$$$$$$$
 function filterOptions(event) {
-    const str = this.value.toLowerCase();
+    const str = event.target.value.toLowerCase();
     var box, list,
         count = 0,
         text = "";
 
-    if (this.id == "searchFrom") {
+    if (event.target.id == "searchFrom") {
         toList = [];
         $("#toList").children().remove();
+        getOutputFormats().then(formats => populateList(formats, "to"));
         box = $("#fromList");
         list = fromList;
     }
     else {
         fromList = [];
         $("#fromList").children().remove();
+        getInputFormats().then(formats => populateList(formats, "from"));
         box = $("#toList");
         list = toList;
     }
@@ -254,7 +256,7 @@ function filterOptions(event) {
         }
     }
 
-    if (this.id == "searchFrom") {
+    if (event.target.id == "searchFrom") {
         $("#fromLabel").html("Select format to convert from (" + count + "):");
     }
     else {
