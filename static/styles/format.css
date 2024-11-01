@@ -679,13 +679,13 @@ form {
 #yesButton,
 #reportButton,
 #applyButton {
-  background-color: #011e41;
-  color           : #e5e1e6;
+  background-color: var(--ifm-color-primary);
+  color           : var(--psdi-light-text-color-body);
 }
 
 /* Upload button (Convert) initially greyed out.*/
 #uploadButton {
-  background-color: #e5e1e6;
+  background-color: var(--psdi-bg-color-secondary);
   color           : gray
 }
 
