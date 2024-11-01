@@ -312,15 +312,17 @@ def create_message(fname, fromFormat, toFormat, converter, calcType, option, fro
 # Append data to a log file.
 def appendToLogFile(log_name, data):
 
-    logLock.acquire()
+    return
 
-    try:
-        if re.match(r"^[a-z]+$", log_name):
-            with open(f"var/{log_name}.log", "a") as log_file:
-                log_file.write(f"{json.dumps(data)}\n")
+    # logLock.acquire()
 
-    finally:
-        logLock.release()
+    # try:
+    #     if re.match(r"^[a-z]+$", log_name):
+    #         with open(f"var/{log_name}.log", "a") as log_file:
+    #             log_file.write(f"{json.dumps(data)}\n")
+
+    # finally:
+    #     logLock.release()
 
 # Check that the incoming token matches the one sent to the user (should mostly prevent spambots).
 # Write date- and time-stamped user input to server-side file 'user_responses'.

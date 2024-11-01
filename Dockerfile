@@ -37,8 +37,6 @@ RUN pip install gunicorn
 RUN apt update
 RUN apt-get -y install libxrender1 libxext6
 
-RUN mkdir var
-
 ENV FLASK_APP=app.py
 ENV FLASK_RUN_HOST=0.0.0.0
 
