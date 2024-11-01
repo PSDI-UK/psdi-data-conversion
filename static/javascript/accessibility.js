@@ -26,8 +26,13 @@ $(document).ready(function() {
           backOpt = sessionStorage.getItem("backOpt");
 
     if (font != null) {
+
+        if (font !== "default ") {
+            r.style.setProperty('--ifm-font-family-base', font);
+            r.style.setProperty('--ifm-heading-font-family', font);
+        }
+
         $(".normalText, .middle, #resetButton, #applyButton").css({
-            fontFamily: font,
             fontSize: size,
             fontWeight: weight,
             letterSpacing: letter
@@ -82,7 +87,8 @@ function changeFont(event) {
                 text.css({lineHeight: 1.145});
             }
 
-            text.css({fontFamily: 'Arial, sans-serif'});
+            r.style.setProperty('--ifm-font-family-base', 'Arial, sans-serif');
+            r.style.setProperty('--ifm-heading-font-family', 'Arial, sans-serif');
             break;
 
         case 'Comic Sans':
@@ -90,7 +96,8 @@ function changeFont(event) {
                 text.css({lineHeight: 1.4});
             }
 
-            text.css({fontFamily: 'Comic Sans MS, Comic Sans, sans-serif'});
+            r.style.setProperty('--ifm-font-family-base', 'Comic Sans MS, Comic Sans, sans-serif');
+            r.style.setProperty('--ifm-heading-font-family', 'Comic Sans MS, Comic Sans, sans-serif');
             break;
 
         case 'Lexend':
@@ -98,7 +105,8 @@ function changeFont(event) {
                 text.css({lineHeight: 1.3});
             }
 
-            text.css({fontFamily: 'Lexend, sans-serif'});
+            r.style.setProperty('--ifm-font-family-base', 'Lexend, sans-serif');
+            r.style.setProperty('--ifm-heading-font-family', 'Lexend, sans-serif');
             break;
 
         case 'Open Sans':
@@ -106,7 +114,8 @@ function changeFont(event) {
                 text.css({lineHeight: 1.4});
             }
 
-            text.css({fontFamily: 'Open Sans, sans-serif'});
+            r.style.setProperty('--ifm-font-family-base', 'Open Sans, sans-serif');
+            r.style.setProperty('--ifm-heading-font-family', 'Open Sans, sans-serif');
             break;
 
         case 'Tahoma':
@@ -114,7 +123,8 @@ function changeFont(event) {
                 text.css({lineHeight: 1.25});
             }
 
-            text.css({fontFamily: 'Tahoma, sans-serif'});
+            r.style.setProperty('--ifm-font-family-base', 'Tahoma, sans-serif');
+            r.style.setProperty('--ifm-heading-font-family', 'Tahoma, sans-serif');
             break;
 
         case 'Trebuchet':
@@ -122,7 +132,8 @@ function changeFont(event) {
                 text.css({lineHeight: 1.2});
             }
 
-            text.css({fontFamily: 'Trebuchet MS, Trebuchet, sans-serif'});
+            r.style.setProperty('--ifm-font-family-base', 'Trebuchet MS, Trebuchet, sans-serif');
+            r.style.setProperty('--ifm-heading-font-family', 'Trebuchet MS, Trebuchet, sans-serif');
             break;
 
         case 'Verdana':
@@ -130,6 +141,8 @@ function changeFont(event) {
                 text.css({lineHeight: 1.25});
             }
 
+            r.style.setProperty('--ifm-font-family-base', 'Verdana, sans-serif');
+            r.style.setProperty('--ifm-heading-font-family', 'Verdana, sans-serif');
             text.css({fontFamily: 'Verdana, sans-serif'});
             break;
 
@@ -138,7 +151,8 @@ function changeFont(event) {
                 text.css({lineHeight: 1.218});
             }
 
-            text.css({fontFamily: 'Lato, sans-serif'});
+            r.style.setProperty('--ifm-font-family-base', 'Lato, Helvetica, Arial, Lucida, sans-serif');
+            r.style.setProperty('--ifm-heading-font-family', 'Oswald, Helvetica, Arial, Lucida, sans-serif');
             break;
     }
 }
@@ -407,7 +421,7 @@ function resetSelections(event) {
 
 // Applies accessibility settings to the entire website.
 function applySettings(event) {
-    sessionStorage.setItem("font", $(".normalText").css('fontFamily'));
+    sessionStorage.setItem("font", r.style.getPropertyValue('--ifm-font-family-base'));
     sessionStorage.setItem("size", $(".normalText").css('fontSize'));
     sessionStorage.setItem("weight", $(".normalText").css('fontWeight'));
     sessionStorage.setItem("letter", $(".normalText").css('letterSpacing'));
