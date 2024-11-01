@@ -227,14 +227,17 @@ option {
   line-height     : var(--ifm-line-height-base);
 }
 
-button {
+button,
+input.button {
   font-family     : var(--ifm-font-family-base);
   font-size       : var(--ifm-font-size-base);
   font-weight     : var(--ifm-font-weight-base);
-  background-color: var(--ifm-background-color);
-  color           : var(--ifm-font-color-base);
+  color           : var(--ifm-hero-text-color);
+  background-color: var(--ifm-color-primary);
   letter-spacing  : var(--psdi-letter-spacing-base);
   line-height     : var(--ifm-line-height-base);
+  border-radius   : 0.25rem;
+  margin          : 0.25rem;
 }
 
 *:has(> .max-width-box) {
