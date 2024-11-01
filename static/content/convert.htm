@@ -32,7 +32,7 @@
 
   <form name="gui">
     <div class="max-width-box">
-      <div class="normalText">
+      <div>
         <p>Zero to two option flag select boxes and zero to two sets of option flag check boxes may
           be
           displayed, depending on the conversion and the degree of completion of the database.
@@ -58,20 +58,20 @@
         <div id="flags"> <!--class="selGrid">-->
           <div id="inFlagList">
             <p>
-              <label for="inFlags" class="normalText" id="in_label">Read (input) option flags
+              <label for="inFlags" id="in_label">Read (input) option flags
                 (select
                 all required):</label>
             <div id="in_flag_break"></div>
-            <select class="normalText" id="inFlags" size="4" multiple="multiple"></select>
+            <select id="inFlags" size="4" multiple="multiple"></select>
             <div id=inFlagInfo></div>
             </p>
           </div>
           <div id="outFlagList">
             <p>
-              <label for="outFlags" class="normalText" id="out_label">Write (output) option flags
+              <label for="outFlags" id="out_label">Write (output) option flags
                 (select all required):</label>
             <div id="out_flag_break"></div>
-            <select class="normalText" id="outFlags" size="4" multiple="multiple"></select>
+            <select id="outFlags" size="4" multiple="multiple"></select>
             <div id=outFlagInfo></div>
             </p>
           </div>
@@ -85,7 +85,7 @@
           required):</span>
         <table id="out_argFlags"></table>
         <p>
-          <label for="coordinates" class="normalText">Select '2D' or '3D' if an Open Babel
+          <label for="coordinates">Select '2D' or '3D' if an Open Babel
             calculation
             of 2- or 3-dimensional atomic coordinates is required. Ensure that this calculation is
             suitable for your purpose.<br>For more information, visit<a
@@ -97,7 +97,7 @@
           neither
         </p>
         <p>
-          <label for="coordOptions" class="normalText"> Calculation options range from 'fastest'
+          <label for="coordOptions"> Calculation options range from 'fastest'
             (least accurate) to 'best' (slowest).</label><br>
           <input type="radio" name="coordOptions" id="coordOptions" value="fastest" disabled=true>
           fastest
@@ -110,7 +110,7 @@
         </p>
         <p id="convertFile">
           Select file to convert:
-          <br><input type="file" class="normalText" name="fileToUpload" id="fileToUpload"><br>
+          <br><input type="file" name="fileToUpload" id="fileToUpload"><br>
           <input type="button" value=" Convert " name="uploadButton" id="uploadButton"
             disabled=true>
         </p>

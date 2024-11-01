@@ -358,7 +358,7 @@ function addCheckboxes(response, type) {
 
                 container.append("<tr><td><input type='checkbox' id= " + type + "_check" + flagCount + " name= " + type
                                                                        + "_check value= " + flag + "></input></td><td>" + flag + "</td>" +
-                                     "<td><input type='text' class='normalText' id= " + type + "_text" + flagCount
+                                     "<td><input type='text' id= " + type + "_text" + flagCount
                                                                        + " placeholder='-- type info. here --'></input></td>" +
                                      "<td><span id= " + type + "_label" + flagCount + ">" + info + "</span></td></tr>");
 

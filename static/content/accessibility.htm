@@ -35,7 +35,7 @@
 
   <form name="gui">
     <div class="max-width-box">
-      <p class="normalText">Select accessibility settings below as required, in any order. Each new
+      <p>Select accessibility settings below as required, in any order. Each new
         setting immediately comes into effect on this page only, in the first instance. Once the
         appearance of the page is satisfactory, clicking on the 'Apply' button applies the settings
         to
@@ -45,8 +45,8 @@
       <div class="access-options">
         <div class="access-option-container">
           <p>
-            <label for="font" class="normalText" id="fontLabel">Font:</label><br>
-            <select class="normalText" id="font">
+            <label for="font" id="fontLabel">Font:</label><br>
+            <select id="font">
               <option value="Default"
                 style="font-family: Lato, Helvetica, Arial, Lucida, sans-serif">Default</option>
               <option value="Arial" style="font-family: Arial, sans-serif;">Arial</option>
@@ -64,8 +64,8 @@
         </div>
         <div class="access-option-container">
           <p>
-            <label for="size" class="normalText" id="sizeLabel">Font size (px):</label><br>
-            <select class="normalText" id="size">
+            <label for="size" id="sizeLabel">Font size (px):</label><br>
+            <select id="size">
               <option value="Default" style="font-size: 16px;">Default</option>
               <option value="14" style="font-size: 14px;">14</option>
               <option value="15" style="font-size: 15px;">15</option>
@@ -80,8 +80,8 @@
         </div>
         <div class="access-option-container">
           <p>
-            <label for="weight" class="normalText" id="weightLabel">Font weight:</label><br>
-            <select class="normalText" id="weight">
+            <label for="weight" id="weightLabel">Font weight:</label><br>
+            <select id="weight">
               <option value="Default" style="font-weight: normal;">Default</option>
               <option value="Bold" style="font-weight: bold;">Bold</option>
             </select>
@@ -89,8 +89,8 @@
         </div>
         <div class="access-option-container">
           <p>
-            <label for="letter" class="normalText" id="letterLabel">Letter spacing (px):</label><br>
-            <select class="normalText" id="letter">
+            <label for="letter" id="letterLabel">Letter spacing (px):</label><br>
+            <select id="letter">
               <!-- Limitations of how the select element works prevent us from showing a preview of this element
                in the dropdown -->
               <option value="Default">Default</option>
@@ -106,8 +106,8 @@
         </div>
         <div class="access-option-container">
           <p>
-            <label for="line" class="normalText" id="lineLabel">Line spacing:</label><br>
-            <select class="normalText" id="line">
+            <label for="line" id="lineLabel">Line spacing:</label><br>
+            <select id="line">
               <!-- Limitations of how the select element works prevent us from showing a preview of this element
                in the dropdown -->
               <option value="Default">Default</option>
@@ -127,9 +127,9 @@
         </div>
         <div class="access-option-container">
           <p>
-            <label for="dark-colour" class="normalText" id="colourLabel">Dark font
+            <label for="dark-colour" id="colourLabel">Dark font
               colour:</label><br>
-            <select class="normalText" id="dark-colour">
+            <select id="dark-colour">
               <option value="Default">Default</option>
               <option value="Red">Red</option>
               <option value="Orange">Orange</option>
@@ -141,9 +141,9 @@
         </div>
         <div class="access-option-container">
           <p>
-            <label for="light-colour" class="normalText" id="lightColourLabel">Light font
+            <label for="light-colour" id="lightColourLabel">Light font
               colour:</label><br>
-            <select class="normalText" id="light-colour">
+            <select id="light-colour">
               <option value="Default" style="color: white">Default</option>
               <option value="Grey" style="color: lightgrey">Grey</option>
               <option value="Red" style="color: red">Red</option>
@@ -156,9 +156,9 @@
         </div>
         <div class="access-option-container">
           <p>
-            <label for="lightBackground" class="normalText" id="lightBackgroundLabel">Light
+            <label for="lightBackground" id="lightBackgroundLabel">Light
               Background colour:</label><br>
-            <select class="normalText" id="light-background">
+            <select id="light-background">
               <option value="Default" style="background-color: white">Default</option>
               <option value="Grey" style="background-color: lightgrey">Grey</option>
               <option value="Mustard" style="background-color: #eddd6e">Mustard</option>
@@ -169,9 +169,9 @@
         </div>
         <div class="access-option-container">
           <p>
-            <label for="darkBackground" class="normalText" id="darkBackgroundLabel">Dark Background
+            <label for="darkBackground" id="darkBackgroundLabel">Dark Background
               colour:</label><br>
-            <select class="normalText" id="dark-background">
+            <select id="dark-background">
               <option value="Default" style="background-color: #041e42">Default</option>
               <option value="Grey" style="background-color: darkgrey">Grey</option>
               <option value="Blue" style="background-color: darkblue">Blue</option>
@@ -183,7 +183,7 @@
       </div>
       <input type="button" value=" Reset " name="resetButton" id="resetButton">
       <div>
-        <br><span class="normalText">Apply chosen settings to the entire website:</span>
+        <br><span>Apply chosen settings to the entire website:</span>
         <input type="button" value=" Apply " name="applyButton" id="applyButton">
       </div>
       <div class="largeGap"></div>

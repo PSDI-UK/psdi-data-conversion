@@ -86,10 +86,7 @@ $(document).ready(function() {
 
 // Changes the font for accessibility purposes and ensures that the correct default line spacing is applied.
 function changeFont(event) {
-    const font = $("#font").find(":selected").text(),
-          line = $("#line").find(":selected").text();
-
-    var text = $(".normalText, .middle, #resetButton, #applyButton");
+    const font = $("#font").find(":selected").text();
 
     switch (font) {
         case 'Arial':
@@ -148,7 +145,6 @@ function changeLetterSpacing(event) {
 // Changes the line spacing for accessibility purposes.
 function changeLineSpacing(event) {
     const space = $("#line").find(":selected").text();
-    var text = $(".normalText, .middle");
     
     if (space=="Default") {
         r.style.setProperty('--ifm-line-height-base', "1.5");
