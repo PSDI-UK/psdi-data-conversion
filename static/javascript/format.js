@@ -5,6 +5,8 @@
   This is the JavaScript which makes the Format and Converter Selection gui work.
 */
 
+const r = document.querySelector(':root');
+
 var fromList = new Array(),
     toList = new Array();
 
@@ -26,29 +28,39 @@ $(document).ready(function() {
           weight = sessionStorage.getItem("weight"),
           letter = sessionStorage.getItem("letter"),
           line = sessionStorage.getItem("line"),
-          colour = sessionStorage.getItem("colour"),
-          back = sessionStorage.getItem("back");
+          darkColour = sessionStorage.getItem("darkColour"),
+          lightColour = sessionStorage.getItem("lightColour"),
+          lightBack = sessionStorage.getItem("lightBack"),
+          darkBack = sessionStorage.getItem("darkBack");
+
+    if (font != null) {
+
+        r.style.setProperty('--ifm-font-family-base', font);
+        r.style.setProperty('--ifm-heading-font-family', font);
+
+        r.style.setProperty('--ifm-font-size-base', size);
+
+        r.style.setProperty('--ifm-font-size-base', size);
+
+        r.style.setProperty('--ifm-font-weight-base', weight);
+
+        r.style.setProperty('--psdi-letter-spacing-base', letter);
+
+        r.style.setProperty('--psdi-dark-text-color-body', darkColour);
+        r.style.setProperty('--psdi-dark-text-color-heading', darkColour);
+        r.style.setProperty('--psdi-light-text-color-body', lightColour);
+        r.style.setProperty('--psdi-light-text-color-heading', lightColour);
+
+        r.style.setProperty('--ifm-line-height-base', line);
+
+        r.style.setProperty('--ifm-background-color', lightBack);
+        r.style.setProperty('--ifm-color-primary', darkBack);
+    }
 
     sessionStorage.setItem("token", token);
     sessionStorage.setItem("in_str", "");
     sessionStorage.setItem("out_str", "");
     sessionStorage.setItem("success", "");
-
-    if (font != null) {
-        $(".normalText, .middle, h3, #resetButton, #yesButton").css({
-            fontFamily: font,
-            fontSize: size,
-            fontWeight: weight,
-            letterSpacing: letter
-        });
-
-        $(".normalText, .middle").css({lineHeight: line});
-        $(".normalText").css({color: colour});
-        $("h1, h2").css({letterSpacing: letter});
-        $("h1, h3").css({color: colour});
-        $("h3").css({fontSize: Number(size.substring(0, 2)) + 4 + 'px'});
-        $("form, select, #searchFrom, #searchTo, #upper").css({background: back});
-    }
 
     $("#fromList").click(populateConversionSuccess);
     $("#toList").click(populateConversionSuccess);

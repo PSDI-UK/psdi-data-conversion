@@ -5,7 +5,7 @@
   This is the JavaScript which makes the Accessibility gui work.
 */
 
-let r = document.querySelector(':root');
+const r = document.querySelector(':root');
 
 $(document).ready(function() {
     const font = sessionStorage.getItem("font"),
