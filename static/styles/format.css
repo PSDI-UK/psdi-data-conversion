@@ -749,15 +749,15 @@ form {
 
 /* Grid for textarea label/elements. */
 .access-options {
-  display        : flex;
-  flex-direction : row;
-  justify-content: flex-start;
-  flex-wrap      : wrap;
+  display              : grid;
+  grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr))
 }
 
 .access-option-container {
-  flex        : 0 0 10rem;
-  padding-left: 0 1rem 0 1rem;
+  padding-left   : 0 1rem 0 1rem;
+  display        : flex;
+  flex-direction : column;
+  justify-content: flex-end;
 }
 
 /* Dark blue text and 310px width select boxes. */
