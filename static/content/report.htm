@@ -32,11 +32,9 @@
 
   <form name="gui">
     <div class="max-width-box">
-      <div>
-        <p>Select the type of report (missing file format or conversion) and then follow the
-          instructions that appear.
-        <p><b>Finally:</b> click on 'Report.'</p><br>
-      </div>
+      <p>Select the type of report (missing file format or conversion) and then follow the
+        instructions that appear.
+      <p><b>Finally:</b> click on 'Report.'</p><br>
       <select id="reason">
         <option value="placeholder">-- select type of report --</option>
         <option value="format">Missing file format</option>
@@ -44,15 +42,12 @@
       </select>
       <div class="medGap"></div>
       <div id="formats">
-        <div>
-          <p>
-            <label for="formatList" id="formatLabel">Check that the format is not
-              present in the list. If it is, consider reporting a missing conversion.</label><br>
-            <input type="text" placeholder="-- type here to filter options --"
-              id="searchFormats"><br>
-            <select size="4" id="formatList"></select>
-          </p>
-        </div>
+        <p>
+          <label for="formatList" id="formatLabel">Check that the format is not
+            present in the list. If it is, consider reporting a missing conversion.</label><br>
+          <input type="text" placeholder="-- type here to filter options --" id="searchFormats"><br>
+          <select size="4" id="formatList"></select>
+        </p>
         <input type="button" value=" Reset " name="resetButton" id="resetButton">
       </div>
       <div id="missing"><br>
@@ -62,21 +57,17 @@
       </div>
       <div id="in_out_formats">
         <br>Select the required 'to' and 'from' formats below.
-        <div>
-          <p>
-            <label for="searchFrom" id="fromLabel">Convert from:</label><br>
-            <input type="text" placeholder="-- type here to filter options --" id="searchFrom"><br>
-            <select size="4" id="fromList"></select>
-          </p>
-        </div>
+        <p>
+          <label for="searchFrom" id="fromLabel">Convert from:</label><br>
+          <input type="text" placeholder="-- type here to filter options --" id="searchFrom"><br>
+          <select size="4" id="fromList"></select>
+        </p>
         <div class="smallGap"></div>
-        <div>
-          <p>
-            <label for="searchTo" id="toLabel">Convert to:</label><br>
-            <input type="text" placeholder="-- type here to filter options --" id="searchTo"><br>
-            <select size="4" id="toList"></select>
-          </p>
-        </div>
+        <p>
+          <label for="searchTo" id="toLabel">Convert to:</label><br>
+          <input type="text" placeholder="-- type here to filter options --" id="searchTo"><br>
+          <select size="4" id="toList"></select>
+        </p>
         <input type="button" value=" Reset " name="resetButton2" id="resetButton2">
       </div>
       <select id="success"></select> <!-- Not for display. For convenience only. -->
