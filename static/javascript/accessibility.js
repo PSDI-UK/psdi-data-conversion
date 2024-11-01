@@ -27,13 +27,12 @@ $(document).ready(function() {
 
     if (font != null) {
 
-        if (font !== "default ") {
-            r.style.setProperty('--ifm-font-family-base', font);
-            r.style.setProperty('--ifm-heading-font-family', font);
-        }
+        r.style.setProperty('--ifm-font-family-base', font);
+        r.style.setProperty('--ifm-heading-font-family', font);
+
+        r.style.setProperty('--ifm-font-size-base', size);
 
         $(".normalText, .middle, #resetButton, #applyButton").css({
-            fontSize: size,
             fontWeight: weight,
             letterSpacing: letter
         });
@@ -272,42 +271,10 @@ function changeFontSize(event) {
     const size = $("#size").find(":selected").text();
     var text = $(".normalText, .middle, #resetButton, #applyButton");
 
-    switch (size) {
-        case '14':
-            text.css({fontSize: '14px'});
-            break;
-
-        case '15':
-            text.css({fontSize: '15px'});
-            break;
-
-        case '16':
-            text.css({fontSize: '16px'});
-            break;
-
-        case '17':
-            text.css({fontSize: '17px'});
-            break;
-
-        case '18':
-            text.css({fontSize: '18px'});
-            break;
-
-        case '19':
-            text.css({fontSize: '19px'});
-            break;
-
-        case '20':
-            text.css({fontSize: '20px'});
-            break;
-
-        case '21':
-            text.css({fontSize: '21px'});
-            break;
-
-        default:
-            text.css({fontSize: '1rem'});
-            break;
+    if (size=="Default") {
+        r.style.setProperty('--ifm-font-size-base', "1rem");
+    } else {
+        r.style.setProperty('--ifm-font-size-base', size+"px");
     }
 }
 
