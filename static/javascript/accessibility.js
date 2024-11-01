@@ -36,9 +36,7 @@ $(document).ready(function() {
 
         r.style.setProperty('--ifm-font-weight-base', weight);
 
-        $(".normalText, .middle, #resetButton, #applyButton").css({
-            letterSpacing: letter
-        });
+        r.style.setProperty('--psdi-letter-spacing-base', letter);
 
         if (darkColour !== "default ") {
             r.style.setProperty('--psdi-dark-text-color-body', darkColour);
@@ -51,7 +49,6 @@ $(document).ready(function() {
         }
 
         $(".middle").css({lineHeight: line});
-        $("h1, h2").css({letterSpacing: letter});
         $("form, select, #upper").css({background: back});
 
         $("#font").val(fontOpt).change();
@@ -162,40 +159,11 @@ function changeFont(event) {
 // Changes the letter spacing for accessibility purposes.
 function changeLetterSpacing(event) {
     const space = $("#letter").find(":selected").text();
-    var text = $(".normalText, .middle, #resetButton, #applyButton, h1, h2");
 
-    switch (space) {
-        case '0.5':
-            text.css({letterSpacing: '0.5px'});
-            break;
-
-        case '1.0':
-            text.css({letterSpacing: '1px'});
-            break;
-
-        case '1.5':
-            text.css({letterSpacing: '1.5px'});
-            break;
-
-        case '2.0':
-            text.css({letterSpacing: '2px'});
-            break;
-
-        case '2.5':
-            text.css({letterSpacing: '2.5px'});
-            break;
-
-        case '3.0':
-            text.css({letterSpacing: '3px'});
-            break;
-
-        case '3.5':
-            text.css({letterSpacing: '3.5px'});
-            break;
-
-        default:
-            text.css({letterSpacing: '0px'});
-            break;
+    if (space == "Default") {
+        r.style.setProperty('--psdi-letter-spacing-base', "normal");
+    } else {
+        r.style.setProperty('--psdi-letter-spacing-base', space+"px");
     }
 }
 
@@ -386,9 +354,9 @@ function resetSelections(event) {
 // Applies accessibility settings to the entire website.
 function applySettings(event) {
     sessionStorage.setItem("font", r.style.getPropertyValue('--ifm-font-family-base'));
-    sessionStorage.setItem("size", $(".normalText").css('fontSize'));
+    sessionStorage.setItem("size", r.style.getPropertyValue('--ifm-font-size-base'));
     sessionStorage.setItem("weight", r.style.getPropertyValue('--ifm-font-weight-base'));
-    sessionStorage.setItem("letter", $(".normalText").css('letterSpacing'));
+    sessionStorage.setItem("letter", r.style.getPropertyValue('--psdi-letter-spacing-base'));
     sessionStorage.setItem("line", $(".normalText").css('lineHeight'));
     sessionStorage.setItem("darkColour", r.style.getPropertyValue('--psdi-dark-text-color-body'));
     sessionStorage.setItem("lightColour", r.style.getPropertyValue('--psdi-light-text-color-body'));

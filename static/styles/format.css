@@ -13,11 +13,12 @@
 
 
   /* Font */
-  --ifm-font-size-base     : 1rem;
-  --ifm-line-height-base   : 1.65;
-  --ifm-font-family-base   : Lato, Helvetica, Arial, Lucida, sans-serif;
-  --ifm-heading-font-family: Oswald, Helvetica, Arial, Lucida, sans-serif;
-  --ifm-font-weight-base   : normal;
+  --ifm-font-size-base      : 1rem;
+  --ifm-line-height-base    : 1.65;
+  --ifm-font-family-base    : Lato, Helvetica, Arial, Lucida, sans-serif;
+  --ifm-heading-font-family : Oswald, Helvetica, Arial, Lucida, sans-serif;
+  --ifm-font-weight-base    : normal;
+  --psdi-letter-spacing-base: normal;
 
   /* Background and text colors */
 
@@ -196,6 +197,7 @@ body {
   font-weight     : var(--ifm-font-weight-base);
   background-color: var(--ifm-background-color);
   color           : var(--ifm-font-color-base);
+  letter-spacing  : var(--psdi-letter-spacing-base);
   display         : flex;
   flex-direction  : column;
   justify-content : space-between;
