@@ -44,6 +44,11 @@ $(document).ready(function() {
     $("#uploadButton").click(submitFile);
 });
 
+// Remove the loading cover when everything is loaded
+$(window).on('load', function() {
+    $("#cover").hide();
+});
+
 // $$$$$$$$$$ Retained in case of future need to write to a log file $$$$$$$$$$
 // Writes user input to a server-side file
 function writeLog(message) {

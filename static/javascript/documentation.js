@@ -13,3 +13,8 @@ $(document).ready(function() {
     loadAccessibilitySettings();
 });
 
+// Remove the loading cover when everything is loaded
+$(window).on('load', function() {
+    $("#cover").hide();
+});
+

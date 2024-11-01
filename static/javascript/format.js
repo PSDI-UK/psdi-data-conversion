@@ -42,6 +42,11 @@ $(document).ready(function() {
     $("#resetButton").click(resetAll);
 });
 
+// Remove the loading cover when everything is loaded
+$(window).on('load', function() {
+    $("#cover").hide();
+});
+
 // Selects a file format; populates the "Conversion success" selection list given input and output IDs;
 // filters the output format list when an input format is selected, and vice versa (formats not convertible
 // to/from the selected format are removed); and removes converter details and text input (if showing)

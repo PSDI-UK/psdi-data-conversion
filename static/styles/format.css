@@ -206,6 +206,16 @@ body {
   margin          : 0;
 }
 
+#cover {
+  position  : fixed;
+  height    : 100%;
+  width     : 100%;
+  top       : 0;
+  left      : 0;
+  background: var(--ifm-background-color);
+  z-index   : 9999;
+}
+
 select,
 option {
   font-family     : var(--ifm-font-family-base);

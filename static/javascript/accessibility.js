@@ -84,6 +84,11 @@ $(document).ready(function() {
     $("#applyButton").click(applySettings);
 });
 
+// Remove the loading cover when everything is loaded
+$(window).on('load', function() {
+    $("#cover").hide();
+});
+
 // Changes the font for accessibility purposes and ensures that the correct default line spacing is applied.
 function changeFont(event) {
     const font = $("#font").find(":selected").text();

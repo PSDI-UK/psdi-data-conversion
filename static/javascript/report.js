@@ -41,6 +41,11 @@ $(document).ready(function() {
     $("#reportButton").click(submitUserInput);
 });
 
+// Remove the loading cover when everything is loaded
+$(window).on('load', function() {
+    $("#cover").hide();
+});
+
 // Included in this file for convenience. When the 'Report' button is clicked, a user's missing conversion report
 // is only sent if the undisplayed conversion success box is empty (i.e., the conversion really is missing)
 function populateConversionSuccess(event) {
