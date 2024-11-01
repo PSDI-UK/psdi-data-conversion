@@ -5,6 +5,8 @@
   This is the JavaScript which makes the report.htm gui work.
 */
 
+import { loadAccessibilitySettings } from './accessibility.js';
+
 const r = document.querySelector(':root');
 
 var token = "",
@@ -13,6 +15,9 @@ var token = "",
     formatList = new Array();
 
 $(document).ready(function() {
+
+    loadAccessibilitySettings();
+
     token = sessionStorage.getItem("token");
 
     $("#success").css({display: "none"});
@@ -23,43 +28,6 @@ $(document).ready(function() {
     queryDatabase(query, "from", populateList);
     queryDatabase(query, "to", populateList);
     queryDatabase(query, "format", populateList);
-
-    const font = sessionStorage.getItem("font"),
-          size = sessionStorage.getItem("size"),
-          weight = sessionStorage.getItem("weight"),
-          letter = sessionStorage.getItem("letter"),
-          line = sessionStorage.getItem("line"),
-          darkColour = sessionStorage.getItem("darkColour"),
-          lightColour = sessionStorage.getItem("lightColour"),
-          lightBack = sessionStorage.getItem("lightBack"),
-          darkBack = sessionStorage.getItem("darkBack");
-
-    if (font != null) {
-
-        r.style.setProperty('--ifm-font-family-base', font);
-        r.style.setProperty('--ifm-heading-font-family', font);
-
-        r.style.setProperty('--ifm-font-size-base', size);
-
-        r.style.setProperty('--ifm-font-size-base', size);
-
-        r.style.setProperty('--ifm-font-weight-base', weight);
-
-        r.style.setProperty('--psdi-letter-spacing-base', letter);
-
-        r.style.setProperty('--psdi-dark-text-color-body', darkColour);
-        r.style.setProperty('--psdi-dark-text-color-heading', darkColour);
-        r.style.setProperty('--psdi-light-text-color-body', lightColour);
-        r.style.setProperty('--psdi-light-text-color-heading', lightColour);
-
-        r.style.setProperty('--ifm-line-height-base', line);
-
-        r.style.setProperty('--ifm-background-color', lightBack);
-        r.style.setProperty('--ifm-color-primary', darkBack);
-    }
-
-//    $("#searchFrom").val(sessionStorage.getItem("in_str")); // $$$$$ CHECK if can remove these items from entire website $$$$$
-  //  $("#searchTo").val(sessionStorage.getItem("out_str"));
 
     $("#reason").change(display);
     $("#fromList").click(populateConversionSuccess);

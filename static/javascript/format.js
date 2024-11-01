@@ -5,12 +5,17 @@
   This is the JavaScript which makes the Format and Converter Selection gui work.
 */
 
+import { loadAccessibilitySettings } from './accessibility.js';
+
 const r = document.querySelector(':root');
 
 var fromList = new Array(),
     toList = new Array();
 
 $(document).ready(function() {
+
+    loadAccessibilitySettings();
+
     // Populates the "Convert from" selection list
     var query = `SELECT DISTINCT Form.Extension, Form.Note FROM Formats Form, Converts_to Conv
                  WHERE Form.ID = Conv.in_ID ORDER BY Form.Extension, Form.Note ASC`
@@ -22,40 +27,6 @@ $(document).ready(function() {
                  WHERE Form.ID = Conv.out_ID ORDER BY Form.Extension, Form.Note ASC`
 
     queryDatabase(query, "to", populateList);
-
-    const font = sessionStorage.getItem("font"),
-          size = sessionStorage.getItem("size"),
-          weight = sessionStorage.getItem("weight"),
-          letter = sessionStorage.getItem("letter"),
-          line = sessionStorage.getItem("line"),
-          darkColour = sessionStorage.getItem("darkColour"),
-          lightColour = sessionStorage.getItem("lightColour"),
-          lightBack = sessionStorage.getItem("lightBack"),
-          darkBack = sessionStorage.getItem("darkBack");
-
-    if (font != null) {
-
-        r.style.setProperty('--ifm-font-family-base', font);
-        r.style.setProperty('--ifm-heading-font-family', font);
-
-        r.style.setProperty('--ifm-font-size-base', size);
-
-        r.style.setProperty('--ifm-font-size-base', size);
-
-        r.style.setProperty('--ifm-font-weight-base', weight);
-
-        r.style.setProperty('--psdi-letter-spacing-base', letter);
-
-        r.style.setProperty('--psdi-dark-text-color-body', darkColour);
-        r.style.setProperty('--psdi-dark-text-color-heading', darkColour);
-        r.style.setProperty('--psdi-light-text-color-body', lightColour);
-        r.style.setProperty('--psdi-light-text-color-heading', lightColour);
-
-        r.style.setProperty('--ifm-line-height-base', line);
-
-        r.style.setProperty('--ifm-background-color', lightBack);
-        r.style.setProperty('--ifm-color-primary', darkBack);
-    }
 
     sessionStorage.setItem("token", token);
     sessionStorage.setItem("in_str", "");

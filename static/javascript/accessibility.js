@@ -7,25 +7,17 @@
 
 const r = document.querySelector(':root');
 
-$(document).ready(function() {
+export function loadAccessibilitySettings() {
+
     const font = sessionStorage.getItem("font"),
-          fontOpt = sessionStorage.getItem("fontOpt"),
           size = sessionStorage.getItem("size"),
-          sizeOpt = sessionStorage.getItem("sizeOpt"),
           weight = sessionStorage.getItem("weight"),
-          weightOpt = sessionStorage.getItem("weightOpt"),
           letter = sessionStorage.getItem("letter"),
-          letterOpt = sessionStorage.getItem("letterOpt"),
           line = sessionStorage.getItem("line"),
-          lineOpt = sessionStorage.getItem("lineOpt"),
           darkColour = sessionStorage.getItem("darkColour"),
-          darkColourOpt = sessionStorage.getItem("darkColourOpt"),
           lightColour = sessionStorage.getItem("lightColour"),
-          lightColourOpt = sessionStorage.getItem("lightColourOpt"),
           lightBack = sessionStorage.getItem("lightBack"),
-          lightBackOpt = sessionStorage.getItem("lightBackOpt"),
-          darkBack = sessionStorage.getItem("darkBack"),
-          darkBackOpt = sessionStorage.getItem("darkBackOpt");
+          darkBack = sessionStorage.getItem("darkBack");
 
     if (font != null) {
 
@@ -49,6 +41,24 @@ $(document).ready(function() {
 
         r.style.setProperty('--ifm-background-color', lightBack);
         r.style.setProperty('--ifm-color-primary', darkBack);
+    }
+}
+
+$(document).ready(function() {
+
+    loadAccessibilitySettings();
+
+    const fontOpt = sessionStorage.getItem("fontOpt"),
+          sizeOpt = sessionStorage.getItem("sizeOpt"),
+          weightOpt = sessionStorage.getItem("weightOpt"),
+          letterOpt = sessionStorage.getItem("letterOpt"),
+          lineOpt = sessionStorage.getItem("lineOpt"),
+          darkColourOpt = sessionStorage.getItem("darkColourOpt"),
+          lightColourOpt = sessionStorage.getItem("lightColourOpt"),
+          lightBackOpt = sessionStorage.getItem("lightBackOpt"),
+          darkBackOpt = sessionStorage.getItem("darkBackOpt");
+
+    if (fontOpt != null) {
 
         $("#font").val(fontOpt).change();
         $("#size").val(sizeOpt).change();
