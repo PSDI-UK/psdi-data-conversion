@@ -45,7 +45,7 @@ $(document).ready(function() {
 
         r.style.setProperty('--ifm-line-height-base', line);
 
-        $("form, select, #upper").css({background: back});
+        r.style.setProperty('--ifm-background-color', back);
 
         $("#font").val(fontOpt).change();
         $("#size").val(sizeOpt).change();
@@ -231,23 +231,26 @@ function changeFontColour(event, lightOrDark="dark") {
 // Changes the background colour for accessibility purposes.
 function changeBackground(event) {
     const colour = $("#background").find(":selected").text();
-    var text = $(".normalText");
 
     switch (colour) {
+        case 'Grey':
+            r.style.setProperty('--ifm-background-color', "lightgrey");
+            break;
+
         case 'Mustard':
-            $("form, select, #upper").css({background: '#eddd6e'});
+            r.style.setProperty('--ifm-background-color', "#eddd6e");
             break;
 
         case 'Peach':
-            $("form, select, #upper").css({background: '#edd1b0'});
+            r.style.setProperty('--ifm-background-color', "#edd1b0");
             break;
 
         case 'Lemon':
-            $("form, select, #upper").css({background: '#f8fd89'});
+            r.style.setProperty('--ifm-background-color', "#f8fd89");
             break;
 
         default:
-            $("form, select, #upper").css({background: 'white'});
+            r.style.setProperty('--ifm-background-color', "var(--psdi-bg-color-default)");
             break;
     }
 }
@@ -266,7 +269,7 @@ function applySettings(event) {
     sessionStorage.setItem("line", r.style.getPropertyValue('--ifm-line-height-base'));
     sessionStorage.setItem("darkColour", r.style.getPropertyValue('--psdi-dark-text-color-body'));
     sessionStorage.setItem("lightColour", r.style.getPropertyValue('--psdi-light-text-color-body'));
-    sessionStorage.setItem("back", $("form").css('background'));
+    sessionStorage.setItem("back", r.style.getPropertyValue('--ifm-background-color'));
 
     sessionStorage.setItem("fontOpt", $("#font").find(":selected").text());
     sessionStorage.setItem("sizeOpt", $("#size").find(":selected").text());
