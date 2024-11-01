@@ -17,6 +17,7 @@
   --ifm-line-height-base   : 1.65;
   --ifm-font-family-base   : Lato, Helvetica, Arial, Lucida, sans-serif;
   --ifm-heading-font-family: Oswald, Helvetica, Arial, Lucida, sans-serif;
+  --ifm-font-weight-base   : normal;
 
   /* Background and text colors */
 
@@ -192,6 +193,7 @@ body {
   min-height      : 100vh;
   font-family     : var(--ifm-font-family-base);
   font-size       : var(--ifm-font-size-base);
+  font-weight     : var(--ifm-font-weight-base);
   background-color: var(--ifm-background-color);
   color           : var(--ifm-font-color-base);
   display         : flex;
@@ -199,6 +201,14 @@ body {
   justify-content : space-between;
   padding         : 0;
   margin          : 0;
+}
+
+select {
+  font-family     : var(--ifm-font-family-base);
+  font-size       : var(--ifm-font-size-base);
+  font-weight     : var(--ifm-font-weight-base);
+  background-color: var(--ifm-background-color);
+  color           : var(--ifm-font-color-base);
 }
 
 *:has(> .max-width-box) {
@@ -239,7 +249,7 @@ body>* {
 
 .navbar__item {
   padding    : 0.5rem 0.75rem;
-  font-weight: 500;
+  font-weight: var(--ifm-font-weight-base);
 }
 
 .navbar__items--right {

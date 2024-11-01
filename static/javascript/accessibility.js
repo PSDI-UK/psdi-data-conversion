@@ -32,8 +32,11 @@ $(document).ready(function() {
 
         r.style.setProperty('--ifm-font-size-base', size);
 
+        r.style.setProperty('--ifm-font-size-base', size);
+
+        r.style.setProperty('--ifm-font-weight-base', weight);
+
         $(".normalText, .middle, #resetButton, #applyButton").css({
-            fontWeight: weight,
             letterSpacing: letter
         });
 
@@ -269,7 +272,6 @@ function changeLineSpacing(event) {
 // Changes the font size for accessibility purposes.
 function changeFontSize(event) {
     const size = $("#size").find(":selected").text();
-    var text = $(".normalText, .middle, #resetButton, #applyButton");
 
     if (size=="Default") {
         r.style.setProperty('--ifm-font-size-base', "1rem");
@@ -281,16 +283,11 @@ function changeFontSize(event) {
 // Changes the font weight for accessibility purposes.
 function changeFontWeight(event) {
     const weight = $("#weight").find(":selected").text();
-    var text = $(".normalText, .middle, #resetButton, #applyButton");
 
-    switch (weight) {
-        case 'Bold':
-            text.css({fontWeight: 'bold'});
-            break;
-
-        default:
-            text.css({fontWeight: 'normal'});
-            break;
+    if (weight=="Default") {
+        r.style.setProperty('--ifm-font-weight-base', "normal");
+    } else {
+        r.style.setProperty('--ifm-font-weight-base', weight.toLowerCase());
     }
 }
 
@@ -390,7 +387,7 @@ function resetSelections(event) {
 function applySettings(event) {
     sessionStorage.setItem("font", r.style.getPropertyValue('--ifm-font-family-base'));
     sessionStorage.setItem("size", $(".normalText").css('fontSize'));
-    sessionStorage.setItem("weight", $(".normalText").css('fontWeight'));
+    sessionStorage.setItem("weight", r.style.getPropertyValue('--ifm-font-weight-base'));
     sessionStorage.setItem("letter", $(".normalText").css('letterSpacing'));
     sessionStorage.setItem("line", $(".normalText").css('lineHeight'));
     sessionStorage.setItem("darkColour", r.style.getPropertyValue('--psdi-dark-text-color-body'));
