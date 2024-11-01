@@ -17,6 +17,7 @@
     type="text/css">
   <link href="https://fonts.googleapis.com/css?family=Lexend:400" rel="stylesheet" type="text/css">
   <link rel="stylesheet" href="{{url_for('static', filename='styles/format.css')}}">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.3/jquery.min.js"></script>
 </head>
 
 <body marginwidth="0">
@@ -26,7 +27,7 @@
 
   <header class="header" id="psdi-header-stub"></header>
   <script>
-    $("#psdi-header-stub").load("local_header.html");
+    $("#psdi-header-stub").load("static/content/local_header.html");
   </script>
 
   <div class="hero">
@@ -41,19 +42,14 @@
         either order. Typing where indicated filters the options (case insensitive); for example,
         typing 'can' or 'NON' reduces the number of options to one: 'can: Canonical SMILES.' If you
         change your mind about a conversion, it is advisable to click on the 'Reset' button. When
-        both
-        formats have been selected, converters able to carry out this conversion appear in the
+        both formats have been selected, converters able to carry out this conversion appear in the
         'Conversion options' box along with an indication of conversion success (many conversions
-        have
-        not yet been tested) and whether or not the converter is supported on this site. Selecting a
-        converter displays information about it, along with a link to a relevant website.
-        Irrespective
-        of the selected converter, an Open Babel conversion is offered if it can be carried out.
-        Clicking on the 'Yes' button takes us to the 'Conversion' page. If a file format has not
-        been
-        found, or if there are no converters supporting a required conversion, please click on
-        'Report
-        Missing Format/Conversion' in the navigation bar.</p>
+        have not yet been tested) and whether or not the converter is supported on this site.
+        Selecting a converter displays information about it, along with a link to a relevant
+        website. Irrespective of the selected converter, an Open Babel conversion is offered if it
+        can be carried out. Clicking on the 'Yes' button takes us to the 'Conversion' page. If a
+        file format has not been found, or if there are no converters supporting a required
+        conversion, please click on 'Report Missing Format/Conversion' in the navigation bar.</p>
       <p>
         <label for="searchFrom" id="fromLabel">Convert from:</label><br>
         <input type="text" placeholder="-- type here to filter options --" size="12"
@@ -102,7 +98,18 @@
   <footer class="footer" id="psdi-footer-stub">
     </header>
     <script>
-      $("#psdi-footer-stub").load("local_footer.html");
+      $("#psdi-footer-stub").load("static/content/local_footer.html",
+        function () {
+          // Adjust header link targets for the index so they're properly relative
+          let navbarLinks = $(".navbar__items--right")[0].childNodes;
+          Array.from(navbarLinks).forEach(element => {
+            if (element.tagName === "A" && element.href != window.location.href) {
+              console.log(element.href);
+              element.href = element.href.replace(window.location.href, window.location.href + "static/content/");
+            }
+          });
+        }
+      );
     </script>
   </footer>
 
