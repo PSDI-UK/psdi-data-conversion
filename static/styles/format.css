@@ -14,7 +14,7 @@
 
   /* Font */
   --ifm-font-size-base      : 1rem;
-  --ifm-line-height-base    : 1.65;
+  --ifm-line-height-base    : 1.5;
   --ifm-font-family-base    : Lato, Helvetica, Arial, Lucida, sans-serif;
   --ifm-heading-font-family : Oswald, Helvetica, Arial, Lucida, sans-serif;
   --ifm-font-weight-base    : normal;
@@ -198,6 +198,7 @@ body {
   background-color: var(--ifm-background-color);
   color           : var(--ifm-font-color-base);
   letter-spacing  : var(--psdi-letter-spacing-base);
+  line-height     : var(--ifm-line-height-base);
   display         : flex;
   flex-direction  : column;
   justify-content : space-between;
@@ -295,7 +296,6 @@ h6 {
   color      : var(--ifm-heading-color);
   font-family: var(--ifm-heading-font-family);
   font-weight: bold;
-  line-height: 1.25;
   margin     : 0 0 1rem 0;
 }
 
@@ -562,17 +562,12 @@ a svg {
   padding: 0;
 }
 
-.funding-text {
-  line-height: 1.5rem;
-}
-
 .footer__col:has(img) {
   padding-top: 0rem;
 }
 
 .footer__items li {
-  line-height: 1.5rem;
-  padding    : 0.25rem 0;
+  padding: 0.25rem 0;
 }
 
 .footer img {
@@ -619,8 +614,7 @@ a svg {
 }
 
 .footer__copyright__text {
-  line-height: 1.5rem;
-  padding    : 0;
+  padding: 0;
 }
 
 /* Custom style settings for this site */

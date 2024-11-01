@@ -38,17 +38,13 @@ $(document).ready(function() {
 
         r.style.setProperty('--psdi-letter-spacing-base', letter);
 
-        if (darkColour !== "default ") {
-            r.style.setProperty('--psdi-dark-text-color-body', darkColour);
-            r.style.setProperty('--psdi-dark-text-color-heading', darkColour);
-        }
+        r.style.setProperty('--psdi-dark-text-color-body', darkColour);
+        r.style.setProperty('--psdi-dark-text-color-heading', darkColour);
+        r.style.setProperty('--psdi-light-text-color-body', lightColour);
+        r.style.setProperty('--psdi-light-text-color-heading', lightColour);
 
-        if (lightColour !== "default ") {
-            r.style.setProperty('--psdi-light-text-color-body', lightColour);
-            r.style.setProperty('--psdi-light-text-color-heading', lightColour);
-        }
+        r.style.setProperty('--ifm-line-height-base', line);
 
-        $(".middle").css({lineHeight: line});
         $("form, select, #upper").css({background: back});
 
         $("#font").val(fontOpt).change();
@@ -82,74 +78,42 @@ function changeFont(event) {
 
     switch (font) {
         case 'Arial':
-            if (line == 'Default') {
-                text.css({lineHeight: 1.145});
-            }
-
             r.style.setProperty('--ifm-font-family-base', 'Arial, sans-serif');
             r.style.setProperty('--ifm-heading-font-family', 'Arial, sans-serif');
             break;
 
         case 'Comic Sans':
-            if (line == 'Default') {
-                text.css({lineHeight: 1.4});
-            }
-
             r.style.setProperty('--ifm-font-family-base', 'Comic Sans MS, Comic Sans, sans-serif');
             r.style.setProperty('--ifm-heading-font-family', 'Comic Sans MS, Comic Sans, sans-serif');
             break;
 
         case 'Lexend':
-            if (line == 'Default') {
-                text.css({lineHeight: 1.3});
-            }
-
             r.style.setProperty('--ifm-font-family-base', 'Lexend, sans-serif');
             r.style.setProperty('--ifm-heading-font-family', 'Lexend, sans-serif');
             break;
 
         case 'Open Sans':
-            if (line == 'Default') {
-                text.css({lineHeight: 1.4});
-            }
-
             r.style.setProperty('--ifm-font-family-base', 'Open Sans, sans-serif');
             r.style.setProperty('--ifm-heading-font-family', 'Open Sans, sans-serif');
             break;
 
         case 'Tahoma':
-            if (line == 'Default') {
-                text.css({lineHeight: 1.25});
-            }
-
             r.style.setProperty('--ifm-font-family-base', 'Tahoma, sans-serif');
             r.style.setProperty('--ifm-heading-font-family', 'Tahoma, sans-serif');
             break;
 
         case 'Trebuchet':
-            if (line == 'Default') {
-                text.css({lineHeight: 1.2});
-            }
-
             r.style.setProperty('--ifm-font-family-base', 'Trebuchet MS, Trebuchet, sans-serif');
             r.style.setProperty('--ifm-heading-font-family', 'Trebuchet MS, Trebuchet, sans-serif');
             break;
 
         case 'Verdana':
-            if (line == 'Default') {
-                text.css({lineHeight: 1.25});
-            }
-
             r.style.setProperty('--ifm-font-family-base', 'Verdana, sans-serif');
             r.style.setProperty('--ifm-heading-font-family', 'Verdana, sans-serif');
             text.css({fontFamily: 'Verdana, sans-serif'});
             break;
 
         default:
-            if (line == 'Default') {
-                text.css({lineHeight: 1.218});
-            }
-
             r.style.setProperty('--ifm-font-family-base', 'Lato, Helvetica, Arial, Lucida, sans-serif');
             r.style.setProperty('--ifm-heading-font-family', 'Oswald, Helvetica, Arial, Lucida, sans-serif');
             break;
@@ -171,69 +135,11 @@ function changeLetterSpacing(event) {
 function changeLineSpacing(event) {
     const space = $("#line").find(":selected").text();
     var text = $(".normalText, .middle");
-
-    switch (space) {
-        case '1.1':
-            text.css({lineHeight: 1.1});
-            break;
-
-        case '1.2':
-            text.css({lineHeight: 1.2});
-            break;
-
-        case '1.3':
-            text.css({lineHeight: 1.3});
-            break;
-
-        case '1.4':
-            text.css({lineHeight: 1.4});
-            break;
-
-        case '1.5':
-            text.css({lineHeight: 1.5});
-            break;
-
-        case '1.6':
-            text.css({lineHeight: 1.6});
-            break;
-
-        case '1.7':
-            text.css({lineHeight: 1.7});
-            break;
-
-        // Ensures that the correct default line spacing is applied to the current font.
-        default:
-            const font = $("#font").find(":selected").text();
-
-            switch (font) {
-                case 'Arial':
-                    text.css({lineHeight: 1.145});
-                    break;
-
-                case 'Comic Sans':
-                case 'Open Sans':
-                    text.css({lineHeight: 1.4});
-                    break;
-
-                case 'Lexend':
-                    text.css({lineHeight: 1.3});
-                    break;
-
-                case 'Tahoma':
-                case 'Verdana':
-                    text.css({lineHeight: 1.25});
-                    break;
-
-                case 'Trebuchet':
-                    text.css({lineHeight: 1.2});
-                    break;
-
-                default:
-                    text.css({lineHeight: 1.218});
-                    break;
-            }
-
-            break;
+    
+    if (space=="Default") {
+        r.style.setProperty('--ifm-line-height-base', "1.5");
+    } else {
+        r.style.setProperty('--ifm-line-height-base', space);
     }
 }
 
@@ -357,7 +263,7 @@ function applySettings(event) {
     sessionStorage.setItem("size", r.style.getPropertyValue('--ifm-font-size-base'));
     sessionStorage.setItem("weight", r.style.getPropertyValue('--ifm-font-weight-base'));
     sessionStorage.setItem("letter", r.style.getPropertyValue('--psdi-letter-spacing-base'));
-    sessionStorage.setItem("line", $(".normalText").css('lineHeight'));
+    sessionStorage.setItem("line", r.style.getPropertyValue('--ifm-line-height-base'));
     sessionStorage.setItem("darkColour", r.style.getPropertyValue('--psdi-dark-text-color-body'));
     sessionStorage.setItem("lightColour", r.style.getPropertyValue('--psdi-light-text-color-body'));
     sessionStorage.setItem("back", $("form").css('background'));
