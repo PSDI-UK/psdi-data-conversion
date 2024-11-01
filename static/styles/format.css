@@ -646,7 +646,7 @@ form {
   padding-left: 0.125rem;
 }
 
-/* 850px width for some select boxes for accessibility purposes. */
+/* 50rem width for some select boxes for accessibility purposes. */
 #fromList,
 #toList,
 #formatList,
@@ -657,13 +657,13 @@ form {
   width: 50rem;
 }
 
-/* 420px width for the report type select box. */
+/* 25rem width for the report type select box. */
 #reason {
   width: 25rem;
 }
 
-/* Width of select box begins to reduce at 530px. */
-@media (max-width: 530px) {
+/* Width of select box begins to reduce at 25rem. */
+@media (max-width: 25rem) {
   #reason {
     width: 100%
   }
@@ -685,17 +685,6 @@ form {
   display: block
 }
 
-/* Dark blue background and light grey text for buttons. */
-#uploadButton,
-#resetButton,
-#resetButton2,
-#yesButton,
-#reportButton,
-#applyButton {
-  background-color: var(--ifm-color-primary);
-  color           : var(--psdi-light-text-color-body);
-}
-
 /* Upload button (Convert) initially greyed out.*/
 #uploadButton {
   background-color: var(--psdi-bg-color-secondary);
@@ -708,7 +697,7 @@ form {
 #searchFrom,
 #missingFormat,
 #searchFormats {
-  color: #011e41;
+  color: var(--ifm-color-primary);
   width: 50rem;
 }
 
@@ -725,7 +714,7 @@ form {
   }
 }
 
-/* Width of text boxes begins to reduce at 950px. */
+/* Width of text boxes begins to reduce at 50rem. */
 @media (max-width: 50rem) {
 
   #searchFrom,
@@ -791,8 +780,8 @@ select#dark-background {
   grid-template-columns: 1fr 1fr
 }
 
-/* Select label/elements are stacked at <= 800px. */
-@media (max-width: 800px) {
+/* Select label/elements are stacked at <= 50rem. */
+@media (max-width: 50rem) {
   .selGrid {
     grid-template-columns: auto
   }
@@ -806,15 +795,15 @@ select#dark-background {
     /* top right bottom left */
 }
 
-/* Logo and navigation are stacked at <= 900px. */
-@media (max-width: 900px) {
+/* Logo and navigation are stacked at <= 55rem. */
+@media (max-width: 55rem) {
   .navGrid {
     grid-template-columns: auto
   }
 }
 
-/* Logo/navigation grid margins reduced at 430px */
-@media (max-width: 430px) {
+/* Logo/navigation grid margins reduced at 25rem */
+@media (max-width: 25rem) {
   .navGrid {
     margin: 0 1rem 0 1rem
   }
