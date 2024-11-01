@@ -47,14 +47,18 @@
           <p>
             <label for="font" class="normalText" id="fontLabel">Font:</label><br>
             <select class="normalText" id="font">
-              <option value="Default">Default</option>
-              <option value="Arial">Arial</option>
-              <option value="Comic Sans">Comic Sans</option>
-              <option value="Lexend">Lexend</option>
-              <option value="Open Sans">Open Sans</option>
-              <option value="Tahoma">Tahoma</option>
-              <option value="Trebuchet">Trebuchet</option>
-              <option value="Verdana">Verdana</option>
+              <option value="Default"
+                style="font-family: Lato, Helvetica, Arial, Lucida, sans-serif">Default</option>
+              <option value="Arial" style="font-family: Arial, sans-serif;">Arial</option>
+              <option value="Comic Sans"
+                style="font-family: Comic Sans MS, Comic Sans, sans-serif;">Comic Sans</option>
+              <option value="Lexend" style="font-family: Lexend, sans-serif;">Lexend</option>
+              <option value="Open Sans" style="font-family: Open Sans, sans-serif;">Open Sans
+              </option>
+              <option value="Tahoma" style="font-family: Tahoma, sans-serif;">Tahoma</option>
+              <option value="Trebuchet" style="font-family: Trebuchet MS, Trebuchet, sans-serif;">
+                Trebuchet</option>
+              <option value="Verdana" style="font-family: Verdana, sans-serif;">Verdana</option>
             </select><br>
           </p>
         </div>
@@ -62,15 +66,15 @@
           <p>
             <label for="size" class="normalText" id="sizeLabel">Font size (px):</label><br>
             <select class="normalText" id="size">
-              <option value="Default">Default</option>
-              <option value="14">14</option>
-              <option value="15">15</option>
-              <option value="16">16</option>
-              <option value="17">17</option>
-              <option value="18">18</option>
-              <option value="19">19</option>
-              <option value="20">20</option>
-              <option value="21">21</option>
+              <option value="Default" style="font-size: 16px;">Default</option>
+              <option value="14" style="font-size: 14px;">14</option>
+              <option value="15" style="font-size: 15px;">15</option>
+              <option value="16" style="font-size: 16px;">16</option>
+              <option value="17" style="font-size: 17px;">17</option>
+              <option value="18" style="font-size: 18px;">18</option>
+              <option value="19" style="font-size: 19px;">19</option>
+              <option value="20" style="font-size: 20px;">20</option>
+              <option value="21" style="font-size: 21px;">21</option>
             </select>
           </p>
         </div>
@@ -87,6 +91,8 @@
           <p>
             <label for="letter" class="normalText" id="letterLabel">Letter spacing (px):</label><br>
             <select class="normalText" id="letter">
+              <!-- Limitations of how the select element works prevent us from showing a preview of this element
+               in the dropdown -->
               <option value="Default">Default</option>
               <option value="0.5">0.5</option>
               <option value="1.0">1.0</option>
@@ -102,6 +108,8 @@
           <p>
             <label for="line" class="normalText" id="lineLabel">Line spacing:</label><br>
             <select class="normalText" id="line">
+              <!-- Limitations of how the select element works prevent us from showing a preview of this element
+               in the dropdown -->
               <option value="Default">Default</option>
               <option value="1.0">1.0</option>
               <option value="1.1">1.1</option>

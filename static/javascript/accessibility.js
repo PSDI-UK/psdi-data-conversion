@@ -125,7 +125,6 @@ function changeFont(event) {
         case 'Verdana':
             r.style.setProperty('--ifm-font-family-base', 'Verdana, sans-serif');
             r.style.setProperty('--ifm-heading-font-family', 'Verdana, sans-serif');
-            text.css({fontFamily: 'Verdana, sans-serif'});
             break;
 
         default:

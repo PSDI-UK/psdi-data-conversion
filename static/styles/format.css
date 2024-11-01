@@ -206,12 +206,25 @@ body {
   margin          : 0;
 }
 
-select {
+select,
+option {
   font-family     : var(--ifm-font-family-base);
   font-size       : var(--ifm-font-size-base);
   font-weight     : var(--ifm-font-weight-base);
   background-color: var(--ifm-background-color);
   color           : var(--ifm-font-color-base);
+  letter-spacing  : var(--psdi-letter-spacing-base);
+  line-height     : var(--ifm-line-height-base);
+}
+
+button {
+  font-family     : var(--ifm-font-family-base);
+  font-size       : var(--ifm-font-size-base);
+  font-weight     : var(--ifm-font-weight-base);
+  background-color: var(--ifm-background-color);
+  color           : var(--ifm-font-color-base);
+  letter-spacing  : var(--psdi-letter-spacing-base);
+  line-height     : var(--ifm-line-height-base);
 }
 
 *:has(> .max-width-box) {
