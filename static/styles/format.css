@@ -762,9 +762,13 @@ form {
 
 /* Dark blue text and 310px width select boxes. */
 select {
-  color    : inherit;
   min-width: 5rem;
   width    : 90%;
+}
+
+select#light-colour {
+  background-color: var(--ifm-color-primary);
+  color           : var(--psdi-light-text-color-body);
 }
 
 /* Initially hidden grid for select label/elements. */

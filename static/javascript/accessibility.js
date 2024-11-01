@@ -52,8 +52,9 @@ $(document).ready(function() {
         $("#weight").val(weightOpt).change();
         $("#letter").val(letterOpt).change();
         $("#line").val(lineOpt).change();
-        $("#darkColour").val(darkColourOpt).change();
-        $("#lightColour").val(lightColourOpt).change();
+        $("#dark-colour").val(darkColourOpt).change();
+        console.log("\""+lightColourOpt+"\"");
+        $("#light-colour").val(lightColourOpt).change();
         $("#background").val(backOpt).change();
     }
 
@@ -177,42 +178,9 @@ function changeFontColourLight(event) {
 
 function changeFontColour(event, lightOrDark="dark") {
     const colour = $("#"+lightOrDark+"-colour").find(":selected").text();
-    var text = $(".normalText");
     let new_colour;
 
-    switch (colour) {
-        case 'Black':
-            new_colour = 'black';
-            break;
-
-        case 'White':
-            new_colour = 'white';
-            break;
-
-        case 'Red':
-            new_colour = 'red';
-            break;
-
-        case 'Orange':
-            new_colour = 'orange';
-            break;
-
-        case 'Green':
-            new_colour = 'green';
-            break;
-
-        case 'Purple':
-            new_colour = 'purple';
-            break;
-
-        case 'Brown':
-            new_colour = 'brown';
-            break;
-
-        default:
-            new_colour = 'default';
-            break;
-    }
+    new_colour = colour.toLowerCase();
 
     if (new_colour==='default') {
         if (lightOrDark=="dark") {
@@ -250,14 +218,14 @@ function changeBackground(event) {
             break;
 
         default:
-            r.style.setProperty('--ifm-background-color', "var(--psdi-bg-color-default)");
+            r.style.setProperty('--ifm-background-color', "white");
             break;
     }
 }
 
 // Reverts all select boxes to 'Default'
 function resetSelections(event) {
-    $("#font, #size, #weight, #letter, #line, #colour, #background").val('Default').change();
+    $("#font, #size, #weight, #letter, #line, #dark-colour, #light-colour, #background").val('Default').change();
 }
 
 // Applies accessibility settings to the entire website.
@@ -279,6 +247,7 @@ function applySettings(event) {
     sessionStorage.setItem("darkColourOpt", $("#dark-colour").find(":selected").text());
     sessionStorage.setItem("lightColourOpt", $("#light-colour").find(":selected").text());
     sessionStorage.setItem("backOpt", $("#background").find(":selected").text());
+    console.log(sessionStorage.getItem("backOpt"));
 
     alert("The settings have been applied to the entire website.");
 }
