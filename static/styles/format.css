@@ -793,6 +793,13 @@ select#dark-background option {
   color           : var(--psdi-light-text-color-body);
 }
 
+[data-theme="dark"] select#light-colour,
+select#light-colour option,
+select#dark-background,
+select#dark-background option {
+  color: var(--psdi-dark-text-color-body);
+}
+
 /* Initially hidden grid for select label/elements. */
 .selGrid {
   display              : grid;
