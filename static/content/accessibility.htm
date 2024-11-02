@@ -11,10 +11,8 @@
   <title>PSDI Data Conversion Service</title>
   <link href="../images/favicon.ico" rel="icon" type="image/x-icon">
   <link href="https://fonts.googleapis.com/css?family=Lato:400" rel="stylesheet" type="text/css">
-  <link href="https://fonts.googleapis.com/css?family=Open+Sans+Condensed:700" rel="stylesheet"
-    type="text/css">
-  <link href="https://fonts.googleapis.com/css?family=Open+Sans:400" rel="stylesheet"
-    type="text/css">
+  <link href="https://fonts.googleapis.com/css?family=Open+Sans+Condensed:700" rel="stylesheet" type="text/css">
+  <link href="https://fonts.googleapis.com/css?family=Open+Sans:400" rel="stylesheet" type="text/css">
   <link href="https://fonts.googleapis.com/css?family=Lexend:400" rel="stylesheet" type="text/css">
   <link rel="stylesheet" href="../styles/format.css">
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.3/jquery.min.js"></script>
@@ -50,11 +48,9 @@
           <p>
             <label for="font" id="fontLabel">Font:</label><br>
             <select id="font">
-              <option value="Default"
-                style="font-family: Lato, Helvetica, Arial, Lucida, sans-serif">Default</option>
+              <option value="Default" style="font-family: var(--psdi-default-font)">Default</option>
               <option value="Arial" style="font-family: Arial, sans-serif;">Arial</option>
-              <option value="Comic Sans"
-                style="font-family: Comic Sans MS, Comic Sans, sans-serif;">Comic Sans</option>
+              <option value="Comic Sans" style="font-family: Comic Sans MS, Comic Sans, sans-serif;">Comic Sans</option>
               <option value="Lexend" style="font-family: Lexend, sans-serif;">Lexend</option>
               <option value="Open Sans" style="font-family: Open Sans, sans-serif;">Open Sans
               </option>
@@ -69,7 +65,7 @@
           <p>
             <label for="size" id="sizeLabel">Font size (px):</label><br>
             <select id="size">
-              <option value="Default" style="font-size: 16px;">Default</option>
+              <option value="Default" style="font-size: var(--psdi-default-font-size);">Default</option>
               <option value="14" style="font-size: 14px;">14</option>
               <option value="15" style="font-size: 15px;">15</option>
               <option value="16" style="font-size: 16px;">16</option>
@@ -130,15 +126,14 @@
         </div>
         <div class="access-option-container">
           <p>
-            <label for="dark-colour" id="colourLabel">Dark font
-              colour:</label><br>
+            <label for="dark-colour" id="colourLabel">Dark font colour:</label><br>
             <select id="dark-colour">
-              <option value="Default">Default</option>
-              <option value="Red">Red</option>
-              <option value="Orange">Orange</option>
-              <option value="Green">Green</option>
-              <option value="Purple">Purple</option>
-              <option value="Brown">Brown</option>
+              <option value="Default" style="color: var(--psdi-default-dark-text-color-body)">Default</option>
+              <option value="Red" style="color: Red">Red</option>
+              <option value="Orange" style="color: Orange">Orange</option>
+              <option value="Green" style="color: Green">Green</option>
+              <option value="Purple" style="color: Purple">Purple</option>
+              <option value="Brown" style="color: Brown">Brown</option>
             </select>
           </p>
         </div>
@@ -147,13 +142,13 @@
             <label for="light-colour" id="lightColourLabel">Light font
               colour:</label><br>
             <select id="light-colour">
-              <option value="Default" style="color: white">Default</option>
-              <option value="Grey" style="color: lightgrey">Grey</option>
+              <option value="Default" style="color: var(--psdi-default-light-text-color-body)">Default</option>
+              <option value="LightGrey" style="color: LightGrey">LightGrey</option>
               <option value="Red" style="color: red">Red</option>
               <option value="Orange" style="color: orange">Orange</option>
-              <option value="Green" style="color: lightgreen">LightGreen</option>
-              <option value="Pink" style="color: pink">Pink</option>
-              <option value="LightBlue" style="color: lightblue">LightBlue</option>
+              <option value="LightGreen" style="color: LightGreen">LightGreen</option>
+              <option value="Pink" style="color: Pink">Pink</option>
+              <option value="LightBlue" style="color: LightBlue">LightBlue</option>
             </select>
           </p>
         </div>
@@ -162,7 +157,7 @@
             <label for="lightBackground" id="lightBackgroundLabel">Light
               Background colour:</label><br>
             <select id="light-background">
-              <option value="Default" style="background-color: white">Default</option>
+              <option value="Default" style="background-color: var(--psdi-default-background-color)">Default</option>
               <option value="Grey" style="background-color: lightgrey">Grey</option>
               <option value="Mustard" style="background-color: #eddd6e">Mustard</option>
               <option value="Peach" style="background-color: #edd1b0">Peach</option>
@@ -175,7 +170,7 @@
             <label for="darkBackground" id="darkBackgroundLabel">Dark Background
               colour:</label><br>
             <select id="dark-background">
-              <option value="Default" style="background-color: #041e42">Default</option>
+              <option value="Default" style="background-color: var(--psdi-default-color-primary)">Default</option>
               <option value="Grey" style="background-color: darkgrey">Grey</option>
               <option value="Blue" style="background-color: darkblue">Blue</option>
               <option value="Red" style="background-color: darkred">Red</option>
@@ -192,8 +187,7 @@
     </div>
   </form>
 
-  <script src="https://code.jquery.com/jquery-3.7.1.js"
-    integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4="
+  <script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4="
     crossorigin="anonymous"></script>
   <script src="../javascript/accessibility.js" type="module" language="JavaScript"></script>
 

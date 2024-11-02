@@ -782,7 +782,9 @@ select {
 }
 
 select#light-colour,
-select#dark-background {
+select#light-colour option,
+select#dark-background,
+select#dark-background option {
   background-color: var(--ifm-color-primary);
   color           : var(--psdi-light-text-color-body);
 }

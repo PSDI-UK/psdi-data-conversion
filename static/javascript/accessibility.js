@@ -6,8 +6,11 @@
 */
 
 const r = document.querySelector(':root');
+const s = getComputedStyle(document.documentElement);
 
 export function loadAccessibilitySettings() {
+
+    saveDefaultSettings();
 
     const font = sessionStorage.getItem("font"),
           size = sessionStorage.getItem("size"),
@@ -26,8 +29,6 @@ export function loadAccessibilitySettings() {
 
         r.style.setProperty('--ifm-font-size-base', size);
 
-        r.style.setProperty('--ifm-font-size-base', size);
-
         r.style.setProperty('--ifm-font-weight-base', weight);
 
         r.style.setProperty('--psdi-letter-spacing-base', letter);
@@ -41,6 +42,36 @@ export function loadAccessibilitySettings() {
 
         r.style.setProperty('--ifm-background-color', lightBack);
         r.style.setProperty('--ifm-color-primary', darkBack);
+    }
+}
+
+function saveDefaultSettings() {
+
+    // Check if the default values have been saved yet, and save them if not
+    if (s.getPropertyValue('--psdi-default-font') == "") {
+
+        r.style.setProperty('--psdi-default-font', s.getPropertyValue('--ifm-font-family-base'));
+        r.style.setProperty('--psdi-default-heading-font', s.getPropertyValue('--ifm-heading-font-family'));
+
+        r.style.setProperty('--psdi-default-font-size', s.getPropertyValue('--ifm-font-size-base'));
+
+        r.style.setProperty('--psdi-default-font-weight', s.getPropertyValue('--ifm-font-weight-base'));
+
+        r.style.setProperty('--psdi-default-letter-spacing', s.getPropertyValue('--psdi-letter-spacing-base'));
+
+        r.style.setProperty('--psdi-default-dark-text-color-body',
+            s.getPropertyValue('--psdi-dark-text-color-body'));
+        r.style.setProperty('--psdi-default-dark-text-color-heading',
+            s.getPropertyValue('--psdi-dark-text-color-heading'));
+        r.style.setProperty('--psdi-default-light-text-color-body',
+            s.getPropertyValue('--psdi-light-text-color-body'));
+        r.style.setProperty('--psdi-default-light-text-color-heading',
+            s.getPropertyValue('--psdi-light-text-color-heading'));
+
+        r.style.setProperty('--psdi-default-line-height', s.getPropertyValue('--ifm-line-height-base'));
+
+        r.style.setProperty('--psdi-default-background-color', s.getPropertyValue('--ifm-background-color'));
+        r.style.setProperty('--psdi-default-color-primary', s.getPropertyValue('--ifm-color-primary'));
     }
 }
 
@@ -86,10 +117,11 @@ $(document).ready(function() {
 
 // Remove the loading cover when everything is loaded
 $(window).on('load', function() {
+
     $("#cover").hide();
 });
 
-// Changes the font for accessibility purposes and ensures that the correct default line spacing is applied.
+// Changes the font for accessibility purposes
 function changeFont(event) {
     const font = $("#font").find(":selected").text();
 
@@ -130,8 +162,8 @@ function changeFont(event) {
             break;
 
         default:
-            r.style.setProperty('--ifm-font-family-base', 'Lato, Helvetica, Arial, Lucida, sans-serif');
-            r.style.setProperty('--ifm-heading-font-family', 'Oswald, Helvetica, Arial, Lucida, sans-serif');
+            r.style.setProperty('--ifm-font-family-base', s.getPropertyValue('--psdi-default-font'));
+            r.style.setProperty('--ifm-heading-font-family', s.getPropertyValue('--psdi-default-heading-font'));
             break;
     }
 }
@@ -141,7 +173,7 @@ function changeLetterSpacing(event) {
     const space = $("#letter").find(":selected").text();
 
     if (space == "Default") {
-        r.style.setProperty('--psdi-letter-spacing-base', "normal");
+        r.style.setProperty('--psdi-letter-spacing-base', s.getPropertyValue('--psdi-default-letter-spacing'));
     } else {
         r.style.setProperty('--psdi-letter-spacing-base', space+"px");
     }
@@ -152,7 +184,7 @@ function changeLineSpacing(event) {
     const space = $("#line").find(":selected").text();
     
     if (space=="Default") {
-        r.style.setProperty('--ifm-line-height-base', "1.5");
+        r.style.setProperty('--ifm-line-height-base', s.getPropertyValue('--psdi-default-line-height'));
     } else {
         r.style.setProperty('--ifm-line-height-base', space);
     }
@@ -163,7 +195,7 @@ function changeFontSize(event) {
     const size = $("#size").find(":selected").text();
 
     if (size=="Default") {
-        r.style.setProperty('--ifm-font-size-base', "1rem");
+        r.style.setProperty('--ifm-font-size-base', s.getPropertyValue('--psdi-default-font-size'));
     } else {
         r.style.setProperty('--ifm-font-size-base', size+"px");
     }
@@ -174,7 +206,7 @@ function changeFontWeight(event) {
     const weight = $("#weight").find(":selected").text();
 
     if (weight=="Default") {
-        r.style.setProperty('--ifm-font-weight-base', "normal");
+        r.style.setProperty('--ifm-font-weight-base', s.getPropertyValue('--psdi-default-font-weight'));
     } else {
         r.style.setProperty('--ifm-font-weight-base', weight.toLowerCase());
     }
@@ -197,13 +229,10 @@ function changeFontColour(event, lightOrDark="dark") {
     new_colour = colour.toLowerCase();
 
     if (new_colour==='default') {
-        if (lightOrDark=="dark") {
-            r.style.setProperty('--psdi-'+lightOrDark+'-text-color-body', '#000000');
-            r.style.setProperty('--psdi-'+lightOrDark+'-text-color-heading', '#041E42');
-        } else {
-            r.style.setProperty('--psdi-'+lightOrDark+'-text-color-body', '#ffffff');
-            r.style.setProperty('--psdi-'+lightOrDark+'-text-color-heading', '#ffffff');
-        }
+        r.style.setProperty('--psdi-'+lightOrDark+'-text-color-body',
+            s.getPropertyValue('--psdi-default-'+lightOrDark+'-text-color-body'));
+        r.style.setProperty('--psdi-'+lightOrDark+'-text-color-heading',
+            s.getPropertyValue('--psdi-default-'+lightOrDark+'-text-color-heading'));
     } else {
         r.style.setProperty('--psdi-'+lightOrDark+'-text-color-body', new_colour);
         r.style.setProperty('--psdi-'+lightOrDark+'-text-color-heading', new_colour);
@@ -232,7 +261,7 @@ function changeLightBackground(event) {
             break;
 
         default:
-            r.style.setProperty('--ifm-background-color', "white");
+            r.style.setProperty('--ifm-background-color', s.getPropertyValue('--psdi-default-background-color'));
             break;
     }
 }
@@ -242,7 +271,7 @@ function changeDarkBackground(event) {
     const colour = $("#dark-background").find(":selected").text();
 
     if (colour=="Default") {
-        r.style.setProperty('--ifm-color-primary', "#041e42");
+        r.style.setProperty('--ifm-color-primary', s.getPropertyValue('--psdi-default-color-primary'));
     } else {
         r.style.setProperty('--ifm-color-primary', "dark"+colour.toLowerCase());
     }
@@ -255,15 +284,15 @@ function resetSelections(event) {
 
 // Applies accessibility settings to the entire website.
 function applySettings(event) {
-    sessionStorage.setItem("font", r.style.getPropertyValue('--ifm-font-family-base'));
-    sessionStorage.setItem("size", r.style.getPropertyValue('--ifm-font-size-base'));
-    sessionStorage.setItem("weight", r.style.getPropertyValue('--ifm-font-weight-base'));
-    sessionStorage.setItem("letter", r.style.getPropertyValue('--psdi-letter-spacing-base'));
-    sessionStorage.setItem("line", r.style.getPropertyValue('--ifm-line-height-base'));
-    sessionStorage.setItem("darkColour", r.style.getPropertyValue('--psdi-dark-text-color-body'));
-    sessionStorage.setItem("lightColour", r.style.getPropertyValue('--psdi-light-text-color-body'));
-    sessionStorage.setItem("lightBack", r.style.getPropertyValue('--ifm-background-color'));
-    sessionStorage.setItem("darkBack", r.style.getPropertyValue('--ifm-color-primary'));
+    sessionStorage.setItem("font", s.getPropertyValue('--ifm-font-family-base'));
+    sessionStorage.setItem("size", s.getPropertyValue('--ifm-font-size-base'));
+    sessionStorage.setItem("weight", s.getPropertyValue('--ifm-font-weight-base'));
+    sessionStorage.setItem("letter", s.getPropertyValue('--psdi-letter-spacing-base'));
+    sessionStorage.setItem("line", s.getPropertyValue('--ifm-line-height-base'));
+    sessionStorage.setItem("darkColour", s.getPropertyValue('--psdi-dark-text-color-body'));
+    sessionStorage.setItem("lightColour", s.getPropertyValue('--psdi-light-text-color-body'));
+    sessionStorage.setItem("lightBack", s.getPropertyValue('--ifm-background-color'));
+    sessionStorage.setItem("darkBack", s.getPropertyValue('--ifm-color-primary'));
 
     sessionStorage.setItem("fontOpt", $("#font").find(":selected").text());
     sessionStorage.setItem("sizeOpt", $("#size").find(":selected").text());
