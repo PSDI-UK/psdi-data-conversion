@@ -41,15 +41,14 @@
         appearance of the page is satisfactory, clicking on the 'Apply' button applies the settings
         to the entire website. Leaving the page without clicking on 'Apply' results in the changes
         being lost. Note that page appearance may vary slightly according to the browser used.</p>
-      <p>If custom background colors are applied, the light-mode/dark-mode button in the header
-        will not change them when toggled. This button will continue to swap where the primary and
-        alternate text colors are used.</p>
+      <p>The color options here are not compatible with the dark-mode toggle in the header bar. If
+        a custom dark scheme is desired, the appropriate colors can be selected in light-mode.</p>
       <div class="access-options">
         <div class="access-option-container">
           <p>
             <label for="font" id="fontLabel">Font:</label><br>
             <select id="font">
-              <option value="Default" style="font-family: var(--psdi-default-font)">Default</option>
+              <option value="Default">Default</option>
               <option value="Arial" style="font-family: Arial, sans-serif;">Arial</option>
               <option value="Comic Sans" style="font-family: Comic Sans MS, Comic Sans, sans-serif;">Comic Sans</option>
               <option value="Lexend" style="font-family: Lexend, sans-serif;">Lexend</option>
@@ -66,7 +65,7 @@
           <p>
             <label for="size" id="sizeLabel">Font size (px):</label><br>
             <select id="size">
-              <option value="Default" style="font-size: var(--psdi-default-font-size);">Default</option>
+              <option value="Default">Default</option>
               <option value="14" style="font-size: 14px;">14</option>
               <option value="15" style="font-size: 15px;">15</option>
               <option value="16" style="font-size: 16px;">16</option>
@@ -125,11 +124,11 @@
             </select>
           </p>
         </div>
-        <div class="access-option-container">
+        <div class="access-option-container lm-only">
           <p>
             <label for="dark-colour" id="colourLabel">Primary font colour:</label><br>
             <select id="dark-colour">
-              <option value="Default" style="color: var(--psdi-default-dark-text-color-body)">Default</option>
+              <option value="Default">Default</option>
               <option value="White" style="color: White">White</option>
               <option value="LightGrey" style="color: LightGrey">LightGrey</option>
               <option value="DarkGrey" style="color: DarkGrey">DarkGrey</option>
@@ -149,11 +148,11 @@
             </select>
           </p>
         </div>
-        <div class="access-option-container">
+        <div class="access-option-container lm-only">
           <p>
             <label for="light-colour" id="lightColourLabel">Alternate font colour:</label><br>
             <select id="light-colour">
-              <option value="Default" style="color: var(--psdi-default-light-text-color-body)">Default</option>
+              <option value="Default">Default</option>
               <option value="White" style="color: White">White</option>
               <option value="LightGrey" style="color: LightGrey">LightGrey</option>
               <option value="DarkGrey" style="color: DarkGrey">DarkGrey</option>
@@ -173,11 +172,11 @@
             </select>
           </p>
         </div>
-        <div class="access-option-container">
+        <div class="access-option-container lm-only">
           <p>
             <label for="lightBackground" id="lightBackgroundLabel">Primary Background colour:</label><br>
             <select id="light-background">
-              <option value="Default" style="background-color: var(--psdi-default-background-color)">Default</option>
+              <option value="Default">Default</option>
               <option value="White" style="background-color: White">White</option>
               <option value="LightGrey" style="background-color: LightGrey">LightGrey</option>
               <option value="DarkGrey" style="background-color: DarkGrey">DarkGrey</option>
@@ -197,11 +196,11 @@
             </select>
           </p>
         </div>
-        <div class="access-option-container">
+        <div class="access-option-container lm-only">
           <p>
             <label for="darkBackground" id="darkBackgroundLabel">Alternate Background colour:</label><br>
             <select id="dark-background">
-              <option value="Default" style="background-color: var(--psdi-default-color-primary)">Default</option>
+              <option value="Default">Default</option>
               <option value="White" style="background-color: White">White</option>
               <option value="LightGrey" style="background-color: LightGrey">LightGrey</option>
               <option value="DarkGrey" style="background-color: DarkGrey">DarkGrey</option>

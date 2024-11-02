@@ -779,6 +779,10 @@ form {
   justify-content: flex-end;
 }
 
+[data-theme="dark"] .access-option-container.lm-only {
+  display: none;
+}
+
 /* Dark blue text and 310px width select boxes. */
 select {
   min-width: 5rem;
@@ -786,18 +790,35 @@ select {
 }
 
 select#light-colour,
-select#light-colour option,
-select#dark-background,
-select#dark-background option {
+select#dark-background {
   background-color: var(--ifm-color-primary);
   color           : var(--psdi-light-text-color-body);
 }
 
-[data-theme="dark"] select#light-colour,
-select#light-colour option,
-select#dark-background,
+select#size option {
+  font-family: var(--psdi-default-font);
+}
+
+select#font option {
+  font-size: var(--psdi-default-font-size);
+}
+
+select#dark-colour option {
+  color: var(--psdi-default-dark-text-color-body);
+}
+
+select#light-colour option {
+  background-color: var(--ifm-color-primary);
+  color           : var(--psdi-default-light-text-color-body);
+}
+
+select#light-background option {
+  background-color: var(--psdi-default-background-color);
+}
+
 select#dark-background option {
-  color: var(--psdi-dark-text-color-body);
+  background-color: var(--psdi-default-color-primary);
+  color           : var(--psdi-light-text-color-body);
 }
 
 /* Initially hidden grid for select label/elements. */
