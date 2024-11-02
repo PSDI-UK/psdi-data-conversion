@@ -305,6 +305,10 @@ body>* {
   width          : 2rem;
 }
 
+[data-theme='dark'] .clean-btn {
+  background-color: black;
+}
+
 .clean-btn:hover {
   background: var(--ifm-background-color-secondary);
 }
