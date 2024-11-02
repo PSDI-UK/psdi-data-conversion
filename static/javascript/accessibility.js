@@ -224,18 +224,15 @@ function changeFontColourLight(event) {
 
 function changeFontColour(event, lightOrDark="dark") {
     const colour = $("#"+lightOrDark+"-colour").find(":selected").text();
-    let new_colour;
 
-    new_colour = colour.toLowerCase();
-
-    if (new_colour==='default') {
+    if (colour==='default') {
         r.style.setProperty('--psdi-'+lightOrDark+'-text-color-body',
             s.getPropertyValue('--psdi-default-'+lightOrDark+'-text-color-body'));
         r.style.setProperty('--psdi-'+lightOrDark+'-text-color-heading',
             s.getPropertyValue('--psdi-default-'+lightOrDark+'-text-color-heading'));
     } else {
-        r.style.setProperty('--psdi-'+lightOrDark+'-text-color-body', new_colour);
-        r.style.setProperty('--psdi-'+lightOrDark+'-text-color-heading', new_colour);
+        r.style.setProperty('--psdi-'+lightOrDark+'-text-color-body', colour);
+        r.style.setProperty('--psdi-'+lightOrDark+'-text-color-heading', colour);
     }
 }
 
@@ -243,26 +240,10 @@ function changeFontColour(event, lightOrDark="dark") {
 function changeLightBackground(event) {
     const colour = $("#light-background").find(":selected").text();
 
-    switch (colour) {
-        case 'Grey':
-            r.style.setProperty('--ifm-background-color', "lightgrey");
-            break;
-
-        case 'Mustard':
-            r.style.setProperty('--ifm-background-color', "#eddd6e");
-            break;
-
-        case 'Peach':
-            r.style.setProperty('--ifm-background-color', "#edd1b0");
-            break;
-
-        case 'Lemon':
-            r.style.setProperty('--ifm-background-color', "#f8fd89");
-            break;
-
-        default:
-            r.style.setProperty('--ifm-background-color', s.getPropertyValue('--psdi-default-background-color'));
-            break;
+    if (colour=="Default") {
+        r.style.setProperty('--ifm-background-color', s.getPropertyValue('--psdi-default-background-color'));
+    } else {
+        r.style.setProperty('--ifm-background-color', colour);
     }
 }
 
@@ -273,7 +254,7 @@ function changeDarkBackground(event) {
     if (colour=="Default") {
         r.style.setProperty('--ifm-color-primary', s.getPropertyValue('--psdi-default-color-primary'));
     } else {
-        r.style.setProperty('--ifm-color-primary', "dark"+colour.toLowerCase());
+        r.style.setProperty('--ifm-color-primary', colour);
     }
 }
 
