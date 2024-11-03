@@ -5,6 +5,7 @@
   This is the JavaScript which makes the report.htm gui work.
 */
 
+import { getAllFormats, getConverters } from "./data.js";
 import { loadAccessibilitySettings } from './accessibility.js';
 
 const r = document.querySelector(':root');
@@ -23,11 +24,11 @@ $(document).ready(function() {
     $("#success").css({display: "none"});
 
     // Populates the "Convert from" and "Convert to" selection lists
-    var query = `SELECT DISTINCT Extension, Note FROM Formats ORDER BY Extension, Note ASC`
-
-    queryDatabase(query, "from", populateList);
-    queryDatabase(query, "to", populateList);
-    queryDatabase(query, "format", populateList);
+    getAllFormats().then((allFormats) => {
+        populateList(allFormats, "from");
+        populateList(allFormats, "to");
+        populateList(allFormats, "format");
+    });
 
     $("#reason").change(display);
     $("#fromList").click(populateConversionSuccess);
@@ -85,12 +86,9 @@ function populateConversionSuccess(event) {
               out_ext = out_str_array[0],
               out_note = out_str_array[1];
 
-        const query = `SELECT C.Name, C_to.Degree_of_success FROM Converters C, Converts_to C_to
-                       WHERE C_to.in_ID=(SELECT ID FROM Formats WHERE Extension = '${in_ext}' AND Note = '${in_note}')
-                       AND C_to.out_ID=(SELECT ID FROM Formats WHERE Extension = '${out_ext}' AND Note = '${out_note}')
-                       AND C.ID=C_to.Converters_ID ORDER BY C.Name ASC`
-
-        queryDatabase(query, "success", populateList);
+        getConverters(in_ext, in_note, out_ext, out_note).then((converters) => {
+            populateList(converters, "success");
+        });
     }
     catch (e) {
         // Can do without an error message if the 'Conversion options' box remains empty;
@@ -129,23 +127,16 @@ function submitUserInput() {
           to = $("#searchTo").val();
 
     var reason = $("#in").val(),
-        missing = $("#missingFormat").val(),
-        date = new Date(),
-        now = "";
-
-    now += date.toDateString();
-    now += " " + date.toTimeString();
-
-    reason = reason.replaceAll("'", "`");
-    missing = missing.replaceAll("'", "`");
+        missing = $("#missingFormat").val()
 
     if (reason.length > 9 && reason.length < 501) {
         if ($("#reason").val() == "format") {
             if (missing.length > 1 && missing.length < 101) {
-                const query = `INSERT INTO Missing_Format (ID, Date, Format, Reason, Reviewed)
-                               VALUES ((SELECT COALESCE(MAX(ID), 0) FROM Missing_Format) + 1, '${now}', '${missing}', '${reason}', 'no')`;
-
-                updateDatabase(query);
+                submitFeedback({
+                    type: "missingFormat",
+                    missing: missing,
+                    reason: reason
+                });
             }
             else {
                 alert("Please enter the missing format (2 to 100 characters).");
@@ -154,10 +145,12 @@ function submitUserInput() {
         else {
             if (from != "" && to != "") {
                 if ($("#success option").length == 0) {
-                    const query = `INSERT INTO Missing_Conversion (ID, Date, Convert_from, Convert_to, Reason, Reviewed)
-                               VALUES ((SELECT COALESCE(MAX(ID), 0) FROM Missing_Conversion) + 1, '${now}', '${from}', '${to}', '${reason}', 'no')`;
-
-                    updateDatabase(query);
+                    submitFeedback({
+                        type: "missingConversion",
+                        from: from,
+                        to: to,
+                        reason: reason
+                    });
                 }
                 else {
                     alert("At least one converter is capable of carrying out this conversion, therefore your report has not been sent. If you wish to send feedback about this conversion, please click on 'Contact' in the navigation bar.");
@@ -202,42 +195,21 @@ function hideOffer() {}
     //    })
 //}
 
-// $$$$$$$$$$ TODO: write separate function for debugging $$$$$$$$$$$
-
-// Queries the PostgreSQL database
-function queryDatabase(query, sel, callback) {
-    var jqXHR = $.post(`/query/`, {
-            'token': token,
-            'data': query
-        })
-        .done(response => {
-            callback(response, sel);
-        })
-        .fail(function(e) {
-            // For debugging
-            console.log("Error writing to log");
-            console.log(e.status);
-            console.log(e.responseText);
-        })
-}
-
-// Updates the PostgreSQL database
-function updateDatabase(query) {
-    var jqXHR = $.post(`/query/`, {
+// Submit feedback
+function submitFeedback(data) {
+    $.post(`/feedback/`, {
         'token': token,
-        'data': query
+        'data': JSON.stringify(data)
     })
-    .done(response => {
+    .done(() => {
         alert("Report received!");
     })
     .fail(function(e) {
         alert("Reporting failed. Please provide feedback by clicking on 'Contact' in the navigation bar.");
 
         // For debugging
-        console.log("Error writing to log");
-        console.log(e.status);
-        console.log(e.responseText);
-    })
+        console.error("Error submitting feedback", e.status, e.responseText);
+    });
 }
 
 // Only options having user filter input as a substring (case insensitive) are included in the selection list
@@ -291,27 +263,17 @@ function emptySuccess() {
 }
 
 // Populates a selection list
-function populateList(response, sel) {
-    var el = $("#" + sel),
-        successText = "",
-        format = '',
-        rows = [];
+function populateList(entries, sel) {
 
-    for (var i = 1; i < response.length; i++) {
-        if (response[i] == '£' && response[i - 1] != '$') {
-            format += ': ';
-        }
-        else if (response[i] == '$') {
-            rows.push(format);
-            format = '';
-        }
-        else if (i == response.length - 1) {
-            format += response[i];
-            rows.push(format);
-        }
-        else if (response[i] != '£') {
-            format += response[i];
-        }
+    let rows = [];
+
+    if ((sel === "from") || (sel === "to") || (sel === "format")) {
+
+        rows = entries.map(entry => `${entry.extension}: ${entry.note}`);
+
+    } else if (sel === "success") {
+
+        rows = entries.map(entry => `${entry.name}: ${entry.degree_of_success}`);
     }
 
     rows.sort(function(a, b) {

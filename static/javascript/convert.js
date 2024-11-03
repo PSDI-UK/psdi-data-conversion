@@ -5,6 +5,7 @@
   This is the JavaScript which makes the convert.htm gui work.
 */
 
+import { getInputFlags, getOutputFlags, getInputArgFlags, getOutputArgFlags } from "./data.js";
 import { loadAccessibilitySettings } from './accessibility.js';
 
 const fromList = new Array(),
@@ -59,25 +60,6 @@ function writeLog(message) {
         .fail(function(e) {
             // For debugging
             console.log("Error writing to log");
-            console.log(e.status);
-            console.log(e.responseText);
-        })
-}
-
-// $$$$$$$$$$ write separate function for debugging $$$$$$$$$$$
-
-// Queries the PostgreSQL database
-function queryDatabase(query, sel, callback) {
-    var jqXHR = $.post(`/query/`, {
-            'token': token,
-            'data': query
-        })
-        .done(response => {
-            callback(response, sel);
-        })
-        .fail(function(e) {
-            // For debugging
-            console.log("Error querying database");
             console.log(e.status);
             console.log(e.responseText);
         })
@@ -285,52 +267,39 @@ function downloadFile(path, filename) {
 
 // Retrieves read or write option flags associated with a file format
 function getFlags (type, str) {
-    var query = ``;
-
-    if (type == "in") {
-        // $$$$$$$$$ MAKE A FUNCTION FOR THIS? $$$$$$$$$
-        const in_str_array = str.split(": "),
-              in_ext = in_str_array[0],          // e.g. "ins"
-              in_note = in_str_array[1];         // e.g. "ShelX"
-
-        query = `SELECT DISTINCT Flag, Description, Further_info FROM OBFlags_in
-                 WHERE ID IN (SELECT DISTINCT OBFlags_in_ID FROM OBFormat_to_Flags_in
-                              WHERE Formats_ID=(SELECT ID FROM Formats WHERE Extension = '${in_ext}' AND Note = '${in_note}')) ORDER BY Flag ASC`;
-    }
-    else if (type == "out") {
-        const out_str_array = str.split(": "),
-              out_ext = out_str_array[0],          // e.g. "ins"
-              out_note = out_str_array[1];         // e.g. "ShelX"
-
-        query = `SELECT DISTINCT Flag, Description, Further_info FROM OBFlags_out
-                 WHERE ID IN (SELECT DISTINCT OBFlags_out_ID FROM OBFormat_to_Flags_out
-                              WHERE Formats_ID=(SELECT ID FROM Formats WHERE Extension = '${out_ext}' AND Note = '${out_note}')) ORDER BY Flag ASC`;
-    }
-    else if (type == "in_arg") {
-        const in_arg_str_array = str.split(": "),
-              in_arg_ext = in_arg_str_array[0],          // e.g. "ins"
-              in_arg_note = in_arg_str_array[1];         // e.g. "ShelX"
-
-        query = `SELECT DISTINCT Flag, Description, Further_info FROM OBArgFlags_in
-                 WHERE ID IN (SELECT DISTINCT OBArgFlags_in_ID FROM OBFormat_to_ArgFlags_in
-                              WHERE Formats_ID=(SELECT ID FROM Formats WHERE Extension = '${in_arg_ext}' AND Note = '${in_arg_note}')) ORDER BY Flag ASC`;
-    }
-    else if (type == "out_arg") {
-        const out_arg_str_array = str.split(": "),
-              out_arg_ext = out_arg_str_array[0],          // e.g. "ins"
-              out_arg_note = out_arg_str_array[1];         // e.g. "ShelX"
-
-        query = `SELECT DISTINCT Flag, Description, Further_info FROM OBArgFlags_out
-                 WHERE ID IN (SELECT DISTINCT OBArgFlags_out_ID FROM OBFormat_to_ArgFlags_out
-                              WHERE Formats_ID=(SELECT ID FROM Formats WHERE Extension = '${out_arg_ext}' AND Note = '${out_arg_note}')) ORDER BY Flag ASC`;
-    }
 
     try {
-        if (type == "in" || type == "out") {
-            queryDatabase(query, type, populateFlagBox);
+        const [ext, note] = str.split(": ");
+
+        if (type == "in") {
+            getInputFlags(ext, note).then((flags) => {
+                populateFlagBox(flags, type);
+            });
         }
-        else {
-            queryDatabase(query, type, addCheckboxes);
+        else if (type === "out") {
+            getOutputFlags(ext, note).then((flags) => {
+                populateFlagBox(flags, type);
+            });
+        }
+        else if (type == "in_arg") {
+
+            const in_arg_str_array = str.split(": "),
+                  in_arg_ext = in_arg_str_array[0],          // e.g. "ins"
+                  in_arg_note = in_arg_str_array[1];         // e.g. "ShelX"
+
+            getInputArgFlags(in_arg_ext, in_arg_note).then((argFlags) => {
+                addCheckboxes(argFlags, "in_arg");
+            });
+        }
+        else if (type == "out_arg") {
+
+            const out_arg_str_array = str.split(": "),
+                  out_arg_ext = out_arg_str_array[0],          // e.g. "ins"
+                  out_arg_note = out_arg_str_array[1];         // e.g. "ShelX"
+
+            getOutputArgFlags(out_arg_ext, out_arg_note).then((argFlags) => {
+                addCheckboxes(argFlags, "out_arg");
+            });
         }
 
         return true;
@@ -341,65 +310,39 @@ function getFlags (type, str) {
 }
 
 // Adds checkboxes for read or write option flags requiring an argument
-function addCheckboxes(response, type) {
-    var container = $("#" + type + "Flags"),
-        flag = '',
-        info = '',
-        count = 0,
-        flagCount = 0,
-        flagAdded = false;
+function addCheckboxes(argFlags, type) {
 
-    if (response.length != 0) {
-        response += '$';
-        $("#" + type + "Label").show();
+    var container = $(`#${type}Flags`),
+        flagCount = 0;
 
-        for (var i = 1; i < response.length; i++) {
-            if (response[i] == '$') {                 // End of all information about a particular option flag
-                const original_length = info.length;
+    if (argFlags.length > 0) {
 
-                info = info.replace(/.: N\/A/, '');
-                info = info.replace(/: N\/A/, '');
-                info = info.replace(/: /, '');
+        $(`#${type}Label`).show();
 
-                container.append("<tr><td><input type='checkbox' id= " + type + "_check" + flagCount + " name= " + type
-                                                                       + "_check value= " + flag + "></input></td><td>" + flag + "</td>" +
-                                     "<td><input type='text' id= " + type + "_text" + flagCount
-                                                                       + " placeholder='-- type info. here --'></input></td>" +
-                                     "<td><span id= " + type + "_label" + flagCount + ">" + info + "</span></td></tr>");
+        for (const argFlag of argFlags) {
 
-                $('#' + type + '_text' + flagCount).hide();
-                $('#' + type + '_label' + flagCount).hide();
-                $('#' + type + '_check' + flagCount).change(enterArgument);
+            const flag = argFlag.flag;
+            const brief = argFlag.brief.replace(/^N\/A$/, "");
+            const description = argFlag.description.replace(/^N\/A$/, "");
+            const furtherInfo = argFlag.further_info.replace(/^N\/A$/, "");
 
-                info = '';
-                flag = '';
-                count = -1;
-                flagCount++;
-            }
-            else if (count == 2) {                    // End of the checkbox value for a particular option flag
-                info += response[i];                  // Start of further information about a particular option flag
-                count++;
-            }
-            else if (count == 3) {                    // Adds to further information
-                info += response[i];
-            }
-            else if (response[i] == '£' && response[i - 1] != '$' && count == 0) {
-                flag += ': ';                         // Break between flag and its description
-                info += ': ';
-                flagAdded = false;
-                count++;
-            }
-            else if (response[i] == '£') {            // Acknowledges change from one piece of data to another
-                count++;
-            }
-            else if (response[i] != '£') {            // Adds to the checkbox value
-                flag += response[i];
+            container.append(`
+                <tr>
+                    <td><input type='checkbox' id="${type}_check${flagCount}" name=${type}_check value="${flag}"></input></td>
+                    <td><label for="${type}_check${flagCount}">${flag} [${brief}]: ${description}<label></td>
+                    <td><input type='text' id=${type}_text${flagCount} placeholder='-- type info. here --'></input></td>
+                    <td><span id= ${type}_label${flagCount}>${furtherInfo}</span></td>
+                </tr>`);
 
-            }
+            $(`#${type}_text${flagCount}`).hide();
+            $(`#${type}_label${flagCount}`).hide();
+            $(`#${type}_check${flagCount}`).change(enterArgument);
+
+            flagCount++;
         }
     }
     else {
-        $("#" + type + "Label").hide(); 
+        $(`#${type}Label`).hide();
 
         if (type == 'in_arg') {
             $("#flag_break").hide();
@@ -408,64 +351,46 @@ function addCheckboxes(response, type) {
 }
 
 // Populates a read or write option flag box
-function populateFlagBox(response, type) {
-    var el = $("#" + type + "Flags"),
-        disp = $("#" + type + "FlagList"),
-        flag = '',
-        info = '<p>',
-        count = 0,
-        flagAdded = false;
+function populateFlagBox(entries, type) {
 
-    if (response.length != 0) {
+    const el = $("#" + type + "Flags");
+    const disp = $("#" + type + "FlagList");
+    const flagInfo = $("#" + type + "FlagInfo");
+
+    let infoLines = [];
+
+    if (entries.length != 0) {
+
         disp.css({display: "inline"});
-        response += '$';
 
-        for (var i = 1; i < response.length; i++) {
-            if (response[i] == '$') {                 // End of all information about a particular option flag
-                const original_length = info.length;
-                info = info.replace(/.: N\/A/, '');   // Ensures 'N/A' not displayed
+        for (const entry of entries) {
 
-                if (info.length == original_length) {
-                    info += '</p><p>';
-                }
+            el.append(new Option(`${entry.flag}: ${entry.description}`));
 
-                count = -1;
-            }
-            else if (count == 2) {                    // End of what appears in the flag box for a particular option flag
-                el.append(new Option(flag));
-                info += response[i];                  // Start of further information about a particular option flag
-                flag = '';
-                count++;
-            }
-            else if (count == 3) {                    // Adds to further information
-                info += response[i];                  
-            }
-            else if (response[i] == '£' && response[i - 1] != '$' && count == 0) {
-                flag += ': ';                         // Break between flag and its description
-                info += ': ';
-                flagAdded = false;
-                count++;
-            }
-            else if (response[i] == '£') {            // Acknowledges change from one piece of data to another
-                count++;
-            }
-            else if (response[i] != '£') {            // Adds to what appears in the flag box
-                flag += response[i];
+            const info = `${entry.flag}: ${entry.further_info}`;
 
-                if (count == 0) {
-                    info += response[i];              // Adds flag to start of further information
-                }
+            if (!info.match(/.: N\/A/)) {
+                infoLines.push(info);
             }
         }
-    }
-    else {
+
+    } else {
+
         $("#" + type + "_label").hide(); 
         $("#" + type + "_flag_break").hide(); 
         el.hide();
     }
 
     el.append(new Option(""));
-    $("#" + type + "FlagInfo").html(info);
+
+    for (const infoLine of infoLines) {
+
+        const p = $("<p>");
+
+        p.text(infoLine);
+
+        flagInfo.append(p);
+    }
 }
 
 // Disable coordinate options if calculation type is 'neither,' otherwise enable
