@@ -22,8 +22,9 @@ $(document).ready(function() {
     });
 
     // Populates the "Convert to" selection list
-    var query = `SELECT DISTINCT Form.Extension, Form.Note FROM Formats Form, Converts_to Conv
-                 WHERE Form.ID = Conv.out_ID ORDER BY Form.Extension, Form.Note ASC`
+    getOutputFormats().then((formats) => {
+        populateList(formats, "to");
+    });
 
     queryDatabase(query, "to", populateList);
 
