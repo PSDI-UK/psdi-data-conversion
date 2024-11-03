@@ -6,11 +6,8 @@
 */
 
 import { loadAccessibilitySettings } from './accessibility.js';
-
 import { getInputFormats, getOutputFormats, getOutputFormatsForInputFormat,
     getInputFormatsForOutputFormat, getConverters, getConverterByName } from "./data.js";
-
-const r = document.querySelector(':root');
 
 var fromList = new Array(),
     toList = new Array();

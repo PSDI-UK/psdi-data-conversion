@@ -8,8 +8,6 @@
 import { getAllFormats, getConverters } from "./data.js";
 import { loadAccessibilitySettings } from './accessibility.js';
 
-const r = document.querySelector(':root');
-
 var token = "",
     fromList = new Array(),
     toList = new Array(),

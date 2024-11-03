@@ -7,8 +7,6 @@
 
 import { loadAccessibilitySettings } from './accessibility.js';
 
-const r = document.querySelector(':root');
-
 $(document).ready(function() {
     loadAccessibilitySettings();
 });
