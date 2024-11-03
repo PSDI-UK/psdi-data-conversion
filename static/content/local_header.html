@@ -5,10 +5,9 @@
   <div class="header-left">
     <a class="navbar__brand" href="https://psdidev2.azurewebsites.net/">
       <div class="navbar__logo">
-        <img src="https://psdi-uk.github.io/css-template/images/PSDI_Logo-darktext.png"
-          alt="PSDI logo" class="lm-only">
-        <img src="https://psdi-uk.github.io/css-template/images/PSDI_Logo-lighttext.png"
-          alt="PSDI logo" class="dm-only">
+        <img src="https://psdi-uk.github.io/css-template/images/PSDI_Logo-darktext.png" alt="PSDI logo" class="lm-only">
+        <img src="https://psdi-uk.github.io/css-template/images/PSDI_Logo-lighttext.png" alt="PSDI logo"
+          class="dm-only">
       </div>
       <h5 class="navbar__title">Data Conversion Service</h5>
     </a>
@@ -20,13 +19,12 @@
     <a href="documentation.htm" class="navbar__item navbar__link">Documentation</a>
     <a href="accessibility.htm" class="navbar__item navbar__link">Accessibility</a>
     <a href="mailto: psdi@soton.ac.uk" class="navbar__item navbar__link" id="mail">Contact</a>
-    <button class="clean-btn color-mode-toggle"
-      title="Switch between dark and light mode (currently light mode)"
+    <button class="clean-btn color-mode-toggle" title="Switch between dark and light mode (currently light mode)"
       aria-label="Lightmode/darkmode toggle button">
-      <img src="https://psdi-uk.github.io/css-template/images/lightmode-toggle-lm.svg"
-        alt="Lightmode toggle icon" class="lm-only">
-      <img src="https://psdi-uk.github.io/css-template/images/lightmode-toggle-dm.svg"
-        alt="Darkmode toggle icon" class="dm-only">
+      <img src="https://psdi-uk.github.io/css-template/images/lightmode-toggle-lm.svg" alt="Lightmode toggle icon"
+        class="lm-only">
+      <img src="https://psdi-uk.github.io/css-template/images/lightmode-toggle-dm.svg" alt="Darkmode toggle icon"
+        class="dm-only">
     </button>
   </div>
 </div>
@@ -36,8 +34,8 @@
   $("#psdi-header").load("https://psdi-uk.github.io/css-template/header.html",
     function (response, status, xhr) {
       // This is a callback function called after trying to load the remote header. It checks if it was loaded
-      // successfully, and if so, deletes the backup header, and fills in the new header with specific data
-      // for this site
+      // successfully, and if so, deletes the backup header, and fills in the new header with specific data for this
+      // site
 
       if (status == "error") {
         // Leave the backup as-is if we can't retrieve the remote header

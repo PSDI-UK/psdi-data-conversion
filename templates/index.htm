@@ -11,10 +11,8 @@
   <title>PSDI Data Conversion Service</title>
   <link href="{{url_for('static', filename='images/favicon.ico')}}" rel="icon" type="image/x-icon">
   <link href="https://fonts.googleapis.com/css?family=Lato:400" rel="stylesheet" type="text/css">
-  <link href="https://fonts.googleapis.com/css?family=Open+Sans+Condensed:700" rel="stylesheet"
-    type="text/css">
-  <link href="https://fonts.googleapis.com/css?family=Open+Sans:400" rel="stylesheet"
-    type="text/css">
+  <link href="https://fonts.googleapis.com/css?family=Open+Sans+Condensed:700" rel="stylesheet" type="text/css">
+  <link href="https://fonts.googleapis.com/css?family=Open+Sans:400" rel="stylesheet" type="text/css">
   <link href="https://fonts.googleapis.com/css?family=Lexend:400" rel="stylesheet" type="text/css">
   <link rel="stylesheet" href="{{url_for('static', filename='styles/format.css')}}">
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.3/jquery.min.js"></script>
@@ -38,29 +36,25 @@
 
   <form name="gui">
     <div class="max-width-box">
-      <p>Select 'from' and 'to' file formats in the 'Convert from/to' boxes, in
-        either order. Typing where indicated filters the options (case insensitive); for example,
-        typing 'can' or 'NON' reduces the number of options to one: 'can: Canonical SMILES.' If you
-        change your mind about a conversion, it is advisable to click on the 'Reset' button. When
-        both formats have been selected, converters able to carry out this conversion appear in the
-        'Conversion options' box along with an indication of conversion success (many conversions
-        have not yet been tested) and whether or not the converter is supported on this site.
-        Selecting a converter displays information about it, along with a link to a relevant
-        website. Irrespective of the selected converter, an Open Babel conversion is offered if it
-        can be carried out. Clicking on the 'Yes' button takes us to the 'Conversion' page. If a
-        file format has not been found, or if there are no converters supporting a required
-        conversion, please click on 'Report Missing Format/Conversion' in the navigation bar.</p>
+      <p>Select 'from' and 'to' file formats in the 'Convert from/to' boxes, in either order. Typing where indicated
+        filters the options (case insensitive); for example, typing 'can' or 'NON' reduces the number of options to one:
+        'can: Canonical SMILES.' If you change your mind about a conversion, it is advisable to click on the 'Reset'
+        button. When both formats have been selected, converters able to carry out this conversion appear in the
+        'Conversion options' box along with an indication of conversion success (many conversions have not yet been
+        tested) and whether or not the converter is supported on this site. Selecting a converter displays information
+        about it, along with a link to a relevant website. Irrespective of the selected converter, an Open Babel
+        conversion is offered if it can be carried out. Clicking on the 'Yes' button takes us to the 'Conversion' page.
+        If a file format has not been found, or if there are no converters supporting a required conversion, please
+        click on 'Report Missing Format/Conversion' in the navigation bar.</p>
       <p>
         <label for="searchFrom" id="fromLabel">Convert from:</label><br>
-        <input type="text" placeholder="-- type here to filter options --" size="12"
-          id="searchFrom"><br>
+        <input type="text" placeholder="-- type here to filter options --" size="12" id="searchFrom"><br>
         <select size="4" id="fromList"></select>
       </p>
       <div class="smallGap"></div>
       <p>
         <label for="searchTo" id="toLabel">Convert to:</label><br>
-        <input type="text" placeholder="-- type here to filter options --" size="12"
-          id="searchTo"><br>
+        <input type="text" placeholder="-- type here to filter options --" size="12" id="searchTo"><br>
         <select size="4" id="toList"></select>
       </p>
       <input type="button" class="button" value=" Reset " name="resetButton" id="resetButton">
@@ -87,14 +81,12 @@
     </div>
   </form>
 
-  <script src="https://code.jquery.com/jquery-3.7.1.js"
-    integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4="
+  <script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4="
     crossorigin="anonymous"></script>
   {% for item in data %}
   <script>const token = "{{item.token}}";</script>
   {% endfor %}
-  <script src="{{url_for('static', filename='/javascript/format.js')}}" type="module"
-    language="JavaScript"></script>
+  <script src="{{url_for('static', filename='/javascript/format.js')}}" type="module" language="JavaScript"></script>
 
   <footer class="footer" id="psdi-footer-stub">
     </header>
