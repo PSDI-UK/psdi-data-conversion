@@ -25,7 +25,18 @@
 
   <header class="header" id="psdi-header-stub"></header>
   <script>
-    $("#psdi-header-stub").load("static/content/local_header.html");
+    $("#psdi-header-stub").load("static/content/local_header.html",
+      function () {
+        // Adjust header link targets for the index so they're properly relative
+        let navbarLinks = $(".navbar__items--right")[0].childNodes;
+        Array.from(navbarLinks).forEach(element => {
+          if (element.tagName === "A" && element.href != window.location.href) {
+            console.log(element.href);
+            element.href = element.href.replace(window.location.href, window.location.href + "static/content/");
+          }
+        });
+      }
+    );
   </script>
 
   <div class="hero">
@@ -91,18 +102,7 @@
   <footer class="footer" id="psdi-footer-stub">
     </header>
     <script>
-      $("#psdi-footer-stub").load("static/content/local_footer.html",
-        function () {
-          // Adjust header link targets for the index so they're properly relative
-          let navbarLinks = $(".navbar__items--right")[0].childNodes;
-          Array.from(navbarLinks).forEach(element => {
-            if (element.tagName === "A" && element.href != window.location.href) {
-              console.log(element.href);
-              element.href = element.href.replace(window.location.href, window.location.href + "static/content/");
-            }
-          });
-        }
-      );
+      $("#psdi-footer-stub").load("static/content/local_footer.html");
     </script>
   </footer>
 
