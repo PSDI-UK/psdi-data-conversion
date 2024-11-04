@@ -225,7 +225,7 @@ function changeFontColourLight(event) {
 function changeFontColour(event, lightOrDark="dark") {
     const colour = $("#"+lightOrDark+"-colour").find(":selected").text();
 
-    if (colour==='default') {
+    if (colour==='Default') {
         r.style.setProperty('--psdi-'+lightOrDark+'-text-color-body',
             s.getPropertyValue('--psdi-default-'+lightOrDark+'-text-color-body'));
         r.style.setProperty('--psdi-'+lightOrDark+'-text-color-heading',
