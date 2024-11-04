@@ -212,7 +212,8 @@ body {
 }
 
 select,
-option {
+option,
+input {
   font-family     : var(--ifm-font-family-base);
   font-size       : var(--ifm-font-size-base);
   font-weight     : var(--ifm-font-weight-base);
