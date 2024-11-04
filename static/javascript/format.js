@@ -26,8 +26,6 @@ $(document).ready(function() {
         populateList(formats, "to");
     });
 
-    queryDatabase(query, "to", populateList);
-
     sessionStorage.setItem("token", token);
     sessionStorage.setItem("in_str", "");
     sessionStorage.setItem("out_str", "");
