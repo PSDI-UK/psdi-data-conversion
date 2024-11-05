@@ -97,7 +97,7 @@ function submitFile() {
     
     if (extension != in_ext) {
         alert("The file extension is not " + in_ext + ": please select another file or change the 'from' format on the 'Home' page.");
-        $("#uploadButton").css({"background-color": "#e5e1e6", "color": "gray"});
+        $("#uploadButton").css({"background-color": "var(--psdi-bg-color-secondary)", "color": "gray"});
         return;
     }
 
@@ -412,13 +412,12 @@ function checkExtension(event) {
     const extension = file_name_array[1];
 
     if (extension != in_ext) {
-        $("#uploadButton").css({"background-color": "#e5e1e6", "color": "gray"});
+        $("#uploadButton").css({"background-color": "var(--psdi-bg-color-secondary)", "color": "gray"});
         $("#uploadButton").prop({disabled: true});
         alert("The file extension is not " + in_ext + ": please select another file or change the 'from' format on the 'Home' page.");
     }
     else {
-        $("#uploadButton").css("background-color", "#011e41"); // TODO: COMBINE TWO LINES
-        $("#uploadButton").css("color", "#e5e1e6");
+        $("#uploadButton").css({"background-color": "var(--ifm-hero-text-color)", "color": "var(--ifm-color-primary)"});
         $("#uploadButton").prop({disabled: false});
     }
 }
