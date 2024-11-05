@@ -31,7 +31,6 @@
         let navbarLinks = $(".navbar__items--right")[0].childNodes;
         Array.from(navbarLinks).forEach(element => {
           if (element.tagName === "A" && element.href != window.location.href) {
-            console.log(element.href);
             element.href = element.href.replace(window.location.href, window.location.href + "static/content/");
           }
         });
