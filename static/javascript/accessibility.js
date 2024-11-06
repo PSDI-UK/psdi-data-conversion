@@ -8,6 +8,23 @@
 const r = document.querySelector(':root');
 const s = getComputedStyle(document.documentElement);
 
+const LIGHT_MODE = "light";
+const DARK_MODE = "dark";
+
+function toggleMode() {
+  let currentMode = document.documentElement.getAttribute("data-theme");
+  let new_mode;
+
+  if (currentMode == DARK_MODE) {
+    new_mode = LIGHT_MODE;
+  } else {
+    new_mode = DARK_MODE;
+  }
+
+  document.documentElement.setAttribute("data-theme", new_mode);
+  sessionStorage.setItem("mode", new_mode);
+}
+
 export function loadAccessibilitySettings() {
 
     saveDefaultSettings();
@@ -20,7 +37,8 @@ export function loadAccessibilitySettings() {
           darkColour = sessionStorage.getItem("darkColour"),
           lightColour = sessionStorage.getItem("lightColour"),
           lightBack = sessionStorage.getItem("lightBack"),
-          darkBack = sessionStorage.getItem("darkBack");
+          darkBack = sessionStorage.getItem("darkBack"),
+          mode = sessionStorage.getItem("mode");
 
     if (font != null) {
 
@@ -43,6 +61,14 @@ export function loadAccessibilitySettings() {
         r.style.setProperty('--ifm-background-color', lightBack);
         r.style.setProperty('--ifm-color-primary', darkBack);
     }
+
+    document.documentElement.setAttribute("data-theme", mode);
+
+    // Connect the mode toggle function to the button
+    const lModeToggleButton = document.querySelectorAll(".color-mode-toggle");
+    lModeToggleButton.forEach(function (modeToggleButton) {
+      modeToggleButton.addEventListener("click", toggleMode);
+    });
 }
 
 function saveDefaultSettings() {
