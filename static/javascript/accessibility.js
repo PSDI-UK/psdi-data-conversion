@@ -5,47 +5,59 @@
   This is the JavaScript which makes the Accessibility gui work.
 */
 
+const r = document.querySelector(':root');
+const s = getComputedStyle(document.documentElement);
+
+const LIGHT_MODE = "light";
+const DARK_MODE = "dark";
+
+function toggleMode() {
+  let currentMode = document.documentElement.getAttribute("data-theme");
+  let new_mode;
+
+  if (currentMode == DARK_MODE) {
+    new_mode = LIGHT_MODE;
+  } else {
+    new_mode = DARK_MODE;
+  }
+
+  document.documentElement.setAttribute("data-theme", new_mode);
+  sessionStorage.setItem("mode", new_mode);
+}
+
+export function connectModeToggleButton() {
+    // Connect the mode toggle function to the button
+    const lModeToggleButton = document.querySelectorAll(".color-mode-toggle");
+    lModeToggleButton.forEach(function (modeToggleButton) {
+      modeToggleButton.addEventListener("click", toggleMode);
+    });
+}    
+
 $(document).ready(function() {
-    const font = sessionStorage.getItem("font"),
-          fontOpt = sessionStorage.getItem("fontOpt"),
-          size = sessionStorage.getItem("size"),
+
+    connectModeToggleButton();
+
+    const fontOpt = sessionStorage.getItem("fontOpt"),
           sizeOpt = sessionStorage.getItem("sizeOpt"),
-          weight = sessionStorage.getItem("weight"),
           weightOpt = sessionStorage.getItem("weightOpt"),
-          letter = sessionStorage.getItem("letter"),
           letterOpt = sessionStorage.getItem("letterOpt"),
-          line = sessionStorage.getItem("line"),
           lineOpt = sessionStorage.getItem("lineOpt"),
-          colour = sessionStorage.getItem("colour"),
-          colourOpt = sessionStorage.getItem("colourOpt"),
-          back = sessionStorage.getItem("back"),
-          backOpt = sessionStorage.getItem("backOpt");
+          darkColourOpt = sessionStorage.getItem("darkColourOpt"),
+          lightColourOpt = sessionStorage.getItem("lightColourOpt"),
+          lightBackOpt = sessionStorage.getItem("lightBackOpt"),
+          darkBackOpt = sessionStorage.getItem("darkBackOpt");
 
-    if (font != null) {
-        $(".normalText, .middle, #resetButton, #applyButton").css({
-            fontFamily: font,
-            fontSize: size,
-            fontWeight: weight,
-            letterSpacing: letter
-        });
-
-        $(".normalText").css({
-            lineHeight: line,
-            color: colour
-        });
-
-        $(".middle").css({lineHeight: line});
-        $("h1, h2").css({letterSpacing: letter});
-        $("h1").css({color: colour});
-        $("form, select, #upper").css({background: back});
+    if (fontOpt != null) {
 
         $("#font").val(fontOpt).change();
         $("#size").val(sizeOpt).change();
         $("#weight").val(weightOpt).change();
         $("#letter").val(letterOpt).change();
         $("#line").val(lineOpt).change();
-        $("#colour").val(colourOpt).change();
-        $("#background").val(backOpt).change();
+        $("#dark-colour").val(darkColourOpt).change();
+        $("#light-colour").val(lightColourOpt).change();
+        $("#light-background").val(lightBackOpt).change();
+        $("#dark-background").val(darkBackOpt).change();
     }
 
     $("#font").change(changeFont);
@@ -53,82 +65,63 @@ $(document).ready(function() {
     $("#weight").change(changeFontWeight);
     $("#letter").change(changeLetterSpacing);
     $("#line").change(changeLineSpacing);
-    $("#colour").change(changeFontColour);
-    $("#background").change(changeBackground);
+    $("#dark-colour").change(changeFontColourDark);
+    $("#light-colour").change(changeFontColourLight);
+    $("#light-background").change(changeLightBackground);
+    $("#dark-background").change(changeDarkBackground);
     $("#resetButton").click(resetSelections);
     $("#applyButton").click(applySettings);
 });
 
-// Changes the font for accessibility purposes and ensures that the correct default line spacing is applied.
-function changeFont(event) {
-    const font = $("#font").find(":selected").text(),
-          line = $("#line").find(":selected").text();
+// Remove the loading cover when everything is loaded
+$(window).on('load', function() {
 
-    var text = $(".normalText, .middle, #resetButton, #applyButton");
+    $("#cover").hide();
+});
+
+// Changes the font for accessibility purposes
+function changeFont(event) {
+    const font = $("#font").find(":selected").text();
 
     switch (font) {
         case 'Arial':
-            if (line == 'Default') {
-                text.css({lineHeight: 1.145});
-            }
-
-            text.css({fontFamily: 'Arial, sans-serif'});
+            r.style.setProperty('--ifm-font-family-base', 'Arial, sans-serif');
+            r.style.setProperty('--ifm-heading-font-family', 'Arial, sans-serif');
             break;
 
         case 'Comic Sans':
-            if (line == 'Default') {
-                text.css({lineHeight: 1.4});
-            }
-
-            text.css({fontFamily: 'Comic Sans MS, Comic Sans, sans-serif'});
+            r.style.setProperty('--ifm-font-family-base', 'Comic Sans MS, Comic Sans, sans-serif');
+            r.style.setProperty('--ifm-heading-font-family', 'Comic Sans MS, Comic Sans, sans-serif');
             break;
 
         case 'Lexend':
-            if (line == 'Default') {
-                text.css({lineHeight: 1.3});
-            }
-
-            text.css({fontFamily: 'Lexend, sans-serif'});
+            r.style.setProperty('--ifm-font-family-base', 'Lexend, sans-serif');
+            r.style.setProperty('--ifm-heading-font-family', 'Lexend, sans-serif');
             break;
 
         case 'Open Sans':
-            if (line == 'Default') {
-                text.css({lineHeight: 1.4});
-            }
-
-            text.css({fontFamily: 'Open Sans, sans-serif'});
+            r.style.setProperty('--ifm-font-family-base', 'Open Sans, sans-serif');
+            r.style.setProperty('--ifm-heading-font-family', 'Open Sans, sans-serif');
             break;
 
         case 'Tahoma':
-            if (line == 'Default') {
-                text.css({lineHeight: 1.25});
-            }
-
-            text.css({fontFamily: 'Tahoma, sans-serif'});
+            r.style.setProperty('--ifm-font-family-base', 'Tahoma, sans-serif');
+            r.style.setProperty('--ifm-heading-font-family', 'Tahoma, sans-serif');
             break;
 
         case 'Trebuchet':
-            if (line == 'Default') {
-                text.css({lineHeight: 1.2});
-            }
-
-            text.css({fontFamily: 'Trebuchet MS, Trebuchet, sans-serif'});
+            r.style.setProperty('--ifm-font-family-base', 'Trebuchet MS, Trebuchet, sans-serif');
+            r.style.setProperty('--ifm-heading-font-family', 'Trebuchet MS, Trebuchet, sans-serif');
             break;
 
         case 'Verdana':
-            if (line == 'Default') {
-                text.css({lineHeight: 1.25});
-            }
-
-            text.css({fontFamily: 'Verdana, sans-serif'});
+            r.style.setProperty('--ifm-font-family-base', 'Verdana, sans-serif');
+            r.style.setProperty('--ifm-heading-font-family', 'Verdana, sans-serif');
             break;
 
         default:
-            if (line == 'Default') {
-                text.css({lineHeight: 1.218});
-            }
-
-            text.css({fontFamily: 'Lato, sans-serif'});
+            r.style.setProperty('--ifm-font-family-base', s.getPropertyValue('--psdi-default-font'));
+            r.style.setProperty('--ifm-heading-font-family', s.getPropertyValue('--psdi-default-heading-font'));
             break;
     }
 }
@@ -136,251 +129,119 @@ function changeFont(event) {
 // Changes the letter spacing for accessibility purposes.
 function changeLetterSpacing(event) {
     const space = $("#letter").find(":selected").text();
-    var text = $(".normalText, .middle, #resetButton, #applyButton, h1, h2");
 
-    switch (space) {
-        case '0.5':
-            text.css({letterSpacing: '0.5px'});
-            break;
-
-        case '1.0':
-            text.css({letterSpacing: '1px'});
-            break;
-
-        case '1.5':
-            text.css({letterSpacing: '1.5px'});
-            break;
-
-        case '2.0':
-            text.css({letterSpacing: '2px'});
-            break;
-
-        case '2.5':
-            text.css({letterSpacing: '2.5px'});
-            break;
-
-        case '3.0':
-            text.css({letterSpacing: '3px'});
-            break;
-
-        case '3.5':
-            text.css({letterSpacing: '3.5px'});
-            break;
-
-        default:
-            text.css({letterSpacing: '0px'});
-            break;
+    if (space == "Default") {
+        r.style.setProperty('--psdi-letter-spacing-base', s.getPropertyValue('--psdi-default-letter-spacing'));
+    } else {
+        r.style.setProperty('--psdi-letter-spacing-base', space+"px");
     }
 }
 
 // Changes the line spacing for accessibility purposes.
 function changeLineSpacing(event) {
     const space = $("#line").find(":selected").text();
-    var text = $(".normalText, .middle");
-
-    switch (space) {
-        case '1.1':
-            text.css({lineHeight: 1.1});
-            break;
-
-        case '1.2':
-            text.css({lineHeight: 1.2});
-            break;
-
-        case '1.3':
-            text.css({lineHeight: 1.3});
-            break;
-
-        case '1.4':
-            text.css({lineHeight: 1.4});
-            break;
-
-        case '1.5':
-            text.css({lineHeight: 1.5});
-            break;
-
-        case '1.6':
-            text.css({lineHeight: 1.6});
-            break;
-
-        case '1.7':
-            text.css({lineHeight: 1.7});
-            break;
-
-        // Ensures that the correct default line spacing is applied to the current font.
-        default:
-            const font = $("#font").find(":selected").text();
-
-            switch (font) {
-                case 'Arial':
-                    text.css({lineHeight: 1.145});
-                    break;
-
-                case 'Comic Sans':
-                case 'Open Sans':
-                    text.css({lineHeight: 1.4});
-                    break;
-
-                case 'Lexend':
-                    text.css({lineHeight: 1.3});
-                    break;
-
-                case 'Tahoma':
-                case 'Verdana':
-                    text.css({lineHeight: 1.25});
-                    break;
-
-                case 'Trebuchet':
-                    text.css({lineHeight: 1.2});
-                    break;
-
-                default:
-                    text.css({lineHeight: 1.218});
-                    break;
-            }
-
-            break;
+    
+    if (space=="Default") {
+        r.style.setProperty('--ifm-line-height-base', s.getPropertyValue('--psdi-default-line-height'));
+    } else {
+        r.style.setProperty('--ifm-line-height-base', space);
     }
 }
 
 // Changes the font size for accessibility purposes.
 function changeFontSize(event) {
     const size = $("#size").find(":selected").text();
-    var text = $(".normalText, .middle, #resetButton, #applyButton");
 
-    switch (size) {
-        case '15':
-            text.css({fontSize: '15px'});
-            break;
-
-        case '16':
-            text.css({fontSize: '16px'});
-            break;
-
-        case '17':
-            text.css({fontSize: '17px'});
-            break;
-
-        case '18':
-            text.css({fontSize: '18px'});
-            break;
-
-        case '19':
-            text.css({fontSize: '19px'});
-            break;
-
-        case '20':
-            text.css({fontSize: '20px'});
-            break;
-
-        case '21':
-            text.css({fontSize: '21px'});
-            break;
-
-        default:
-            text.css({fontSize: '14px'});
-            break;
+    if (size=="Default") {
+        r.style.setProperty('--ifm-font-size-base', s.getPropertyValue('--psdi-default-font-size'));
+    } else {
+        r.style.setProperty('--ifm-font-size-base', size+"px");
     }
 }
 
 // Changes the font weight for accessibility purposes.
 function changeFontWeight(event) {
     const weight = $("#weight").find(":selected").text();
-    var text = $(".normalText, .middle, #resetButton, #applyButton");
 
-    switch (weight) {
-        case 'Bold':
-            text.css({fontWeight: 'bold'});
-            break;
-
-        default:
-            text.css({fontWeight: 'normal'});
-            break;
+    if (weight=="Default") {
+        r.style.setProperty('--ifm-font-weight-base', s.getPropertyValue('--psdi-default-font-weight'));
+    } else {
+        r.style.setProperty('--ifm-font-weight-base', weight.toLowerCase());
     }
 }
 
 // Changes the font colour for accessibility purposes.
-function changeFontColour(event) {
-    const colour = $("#colour").find(":selected").text();
-    var text = $(".normalText, h1");
 
-    switch (colour) {
-        case 'Black':
-            text.css({color: 'black'});
-            break;
+function changeFontColourDark(event) {
+    return changeFontColour(event, "dark");
+}
 
-        case 'Red':
-            text.css({color: 'red'});
-            break;
+function changeFontColourLight(event) {
+    return changeFontColour(event, "light");
+}
 
-        case 'Orange':
-            text.css({color: 'orange'});
-            break;
+function changeFontColour(event, lightOrDark="dark") {
+    const colour = $("#"+lightOrDark+"-colour").find(":selected").text();
 
-        case 'Green':
-            text.css({color: 'green'});
-            break;
-
-        case 'Purple':
-            text.css({color: 'purple'});
-            break;
-
-        case 'Brown':
-            text.css({color: 'brown'});
-            break;
-
-        default:
-            text.css({color: '#011e41'});
-            break;
+    if (colour==='Default') {
+        r.style.setProperty('--psdi-'+lightOrDark+'-text-color-body',
+            s.getPropertyValue('--psdi-default-'+lightOrDark+'-text-color-body'));
+        r.style.setProperty('--psdi-'+lightOrDark+'-text-color-heading',
+            s.getPropertyValue('--psdi-default-'+lightOrDark+'-text-color-heading'));
+    } else {
+        r.style.setProperty('--psdi-'+lightOrDark+'-text-color-body', colour);
+        r.style.setProperty('--psdi-'+lightOrDark+'-text-color-heading', colour);
     }
 }
 
 // Changes the background colour for accessibility purposes.
-function changeBackground(event) {
-    const colour = $("#background").find(":selected").text();
-    var text = $(".normalText");
+function changeLightBackground(event) {
+    const colour = $("#light-background").find(":selected").text();
 
-    switch (colour) {
-        case 'Mustard':
-            $("form, select, #upper").css({background: '#eddd6e'});
-            break;
+    if (colour=="Default") {
+        r.style.setProperty('--ifm-background-color', s.getPropertyValue('--psdi-default-background-color'));
+    } else {
+        r.style.setProperty('--ifm-background-color', colour);
+    }
+}
 
-        case 'Peach':
-            $("form, select, #upper").css({background: '#edd1b0'});
-            break;
+// Changes the background colour for accessibility purposes.
+function changeDarkBackground(event) {
+    const colour = $("#dark-background").find(":selected").text();
 
-        case 'Lemon':
-            $("form, select, #upper").css({background: '#f8fd89'});
-            break;
-
-        default:
-            $("form, select, #upper").css({background: 'white'});
-            break;
+    if (colour=="Default") {
+        r.style.setProperty('--ifm-color-primary', s.getPropertyValue('--psdi-default-color-primary'));
+    } else {
+        r.style.setProperty('--ifm-color-primary', colour);
     }
 }
 
 // Reverts all select boxes to 'Default'
 function resetSelections(event) {
-    $("#font, #size, #weight, #letter, #line, #colour, #background").val('Default').change();
+    $("#font, #size, #weight, #letter, #line, #dark-colour, #light-colour, #light-background, #dark-background").val('Default').change();
 }
 
 // Applies accessibility settings to the entire website.
 function applySettings(event) {
-    sessionStorage.setItem("font", $(".normalText").css('fontFamily'));
-    sessionStorage.setItem("size", $(".normalText").css('fontSize'));
-    sessionStorage.setItem("weight", $(".normalText").css('fontWeight'));
-    sessionStorage.setItem("letter", $(".normalText").css('letterSpacing'));
-    sessionStorage.setItem("line", $(".normalText").css('lineHeight'));
-    sessionStorage.setItem("colour", $(".normalText").css('color'));
-    sessionStorage.setItem("back", $("form").css('background'));
+    sessionStorage.setItem("font", s.getPropertyValue('--ifm-font-family-base'));
+    sessionStorage.setItem("size", s.getPropertyValue('--ifm-font-size-base'));
+    sessionStorage.setItem("weight", s.getPropertyValue('--ifm-font-weight-base'));
+    sessionStorage.setItem("letter", s.getPropertyValue('--psdi-letter-spacing-base'));
+    sessionStorage.setItem("line", s.getPropertyValue('--ifm-line-height-base'));
+    sessionStorage.setItem("darkColour", s.getPropertyValue('--psdi-dark-text-color-body'));
+    sessionStorage.setItem("lightColour", s.getPropertyValue('--psdi-light-text-color-body'));
+    sessionStorage.setItem("lightBack", s.getPropertyValue('--ifm-background-color'));
+    sessionStorage.setItem("darkBack", s.getPropertyValue('--ifm-color-primary'));
 
     sessionStorage.setItem("fontOpt", $("#font").find(":selected").text());
     sessionStorage.setItem("sizeOpt", $("#size").find(":selected").text());
     sessionStorage.setItem("weightOpt", $("#weight").find(":selected").text());
     sessionStorage.setItem("letterOpt", $("#letter").find(":selected").text());
     sessionStorage.setItem("lineOpt", $("#line").find(":selected").text());
-    sessionStorage.setItem("colourOpt", $("#colour").find(":selected").text());
-    sessionStorage.setItem("backOpt", $("#background").find(":selected").text());
+    sessionStorage.setItem("darkColourOpt", $("#dark-colour").find(":selected").text());
+    sessionStorage.setItem("lightColourOpt", $("#light-colour").find(":selected").text());
+    sessionStorage.setItem("lightBackOpt", $("#light-background").find(":selected").text());
+    sessionStorage.setItem("darkBackOpt", $("#dark-background").find(":selected").text());
 
     alert("The settings have been applied to the entire website.");
 }

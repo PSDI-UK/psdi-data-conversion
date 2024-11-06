@@ -5,28 +5,14 @@
   This is the JavaScript which makes the feedback.htm gui work.
 */
 
+import { connectModeToggleButton } from './accessibility.js';
+
 $(document).ready(function() {
-    const font = sessionStorage.getItem("font"),
-          size = sessionStorage.getItem("size"),
-          weight = sessionStorage.getItem("weight"),
-          letter = sessionStorage.getItem("letter"),
-          line = sessionStorage.getItem("line"),
-          colour = sessionStorage.getItem("colour"),
-          back = sessionStorage.getItem("back");
+  connectModeToggleButton();
+});
 
-    if (font != null) {
-        $(".normalText, .middle").css({
-            fontFamily: font,
-            fontSize: size,
-            fontWeight: weight,
-            letterSpacing: letter,
-            lineHeight: line
-        });
-
-        $(".normalText").css({color: colour});
-        $("h1, h2").css({letterSpacing: letter});
-        $("h1").css({color: colour});
-        $("form, #upper").css({background: back});
-    }
+// Remove the loading cover when everything is loaded
+$(window).on('load', function() {
+    $("#cover").hide();
 });
 

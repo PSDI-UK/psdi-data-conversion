@@ -6,6 +6,7 @@
 */
 
 import { getAllFormats, getConverters } from "./data.js";
+import { connectModeToggleButton } from './accessibility.js';
 
 var token = "",
     fromList = new Array(),
@@ -13,6 +14,9 @@ var token = "",
     formatList = new Array();
 
 $(document).ready(function() {
+
+    connectModeToggleButton();
+
     token = sessionStorage.getItem("token");
 
     $("#success").css({display: "none"});
@@ -24,31 +28,6 @@ $(document).ready(function() {
         populateList(allFormats, "format");
     });
 
-    const font = sessionStorage.getItem("font"),
-          size = sessionStorage.getItem("size"),
-          weight = sessionStorage.getItem("weight"),
-          letter = sessionStorage.getItem("letter"),
-          line = sessionStorage.getItem("line"),
-          colour = sessionStorage.getItem("colour"),
-          back = sessionStorage.getItem("back");
-
-    if (font != null) {
-        $(".normalText, .middle, #resetButton, #resetButton2, #reportButton").css({
-            fontFamily: font,
-            fontSize: size,
-            fontWeight: weight,
-            letterSpacing: letter
-        });
-
-        $(".normalText, .middle").css({lineHeight: line});
-        $(".normalText, h1").css({color: colour});
-        $("h1, h2").css({letterSpacing: letter});
-        $("form, select, #upper, #missingFormat, #searchFrom, #searchTo, #searchFormats, #in").css({background: back});
-    }
-
-//    $("#searchFrom").val(sessionStorage.getItem("in_str")); // $$$$$ CHECK if can remove these items from entire website $$$$$
-  //  $("#searchTo").val(sessionStorage.getItem("out_str"));
-
     $("#reason").change(display);
     $("#fromList").click(populateConversionSuccess);
     $("#toList").click(populateConversionSuccess);
@@ -59,6 +38,11 @@ $(document).ready(function() {
     $("#resetButton").click(resetAll);
     $("#resetButton2").click(resetAll);
     $("#reportButton").click(submitUserInput);
+});
+
+// Remove the loading cover when everything is loaded
+$(window).on('load', function() {
+    $("#cover").hide();
 });
 
 // Included in this file for convenience. When the 'Report' button is clicked, a user's missing conversion report

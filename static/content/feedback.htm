@@ -5,46 +5,157 @@
 
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PSDI Data Conversion Service</title>
-    <link href="../images/favicon.ico" rel="icon" type="image/x-icon">
-    <link href="https://fonts.googleapis.com/css?family=Lato:400" rel="stylesheet" type="text/css">
-    <link href="https://fonts.googleapis.com/css?family=Open+Sans+Condensed:700" rel="stylesheet" type="text/css">
-    <link rel="stylesheet" href="../styles/format.css">
-  </head>
 
-  <body marginwidth="0">
-    <div id="upper">
-      <div class="navGrid" id="top">
-        <img src="../images/PSDI_Logo_CMYK_282c.svg" alt="PSDI logo">
-        <h1>Data Conversion Service</h1>
-      </div>
-      <div class="middle">
-        <a href="/">Home</a>
-        <a href="report.htm">Report Missing Format/Conversion</a>
-        <a href="">Provide Feedback</a>
-        <a href="documentation.htm">Documentation</a>
-        <a href="accessibility.htm">Accessibility</a>
-        <a href="mailto: psdi@soton.ac.uk" id="mail">Contact</a>
-      </div>
-      <div class="smallGap"></div>
-    </div>
-    <h2>Provide Feedback</h2>
-    <form name="gui">
-      <div class="normalText">
-        <p>To report issues other than missing formats or conversions, please click on the 'Feedback form' link below. The form will open in a new tab.</p>
-        <a href="https://forms.office.com/Pages/ResponsePage.aspx?id=-XhTSvQpPk2-iWadA62p2Fa27wFj_AtEgNrXLTdVtPVUQzhCODEyWTRXNlFEVDg5WklURlY2MExLWiQlQCN0PWcu" target="_blank">
-          Feedback form
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PSDI Data Conversion Service</title>
+  <link href="../images/favicon.ico" rel="icon" type="image/x-icon">
+  <link href="https://fonts.googleapis.com/css?family=Lato:400" rel="stylesheet" type="text/css">
+  <link href="https://fonts.googleapis.com/css?family=Open+Sans+Condensed:700" rel="stylesheet" type="text/css">
+  <link rel="stylesheet" href="../styles/format.css">
+  <script src="../javascript/load_accessibility.js"></script>
+</head>
+
+<body marginwidth="0">
+
+  <header class="header" id="psdi-header">
+    <div class="max-width-box navbar">
+      <div class="header-left">
+        <a class="navbar__brand" href="../../">
+          <div class="navbar__logo">
+            <img src="https://psdi-uk.github.io/css-template/images/PSDI_Logo-darktext.png" alt="PSDI logo"
+              class="lm-only">
+            <img src="https://psdi-uk.github.io/css-template/images/PSDI_Logo-lighttext.png" alt="PSDI logo"
+              class="dm-only">
+          </div>
+          <h5 class="navbar__title"></h5>
         </a>
-        <div class="medGap"></div>
       </div>
-      <div class="largeGap"></div>
-    </form>
+      <div class="navbar__items navbar__items--right">
+        <a href="../../" class="navbar__item navbar__link">Home</a>
+        <a href="report.htm" class="navbar__item navbar__link">Report Missing Format/Conversion</a>
+        <a href="feedback.htm" class="navbar__item navbar__link">Provide Feedback</a>
+        <a href="documentation.htm" class="navbar__item navbar__link">Documentation</a>
+        <a href="accessibility.htm" class="navbar__item navbar__link">Accessibility</a>
+        <a href="mailto: psdi@soton.ac.uk" class="navbar__item navbar__link" id="mail">Contact</a>
+        <button class="clean-btn color-mode-toggle" title="Switch between dark and light mode"
+          aria-label="Lightmode/darkmode toggle button">
+          <img src="https://psdi-uk.github.io/css-template/images/lightmode-toggle-lm.svg" alt="Lightmode toggle icon"
+            class="lm-only">
+          <img src="https://psdi-uk.github.io/css-template/images/lightmode-toggle-dm.svg" alt="Darkmode toggle icon"
+            class="dm-only">
+        </button>
+      </div>
+    </div>
+  </header>
 
-    <script src="https://code.jquery.com/jquery-3.7.1.js"
-            integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4="
-            crossorigin="anonymous"></script>
-    <script src="../javascript/feedback.js" type="module" language="JavaScript"></script>
-  </body>
+  <div class="hero">
+    <div class="max-width-box">
+      <h1 class="hero__title marginless_header">Provide Feedback</h1>
+    </div>
+  </div>
+
+  <form name="gui">
+    <div class="max-width-box">
+      <p>To report issues other than missing formats or conversions, please click on the 'Feedback
+        form' link below. The form will open in a new tab.</p>
+      <a href="https://forms.office.com/Pages/ResponsePage.aspx?id=-XhTSvQpPk2-iWadA62p2Fa27wFj_AtEgNrXLTdVtPVUQzhCODEyWTRXNlFEVDg5WklURlY2MExLWiQlQCN0PWcu"
+        target="_blank">
+        Feedback form
+      </a>
+      <div class="medGap"></div>
+    </div>
+  </form>
+
+  <script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4="
+    crossorigin="anonymous"></script>
+  <script src="../javascript/feedback.js" type="module" language="JavaScript"></script>
+
+  <footer class="footer" id="psdi-footer">
+    <div class="max-width-box">
+      <div class="footer__links">
+        <div id="footer__links__left">
+          <div class="footer__title">
+            <h6>Funding</h6>
+          </div>
+          <h6 class="footer__title"><br></h6>
+          <div class="footer__hline">
+            <hr>
+          </div>
+          <ul class="footer__col footer__items clean-list">
+            <li class="funding-text">PSDI acknowledges the funding support by the EPSRC grants
+              EP/X032701/1, EP/X032663/1 and EP/W032252/1</li>
+          </ul>
+          <ul class="footer__col footer__items clean-list">
+            <li>
+              <img class="lm-only" src="https://psdi-uk.github.io/css-template/images/UKRI-lighttext.png"
+                alt="UKRI logo">
+              <img class="dm-only" src="https://psdi-uk.github.io/css-template/images/UKRI-darktext.png"
+                alt="UKRI logo">
+            </li>
+            <li>
+              <img class="lm-only" src="https://psdi-uk.github.io/css-template/images/UKRI_EPSR-lighttext.png"
+                alt="UKRI EPSR logo">
+              <img class="dm-only" src="https://psdi-uk.github.io/css-template/images/UKRI_EPSR-darktext.png"
+                alt="UKRI EPSR logo">
+            </li>
+          </ul>
+          <div class="footer__hline small-screen-only">
+            <hr>
+          </div>
+        </div>
+        <div id="footer__links__right">
+          <div class="footer__title">
+            <h6>Useful Links</h6>
+          </div>
+          <div class="footer__title">
+            <h6>Connect</h6>
+          </div>
+          <div class="footer__hline">
+            <hr>
+          </div>
+          <ul class="footer__col footer__items clean-list">
+            <li><a href="https://psdi.ac.uk/">PSDI Home</a></li>
+            <li><a href="https://www.psdi.ac.uk/contact/">Contact Us</a></li>
+            <li><a href="#">Privacy</a></li>
+            <li><a href="#">Terms and Conditions</a></li>
+          </ul>
+          <p class="footer__col" id="footer-icon-list">
+            <a href="#" class="footer-icon">
+              <img src="https://psdi-uk.github.io/css-template/images/In-White-128.png" alt="LinkedIn icon"
+                class="lm-only">
+              <img src="https://psdi-uk.github.io/css-template/images/In-Black-128.png" alt="LinkedIn icon"
+                class="dm-only">
+            </a>
+            <a href="#" class="footer-icon">
+              <img src="https://psdi-uk.github.io/css-template/images/x-logo-white.svg" alt="X icon" class="lm-only">
+              <img src="https://psdi-uk.github.io/css-template/images/x-logo-black.svg" alt="X icon" class="dm-only">
+            </a>
+            <a href="#" class="footer-icon">
+              <img src="https://psdi-uk.github.io/css-template/images/Instagram_Glyph_White.svg" alt="Instagram icon"
+                class="lm-only">
+              <img src="https://psdi-uk.github.io/css-template/images/Instagram_Glyph_Black.svg" alt="Instagram icon"
+                class="dm-only">
+            </a>
+            <a href="#" class="footer-icon">
+              <img src="https://psdi-uk.github.io/css-template/images/yt_icon_mono-white.png" alt="YouTube icon"
+                class="lm-only">
+              <img src="https://psdi-uk.github.io/css-template/images/yt_icon_mono-dark.png" alt="YouTube icon"
+                class="dm-only">
+            </a>
+          </p>
+          <div class="footer__hline small-screen-only">
+            <hr>
+          </div>
+        </div>
+      </div>
+      <div class="footer__hline big-screen-only">
+        <hr>
+      </div>
+      <div class="footer__copyright__text text--center">Copyright © 2024 PSDI</div>
+    </div>
+  </footer>
+
+</body>
+
 </html>

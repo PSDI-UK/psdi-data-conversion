@@ -5,6 +5,7 @@
   This is the JavaScript which makes the Format and Converter Selection gui work.
 */
 
+import { connectModeToggleButton } from './accessibility.js';
 import { getInputFormats, getOutputFormats, getOutputFormatsForInputFormat,
     getInputFormatsForOutputFormat, getConverters, getConverterByName } from "./data.js";
 
@@ -12,6 +13,9 @@ var fromList = new Array(),
     toList = new Array();
 
 $(document).ready(function() {
+
+    connectModeToggleButton();
+
     // Populates the "Convert from" selection list
     getInputFormats().then((formats) => {
         populateList(formats, "from");
@@ -22,34 +26,10 @@ $(document).ready(function() {
         populateList(formats, "to");
     });
 
-    const font = sessionStorage.getItem("font"),
-          size = sessionStorage.getItem("size"),
-          weight = sessionStorage.getItem("weight"),
-          letter = sessionStorage.getItem("letter"),
-          line = sessionStorage.getItem("line"),
-          colour = sessionStorage.getItem("colour"),
-          back = sessionStorage.getItem("back");
-
     sessionStorage.setItem("token", token);
     sessionStorage.setItem("in_str", "");
     sessionStorage.setItem("out_str", "");
     sessionStorage.setItem("success", "");
-
-    if (font != null) {
-        $(".normalText, .middle, h3, #resetButton, #yesButton").css({
-            fontFamily: font,
-            fontSize: size,
-            fontWeight: weight,
-            letterSpacing: letter
-        });
-
-        $(".normalText, .middle").css({lineHeight: line});
-        $(".normalText").css({color: colour});
-        $("h1, h2").css({letterSpacing: letter});
-        $("h1, h3").css({color: colour});
-        $("h3").css({fontSize: Number(size.substring(0, 2)) + 4 + 'px'});
-        $("form, select, #searchFrom, #searchTo, #upper").css({background: back});
-    }
 
     $("#fromList").click(populateConversionSuccess);
     $("#toList").click(populateConversionSuccess);
@@ -58,6 +38,11 @@ $(document).ready(function() {
     $("#yesButton").click(goToConversionPage);
     $("#success").click(showConverterDetails);
     $("#resetButton").click(resetAll);
+});
+
+// Remove the loading cover when everything is loaded
+$(window).on('load', function() {
+    $("#cover").hide();
 });
 
 // Selects a file format; populates the "Conversion success" selection list given input and output IDs;

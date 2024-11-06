@@ -6,6 +6,7 @@
 */
 
 import { getInputFlags, getOutputFlags, getInputArgFlags, getOutputArgFlags } from "./data.js";
+import { connectModeToggleButton } from './accessibility.js';
 
 const fromList = new Array(),
       toList = new Array();
@@ -18,29 +19,7 @@ var token = "",
 $(document).ready(function() {
     token = sessionStorage.getItem("token");
 
-    const font = sessionStorage.getItem("font"),
-          size = sessionStorage.getItem("size"),
-          weight = sessionStorage.getItem("weight"),
-          letter = sessionStorage.getItem("letter"),
-          line = sessionStorage.getItem("line"),
-          colour = sessionStorage.getItem("colour"),
-          back = sessionStorage.getItem("back");
-
-    if (font != null) {
-        $(".normalText, .middle, h3, #uploadButton").css({
-            fontFamily: font,
-            fontSize: size,
-            fontWeight: weight,
-            letterSpacing: letter
-        });
-
-        $(".normalText, .middle").css({lineHeight: line});
-        $(".normalText").css({color: colour});
-        $("h1, h2").css({letterSpacing: letter});
-        $("h1, h3").css({color: colour});
-        $("h3").css({fontSize: Number(size.substring(0, 2)) + 4 + 'px'});
-        $("form, #upper, #inFlags, #outFlags").css({background: back});
-    }
+    connectModeToggleButton();
 
     const in_str = sessionStorage.getItem("in_str"),
           out_str = sessionStorage.getItem("out_str");
@@ -64,6 +43,11 @@ $(document).ready(function() {
     $('input[name="coordinates"]').change(coordOptionAvailability);
     $("#fileToUpload").change(checkExtension);
     $("#uploadButton").click(submitFile);
+});
+
+// Remove the loading cover when everything is loaded
+$(window).on('load', function() {
+    $("#cover").hide();
 });
 
 // $$$$$$$$$$ Retained in case of future need to write to a log file $$$$$$$$$$
@@ -113,7 +97,7 @@ function submitFile() {
     
     if (extension != in_ext) {
         alert("The file extension is not " + in_ext + ": please select another file or change the 'from' format on the 'Home' page.");
-        $("#uploadButton").css({"background-color": "#e5e1e6", "color": "gray"});
+        $("#uploadButton").css({"background-color": "var(--psdi-bg-color-secondary)", "color": "gray"});
         return;
     }
 
@@ -346,7 +330,7 @@ function addCheckboxes(argFlags, type) {
                 <tr>
                     <td><input type='checkbox' id="${type}_check${flagCount}" name=${type}_check value="${flag}"></input></td>
                     <td><label for="${type}_check${flagCount}">${flag} [${brief}]: ${description}<label></td>
-                    <td><input type='text' class='normalText' id=${type}_text${flagCount} placeholder='-- type info. here --'></input></td>
+                    <td><input type='text' id=${type}_text${flagCount} placeholder='-- type info. here --'></input></td>
                     <td><span id= ${type}_label${flagCount}>${furtherInfo}</span></td>
                 </tr>`);
 
@@ -428,13 +412,12 @@ function checkExtension(event) {
     const extension = file_name_array[1];
 
     if (extension != in_ext) {
-        $("#uploadButton").css({"background-color": "#e5e1e6", "color": "gray"});
+        $("#uploadButton").css({"background-color": "var(--psdi-bg-color-secondary)", "color": "gray"});
         $("#uploadButton").prop({disabled: true});
         alert("The file extension is not " + in_ext + ": please select another file or change the 'from' format on the 'Home' page.");
     }
     else {
-        $("#uploadButton").css("background-color", "#011e41"); // TODO: COMBINE TWO LINES
-        $("#uploadButton").css("color", "#e5e1e6");
+        $("#uploadButton").css({"background-color": "var(--ifm-color-primary)", "color": "var(--ifm-hero-text-color)"});
         $("#uploadButton").prop({disabled: false});
     }
 }
