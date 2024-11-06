@@ -258,6 +258,12 @@ body>* {
   display: var(--dm-display);
 }
 
+.header,
+.hero,
+.footer {
+  flex: none;
+}
+
 .header .max-width-box {
   display        : flex;
   flex           : auto;
