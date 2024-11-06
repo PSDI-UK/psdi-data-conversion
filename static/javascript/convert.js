@@ -417,7 +417,7 @@ function checkExtension(event) {
         alert("The file extension is not " + in_ext + ": please select another file or change the 'from' format on the 'Home' page.");
     }
     else {
-        $("#uploadButton").css({"background-color": "var(--ifm-hero-text-color)", "color": "var(--ifm-color-primary)"});
+        $("#uploadButton").css({"background-color": "var(--ifm-color-primary)", "color": "var(--ifm-hero-text-color)"});
         $("#uploadButton").prop({disabled: false});
     }
 }
