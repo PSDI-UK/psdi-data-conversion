@@ -70,7 +70,6 @@ form {
 #searchFrom,
 #missingFormat,
 #searchFormats {
-  color: var(--ifm-color-primary);
   width: 50rem;
 }
 
