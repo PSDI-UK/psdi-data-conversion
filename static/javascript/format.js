@@ -5,7 +5,7 @@
   This is the JavaScript which makes the Format and Converter Selection gui work.
 */
 
-import { loadAccessibilitySettings } from './accessibility.js';
+import { connectModeToggleButton } from './accessibility.js';
 import { getInputFormats, getOutputFormats, getOutputFormatsForInputFormat,
     getInputFormatsForOutputFormat, getConverters, getConverterByName } from "./data.js";
 
@@ -14,7 +14,7 @@ var fromList = new Array(),
 
 $(document).ready(function() {
 
-    loadAccessibilitySettings();
+    connectModeToggleButton();
 
     // Populates the "Convert from" selection list
     getInputFormats().then((formats) => {

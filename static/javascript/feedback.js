@@ -5,10 +5,10 @@
   This is the JavaScript which makes the feedback.htm gui work.
 */
 
-import { loadAccessibilitySettings } from './accessibility.js';
+import { connectModeToggleButton } from './accessibility.js';
 
 $(document).ready(function() {
-    loadAccessibilitySettings();
+  connectModeToggleButton();
 });
 
 // Remove the loading cover when everything is loaded

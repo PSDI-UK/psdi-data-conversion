@@ -6,7 +6,7 @@
 */
 
 import { getAllFormats, getConverters } from "./data.js";
-import { loadAccessibilitySettings } from './accessibility.js';
+import { connectModeToggleButton } from './accessibility.js';
 
 var token = "",
     fromList = new Array(),
@@ -15,7 +15,7 @@ var token = "",
 
 $(document).ready(function() {
 
-    loadAccessibilitySettings();
+    connectModeToggleButton();
 
     token = sessionStorage.getItem("token");
 

@@ -6,7 +6,7 @@
 */
 
 import { getInputFlags, getOutputFlags, getInputArgFlags, getOutputArgFlags } from "./data.js";
-import { loadAccessibilitySettings } from './accessibility.js';
+import { connectModeToggleButton } from './accessibility.js';
 
 const fromList = new Array(),
       toList = new Array();
@@ -19,7 +19,7 @@ var token = "",
 $(document).ready(function() {
     token = sessionStorage.getItem("token");
 
-    loadAccessibilitySettings();
+    connectModeToggleButton();
 
     const in_str = sessionStorage.getItem("in_str"),
           out_str = sessionStorage.getItem("out_str");
