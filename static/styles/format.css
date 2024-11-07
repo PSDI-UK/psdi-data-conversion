@@ -5,8 +5,7 @@
 
 @import url("psdi-common.css");
 
-/* White background, with content well away from the edge. */
-
+/* Forms inherit style from normal content, and makes sure content is well away from the edges */
 form {
   width      : 95%;
   min-width  : 320px;
@@ -19,26 +18,28 @@ form {
   padding-left: 0.125rem;
 }
 
-/* 50rem width for some select boxes for accessibility purposes. */
-#fromList,
-#toList,
-#formatList,
-#success,
-#inFlags,
-#outFlags,
-#outArgFlags {
-  width: 50rem;
-}
+/* Width management for select boxes and forms */
 
-/* 25rem width for the report type select box. */
-#reason {
+.med-width {
   width: 25rem;
 }
 
-/* Width of select box begins to reduce at 25rem. */
 @media (max-width: 25rem) {
-  #reason {
+  .med-width {
     width: 100%
+  }
+}
+
+.large-width {
+  width: 50rem;
+}
+
+@media (max-width: 50rem) {
+  .large-width {
+    width: 100%
+  }
+  input.large-width {
+    width: calc(100% - 0.5rem)
   }
 }
 
@@ -62,40 +63,6 @@ form {
 #uploadButton {
   background-color: var(--psdi-bg-color-secondary);
   color           : gray
-}
-
-/* Dark blue text for text input. */
-#in,
-#searchTo,
-#searchFrom,
-#missingFormat,
-#searchFormats {
-  width: 50rem;
-}
-
-/* Width of select boxes begins to reduce at 950px. */
-@media (max-width: 50rem) {
-
-  #fromList,
-  #toList,
-  #success,
-  #inFlags,
-  #outFlags,
-  #formatList {
-    width: 100%
-  }
-}
-
-/* Width of text boxes begins to reduce at 50rem. */
-@media (max-width: 50rem) {
-
-  #searchFrom,
-  #searchTo,
-  #searchFormats,
-  #in,
-  #missingFormat {
-    width: calc(100% - 0.5rem)
-  }
 }
 
 /* Format boxes, reset button, text input box and report button initially not displayed on the 'Report' page */
