@@ -49,7 +49,7 @@ form {
 }
 
 /* Buttons that are initially disabled */
-.init-disabled {
+input.button.init-disabled {
   background-color: var(--psdi-bg-color-secondary);
   color           : gray
 }
