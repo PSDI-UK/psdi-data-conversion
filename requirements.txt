@@ -1,5 +1,6 @@
-azure-functions
-requests
-openbabel-wheel
-psycopg2
-py
+azure-functions==1.21.3
+Flask==1.21.3
+openbabel-wheel==1.21.3
+psycopg2-binary==1.21.3
+py==1.21.3
+requests==1.21.3
