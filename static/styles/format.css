@@ -5,8 +5,7 @@
 
 @import url("psdi-common.css");
 
-/* White background, with content well away from the edge. */
-
+/* Forms inherit style from normal content, and make sure content is well away from the edges */
 form {
   width      : 95%;
   min-width  : 320px;
@@ -19,91 +18,40 @@ form {
   padding-left: 0.125rem;
 }
 
-/* 50rem width for some select boxes for accessibility purposes. */
-#fromList,
-#toList,
-#formatList,
-#success,
-#inFlags,
-#outFlags,
-#outArgFlags {
-  width: 50rem;
-}
+/* Width management for select boxes and forms */
 
-/* 25rem width for the report type select box. */
-#reason {
+.med-width {
   width: 25rem;
 }
 
-/* Width of select box begins to reduce at 25rem. */
 @media (max-width: 25rem) {
-  #reason {
+  .med-width {
     width: 100%
   }
 }
 
-/* Hidden dummy elements to aid layout. */
-#dummyText {
-  visibility: hidden
-}
-
-/* Converter details, user input and file conversion initially not displayed. */
-#converter,
-#offer {
-  display: none
-}
-
-/* Heading for Conversion page. */
-#heading {
-  display: block
-}
-
-/* Upload button (Convert) initially greyed out.*/
-#uploadButton {
-  background-color: var(--psdi-bg-color-secondary);
-  color           : gray
-}
-
-/* Dark blue text for text input. */
-#in,
-#searchTo,
-#searchFrom,
-#missingFormat,
-#searchFormats {
+.large-width {
   width: 50rem;
 }
 
-/* Width of select boxes begins to reduce at 950px. */
 @media (max-width: 50rem) {
-
-  #fromList,
-  #toList,
-  #success,
-  #inFlags,
-  #outFlags,
-  #formatList {
+  .large-width {
     width: 100%
   }
-}
-
-/* Width of text boxes begins to reduce at 50rem. */
-@media (max-width: 50rem) {
-
-  #searchFrom,
-  #searchTo,
-  #searchFormats,
-  #in,
-  #missingFormat {
+  input.large-width {
     width: calc(100% - 0.5rem)
   }
 }
 
-/* Format boxes, reset button, text input box and report button initially not displayed on the 'Report' page */
-#formats,
-#in_out_formats,
-#userInput,
-#missing {
+/* Converter details, user input and file conversion initially not displayed. */
+.init-hidden {
   display: none
+}
+
+/* Buttons that are initially disabled */
+input.button.init-disabled {
+  background-color: var(--psdi-bg-color-secondary);
+  color           : gray
 }
 
 /* Small vertical space. */
@@ -125,7 +73,7 @@ form {
 .access-options {
   display              : grid;
   grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
-  column-gap: 1rem;
+  column-gap: 2rem;
 }
 
 .access-option-container {
@@ -139,10 +87,10 @@ form {
   display: none;
 }
 
-/* Dark blue text and 310px width select boxes. */
-select {
+/* Select boxes for accessibility options */
+.access-option-container select {
   min-width: 5rem;
-  width    : 90%;
+  width    : 100%;
 }
 
 select#light-colour,
@@ -175,46 +123,4 @@ select#light-background option {
 select#dark-background option {
   background-color: var(--psdi-default-color-primary);
   color           : var(--psdi-light-text-color-body);
-}
-
-/* Initially hidden grid for select label/elements. */
-.selGrid {
-  display              : grid;
-  grid-template-columns: 1fr 1fr
-}
-
-/* Select label/elements are stacked at <= 50rem. */
-@media (max-width: 50rem) {
-  .selGrid {
-    grid-template-columns: auto
-  }
-}
-
-/* Grid for logo and navigation. */
-.navGrid {
-  display              : grid;
-  grid-template-columns: 1fr 2fr;
-  margin               : 0 4rem 0 4rem
-    /* top right bottom left */
-}
-
-/* Logo and navigation are stacked at <= 55rem. */
-@media (max-width: 55rem) {
-  .navGrid {
-    grid-template-columns: auto
-  }
-}
-
-/* Logo/navigation grid margins reduced at 25rem */
-@media (max-width: 25rem) {
-  .navGrid {
-    margin: 0 1rem 0 1rem
-  }
-}
-
-/* Navigation vertically aligned in the middle. */
-.middle {
-  align-self: center;
-  text-align: right;
-  padding   : 1rem
 }

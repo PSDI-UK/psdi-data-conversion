@@ -71,31 +71,33 @@
         click on 'Report Missing Format/Conversion' in the navigation bar.</p>
       <p>
         <label for="searchFrom" id="fromLabel">Convert from:</label><br>
-        <input type="text" placeholder="-- type here to filter options --" size="12" id="searchFrom"><br>
-        <select size="4" id="fromList"></select>
+        <input type="text" placeholder="-- type here to filter options --" size="12" id="searchFrom"
+          class="large-width"><br>
+        <select size="4" id="fromList" class="large-width"></select>
       </p>
       <div class="smallGap"></div>
       <p>
         <label for="searchTo" id="toLabel">Convert to:</label><br>
-        <input type="text" placeholder="-- type here to filter options --" size="12" id="searchTo"><br>
-        <select size="4" id="toList"></select>
+        <input type="text" placeholder="-- type here to filter options --" size="12" id="searchTo"
+          class="large-width"><br>
+        <select size="4" id="toList" class="large-width"></select>
       </p>
       <input type="button" class="button" value=" Reset " name="resetButton" id="resetButton">
       <br><br>
       <p>
         <label for="success">Select from available conversion
           options:</label><br>
-        <select size="4" id="success"></select>
+        <select size="4" id="success" class="large-width"></select>
       </p>
       <br>
       <h3>Converter details:</h3>
-      <p id="converter">
+      <p id="converter", class="init-hidden">
         <span id="name"></span>
         <br><span id="description"></span>
         <br><span id="url"></span>
         <br><span id="info"></span>
         <a id="visit" target="_blank">this website.</a>
-      <div id="offer">
+      <div id="offer" class="init-hidden">
         <span id="question"></span>
         <input type="button" class="button" value=" Yes " name="yesButton" id="yesButton">
       </div>

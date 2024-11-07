@@ -69,15 +69,14 @@
         'Convert' uploads and converts the file. The output file is automatically downloaded. If any issues are
         encountered (e.g., the output file does not download), please click on 'Provide Feedback' in the navigation bar.
       </p>
-      <h3 id="heading"></h3>
-      <div id="flags"> <!--class="selGrid">-->
+      <div id="flags">
         <div id="inFlagList">
           <p>
             <label for="inFlags" id="in_label">Read (input) option flags
               (select
               all required):</label>
           <div id="in_flag_break"></div>
-          <select id="inFlags" size="4" multiple="multiple"></select>
+          <select id="inFlags" class="large-width" size="4" multiple="multiple"></select>
           <div id=inFlagInfo></div>
           </p>
         </div>
@@ -86,7 +85,7 @@
             <label for="outFlags" id="out_label">Write (output) option flags
               (select all required):</label>
           <div id="out_flag_break"></div>
-          <select id="outFlags" size="4" multiple="multiple"></select>
+          <select id="outFlags" class="large-width" size="4" multiple="multiple"></select>
           <div id=outFlagInfo></div>
           </p>
         </div>
@@ -109,18 +108,17 @@
       <p>
         <label for="coordOptions"> Calculation options range from 'fastest'
           (least accurate) to 'best' (slowest).</label><br>
-        <input type="radio" name="coordOptions" id="coordOptions" value="fastest" disabled=true>
-        fastest
+        <input type="radio" name="coordOptions" id="coordOptions" value="fastest" disabled=true> fastest
         <input type="radio" name="coordOptions" id="coordOptions" value="fast" disabled=true> fast
         <input type="radio" name="coordOptions" id="coordOptions" value="medium" checked="checked" disabled=true> medium
-        <input type="radio" name="coordOptions" id="coordOptions" value="better" disabled=true>
-        better
+        <input type="radio" name="coordOptions" id="coordOptions" value="better" disabled=true> better
         <input type="radio" name="coordOptions" id="coordOptions" value="best" disabled=true> best
       </p>
       <p id="convertFile">
         Select file to convert:
         <br><input type="file" name="fileToUpload" id="fileToUpload"><br>
-        <input type="button" class="button" value=" Convert " name="uploadButton" id="uploadButton" disabled=true>
+        <input type="button" class="button init-disabled" value=" Convert " name="uploadButton" id="uploadButton"
+          disabled=true>
       </p>
       <div class="medGap"></div>
     </div>

@@ -223,6 +223,12 @@ input {
   line-height     : var(--ifm-line-height-base);
 }
 
+input::placeholder {
+  color      : var(--ifm-font-color-base);
+  font-weight: 100;
+  font-style : italic;
+}
+
 button,
 input.button {
   font-family     : var(--ifm-font-family-base);
