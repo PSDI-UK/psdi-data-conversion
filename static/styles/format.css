@@ -5,7 +5,7 @@
 
 @import url("psdi-common.css");
 
-/* Forms inherit style from normal content, and makes sure content is well away from the edges */
+/* Forms inherit style from normal content, and make sure content is well away from the edges */
 form {
   width      : 95%;
   min-width  : 320px;
@@ -43,34 +43,15 @@ form {
   }
 }
 
-/* Hidden dummy elements to aid layout. */
-#dummyText {
-  visibility: hidden
-}
-
 /* Converter details, user input and file conversion initially not displayed. */
-#converter,
-#offer {
+.init-hidden {
   display: none
 }
 
-/* Heading for Conversion page. */
-#heading {
-  display: block
-}
-
-/* Upload button (Convert) initially greyed out.*/
-#uploadButton {
+/* Buttons that are initially disabled */
+.init-disabled {
   background-color: var(--psdi-bg-color-secondary);
   color           : gray
-}
-
-/* Format boxes, reset button, text input box and report button initially not displayed on the 'Report' page */
-#formats,
-#in_out_formats,
-#userInput,
-#missing {
-  display: none
 }
 
 /* Small vertical space. */
