@@ -73,7 +73,7 @@ form {
 .access-options {
   display              : grid;
   grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
-  column-gap: 1rem;
+  column-gap: 2rem;
 }
 
 .access-option-container {
@@ -87,10 +87,10 @@ form {
   display: none;
 }
 
-/* Dark blue text and 310px width select boxes. */
-select {
+/* Select boxes for accessibility options */
+.access-option-container select {
   min-width: 5rem;
-  width    : 90%;
+  width    : 100%;
 }
 
 select#light-colour,
@@ -123,46 +123,4 @@ select#light-background option {
 select#dark-background option {
   background-color: var(--psdi-default-color-primary);
   color           : var(--psdi-light-text-color-body);
-}
-
-/* Initially hidden grid for select label/elements. */
-.selGrid {
-  display              : grid;
-  grid-template-columns: 1fr 1fr
-}
-
-/* Select label/elements are stacked at <= 50rem. */
-@media (max-width: 50rem) {
-  .selGrid {
-    grid-template-columns: auto
-  }
-}
-
-/* Grid for logo and navigation. */
-.navGrid {
-  display              : grid;
-  grid-template-columns: 1fr 2fr;
-  margin               : 0 4rem 0 4rem
-    /* top right bottom left */
-}
-
-/* Logo and navigation are stacked at <= 55rem. */
-@media (max-width: 55rem) {
-  .navGrid {
-    grid-template-columns: auto
-  }
-}
-
-/* Logo/navigation grid margins reduced at 25rem */
-@media (max-width: 25rem) {
-  .navGrid {
-    margin: 0 1rem 0 1rem
-  }
-}
-
-/* Navigation vertically aligned in the middle. */
-.middle {
-  align-self: center;
-  text-align: right;
-  padding   : 1rem
 }

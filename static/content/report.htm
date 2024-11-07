@@ -65,7 +65,7 @@
         <option value="conversion">Missing conversion</option>
       </select>
       <div class="medGap"></div>
-      <div id="formats">
+      <div id="formats" class="init-hidden">
         <p>
           <label for="formatList" id="formatLabel">Check that the format is not present in the list. If it is, consider
             reporting a missing conversion.</label><br>
@@ -74,11 +74,11 @@
         </p>
         <input type="button" class="button" value=" Reset " name="resetButton" id="resetButton">
       </div>
-      <div id="missing"><br>
+      <div id="missing" class="init-hidden"><br>
         <br>Enter the name of the missing file format including the file extension(s) [max 100 characters].
         <br><input type="text" placeholder="-- type here --" id="missingFormat" class="large-width">
       </div>
-      <div id="in_out_formats">
+      <div id="in_out_formats" class="init-hidden">
         <br>Select the required 'to' and 'from' formats below.
         <p>
           <label for="searchFrom" id="fromLabel">Convert from:</label><br>
@@ -94,7 +94,7 @@
         <input type="button" class="button" value=" Reset " name="resetButton2" id="resetButton2">
       </div>
       <select id="success" class="large-width"></select> <!-- Not for display. For convenience only. -->
-      <p id="userInput">
+      <p id="userInput" class="init-hidden">
         <span id="message"></span>
         <br><span id="message1"></span>
         <br><input type="text" placeholder="-- type here --" id="in" class="large-width">
