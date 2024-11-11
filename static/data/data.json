@@ -2587,6 +2587,12 @@
             "name": "WebMO",
             "description": "Web-based converter",
             "url": "https://www.webmo.net"
+        },
+        {
+            "id": 8,
+            "name": "Atomsk",
+            "description": "University of Lille",
+            "url": "https://atomsk.univ-lille.fr"
         }
     ],
     "converts_to": [
@@ -119966,6 +119972,222 @@
             "converters_id": 7,
             "in_id": 20,
             "out_id": 18,
+            "degree_of_success": "not tested"
+        },
+        {
+            "converters_id": 8,
+            "in_id": 1,
+            "out_id": 9,
+            "degree_of_success": "not tested"
+        },
+        {
+            "converters_id": 8,
+            "in_id": 1,
+            "out_id": 20,
+            "degree_of_success": "not tested"
+        },
+        {
+            "converters_id": 8,
+            "in_id": 1,
+            "out_id": 40,
+            "degree_of_success": "not tested"
+        },
+        {
+            "converters_id": 8,
+            "in_id": 1,
+            "out_id": 73,
+            "degree_of_success": "not tested"
+        },
+        {
+            "converters_id": 8,
+            "in_id": 1,
+            "out_id": 111,
+            "degree_of_success": "not tested"
+        },
+        {
+            "converters_id": 8,
+            "in_id": 9,
+            "out_id": 1,
+            "degree_of_success": "not tested"
+        },
+        {
+            "converters_id": 8,
+            "in_id": 9,
+            "out_id": 20,
+            "degree_of_success": "not tested"
+        },
+        {
+            "converters_id": 8,
+            "in_id": 9,
+            "out_id": 40,
+            "degree_of_success": "not tested"
+        },
+        {
+            "converters_id": 8,
+            "in_id": 9,
+            "out_id": 73,
+            "degree_of_success": "not tested"
+        },
+        {
+            "converters_id": 8,
+            "in_id": 9,
+            "out_id": 111,
+            "degree_of_success": "not tested"
+        },
+        {
+            "converters_id": 8,
+            "in_id": 20,
+            "out_id": 1,
+            "degree_of_success": "not tested"
+        },
+        {
+            "converters_id": 8,
+            "in_id": 20,
+            "out_id": 9,
+            "degree_of_success": "not tested"
+        },
+        {
+            "converters_id": 8,
+            "in_id": 20,
+            "out_id": 40,
+            "degree_of_success": "not tested"
+        },
+        {
+            "converters_id": 8,
+            "in_id": 20,
+            "out_id": 73,
+            "degree_of_success": "not tested"
+        },
+        {
+            "converters_id": 8,
+            "in_id": 20,
+            "out_id": 111,
+            "degree_of_success": "not tested"
+        },
+        {
+            "converters_id": 8,
+            "in_id": 40,
+            "out_id": 1,
+            "degree_of_success": "not tested"
+        },
+        {
+            "converters_id": 8,
+            "in_id": 40,
+            "out_id": 9,
+            "degree_of_success": "not tested"
+        },
+        {
+            "converters_id": 8,
+            "in_id": 40,
+            "out_id": 20,
+            "degree_of_success": "not tested"
+        },
+        {
+            "converters_id": 8,
+            "in_id": 40,
+            "out_id": 73,
+            "degree_of_success": "not tested"
+        },
+        {
+            "converters_id": 8,
+            "in_id": 40,
+            "out_id": 111,
+            "degree_of_success": "not tested"
+        },
+        {
+            "converters_id": 8,
+            "in_id": 73,
+            "out_id": 1,
+            "degree_of_success": "not tested"
+        },
+        {
+            "converters_id": 8,
+            "in_id": 73,
+            "out_id": 9,
+            "degree_of_success": "not tested"
+        },
+        {
+            "converters_id": 8,
+            "in_id": 73,
+            "out_id": 20,
+            "degree_of_success": "not tested"
+        },
+        {
+            "converters_id": 8,
+            "in_id": 73,
+            "out_id": 40,
+            "degree_of_success": "not tested"
+        },
+        {
+            "converters_id": 8,
+            "in_id": 73,
+            "out_id": 111,
+            "degree_of_success": "not tested"
+        },
+        {
+            "converters_id": 8,
+            "in_id": 105,
+            "out_id": 1,
+            "degree_of_success": "not tested"
+        },
+        {
+            "converters_id": 8,
+            "in_id": 105,
+            "out_id": 9,
+            "degree_of_success": "not tested"
+        },
+        {
+            "converters_id": 8,
+            "in_id": 105,
+            "out_id": 20,
+            "degree_of_success": "not tested"
+        },
+        {
+            "converters_id": 8,
+            "in_id": 105,
+            "out_id": 40,
+            "degree_of_success": "not tested"
+        },
+        {
+            "converters_id": 8,
+            "in_id": 105,
+            "out_id": 73,
+            "degree_of_success": "not tested"
+        },
+        {
+            "converters_id": 8,
+            "in_id": 105,
+            "out_id": 111,
+            "degree_of_success": "not tested"
+        },
+        {
+            "converters_id": 8,
+            "in_id": 111,
+            "out_id": 1,
+            "degree_of_success": "not tested"
+        },
+        {
+            "converters_id": 8,
+            "in_id": 111,
+            "out_id": 9,
+            "degree_of_success": "not tested"
+        },
+        {
+            "converters_id": 8,
+            "in_id": 111,
+            "out_id": 20,
+            "degree_of_success": "not tested"
+        },
+        {
+            "converters_id": 8,
+            "in_id": 111,
+            "out_id": 40,
+            "degree_of_success": "not tested"
+        },
+        {
+            "converters_id": 8,
+            "in_id": 111,
+            "out_id": 73,
             "degree_of_success": "not tested"
         }
     ],
