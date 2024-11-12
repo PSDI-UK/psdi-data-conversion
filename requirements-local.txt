@@ -1,6 +1,6 @@
 azure-functions==1.21.3
-Flask==1.21.3
-openbabel-wheel==1.21.3
-psycopg2-binary==1.21.3
-py==1.21.3
-requests==1.21.3
+Flask==3.0.3
+openbabel-wheel==3.1.1.20
+psycopg2-binary==2.9.10
+py==1.11.0
+requests==2.32.3
