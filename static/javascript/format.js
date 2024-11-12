@@ -1,6 +1,6 @@
 /*
   format.js
-  Version 1.0, 26th June 2024
+  Version 1.0, 11th November 2024
 
   This is the JavaScript which makes the Format and Converter Selection gui work.
 */
@@ -84,12 +84,12 @@ function populateConversionSuccess(event) {
               out_ext = out_str_array[0],
               out_note = out_str_array[1];
 
-        if (this.id == "fromList") { // && !isOption(out_str, "toList")) {
+        if (this.id == "fromList") {
             toList = [];
             $("#toList").children().remove();
             getOutputFormatsForInputFormat(in_ext, in_note).then(formats => populateList(formats, "to"));
         }
-        else if (this.id == "toList") { // && !isOption(in_str, "fromList")) {
+        else if (this.id == "toList") {
             fromList = [];
             $("#fromList").children().remove();
             getInputFormatsForOutputFormat(out_ext, out_note).then(formats => populateList(formats, "from"));
@@ -141,17 +141,19 @@ function hideConverterDetails() {
 function showOffer() {
     const from_format = getFormat($("#searchFrom").val()),
           to_format = getFormat($("#searchTo").val()),
-          quest = "ould you like to convert a file from '" + from_format + "' to '" + to_format + "' on this site using Open Babel?";
+          quest = " like to convert a file from '" + from_format + "' to '" + to_format + "' on this site";
 
-    if ($("#name").html() == "Open Babel") {
+    if ($("#name").html() == "Open Babel" || $("#name").html() == "Atomsk") {
         $("#info").html("");
         $("#visit").html("visit website");
-        $("#question").html("W" + quest);
+        $("#question").html("Would you" + quest + " using " + $("#name").html() + "?");
+        $("#yesButton").css({display: "inline"});
     }
     else {
         $("#info").html("This converter is not supported on our website; however, you can find out how to use it at");
         $("#visit").html("this website.");
-        $("#question").html("As an alternative, w" + quest);
+        $("#question").html("As an alternative, if you would" + quest + ", please select a supported converter above (if available).");
+        $("#yesButton").css({display: "none"});
     }
 
     $("#question").css({display: "inline"});
@@ -184,7 +186,6 @@ function showConverterDetails(event) {
                 $("#converter").css({display: "block"});
                 $("h3").css({display: "block"});
             }
-        });
 
         const el = this;
 
@@ -196,7 +197,7 @@ function showConverterDetails(event) {
 
         while (el.selectionStart < text.length) {
             const selectedText = getSelectedText(el),
-                name = selectedText.split(": ")[0];
+                  name = selectedText.split(": ")[0];
 
             showOffer();
 
@@ -207,6 +208,7 @@ function showConverterDetails(event) {
         el.selectionStart = -1;
         el.selectionEnd = -1;
         el.blur();
+        });
     }
 }
 
@@ -308,8 +310,17 @@ function getFormat(str) {
 
 // Stores chosen formats and switches to the Conversion page
 function goToConversionPage(event) {
+    var path = ``;
+
+    if ($("#name").html() == "Open Babel") {
+        path = `static/content/convert.htm`;
+    }
+    else if ($("#name").html() == "Atomsk") {
+        path = `static/content/convertato.htm`;
+    }
+
     const a = $("<a>")
-          .attr("href", `static/content/convert.htm`)
+          .attr("href", path)
           .appendTo("body");
 
     a[0].click();
@@ -337,7 +348,7 @@ function populateList(entries, sel) {
     });
 
     for (var i = 0; i < rows.length; i++) {
-        const support = rows[i].substring(0, 10) == "Open Babel" ? " (supported)" : " (unsupported)";
+        const support = rows[i].substring(0, 10) == "Open Babel" || rows[i].substring(0, 6) == "Atomsk" ? " (supported)" : " (unsupported)";
 
         if ( sel == "success") {
             $("#success").append($('<option>', { text: rows[i] + support }));

@@ -1,6 +1,6 @@
 /*
   convert.js
-  Version 1.0, 11th October 2024
+  Version 1.0, 8th November 2024
 
   This is the JavaScript which makes the convert.htm gui work.
 */
@@ -153,6 +153,7 @@ function submitFile() {
     var form_data = new FormData();
 
     form_data.append("token", token);
+    form_data.append("converter", 'Open Babel');
     form_data.append("from", in_ext);
     form_data.append("to", out_ext);
     form_data.append("from_full", sessionStorage.getItem("in_str"));
