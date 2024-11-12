@@ -1,6 +1,6 @@
 <!--
   documentation.htm
-  Version 1.0, 19th June 2024
+  Version 1.0, 11th November 2024
 -->
 
 <!DOCTYPE html>
@@ -69,6 +69,7 @@
         If a file format has not been found, or if there are no converters supporting a required conversion, please
         click on 'Report Missing Format/Conversion' in the navigation bar.</p><br>
       <h3>Conversion</h3>
+      <h4>Open Babel</h4>
       <p>Zero to two option flag select boxes and zero to two sets of option flag check boxes may be displayed,
         depending on the conversion and the degree of completion of the database. Further information may be displayed
         underneath the select boxes if available. One or more input or output flags may be selected if required (command
@@ -77,10 +78,14 @@
         information, along with further explanation if available. If 2- or 3-dimensional atomic coordinates need to be
         calculated (using Open Babel), select '2D' or '3D' and a speed/accuracy option ('fastest' is least accurate).
         Note that this calculation is not appropriate for all file formats, so in these cases selections will be
-        ignored. Click on 'Choose file' and then select an input file of the correct format (and extension).
-        Clicking on 'Convert' uploads and converts the file. The output file is automatically downloaded. If any issues
-        are encountered (e.g., the output file does not download), please click on 'Provide Feedback' in the navigation
-        bar.</p><br>
+        ignored. Click on 'Choose file' and then select an input file of the correct format (and extension). Clicking
+        on 'Convert' uploads and converts the file. The output file is automatically downloaded, along with a log file.
+        if any issues are encountered (e.g., the output file does not download), please click on 'Provide Feedback' in
+        the navigation bar.</p>
+      <h4>Atomsk</h4>
+      <p>Click on 'Choose file' and then select an input file of the correct format (and extension). Clicking on 'Convert'
+        uploads and converts the file. The output file is automatically downloaded, along with a log file. If any issues are
+        encountered (e.g., the output file does not download), please click on 'Provide Feedback' in the navigation bar.</p><br>
       <h3>Report Missing Format/Conversion</h3>
       <p>Select the type of report (missing file format or conversion) and then follow the instructions that appear.
         Finally, click on 'Report.'</p><br>
@@ -92,6 +97,8 @@
         on this page only, in the first instance. Once the appearance of the page is satisfactory, clicking on the
         'Apply' button applies the settings to the entire website. Leaving the page without clicking on 'Apply' results
         in the changes being lost. Note that page appearance may vary slightly according to the browser used.</p>
+      <p>The colour options here are not compatible with the dark-mode toggle in the header bar. If a custom dark scheme
+        is desired, the appropriate colours can be selected in light-mode.</p>
       <div class="medGap"></div>
     </div>
   </form>

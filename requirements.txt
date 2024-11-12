@@ -1,4 +1,3 @@
 requests
 openbabel-wheel
-psycopg2
 py
