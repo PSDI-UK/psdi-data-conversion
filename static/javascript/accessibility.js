@@ -224,6 +224,7 @@ function resetSelections(event) {
 // Applies accessibility settings to the entire website.
 function applySettings(event) {
     sessionStorage.setItem("font", s.getPropertyValue('--ifm-font-family-base'));
+    sessionStorage.setItem("hfont", s.getPropertyValue('--ifm-heading-font-family'));
     sessionStorage.setItem("size", s.getPropertyValue('--ifm-font-size-base'));
     sessionStorage.setItem("weight", s.getPropertyValue('--ifm-font-weight-base'));
     sessionStorage.setItem("letter", s.getPropertyValue('--psdi-letter-spacing-base'));

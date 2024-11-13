@@ -30,6 +30,7 @@ if (s.getPropertyValue('--psdi-default-font') == "") {
 
 // Load values from session storage
 const font = sessionStorage.getItem("font"),
+  hfont = sessionStorage.getItem("hfont"),
   size = sessionStorage.getItem("size"),
   weight = sessionStorage.getItem("weight"),
   letter = sessionStorage.getItem("letter"),
@@ -43,7 +44,7 @@ const font = sessionStorage.getItem("font"),
 if (font != null) {
 
   r.style.setProperty('--ifm-font-family-base', font);
-  r.style.setProperty('--ifm-heading-font-family', font);
+  r.style.setProperty('--ifm-heading-font-family', hfont);
 
   r.style.setProperty('--ifm-font-size-base', size);
 
