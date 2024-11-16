@@ -28,7 +28,7 @@
     import { setHeaderLinksSource } from "https://psdi-uk.github.io/css-template/psdi-common.js";
     // Due to the index being a template which will exist in a different directory once rendered, we need to set
     // a non-default location of the header links file
-    setHeaderLinksSource("./static/content/index-header-links.html");
+    setHeaderLinksSource("{{url_for('static', filename='content/index-header-links.html')}}");
   </script>
 
   <div class="hero">
