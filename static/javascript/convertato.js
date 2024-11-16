@@ -5,8 +5,6 @@
   This is the JavaScript which makes the convertato.htm gui work.
 */
 
-import { connectModeToggleButton } from './accessibility.js';
-
 const fromList = new Array(),
       toList = new Array();
 
@@ -17,8 +15,6 @@ var token = "",
 
 $(document).ready(function() {
     token = sessionStorage.getItem("token");
-
-    connectModeToggleButton();
 
     const in_str = sessionStorage.getItem("in_str"),
           out_str = sessionStorage.getItem("out_str");
@@ -36,11 +32,6 @@ $(document).ready(function() {
 
     $("#fileToUpload").change(checkExtension);
     $("#uploadButton").click(submitFile);
-});
-
-// Remove the loading cover when everything is loaded
-$(window).on('load', function() {
-    $("#cover").hide();
 });
 
 // $$$$$$$$$$ Retained in case of future need to write to a log file $$$$$$$$$$

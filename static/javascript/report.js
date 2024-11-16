@@ -6,7 +6,6 @@
 */
 
 import { getAllFormats, getConverters } from "./data.js";
-import { connectModeToggleButton } from './accessibility.js';
 
 var token = "",
     fromList = new Array(),
@@ -14,8 +13,6 @@ var token = "",
     formatList = new Array();
 
 $(document).ready(function() {
-
-    connectModeToggleButton();
 
     token = sessionStorage.getItem("token");
 
@@ -38,11 +35,6 @@ $(document).ready(function() {
     $("#resetButton").click(resetAll);
     $("#resetButton2").click(resetAll);
     $("#reportButton").click(submitUserInput);
-});
-
-// Remove the loading cover when everything is loaded
-$(window).on('load', function() {
-    $("#cover").hide();
 });
 
 // Included in this file for convenience. When the 'Report' button is clicked, a user's missing conversion report

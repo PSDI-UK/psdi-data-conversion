@@ -25,17 +25,7 @@ function toggleMode() {
   sessionStorage.setItem("mode", new_mode);
 }
 
-export function connectModeToggleButton() {
-    // Connect the mode toggle function to the button
-    const lModeToggleButton = document.querySelectorAll(".color-mode-toggle");
-    lModeToggleButton.forEach(function (modeToggleButton) {
-      modeToggleButton.addEventListener("click", toggleMode);
-    });
-}    
-
 $(document).ready(function() {
-
-    connectModeToggleButton();
 
     const fontOpt = sessionStorage.getItem("fontOpt"),
           sizeOpt = sessionStorage.getItem("sizeOpt"),
@@ -71,12 +61,6 @@ $(document).ready(function() {
     $("#dark-background").change(changeDarkBackground);
     $("#resetButton").click(resetSelections);
     $("#applyButton").click(applySettings);
-});
-
-// Remove the loading cover when everything is loaded
-$(window).on('load', function() {
-
-    $("#cover").hide();
 });
 
 // Changes the font for accessibility purposes
