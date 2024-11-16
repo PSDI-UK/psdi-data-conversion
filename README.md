@@ -22,7 +22,6 @@ static
         report.htm
     downloads (created by app.py if not extant)
     images
-        favicon.ico
         PSDI_Logo_CMYK_282c.svg
     javascript
         convert.js
