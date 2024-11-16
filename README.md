@@ -21,8 +21,6 @@ static
         index-header-links.htm
         report.htm
     downloads (created by app.py if not extant)
-    images
-        PSDI_Logo_CMYK_282c.svg
     javascript
         convert.js
         convert.py
