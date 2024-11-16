@@ -12,20 +12,25 @@ requirements.txt
 startup.sh*
 static
     content
+        accessibility.htm
         convert.htm
-        report.htm
-        feedback.htm
+        convertato.htm
         documentation.htm
+        feedback.htm
+        header-links.htm
+        index-header-links.htm
+        report.htm
     downloads (created by app.py if not extant)
     images
         favicon.ico
         PSDI_Logo_CMYK_282c.svg
     javascript
-        format.js
         convert.js
+        convert.py
+        convertato.js
+        format.js
+        load_accessibility.js
         report.js
-        feedback.js
-        documentation.js
     styles
         format.css
     uploads (created by app.py if not extant)
