@@ -5,7 +5,6 @@
   This is the JavaScript which makes the Format and Converter Selection gui work.
 */
 
-import { connectModeToggleButton } from './accessibility.js';
 import { getInputFormats, getOutputFormats, getOutputFormatsForInputFormat,
     getInputFormatsForOutputFormat, getConverters, getConverterByName } from "./data.js";
 
@@ -13,8 +12,6 @@ var fromList = new Array(),
     toList = new Array();
 
 $(document).ready(function() {
-
-    connectModeToggleButton();
 
     // Populates the "Convert from" selection list
     getInputFormats().then((formats) => {
@@ -38,11 +35,6 @@ $(document).ready(function() {
     $("#yesButton").click(goToConversionPage);
     $("#success").click(showConverterDetails);
     $("#resetButton").click(resetAll);
-});
-
-// Remove the loading cover when everything is loaded
-$(window).on('load', function() {
-    $("#cover").hide();
 });
 
 // Selects a file format; populates the "Conversion success" selection list given input and output IDs;
