@@ -67,11 +67,6 @@ open -a "Google Chrome.app" --args --allow-file-access-from-files
 Guidance on usage is given on each page of the website.
 
 
-## Database
-
-A PostgreSQL database is hosted on the same Azure site. The website user is not able to update the database, but instead provides feedback.
-
-
 ## Dependencies
 
 In addition to the dependencies listed in the `requirements.txt` file, this project depends on the assets made public by PSDI's "css-template" at https://psdi-uk.github.io/css-template/. Any changes to these assets will be reflected in this project's web pages, and this project should ideally be tested with any changes before they're made live. An issue with retrieving these assets will appear as the website appear unstyled and missing its header and footer.
