@@ -1,15 +1,17 @@
 /*
   format.js
-  Version 1.0, 11th November 2024
+  Version 1.0, 27th November 2024
 
   This is the JavaScript which makes the Format and Converter Selection gui work.
 */
 
 import { getInputFormats, getOutputFormats, getOutputFormatsForInputFormat,
-    getInputFormatsForOutputFormat, getConverters, getConverterByName } from "./data.js";
+    getInputFormatsForOutputFormat, getConverters, getConverterByName, getLevelChemInfo } from "./data.js";
 
 var fromList = new Array(),
-    toList = new Array();
+    toList = new Array(),
+    qualityCriteriaCount = 0,
+    qualityMeasureSum = 0;
 
 $(document).ready(function() {
 
@@ -35,6 +37,7 @@ $(document).ready(function() {
     $("#yesButton").click(goToConversionPage);
     $("#success").click(showConverterDetails);
     $("#resetButton").click(resetAll);
+    $("#showButton").click(showQualityDetails);
 });
 
 // Selects a file format; populates the "Conversion success" selection list given input and output IDs;
@@ -94,6 +97,126 @@ function populateConversionSuccess(event) {
     catch (e) {
         // Can do without an error message if the 'Conversion options' box remains empty;
         // however, consider a greyed-out message inside the box (using some of the commented out code below).
+    }
+}
+
+// Shows how the conversion quality was determined for the selected conversion/converter combination
+function showQualityDetails(event) {
+    const in_str = sessionStorage.getItem("in_str"), // e.g. "ins: ShelX"
+          in_str_array = in_str.split(": "),
+          in_ext = in_str_array[0],                  // e.g. "ins"
+          in_note = in_str_array[1];                 // e.g. "ShelX"
+
+    const out_str = sessionStorage.getItem("out_str"),
+          out_str_array = out_str.split(": "),
+          out_ext = out_str_array[0],
+          out_note = out_str_array[1];
+
+    const converter = sessionStorage.getItem("success").split(": ")[0]
+
+    getLevelChemInfo(in_ext, in_note, out_ext, out_note).then(formats => displayLevelChemInfo(formats, "to"));
+}
+
+// Assemble quality information based on level of chemical information and display it.
+function displayLevelChemInfo(entries, sel) {
+    var composition_in = entries[0].composition,
+        composition_out = entries[1].composition,
+        connections_in = entries[0].connections,
+        connections_out = entries[1].connections,
+        two_dim_in = entries[0].two_dim,
+        two_dim_out = entries[1].two_dim,
+        three_dim_in = entries[0].three_dim,
+        three_dim_out = entries[1].three_dim;
+
+    qualityCriteriaCount = 0;
+    qualityMeasureSum = 0;
+
+    var quality = qualityDetail(composition_in, composition_out, 'Composition') +
+                  qualityDetail(connections_in, connections_out, 'Connections') +
+                  qualityDetail(two_dim_in, two_dim_out, '2D coordinates') +
+                  qualityDetail(three_dim_in, three_dim_out, '3D coordinates');
+
+    if (qualityCriteriaCount == 0) {
+        quality = 'Conversion quality details not available for this converter/conversion combination.';
+    }
+    else {
+        var qualityText = 'very poor',
+            percent = qualityMeasureSum * 20 / qualityCriteriaCount;
+
+        percent = (Math.round(percent * 100) / 100);
+
+        if (percent >= 80.0) {
+            qualityText = 'very good';
+        }
+        else if (percent >= 60.0) {
+            qualityText = 'good';
+        }
+        else if (percent >= 40.0) {
+            qualityText = 'okay';
+        }
+        else if (percent >= 20.0) {
+            qualityText = 'poor';
+        }
+
+        quality += '-----------------------------\n' +
+                   'Total score: ' + percent + '%\n' +
+                   'Conversion quality: ' + qualityText + '\n' +
+                   '-----------------------------\n';
+    }
+
+    alert(quality);
+}
+
+// Determine a statement of quality based on level of chemical information and populate the converter select box.
+function getQuality(entries, rows) {
+    var composition_in = entries[0].composition,
+        composition_out = entries[1].composition,
+        connections_in = entries[0].connections,
+        connections_out = entries[1].connections,
+        two_dim_in = entries[0].two_dim,
+        two_dim_out = entries[1].two_dim,
+        three_dim_in = entries[0].three_dim,
+        three_dim_out = entries[1].three_dim,
+        qualityText = ' very poor';
+
+    qualityCriteriaCount = 0;
+    qualityMeasureSum = 0;
+
+    qualityDetail(composition_in, composition_out, 'Composition') +
+    qualityDetail(connections_in, connections_out, 'Connections') +
+    qualityDetail(two_dim_in, two_dim_out, '2D coordinates') +
+    qualityDetail(three_dim_in, three_dim_out, '3D coordinates');
+
+    if (qualityCriteriaCount == 0) {
+        qualityText = ' not tested';
+    }
+    else {
+        var percent = qualityMeasureSum * 20 / qualityCriteriaCount;
+
+        percent = (Math.round(percent * 100) / 100);
+
+        if (percent >= 80.0) {
+            qualityText = ' very good';
+        }
+        else if (percent >= 60.0) {
+            qualityText = ' good';
+        }
+        else if (percent >= 40.0) {
+            qualityText = ' okay';
+        }
+        else if (percent >= 20.0) {
+            qualityText = ' poor';
+        }
+    }
+
+    rows.sort(function(a, b) {
+        return a.toLowerCase().localeCompare(b.toLowerCase());
+    });
+
+    for (var i = 0; i < rows.length; i++) {
+        const support = rows[i].substring(0, 10) == "Open Babel" || rows[i].substring(0, 6) == "Atomsk" ? " (supported)" : " (unsupported)";
+
+        $("#success").append($('<option>', { text: rows[i] + qualityText + support }));
     }
 }
 
@@ -201,6 +324,25 @@ function showConverterDetails(event) {
         el.selectionEnd = -1;
         el.blur();
         });
+    }
+}
+
+// Create content for conversion quality details based on level of chemical information
+function qualityDetail(input, output, type) {
+    if (input == true && output == true) {
+        qualityCriteriaCount += 1;
+        qualityMeasureSum += 5;
+        return type + ': 5\n';
+    }
+    else if (input == true && output == false) {
+        return type + ': WARNING: Not represented in the output format.\n';
+    }
+    else if (input == false && output == true) {
+        qualityCriteriaCount += 1;
+        return type + ': 0 WARNING: Not represented in the input format, but the output format has the ability to do so.\n';
+    }
+    else {
+        return '';
     }
 }
 
@@ -322,7 +464,14 @@ function goToConversionPage(event) {
 // Populates a selection list
 function populateList(entries, sel) {
     const in_str = $("#searchFrom").val(), // e.g. "ins: ShelX"
-          out_str = $("#searchTo").val();
+          in_str_array = in_str.split(": "),
+          in_ext = in_str_array[0],           // e.g. "ins"
+          in_note = in_str_array[1];          // e.g. "ShelX"
+
+    const out_str = $("#searchTo").val(),
+          out_str_array = out_str.split(": "),
+          out_ext = out_str_array[0],
+          out_note = out_str_array[1];
 
     let rows;
 
@@ -332,27 +481,29 @@ function populateList(entries, sel) {
 
     } else if (sel === "success") {
 
-        rows = entries.map(entry => `${entry.name}: ${entry.degree_of_success}`);
+        rows = entries.map(entry => `${entry.name}:`);
+
+        if (in_ext != "" && out_ext != "") {
+            const quality = getLevelChemInfo(in_ext, in_note, out_ext, out_note).then(formats => getQuality(formats, rows));
+        }
     }
 
-    rows.sort(function(a, b) {
-        return a.toLowerCase().localeCompare(b.toLowerCase());
-    });
+    if (sel !== "success") {
+        rows.sort(function(a, b) {
+            return a.toLowerCase().localeCompare(b.toLowerCase());
+        });
 
-    for (var i = 0; i < rows.length; i++) {
-        const support = rows[i].substring(0, 10) == "Open Babel" || rows[i].substring(0, 6) == "Atomsk" ? " (supported)" : " (unsupported)";
+        for (var i = 0; i < rows.length; i++) {
+            const support = rows[i].substring(0, 10) == "Open Babel" || rows[i].substring(0, 6) == "Atomsk" ? " (supported)" : " (unsupported)";
 
-        if ( sel == "success") {
-            $("#success").append($('<option>', { text: rows[i] + support }));
-        }
-
-        if (sel == "from") {
-            $("#fromList").append($('<option>', { value: rows[i], text: rows[i] }));
-            fromList[i] = rows[i] + "\n";
-        }
-        else if (sel == "to") {
-            $("#toList").append($('<option>', { value: rows[i], text: rows[i] }));
-            toList[i] = rows[i] + "\n";
+            if (sel == "from") {
+                $("#fromList").append($('<option>', { value: rows[i], text: rows[i] }));
+                fromList[i] = rows[i] + "\n";
+            }
+            else if (sel == "to") {
+                $("#toList").append($('<option>', { value: rows[i], text: rows[i] }));
+                toList[i] = rows[i] + "\n";
+            }
         }
     }
 

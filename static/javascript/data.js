@@ -93,8 +93,7 @@ export async function getConverters(inExtension, inNote, outExtension, outNote) 
     const conversions = data.converts_to.filter(record => (record.in_id === inputFormat.id) && record.out_id === outputFormat.id);
 
     const convertersWithDegreeOfSuccess = conversions.map(conversion => ({
-        name: convertersById.get(conversion.converters_id).name,
-        degree_of_success: conversion.degree_of_success
+        name: convertersById.get(conversion.converters_id).name
     }));
 
     return convertersWithDegreeOfSuccess.sort((a, b) => compare(a.name, b.name ));
@@ -166,4 +165,12 @@ export async function getOutputArgFlags(extension, note) {
         .filter(entry => argFlagEntries.indexOf(entry.id) !== -1);
 
     return argFlags.sort((a, b) => compare([a.flag, b.flag]));
+}
+
+export async function getLevelChemInfo(inExtension, inNote, outExtension, outNote) {
+
+    const inputFormat = (data.formats.filter(format => (format.extension === inExtension) && (format.note === inNote)))[0],
+          outputFormat = (data.formats.filter(format => (format.extension === outExtension) && (format.note === outNote)))[0];
+
+    return [inputFormat, outputFormat];
 }
