@@ -65,17 +65,28 @@ $(document).ready(function() {
 
 // Changes the font for accessibility purposes
 function changeFont(event) {
-    const font = $("#font").find(":selected").text();
+    const font = $("#font").find(":selected").text().trim();
 
     switch (font) {
         case 'Arial':
             r.style.setProperty('--ifm-font-family-base', 'Arial, sans-serif');
             r.style.setProperty('--ifm-heading-font-family', 'Arial, sans-serif');
             break;
+        
+        case 'Calibri':
+            r.style.setProperty('--ifm-font-family-base', 'Calibri, sans-serif');
+            r.style.setProperty('--ifm-heading-font-family', 'Calibri, sans-serif');
+            break;
+    
 
         case 'Comic Sans':
             r.style.setProperty('--ifm-font-family-base', 'Comic Sans MS, Comic Sans, sans-serif');
             r.style.setProperty('--ifm-heading-font-family', 'Comic Sans MS, Comic Sans, sans-serif');
+            break;
+
+        case 'Helvetica':
+            r.style.setProperty('--ifm-font-family-base', 'Helvetica, sans-serif');
+            r.style.setProperty('--ifm-heading-font-family', 'Helvetica, sans-serif');
             break;
 
         case 'Lexend':
@@ -91,6 +102,11 @@ function changeFont(event) {
         case 'Tahoma':
             r.style.setProperty('--ifm-font-family-base', 'Tahoma, sans-serif');
             r.style.setProperty('--ifm-heading-font-family', 'Tahoma, sans-serif');
+            break;
+
+        case 'Times New Roman':
+            r.style.setProperty('--ifm-font-family-base', "'Times New Roman', Times, serif");
+            r.style.setProperty('--ifm-heading-font-family', "'Times New Roman', Times, serif");
             break;
 
         case 'Trebuchet':
