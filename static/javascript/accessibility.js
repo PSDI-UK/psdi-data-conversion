@@ -65,64 +65,18 @@ $(document).ready(function() {
 
 // Changes the font for accessibility purposes
 function changeFont(event) {
-    const font = $("#font").find(":selected").text().trim();
+    const fontSelection = $("#font").find(":selected");
+    const font = fontSelection.text().trim();
 
-    switch (font) {
-        case 'Arial':
-            r.style.setProperty('--ifm-font-family-base', 'Arial, sans-serif');
-            r.style.setProperty('--ifm-heading-font-family', 'Arial, sans-serif');
-            break;
-        
-        case 'Calibri':
-            r.style.setProperty('--ifm-font-family-base', 'Calibri, sans-serif');
-            r.style.setProperty('--ifm-heading-font-family', 'Calibri, sans-serif');
-            break;
-    
-
-        case 'Comic Sans':
-            r.style.setProperty('--ifm-font-family-base', 'Comic Sans MS, Comic Sans, sans-serif');
-            r.style.setProperty('--ifm-heading-font-family', 'Comic Sans MS, Comic Sans, sans-serif');
-            break;
-
-        case 'Helvetica':
-            r.style.setProperty('--ifm-font-family-base', 'Helvetica, sans-serif');
-            r.style.setProperty('--ifm-heading-font-family', 'Helvetica, sans-serif');
-            break;
-
-        case 'Lexend':
-            r.style.setProperty('--ifm-font-family-base', 'Lexend, sans-serif');
-            r.style.setProperty('--ifm-heading-font-family', 'Lexend, sans-serif');
-            break;
-
-        case 'Open Sans':
-            r.style.setProperty('--ifm-font-family-base', 'Open Sans, sans-serif');
-            r.style.setProperty('--ifm-heading-font-family', 'Open Sans, sans-serif');
-            break;
-
-        case 'Tahoma':
-            r.style.setProperty('--ifm-font-family-base', 'Tahoma, sans-serif');
-            r.style.setProperty('--ifm-heading-font-family', 'Tahoma, sans-serif');
-            break;
-
-        case 'Times New Roman':
-            r.style.setProperty('--ifm-font-family-base', "'Times New Roman', Times, serif");
-            r.style.setProperty('--ifm-heading-font-family', "'Times New Roman', Times, serif");
-            break;
-
-        case 'Trebuchet':
-            r.style.setProperty('--ifm-font-family-base', 'Trebuchet MS, Trebuchet, sans-serif');
-            r.style.setProperty('--ifm-heading-font-family', 'Trebuchet MS, Trebuchet, sans-serif');
-            break;
-
-        case 'Verdana':
-            r.style.setProperty('--ifm-font-family-base', 'Verdana, sans-serif');
-            r.style.setProperty('--ifm-heading-font-family', 'Verdana, sans-serif');
-            break;
-
-        default:
-            r.style.setProperty('--ifm-font-family-base', s.getPropertyValue('--psdi-default-font'));
-            r.style.setProperty('--ifm-heading-font-family', s.getPropertyValue('--psdi-default-heading-font'));
-            break;
+    if (font=="Default") {
+        r.style.setProperty('--ifm-font-family-base', s.getPropertyValue('--psdi-default-font'));
+        r.style.setProperty('--ifm-heading-font-family', s.getPropertyValue('--psdi-default-heading-font'));
+    } else {
+        // To avoid duplication of font settings, we retrieve the style to apply from what's applied to the font in the
+        // selection box
+        let fontFamily = fontSelection[0].style['font-family'];
+        r.style.setProperty('--ifm-font-family-base', fontFamily);
+        r.style.setProperty('--ifm-heading-font-family', fontFamily);
     }
 }
 
