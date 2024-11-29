@@ -5,6 +5,7 @@ This is the repository for the Pathfinder 2 Chemistry File Format Conversion sou
 
 ## Directory structure of the Python Flask app website:
 
+```
 app.py
 requirements.txt
   (azure-functions, requests, openbabel-wheel:
@@ -33,6 +34,7 @@ static
     uploads (created by app.py if not extant)
 templates
     index.htm
+```
 
 *Must be copied to another location on the Azure site. Once there, it persists. Installs libraries missing from the Docker container (required by Open Babel). Go to     Development Tools > SSH > Go    to arrive at a terminal for the site. At    /home    place file startup.sh. Go to    Settings > Configurations > General settings    and enter    /home/startup.sh    in Startup Command. Note that startup.sh can be placed anywhere below    /home    (provided the paths match).
 
