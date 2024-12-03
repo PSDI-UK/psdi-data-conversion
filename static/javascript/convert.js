@@ -7,6 +7,9 @@
 
 import { getInputFlags, getOutputFlags, getInputArgFlags, getOutputArgFlags } from "./data.js";
 
+const MEGABYTE = 1024*1024*1024;
+const MAX_FILESIZE = 1*MEGABYTE;
+
 const fromList = new Array(),
       toList = new Array();
 
@@ -397,9 +400,6 @@ function coordOptionAvailability(event) {
         $('input[name="coordOptions"]').prop({disabled: false}); 
     }
 }
-
-const MEGABYTE = 1024*1024*1024;
-const MAX_FILESIZE = 1*MEGABYTE;
 
 // Check that the file meets requirements for upload
 function checkFile(event) {
