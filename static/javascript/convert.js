@@ -7,7 +7,7 @@
 
 import { getInputFlags, getOutputFlags, getInputArgFlags, getOutputArgFlags } from "./data.js";
 
-const MEGABYTE = 1024*1024*1024;
+const MEGABYTE = 1024*1024;
 const MAX_FILESIZE = 1*MEGABYTE;
 
 const fromList = new Array(),
