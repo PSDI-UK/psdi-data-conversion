@@ -402,7 +402,7 @@ function coordOptionAvailability(event) {
 }
 
 // Check that the file meets requirements for upload
-function checkFile(event) {
+export function checkFile(event) {
 
     let allGood = true;
     let file = this.files[0];

@@ -5,6 +5,8 @@
   This is the JavaScript which makes the convertato.htm gui work.
 */
 
+import {checkFile} from "./convert.js"
+
 const fromList = new Array(),
       toList = new Array();
 
@@ -30,7 +32,7 @@ $(document).ready(function() {
 
     $("#heading").html("Convert from \'" + in_ext + "\' (" + in_note + ") to \'" + out_ext + "\' (" + out_note + ") using Atomsk");
 
-    $("#fileToUpload").change(checkExtension);
+    $("#fileToUpload").change(checkFile);
     $("#uploadButton").click(submitFile);
 });
 
@@ -219,21 +221,3 @@ function downloadFile(path, filename) {
     a[0].click();
     a.remove();
 }
-
-// File upload is allowed only if its extension matches the 'from' format
-function checkExtension(event) {
-    const file_name = this.files[0].name;
-    const file_name_array = file_name.split(".");
-    const extension = file_name_array[1];
-
-    if (extension != in_ext) {
-        $("#uploadButton").css({"background-color": "var(--psdi-bg-color-secondary)", "color": "gray"});
-        $("#uploadButton").prop({disabled: true});
-        alert("The file extension is not " + in_ext + ": please select another file or change the 'from' format on the 'Home' page.");
-    }
-    else {
-        $("#uploadButton").css({"background-color": "var(--ifm-color-primary)", "color": "var(--ifm-hero-text-color)"});
-        $("#uploadButton").prop({disabled: false});
-    }
-}
-
