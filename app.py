@@ -12,6 +12,10 @@ from datetime import datetime
 from openbabel import openbabel
 from flask import Flask, request, render_template, abort, Response
 
+# Maximum output file size in bytes
+MEGABYTE = 1024*1024
+MAX_FILE_SIZE = 1*MEGABYTE
+
 # A lock to prevent multiple threads logging at the same time.
 logLock = Lock()
 
@@ -52,10 +56,34 @@ def convert() :
 def conv() :
     return convertFile('file')
 
+# Get file sizes, checking that output file isn't too large
+def checkFileSize(inFilename, outFilename):
+    inSize = os.path.getsize(inFilename)
+    outSize = os.path.getsize(outFilename)
+
+    # Check that the output file doesn't exceed the maximum allowed size
+    if outSize > MAX_FILE_SIZE:
+        with open('error_log.txt', 'a') as f:
+            f.write("ERROR: Output file exceeds maximum size.\n" +
+                f"File size is {outSize/MEGABYTE:.2f} MB; maximum size is {MAX_FILE_SIZE/MEGABYTE:.2f} MB.")
+
+        # Delete output and input files
+        os.remove(inFilename)
+        os.remove(outFilename)
+
+        abort(405)   # return http status code 405
+
+    return inSize, outSize
+
 # Convert the uploaded file to the required format, generating atomic coordinates if required
 def convertFile(file) :
+
     f = request.files[file]
-    f.save('static/uploads/' + f.filename)
+        
+    inFilename = 'static/uploads/' + f.filename
+    outFilename = 'static/downloads/' + fname + '.' + toFormat
+    
+    f.save(inFilename)
     fname = f.filename.split(".")[0]  # E.g. ethane.mol --> ethane
 
     # Retrieve 'from' and 'to' file formats
@@ -104,7 +132,7 @@ def convertFile(file) :
 
         # Read the file to be converted
         mol = openbabel.OBMol()
-        obConversion.ReadFile(mol, 'static/uploads/' + f.filename)
+        obConversion.ReadFile(mol, inFilename)
 
         # Retrieve coordinate calculation type (Gen2D, Gen3D, neither)
         calcType = request.form['coordinates']
@@ -120,16 +148,15 @@ def convertFile(file) :
             gen.Do(mol, option)
 
         # Write the converted file
-        obConversion.WriteFile(mol, 'static/downloads/' + fname + '.' + toFormat)
+        obConversion.WriteFile(mol, outFilename)
 
         out,err = stdouterrOB.reset()   # Grab stdout and stderr
 
-        # Determine file sizes for logging purposes
-        inSize = os.path.getsize('static/uploads/' + f.filename)
-        outSize = os.path.getsize('static/downloads/' + fname + '.' + toFormat)
+        # Determine file sizes for logging purposes and check output isn't too large
+        inSize, outSize = checkFileSize(inFilename, outFilename)
 
         if file != 'file' : # Website only (i.e., not command line option)
-            os.remove('static/uploads/' + f.filename)
+            os.remove(inFilename)
             fromFormat = request.form['from_full']
             toFormat = request.form['to_full']
             quality = request.form['success']
@@ -150,12 +177,11 @@ def convertFile(file) :
         out = atomsk.stdout
         err = atomsk.stderr
 
-        # Determine file sizes for logging purposes
-        inSize = os.path.getsize('static/uploads/' + f.filename)
-        outSize = os.path.getsize('static/downloads/' + fname + '.' + toFormat)
+        # Determine file sizes for logging purposes and check output isn't too large
+        inSize, outSize = checkFileSize(inFilename, outFilename)
 
         if file != 'file' :   # Website only (i.e., not command line option)
-            os.remove('static/uploads/' + f.filename)
+            os.remove(inFilename)
             fromFormat = request.form['from_full']
             toFormat = request.form['to_full']
             quality = request.form['success']
