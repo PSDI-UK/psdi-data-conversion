@@ -38,7 +38,7 @@ $(document).ready(function() {
     getFlags("out_arg", out_str);
 
     $('input[name="coordinates"]').change(coordOptionAvailability);
-    $("#fileToUpload").change(checkExtension);
+    $("#fileToUpload").change(checkFile);
     $("#uploadButton").click(submitFile);
 });
 
@@ -402,7 +402,7 @@ const MEGABYTE = 1024*1024*1024;
 const MAX_FILESIZE = 1*MEGABYTE;
 
 // Check that the file meets requirements for upload
-function checkExtension(event) {
+function checkFile(event) {
 
     let allGood = true;
     let file = this.files[0];
