@@ -115,7 +115,7 @@ export async function getInputFlags(extension, note) {
 
         const obFlagsIn = new Set(data.obformat_to_flags_in.filter(entry => entry.formats_id === format.id).map(entry => entry.obflags_in_id));
 
-        return data.obflags_in.filter(entry => obFlagsIn.has(entry.id));
+        return data.obflags_in.filter(entry => obFlagsIn.has(entry.id)).sort((a, b) => compare([a.flag, b.flag]));
     }
 }
 
@@ -127,7 +127,7 @@ export async function getOutputFlags(extension, note) {
 
         const obFlagsOut = new Set(data.obformat_to_flags_out.filter(entry => entry.formats_id === format.id).map(entry => entry.obflags_out_id));
 
-        return data.obflags_out.filter(entry => obFlagsOut.has(entry.id));
+        return data.obflags_out.filter(entry => obFlagsOut.has(entry.id)).sort((a, b) => compare([a.flag, b.flag]));
     }
 }
 
