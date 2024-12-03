@@ -398,20 +398,42 @@ function coordOptionAvailability(event) {
     }
 }
 
-// File upload is allowed only if its extension matches the 'from' format
+const MEGABYTE = 1024*1024*1024;
+const MAX_FILESIZE = 1*MEGABYTE;
+
+// Check that the file meets requirements for upload
 function checkExtension(event) {
-    const file_name = this.files[0].name;
+
+    let allGood = true;
+    let file = this.files[0];
+    let message = "";
+    
+    // Check file has the proper extension
+    const file_name = file.name;
     const file_name_array = file_name.split(".");
     const extension = file_name_array[1];
-
     if (extension != in_ext) {
-        $("#uploadButton").css({"background-color": "var(--psdi-bg-color-secondary)", "color": "gray"});
-        $("#uploadButton").prop({disabled: true});
-        alert("The file extension is not " + in_ext + ": please select another file or change the 'from' format on the 'Home' page.");
+        message += "The file extension is not " + in_ext +
+            ": please select another file or change the 'from' format on the 'Home' page.";
+        allGood = false;
     }
-    else {
+
+    // Check file does not exceed maximum size
+    if (file.size > MAX_FILESIZE) {
+        if (message!=="")
+            message += "\n\n";
+        message += "The file exceeds the maximum size limit of " + MAX_FILESIZE/MEGABYTE + " MB; its size is " +
+          file.size/MEGABYTE + " MB.";
+        allGood = false;
+    }
+
+    if(allGood) {
         $("#uploadButton").css({"background-color": "var(--ifm-color-primary)", "color": "var(--ifm-hero-text-color)"});
         $("#uploadButton").prop({disabled: false});
+    } else {
+        $("#uploadButton").css({"background-color": "var(--psdi-bg-color-secondary)", "color": "gray"});
+        $("#uploadButton").prop({disabled: true});
+        alert(message);
     }
 }
 
