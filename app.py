@@ -65,7 +65,7 @@ def checkFileSize(inFilename, outFilename):
     if outSize > MAX_FILE_SIZE:
         with open('error_log.txt', 'a') as f:
             f.write("ERROR: Output file exceeds maximum size.\n" +
-                f"File size is {outSize/MEGABYTE:.2f} MB; maximum size is {MAX_FILE_SIZE/MEGABYTE:.2f} MB.")
+                f"File size is {outSize/MEGABYTE:.2f} MB; maximum size is {MAX_FILE_SIZE/MEGABYTE:.2f} MB.\n")
 
         # Delete output and input files
         os.remove(inFilename)
