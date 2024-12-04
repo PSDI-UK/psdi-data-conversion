@@ -2,4 +2,4 @@
 !.gitignore
 *.pyc
 
-error_log.txt
+static/downloads/*
