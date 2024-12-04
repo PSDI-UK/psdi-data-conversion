@@ -17,7 +17,7 @@ var token = "",
     last_select = "",
     in_ext = "",
     out_ext = "",
-    in_str = ""
+    in_str = "",
     out_str = "";
 
 export function commonConvertReady(converter) {
