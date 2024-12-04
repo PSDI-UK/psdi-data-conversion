@@ -82,7 +82,6 @@ def convertFile(file) :
     fname = f.filename.split(".")[0]  # E.g. ethane.mol --> ethane
         
     inFilename = 'static/uploads/' + f.filename
-    outFilename = 'static/downloads/' + fname + '.' + toFormat
     
     f.save(inFilename)
 
@@ -91,6 +90,8 @@ def convertFile(file) :
     toFormat = request.form['to']
 
     converter = request.form['converter']
+    
+    outFilename = 'static/downloads/' + fname + '.' + toFormat
 
     if converter == 'Open Babel' :
         stdouterrOB = py.io.StdCaptureFD(in_=False)
