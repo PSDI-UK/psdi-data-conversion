@@ -14,7 +14,10 @@ from flask import Flask, request, render_template, abort, Response
 
 # Maximum output file size in bytes
 MEGABYTE = 1024*1024
-MAX_FILE_SIZE = 1*MEGABYTE
+MAX_FILE_SIZE = 0.2*MEGABYTE
+
+# File to log any errors that occur
+ERROR_LOG_FILENAME = "./static/downloads/error_log.txt"
 
 # A lock to prevent multiple threads logging at the same time.
 logLock = Lock()
@@ -63,7 +66,7 @@ def checkFileSize(inFilename, outFilename):
 
     # Check that the output file doesn't exceed the maximum allowed size
     if outSize > MAX_FILE_SIZE:
-        with open('error_log.txt', 'a') as f:
+        with open(ERROR_LOG_FILENAME, 'a') as f:
             f.write("ERROR: Output file exceeds maximum size.\n" +
                 f"File size is {outSize/MEGABYTE:.2f} MB; maximum size is {MAX_FILE_SIZE/MEGABYTE:.2f} MB.\n")
 
@@ -77,6 +80,10 @@ def checkFileSize(inFilename, outFilename):
 
 # Convert the uploaded file to the required format, generating atomic coordinates if required
 def convertFile(file) :
+
+    # If any previous error log exists, delete it
+    if os.path.exists(ERROR_LOG_FILENAME):
+        os.remove(ERROR_LOG_FILENAME)
 
     f = request.files[file]
     fname = f.filename.split(".")[0]  # E.g. ethane.mol --> ethane
@@ -315,7 +322,7 @@ def log_ato(fromFormat, toFormat, converter, fname, quality, out, err) :
 def error_log(fromFormat, toFormat, converter, fname, calcType, option, fromFlags, toFlags, readFlagsArgs, writeFlagsArgs, err) :
     message = create_message(fname, fromFormat, toFormat, converter, calcType, option, fromFlags, toFlags, readFlagsArgs, writeFlagsArgs) + err + '\n'
 
-    f = open('error_log.txt', 'a')
+    f = open(ERROR_LOG_FILENAME, 'a')
     f.write(message)
     f.close()
 
@@ -323,7 +330,7 @@ def error_log(fromFormat, toFormat, converter, fname, calcType, option, fromFlag
 def error_log_ato(fromFormat, toFormat, converter, fname, err) :
     message = create_message(fname, fromFormat, toFormat, converter) + err + '\n'
 
-    f = open('error_log.txt', 'a')
+    f = open(ERROR_LOG_FILENAME, 'a')
     f.write(message)
     f.close()
 
