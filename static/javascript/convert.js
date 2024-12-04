@@ -241,7 +241,7 @@ function convertFile(form_data, download_fname, fname) {
                       "when you close this alert. Please report any problems by clicking on 'Contact' in the navigation bar.");
             })
             .fail(function(e) {
-                alert("This conversion has failed. Please provide feedback on the conversion " +
+                alert("This conversion has failed for an unknown reason. Please provide feedback on the conversion " +
                       "that you were attempting by clicking on 'Contact' in the navigation bar.");
 
                 // For debugging
