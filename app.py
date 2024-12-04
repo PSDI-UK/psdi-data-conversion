@@ -79,12 +79,12 @@ def checkFileSize(inFilename, outFilename):
 def convertFile(file) :
 
     f = request.files[file]
+    fname = f.filename.split(".")[0]  # E.g. ethane.mol --> ethane
         
     inFilename = 'static/uploads/' + f.filename
     outFilename = 'static/downloads/' + fname + '.' + toFormat
     
     f.save(inFilename)
-    fname = f.filename.split(".")[0]  # E.g. ethane.mol --> ethane
 
     # Retrieve 'from' and 'to' file formats
     fromFormat = request.form['from']
