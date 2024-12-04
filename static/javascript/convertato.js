@@ -13,7 +13,9 @@ const fromList = new Array(),
 var token = "",
     last_select = "",
     in_ext = "",
-    out_ext = "";
+    out_ext = "",
+    in_str = ""
+    out_str = "";
 
 $(document).ready(function() {
     [token, in_str, in_ext, out_str, out_ext] = commonConvertReady("Atomsk");

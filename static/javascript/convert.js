@@ -16,13 +16,15 @@ const fromList = new Array(),
 var token = "",
     last_select = "",
     in_ext = "",
-    out_ext = "";
+    out_ext = "",
+    in_str = ""
+    out_str = "";
 
 export function commonConvertReady(converter) {
     token = sessionStorage.getItem("token");
 
-    const in_str = sessionStorage.getItem("in_str"),
-          out_str = sessionStorage.getItem("out_str");
+    in_str = sessionStorage.getItem("in_str");
+    out_str = sessionStorage.getItem("out_str");
 
     // $$$$$ FUNCTION FOR THIS? $$$$$
     const in_str_array = in_str.split(": ");
