@@ -14,7 +14,7 @@ from flask import Flask, request, render_template, abort, Response
 
 # Maximum output file size in bytes
 MEGABYTE = 1024*1024
-MAX_FILE_SIZE = 0.2*MEGABYTE
+MAX_FILE_SIZE = 1*MEGABYTE
 
 # File to log any errors that occur
 ERROR_LOG_FILENAME = "./static/downloads/error_log.txt"
