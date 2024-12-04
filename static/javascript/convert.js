@@ -422,8 +422,8 @@ export function checkFile(event) {
     if (file.size > MAX_FILESIZE) {
         if (message!=="")
             message += "\n\n";
-        message += "The file exceeds the maximum size limit of " + MAX_FILESIZE/MEGABYTE + " MB; its size is " +
-          file.size/MEGABYTE + " MB.";
+        message += "The file exceeds the maximum size limit of " + (MAX_FILESIZE/MEGABYTE).toFixed(2) +
+          " MB; its size is " + (file.size/MEGABYTE).toFixed(2) + " MB.";
         allGood = false;
     }
 
