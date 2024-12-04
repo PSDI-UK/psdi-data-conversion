@@ -244,9 +244,17 @@ function convertFile(form_data, download_fname, fname) {
                 let errLog = '/static/downloads/error_log.txt';
 
                 fetch(errLog)
-                .then(response => response.text())
+                .then(function (response) {
+                    if (response.status==404) {
+                        return "An unknown error occurred, which produced no error log. Please provide feedback on " +
+                            "the conversion that you were attempting by clicking on 'Contact' in the navigation bar.";
+                    } else {
+                        return response.text();
+                    }
+                })
                 .then(function (text) {
-                    alert(text);
+                    if (text!="")
+                        alert(text);
                 })
 
                 // For debugging
