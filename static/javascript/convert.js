@@ -18,7 +18,7 @@ var token = "",
     in_ext = "",
     out_ext = "";
 
-$(document).ready(function() {
+export function commonConvertReady(converter) {
     token = sessionStorage.getItem("token");
 
     const in_str = sessionStorage.getItem("in_str"),
@@ -33,16 +33,24 @@ $(document).ready(function() {
     out_ext = out_str_array[0];
     const out_note = out_str_array[1];
 
-    $("#heading").html("Convert from \'" + in_ext + "\' (" + in_note + ") to \'" + out_ext + "\' (" + out_note + ") using Open Babel");
+    $("#heading").html("Convert from \'" + in_ext + "\' (" + in_note + ") to \'" + out_ext + "\' (" + out_note + 
+        ") using " + converter);
+
+    $("#fileToUpload").change(checkFile);
+
+    return [token, in_ext, out_ext];
+}
+
+$(document).ready(function() {
+    [token, in_ext, out_ext] = commonConvertReady("Open Babel");
+
+    $('input[name="coordinates"]').change(coordOptionAvailability);
+    $("#uploadButton").click(submitFile);
 
     getFlags("in", in_str);
     getFlags("out", out_str);
     getFlags("in_arg", in_str);
     getFlags("out_arg", out_str);
-
-    $('input[name="coordinates"]').change(coordOptionAvailability);
-    $("#fileToUpload").change(checkFile);
-    $("#uploadButton").click(submitFile);
 });
 
 // $$$$$$$$$$ Retained in case of future need to write to a log file $$$$$$$$$$
@@ -198,7 +206,7 @@ function extractArgFlags(flags_text) {
 }
 
 // Converts user-supplied file to another format and downloads the resulting file
-function convertFile(form_data, download_fname, fname) {
+export function convertFile(form_data, download_fname, fname) {
     var jqXHR = $.ajax({
             url: `/convert/`,
             type: "POST",
@@ -415,7 +423,7 @@ function coordOptionAvailability(event) {
 }
 
 // Check that the file meets requirements for upload
-export function checkFile(event) {
+function checkFile(event) {
 
     let allGood = true;
     let file = this.files[0];
