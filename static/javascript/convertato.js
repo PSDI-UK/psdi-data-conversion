@@ -16,7 +16,7 @@ var token = "",
     out_ext = "";
 
 $(document).ready(function() {
-    [token, in_ext, out_ext] = commonConvertReady("Atomsk");
+    [token, in_str, in_ext, out_str, out_ext] = commonConvertReady("Atomsk");
     $("#uploadButton").click(submitFile);
 });
 

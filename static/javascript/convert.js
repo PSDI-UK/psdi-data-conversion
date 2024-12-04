@@ -38,11 +38,11 @@ export function commonConvertReady(converter) {
 
     $("#fileToUpload").change(checkFile);
 
-    return [token, in_ext, out_ext];
+    return [token, in_str, in_ext, out_str, out_ext];
 }
 
 $(document).ready(function() {
-    [token, in_ext, out_ext] = commonConvertReady("Open Babel");
+    [token, in_str, in_ext, out_str, out_ext] = commonConvertReady("Open Babel");
 
     $('input[name="coordinates"]').change(coordOptionAvailability);
     $("#uploadButton").click(submitFile);
