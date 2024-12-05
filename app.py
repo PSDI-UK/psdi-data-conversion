@@ -16,9 +16,6 @@ from flask import Flask, request, render_template, abort, Response
 MEGABYTE = 1024*1024
 MAX_FILE_SIZE = 1*MEGABYTE
 
-# File to log any errors that occur
-ERROR_LOG_FILENAME = "./static/downloads/error_log.txt"
-
 # A lock to prevent multiple threads logging at the same time.
 logLock = Lock()
 
@@ -35,6 +32,11 @@ if not os.path.exists(upDir) :
 downDir = './static/downloads'
 if not os.path.exists(downDir) :
     os.mkdir(downDir)
+
+# File to log any errors that occur
+ERROR_LOG_FILENAME = "error_log.txt"
+GLOBAL_ERROR_LOG = f"./{ERROR_LOG_FILENAME}"
+LOCAL_ERROR_LOG = f"{downDir}/{ERROR_LOG_FILENAME}"
 
 app = Flask(__name__)
 
@@ -59,6 +61,11 @@ def convert() :
 def conv() :
     return convertFile('file')
 
+def logErrorMessage(message):
+    for error_log in (GLOBAL_ERROR_LOG, LOCAL_ERROR_LOG):
+        with open(error_log, 'a') as f:
+            f.write(message)
+
 # Get file sizes, checking that output file isn't too large
 def checkFileSize(inFilename, outFilename):
     inSize = os.path.getsize(inFilename)
@@ -66,9 +73,8 @@ def checkFileSize(inFilename, outFilename):
 
     # Check that the output file doesn't exceed the maximum allowed size
     if outSize > MAX_FILE_SIZE:
-        with open(ERROR_LOG_FILENAME, 'a') as f:
-            f.write("ERROR: Output file exceeds maximum size.\n" +
-                f"File size is {outSize/MEGABYTE:.2f} MB; maximum size is {MAX_FILE_SIZE/MEGABYTE:.2f} MB.\n")
+        logErrorMessage("ERROR: Output file exceeds maximum size.\n" +
+            f"File size is {outSize/MEGABYTE:.2f} MB; maximum size is {MAX_FILE_SIZE/MEGABYTE:.2f} MB.\n")
 
         # Delete output and input files
         os.remove(inFilename)
@@ -82,8 +88,8 @@ def checkFileSize(inFilename, outFilename):
 def convertFile(file) :
 
     # If any previous error log exists, delete it
-    if os.path.exists(ERROR_LOG_FILENAME):
-        os.remove(ERROR_LOG_FILENAME)
+    if os.path.exists(LOCAL_ERROR_LOG):
+        os.remove(LOCAL_ERROR_LOG)
 
     f = request.files[file]
     fname = f.filename.split(".")[0]  # E.g. ethane.mol --> ethane
@@ -321,18 +327,12 @@ def log_ato(fromFormat, toFormat, converter, fname, quality, out, err) :
 # Write Open Babel conversion error information to server-side log file.
 def error_log(fromFormat, toFormat, converter, fname, calcType, option, fromFlags, toFlags, readFlagsArgs, writeFlagsArgs, err) :
     message = create_message(fname, fromFormat, toFormat, converter, calcType, option, fromFlags, toFlags, readFlagsArgs, writeFlagsArgs) + err + '\n'
-
-    f = open(ERROR_LOG_FILENAME, 'a')
-    f.write(message)
-    f.close()
+    logErrorMessage(message)
 
 # Write Atomsk conversion error information to server-side log file.
 def error_log_ato(fromFormat, toFormat, converter, fname, err) :
     message = create_message(fname, fromFormat, toFormat, converter) + err + '\n'
-
-    f = open(ERROR_LOG_FILENAME, 'a')
-    f.write(message)
-    f.close()
+    logErrorMessage(message)
 
 # Create message for log files.
 def create_message(fname, fromFormat, toFormat, converter, calcType, option, fromFlags, toFlags, readFlagsArgs, writeFlagsArgs) :
