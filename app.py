@@ -73,8 +73,9 @@ def checkFileSize(inFilename, outFilename):
 
     # Check that the output file doesn't exceed the maximum allowed size
     if outSize > MAX_FILE_SIZE:
-        logErrorMessage("ERROR: Output file exceeds maximum size.\n" +
-            f"File size is {outSize/MEGABYTE:.2f} MB; maximum size is {MAX_FILE_SIZE/MEGABYTE:.2f} MB.\n")
+        logErrorMessage(f"ERROR converting {inFilename} to {outFilename}: Output file exceeds maximum size.\n" +
+            f"Input file size is {inSize/MEGABYTE:.2f} MB; Output file size is {outSize/MEGABYTE:.2f} MB; " +
+            f"maximum output file size is {MAX_FILE_SIZE/MEGABYTE:.2f} MB.\n")
 
         # Delete output and input files
         os.remove(inFilename)
