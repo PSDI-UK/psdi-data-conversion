@@ -5,66 +5,22 @@
   This is the JavaScript which makes the convertato.htm gui work.
 */
 
+import {commonConvertReady, convertFile} from "./convert.js"
+
 const fromList = new Array(),
       toList = new Array();
 
 var token = "",
     last_select = "",
     in_ext = "",
-    out_ext = "";
+    out_ext = "",
+    in_str = ""
+    out_str = "";
 
 $(document).ready(function() {
-    token = sessionStorage.getItem("token");
-
-    const in_str = sessionStorage.getItem("in_str"),
-          out_str = sessionStorage.getItem("out_str");
-
-    // $$$$$ FUNCTION FOR THIS? $$$$$
-    const in_str_array = in_str.split(": ");
-    in_ext = in_str_array[0];                // e.g. "ins"
-    const in_note = in_str_array[1];         // e.g. "ShelX"
-
-    const out_str_array = out_str.split(": ");
-    out_ext = out_str_array[0];
-    const out_note = out_str_array[1];
-
-    $("#heading").html("Convert from \'" + in_ext + "\' (" + in_note + ") to \'" + out_ext + "\' (" + out_note + ") using Atomsk");
-
-    $("#fileToUpload").change(checkExtension);
+    [token, in_str, in_ext, out_str, out_ext] = commonConvertReady("Atomsk");
     $("#uploadButton").click(submitFile);
 });
-
-// $$$$$$$$$$ Retained in case of future need to write to a log file $$$$$$$$$$
-// Writes user input to a server-side file
-function writeLog(message) {
-    var jqXHR = $.get(`/data/`, {
-            'token': token,
-            'data': message
-        })
-        .fail(function(e) {
-            // For debugging
-            console.log("Error writing to log");
-            console.log(e.status);
-            console.log(e.responseText);
-        })
-}
-
-// On ticking a checkbox, a text box for entry of an option flag argument appears next to it. On unticking, the text box disappears.
-function enterArgument(event) {
-    var arg_id = this.id.replace('check', 'text'),
-        arg_label_id = this.id.replace('check', 'label');
-
-    if ($('#' + this.id).is(':checked')) {
-        // Show appropriate text box and its label
-        $('#' + arg_id).show();
-        $('#' + arg_label_id).show();
-    }
-    else {
-        // Hide appropriate text box (empty) and its label
-        $('#' + arg_id).val('').hide();
-        $('#' + arg_label_id).hide();
-    }
-}
 
 // Uploads a user-supplied file
 function submitFile() {
@@ -155,85 +111,3 @@ function submitFile() {
 
     convertFile(form_data, download_fname, fname);
 }
-
-// Converts user-supplied file to another format and downloads the resulting file
-function convertFile(form_data, download_fname, fname) {
-    var jqXHR = $.ajax({
-            url: `/convert/`,
-            type: "POST",
-            data: form_data,
-            processData: false,
-            contentType: false,
-            success: async function() {
-                const delay = ms => new Promise(response => setTimeout(response, ms));
-
-                downloadFile(`../downloads/${fname}.log.txt`, fname + '.log.txt')
-                await delay(300);
-                downloadFile(`../downloads/${download_fname}`, download_fname)
-                await delay(300);
-
-                var fdata = new FormData();
-
-                fdata.append("filename", download_fname);
-                fdata.append("logname", fname + '.log.txt');
-
-                $.ajax({
-                    url: `/delete/`,
-                    type: "POST",
-                    data: fdata,
-                    processData: false,
-                    contentType: false
-                })
-                .fail(function(e) {
-                    // For debugging
-                    console.log("Error deleting remote files after download");
-                    console.log(e.status);
-                    console.log(e.responseText);
-                })
-            },
-            error: function(data) {
-                //alert("ajax error, FormData: " + data);
-                }
-            })
-            .done(response => {
-                alert("To the best of our knowledge, this conversion has worked. Your output file should download automatically " +
-                      "when you close this alert. Please report any problems by clicking on 'Contact' in the navigation bar.");
-            })
-            .fail(function(e) {
-                alert("This conversion has failed. Please provide feedback on the conversion " +
-                      "that you were attempting by clicking on 'Contact' in the navigation bar.");
-
-                // For debugging
-                console.log("Error converting file");
-                console.log(e.status);
-                console.log(e.responseText);
-            })
-}
-
-// A link is created, clicked and removed, resulting in the download of a file
-function downloadFile(path, filename) {
-    const a = $("<a>")
-          .attr("href", path)
-          .attr("download", filename)
-          .appendTo("body");
-    a[0].click();
-    a.remove();
-}
-
-// File upload is allowed only if its extension matches the 'from' format
-function checkExtension(event) {
-    const file_name = this.files[0].name;
-    const file_name_array = file_name.split(".");
-    const extension = file_name_array[1];
-
-    if (extension != in_ext) {
-        $("#uploadButton").css({"background-color": "var(--psdi-bg-color-secondary)", "color": "gray"});
-        $("#uploadButton").prop({disabled: true});
-        alert("The file extension is not " + in_ext + ": please select another file or change the 'from' format on the 'Home' page.");
-    }
-    else {
-        $("#uploadButton").css({"background-color": "var(--ifm-color-primary)", "color": "var(--ifm-hero-text-color)"});
-        $("#uploadButton").prop({disabled: false});
-    }
-}
-

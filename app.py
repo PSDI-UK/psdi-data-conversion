@@ -12,6 +12,10 @@ from datetime import datetime
 from openbabel import openbabel
 from flask import Flask, request, render_template, abort, Response
 
+# Maximum output file size in bytes
+MEGABYTE = 1024*1024
+MAX_FILE_SIZE = 1*MEGABYTE
+
 # A lock to prevent multiple threads logging at the same time.
 logLock = Lock()
 
@@ -28,6 +32,10 @@ if not os.path.exists(upDir) :
 downDir = './static/downloads'
 if not os.path.exists(downDir) :
     os.mkdir(downDir)
+
+# File to log any errors that occur
+ERROR_LOG_FILENAME = "error_log.txt"
+GLOBAL_ERROR_LOG = f"./{ERROR_LOG_FILENAME}"
 
 app = Flask(__name__)
 
@@ -52,17 +60,54 @@ def convert() :
 def conv() :
     return convertFile('file')
 
+def logErrorMessage(message, localErrorLog):
+    for error_log in (GLOBAL_ERROR_LOG, localErrorLog):
+        with open(error_log, 'a') as f:
+            f.write(message)
+
+# Get file sizes, checking that output file isn't too large
+def checkFileSize(inFilename, outFilename, localErrorLog):
+    inSize = os.path.getsize(inFilename)
+    outSize = os.path.getsize(outFilename)
+
+    # Check that the output file doesn't exceed the maximum allowed size
+    if outSize > MAX_FILE_SIZE:
+        logErrorMessage(f"ERROR converting {inFilename} to {outFilename}: Output file exceeds maximum size.\n" +
+            f"Input file size is {inSize/MEGABYTE:.2f} MB; Output file size is {outSize/MEGABYTE:.2f} MB; " +
+            f"maximum output file size is {MAX_FILE_SIZE/MEGABYTE:.2f} MB.\n",
+            localErrorLog)
+
+        # Delete output and input files
+        os.remove(inFilename)
+        os.remove(outFilename)
+
+        abort(405)   # return http status code 405
+
+    return inSize, outSize
+
 # Convert the uploaded file to the required format, generating atomic coordinates if required
 def convertFile(file) :
+
     f = request.files[file]
-    f.save('static/uploads/' + f.filename)
     fname = f.filename.split(".")[0]  # E.g. ethane.mol --> ethane
+        
+    inFilename = 'static/uploads/' + f.filename
+    
+    f.save(inFilename)
 
     # Retrieve 'from' and 'to' file formats
     fromFormat = request.form['from']
     toFormat = request.form['to']
 
     converter = request.form['converter']
+    
+    outFilename = 'static/downloads/' + fname + '.' + toFormat
+
+    localErrorLog = f"{downDir}/{f.filename}-{fname}.{toFormat}.err"
+
+    # If any previous error log exists, delete it
+    if os.path.exists(localErrorLog):
+        os.remove(localErrorLog)
 
     if converter == 'Open Babel' :
         stdouterrOB = py.io.StdCaptureFD(in_=False)
@@ -104,7 +149,7 @@ def convertFile(file) :
 
         # Read the file to be converted
         mol = openbabel.OBMol()
-        obConversion.ReadFile(mol, 'static/uploads/' + f.filename)
+        obConversion.ReadFile(mol, inFilename)
 
         # Retrieve coordinate calculation type (Gen2D, Gen3D, neither)
         calcType = request.form['coordinates']
@@ -120,16 +165,15 @@ def convertFile(file) :
             gen.Do(mol, option)
 
         # Write the converted file
-        obConversion.WriteFile(mol, 'static/downloads/' + fname + '.' + toFormat)
+        obConversion.WriteFile(mol, outFilename)
 
         out,err = stdouterrOB.reset()   # Grab stdout and stderr
 
-        # Determine file sizes for logging purposes
-        inSize = os.path.getsize('static/uploads/' + f.filename)
-        outSize = os.path.getsize('static/downloads/' + fname + '.' + toFormat)
+        # Determine file sizes for logging purposes and check output isn't too large
+        inSize, outSize = checkFileSize(inFilename, outFilename, localErrorLog)
 
         if file != 'file' : # Website only (i.e., not command line option)
-            os.remove('static/uploads/' + f.filename)
+            os.remove(inFilename)
             fromFormat = request.form['from_full']
             toFormat = request.form['to_full']
             quality = request.form['success']
@@ -137,7 +181,7 @@ def convertFile(file) :
             quality = getQuality(fromFormat, toFormat)
 
         if err.find('Error') > -1 :
-            error_log(fromFormat, toFormat, converter, fname, calcType, option, fromFlags, toFlags, readFlagsArgs, writeFlagsArgs, err)
+            error_log(fromFormat, toFormat, converter, fname, calcType, option, fromFlags, toFlags, readFlagsArgs, writeFlagsArgs, err, localErrorLog)
             stdouterrOB.done()
             abort(405) # return http status code 405
         else :
@@ -150,12 +194,11 @@ def convertFile(file) :
         out = atomsk.stdout
         err = atomsk.stderr
 
-        # Determine file sizes for logging purposes
-        inSize = os.path.getsize('static/uploads/' + f.filename)
-        outSize = os.path.getsize('static/downloads/' + fname + '.' + toFormat)
+        # Determine file sizes for logging purposes and check output isn't too large
+        inSize, outSize = checkFileSize(inFilename, outFilename, localErrorLog)
 
         if file != 'file' :   # Website only (i.e., not command line option)
-            os.remove('static/uploads/' + f.filename)
+            os.remove(inFilename)
             fromFormat = request.form['from_full']
             toFormat = request.form['to_full']
             quality = request.form['success']
@@ -163,7 +206,7 @@ def convertFile(file) :
             quality = getQuality(fromFormat, toFormat)
 
         if err.find('Error') > -1 :
-            error_log_ato(fromFormat, toFormat, converter, fname, err)
+            error_log_ato(fromFormat, toFormat, converter, fname, err, localErrorLog)
             abort(405)   # return http status code 405
         else :
             log_ato(fromFormat, toFormat, converter, fname, quality, out, err)
@@ -285,20 +328,14 @@ def log_ato(fromFormat, toFormat, converter, fname, quality, out, err) :
     f.close()
 
 # Write Open Babel conversion error information to server-side log file.
-def error_log(fromFormat, toFormat, converter, fname, calcType, option, fromFlags, toFlags, readFlagsArgs, writeFlagsArgs, err) :
+def error_log(fromFormat, toFormat, converter, fname, calcType, option, fromFlags, toFlags, readFlagsArgs, writeFlagsArgs, err, localErrorLog) :
     message = create_message(fname, fromFormat, toFormat, converter, calcType, option, fromFlags, toFlags, readFlagsArgs, writeFlagsArgs) + err + '\n'
-
-    f = open('error_log.txt', 'a')
-    f.write(message)
-    f.close()
+    logErrorMessage(message, localErrorLog)
 
 # Write Atomsk conversion error information to server-side log file.
-def error_log_ato(fromFormat, toFormat, converter, fname, err) :
+def error_log_ato(fromFormat, toFormat, converter, fname, err, localErrorLog) :
     message = create_message(fname, fromFormat, toFormat, converter) + err + '\n'
-
-    f = open('error_log.txt', 'a')
-    f.write(message)
-    f.close()
+    logErrorMessage(message, localErrorLog)
 
 # Create message for log files.
 def create_message(fname, fromFormat, toFormat, converter, calcType, option, fromFlags, toFlags, readFlagsArgs, writeFlagsArgs) :

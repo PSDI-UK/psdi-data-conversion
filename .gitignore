@@ -1,0 +1,6 @@
+.*
+!.gitignore
+*.pyc
+
+static/downloads/*
+static/uploads/*
