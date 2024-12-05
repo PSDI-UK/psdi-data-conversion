@@ -253,7 +253,7 @@ export function convertFile(form_data, download_fname, fname) {
             .fail(function(e) {
                 let errLog = '/static/downloads/error_log.txt';
 
-                fetch(errLog)
+                fetch(errLog, {cache: "no-store"})
                 .then(function (response) {
                     if (response.status==404) {
                         return "An unknown error occurred, which produced no error log. Please provide feedback on " +
