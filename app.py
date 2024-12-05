@@ -36,7 +36,7 @@ if not os.path.exists(downDir) :
 # File to log any errors that occur
 ERROR_LOG_FILENAME = "error_log.txt"
 GLOBAL_ERROR_LOG = f"./{ERROR_LOG_FILENAME}"
-LOCAL_ERROR_LOG = f"{downDir}/{ERROR_LOG_FILENAME}"
+localErrorLog = ""
 
 app = Flask(__name__)
 
@@ -62,7 +62,7 @@ def conv() :
     return convertFile('file')
 
 def logErrorMessage(message):
-    for error_log in (GLOBAL_ERROR_LOG, LOCAL_ERROR_LOG):
+    for error_log in (GLOBAL_ERROR_LOG, localErrorLog):
         with open(error_log, 'a') as f:
             f.write(message)
 
@@ -89,8 +89,8 @@ def checkFileSize(inFilename, outFilename):
 def convertFile(file) :
 
     # If any previous error log exists, delete it
-    if os.path.exists(LOCAL_ERROR_LOG):
-        os.remove(LOCAL_ERROR_LOG)
+    if os.path.exists(localErrorLog):
+        os.remove(localErrorLog)
 
     f = request.files[file]
     fname = f.filename.split(".")[0]  # E.g. ethane.mol --> ethane
@@ -106,6 +106,8 @@ def convertFile(file) :
     converter = request.form['converter']
     
     outFilename = 'static/downloads/' + fname + '.' + toFormat
+
+    localErrorLog = f"{downDir}/{f.filename}-{fname}.{toFormat}.err"
 
     if converter == 'Open Babel' :
         stdouterrOB = py.io.StdCaptureFD(in_=False)
