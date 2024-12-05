@@ -251,7 +251,7 @@ export function convertFile(form_data, download_fname, fname) {
                       "when you close this alert. Please report any problems by clicking on 'Contact' in the navigation bar.");
             })
             .fail(function(e) {
-                let errLog = '/static/downloads/' + fname + '-' + download_fname + ".err";
+                let errLog = '/static/downloads/' + fname + '.' + form_data.get("from") + '-' + download_fname + ".err";
 
                 fetch(errLog, {cache: "no-store"})
                 .then(function (response) {
