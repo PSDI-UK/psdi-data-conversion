@@ -41,51 +41,76 @@ GLOBAL_ERROR_LOG = f"./{ERROR_LOG_FILENAME}"
 
 app = Flask(__name__)
 
-# Return the web page along with the token.
-
 
 @app.route('/')
 def website():
+    """Return the web page along with the token
+    """
     data = [{'token': token}]
     return render_template("index.htm", data=data)
-
-# Convert file to a different format and save to folder 'downloads'. Delete original file.
-# Note that downloading is achieved in format.js
 
 
 @app.route('/convert/', methods=['POST'])
 def convert():
+    """Convert file to a different format and save to folder 'downloads'. Delete original file. Note that downloading is
+    achieved in format.js
+    """
     if request.form['token'] == token and token != '':
         return convertFile('fileToUpload')
     else:
         # return http status code 405
         abort(405)
 
-# Convert file (cURL)
-
 
 @app.route('/conv/', methods=['POST'])
 def conv():
+    """Convert file (cURL)
+    """
     return convertFile('file')
 
 
 def logErrorMessage(message, localErrorLog):
+    """Report an error message in both the global and local error logs
+
+    Parameters
+    ----------
+    message : str
+        The error message
+    localErrorLog : str
+        Fully-qualified name of error log local to this process
+    """
     for error_log in (GLOBAL_ERROR_LOG, localErrorLog):
         with open(error_log, 'a') as f:
             f.write(message)
 
-# Get file sizes, checking that output file isn't too large
-
 
 def checkFileSize(inFilename, outFilename, localErrorLog):
+    """Get file sizes, checking that output file isn't too large
+
+    Parameters
+    ----------
+    inFilename : str
+        Fully-qualified name of input file
+    outFilename : str
+        Fully-qualified name of output file
+    localErrorLog : str
+        Fully-qualified name of error log local to this process
+
+    Returns
+    -------
+    inSize : int
+        Size of input file in bytes
+    outSize : int
+        Size of output file in bytes
+    """
     inSize = os.path.getsize(inFilename)
     outSize = os.path.getsize(outFilename)
 
     # Check that the output file doesn't exceed the maximum allowed size
     if outSize > MAX_FILE_SIZE:
         logErrorMessage(f"ERROR converting {inFilename} to {outFilename}: Output file exceeds maximum size.\n" +
-                        f"Input file size is {inSize/MEGABYTE:.2f} MB; Output file size is {outSize/MEGABYTE:.2f} MB; " +
-                        f"maximum output file size is {MAX_FILE_SIZE/MEGABYTE:.2f} MB.\n",
+                        f"Input file size is {inSize/MEGABYTE:.2f} MB; Output file size is {outSize/MEGABYTE:.2f} " +
+                        "MB; maximum output file size is {MAX_FILE_SIZE/MEGABYTE:.2f} MB.\n",
                         localErrorLog)
 
         # Delete output and input files
@@ -96,10 +121,10 @@ def checkFileSize(inFilename, outFilename, localErrorLog):
 
     return inSize, outSize
 
-# Convert the uploaded file to the required format, generating atomic coordinates if required
-
 
 def convertFile(file):
+    """Convert the uploaded file to the required format, generating atomic coordinates if required
+    """
 
     f = request.files[file]
     fname = f.filename.split(".")[0]  # E.g. ethane.mol --> ethane
@@ -239,11 +264,11 @@ def convertFile(file):
 
     return '\nConverting from ' + fname + '.' + fromFormat + ' to ' + fname + '.' + toFormat + '\n'
 
-# Take feedback data from the web app and log it.
-
 
 @app.route('/feedback/', methods=['POST'])
 def feedback():
+    """Take feedback data from the web app and log it
+    """
 
     try:
 
@@ -268,6 +293,8 @@ def feedback():
 
 # Query the JSON file to obtain conversion quality
 def getQuality(fromExt, toExt):
+    """Query the JSON file to obtain conversion quality
+    """
 
     try:
 
@@ -292,21 +319,21 @@ def getQuality(fromExt, toExt):
 
         return "unknown"
 
-# Delete files in folder 'downloads'
-
 
 @app.route('/delete/', methods=['POST'])
 def delete():
+    """Delete files in folder 'downloads'
+    """
     os.remove('static/downloads/' + request.form['filename'])
     os.remove('static/downloads/' + request.form['logname'])
 
     return 'okay'
 
-# Delete file (cURL)
-
 
 @app.route('/del/', methods=['POST'])
 def deleteFile():
+    """Delete file (cURL)
+    """
     os.remove(request.form['filepath'])
     return 'Server-side file ' + request.form['filepath'] + ' deleted\n'
 
@@ -314,40 +341,109 @@ def deleteFile():
 
 
 def get_date():
+    """Retrieve current date as a string
+
+    Returns
+    -------
+    str
+        Current date in the format YYYY-(M)M-(D)D
+    """
     today = datetime.today()
     return str(today.year) + '-' + format(today.month) + '-' + format(today.day)
 
-# Retrieve current time as a string.
-
 
 def get_time():
+    """Retrieve current time as a string
+
+    Returns
+    -------
+    str
+        Current time in the format HH:MM:SS
+    """
     today = datetime.today()
     return format(today.hour) + ':' + format(today.minute) + ':' + format(today.second)
 
-# Retrieve current date and time as a string.
-
 
 def get_date_time():
+    """Retrieve current date and time as a string
+
+    Returns
+    -------
+    str
+        Current date and time in the format YYYY-(M)M-(D)D HH:MM:SS
+    """
     return get_date() + ' ' + get_time()
 
 # Write Open Babel conversion information to server-side file, ready for downloading to user.
 
 
-def log(fromFormat, toFormat, converter, fname, calcType, option, fromFlags, toFlags, readFlagsArgs, writeFlagsArgs, quality, out, err):
-    message = create_message(fname, fromFormat, toFormat, converter, calcType, option, fromFlags, toFlags, readFlagsArgs, writeFlagsArgs) + \
-        'Quality:           ' + quality + '\n' \
-        'Success:           Assuming that the data provided was of the correct format, the conversion\n' \
-        '                   was successful (to the best of our knowledge) subject to any warnings below.\n' + \
-        out + '\n' + err + '\n'
+def log(fromFormat, toFormat, converter, fname, calcType, option, fromFlags, toFlags, readFlagsArgs, writeFlagsArgs,
+        quality, out, err):
+    """Write Open Babel conversion information to server-side file, ready for downloading to user
+
+    Parameters
+    ----------
+    fromFormat : _type_
+        _description_
+    toFormat : _type_
+        _description_
+    converter : _type_
+        _description_
+    fname : _type_
+        _description_
+    calcType : _type_
+        _description_
+    option : _type_
+        _description_
+    fromFlags : _type_
+        _description_
+    toFlags : _type_
+        _description_
+    readFlagsArgs : _type_
+        _description_
+    writeFlagsArgs : _type_
+        _description_
+    quality : _type_
+        _description_
+    out : _type_
+        _description_
+    err : _type_
+        _description_
+    """
+
+    message = (create_message(fname, fromFormat, toFormat, converter, calcType, option, fromFlags, toFlags,
+                              readFlagsArgs, writeFlagsArgs) +
+               'Quality:           ' + quality + '\n' +
+               'Success:           Assuming that the data provided was of the correct format, the conversion\n' +
+               '                   was successful (to the best of our knowledge) subject to any warnings below.\n' + +
+               out + '\n' + err + '\n')
 
     f = open('static/downloads/' + fname + '.log.txt', 'w')
     f.write(message)
     f.close()
 
-# Write Atomsk conversion information to server-side file, ready for downloading to user.
-
 
 def log_ato(fromFormat, toFormat, converter, fname, quality, out, err):
+    """Write Atomsk conversion information to server-side file, ready for downloading to user
+
+    Parameters
+    ----------
+    fromFormat : _type_
+        _description_
+    toFormat : _type_
+        _description_
+    converter : _type_
+        _description_
+    fname : _type_
+        _description_
+    quality : _type_
+        _description_
+    out : _type_
+        _description_
+    err : _type_
+        _description_
+    """
+
     message = create_message_start(fname, fromFormat, toFormat, converter) + \
         'Quality:           ' + quality + '\n' \
         'Success:           Assuming that the data provided was of the correct format, the conversion\n' \
@@ -358,25 +454,97 @@ def log_ato(fromFormat, toFormat, converter, fname, quality, out, err):
     f.write(message)
     f.close()
 
-# Write Open Babel conversion error information to server-side log file.
 
+def error_log(fromFormat, toFormat, converter, fname, calcType, option, fromFlags, toFlags, readFlagsArgs,
+              writeFlagsArgs, err, localErrorLog):
+    """Write Open Babel conversion error information to server-side log file
 
-def error_log(fromFormat, toFormat, converter, fname, calcType, option, fromFlags, toFlags, readFlagsArgs, writeFlagsArgs, err, localErrorLog):
+    Parameters
+    ----------
+    fromFormat : _type_
+        _description_
+    toFormat : _type_
+        _description_
+    converter : _type_
+        _description_
+    fname : _type_
+        _description_
+    calcType : _type_
+        _description_
+    option : _type_
+        _description_
+    fromFlags : _type_
+        _description_
+    toFlags : _type_
+        _description_
+    readFlagsArgs : _type_
+        _description_
+    writeFlagsArgs : _type_
+        _description_
+    err : _type_
+        _description_
+    localErrorLog : _type_
+        _description_
+    """
     message = create_message(fname, fromFormat, toFormat, converter, calcType, option,
                              fromFlags, toFlags, readFlagsArgs, writeFlagsArgs) + err + '\n'
     logErrorMessage(message, localErrorLog)
 
-# Write Atomsk conversion error information to server-side log file.
-
 
 def error_log_ato(fromFormat, toFormat, converter, fname, err, localErrorLog):
+    """Write Atomsk conversion error information to server-side log file
+
+    Parameters
+    ----------
+    fromFormat : _type_
+        _description_
+    toFormat : _type_
+        _description_
+    converter : _type_
+        _description_
+    fname : _type_
+        _description_
+    err : _type_
+        _description_
+    localErrorLog : _type_
+        _description_
+    """
     message = create_message(fname, fromFormat, toFormat, converter) + err + '\n'
     logErrorMessage(message, localErrorLog)
 
-# Create message for log files.
 
+def create_message(fname, fromFormat, toFormat, converter, calcType, option, fromFlags, toFlags, readFlagsArgs,
+                   writeFlagsArgs):
+    """Create message for log files
 
-def create_message(fname, fromFormat, toFormat, converter, calcType, option, fromFlags, toFlags, readFlagsArgs, writeFlagsArgs):
+    Parameters
+    ----------
+    fname : _type_
+        _description_
+    fromFormat : _type_
+        _description_
+    toFormat : _type_
+        _description_
+    converter : _type_
+        _description_
+    calcType : _type_
+        _description_
+    option : _type_
+        _description_
+    fromFlags : _type_
+        _description_
+    toFlags : _type_
+        _description_
+    readFlagsArgs : _type_
+        _description_
+    writeFlagsArgs : _type_
+        _description_
+
+    Returns
+    -------
+    str
+        The message for log files
+    """
     str = ''
 
     if calcType == 'neither':
@@ -422,10 +590,26 @@ def create_message(fname, fromFormat, toFormat, converter, calcType, option, fro
 
     return create_message_start(fname, fromFormat, toFormat, converter) + str
 
-# Create beginning of message for log files
-
 
 def create_message_start(fname, fromFormat, toFormat, converter):
+    """Create beginning of message for log files
+
+    Parameters
+    ----------
+    fname : _type_
+        _description_
+    fromFormat : _type_
+        _description_
+    toFormat : _type_
+        _description_
+    converter : _type_
+        _description_
+
+    Returns
+    -------
+    str
+        The beginning of a message for log files, containing generic information about what was trying to be done
+    """
     return 'Date:              ' + get_date() + '\n' \
            'Time:              ' + get_time() + '\n' \
            'File name:         ' + fname + '\n' \
@@ -433,10 +617,17 @@ def create_message_start(fname, fromFormat, toFormat, converter):
            'To:                ' + toFormat + '\n' \
            'Converter:         ' + converter + '\n'
 
-# Append data to a log file.
-
 
 def appendToLogFile(log_name, data):
+    """Append data to a log file
+
+    Parameters
+    ----------
+    log_name : _type_
+        _description_
+    data : _type_
+        _description_
+    """
 
     return
 
@@ -457,6 +648,16 @@ def appendToLogFile(log_name, data):
 
 @app.route('/data/', methods=['GET'])
 def data():
+    """Check that the incoming token matches the one sent to the user (should mostly prevent spambots). Write date- and
+    time-stamped user input to server-side file 'user_responses'.
+
+    $$$$$$$$$$ Retained in case direct logging is required in the future. $$$$$$$$$$
+
+    Returns
+    -------
+    str
+        Output status - 'okay' if exited successfuly
+    """
     if request.args['token'] == token and token != '':
         message = '[' + get_date_time() + '] ' + request.args['data'] + '\n'
 
@@ -469,10 +670,20 @@ def data():
         # return http status code 405
         abort(405)
 
-# Ensure that an element of date or time (month, day, hours, minutes or seconds) always has two digits.
-
 
 def format(time):
+    """Ensure that an element of date or time (month, day, hours, minutes or seconds) always has two digits.
+
+    Parameters
+    ----------
+    time : str or int
+        Digit(s) indicating date or month
+
+    Returns
+    -------
+    str
+        2-digit value indicating date or month
+    """
     num = str(time)
 
     if len(num) == 1:
