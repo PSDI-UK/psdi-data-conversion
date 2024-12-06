@@ -6,7 +6,6 @@
 
 import hashlib, os, py.io, json, re, subprocess, time
 #import hashlib, os, glob, psycopg2, py.io, json, re $$$$$$$$$$$$$$$$$$$$$$$$$$$ DELETE $$$$$$$$$$$$$$$$$$$$$$$$$$$$
-from multiprocessing import Lock
 #from psycopg2 import sql $$$$$$$$$$$$$$$$$$$$$$$$$$$$ DELETE $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 from datetime import datetime
 from openbabel import openbabel
@@ -15,9 +14,6 @@ from flask import Flask, request, render_template, abort, Response
 # Maximum output file size in bytes
 MEGABYTE = 1024*1024
 MAX_FILE_SIZE = 1*MEGABYTE
-
-# A lock to prevent multiple threads logging at the same time.
-logLock = Lock()
 
 # Create a token by hashing the current date and time.
 dt = str(datetime.now())
@@ -396,17 +392,8 @@ def create_message_start(fname, fromFormat, toFormat, converter) :
 # Append data to a log file.
 def appendToLogFile(log_name, data):
 
-    return
-
-    # logLock.acquire()
-
-    # try:
-    #     if re.match(r"^[a-z]+$", log_name):
-    #         with open(f"var/{log_name}.log", "a") as log_file:
-    #             log_file.write(f"{json.dumps(data)}\n")
-
-    # finally:
-    #     logLock.release()
+    if (os.environ.get('ENABLE_DCS_LOG') != None):
+        print(json.dumps(data))
 
 # Check that the incoming token matches the one sent to the user (should mostly prevent spambots).
 # Write date- and time-stamped user input to server-side file 'user_responses'.
