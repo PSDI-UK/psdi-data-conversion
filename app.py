@@ -4,10 +4,8 @@
 
 #   This script acts as a server for the PSDI Data Conversion Service website.
 
-import hashlib, os, py.io, json, re, subprocess, time
-#import hashlib, os, glob, psycopg2, py.io, json, re $$$$$$$$$$$$$$$$$$$$$$$$$$$ DELETE $$$$$$$$$$$$$$$$$$$$$$$$$$$$
+import hashlib, os, py.io, json, subprocess
 from multiprocessing import Lock
-#from psycopg2 import sql $$$$$$$$$$$$$$$$$$$$$$$$$$$$ DELETE $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 from datetime import datetime
 from openbabel import openbabel
 from flask import Flask, request, render_template, abort, Response
