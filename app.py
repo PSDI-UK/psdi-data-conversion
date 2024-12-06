@@ -412,7 +412,7 @@ def log(fromFormat, toFormat, converter, fname, calcType, option, fromFlags, toF
                              readFlagsArgs, writeFlagsArgs) +
                'Quality:           ' + quality + '\n' +
                'Success:           Assuming that the data provided was of the correct format, the conversion\n' +
-               '                   was successful (to the best of our knowledge) subject to any warnings below.\n' + +
+               '                   was successful (to the best of our knowledge) subject to any warnings below.\n' +
                out + '\n' + err + '\n')
 
     f = open('static/downloads/' + fname + '.log.txt', 'w')
