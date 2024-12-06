@@ -345,7 +345,7 @@ def getDate():
     Returns
     -------
     str
-        Current date in the format YYYY-(M)M-(D)D
+        Current date in the format YYYY-MM-DD
     """
     today = datetime.today()
     return str(today.year) + '-' + format(today.month) + '-' + format(today.day)
@@ -369,7 +369,7 @@ def getDateTime():
     Returns
     -------
     str
-        Current date and time in the format YYYY-(M)M-(D)D HH:MM:SS
+        Current date and time in the format YYYY-MM-DD HH:MM:SS
     """
     return getDate() + ' ' + getTime()
 
