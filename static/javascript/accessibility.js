@@ -120,6 +120,7 @@ function changeFontColourLight(event) {
 }
 
 function changeFontColour(event, lightOrDark="dark") {
+    
     const colour = $("#"+lightOrDark+"-colour").find(":selected").text();
 
     if (colour==='Default') {
@@ -157,11 +158,12 @@ function changeDarkBackground(event) {
 
 // Reverts all select boxes to 'Default'
 function resetSelections(event) {
-    $("#font, #size, #weight, #letter, #line").val('Default').change();
-
-    // Only change colors if we're in light mode
-    if (document.documentElement.getAttribute("data-theme")!=DARK_MODE)
-        $("#dark-colour, #light-colour, #light-background, #dark-background").val('Default').change();
+    ["#font", "#size", "#weight", "#letter", "#line", "#dark-colour", "#light-colour", "#light-background",
+        "#dark-background"].forEach(function (selector) {
+        // Don't trigger a change event if it's already on Default
+        if ($(selector).find(":selected").val() != "Default")
+            $(selector).val("Default").change();
+    });
 }
 
 // Save a setting for one accessibility option to sessionStorage
