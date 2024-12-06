@@ -302,18 +302,18 @@ def getQuality(fromExt, toExt):
         with open("static/data/data.json") as datafile:
             data = json.load(datafile)
 
-        from_format = [d for d in data["formats"] if d["extension"] == fromExt]
-        to_format = [d for d in data["formats"] if d["extension"] == toExt]
-        open_babel = [d for d in data["converters"] if d["name"] == "Open Babel"]
+        fromFormat = [d for d in data["formats"] if d["extension"] == fromExt]
+        toFormat = [d for d in data["formats"] if d["extension"] == toExt]
+        openBabel = [d for d in data["converters"] if d["name"] == "Open Babel"]
 
-        open_babel_id = open_babel[0]["id"]
-        from_id = from_format[0]["id"]
-        to_id = to_format[0]["id"]
+        openBabelId = openBabel[0]["id"]
+        fromId = fromFormat[0]["id"]
+        toId = toFormat[0]["id"]
 
-        converts_to = [d for d in data["converts_to"] if
-                       d["converters_id"] == open_babel_id and d["in_id"] == from_id and d["out_id"] == to_id]
+        convertsTo = [d for d in data["converts_to"] if
+                      d["converters_id"] == openBabelId and d["in_id"] == fromId and d["out_id"] == toId]
 
-        return converts_to[0]["degree_of_success"]
+        return convertsTo[0]["degree_of_success"]
 
     except Exception:
 
@@ -614,12 +614,12 @@ def createMessageStart(fname, fromFormat, toFormat, converter):
            'Converter:         ' + converter + '\n'
 
 
-def appendToLogFile(log_name, data):
+def appendToLogFile(logName, data):
     """Append data to a log file
 
     Parameters
     ----------
-    log_name : _type_
+    logName : _type_
         _description_
     data : _type_
         _description_
@@ -630,16 +630,12 @@ def appendToLogFile(log_name, data):
     # logLock.acquire()
 
     # try:
-    #     if re.match(r"^[a-z]+$", log_name):
-    #         with open(f"var/{log_name}.log", "a") as log_file:
-    #             log_file.write(f"{json.dumps(data)}\n")
+    #     if re.match(r"^[a-z]+$", logName):
+    #         with open(f"var/{logName}.log", "a") as logFile:
+    #             logFile.write(f"{json.dumps(data)}\n")
 
     # finally:
     #     logLock.release()
-
-# Check that the incoming token matches the one sent to the user (should mostly prevent spambots).
-# Write date- and time-stamped user input to server-side file 'user_responses'.
-# $$$$$$$$$$ Retained in case direct logging is required in the future. $$$$$$$$$$
 
 
 @app.route('/data/', methods=['GET'])
