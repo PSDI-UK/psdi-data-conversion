@@ -188,15 +188,15 @@ function applySettings(event) {
     sessionStorage.setItem("lightBack", s.getPropertyValue('--ifm-background-color'));
     sessionStorage.setItem("darkBack", s.getPropertyValue('--ifm-color-primary'));
 
-    sessionStorage.setItem("fontOpt", $("#font").find(":selected").text());
-    sessionStorage.setItem("sizeOpt", $("#size").find(":selected").text());
-    sessionStorage.setItem("weightOpt", $("#weight").find(":selected").text());
-    sessionStorage.setItem("letterOpt", $("#letter").find(":selected").text());
-    sessionStorage.setItem("lineOpt", $("#line").find(":selected").text());
-    sessionStorage.setItem("darkColourOpt", $("#dark-colour").find(":selected").text());
-    sessionStorage.setItem("lightColourOpt", $("#light-colour").find(":selected").text());
-    sessionStorage.setItem("lightBackOpt", $("#light-background").find(":selected").text());
-    sessionStorage.setItem("darkBackOpt", $("#dark-background").find(":selected").text());
+    sessionStorage.setItem("fontOpt", $("#font").find(":selected").text().trim());
+    sessionStorage.setItem("sizeOpt", $("#size").find(":selected").text().trim());
+    sessionStorage.setItem("weightOpt", $("#weight").find(":selected").text().trim());
+    sessionStorage.setItem("letterOpt", $("#letter").find(":selected").text().trim());
+    sessionStorage.setItem("lineOpt", $("#line").find(":selected").text().trim());
+    sessionStorage.setItem("darkColourOpt", $("#dark-colour").find(":selected").text().trim());
+    sessionStorage.setItem("lightColourOpt", $("#light-colour").find(":selected").text().trim());
+    sessionStorage.setItem("lightBackOpt", $("#light-background").find(":selected").text().trim());
+    sessionStorage.setItem("darkBackOpt", $("#dark-background").find(":selected").text().trim());
 
     alert("The settings have been applied to the entire website.");
 }
