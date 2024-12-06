@@ -219,8 +219,8 @@ def convertFile(file):
             quality = getQuality(fromFormat, toFormat)
 
         if err.find('Error') > -1:
-            error_log(fromFormat, toFormat, converter, fname, calcType, option, fromFlags,
-                      toFlags, readFlagsArgs, writeFlagsArgs, err, localErrorLog)
+            errorLog(fromFormat, toFormat, converter, fname, calcType, option, fromFlags,
+                     toFlags, readFlagsArgs, writeFlagsArgs, err, localErrorLog)
             stdouterrOB.done()
             abort(405)  # return http status code 405
         else:
@@ -246,13 +246,13 @@ def convertFile(file):
             quality = getQuality(fromFormat, toFormat)
 
         if err.find('Error') > -1:
-            error_log_ato(fromFormat, toFormat, converter, fname, err, localErrorLog)
+            errorLogAto(fromFormat, toFormat, converter, fname, err, localErrorLog)
             abort(405)   # return http status code 405
         else:
-            log_ato(fromFormat, toFormat, converter, fname, quality, out, err)
+            logAto(fromFormat, toFormat, converter, fname, quality, out, err)
 
     appendToLogFile("conversions", {
-        "datetime": get_date_time(),
+        "datetime": getDateTime(),
         "fromFormat": fromFormat,
         "toFormat": toFormat,
         "converter": converter,
@@ -273,7 +273,7 @@ def feedback():
     try:
 
         entry = {
-            "datetime": get_date_time(),
+            "datetime": getDateTime(),
         }
 
         report = json.loads(request.form['data'])
@@ -337,10 +337,8 @@ def deleteFile():
     os.remove(request.form['filepath'])
     return 'Server-side file ' + request.form['filepath'] + ' deleted\n'
 
-# Retrieve current date as a string.
 
-
-def get_date():
+def getDate():
     """Retrieve current date as a string
 
     Returns
@@ -352,7 +350,7 @@ def get_date():
     return str(today.year) + '-' + format(today.month) + '-' + format(today.day)
 
 
-def get_time():
+def getTime():
     """Retrieve current time as a string
 
     Returns
@@ -364,7 +362,7 @@ def get_time():
     return format(today.hour) + ':' + format(today.minute) + ':' + format(today.second)
 
 
-def get_date_time():
+def getDateTime():
     """Retrieve current date and time as a string
 
     Returns
@@ -372,7 +370,7 @@ def get_date_time():
     str
         Current date and time in the format YYYY-(M)M-(D)D HH:MM:SS
     """
-    return get_date() + ' ' + get_time()
+    return getDate() + ' ' + getTime()
 
 # Write Open Babel conversion information to server-side file, ready for downloading to user.
 
@@ -411,8 +409,8 @@ def log(fromFormat, toFormat, converter, fname, calcType, option, fromFlags, toF
         _description_
     """
 
-    message = (create_message(fname, fromFormat, toFormat, converter, calcType, option, fromFlags, toFlags,
-                              readFlagsArgs, writeFlagsArgs) +
+    message = (createMessage(fname, fromFormat, toFormat, converter, calcType, option, fromFlags, toFlags,
+                             readFlagsArgs, writeFlagsArgs) +
                'Quality:           ' + quality + '\n' +
                'Success:           Assuming that the data provided was of the correct format, the conversion\n' +
                '                   was successful (to the best of our knowledge) subject to any warnings below.\n' + +
@@ -423,7 +421,7 @@ def log(fromFormat, toFormat, converter, fname, calcType, option, fromFlags, toF
     f.close()
 
 
-def log_ato(fromFormat, toFormat, converter, fname, quality, out, err):
+def logAto(fromFormat, toFormat, converter, fname, quality, out, err):
     """Write Atomsk conversion information to server-side file, ready for downloading to user
 
     Parameters
@@ -444,7 +442,7 @@ def log_ato(fromFormat, toFormat, converter, fname, quality, out, err):
         _description_
     """
 
-    message = create_message_start(fname, fromFormat, toFormat, converter) + \
+    message = createMessageStart(fname, fromFormat, toFormat, converter) + \
         'Quality:           ' + quality + '\n' \
         'Success:           Assuming that the data provided was of the correct format, the conversion\n' \
         '                   was successful (to the best of our knowledge) subject to any warnings below.\n' + \
@@ -455,8 +453,8 @@ def log_ato(fromFormat, toFormat, converter, fname, quality, out, err):
     f.close()
 
 
-def error_log(fromFormat, toFormat, converter, fname, calcType, option, fromFlags, toFlags, readFlagsArgs,
-              writeFlagsArgs, err, localErrorLog):
+def errorLog(fromFormat, toFormat, converter, fname, calcType, option, fromFlags, toFlags, readFlagsArgs,
+             writeFlagsArgs, err, localErrorLog):
     """Write Open Babel conversion error information to server-side log file
 
     Parameters
@@ -486,12 +484,12 @@ def error_log(fromFormat, toFormat, converter, fname, calcType, option, fromFlag
     localErrorLog : _type_
         _description_
     """
-    message = create_message(fname, fromFormat, toFormat, converter, calcType, option,
-                             fromFlags, toFlags, readFlagsArgs, writeFlagsArgs) + err + '\n'
+    message = createMessage(fname, fromFormat, toFormat, converter, calcType, option,
+                            fromFlags, toFlags, readFlagsArgs, writeFlagsArgs) + err + '\n'
     logErrorMessage(message, localErrorLog)
 
 
-def error_log_ato(fromFormat, toFormat, converter, fname, err, localErrorLog):
+def errorLogAto(fromFormat, toFormat, converter, fname, err, localErrorLog):
     """Write Atomsk conversion error information to server-side log file
 
     Parameters
@@ -509,12 +507,12 @@ def error_log_ato(fromFormat, toFormat, converter, fname, err, localErrorLog):
     localErrorLog : _type_
         _description_
     """
-    message = create_message(fname, fromFormat, toFormat, converter) + err + '\n'
+    message = createMessage(fname, fromFormat, toFormat, converter) + err + '\n'
     logErrorMessage(message, localErrorLog)
 
 
-def create_message(fname, fromFormat, toFormat, converter, calcType, option, fromFlags, toFlags, readFlagsArgs,
-                   writeFlagsArgs):
+def createMessage(fname, fromFormat, toFormat, converter, calcType, option, fromFlags, toFlags, readFlagsArgs,
+                  writeFlagsArgs):
     """Create message for log files
 
     Parameters
@@ -588,10 +586,10 @@ def create_message(fname, fromFormat, toFormat, converter, calcType, option, fro
             else:
                 str += '                   ' + pair + '\n'
 
-    return create_message_start(fname, fromFormat, toFormat, converter) + str
+    return createMessageStart(fname, fromFormat, toFormat, converter) + str
 
 
-def create_message_start(fname, fromFormat, toFormat, converter):
+def createMessageStart(fname, fromFormat, toFormat, converter):
     """Create beginning of message for log files
 
     Parameters
@@ -610,8 +608,8 @@ def create_message_start(fname, fromFormat, toFormat, converter):
     str
         The beginning of a message for log files, containing generic information about what was trying to be done
     """
-    return 'Date:              ' + get_date() + '\n' \
-           'Time:              ' + get_time() + '\n' \
+    return 'Date:              ' + getDate() + '\n' \
+           'Time:              ' + getTime() + '\n' \
            'File name:         ' + fname + '\n' \
            'From:              ' + fromFormat + '\n' \
            'To:                ' + toFormat + '\n' \
@@ -659,7 +657,7 @@ def data():
         Output status - 'okay' if exited successfuly
     """
     if request.args['token'] == token and token != '':
-        message = '[' + get_date_time() + '] ' + request.args['data'] + '\n'
+        message = '[' + getDateTime() + '] ' + request.args['data'] + '\n'
 
         f = open("user_responses", "a")
         f.write(message)
