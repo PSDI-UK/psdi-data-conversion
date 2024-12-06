@@ -22,14 +22,14 @@ dt = str(datetime.now())
 token = hashlib.md5(dt.encode('utf8')).hexdigest()
 
 # Create directory 'uploads' if not extant.
-upDir = './static/uploads'
-if not os.path.exists(upDir) :
-    os.mkdir(upDir)
+UPLOAD_DIR = './static/uploads'
+if not os.path.exists(UPLOAD_DIR) :
+    os.mkdir(UPLOAD_DIR)
 
 # Create directory 'downloads' if not extant.
-downDir = './static/downloads'
-if not os.path.exists(downDir) :
-    os.mkdir(downDir)
+DOWNLOAD_DIR = './static/downloads'
+if not os.path.exists(DOWNLOAD_DIR) :
+    os.mkdir(DOWNLOAD_DIR)
 
 # File to log any errors that occur
 ERROR_LOG_FILENAME = "error_log.txt"
@@ -101,7 +101,7 @@ def convertFile(file) :
     
     outFilename = 'static/downloads/' + fname + '.' + toFormat
 
-    localErrorLog = f"{downDir}/{f.filename}-{fname}.{toFormat}.err"
+    localErrorLog = f"{DOWNLOAD_DIR}/{f.filename}-{fname}.{toFormat}.err"
 
     # If any previous error log exists, delete it
     if os.path.exists(localErrorLog):
