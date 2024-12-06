@@ -110,7 +110,7 @@ def checkFileSize(inFilename, outFilename, localErrorLog):
     if outSize > MAX_FILE_SIZE:
         logErrorMessage(f"ERROR converting {inFilename} to {outFilename}: Output file exceeds maximum size.\n" +
                         f"Input file size is {inSize/MEGABYTE:.2f} MB; Output file size is {outSize/MEGABYTE:.2f} " +
-                        "MB; maximum output file size is {MAX_FILE_SIZE/MEGABYTE:.2f} MB.\n",
+                        f"MB; maximum output file size is {MAX_FILE_SIZE/MEGABYTE:.2f} MB.\n",
                         localErrorLog)
 
         # Delete output and input files
@@ -219,7 +219,7 @@ def convertFile(file):
             quality = getQuality(fromFormat, toFormat)
 
         if err.find('Error') > -1:
-            errorLog(fromFormat, toFormat, converter, fname, calcType, option, fromFlags,
+            logError(fromFormat, toFormat, converter, fname, calcType, option, fromFlags,
                      toFlags, readFlagsArgs, writeFlagsArgs, err, localErrorLog)
             stdouterrOB.done()
             abort(405)  # return http status code 405
@@ -246,7 +246,7 @@ def convertFile(file):
             quality = getQuality(fromFormat, toFormat)
 
         if err.find('Error') > -1:
-            errorLogAto(fromFormat, toFormat, converter, fname, err, localErrorLog)
+            logErrorAto(fromFormat, toFormat, converter, fname, err, localErrorLog)
             abort(405)   # return http status code 405
         else:
             logAto(fromFormat, toFormat, converter, fname, quality, out, err)
@@ -372,8 +372,6 @@ def getDateTime():
     """
     return getDate() + ' ' + getTime()
 
-# Write Open Babel conversion information to server-side file, ready for downloading to user.
-
 
 def log(fromFormat, toFormat, converter, fname, calcType, option, fromFlags, toFlags, readFlagsArgs, writeFlagsArgs,
         quality, out, err):
@@ -453,7 +451,7 @@ def logAto(fromFormat, toFormat, converter, fname, quality, out, err):
     f.close()
 
 
-def errorLog(fromFormat, toFormat, converter, fname, calcType, option, fromFlags, toFlags, readFlagsArgs,
+def logError(fromFormat, toFormat, converter, fname, calcType, option, fromFlags, toFlags, readFlagsArgs,
              writeFlagsArgs, err, localErrorLog):
     """Write Open Babel conversion error information to server-side log file
 
@@ -489,7 +487,7 @@ def errorLog(fromFormat, toFormat, converter, fname, calcType, option, fromFlags
     logErrorMessage(message, localErrorLog)
 
 
-def errorLogAto(fromFormat, toFormat, converter, fname, err, localErrorLog):
+def logErrorAto(fromFormat, toFormat, converter, fname, err, localErrorLog):
     """Write Atomsk conversion error information to server-side log file
 
     Parameters
