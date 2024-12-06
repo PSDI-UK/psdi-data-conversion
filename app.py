@@ -286,7 +286,7 @@ def feedback():
 
         return Response(status=201)
 
-    except:
+    except Exception:
 
         return Response(status=400)
 
@@ -315,7 +315,7 @@ def getQuality(fromExt, toExt):
 
         return converts_to[0]["degree_of_success"]
 
-    except:
+    except Exception:
 
         return "unknown"
 
