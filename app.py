@@ -10,7 +10,6 @@ import os
 import py.io
 import json
 import subprocess
-from multiprocessing import Lock
 from datetime import datetime
 from openbabel import openbabel
 from flask import Flask, request, render_template, abort, Response
@@ -18,9 +17,6 @@ from flask import Flask, request, render_template, abort, Response
 # Maximum output file size in bytes
 MEGABYTE = 1024*1024
 MAX_FILE_SIZE = 1*MEGABYTE
-
-# A lock to prevent multiple threads logging at the same time.
-logLock = Lock()
 
 # Create a token by hashing the current date and time.
 dt = str(datetime.now())
@@ -626,17 +622,8 @@ def appendToLogFile(logName, data):
         _description_
     """
 
-    return
-
-    # logLock.acquire()
-
-    # try:
-    #     if re.match(r"^[a-z]+$", logName):
-    #         with open(f"var/{logName}.log", "a") as logFile:
-    #             logFile.write(f"{json.dumps(data)}\n")
-
-    # finally:
-    #     logLock.release()
+    if (os.environ.get('ENABLE_DCS_LOG') != None):
+        print(json.dumps(data))
 
 
 @app.route('/data/', methods=['GET'])
