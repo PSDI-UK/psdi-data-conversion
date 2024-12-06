@@ -3,7 +3,7 @@
   Version 1.0, 11th October 2024
 */
 
-@import url("https://psdi-uk.github.io/css-template/psdi-common.css");
+@import url("https://psdi-uk.github.io/psdi-common-style/css/psdi-common.css");
 
 /* Forms inherit style from normal content, and make sure content is well away from the edges */
 form {
