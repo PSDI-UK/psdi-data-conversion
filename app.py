@@ -1,8 +1,9 @@
+"""app.py
 
-#   app.py
-#   Version 1.0, 8th November 2024
+Version 1.0, 8th November 2024
 
-#   This script acts as a server for the PSDI Data Conversion Service website.
+This script acts as a server for the PSDI Data Conversion Service website.
+"""
 
 import hashlib
 import os
