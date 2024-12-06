@@ -60,7 +60,7 @@ $(document).ready(function() {
     $("#light-background").change(changeLightBackground);
     $("#dark-background").change(changeDarkBackground);
     $("#resetButton").click(resetSelections);
-    $("#applyButton").click(applySettings);
+    $("#applyButton").click(applyAllSettings);
 });
 
 // Changes the font for accessibility purposes
@@ -175,28 +175,24 @@ function resetSelections(event) {
     $("#font, #size, #weight, #letter, #line, #dark-colour, #light-colour, #light-background, #dark-background").val('Default').change();
 }
 
-// Applies accessibility settings to the entire website.
-function applySettings(event) {
-    sessionStorage.setItem("font", s.getPropertyValue('--ifm-font-family-base'));
-    sessionStorage.setItem("hfont", s.getPropertyValue('--ifm-heading-font-family'));
-    sessionStorage.setItem("size", s.getPropertyValue('--ifm-font-size-base'));
-    sessionStorage.setItem("weight", s.getPropertyValue('--ifm-font-weight-base'));
-    sessionStorage.setItem("letter", s.getPropertyValue('--psdi-letter-spacing-base'));
-    sessionStorage.setItem("line", s.getPropertyValue('--ifm-line-height-base'));
-    sessionStorage.setItem("darkColour", s.getPropertyValue('--psdi-dark-text-color-body'));
-    sessionStorage.setItem("lightColour", s.getPropertyValue('--psdi-light-text-color-body'));
-    sessionStorage.setItem("lightBack", s.getPropertyValue('--ifm-background-color'));
-    sessionStorage.setItem("darkBack", s.getPropertyValue('--ifm-color-primary'));
+function applySetting(jsName, cssSelector, cssVar) {
+    sessionStorage.setItem(jsName, s.getPropertyValue(cssVar));
+    if (cssSelector!==null)
+        sessionStorage.setItem(jsName+"Opt", $(cssSelector).find(":selected").val());
+}
 
-    sessionStorage.setItem("fontOpt", $("#font").find(":selected").val());
-    sessionStorage.setItem("sizeOpt", $("#size").find(":selected").val());
-    sessionStorage.setItem("weightOpt", $("#weight").find(":selected").val());
-    sessionStorage.setItem("letterOpt", $("#letter").find(":selected").val());
-    sessionStorage.setItem("lineOpt", $("#line").find(":selected").val());
-    sessionStorage.setItem("darkColourOpt", $("#dark-colour").find(":selected").val());
-    sessionStorage.setItem("lightColourOpt", $("#light-colour").find(":selected").val());
-    sessionStorage.setItem("lightBackOpt", $("#light-background").find(":selected").val());
-    sessionStorage.setItem("darkBackOpt", $("#dark-background").find(":selected").val());
+// Applies accessibility settings to the entire website.
+function applyAllSettings(event) {
+    applySetting("font", "#font", "--ifm-font-family-base");
+    applySetting("hfont", null, "--ifm-heading-font-family");
+    applySetting("size", "#size", "--ifm-font-size-base");
+    applySetting("weight", "#weight", "--ifm-font-weight-base");
+    applySetting("letter", "#letter", "--psdi-letter-spacing-base");
+    applySetting("line", "#line", "--ifm-line-height-base");
+    applySetting("darkColour", "#dark-colour", "--psdi-dark-text-color-body");
+    applySetting("lightColour", "#light-colour", "--psdi-light-text-color-body");
+    applySetting("lightBack", "#light-background", "--ifm-background-color");
+    applySetting("darkBack", "#dark-background", "--ifm-color-primary");
 
     alert("The settings have been applied to the entire website.");
 }
