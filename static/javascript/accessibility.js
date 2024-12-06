@@ -25,40 +25,25 @@ function toggleMode() {
   sessionStorage.setItem("mode", new_mode);
 }
 
+function loadOption(jsName, cssSelector, changeFunc) {
+    const opt = sessionStorage.getItem(jsName+"Opt");
+    if (opt!=null)
+        $(cssSelector).val(opt).change();
+    $(cssSelector).change(changeFunc);
+}
+
 $(document).ready(function() {
 
-    const fontOpt = sessionStorage.getItem("fontOpt"),
-          sizeOpt = sessionStorage.getItem("sizeOpt"),
-          weightOpt = sessionStorage.getItem("weightOpt"),
-          letterOpt = sessionStorage.getItem("letterOpt"),
-          lineOpt = sessionStorage.getItem("lineOpt"),
-          darkColourOpt = sessionStorage.getItem("darkColourOpt"),
-          lightColourOpt = sessionStorage.getItem("lightColourOpt"),
-          lightBackOpt = sessionStorage.getItem("lightBackOpt"),
-          darkBackOpt = sessionStorage.getItem("darkBackOpt");
+    loadOption("font", "#font", changeFont);
+    loadOption("size", "#size", changeFontSize);
+    loadOption("weight", "#weight", changeFontWeight);
+    loadOption("letter", "#letter", changeLetterSpacing);
+    loadOption("line", "#line", changeLineSpacing);
+    loadOption("darkColour", "#dark-colour", changeFontColourDark);
+    loadOption("lightColour", "#light-colour", changeFontColourLight);
+    loadOption("lightBack", "#light-background", changeLightBackground);
+    loadOption("darkBack", "#dark-background", changeDarkBackground);
 
-    if (fontOpt != null) {
-
-        $("#font").val(fontOpt).change();
-        $("#size").val(sizeOpt).change();
-        $("#weight").val(weightOpt).change();
-        $("#letter").val(letterOpt).change();
-        $("#line").val(lineOpt).change();
-        $("#dark-colour").val(darkColourOpt).change();
-        $("#light-colour").val(lightColourOpt).change();
-        $("#light-background").val(lightBackOpt).change();
-        $("#dark-background").val(darkBackOpt).change();
-    }
-
-    $("#font").change(changeFont);
-    $("#size").change(changeFontSize);
-    $("#weight").change(changeFontWeight);
-    $("#letter").change(changeLetterSpacing);
-    $("#line").change(changeLineSpacing);
-    $("#dark-colour").change(changeFontColourDark);
-    $("#light-colour").change(changeFontColourLight);
-    $("#light-background").change(changeLightBackground);
-    $("#dark-background").change(changeDarkBackground);
     $("#resetButton").click(resetSelections);
     $("#applyButton").click(applyAllSettings);
 });
@@ -175,16 +160,22 @@ function resetSelections(event) {
     $("#font, #size, #weight, #letter, #line, #dark-colour, #light-colour, #light-background, #dark-background").val('Default').change();
 }
 
+// Save a setting for one accessibility option to sessionStorage
 function applySetting(jsName, cssSelector, cssVar) {
+
+    // Check if set to default and not previously set, in which case don't save anything to storage
+    let selectedVal = $(cssSelector).find(":selected").val();
+    if (selectedVal=="Default" && sessionStorage.getItem(jsName)==null)
+        return;
+
     sessionStorage.setItem(jsName, s.getPropertyValue(cssVar));
-    if (cssSelector!==null)
-        sessionStorage.setItem(jsName+"Opt", $(cssSelector).find(":selected").val());
+    sessionStorage.setItem(jsName+"Opt", selectedVal);
 }
 
 // Applies accessibility settings to the entire website.
 function applyAllSettings(event) {
     applySetting("font", "#font", "--ifm-font-family-base");
-    applySetting("hfont", null, "--ifm-heading-font-family");
+    applySetting("hfont", "#font", "--ifm-heading-font-family");
     applySetting("size", "#size", "--ifm-font-size-base");
     applySetting("weight", "#weight", "--ifm-font-weight-base");
     applySetting("letter", "#letter", "--psdi-letter-spacing-base");
