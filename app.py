@@ -81,7 +81,7 @@ def log_error_message(message, local_error_log):
             f.write(message)
 
 
-def checkFileSize(in_filename, out_filename, local_error_log):
+def check_file_size(in_filename, out_filename, local_error_log):
     """Get file sizes, checking that output file isn't too large
 
     Parameters
@@ -205,7 +205,7 @@ def convert_file(file):
         out, err = stdouterr_ob.reset()   # Grab stdout and stderr
 
         # Determine file sizes for logging purposes and check output isn't too large
-        in_size, out_size = checkFileSize(in_filename, out_filename, local_error_log)
+        in_size, out_size = check_file_size(in_filename, out_filename, local_error_log)
 
         if file != 'file':  # Website only (i.e., not command line option)
             os.remove(in_filename)
@@ -233,7 +233,7 @@ def convert_file(file):
         err = atomsk.stderr
 
         # Determine file sizes for logging purposes and check output isn't too large
-        in_size, out_size = checkFileSize(in_filename, out_filename, local_error_log)
+        in_size, out_size = check_file_size(in_filename, out_filename, local_error_log)
 
         if file != 'file':   # Website only (i.e., not command line option)
             os.remove(in_filename)
