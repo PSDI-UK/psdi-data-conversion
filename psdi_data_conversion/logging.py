@@ -36,22 +36,22 @@ class DataConversionLogger(logging.Logger):
 
         # Set up the global logger
         super().__init__(name, logging.NOTSET)
-        global_handler = logging.FileHandler(ERROR_LOG_FILENAME)
-        self.addHandler(global_handler)
+        self._global_handler = logging.FileHandler(ERROR_LOG_FILENAME)
+        self.addHandler(self._global_handler)
 
         # Set up the local logger unless the local logging filename is `None`
-        if _local_log_file is None:
-            self.local_logger = None
-        else:
+        self._local_logger: logging.Logger | None = None
+        self._local_handler: logging.FileHandler | None = None
+        if _local_log_file is not None:
             old_logger_class = logging.getLoggerClass()
             try:
                 logging.setLoggerClass(logging.Logger)
-                self.local_logger = logging.getLogger(name)
+                self._local_logger = logging.getLogger(name)
             finally:
                 logging.setLoggerClass(old_logger_class)
-            local_handler = logging.FileHandler(_local_log_file)
-            self.local_logger.addHandler(local_handler)
-            self.local_logger.setLevel(level)
+            self._local_handler = logging.FileHandler(_local_log_file)
+            self._local_logger.addHandler(self._local_handler)
+            self._local_logger.setLevel(level)
 
     def setLevel(self, level):
         """Override the `setLevel` method to set the same level with both the global and local loggers
@@ -67,15 +67,37 @@ class DataConversionLogger(logging.Logger):
     def setLocalLevel(self, level):
         """Set the level for the local logger
         """
-        if self.local_logger is not None:
-            self.local_logger.setLevel(level)
+        if self._local_logger is not None:
+            self._local_logger.setLevel(level)
 
     def log(self, level, msg, *args, **kwargs):
         """Override the `log` method to log with both the global and local loggers
         """
         super().log(level, msg, *args, **kwargs)
-        if self.local_logger is not None:
-            self.local_logger.log(level, msg, *args, **kwargs)
+        if self._local_logger is not None:
+            self._local_logger.log(level, msg, *args, **kwargs)
+
+    def getGlobalFilename(self):
+        """Get the filename which is used for the global logger
+
+        Returns
+        -------
+        str
+        """
+
+        return self._global_handler.baseFilename
+
+    def getLocalFilename(self):
+        """Get the filename which is used for the local logger
+
+        Returns
+        -------
+        str | None
+        """
+
+        if self._local_handler is None:
+            return None
+        return self._local_handler.baseFilename
 
 
 def setLocalLoggerFilename(local_log_file):
@@ -98,13 +120,12 @@ def getLocalLoggerFilename():
     Returns
     -------
     str | None
-        _description_
     """
 
     return _local_log_file
 
 
-def getLogger(name, local_log_file=None):
+def getLogger(name, local_log_file=None) -> DataConversionLogger:
     """Gets the `DataConversionLogger` with the provided name if one exists, and creates one if not
 
     Parameters
@@ -117,7 +138,6 @@ def getLogger(name, local_log_file=None):
     Returns
     -------
     DataConversionLogger
-        The requested logger
     """
 
     old_logger_class = logging.getLoggerClass()
@@ -126,7 +146,8 @@ def getLogger(name, local_log_file=None):
         logging.setLoggerClass(DataConversionLogger)
         if local_log_file is not None:
             setLocalLoggerFilename(local_log_file)
-        return logging.getLogger(name)
+        logger = logging.getLogger(name)
+        return logger
     finally:
         logging.setLoggerClass(old_logger_class)
         setLocalLoggerFilename(old_local_filename)

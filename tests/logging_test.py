@@ -5,10 +5,11 @@ Created 2024-12-09 by Bryan Gillis.
 Tests of functions relating to logging
 """
 
+import os
 import re
 import time
 
-from psdi_data_conversion.logging import getLogger
+from psdi_data_conversion import logging
 from app import get_date, get_date_time, get_time
 
 
@@ -45,14 +46,20 @@ def test_date_time():
     assert datetime_str_2 != datetime_str_1
 
 
-def test_logging():
+def test_get_logger():
+    """Tests of `logging.getLogger`
+    """
     # Get a logger to test with
-    logger = getLogger("test")
+    logger = logging.getLogger("test")
 
     # Test getting a second logger with the same name returns the same as the first
-    same_name_logger = getLogger("test")
+    same_name_logger = logging.getLogger("test")
     assert same_name_logger is logger
 
     # Test getting a logger with a different name returns a different logger
-    diff_name_logger = getLogger("not.test")
+    diff_name_logger = logging.getLogger("not.test")
     assert diff_name_logger is not logger
+
+    # Test that the filenames are as expected
+    assert logger.getGlobalFilename() == os.path.abspath(logging.GLOBAL_ERROR_LOG)
+    assert logger.getLocalFilename() is None
