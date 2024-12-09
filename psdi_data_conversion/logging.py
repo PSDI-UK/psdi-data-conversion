@@ -46,7 +46,7 @@ class DataConversionLogger(logging.Logger):
             old_logger_class = logging.getLoggerClass()
             try:
                 logging.setLoggerClass(logging.Logger)
-                self._local_logger = logging.getLogger(f"{name}-local")
+                self._local_logger = logging.getLogger(f"local.{name}")
             finally:
                 logging.setLoggerClass(old_logger_class)
             self._local_handler = logging.FileHandler(_local_log_file)
