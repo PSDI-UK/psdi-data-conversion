@@ -121,7 +121,7 @@ def getLogger(name, local_log_file=None):
     """
 
     old_logger_class = logging.getLoggerClass()
-    old_local_filename = logging.getLocalFilename()
+    old_local_filename = getLocalLoggerFilename()
     try:
         logging.setLoggerClass(DataConversionLogger)
         if local_log_file is not None:
