@@ -14,6 +14,8 @@ from datetime import datetime
 from openbabel import openbabel
 from flask import Flask, request, render_template, abort, Response
 
+from psdi_data_conversion import logging
+
 # Maximum output file size in bytes
 MEGABYTE = 1024*1024
 MAX_FILE_SIZE = 1*MEGABYTE
@@ -31,10 +33,6 @@ if not os.path.exists(UPLOAD_DIR):
 DOWNLOAD_DIR = './static/downloads'
 if not os.path.exists(DOWNLOAD_DIR):
     os.mkdir(DOWNLOAD_DIR)
-
-# File to log any errors that occur
-ERROR_LOG_FILENAME = "error_log.txt"
-GLOBAL_ERROR_LOG = f"./{ERROR_LOG_FILENAME}"
 
 app = Flask(__name__)
 
@@ -76,7 +74,7 @@ def log_error_message(message, local_error_log):
     local_error_log : str
         Fully-qualified name of error log local to this process
     """
-    for error_log in (GLOBAL_ERROR_LOG, local_error_log):
+    for error_log in (logging.GLOBAL_ERROR_LOG, local_error_log):
         with open(error_log, 'a') as f:
             f.write(message)
 
