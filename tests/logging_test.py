@@ -103,6 +103,6 @@ def test_logging(caplog):
     assert not re.compile("test:" + r"\S*\s*\S*" + info_msg).search(log_content)
     assert re.compile("test:" + r"\S*\s*\S*" + warning_msg).search(log_content)
 
-    assert not re.compile("test-local:" + r"\S*\s*\S*" + debug_msg).search(log_content)
-    assert re.compile("test-local:" + r"\S*\s*\S*" + info_msg).search(log_content)
-    assert re.compile("test-local:" + r"\S*\s*\S*" + warning_msg).search(log_content)
+    assert not re.compile("local.test:" + r"\S*\s*\S*" + debug_msg).search(log_content)
+    assert re.compile("local.test:" + r"\S*\s*\S*" + info_msg).search(log_content)
+    assert re.compile("local.test:" + r"\S*\s*\S*" + warning_msg).search(log_content)
