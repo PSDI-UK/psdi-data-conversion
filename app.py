@@ -16,6 +16,8 @@ from flask import Flask, request, render_template, abort, Response
 
 from psdi_data_conversion import logging
 
+logger = logging.getLogger()
+
 # Maximum output file size in bytes
 MEGABYTE = 1024*1024
 MAX_FILE_SIZE = 1*MEGABYTE
@@ -64,22 +66,7 @@ def conv():
     return convert_file('file')
 
 
-def log_error_message(message, local_error_log):
-    """Report an error message in both the global and local error logs
-
-    Parameters
-    ----------
-    message : str
-        The error message
-    local_error_log : str
-        Fully-qualified name of error log local to this process
-    """
-    for error_log in (logging.GLOBAL_ERROR_LOG, local_error_log):
-        with open(error_log, 'a') as f:
-            f.write(message)
-
-
-def check_file_size(in_filename, out_filename, local_error_log):
+def check_file_size(in_filename, out_filename):
     """Get file sizes, checking that output file isn't too large
 
     Parameters
@@ -88,8 +75,6 @@ def check_file_size(in_filename, out_filename, local_error_log):
         Fully-qualified name of input file
     out_filename : str
         Fully-qualified name of output file
-    local_error_log : str
-        Fully-qualified name of error log local to this process
 
     Returns
     -------
@@ -103,10 +88,9 @@ def check_file_size(in_filename, out_filename, local_error_log):
 
     # Check that the output file doesn't exceed the maximum allowed size
     if out_size > MAX_FILE_SIZE:
-        log_error_message(f"ERROR converting {in_filename} to {out_filename}: Output file exceeds maximum size.\n"
-                          f"Input file size is {in_size/MEGABYTE:.2f} MB; Output file size is {out_size/MEGABYTE:.2f} "
-                          f"MB; maximum output file size is {MAX_FILE_SIZE/MEGABYTE:.2f} MB.\n",
-                          local_error_log)
+        logger.error(f"ERROR converting {in_filename} to {out_filename}: Output file exceeds maximum size.\n"
+                     f"Input file size is {in_size/MEGABYTE:.2f} MB; Output file size is {out_size/MEGABYTE:.2f} "
+                     f"MB; maximum output file size is {MAX_FILE_SIZE/MEGABYTE:.2f} MB.\n")
 
         # Delete output and input files
         os.remove(in_filename)
@@ -141,6 +125,9 @@ def convert_file(file):
     # If any previous error log exists, delete it
     if os.path.exists(local_error_log):
         os.remove(local_error_log)
+
+    global logger
+    logger = logging.getLogger(__name__, local_error_log)
 
     if converter == 'Open Babel':
         stdouterr_ob = py.io.StdCaptureFD(in_=False)
@@ -203,7 +190,7 @@ def convert_file(file):
         out, err = stdouterr_ob.reset()   # Grab stdout and stderr
 
         # Determine file sizes for logging purposes and check output isn't too large
-        in_size, out_size = check_file_size(in_filename, out_filename, local_error_log)
+        in_size, out_size = check_file_size(in_filename, out_filename)
 
         if file != 'file':  # Website only (i.e., not command line option)
             os.remove(in_filename)
@@ -215,7 +202,7 @@ def convert_file(file):
 
         if err.find('Error') > -1:
             logError(from_format, to_format, converter, filename_base, calc_type, option, from_flags,
-                     to_flags, read_flags_args, write_flags_args, err, local_error_log)
+                     to_flags, read_flags_args, write_flags_args, err)
             stdouterr_ob.done()
             abort(405)  # return http status code 405
         else:
@@ -231,7 +218,7 @@ def convert_file(file):
         err = atomsk.stderr
 
         # Determine file sizes for logging purposes and check output isn't too large
-        in_size, out_size = check_file_size(in_filename, out_filename, local_error_log)
+        in_size, out_size = check_file_size(in_filename, out_filename)
 
         if file != 'file':   # Website only (i.e., not command line option)
             os.remove(in_filename)
@@ -242,7 +229,7 @@ def convert_file(file):
             quality = get_quality(from_format, to_format)
 
         if err.find('Error') > -1:
-            log_error_ato(from_format, to_format, converter, filename_base, err, local_error_log)
+            log_error_ato(from_format, to_format, converter, filename_base, err)
             abort(405)   # return http status code 405
         else:
             log_ato(from_format, to_format, converter, filename_base, quality, out, err)
@@ -448,7 +435,7 @@ def log_ato(from_format, to_format, converter, fname, quality, out, err):
 
 
 def logError(from_format, to_format, converter, fname, calc_type, option, from_flags, to_flags, read_flags_args,
-             write_flags_args, err, local_error_log):
+             write_flags_args, err):
     """Write Open Babel conversion error information to server-side log file
 
     Parameters
@@ -475,15 +462,13 @@ def logError(from_format, to_format, converter, fname, calc_type, option, from_f
         _description_
     err : _type_
         _description_
-    local_error_log : _type_
-        _description_
     """
     message = create_message(fname, from_format, to_format, converter, calc_type, option,
                              from_flags, to_flags, read_flags_args, write_flags_args) + err + '\n'
-    log_error_message(message, local_error_log)
+    logger.error(message)
 
 
-def log_error_ato(from_format, to_format, converter, fname, err, local_error_log):
+def log_error_ato(from_format, to_format, converter, fname, err):
     """Write Atomsk conversion error information to server-side log file
 
     Parameters
@@ -498,11 +483,9 @@ def log_error_ato(from_format, to_format, converter, fname, err, local_error_log
         _description_
     err : _type_
         _description_
-    local_error_log : _type_
-        _description_
     """
     message = create_message(fname, from_format, to_format, converter) + err + '\n'
-    log_error_message(message, local_error_log)
+    logger.error(message)
 
 
 def create_message(fname, from_format, to_format, converter, calc_type, option, from_flags, to_flags, read_flags_args,
