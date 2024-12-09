@@ -82,7 +82,7 @@ def test_logging(caplog):
         os.remove(test_filename)
 
     # Create a logger to work with
-    logger = logging.getLogger("test", test_filename)
+    logger = logging.getLogger("logging-test", test_filename)
 
     # Try logging a few messages at different levels
     debug_msg = "FINDME_DEBUG"
