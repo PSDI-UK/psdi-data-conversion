@@ -68,3 +68,34 @@ def test_get_logger():
     fn_logger = logging.getLogger("fn.test", test_filename)
     assert fn_logger.getGlobalFilename() == os.path.abspath(logging.GLOBAL_ERROR_LOG)
     assert fn_logger.getLocalFilename() == os.path.abspath(test_filename)
+
+
+def test_logging():
+    """Test that logging works as expected
+    """
+    # Create a logger to work with
+    test_filename = "./static/downloads/local_error_log.txt"
+    logger = logging.getLogger("test", test_filename)
+
+    # Try logging a few messages at different levels
+    debug_msg = "FINDME_DEBUG"
+    info_msg = "FINDME_INFO"
+    warn_msg = "FINDME_WARN"
+    logger.debug(debug_msg)
+    logger.info(info_msg)
+    logger.warning(warn_msg)
+
+    # Open the files and check that only the expected messages are present - by default, the global log will log
+    # at WARNING level and above, and the local log will log at INFO level and above
+
+    with open(logging.GLOBAL_ERROR_LOG, "r") as global_log:
+        global_log_content = global_log.read()
+        assert debug_msg not in global_log_content
+        assert info_msg not in global_log_content
+        assert warn_msg in global_log_content
+
+    with open(test_filename, "r") as local_log:
+        local_log_content = local_log.read()
+        assert debug_msg not in local_log_content
+        assert info_msg in local_log_content
+        assert warn_msg in local_log_content
