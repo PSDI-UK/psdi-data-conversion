@@ -208,7 +208,7 @@ def convert_file(file):
             abort(405)  # return http status code 405
         else:
             logging.log(from_format, to_format, converter, filename_base, calc_type, option, from_flags,
-                        to_flags, read_flags_args, write_flags_args, quality, out, err, logger)
+                        to_flags, read_flags_args, write_flags_args, quality, out, err)
 
         stdouterr_ob.done()
     elif request.form['converter'] == 'Atomsk':
