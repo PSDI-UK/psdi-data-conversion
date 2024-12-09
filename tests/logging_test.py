@@ -8,6 +8,7 @@ Tests of functions relating to logging
 import re
 import time
 
+from psdi_data_conversion.logging import getLogger
 from app import get_date, get_date_time, get_time
 
 
@@ -42,3 +43,16 @@ def test_date_time():
 
     assert time_str_2 != time_str_1
     assert datetime_str_2 != datetime_str_1
+
+
+def test_logging():
+    # Get a logger to test with
+    logger = getLogger("test")
+
+    # Test getting a second logger with the same name returns the same as the first
+    same_name_logger = getLogger("test")
+    assert same_name_logger is logger
+
+    # Test getting a logger with a different name returns a different logger
+    diff_name_logger = getLogger("not.test")
+    assert diff_name_logger is not logger
