@@ -64,7 +64,7 @@ def test_get_logger():
     assert logger.getLocalFilename() is None
 
     test_filename = "./static/downloads/local_error_log.txt"
-    os.makedirs("./static/downloads/")
+    os.makedirs("./static/downloads/", exist_ok=True)
     fn_logger = logging.getLogger("fn.test", test_filename)
     assert fn_logger.getGlobalFilename() == os.path.abspath(logging.GLOBAL_ERROR_LOG)
     assert fn_logger.getLocalFilename() == os.path.abspath(test_filename)
@@ -75,7 +75,7 @@ def test_logging(caplog):
     """
 
     test_filename = "./static/downloads/local_error_log.txt"
-    os.makedirs("./static/downloads/")
+    os.makedirs("./static/downloads/", exist_ok=True)
 
     # Delete any existing error logs
     if os.path.isfile(logging.GLOBAL_ERROR_LOG):
