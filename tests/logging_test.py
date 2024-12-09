@@ -70,7 +70,7 @@ def test_get_logger():
     assert fn_logger.getLocalFilename() == os.path.abspath(test_filename)
 
 
-def test_logging():
+def test_logging(caplog):
     """Test that logging works as expected
     """
 
@@ -88,22 +88,20 @@ def test_logging():
     # Try logging a few messages at different levels
     debug_msg = "FINDME_DEBUG"
     info_msg = "FINDME_INFO"
-    warn_msg = "FINDME_WARN"
+    warning_msg = "FINDME_WARNING"
     logger.debug(debug_msg)
     logger.info(info_msg)
-    logger.warning(warn_msg)
+    logger.warning(warning_msg)
 
     # Open the files and check that only the expected messages are present - by default, the global log will log
     # at WARNING level and above, and the local log will log at INFO level and above
 
-    with open(logging.GLOBAL_ERROR_LOG, "r") as global_log:
-        global_log_content = global_log.read()
-        assert debug_msg not in global_log_content
-        assert info_msg not in global_log_content
-        assert warn_msg in global_log_content
+    log_content = caplog.text
 
-    with open(test_filename, "r") as local_log:
-        local_log_content = local_log.read()
-        assert debug_msg not in local_log_content
-        assert info_msg in local_log_content
-        assert warn_msg in local_log_content
+    assert not re.compile("test:" + r"\S*\s*\S*" + debug_msg).search(log_content)
+    assert not re.compile("test:" + r"\S*\s*\S*" + info_msg).search(log_content)
+    assert re.compile("test:" + r"\S*\s*\S*" + warning_msg).search(log_content)
+
+    assert not re.compile("test-local:" + r"\S*\s*\S*" + debug_msg).search(log_content)
+    assert re.compile("test-local:" + r"\S*\s*\S*" + info_msg).search(log_content)
+    assert re.compile("test-local:" + r"\S*\s*\S*" + warning_msg).search(log_content)
