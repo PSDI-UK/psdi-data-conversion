@@ -73,8 +73,16 @@ def test_get_logger():
 def test_logging():
     """Test that logging works as expected
     """
-    # Create a logger to work with
+
     test_filename = "./static/downloads/local_error_log.txt"
+
+    # Delete any existing error logs
+    if os.path.isfile(logging.GLOBAL_ERROR_LOG):
+        os.remove(logging.GLOBAL_ERROR_LOG)
+    if os.path.isfile(test_filename):
+        os.remove(test_filename)
+
+    # Create a logger to work with
     logger = logging.getLogger("test", test_filename)
 
     # Try logging a few messages at different levels
