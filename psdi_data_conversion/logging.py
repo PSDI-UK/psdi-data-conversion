@@ -156,13 +156,14 @@ def getLocalLoggerFilename():
     return _local_log_file
 
 
-def getLogger(name, local_log_file=None) -> DataConversionLogger:
+def getLogger(name=None, local_log_file=None) -> DataConversionLogger:
     """Gets the `DataConversionLogger` with the provided name if one exists, and creates one if not
 
     Parameters
     ----------
-    name : str
+    name : str | None
         The desired logging channel for this logger. Should be a period-separated string such as "input.files" etc.
+        By default None, indicating use the root logger
     local_log_file : _type_, optional
         The file to log to for local logs. If not provided, will use the filename last set with `setLocalLoggerFilename`
 
