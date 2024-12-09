@@ -88,7 +88,8 @@ def check_file_size(in_filename, out_filename):
 
     # Check that the output file doesn't exceed the maximum allowed size
     if out_size > MAX_FILE_SIZE:
-        logger.error(f"ERROR converting {in_filename} to {out_filename}: Output file exceeds maximum size.\n"
+        logger.error(f"ERROR converting {os.path.basename(in_filename)} to {os.path.basename(out_filename)}: Output "
+                     f"file exceeds maximum size.\n"
                      f"Input file size is {in_size/MEGABYTE:.2f} MB; Output file size is {out_size/MEGABYTE:.2f} "
                      f"MB; maximum output file size is {MAX_FILE_SIZE/MEGABYTE:.2f} MB.\n")
 
