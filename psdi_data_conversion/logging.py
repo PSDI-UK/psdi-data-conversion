@@ -264,8 +264,7 @@ def log(from_format, to_format, converter, fname, calc_type, option, from_flags,
                '                   was successful (to the best of our knowledge) subject to any warnings below.\n' +
                out + '\n' + err + '\n')
 
-    with open('static/downloads/' + fname + '.log.txt', 'w') as f:
-        f.write(message)
+    getLogger("output").info(message)
 
 
 def log_ato(from_format, to_format, converter, fname, quality, out, err, logger):
@@ -297,12 +296,11 @@ def log_ato(from_format, to_format, converter, fname, quality, out, err, logger)
                '                   was successful (to the best of our knowledge) subject to any warnings below.\n' +
                out + '\n' + err + '\n')
 
-    with open('static/downloads/' + fname + '.log.txt', 'w') as f:
-        f.write(message)
+    getLogger("output").info(message)
 
 
 def log_error(from_format, to_format, converter, fname, calc_type, option, from_flags, to_flags, read_flags_args,
-              write_flags_args, err, logger):
+              write_flags_args, err):
     """Write Open Babel conversion error information to server-side log file
 
     Parameters
@@ -329,15 +327,13 @@ def log_error(from_format, to_format, converter, fname, calc_type, option, from_
         _description_
     err : _type_
         _description_
-    logger : Logger
-        The logger to use to log the message
     """
     message = create_message(fname, from_format, to_format, converter, calc_type, option,
                              from_flags, to_flags, read_flags_args, write_flags_args) + err + '\n'
-    logger.error(message)
+    getLogger("error").error(message)
 
 
-def log_error_ato(from_format, to_format, converter, fname, err, logger):
+def log_error_ato(from_format, to_format, converter, fname, err):
     """Write Atomsk conversion error information to server-side log file
 
     Parameters
@@ -352,11 +348,9 @@ def log_error_ato(from_format, to_format, converter, fname, err, logger):
         _description_
     err : _type_
         _description_
-    logger : Logger
-        The logger to use to log the message
     """
     message = create_message(fname, from_format, to_format, converter) + err + '\n'
-    logger.error(message)
+    getLogger("error").error(message)
 
 
 def create_message(fname, from_format, to_format, converter, calc_type, option, from_flags, to_flags, read_flags_args,

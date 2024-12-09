@@ -17,6 +17,7 @@ from flask import Flask, request, render_template, abort, Response
 from psdi_data_conversion import logging
 
 error_logger = logging.getLogger()
+output_logger = logging.getLogger()
 
 # Maximum output file size in bytes
 MEGABYTE = 1024*1024
@@ -122,14 +123,20 @@ def convert_file(file):
 
     out_filename = 'static/downloads/' + filename_base + '.' + to_format
 
+    # Set up loggers
     local_error_log = f"{DOWNLOAD_DIR}/{f.filename}-{filename_base}.{to_format}.err"
+    output_log = 'static/downloads/' + filename_base + '.log.txt'
 
-    # If any previous error log exists, delete it
+    # If any previous log exists, delete it
     if os.path.exists(local_error_log):
         os.remove(local_error_log)
+    if os.path.exists(output_log):
+        os.remove(output_log)
 
     global error_logger
-    error_logger = logging.getLogger(__name__, local_error_log)
+    error_logger = logging.getLogger("error", local_error_log)
+    global output_logger
+    output_logger = logging.getLogger("output", output_log)
 
     if converter == 'Open Babel':
         stdouterr_ob = py.io.StdCaptureFD(in_=False)
@@ -204,7 +211,7 @@ def convert_file(file):
 
         if err.find('Error') > -1:
             logging.log_error(from_format, to_format, converter, filename_base, calc_type, option, from_flags,
-                              to_flags, read_flags_args, write_flags_args, err, error_logger)
+                              to_flags, read_flags_args, write_flags_args, err)
             stdouterr_ob.done()
             abort(405)  # return http status code 405
         else:
@@ -231,7 +238,7 @@ def convert_file(file):
             quality = get_quality(from_format, to_format)
 
         if err.find('Error') > -1:
-            logging.log_error_ato(from_format, to_format, converter, filename_base, err, error_logger)
+            logging.log_error_ato(from_format, to_format, converter, filename_base, err)
             abort(405)   # return http status code 405
         else:
             logging.log_ato(from_format, to_format, converter, filename_base, quality, out, err, error_logger)
