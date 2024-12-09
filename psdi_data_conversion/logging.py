@@ -10,6 +10,7 @@ import logging
 # Global file to log any errors that occur
 ERROR_LOG_FILENAME = "error_log.txt"
 GLOBAL_ERROR_LOG = f"./{ERROR_LOG_FILENAME}"
+LOCAL_ERROR_LOG = "./static/downloads/local_error_log.txt"
 
 logging.basicConfig(filename=ERROR_LOG_FILENAME)
 
@@ -18,7 +19,7 @@ class DataConversionLogger(logging.Logger):
     """Logger which logs to both a global file and a local file
     """
 
-    def __init__(self, name, local_log_filename, level=logging.NOTSET):
+    def __init__(self, name, level=logging.NOTSET):
         """Creates a logger as a child class of `logging.Logger`
 
         Parameters
@@ -37,8 +38,14 @@ class DataConversionLogger(logging.Logger):
         self.addHandler(global_handler)
 
         # Set up the local logger
-        self.local_logger = logging.getLogger(f"{name}-local")
-        local_handler = logging.FileHandler(local_log_filename)
+
+        old_logger_class = logging.getLoggerClass()
+        try:
+            logging.setLoggerClass(logging.Logger)
+            self.local_logger = logging.getLogger(name)
+        finally:
+            logging.setLoggerClass(old_logger_class)
+        local_handler = logging.FileHandler(LOCAL_ERROR_LOG)
         self.local_logger.addHandler(local_handler)
         self.local_logger.setLevel(level)
 
