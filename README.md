@@ -34,6 +34,8 @@ static
     uploads (created by app.py if not extant)
 templates
     index.htm
+tests
+    logging_test.py
 ```
 
 *Must be copied to another location on the Azure site. Once there, it persists. Installs libraries missing from the Docker container (required by Open Babel). Go to     Development Tools > SSH > Go    to arrive at a terminal for the site. At    /home    place file startup.sh. Go to    Settings > Configurations > General settings    and enter    /home/startup.sh    in Startup Command. Note that startup.sh can be placed anywhere below    /home    (provided the paths match).
@@ -42,6 +44,17 @@ templates
 ## Running the Python Flask app hosted on the Microsoft Azure site
 
 Enter    https://psdidev2.azurewebsites.net    in a browser.
+
+
+## Testing
+
+Install the package requirements locally (ideally within a virtual environment) and test with pytest:
+
+```bash
+source .venv/bin/activate # Create a venv first if necessary with `python -m venv .venv`
+pip install -r requirements-local.txt
+pytest
+```
 
 
 ## Running the Python/Flask app locally
