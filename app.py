@@ -16,7 +16,7 @@ from flask import Flask, request, render_template, abort, Response
 
 from psdi_data_conversion import logging
 
-logger = logging.getLogger()
+error_logger = logging.getLogger()
 
 # Maximum output file size in bytes
 MEGABYTE = 1024*1024
@@ -88,10 +88,11 @@ def check_file_size(in_filename, out_filename):
 
     # Check that the output file doesn't exceed the maximum allowed size
     if out_size > MAX_FILE_SIZE:
-        logger.error(f"ERROR converting {os.path.basename(in_filename)} to {os.path.basename(out_filename)}: Output "
-                     f"file exceeds maximum size.\n"
-                     f"Input file size is {in_size/MEGABYTE:.2f} MB; Output file size is {out_size/MEGABYTE:.2f} "
-                     f"MB; maximum output file size is {MAX_FILE_SIZE/MEGABYTE:.2f} MB.\n")
+        error_logger.error(f"ERROR converting {os.path.basename(in_filename)} to {os.path.basename(out_filename)}: "
+                           f"Output file exceeds maximum size.\n"
+                           f"Input file size is {
+                               in_size/MEGABYTE:.2f} MB; Output file size is {out_size/MEGABYTE:.2f} "
+                           f"MB; maximum output file size is {MAX_FILE_SIZE/MEGABYTE:.2f} MB.\n")
 
         # Delete output and input files
         os.remove(in_filename)
@@ -127,8 +128,8 @@ def convert_file(file):
     if os.path.exists(local_error_log):
         os.remove(local_error_log)
 
-    global logger
-    logger = logging.getLogger(__name__, local_error_log)
+    global error_logger
+    error_logger = logging.getLogger(__name__, local_error_log)
 
     if converter == 'Open Babel':
         stdouterr_ob = py.io.StdCaptureFD(in_=False)
@@ -203,7 +204,7 @@ def convert_file(file):
 
         if err.find('Error') > -1:
             logging.log_error(from_format, to_format, converter, filename_base, calc_type, option, from_flags,
-                              to_flags, read_flags_args, write_flags_args, err, logger)
+                              to_flags, read_flags_args, write_flags_args, err, error_logger)
             stdouterr_ob.done()
             abort(405)  # return http status code 405
         else:
@@ -230,10 +231,10 @@ def convert_file(file):
             quality = get_quality(from_format, to_format)
 
         if err.find('Error') > -1:
-            logging.log_error_ato(from_format, to_format, converter, filename_base, err, logger)
+            logging.log_error_ato(from_format, to_format, converter, filename_base, err, error_logger)
             abort(405)   # return http status code 405
         else:
-            logging.log_ato(from_format, to_format, converter, filename_base, quality, out, err, logger)
+            logging.log_ato(from_format, to_format, converter, filename_base, quality, out, err, error_logger)
 
     logging.append_to_log_file("conversions", {
         "datetime": logging.get_date_time(),
