@@ -202,13 +202,13 @@ def convert_file(file):
             quality = get_quality(from_format, to_format)
 
         if err.find('Error') > -1:
-            logError(from_format, to_format, converter, filename_base, calc_type, option, from_flags,
-                     to_flags, read_flags_args, write_flags_args, err)
+            logging.log_error(from_format, to_format, converter, filename_base, calc_type, option, from_flags,
+                              to_flags, read_flags_args, write_flags_args, err, logger)
             stdouterr_ob.done()
             abort(405)  # return http status code 405
         else:
-            log(from_format, to_format, converter, filename_base, calc_type, option, from_flags,
-                to_flags, read_flags_args, write_flags_args, quality, out, err)
+            logging.log(from_format, to_format, converter, filename_base, calc_type, option, from_flags,
+                        to_flags, read_flags_args, write_flags_args, quality, out, err, logger)
 
         stdouterr_ob.done()
     elif request.form['converter'] == 'Atomsk':
@@ -230,13 +230,13 @@ def convert_file(file):
             quality = get_quality(from_format, to_format)
 
         if err.find('Error') > -1:
-            log_error_ato(from_format, to_format, converter, filename_base, err)
+            logging.log_error_ato(from_format, to_format, converter, filename_base, err, logger)
             abort(405)   # return http status code 405
         else:
-            log_ato(from_format, to_format, converter, filename_base, quality, out, err)
+            logging.log_ato(from_format, to_format, converter, filename_base, quality, out, err, logger)
 
-    append_to_log_file("conversions", {
-        "datetime": get_date_time(),
+    logging.append_to_log_file("conversions", {
+        "datetime": logging.get_date_time(),
         "fromFormat": from_format,
         "toFormat": to_format,
         "converter": converter,
@@ -257,7 +257,7 @@ def feedback():
     try:
 
         entry = {
-            "datetime": get_date_time(),
+            "datetime": logging.get_date_time(),
         }
 
         report = json.loads(request.form['data'])
@@ -266,7 +266,7 @@ def feedback():
             if key in report:
                 entry[key] = str(report[key])
 
-        append_to_log_file("feedback", entry)
+        logging.append_to_log_file("feedback", entry)
 
         return Response(status=201)
 
@@ -322,291 +322,6 @@ def delete_file():
     return 'Server-side file ' + request.form['filepath'] + ' deleted\n'
 
 
-def get_date():
-    """Retrieve current date as a string
-
-    Returns
-    -------
-    str
-        Current date in the format YYYY-MM-DD
-    """
-    today = datetime.today()
-    return str(today.year) + '-' + format(today.month) + '-' + format(today.day)
-
-
-def get_time():
-    """Retrieve current time as a string
-
-    Returns
-    -------
-    str
-        Current time in the format HH:MM:SS
-    """
-    today = datetime.today()
-    return format(today.hour) + ':' + format(today.minute) + ':' + format(today.second)
-
-
-def get_date_time():
-    """Retrieve current date and time as a string
-
-    Returns
-    -------
-    str
-        Current date and time in the format YYYY-MM-DD HH:MM:SS
-    """
-    return get_date() + ' ' + get_time()
-
-
-def log(from_format, to_format, converter, fname, calc_type, option, from_flags, to_flags, read_flags_args,
-        write_flags_args, quality, out, err):
-    """Write Open Babel conversion information to server-side file, ready for downloading to user
-
-    Parameters
-    ----------
-    from_format : _type_
-        _description_
-    to_format : _type_
-        _description_
-    converter : _type_
-        _description_
-    fname : _type_
-        _description_
-    calc_type : _type_
-        _description_
-    option : _type_
-        _description_
-    from_flags : _type_
-        _description_
-    to_flags : _type_
-        _description_
-    read_flags_args : _type_
-        _description_
-    write_flags_args : _type_
-        _description_
-    quality : _type_
-        _description_
-    out : _type_
-        _description_
-    err : _type_
-        _description_
-    """
-
-    message = (create_message(fname, from_format, to_format, converter, calc_type, option, from_flags, to_flags,
-                              read_flags_args, write_flags_args) +
-               'Quality:           ' + quality + '\n'
-               'Success:           Assuming that the data provided was of the correct format, the conversion\n'
-               '                   was successful (to the best of our knowledge) subject to any warnings below.\n' +
-               out + '\n' + err + '\n')
-
-    with open('static/downloads/' + fname + '.log.txt', 'w') as f:
-        f.write(message)
-
-
-def log_ato(from_format, to_format, converter, fname, quality, out, err):
-    """Write Atomsk conversion information to server-side file, ready for downloading to user
-
-    Parameters
-    ----------
-    from_format : _type_
-        _description_
-    to_format : _type_
-        _description_
-    converter : _type_
-        _description_
-    fname : _type_
-        _description_
-    quality : _type_
-        _description_
-    out : _type_
-        _description_
-    err : _type_
-        _description_
-    """
-
-    message = (create_message_start(fname, from_format, to_format, converter) +
-               'Quality:           ' + quality + '\n'
-               'Success:           Assuming that the data provided was of the correct format, the conversion\n'
-               '                   was successful (to the best of our knowledge) subject to any warnings below.\n' +
-               out + '\n' + err + '\n')
-
-    with open('static/downloads/' + fname + '.log.txt', 'w') as f:
-        f.write(message)
-
-
-def logError(from_format, to_format, converter, fname, calc_type, option, from_flags, to_flags, read_flags_args,
-             write_flags_args, err):
-    """Write Open Babel conversion error information to server-side log file
-
-    Parameters
-    ----------
-    from_format : _type_
-        _description_
-    to_format : _type_
-        _description_
-    converter : _type_
-        _description_
-    fname : _type_
-        _description_
-    calc_type : _type_
-        _description_
-    option : _type_
-        _description_
-    from_flags : _type_
-        _description_
-    to_flags : _type_
-        _description_
-    read_flags_args : _type_
-        _description_
-    write_flags_args : _type_
-        _description_
-    err : _type_
-        _description_
-    """
-    message = create_message(fname, from_format, to_format, converter, calc_type, option,
-                             from_flags, to_flags, read_flags_args, write_flags_args) + err + '\n'
-    logger.error(message)
-
-
-def log_error_ato(from_format, to_format, converter, fname, err):
-    """Write Atomsk conversion error information to server-side log file
-
-    Parameters
-    ----------
-    from_format : _type_
-        _description_
-    to_format : _type_
-        _description_
-    converter : _type_
-        _description_
-    fname : _type_
-        _description_
-    err : _type_
-        _description_
-    """
-    message = create_message(fname, from_format, to_format, converter) + err + '\n'
-    logger.error(message)
-
-
-def create_message(fname, from_format, to_format, converter, calc_type, option, from_flags, to_flags, read_flags_args,
-                   write_flags_args):
-    """Create message for log files
-
-    Parameters
-    ----------
-    fname : _type_
-        _description_
-    from_format : _type_
-        _description_
-    to_format : _type_
-        _description_
-    converter : _type_
-        _description_
-    calc_type : _type_
-        _description_
-    option : _type_
-        _description_
-    from_flags : _type_
-        _description_
-    to_flags : _type_
-        _description_
-    read_flags_args : _type_
-        _description_
-    write_flags_args : _type_
-        _description_
-
-    Returns
-    -------
-    message : str
-        The message for log files
-    """
-    message = ''
-
-    if calc_type == 'neither':
-        message = 'Coord. gen.:       none\n'
-    else:
-        message += 'Coord. gen.:       ' + calc_type + '\n'
-
-    message += 'Coord. option:     ' + option + '\n'
-
-    if from_flags == '':
-        message += 'Read options:      none\n'
-    else:
-        message += 'Read options:      ' + from_flags + '\n'
-
-    if to_flags == '':
-        message += 'Write options:     none\n'
-    else:
-        message += 'Write options:     ' + to_flags + '\n'
-
-    if len(read_flags_args) == 0:
-        message += 'Read opts + args:  none\n'
-    else:
-        heading_added = False
-
-        for pair in read_flags_args:
-            if not heading_added:
-                message += 'Read opts + args:  ' + pair + '\n'
-                heading_added = True
-            else:
-                message += '                   ' + pair + '\n'
-
-    if len(write_flags_args) == 0:
-        message += 'Write opts + args: none\n'
-    else:
-        heading_added = False
-
-        for pair in write_flags_args:
-            if not heading_added:
-                message += 'Write opts + args: ' + pair + '\n'
-                heading_added = True
-            else:
-                message += '                   ' + pair + '\n'
-
-    return create_message_start(fname, from_format, to_format, converter) + message
-
-
-def create_message_start(fname, from_format, to_format, converter):
-    """Create beginning of message for log files
-
-    Parameters
-    ----------
-    fname : _type_
-        _description_
-    from_format : _type_
-        _description_
-    to_format : _type_
-        _description_
-    converter : _type_
-        _description_
-
-    Returns
-    -------
-    str
-        The beginning of a message for log files, containing generic information about what was trying to be done
-    """
-    return ('Date:              ' + get_date() + '\n'
-            'Time:              ' + get_time() + '\n'
-            'File name:         ' + fname + '\n'
-            'From:              ' + from_format + '\n'
-            'To:                ' + to_format + '\n'
-            'Converter:         ' + converter + '\n')
-
-
-def append_to_log_file(log_name, data):
-    """Append data to a log file
-
-    Parameters
-    ----------
-    log_name : _type_
-        _description_
-    data : _type_
-        _description_
-    """
-
-    if (os.environ.get('ENABLE_DCS_LOG') is not None):
-        print(json.dumps(data))
-
-
 @app.route('/data/', methods=['GET'])
 def data():
     """Check that the incoming token matches the one sent to the user (should mostly prevent spambots). Write date- and
@@ -620,7 +335,7 @@ def data():
         Output status - 'okay' if exited successfuly
     """
     if request.args['token'] == token and token != '':
-        message = '[' + get_date_time() + '] ' + request.args['data'] + '\n'
+        message = '[' + logging.get_date_time() + '] ' + request.args['data'] + '\n'
 
         with open("user_responses", "a") as f:
             f.write(message)
@@ -629,24 +344,3 @@ def data():
     else:
         # return http status code 405
         abort(405)
-
-
-def format(time):
-    """Ensure that an element of date or time (month, day, hours, minutes or seconds) always has two digits.
-
-    Parameters
-    ----------
-    time : str or int
-        Digit(s) indicating date or month
-
-    Returns
-    -------
-    str
-        2-digit value indicating date or month
-    """
-    num = str(time)
-
-    if len(num) == 1:
-        return '0' + num
-    else:
-        return num
