@@ -11,8 +11,6 @@ import logging
 ERROR_LOG_FILENAME = "error_log.txt"
 GLOBAL_ERROR_LOG = f"./{ERROR_LOG_FILENAME}"
 
-_local_log_file: str | None = None
-
 logging.basicConfig(filename=GLOBAL_ERROR_LOG, level=logging.WARN)
 
 
@@ -46,7 +44,7 @@ class DataConversionLogger(logging.Logger):
             old_logger_class = logging.getLoggerClass()
             try:
                 logging.setLoggerClass(logging.Logger)
-                self._local_logger = logging.getLogger(name)
+                self._local_logger = logging.getLogger(f"{name}-local")
             finally:
                 logging.setLoggerClass(old_logger_class)
             self._local_handler = logging.FileHandler(_local_log_file)
@@ -70,12 +68,47 @@ class DataConversionLogger(logging.Logger):
         if self._local_logger is not None:
             self._local_logger.setLevel(level)
 
-    def log(self, level, msg, *args, **kwargs):
+    def debug(self, *args, **kwargs):
+        """Override the `debug` method to log with both the global and local loggers
+        """
+        super().debug(*args, **kwargs)
+        if self._local_logger is not None:
+            self._local_logger.debug(*args, **kwargs)
+
+    def info(self, *args, **kwargs):
+        """Override the `info` method to log with both the global and local loggers
+        """
+        super().info(*args, **kwargs)
+        if self._local_logger is not None:
+            self._local_logger.info(*args, **kwargs)
+
+    def warning(self, *args, **kwargs):
+        """Override the `warning` method to log with both the global and local loggers
+        """
+        super().warning(*args, **kwargs)
+        if self._local_logger is not None:
+            self._local_logger.warning(*args, **kwargs)
+
+    def error(self, *args, **kwargs):
+        """Override the `error` method to log with both the global and local loggers
+        """
+        super().error(*args, **kwargs)
+        if self._local_logger is not None:
+            self._local_logger.error(*args, **kwargs)
+
+    def critical(self, *args, **kwargs):
+        """Override the `critical` method to log with both the global and local loggers
+        """
+        super().critical(*args, **kwargs)
+        if self._local_logger is not None:
+            self._local_logger.critical(*args, **kwargs)
+
+    def log(self, *args, **kwargs):
         """Override the `log` method to log with both the global and local loggers
         """
-        super().log(level, msg, *args, **kwargs)
+        super().log(*args, **kwargs)
         if self._local_logger is not None:
-            self._local_logger.log(level, msg, *args, **kwargs)
+            self._local_logger.log(*args, **kwargs)
 
     def getGlobalFilename(self):
         """Get the filename which is used for the global logger
@@ -84,7 +117,6 @@ class DataConversionLogger(logging.Logger):
         -------
         str
         """
-
         return self._global_handler.baseFilename
 
     def getLocalFilename(self):
@@ -94,7 +126,6 @@ class DataConversionLogger(logging.Logger):
         -------
         str | None
         """
-
         if self._local_handler is None:
             return None
         return self._local_handler.baseFilename
@@ -108,9 +139,11 @@ def setLocalLoggerFilename(local_log_file):
     local_log_file : str | None
         The file to log to for local logs. `None` can be used to indicate no local logging.
     """
-
     global _local_log_file
     _local_log_file = local_log_file
+
+
+_local_log_file: str | None = None
 
 
 def getLocalLoggerFilename():
@@ -121,7 +154,6 @@ def getLocalLoggerFilename():
     -------
     str | None
     """
-
     return _local_log_file
 
 
