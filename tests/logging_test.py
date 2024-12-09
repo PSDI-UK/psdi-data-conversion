@@ -10,7 +10,6 @@ import re
 import time
 
 from psdi_data_conversion import logging
-from app import get_date, get_date_time, get_time
 
 
 def test_date_time():
@@ -26,9 +25,9 @@ def test_date_time():
     time_re = re.compile(time_re_raw)
     datetime_re = re.compile(datetime_re_raw)
 
-    date_str_1 = get_date()
-    time_str_1 = get_time()
-    datetime_str_1 = get_date_time()
+    date_str_1 = logging.get_date()
+    time_str_1 = logging.get_time()
+    datetime_str_1 = logging.get_date_time()
 
     assert date_re.match(date_str_1)
     assert time_re.match(time_str_1)
@@ -36,8 +35,8 @@ def test_date_time():
 
     # Test that the time changes after a second, and is still in the correct format
     time.sleep(1)
-    time_str_2 = get_time()
-    datetime_str_2 = get_date_time()
+    time_str_2 = logging.get_time()
+    datetime_str_2 = logging.get_date_time()
 
     assert time_re.match(time_str_2)
     assert datetime_re.match(datetime_str_2)
