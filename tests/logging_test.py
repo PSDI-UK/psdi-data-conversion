@@ -63,3 +63,8 @@ def test_get_logger():
     # Test that the filenames are as expected
     assert logger.getGlobalFilename() == os.path.abspath(logging.GLOBAL_ERROR_LOG)
     assert logger.getLocalFilename() is None
+
+    test_filename = "./static/downloads/local_error_log.txt"
+    fn_logger = logging.getLogger("fn.test", test_filename)
+    assert fn_logger.getGlobalFilename() == os.path.abspath(logging.GLOBAL_ERROR_LOG)
+    assert fn_logger.getLocalFilename() == os.path.abspath(test_filename)
