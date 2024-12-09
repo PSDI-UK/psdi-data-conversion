@@ -397,9 +397,8 @@ def log(from_format, to_format, converter, fname, calc_type, option, from_flags,
                '                   was successful (to the best of our knowledge) subject to any warnings below.\n' +
                out + '\n' + err + '\n')
 
-    f = open('static/downloads/' + fname + '.log.txt', 'w')
-    f.write(message)
-    f.close()
+    with open('static/downloads/' + fname + '.log.txt', 'w') as f:
+        f.write(message)
 
 
 def log_ato(from_format, to_format, converter, fname, quality, out, err):
@@ -429,9 +428,8 @@ def log_ato(from_format, to_format, converter, fname, quality, out, err):
                '                   was successful (to the best of our knowledge) subject to any warnings below.\n' +
                out + '\n' + err + '\n')
 
-    f = open('static/downloads/' + fname + '.log.txt', 'w')
-    f.write(message)
-    f.close()
+    with open('static/downloads/' + fname + '.log.txt', 'w') as f:
+        f.write(message)
 
 
 def logError(from_format, to_format, converter, fname, calc_type, option, from_flags, to_flags, read_flags_args,
@@ -623,9 +621,8 @@ def data():
     if request.args['token'] == token and token != '':
         message = '[' + get_date_time() + '] ' + request.args['data'] + '\n'
 
-        f = open("user_responses", "a")
-        f.write(message)
-        f.close()
+        with open("user_responses", "a") as f:
+            f.write(message)
 
         return 'okay'
     else:
