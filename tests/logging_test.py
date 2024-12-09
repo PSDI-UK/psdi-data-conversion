@@ -99,10 +99,10 @@ def test_logging(caplog):
 
     log_content = caplog.text
 
-    assert not re.compile("test:" + r"\S*\s*\S*" + debug_msg).search(log_content)
-    assert not re.compile("test:" + r"\S*\s*\S*" + info_msg).search(log_content)
-    assert re.compile("test:" + r"\S*\s*\S*" + warning_msg).search(log_content)
+    assert not re.compile(r"\slogging-test:" + r"\S*\s*\S*" + debug_msg).search(log_content)
+    assert not re.compile(r"\slogging-test:" + r"\S*\s*\S*" + info_msg).search(log_content)
+    assert re.compile(r"\slogging-test:" + r"\S*\s*\S*" + warning_msg).search(log_content)
 
-    assert not re.compile("local.test:" + r"\S*\s*\S*" + debug_msg).search(log_content)
-    assert re.compile("local.test:" + r"\S*\s*\S*" + info_msg).search(log_content)
-    assert re.compile("local.test:" + r"\S*\s*\S*" + warning_msg).search(log_content)
+    assert not re.compile(r"\slocal.logging-test:" + r"\S*\s*\S*" + debug_msg).search(log_content)
+    assert re.compile(r"\slocal.logging-test:" + r"\S*\s*\S*" + info_msg).search(log_content)
+    assert re.compile(r"\slocal.logging-test:" + r"\S*\s*\S*" + warning_msg).search(log_content)
