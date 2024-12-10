@@ -91,7 +91,7 @@ def check_file_size(in_filename, out_filename):
             f"ERROR converting {os.path.basename(in_filename)} to {os.path.basename(out_filename)}: "
             f"Output file exceeds maximum size.\nInput file size is "
             f"{in_size/MEGABYTE:.2f} MB; Output file size is {out_size/MEGABYTE:.2f} "
-            f"MB; maximum output file size is {MAX_FILE_SIZE/MEGABYTE:.2f} MB.\n")
+            f"MB; maximum output file size is {MAX_FILE_SIZE/MEGABYTE:.2f} MB.")
 
         # Delete output and input files
         os.remove(in_filename)

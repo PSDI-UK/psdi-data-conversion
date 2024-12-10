@@ -219,7 +219,7 @@ def log(from_format, to_format, converter, fname, calc_type, option, from_flags,
                'Quality:           ' + quality + '\n'
                'Success:           Assuming that the data provided was of the correct format, the conversion\n'
                '                   was successful (to the best of our knowledge) subject to any warnings below.\n' +
-               out + '\n' + err + '\n')
+               out + '\n' + err)
 
     getDataConversionLogger("output").info(message)
 
@@ -251,7 +251,7 @@ def log_ato(from_format, to_format, converter, fname, quality, out, err, logger)
                'Quality:           ' + quality + '\n'
                'Success:           Assuming that the data provided was of the correct format, the conversion\n'
                '                   was successful (to the best of our knowledge) subject to any warnings below.\n' +
-               out + '\n' + err + '\n')
+               out + '\n' + err)
 
     getDataConversionLogger("output").info(message)
 
@@ -286,7 +286,7 @@ def log_error(from_format, to_format, converter, fname, calc_type, option, from_
         _description_
     """
     message = create_message(fname, from_format, to_format, converter, calc_type, option,
-                             from_flags, to_flags, read_flags_args, write_flags_args) + err + '\n'
+                             from_flags, to_flags, read_flags_args, write_flags_args) + err
     getDataConversionLogger().error(message)
 
 
@@ -306,7 +306,7 @@ def log_error_ato(from_format, to_format, converter, fname, err):
     err : _type_
         _description_
     """
-    message = create_message(fname, from_format, to_format, converter) + err + '\n'
+    message = create_message(fname, from_format, to_format, converter) + err
     getDataConversionLogger().error(message)
 
 
