@@ -8,9 +8,9 @@ Tests of functions relating to logging
 import os
 import re
 import time
-import logging as py_logging
+import logging
 
-from psdi_data_conversion import logging
+from psdi_data_conversion import log_utility
 
 
 def test_date_time():
@@ -26,9 +26,9 @@ def test_date_time():
     time_re = re.compile(time_re_raw)
     datetime_re = re.compile(datetime_re_raw)
 
-    date_str_1 = logging.get_date()
-    time_str_1 = logging.get_time()
-    datetime_str_1 = logging.get_date_time()
+    date_str_1 = log_utility.get_date()
+    time_str_1 = log_utility.get_time()
+    datetime_str_1 = log_utility.get_date_time()
 
     assert date_re.match(date_str_1)
     assert time_re.match(time_str_1)
@@ -36,8 +36,8 @@ def test_date_time():
 
     # Test that the time changes after a second, and is still in the correct format
     time.sleep(1)
-    time_str_2 = logging.get_time()
-    datetime_str_2 = logging.get_date_time()
+    time_str_2 = log_utility.get_time()
+    datetime_str_2 = log_utility.get_date_time()
 
     assert time_re.match(time_str_2)
     assert datetime_re.match(datetime_str_2)
@@ -47,35 +47,35 @@ def test_date_time():
 
 
 def test_get_logger(tmp_path):
-    """Tests of `logging.getLogger`
+    """Tests of `log_utility.getDataConversionLogger`
     """
     # Get a logger to test with
-    logger = logging.getDataConversionLogger("test")
+    logger = log_utility.getDataConversionLogger("test")
 
     # Test getting a second logger with the same name returns the same as the first
-    same_name_logger = logging.getDataConversionLogger("test")
+    same_name_logger = log_utility.getDataConversionLogger("test")
     assert same_name_logger is logger
 
     # Test getting a logger with a different name returns a different logger
-    diff_name_logger = logging.getDataConversionLogger("not.test")
+    diff_name_logger = log_utility.getDataConversionLogger("not.test")
     assert diff_name_logger is not logger
 
     # Test that a logger without a name provided will also differ
-    no_name_logger = logging.getDataConversionLogger()
+    no_name_logger = log_utility.getDataConversionLogger()
     assert no_name_logger is not logger
 
     # Test that the filenames are as expected
     test_filename = os.path.join(tmp_path, "log.txt")
-    test_level = py_logging.CRITICAL
-    fn_logger = logging.getDataConversionLogger("fn-test", local_log_file=test_filename,
-                                                local_logger_level=test_level)
+    test_level = logging.CRITICAL
+    fn_logger = log_utility.getDataConversionLogger("fn-test", local_log_file=test_filename,
+                                                    local_logger_level=test_level)
 
     # Search through the logger's handlers to get all files it logs to and at what levels
     l_files_and_levels = []
     for handler in fn_logger.handlers:
-        if isinstance(handler, py_logging.FileHandler):
+        if isinstance(handler, logging.FileHandler):
             l_files_and_levels.append((handler.baseFilename, handler.level))
-    assert (os.path.abspath(logging.GLOBAL_LOG_FILENAME), logging.GLOBAL_LOGGER_LEVEL) in l_files_and_levels
+    assert (os.path.abspath(log_utility.GLOBAL_LOG_FILENAME), log_utility.GLOBAL_LOGGER_LEVEL) in l_files_and_levels
     assert (os.path.abspath(test_filename), test_level) in l_files_and_levels
 
 
@@ -86,16 +86,16 @@ def test_logging(tmp_path):
     test_filename = os.path.join(tmp_path, "log.txt")
 
     # Delete any existing error logs
-    if os.path.isfile(logging.GLOBAL_LOG_FILENAME):
-        os.remove(logging.GLOBAL_LOG_FILENAME)
+    if os.path.isfile(log_utility.GLOBAL_LOG_FILENAME):
+        os.remove(log_utility.GLOBAL_LOG_FILENAME)
     if os.path.isfile(test_filename):
         os.remove(test_filename)
 
-    logger_name = "logging-test"
+    logger_name = "log_utility-test"
 
     # Create a logger to work with
-    logger = logging.getDataConversionLogger(logger_name, test_filename)
-    logger.setLevel(py_logging.INFO)
+    logger = log_utility.getDataConversionLogger(logger_name, test_filename)
+    logger.setLevel(logging.INFO)
 
     # Try logging a few messages at different levels
     debug_msg = "FINDME_DEBUG"
@@ -108,7 +108,7 @@ def test_logging(tmp_path):
     # Open the files and check that only the expected messages are present - by default, the global log will log
     # at ERROR level and above, and the local log will log at INFO level and above
 
-    with open(logging.GLOBAL_LOG_FILENAME, "r") as fi:
+    with open(log_utility.GLOBAL_LOG_FILENAME, "r") as fi:
         global_log_content = fi.read()
 
         assert debug_msg not in global_log_content

@@ -14,7 +14,7 @@ from datetime import datetime
 from openbabel import openbabel
 from flask import Flask, request, render_template, abort, Response
 
-from psdi_data_conversion import logging
+from psdi_data_conversion import log_utility
 
 # Maximum output file size in bytes
 MEGABYTE = 1024*1024
@@ -86,7 +86,7 @@ def check_file_size(in_filename, out_filename):
 
     # Check that the output file doesn't exceed the maximum allowed size
     if out_size > MAX_FILE_SIZE:
-        logging.getDataConversionLogger().error(
+        log_utility.getDataConversionLogger().error(
             f"ERROR converting {os.path.basename(in_filename)} to {os.path.basename(out_filename)}: "
             f"Output file exceeds maximum size.\nInput file size is "
             f"{in_size/MEGABYTE:.2f} MB; Output file size is {out_size/MEGABYTE:.2f} "
@@ -130,9 +130,9 @@ def convert_file(file):
     if os.path.exists(output_log):
         os.remove(output_log)
 
-    # Set up loggers - one for general-purpose logging, and one just for what we want to output to the user
-    logging.getDataConversionLogger(local_log_file=local_log)
-    logging.getDataConversionLogger(name="output", local_log_file=output_log)
+    # Set up loggers - one for general-purpose log_utility, and one just for what we want to output to the user
+    log_utility.getDataConversionLogger(local_log_file=local_log)
+    log_utility.getDataConversionLogger(name="output", local_log_file=output_log)
 
     if converter == 'Open Babel':
         stdouterr_ob = py.io.StdCaptureFD(in_=False)
@@ -206,13 +206,13 @@ def convert_file(file):
             quality = get_quality(from_format, to_format)
 
         if err.find('Error') > -1:
-            logging.log_error(from_format, to_format, converter, filename_base, calc_type, option, from_flags,
-                              to_flags, read_flags_args, write_flags_args, err)
+            log_utility.log_error(from_format, to_format, converter, filename_base, calc_type, option, from_flags,
+                                  to_flags, read_flags_args, write_flags_args, err)
             stdouterr_ob.done()
             abort(405)  # return http status code 405
         else:
-            logging.log(from_format, to_format, converter, filename_base, calc_type, option, from_flags,
-                        to_flags, read_flags_args, write_flags_args, quality, out, err)
+            log_utility.log(from_format, to_format, converter, filename_base, calc_type, option, from_flags,
+                            to_flags, read_flags_args, write_flags_args, quality, out, err)
 
         stdouterr_ob.done()
     elif request.form['converter'] == 'Atomsk':
@@ -234,13 +234,13 @@ def convert_file(file):
             quality = get_quality(from_format, to_format)
 
         if err.find('Error') > -1:
-            logging.log_error_ato(from_format, to_format, converter, filename_base, err)
+            log_utility.log_error_ato(from_format, to_format, converter, filename_base, err)
             abort(405)   # return http status code 405
         else:
-            logging.log_ato(from_format, to_format, converter, filename_base, quality, out, err)
+            log_utility.log_ato(from_format, to_format, converter, filename_base, quality, out, err)
 
-    logging.append_to_log_file("conversions", {
-        "datetime": logging.get_date_time(),
+    log_utility.append_to_log_file("conversions", {
+        "datetime": log_utility.get_date_time(),
         "fromFormat": from_format,
         "toFormat": to_format,
         "converter": converter,
@@ -261,7 +261,7 @@ def feedback():
     try:
 
         entry = {
-            "datetime": logging.get_date_time(),
+            "datetime": log_utility.get_date_time(),
         }
 
         report = json.loads(request.form['data'])
@@ -270,7 +270,7 @@ def feedback():
             if key in report:
                 entry[key] = str(report[key])
 
-        logging.append_to_log_file("feedback", entry)
+        log_utility.append_to_log_file("feedback", entry)
 
         return Response(status=201)
 
@@ -339,7 +339,7 @@ def data():
         Output status - 'okay' if exited successfuly
     """
     if request.args['token'] == token and token != '':
-        message = '[' + logging.get_date_time() + '] ' + request.args['data'] + '\n'
+        message = '[' + log_utility.get_date_time() + '] ' + request.args['data'] + '\n'
 
         with open("user_responses", "a") as f:
             f.write(message)
