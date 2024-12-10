@@ -30,9 +30,10 @@ global_handler.setLevel(GLOBAL_LOGGER_LEVEL)
 def setUpDataConversionLogger(name=NAME,
                               local_log_file=None,
                               local_logger_level=DEFAULT_LOCAL_LOGGER_LEVEL,
+                              local_logger_raw_output=False,
                               local_error_file=None,
                               local_error_level=DEFAULT_LOCAL_ERROR_LEVEL,
-                              raw_output=False):
+                              local_error_raw_output=False):
     """Registers a logger with the provided name and sets it up with the desired options
 
     Parameters
@@ -45,14 +46,17 @@ def setUpDataConversionLogger(name=NAME,
     local_logger_level : int
         The logging level to set up for the local logger, using one of the levels defined in the base Python `logging`
         module, by default `logging.INFO`
-    local_log_file : str | None
+    local_logger_raw_output : bool
+        If set to True, output to the local logger will be logged with no formatting, exactly as input. Otherwise
+        (default) it will include a timestamp and indicate the logging level
+    local_error_file : str | None
         The file to log to for local reporting of errors. If None, will not set up local error logging
-    local_logger_level : int
+    local_error_level : int
         The logging level to set up for the local error logger, using one of the levels defined in the base Python
         `logging` module, by default `logging.ERROR`
-    raw_output : bool
-        If set to True, output will be logged with no formatting, exactly as input. Otherwise (default) it will
-        include a timestamp and indicate the logging level
+    local_error_raw_output : bool
+        If set to True, output to the local error logger will be logged with no formatting, exactly as input. Otherwise
+        (default) it will include a timestamp and indicate the logging level
 
     Returns
     -------
@@ -63,9 +67,9 @@ def setUpDataConversionLogger(name=NAME,
     logger = logging.getLogger(name)
 
     # Set up filehandlers for the global and local logging
-    for (filename, level) in ((GLOBAL_LOG_FILENAME, GLOBAL_LOGGER_LEVEL),
-                              (local_log_file, local_logger_level),
-                              (local_error_file, local_error_level)):
+    for (filename, level, raw_output) in ((GLOBAL_LOG_FILENAME, GLOBAL_LOGGER_LEVEL, False),
+                                          (local_log_file, local_logger_level, local_logger_raw_output),
+                                          (local_error_file, local_error_level, local_error_raw_output)):
         _add_filehandler_to_logger(logger, filename, level, raw_output)
 
     return logger
