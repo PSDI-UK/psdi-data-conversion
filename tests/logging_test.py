@@ -65,10 +65,15 @@ def test_get_logger(tmp_path):
     assert no_name_logger is not logger
 
     # Test that the filenames are as expected
-    test_filename = os.path.join(tmp_path, "log.txt")
-    test_level = logging.CRITICAL
-    fn_logger = log_utility.getDataConversionLogger("fn-test", local_log_file=test_filename,
-                                                    local_logger_level=test_level)
+    test_log_filename = os.path.join(tmp_path, "log.txt")
+    test_log_level = logging.WARN
+    test_error_filename = os.path.join(tmp_path, "err.txt")
+    test_error_level = logging.CRITICAL
+    fn_logger = log_utility.getDataConversionLogger("fn-test",
+                                                    local_log_file=test_log_filename,
+                                                    local_logger_level=test_log_level,
+                                                    local_error_file=test_error_filename,
+                                                    local_error_level=test_error_level)
 
     # Search through the logger's handlers to get all files it logs to and at what levels
     l_files_and_levels = []
@@ -76,7 +81,8 @@ def test_get_logger(tmp_path):
         if isinstance(handler, logging.FileHandler):
             l_files_and_levels.append((handler.baseFilename, handler.level))
     assert (os.path.abspath(log_utility.GLOBAL_LOG_FILENAME), log_utility.GLOBAL_LOGGER_LEVEL) in l_files_and_levels
-    assert (os.path.abspath(test_filename), test_level) in l_files_and_levels
+    assert (os.path.abspath(test_log_filename), test_log_level) in l_files_and_levels
+    assert (os.path.abspath(test_error_filename), test_error_level) in l_files_and_levels
 
 
 def test_logging(tmp_path):
