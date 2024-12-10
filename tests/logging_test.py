@@ -60,6 +60,10 @@ def test_get_logger():
     diff_name_logger = logging.getDataConversionLogger("not.test")
     assert diff_name_logger is not logger
 
+    # Test that a logger without a name provided will also differ
+    no_name_logger = logging.getDataConversionLogger()
+    assert no_name_logger is not logger
+
     # TODO: Test that the filenames are as expected
 
 

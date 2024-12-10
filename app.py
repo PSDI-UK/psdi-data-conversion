@@ -130,9 +130,9 @@ def convert_file(file):
     if os.path.exists(output_log):
         os.remove(output_log)
 
-    # Set up loggers
-    logging.getDataConversionLogger(None, local_log)
-    logging.getDataConversionLogger("output", output_log)
+    # Set up loggers - one for general-purpose logging, and one just for what we want to output to the user
+    logging.getDataConversionLogger(local_log_file=local_log)
+    logging.getDataConversionLogger(name="output", local_log_file=output_log)
 
     if converter == 'Open Babel':
         stdouterr_ob = py.io.StdCaptureFD(in_=False)
