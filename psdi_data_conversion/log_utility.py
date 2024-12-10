@@ -9,6 +9,7 @@ from datetime import datetime
 import json
 import logging
 import os
+import sys
 
 LOG_FORMAT = r'%(asctime)s - %(levelname)s - %(message)s'
 TIMESTAMP_FORMAT = r"%Y-%m-%d %H:%M:%S"
@@ -33,7 +34,8 @@ def setUpDataConversionLogger(name=NAME,
                               local_logger_raw_output=False,
                               local_error_file=None,
                               local_error_level=DEFAULT_LOCAL_ERROR_LEVEL,
-                              local_error_raw_output=False):
+                              local_error_raw_output=False,
+                              stdout_output_level=None):
     """Registers a logger with the provided name and sets it up with the desired options
 
     Parameters
@@ -71,6 +73,19 @@ def setUpDataConversionLogger(name=NAME,
                                           (local_log_file, local_logger_level, local_logger_raw_output),
                                           (local_error_file, local_error_level, local_error_raw_output)):
         _add_filehandler_to_logger(logger, filename, level, raw_output)
+
+    # Set up stdout output if desired
+    if stdout_output_level is not None:
+
+        stream_handler = logging.StreamHandler(sys.stdout)
+
+        # Check if stdout output is already handled, and update that handler if so
+        for handler in logger.handlers:
+            if (isinstance(handler, logging.StreamHandler) and handler.stream == sys.stdout):
+                stream_handler = handler
+                break
+
+        stream_handler.setLevel(stdout_output_level)
 
     return logger
 
