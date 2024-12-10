@@ -46,7 +46,7 @@ def test_date_time():
     assert datetime_str_2 != datetime_str_1
 
 
-def test_get_logger():
+def test_get_logger(tmp_path):
     """Tests of `logging.getLogger`
     """
     # Get a logger to test with
@@ -65,7 +65,7 @@ def test_get_logger():
     assert no_name_logger is not logger
 
     # Test that the filenames are as expected
-    test_filename = "./test_filename.log"
+    test_filename = os.path.join(tmp_path, "log.txt")
     test_level = py_logging.CRITICAL
     fn_logger = logging.getDataConversionLogger("fn-test", local_log_file=test_filename,
                                                 local_logger_level=test_level)
@@ -79,11 +79,11 @@ def test_get_logger():
     assert (os.path.abspath(test_filename), test_level) in l_files_and_levels
 
 
-def test_logging():
+def test_logging(tmp_path):
     """Test that logging works as expected
     """
 
-    test_filename = "./static/downloads/local_error_log.txt"
+    test_filename = os.path.join(tmp_path, "log.txt")
 
     # Delete any existing error logs
     if os.path.isfile(logging.GLOBAL_LOG_FILENAME):
