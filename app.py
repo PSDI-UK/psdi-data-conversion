@@ -118,20 +118,24 @@ def convert_file(file):
 
     converter = request.form['converter']
 
-    out_filename = 'static/downloads/' + filename_base + '.' + to_format
+    out_filename = f"{DOWNLOAD_DIR}/{filename_base}.{to_format}"
 
-    # Set up loggers
-    local_log = f"{DOWNLOAD_DIR}/{f.filename}-{filename_base}.{to_format}.log"
-    output_log = 'static/downloads/' + filename_base + '.log.txt'
+    # Set up files to log to
+    local_log_base = f"{DOWNLOAD_DIR}/{f.filename}-{filename_base}.{to_format}"
+    local_log = f"{local_log_base}.log"
+    local_error = f"{local_log_base}.err"
+    output_log = f"{DOWNLOAD_DIR}/{filename_base}.log.txt"
 
-    # If any previous log exists, delete it
+    # If any previous local logs exist, delete them
     if os.path.exists(local_log):
         os.remove(local_log)
+    if os.path.exists(local_error):
+        os.remove(local_error)
     if os.path.exists(output_log):
         os.remove(output_log)
 
     # Set up loggers - one for general-purpose log_utility, and one just for what we want to output to the user
-    log_utility.getDataConversionLogger(local_log_file=local_log)
+    log_utility.getDataConversionLogger(local_log_file=local_log, local_error_file=local_error)
     log_utility.getDataConversionLogger(name="output", local_log_file=output_log)
 
     if converter == 'Open Babel':

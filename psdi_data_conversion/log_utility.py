@@ -17,13 +17,18 @@ GLOBAL_LOGGER_LEVEL = logging.ERROR
 # Settings for local logger
 NAME = "data-conversion"
 DEFAULT_LOCAL_LOGGER_LEVEL = logging.INFO
+DEFAULT_LOCAL_ERROR_LEVEL = logging.ERROR
 
 # Set up the global logger when this module is first imported
 global_handler = logging.FileHandler(GLOBAL_LOG_FILENAME)
 global_handler.setLevel(GLOBAL_LOGGER_LEVEL)
 
 
-def getDataConversionLogger(name=NAME, local_log_file=None, local_logger_level=DEFAULT_LOCAL_LOGGER_LEVEL):
+def getDataConversionLogger(name=NAME,
+                            local_log_file=None,
+                            local_logger_level=DEFAULT_LOCAL_LOGGER_LEVEL,
+                            local_error_file=None,
+                            local_error_level=DEFAULT_LOCAL_ERROR_LEVEL):
     """A specialisation of getting a logger with `logging.getLogger` which sets up a logger to also log to the global
     log file at the `logging.ERROR` level and above.
 
@@ -37,6 +42,11 @@ def getDataConversionLogger(name=NAME, local_log_file=None, local_logger_level=D
     local_logger_level : int
         The logging level to set up for the local logger, using one of the levels defined in the base Python `logging`
         module, by default `logging.INFO`
+    local_log_file : str | None
+        The file to log to for local reporting of errors. If None, will not set up local error logging
+    local_logger_level : int
+        The logging level to set up for the local error logger, using one of the levels defined in the base Python
+        `logging` module, by default `logging.ERROR`
 
     Returns
     -------
@@ -48,7 +58,8 @@ def getDataConversionLogger(name=NAME, local_log_file=None, local_logger_level=D
 
     # Set up filehandlers for the global and local logging
     for (filename, level) in ((GLOBAL_LOG_FILENAME, GLOBAL_LOGGER_LEVEL),
-                              (local_log_file, local_logger_level)):
+                              (local_log_file, local_logger_level),
+                              (local_error_file, local_error_level)):
         _add_filehandler_to_logger(logger, filename, level)
 
     return logger
