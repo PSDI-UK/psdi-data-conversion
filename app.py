@@ -16,9 +16,6 @@ from flask import Flask, request, render_template, abort, Response
 
 from psdi_data_conversion import logging
 
-error_logger = logging.getLogger()
-output_logger = logging.getLogger()
-
 # Maximum output file size in bytes
 MEGABYTE = 1024*1024
 MAX_FILE_SIZE = 1*MEGABYTE
@@ -89,10 +86,11 @@ def check_file_size(in_filename, out_filename):
 
     # Check that the output file doesn't exceed the maximum allowed size
     if out_size > MAX_FILE_SIZE:
-        error_logger.error(f"ERROR converting {os.path.basename(in_filename)} to {os.path.basename(out_filename)}: "
-                           f"Output file exceeds maximum size.\nInput file size is "
-                           f"{in_size/MEGABYTE:.2f} MB; Output file size is {out_size/MEGABYTE:.2f} "
-                           f"MB; maximum output file size is {MAX_FILE_SIZE/MEGABYTE:.2f} MB.\n")
+        logging.getDataConversionLogger().error(
+            f"ERROR converting {os.path.basename(in_filename)} to {os.path.basename(out_filename)}: "
+            f"Output file exceeds maximum size.\nInput file size is "
+            f"{in_size/MEGABYTE:.2f} MB; Output file size is {out_size/MEGABYTE:.2f} "
+            f"MB; maximum output file size is {MAX_FILE_SIZE/MEGABYTE:.2f} MB.\n")
 
         # Delete output and input files
         os.remove(in_filename)
@@ -123,19 +121,18 @@ def convert_file(file):
     out_filename = 'static/downloads/' + filename_base + '.' + to_format
 
     # Set up loggers
-    local_error_log = f"{DOWNLOAD_DIR}/{f.filename}-{filename_base}.{to_format}.err"
+    local_log = f"{DOWNLOAD_DIR}/{f.filename}-{filename_base}.{to_format}.log"
     output_log = 'static/downloads/' + filename_base + '.log.txt'
 
     # If any previous log exists, delete it
-    if os.path.exists(local_error_log):
-        os.remove(local_error_log)
+    if os.path.exists(local_log):
+        os.remove(local_log)
     if os.path.exists(output_log):
         os.remove(output_log)
 
-    global error_logger
-    error_logger = logging.getLogger("error", local_error_log)
-    global output_logger
-    output_logger = logging.getLogger("output", output_log)
+    # Set up loggers
+    logging.getDataConversionLogger(None, local_log)
+    logging.getDataConversionLogger("output", output_log)
 
     if converter == 'Open Babel':
         stdouterr_ob = py.io.StdCaptureFD(in_=False)
@@ -240,7 +237,7 @@ def convert_file(file):
             logging.log_error_ato(from_format, to_format, converter, filename_base, err)
             abort(405)   # return http status code 405
         else:
-            logging.log_ato(from_format, to_format, converter, filename_base, quality, out, err, error_logger)
+            logging.log_ato(from_format, to_format, converter, filename_base, quality, out, err)
 
     logging.append_to_log_file("conversions", {
         "datetime": logging.get_date_time(),

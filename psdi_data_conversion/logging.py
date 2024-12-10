@@ -10,182 +10,75 @@ import json
 import logging
 import os
 
-# Global file to log any errors that occur
-ERROR_LOG_FILENAME = "error_log.txt"
-GLOBAL_ERROR_LOG = f"./{ERROR_LOG_FILENAME}"
+# Settings for global logger
+GLOBAL_LOG_FILENAME = "./error_log.txt"
+GLOBAL_LOGGER_LEVEL = logging.ERROR
+
+# Default settings for local logger
+LOCAL_LOGGER_LEVEL = logging.INFO
+
+# Set up the global logger when this module is first imported
+global_handler = logging.FileHandler(GLOBAL_LOG_FILENAME)
+global_handler.setLevel(GLOBAL_LOGGER_LEVEL)
 
 
-class DataConversionLogger(logging.Logger):
-    """Logger which logs to both a global file and a local file.
-
-    Note: For compatibility with the parent class, this class uses `camelCase` for function names.
-    """
-
-    def __init__(self, name, level=logging.INFO):
-        """Creates a logger as a child class of `logging.Logger`
-
-        Parameters
-        ----------
-        name : str
-            The desired logging channel for this logger. Should be a period-separated string such as "input.files" etc.
-        level : int, optional
-            The desired logging level for the local logger, using one of the constants defined in the `logging` module,
-            by default logging.INFO
-        """
-
-        # Set up the global logger
-        super().__init__(name, logging.NOTSET)
-        self._global_handler = logging.FileHandler(ERROR_LOG_FILENAME)
-        self.addHandler(self._global_handler)
-        super().setLevel(logging.WARN)
-
-        # Set up the local logger unless the local logging filename is `None`
-        self._local_logger: logging.Logger | None = None
-        self._local_handler: logging.FileHandler | None = None
-        if _local_log_file is not None:
-            old_logger_class = logging.getLoggerClass()
-            try:
-                logging.setLoggerClass(logging.Logger)
-                self._local_logger = logging.getLogger(f"local.{name}")
-            finally:
-                logging.setLoggerClass(old_logger_class)
-            self._local_handler = logging.FileHandler(_local_log_file)
-            self._local_logger.addHandler(self._local_handler)
-            self._local_logger.setLevel(level)
-
-    def setLevel(self, level):
-        """Override the `setLevel` method to set the same level with both the global and local loggers
-        """
-        self.setGlobalLevel(level)
-        self.setLocalLevel(level)
-
-    def setGlobalLevel(self, level):
-        """Set the level for the global logger
-        """
-        super().setLevel(level)
-
-    def setLocalLevel(self, level):
-        """Set the level for the local logger
-        """
-        if self._local_logger is not None:
-            self._local_logger.setLevel(level)
-
-    def debug(self, *args, **kwargs):
-        """Override the `debug` method to log with both the global and local loggers
-        """
-        super().debug(*args, **kwargs)
-        if self._local_logger is not None:
-            self._local_logger.debug(*args, **kwargs)
-
-    def info(self, *args, **kwargs):
-        """Override the `info` method to log with both the global and local loggers
-        """
-        super().info(*args, **kwargs)
-        if self._local_logger is not None:
-            self._local_logger.info(*args, **kwargs)
-
-    def warning(self, *args, **kwargs):
-        """Override the `warning` method to log with both the global and local loggers
-        """
-        super().warning(*args, **kwargs)
-        if self._local_logger is not None:
-            self._local_logger.warning(*args, **kwargs)
-
-    def error(self, *args, **kwargs):
-        """Override the `error` method to log with both the global and local loggers
-        """
-        super().error(*args, **kwargs)
-        if self._local_logger is not None:
-            self._local_logger.error(*args, **kwargs)
-
-    def critical(self, *args, **kwargs):
-        """Override the `critical` method to log with both the global and local loggers
-        """
-        super().critical(*args, **kwargs)
-        if self._local_logger is not None:
-            self._local_logger.critical(*args, **kwargs)
-
-    def log(self, *args, **kwargs):
-        """Override the `log` method to log with both the global and local loggers
-        """
-        super().log(*args, **kwargs)
-        if self._local_logger is not None:
-            self._local_logger.log(*args, **kwargs)
-
-    def getGlobalFilename(self):
-        """Get the filename which is used for the global logger
-
-        Returns
-        -------
-        str
-        """
-        return self._global_handler.baseFilename
-
-    def getLocalFilename(self):
-        """Get the filename which is used for the local logger
-
-        Returns
-        -------
-        str | None
-        """
-        if self._local_handler is None:
-            return None
-        return self._local_handler.baseFilename
-
-
-def setLocalLoggerFilename(local_log_file):
-    """Sets the filename to be used for the logs of the local logger. `None` can be used to indicate no local logging.
-
-    Parameters
-    ----------
-    local_log_file : str | None
-        The file to log to for local logs. `None` can be used to indicate no local logging.
-    """
-    global _local_log_file
-    _local_log_file = local_log_file
-
-
-_local_log_file: str | None = None
-
-
-def getLocalLoggerFilename():
-    """Get the filename which will be used for the local logs for any newly-instantiated `DataconversionLogger` objects.
-    A value of `None` will indicate no local logging.
-
-    Returns
-    -------
-    str | None
-    """
-    return _local_log_file
-
-
-def getLogger(name=None, local_log_file=None) -> DataConversionLogger:
-    """Gets the `DataConversionLogger` with the provided name if one exists, and creates one if not
+def getDataConversionLogger(name=None, local_log_file=None, local_logger_level=logging.INFO):
+    """Gets the `Logger` with the provided name if one exists, and creates one if not
 
     Parameters
     ----------
     name : str | None
         The desired logging channel for this logger. Should be a period-separated string such as "input.files" etc.
-        By default None, indicating use the root logger
-    local_log_file : _type_, optional
-        The file to log to for local logs. If not provided, will use the filename last set with `setLocalLoggerFilename`
+        By default None, indicating use the global logger
+    local_log_file : str | None
+        The file to log to for local logs. If None, will not set up local logging
+    local_logger_level : int
+        The logging level to set up for the local logger, using one of the levels defined in the base Python `logging`
+        module, by default `logging.INFO`
 
     Returns
     -------
-    DataConversionLogger
+    Logger
     """
 
-    old_logger_class = logging.getLoggerClass()
-    old_local_filename = getLocalLoggerFilename()
-    try:
-        logging.setLoggerClass(DataConversionLogger)
-        if local_log_file is not None:
-            setLocalLoggerFilename(local_log_file)
-        logger = logging.getLogger(name)
-        return logger
-    finally:
-        logging.setLoggerClass(old_logger_class)
-        setLocalLoggerFilename(old_local_filename)
+    # Get a logger using the inherited method before setting up any file handling for it
+    logger = logging.getLogger(name)
+
+    # Set up filehandlers for the global and local logging
+    for (filename, level) in ((GLOBAL_LOG_FILENAME, GLOBAL_LOGGER_LEVEL),
+                              (local_log_file, local_logger_level)):
+        _add_filehandler_to_logger(logger, filename, level)
+
+    return logger
+
+
+def _add_filehandler_to_logger(logger, filename, level):
+    """Private function to add a file handler to a logger only if the logger doesn't already have a handler for that
+    file, and set the logging level for the handler
+    """
+    # Skip if filename is None
+    if filename is None:
+        return
+
+    # Check if the file to log to is already in the logger's filehandlers
+    file_already_present = False
+    for handler in logger.handlers:
+        if (isinstance(handler, logging.FileHandler) and
+                handler.baseFilename == os.path.abspath(filename)):
+            file_already_present = True
+            break
+
+    # Add a FileHandler for the file if it's not already present, make sure the path to the log file exists,
+    # and set the logging level
+    if not file_already_present:
+        os.makedirs(os.path.split(filename)[0], exist_ok=True)
+
+        handler = logging.FileHandler(filename)
+        handler.setLevel(level)
+
+        logger.addHandler(handler)
+
+    return
 
 
 def get_date():
@@ -264,7 +157,7 @@ def log(from_format, to_format, converter, fname, calc_type, option, from_flags,
                '                   was successful (to the best of our knowledge) subject to any warnings below.\n' +
                out + '\n' + err + '\n')
 
-    getLogger("output").info(message)
+    getDataConversionLogger("output").info(message)
 
 
 def log_ato(from_format, to_format, converter, fname, quality, out, err, logger):
@@ -296,7 +189,7 @@ def log_ato(from_format, to_format, converter, fname, quality, out, err, logger)
                '                   was successful (to the best of our knowledge) subject to any warnings below.\n' +
                out + '\n' + err + '\n')
 
-    getLogger("output").info(message)
+    getDataConversionLogger("output").info(message)
 
 
 def log_error(from_format, to_format, converter, fname, calc_type, option, from_flags, to_flags, read_flags_args,
@@ -330,7 +223,7 @@ def log_error(from_format, to_format, converter, fname, calc_type, option, from_
     """
     message = create_message(fname, from_format, to_format, converter, calc_type, option,
                              from_flags, to_flags, read_flags_args, write_flags_args) + err + '\n'
-    getLogger("error").error(message)
+    getDataConversionLogger().error(message)
 
 
 def log_error_ato(from_format, to_format, converter, fname, err):
@@ -350,7 +243,7 @@ def log_error_ato(from_format, to_format, converter, fname, err):
         _description_
     """
     message = create_message(fname, from_format, to_format, converter) + err + '\n'
-    getLogger("error").error(message)
+    getDataConversionLogger().error(message)
 
 
 def create_message(fname, from_format, to_format, converter, calc_type, option, from_flags, to_flags, read_flags_args,

@@ -8,6 +8,7 @@ Tests of functions relating to logging
 import os
 import re
 import time
+import logging as py_logging
 
 from psdi_data_conversion import logging
 
@@ -49,60 +50,58 @@ def test_get_logger():
     """Tests of `logging.getLogger`
     """
     # Get a logger to test with
-    logger = logging.getLogger("test")
+    logger = logging.getDataConversionLogger("test")
 
     # Test getting a second logger with the same name returns the same as the first
-    same_name_logger = logging.getLogger("test")
+    same_name_logger = logging.getDataConversionLogger("test")
     assert same_name_logger is logger
 
     # Test getting a logger with a different name returns a different logger
-    diff_name_logger = logging.getLogger("not.test")
+    diff_name_logger = logging.getDataConversionLogger("not.test")
     assert diff_name_logger is not logger
 
-    # Test that the filenames are as expected
-    assert logger.getGlobalFilename() == os.path.abspath(logging.GLOBAL_ERROR_LOG)
-    assert logger.getLocalFilename() is None
-
-    test_filename = "./static/downloads/local_error_log.txt"
-    os.makedirs("./static/downloads/", exist_ok=True)
-    fn_logger = logging.getLogger("fn.test", test_filename)
-    assert fn_logger.getGlobalFilename() == os.path.abspath(logging.GLOBAL_ERROR_LOG)
-    assert fn_logger.getLocalFilename() == os.path.abspath(test_filename)
+    # TODO: Test that the filenames are as expected
 
 
-def test_logging(caplog):
+def test_logging():
     """Test that logging works as expected
     """
 
     test_filename = "./static/downloads/local_error_log.txt"
-    os.makedirs("./static/downloads/", exist_ok=True)
 
     # Delete any existing error logs
-    if os.path.isfile(logging.GLOBAL_ERROR_LOG):
-        os.remove(logging.GLOBAL_ERROR_LOG)
+    if os.path.isfile(logging.GLOBAL_LOG_FILENAME):
+        os.remove(logging.GLOBAL_LOG_FILENAME)
     if os.path.isfile(test_filename):
         os.remove(test_filename)
 
+    logger_name = "logging-test"
+
     # Create a logger to work with
-    logger = logging.getLogger("logging-test", test_filename)
+    logger = logging.getDataConversionLogger(logger_name, test_filename)
+    logger.setLevel(py_logging.INFO)
 
     # Try logging a few messages at different levels
     debug_msg = "FINDME_DEBUG"
     info_msg = "FINDME_INFO"
-    warning_msg = "FINDME_WARNING"
+    error_msg = "FINDME_ERROR"
     logger.debug(debug_msg)
     logger.info(info_msg)
-    logger.warning(warning_msg)
+    logger.error(error_msg)
 
     # Open the files and check that only the expected messages are present - by default, the global log will log
-    # at WARNING level and above, and the local log will log at INFO level and above
+    # at ERROR level and above, and the local log will log at INFO level and above
 
-    log_content = caplog.text
+    with open(logging.GLOBAL_LOG_FILENAME, "r") as fi:
+        global_log_content = fi.read()
 
-    assert not re.compile(r"\slogging-test:" + r"\S*\s*\S*" + debug_msg).search(log_content)
-    assert not re.compile(r"\slogging-test:" + r"\S*\s*\S*" + info_msg).search(log_content)
-    assert re.compile(r"\slogging-test:" + r"\S*\s*\S*" + warning_msg).search(log_content)
+        assert debug_msg not in global_log_content
+        assert info_msg not in global_log_content
+        assert error_msg in global_log_content
 
-    assert not re.compile(r"\slocal.logging-test:" + r"\S*\s*\S*" + debug_msg).search(log_content)
-    assert re.compile(r"\slocal.logging-test:" + r"\S*\s*\S*" + info_msg).search(log_content)
-    assert re.compile(r"\slocal.logging-test:" + r"\S*\s*\S*" + warning_msg).search(log_content)
+    with open(test_filename, "r") as fi:
+        local_log_content = fi.read()
+
+        assert debug_msg not in local_log_content
+        assert info_msg in local_log_content
+        assert error_msg in local_log_content
