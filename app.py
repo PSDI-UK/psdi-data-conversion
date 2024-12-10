@@ -6,6 +6,7 @@ This script acts as a server for the PSDI Data Conversion Service website.
 """
 
 import hashlib
+import logging
 import os
 import py.io
 import json
@@ -137,7 +138,8 @@ def convert_file(file):
     # Set up loggers - one for general-purpose log_utility, and one just for what we want to output to the user
     log_utility.setUpDataConversionLogger(local_log_file=local_log,
                                           local_error_file=local_error,
-                                          local_error_raw_output=True)
+                                          local_error_raw_output=True,
+                                          stdout_output_level=logging.INFO)
     log_utility.setUpDataConversionLogger(name="output",
                                           local_log_file=output_log,
                                           local_logger_raw_output=True)

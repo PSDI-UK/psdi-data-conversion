@@ -80,12 +80,19 @@ def setUpDataConversionLogger(name=NAME,
         stream_handler = logging.StreamHandler(sys.stdout)
 
         # Check if stdout output is already handled, and update that handler if so
+        handler_already_present = False
         for handler in logger.handlers:
             if (isinstance(handler, logging.StreamHandler) and handler.stream == sys.stdout):
+                handler_already_present = True
                 stream_handler = handler
                 break
 
+        if not handler_already_present:
+            logger.addHandler(stream_handler)
+
         stream_handler.setLevel(stdout_output_level)
+        if stdout_output_level < logger.level or logger.level == logging.NOTSET:
+            logger.setLevel(stdout_output_level)
 
     return logger
 
@@ -101,17 +108,17 @@ def _add_filehandler_to_logger(logger, filename, level, raw_output):
     file_handler = logging.FileHandler(filename)
 
     # Check if the file to log to is already in the logger's filehandlers
-    file_already_present = False
+    handler_already_present = False
     for handler in logger.handlers:
         if (isinstance(handler, logging.FileHandler) and
                 handler.baseFilename == os.path.abspath(filename)):
-            file_already_present = True
+            handler_already_present = True
             file_handler = handler
             break
 
     # Add a FileHandler for the file if it's not already present, make sure the path to the log file exists,
     # and set the logging level
-    if not file_already_present:
+    if not handler_already_present:
         os.makedirs(os.path.split(filename)[0], exist_ok=True)
 
         file_handler = logging.FileHandler(filename)
@@ -121,6 +128,8 @@ def _add_filehandler_to_logger(logger, filename, level, raw_output):
     # Set or update the logging level and formatter for the handler
     if level is not None:
         file_handler.setLevel(level)
+        if level < logger.level or logger.level == logging.NOTSET:
+            logger.setLevel(level)
     if not raw_output:
         file_handler.setFormatter(logging.Formatter(LOG_FORMAT, datefmt=TIMESTAMP_FORMAT))
 
