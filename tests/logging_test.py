@@ -64,7 +64,19 @@ def test_get_logger():
     no_name_logger = logging.getDataConversionLogger()
     assert no_name_logger is not logger
 
-    # TODO: Test that the filenames are as expected
+    # Test that the filenames are as expected
+    test_filename = "./test_filename.log"
+    test_level = py_logging.CRITICAL
+    fn_logger = logging.getDataConversionLogger("fn-test", local_log_file=test_filename,
+                                                local_logger_level=test_level)
+
+    # Search through the logger's handlers to get all files it logs to and at what levels
+    l_files_and_levels = []
+    for handler in fn_logger.handlers:
+        if isinstance(handler, py_logging.FileHandler):
+            l_files_and_levels.append((handler.baseFilename, handler.level))
+    assert (os.path.abspath(logging.GLOBAL_LOG_FILENAME), logging.GLOBAL_LOGGER_LEVEL) in l_files_and_levels
+    assert (os.path.abspath(test_filename), test_level) in l_files_and_levels
 
 
 def test_logging():
