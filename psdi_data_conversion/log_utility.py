@@ -10,6 +10,9 @@ import json
 import logging
 import os
 
+LOG_FORMAT = r'%(asctime)s - %(levelname)s - %(message)s'
+TIMESTAMP_FORMAT = r"%Y-%m-%d %H:%M:%S"
+
 # Settings for global logger
 GLOBAL_LOG_FILENAME = "./error_log.txt"
 GLOBAL_LOGGER_LEVEL = logging.ERROR
@@ -28,7 +31,8 @@ def setUpDataConversionLogger(name=NAME,
                               local_log_file=None,
                               local_logger_level=DEFAULT_LOCAL_LOGGER_LEVEL,
                               local_error_file=None,
-                              local_error_level=DEFAULT_LOCAL_ERROR_LEVEL):
+                              local_error_level=DEFAULT_LOCAL_ERROR_LEVEL,
+                              raw_output=False):
     """Registers a logger with the provided name and sets it up with the desired options
 
     Parameters
@@ -46,6 +50,9 @@ def setUpDataConversionLogger(name=NAME,
     local_logger_level : int
         The logging level to set up for the local error logger, using one of the levels defined in the base Python
         `logging` module, by default `logging.ERROR`
+    raw_output : bool
+        If set to True, output will be logged with no formatting, exactly as input. Otherwise (default) it will
+        include a timestamp and indicate the logging level
 
     Returns
     -------
@@ -59,12 +66,12 @@ def setUpDataConversionLogger(name=NAME,
     for (filename, level) in ((GLOBAL_LOG_FILENAME, GLOBAL_LOGGER_LEVEL),
                               (local_log_file, local_logger_level),
                               (local_error_file, local_error_level)):
-        _add_filehandler_to_logger(logger, filename, level)
+        _add_filehandler_to_logger(logger, filename, level, raw_output)
 
     return logger
 
 
-def _add_filehandler_to_logger(logger, filename, level):
+def _add_filehandler_to_logger(logger, filename, level, raw_output):
     """Private function to add a file handler to a logger only if the logger doesn't already have a handler for that
     file, and set the logging level for the handler
     """
@@ -92,8 +99,11 @@ def _add_filehandler_to_logger(logger, filename, level):
 
         logger.addHandler(file_handler)
 
-    # Set or update the logging level for the handler
-    file_handler.setLevel(level)
+    # Set or update the logging level and formatter for the handler
+    if level is not None:
+        file_handler.setLevel(level)
+    if not raw_output:
+        file_handler.setFormatter(logging.Formatter(LOG_FORMAT, datefmt=TIMESTAMP_FORMAT))
 
     return
 
