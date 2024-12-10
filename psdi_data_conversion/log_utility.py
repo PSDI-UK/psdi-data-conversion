@@ -24,13 +24,12 @@ global_handler = logging.FileHandler(GLOBAL_LOG_FILENAME)
 global_handler.setLevel(GLOBAL_LOGGER_LEVEL)
 
 
-def getDataConversionLogger(name=NAME,
-                            local_log_file=None,
-                            local_logger_level=DEFAULT_LOCAL_LOGGER_LEVEL,
-                            local_error_file=None,
-                            local_error_level=DEFAULT_LOCAL_ERROR_LEVEL):
-    """A specialisation of getting a logger with `logging.getLogger` which sets up a logger to also log to the global
-    log file at the `logging.ERROR` level and above.
+def setUpDataConversionLogger(name=NAME,
+                              local_log_file=None,
+                              local_logger_level=DEFAULT_LOCAL_LOGGER_LEVEL,
+                              local_error_file=None,
+                              local_error_level=DEFAULT_LOCAL_ERROR_LEVEL):
+    """Registers a logger with the provided name and sets it up with the desired options
 
     Parameters
     ----------
@@ -73,12 +72,15 @@ def _add_filehandler_to_logger(logger, filename, level):
     if filename is None:
         return
 
+    file_handler = logging.FileHandler(filename)
+
     # Check if the file to log to is already in the logger's filehandlers
     file_already_present = False
     for handler in logger.handlers:
         if (isinstance(handler, logging.FileHandler) and
                 handler.baseFilename == os.path.abspath(filename)):
             file_already_present = True
+            file_handler = handler
             break
 
     # Add a FileHandler for the file if it's not already present, make sure the path to the log file exists,
@@ -86,12 +88,23 @@ def _add_filehandler_to_logger(logger, filename, level):
     if not file_already_present:
         os.makedirs(os.path.split(filename)[0], exist_ok=True)
 
-        handler = logging.FileHandler(filename)
-        handler.setLevel(level)
+        file_handler = logging.FileHandler(filename)
 
-        logger.addHandler(handler)
+        logger.addHandler(file_handler)
+
+    # Set or update the logging level for the handler
+    file_handler.setLevel(level)
 
     return
+
+
+def getDataConversionLogger(name=NAME):
+    """A specialisation of getting a logger with `logging.getLogger` which uses a default name, to provide a bulwark
+    against using the root logger and potentially breaking something with Flask.
+    """
+
+    # Get a logger using the inherited method before setting up any file handling for it
+    return logging.getLogger(name)
 
 
 def get_date():
