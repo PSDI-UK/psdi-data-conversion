@@ -94,6 +94,8 @@ def setUpDataConversionLogger(name=NAME,
         if stdout_output_level < logger.level or logger.level == logging.NOTSET:
             logger.setLevel(stdout_output_level)
 
+        stream_handler.setFormatter(logging.Formatter(LOG_FORMAT, datefmt=TIMESTAMP_FORMAT))
+
     return logger
 
 
