@@ -23,13 +23,14 @@ global_handler.setLevel(GLOBAL_LOGGER_LEVEL)
 
 
 def getDataConversionLogger(name=None, local_log_file=None, local_logger_level=logging.INFO):
-    """Gets the `Logger` with the provided name if one exists, and creates one if not
+    """A specialisation of getting a logger with `logging.getLogger` which sets up a logger to also log to the global
+    log file at the `logging.ERROR` level and above.
 
     Parameters
     ----------
     name : str | None
         The desired logging channel for this logger. Should be a period-separated string such as "input.files" etc.
-        By default None, indicating use the global logger
+        By default None, indicating use the root logger
     local_log_file : str | None
         The file to log to for local logs. If None, will not set up local logging
     local_logger_level : int
