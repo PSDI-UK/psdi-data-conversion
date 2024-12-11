@@ -3,5 +3,7 @@
 !.github
 *.pyc
 
+error_log.txt
+
 static/downloads/*
 static/uploads/*

@@ -39,6 +39,7 @@ RUN apt-get -y install libxrender1 libxext6
 
 ENV FLASK_APP=app.py
 ENV FLASK_RUN_HOST=0.0.0.0
+ENV PYTHONPATH="."
 
 EXPOSE 5000
 
