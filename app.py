@@ -28,12 +28,12 @@ token = hashlib.md5(dt.encode('utf8')).hexdigest()
 # Create directory 'uploads' if not extant.
 UPLOAD_DIR = './static/uploads'
 if not os.path.exists(UPLOAD_DIR):
-    os.mkdir(UPLOAD_DIR)
+    os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 # Create directory 'downloads' if not extant.
 DOWNLOAD_DIR = './static/downloads'
 if not os.path.exists(DOWNLOAD_DIR):
-    os.mkdir(DOWNLOAD_DIR)
+    os.makedirs(DOWNLOAD_DIR, exist_ok=True)
 
 app = Flask(__name__)
 
