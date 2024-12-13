@@ -12,7 +12,7 @@ from datetime import datetime
 from flask import Flask, request, render_template, abort, Response
 
 from psdi_data_conversion import log_utility
-from psdi_data_conversion.converter import convert_file
+from psdi_data_conversion.converter import FileConverter
 
 # Create a token by hashing the current date and time.
 dt = str(datetime.now())
@@ -35,7 +35,9 @@ def convert():
     achieved in format.js
     """
     if request.form['token'] == token and token != '':
-        return convert_file('fileToUpload')
+        return FileConverter(files=request.files,
+                             form=request.form,
+                             file_to_convert='fileToUpload').run()
     else:
         # return http status code 405
         abort(405)
@@ -45,7 +47,9 @@ def convert():
 def conv():
     """Convert file (cURL)
     """
-    return convert_file('file')
+    return FileConverter(files=request.files,
+                         form=request.form,
+                         file_to_convert='file').run()
 
 
 @app.route('/feedback/', methods=['POST'])

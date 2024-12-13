@@ -132,7 +132,7 @@ class FileConverter:
                                                                        log_utility.DEFAULT_LOCAL_LOGGER_LEVEL,
                                                                        False)])
 
-    def __call__(self):
+    def run(self):
         """Run the file conversion
         """
 
