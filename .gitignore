@@ -1,9 +1,17 @@
 .*
 !.gitignore
 !.github
-*.pyc
 
+# Compiled files
+*.pyc
+*.pyo
+
+# Created error log
 error_log.txt
 
+# Contents of the downloads and uploads directories, which are created in-use but shouldn't be persistent
 static/downloads/*
 static/uploads/*
+
+# Any zone identifiers created by Windows copying
+*:Zone.Identifier
