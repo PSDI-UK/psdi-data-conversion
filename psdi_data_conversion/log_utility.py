@@ -9,6 +9,10 @@ from datetime import datetime
 import json
 import logging
 import os
+import sys
+
+LOG_FORMAT = r'[%(asctime)s] %(levelname)s [%(name)s.%(funcName)s:%(lineno)d] %(message)s'
+TIMESTAMP_FORMAT = r"%Y-%m-%d %H:%M:%S"
 
 # Settings for global logger
 GLOBAL_LOG_FILENAME = "./error_log.txt"
@@ -17,20 +21,19 @@ GLOBAL_LOGGER_LEVEL = logging.ERROR
 # Settings for local logger
 NAME = "data-conversion"
 DEFAULT_LOCAL_LOGGER_LEVEL = logging.INFO
-DEFAULT_LOCAL_ERROR_LEVEL = logging.ERROR
 
 # Set up the global logger when this module is first imported
 global_handler = logging.FileHandler(GLOBAL_LOG_FILENAME)
 global_handler.setLevel(GLOBAL_LOGGER_LEVEL)
 
 
-def getDataConversionLogger(name=NAME,
-                            local_log_file=None,
-                            local_logger_level=DEFAULT_LOCAL_LOGGER_LEVEL,
-                            local_error_file=None,
-                            local_error_level=DEFAULT_LOCAL_ERROR_LEVEL):
-    """A specialisation of getting a logger with `logging.getLogger` which sets up a logger to also log to the global
-    log file at the `logging.ERROR` level and above.
+def setUpDataConversionLogger(name=NAME,
+                              local_log_file=None,
+                              local_logger_level=DEFAULT_LOCAL_LOGGER_LEVEL,
+                              local_logger_raw_output=False,
+                              extra_loggers=None,
+                              stdout_output_level=None):
+    """Registers a logger with the provided name and sets it up with the desired options
 
     Parameters
     ----------
@@ -42,11 +45,15 @@ def getDataConversionLogger(name=NAME,
     local_logger_level : int
         The logging level to set up for the local logger, using one of the levels defined in the base Python `logging`
         module, by default `logging.INFO`
-    local_log_file : str | None
-        The file to log to for local reporting of errors. If None, will not set up local error logging
-    local_logger_level : int
-        The logging level to set up for the local error logger, using one of the levels defined in the base Python
-        `logging` module, by default `logging.ERROR`
+    local_logger_raw_output : bool
+        If set to True, output to the local logger will be logged with no formatting, exactly as input. Otherwise
+        (default) it will include a timestamp and indicate the logging level
+    extra_loggers : Iterable[Tuple[str, int, bool]]
+        A list of one or more tuples of the format (`filename`, `level`, `raw_output`) specifying these options
+        (defined the same as for the local logger) for one or more additional logging channels.
+    stdout_output_level : int | None
+        The logging level (using one of the levels defined in the base Python `logging` module) at and above which to
+        log output to stdout. If None (default), nothing will be sent to stdout
 
     Returns
     -------
@@ -56,16 +63,41 @@ def getDataConversionLogger(name=NAME,
     # Get a logger using the inherited method before setting up any file handling for it
     logger = logging.getLogger(name)
 
+    if extra_loggers is None:
+        extra_loggers = []
+
     # Set up filehandlers for the global and local logging
-    for (filename, level) in ((GLOBAL_LOG_FILENAME, GLOBAL_LOGGER_LEVEL),
-                              (local_log_file, local_logger_level),
-                              (local_error_file, local_error_level)):
-        _add_filehandler_to_logger(logger, filename, level)
+    for (filename, level, raw_output) in ((GLOBAL_LOG_FILENAME, GLOBAL_LOGGER_LEVEL, False),
+                                          (local_log_file, local_logger_level, local_logger_raw_output),
+                                          *extra_loggers):
+        _add_filehandler_to_logger(logger, filename, level, raw_output)
+
+    # Set up stdout output if desired
+    if stdout_output_level is not None:
+
+        stream_handler = logging.StreamHandler(sys.stdout)
+
+        # Check if stdout output is already handled, and update that handler if so
+        handler_already_present = False
+        for handler in logger.handlers:
+            if (isinstance(handler, logging.StreamHandler) and handler.stream == sys.stdout):
+                handler_already_present = True
+                stream_handler = handler
+                break
+
+        if not handler_already_present:
+            logger.addHandler(stream_handler)
+
+        stream_handler.setLevel(stdout_output_level)
+        if stdout_output_level < logger.level or logger.level == logging.NOTSET:
+            logger.setLevel(stdout_output_level)
+
+        stream_handler.setFormatter(logging.Formatter(LOG_FORMAT, datefmt=TIMESTAMP_FORMAT))
 
     return logger
 
 
-def _add_filehandler_to_logger(logger, filename, level):
+def _add_filehandler_to_logger(logger, filename, level, raw_output):
     """Private function to add a file handler to a logger only if the logger doesn't already have a handler for that
     file, and set the logging level for the handler
     """
@@ -73,25 +105,44 @@ def _add_filehandler_to_logger(logger, filename, level):
     if filename is None:
         return
 
+    file_handler = logging.FileHandler(filename)
+
     # Check if the file to log to is already in the logger's filehandlers
-    file_already_present = False
+    handler_already_present = False
     for handler in logger.handlers:
         if (isinstance(handler, logging.FileHandler) and
                 handler.baseFilename == os.path.abspath(filename)):
-            file_already_present = True
+            handler_already_present = True
+            file_handler = handler
             break
 
     # Add a FileHandler for the file if it's not already present, make sure the path to the log file exists,
     # and set the logging level
-    if not file_already_present:
+    if not handler_already_present:
         os.makedirs(os.path.split(filename)[0], exist_ok=True)
 
-        handler = logging.FileHandler(filename)
-        handler.setLevel(level)
+        file_handler = logging.FileHandler(filename)
 
-        logger.addHandler(handler)
+        logger.addHandler(file_handler)
+
+    # Set or update the logging level and formatter for the handler
+    if level is not None:
+        file_handler.setLevel(level)
+        if level < logger.level or logger.level == logging.NOTSET:
+            logger.setLevel(level)
+    if not raw_output:
+        file_handler.setFormatter(logging.Formatter(LOG_FORMAT, datefmt=TIMESTAMP_FORMAT))
 
     return
+
+
+def getDataConversionLogger(name=NAME):
+    """A specialisation of getting a logger with `logging.getLogger` which uses a default name, to provide a bulwark
+    against using the root logger and potentially breaking something with Flask.
+    """
+
+    # Get a logger using the inherited method before setting up any file handling for it
+    return logging.getLogger(name)
 
 
 def get_date():
@@ -168,7 +219,7 @@ def log(from_format, to_format, converter, fname, calc_type, option, from_flags,
                'Quality:           ' + quality + '\n'
                'Success:           Assuming that the data provided was of the correct format, the conversion\n'
                '                   was successful (to the best of our knowledge) subject to any warnings below.\n' +
-               out + '\n' + err + '\n')
+               out + '\n' + err)
 
     getDataConversionLogger("output").info(message)
 
@@ -200,7 +251,7 @@ def log_ato(from_format, to_format, converter, fname, quality, out, err, logger)
                'Quality:           ' + quality + '\n'
                'Success:           Assuming that the data provided was of the correct format, the conversion\n'
                '                   was successful (to the best of our knowledge) subject to any warnings below.\n' +
-               out + '\n' + err + '\n')
+               out + '\n' + err)
 
     getDataConversionLogger("output").info(message)
 
@@ -235,8 +286,8 @@ def log_error(from_format, to_format, converter, fname, calc_type, option, from_
         _description_
     """
     message = create_message(fname, from_format, to_format, converter, calc_type, option,
-                             from_flags, to_flags, read_flags_args, write_flags_args) + err + '\n'
-    getDataConversionLogger().error(message)
+                             from_flags, to_flags, read_flags_args, write_flags_args) + err
+    getDataConversionLogger("output").error(message)
 
 
 def log_error_ato(from_format, to_format, converter, fname, err):
@@ -255,8 +306,8 @@ def log_error_ato(from_format, to_format, converter, fname, err):
     err : _type_
         _description_
     """
-    message = create_message(fname, from_format, to_format, converter) + err + '\n'
-    getDataConversionLogger().error(message)
+    message = create_message(fname, from_format, to_format, converter) + err
+    getDataConversionLogger("output").error(message)
 
 
 def create_message(fname, from_format, to_format, converter, calc_type, option, from_flags, to_flags, read_flags_args,

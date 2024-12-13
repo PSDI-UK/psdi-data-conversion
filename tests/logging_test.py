@@ -69,11 +69,11 @@ def test_get_logger(tmp_path):
     test_log_level = logging.WARN
     test_error_filename = os.path.join(tmp_path, "err.txt")
     test_error_level = logging.CRITICAL
-    fn_logger = log_utility.getDataConversionLogger("fn-test",
-                                                    local_log_file=test_log_filename,
-                                                    local_logger_level=test_log_level,
-                                                    local_error_file=test_error_filename,
-                                                    local_error_level=test_error_level)
+    fn_logger = log_utility.getDataConversionLogger("fn-test")
+    log_utility.setUpDataConversionLogger("fn-test",
+                                          local_log_file=test_log_filename,
+                                          local_logger_level=test_log_level,
+                                          extra_loggers=[(test_error_filename, test_error_level, False)])
 
     # Search through the logger's handlers to get all files it logs to and at what levels
     l_files_and_levels = []
@@ -100,7 +100,7 @@ def test_logging(tmp_path):
     logger_name = "log_utility-test"
 
     # Create a logger to work with
-    logger = log_utility.getDataConversionLogger(logger_name, test_filename)
+    logger = log_utility.setUpDataConversionLogger(logger_name, test_filename)
     logger.setLevel(logging.INFO)
 
     # Try logging a few messages at different levels

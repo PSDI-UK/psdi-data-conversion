@@ -6,6 +6,7 @@ Class and functions to perform file conversion
 """
 
 import json
+import logging
 import os
 import py.io
 import subprocess
@@ -21,12 +22,12 @@ MAX_FILE_SIZE = 1*MEGABYTE
 # Create directory 'uploads' if not extant.
 UPLOAD_DIR = './static/uploads'
 if not os.path.exists(UPLOAD_DIR):
-    os.mkdir(UPLOAD_DIR)
+    os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 # Create directory 'downloads' if not extant.
 DOWNLOAD_DIR = './static/downloads'
 if not os.path.exists(DOWNLOAD_DIR):
-    os.mkdir(DOWNLOAD_DIR)
+    os.makedirs(DOWNLOAD_DIR, exist_ok=True)
 
 
 def check_file_size(in_filename, out_filename):
@@ -51,7 +52,7 @@ def check_file_size(in_filename, out_filename):
 
     # Check that the output file doesn't exceed the maximum allowed size
     if out_size > MAX_FILE_SIZE:
-        log_utility.getDataConversionLogger().error(
+        log_utility.getDataConversionLogger("output").error(
             f"ERROR converting {os.path.basename(in_filename)} to {os.path.basename(out_filename)}: "
             f"Output file exceeds maximum size.\nInput file size is "
             f"{in_size/MEGABYTE:.2f} MB; Output file size is {out_size/MEGABYTE:.2f} "
@@ -100,8 +101,13 @@ def convert_file(file):
         os.remove(output_log)
 
     # Set up loggers - one for general-purpose log_utility, and one just for what we want to output to the user
-    log_utility.getDataConversionLogger(local_log_file=local_log, local_error_file=local_error)
-    log_utility.getDataConversionLogger(name="output", local_log_file=output_log)
+    log_utility.setUpDataConversionLogger(local_log_file=local_log,
+                                          local_logger_level=log_utility.DEFAULT_LOCAL_LOGGER_LEVEL,
+                                          stdout_output_level=logging.INFO)
+    log_utility.setUpDataConversionLogger(name="output",
+                                          local_log_file=output_log,
+                                          local_logger_raw_output=True,
+                                          extra_loggers=[(local_log, log_utility.DEFAULT_LOCAL_LOGGER_LEVEL, False)])
 
     if converter == 'Open Babel':
         stdouterr_ob = py.io.StdCaptureFD(in_=False)
