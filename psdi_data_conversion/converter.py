@@ -132,6 +132,20 @@ class FileConverter:
                                                                        log_utility.DEFAULT_LOCAL_LOGGER_LEVEL,
                                                                        False)])
 
+        # Member variables which will be set when conversion is run
+        self.in_size: int | None = None
+        self.out_size: int | None = None
+        self.out: str | None = None
+        self.err: str | None = None
+        self.quality: str | None = None
+
+        # Used by OB conversion
+        self.from_flags: str | None = None
+        self.to_flags: str | None = None
+        self.read_flags_args: list[str] | None = None
+        self.write_flags_args: list[str] | None = None
+        self.calc_type: str | None = None
+
     def run(self):
         """Run the file conversion
         """
@@ -151,6 +165,78 @@ class FileConverter:
         return ('\nConverting from ' + self.filename_base + '.' + self.from_format + ' to ' + self.filename_base +
                 '.' + self.to_format + '\n')
 
+    def _log_error(self):
+        """Write conversion error information to server-side log file
+        """
+        message = self._create_message() + self.err
+        self.output_logger.error(message)
+
+    def _create_message(self):
+
+        message = ''
+
+        if self.calc_type == 'neither':
+            message = 'Coord. gen.:       none\n'
+        elif self.calc_type:
+            message += 'Coord. gen.:       ' + self.calc_type + '\n'
+
+        message += 'Coord. option:     ' + self.option + '\n'
+
+        if self.from_flags == '':
+            message += 'Read options:      none\n'
+        elif self.from_flags:
+            message += 'Read options:      ' + self.from_flags + '\n'
+
+        if self.to_flags == '':
+            message += 'Write options:     none\n'
+        elif self.to_flags:
+            message += 'Write options:     ' + self.to_flags + '\n'
+
+        if self.read_flags_args is None:
+            pass
+        elif len(self.read_flags_args) == 0:
+            message += 'Read opts + args:  none\n'
+        else:
+            heading_added = False
+
+            for pair in self.read_flags_args:
+                if not heading_added:
+                    message += 'Read opts + args:  ' + pair + '\n'
+                    heading_added = True
+                else:
+                    message += '                   ' + pair + '\n'
+
+        if self.write_flags_args is None:
+            pass
+        elif len(self.write_flags_args) == 0:
+            message += 'Write opts + args: none\n'
+        else:
+            heading_added = False
+
+            for pair in self.write_flags_args:
+                if not heading_added:
+                    message += 'Write opts + args: ' + pair + '\n'
+                    heading_added = True
+                else:
+                    message += '                   ' + pair + '\n'
+
+        return self._create_message_start() + message
+
+    def _create_message_start(self):
+        """Create beginning of message for log files
+
+        Returns
+        -------
+        str
+            The beginning of a message for log files, containing generic information about what was trying to be done
+        """
+        return ('Date:              ' + log_utility.get_date() + '\n'
+                'Time:              ' + log_utility.get_time() + '\n'
+                'File name:         ' + self.filename_base + '\n'
+                'From:              ' + self.from_format + '\n'
+                'To:                ' + self.to_format + '\n'
+                'Converter:         ' + self.converter + '\n')
+
     def _convert_ob(self):
         stdouterr_ob = py.io.StdCaptureFD(in_=False)
 
@@ -158,35 +244,35 @@ class FileConverter:
         ob_conversion.SetInAndOutFormats(self.from_format, self.to_format)
 
         # Retrieve 'from' and 'to' option flags and arguments
-        from_flags = self.form['from_flags']
-        to_flags = self.form['to_flags']
+        self.from_flags = self.form['from_flags']
+        self.to_flags = self.form['to_flags']
         from_arg_flags = self.form['from_arg_flags']
         to_arg_flags = self.form['to_arg_flags']
         from_args = self.form['from_args']
         to_args = self.form['to_args']
 
         # Add option flags and arguments as appropriate
-        for char in from_flags:
+        for char in self.from_flags:
             ob_conversion.AddOption(char, ob_conversion.INOPTIONS)
 
-        for char in to_flags:
+        for char in self.to_flags:
             ob_conversion.AddOption(char, ob_conversion.OUTOPTIONS)
 
-        read_flags_args = []
-        write_flags_args = []
+        self.read_flags_args = []
+        self.write_flags_args = []
 
         for char in from_arg_flags:
             index = from_args.find('£')
             arg = from_args[0:index]
             from_args = from_args[index + 1:len(from_args)]
-            read_flags_args.append(char + "  " + arg)
+            self.read_flags_args.append(char + "  " + arg)
             ob_conversion.AddOption(char, ob_conversion.INOPTIONS, arg)
 
         for char in to_arg_flags:
             index = to_args.find('£')
             arg = to_args[0:index]
             to_args = to_args[index + 1:len(to_args)]
-            write_flags_args.append(char + "  " + arg)
+            self.write_flags_args.append(char + "  " + arg)
             ob_conversion.AddOption(char, ob_conversion.OUTOPTIONS, arg)
 
         # Read the file to be converted
@@ -194,16 +280,16 @@ class FileConverter:
         ob_conversion.ReadFile(mol, self.in_filename)
 
         # Retrieve coordinate calculation type (Gen2D, Gen3D, neither)
-        calc_type = self.form['coordinates']
+        self.calc_type = self.form['coordinates']
 
         option = 'N/A'
 
         # Calculate atomic coordinates
-        if calc_type != 'neither':
+        if self.calc_type != 'neither':
             # Retrieve coordinate calculation option (fastest, fast, medium, better, best)
             option = self.form['coordOption']
 
-            gen = openbabel.OBOp.FindType(calc_type)
+            gen = openbabel.OBOp.FindType(self.calc_type)
             gen.Do(mol, option)
 
         # Write the converted file
@@ -220,12 +306,24 @@ class FileConverter:
             self.quality = self.get_quality(self.from_format, self.to_format)
 
         if self.err.find('Error') > -1:
-            self._log_error_ob()
+            self._log_error()
             stdouterr_ob.done()
             abort(405)  # return http status code 405
         else:
-            self._log_success_ob()
+            self._log_success()
             stdouterr_ob.done()
+
+    def _log_success(self):
+        """Write Open Babel conversion information to server-side file, ready for downloading to user
+        """
+
+        message = (self._create_message() +
+                   'Quality:           ' + self.quality + '\n'
+                   'Success:           Assuming that the data provided was of the correct format, the conversion\n'
+                   '                   was successful (to the best of our knowledge) subject to any warnings below.\n' +
+                   self.out + '\n' + self.err)
+
+        self.output_logger.info(message)
 
     def _convert_ato(self):
         atomsk = subprocess.run(['sh', 'atomsk.sh', self.f.filename, self.filename_base,
@@ -243,10 +341,10 @@ class FileConverter:
             self.quality = self.get_quality(self.from_format, self.to_format)
 
         if self.err.find('Error') > -1:
-            self._log_error_ato()
+            self._log_error()
             abort(405)   # return http status code 405
         else:
-            self._log_success_ato()
+            self._log_success()
 
     @staticmethod
     def get_quality(from_ext, to_ext):
