@@ -11,7 +11,7 @@ import logging
 import os
 import sys
 
-LOG_FORMAT = r'%(asctime)s - %(levelname)s - %(message)s'
+LOG_FORMAT = r'[%(asctime)s] %(levelname)s [%(name)s.%(funcName)s:%(lineno)d] %(message)s'
 TIMESTAMP_FORMAT = r"%Y-%m-%d %H:%M:%S"
 
 # Settings for global logger
