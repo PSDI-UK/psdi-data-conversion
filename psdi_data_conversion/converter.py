@@ -9,10 +9,10 @@ import json
 import logging
 import os
 import traceback
+from typing import Callable
 import py.io
 import subprocess
 from openbabel import openbabel
-from flask import abort
 from werkzeug.datastructures import FileStorage
 from werkzeug.exceptions import HTTPException
 
@@ -42,7 +42,8 @@ class FileConverter:
     def __init__(self,
                  files: dict[str, FileStorage],
                  form: dict[str, str],
-                 file_to_convert: str):
+                 file_to_convert: str,
+                 abort_callback: Callable[[int], None] = exit):
         """Initialize the object, storing needed data and setting up loggers.
 
         Parameters
@@ -53,10 +54,13 @@ class FileConverter:
             The form dict provided by Flask at `request.form`
         file_to_convert : str
             The key for the file in the `files` dict to convert
+        abort_callback : Callable[[int], None]
+            Function to be called if the conversion hits an error and must be aborted, default `exit`
         """
         self.files = files
         self.form = form
         self.file_to_convert = file_to_convert
+        self.abort_callback = abort_callback
 
         self.f = self.files[self.file_to_convert]
         self.filename_base = self.f.filename.split(".")[0]  # E.g. ethane.mol --> ethane
@@ -159,7 +163,7 @@ class FileConverter:
             # Note this message in the dev logger as well
             self.logger.error(message)
 
-        abort(status_code)
+        self.abort_callback(status_code)
 
     def _abort_from_err(self):
         """Write conversion error information to server-side log file and abort the conversion

@@ -37,7 +37,8 @@ def convert():
     if request.form['token'] == token and token != '':
         return FileConverter(files=request.files,
                              form=request.form,
-                             file_to_convert='fileToUpload').run()
+                             file_to_convert='fileToUpload',
+                             abort_callback=abort).run()
     else:
         # return http status code 405
         abort(405)
@@ -49,7 +50,8 @@ def conv():
     """
     return FileConverter(files=request.files,
                          form=request.form,
-                         file_to_convert='file').run()
+                         file_to_convert='file',
+                         abort_callback=abort).run()
 
 
 @app.route('/feedback/', methods=['POST'])
