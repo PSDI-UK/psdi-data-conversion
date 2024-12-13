@@ -87,7 +87,7 @@ def check_file_size(in_filename, out_filename):
 
     # Check that the output file doesn't exceed the maximum allowed size
     if out_size > MAX_FILE_SIZE:
-        log_utility.getDataConversionLogger().error(
+        log_utility.getDataConversionLogger("output").error(
             f"ERROR converting {os.path.basename(in_filename)} to {os.path.basename(out_filename)}: "
             f"Output file exceeds maximum size.\nInput file size is "
             f"{in_size/MEGABYTE:.2f} MB; Output file size is {out_size/MEGABYTE:.2f} "
@@ -124,25 +124,22 @@ def convert_file(file):
     # Set up files to log to
     local_log_base = f"{DOWNLOAD_DIR}/{f.filename}-{filename_base}.{to_format}"
     local_log = f"{local_log_base}.log"
-    local_error = f"{local_log_base}.err"
     output_log = f"{DOWNLOAD_DIR}/{filename_base}.log.txt"
 
     # If any previous local logs exist, delete them
     if os.path.exists(local_log):
         os.remove(local_log)
-    if os.path.exists(local_error):
-        os.remove(local_error)
     if os.path.exists(output_log):
         os.remove(output_log)
 
     # Set up loggers - one for general-purpose log_utility, and one just for what we want to output to the user
     log_utility.setUpDataConversionLogger(local_log_file=local_log,
-                                          local_error_file=local_error,
-                                          local_error_raw_output=True,
+                                          local_logger_level=log_utility.DEFAULT_LOCAL_LOGGER_LEVEL,
                                           stdout_output_level=logging.INFO)
     log_utility.setUpDataConversionLogger(name="output",
                                           local_log_file=output_log,
-                                          local_logger_raw_output=True)
+                                          local_logger_raw_output=True,
+                                          extra_loggers=[(local_log, log_utility.DEFAULT_LOCAL_LOGGER_LEVEL, False)])
 
     if converter == 'Open Babel':
         stdouterr_ob = py.io.StdCaptureFD(in_=False)
