@@ -12,7 +12,7 @@ from datetime import datetime
 from flask import Flask, request, render_template, abort, Response
 
 from psdi_data_conversion import log_utility
-from psdi_data_conversion.converter import FileConverter
+from psdi_data_conversion.converter import DOWNLOAD_DIR, FileConverter
 
 # Create a token by hashing the current date and time.
 dt = str(datetime.now())
@@ -82,8 +82,8 @@ def feedback():
 def delete():
     """Delete files in folder 'downloads'
     """
-    os.remove('static/downloads/' + request.form['filename'])
-    os.remove('static/downloads/' + request.form['logname'])
+    os.remove(f"{DOWNLOAD_DIR}/{request.form['filename']}")
+    os.remove(f"{DOWNLOAD_DIR}/{request.form['logname']}")
 
     return 'okay'
 
