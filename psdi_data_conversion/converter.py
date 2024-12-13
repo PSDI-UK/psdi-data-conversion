@@ -14,6 +14,7 @@ import subprocess
 from openbabel import openbabel
 from flask import abort
 from werkzeug.datastructures import FileStorage
+from werkzeug.exceptions import HTTPException
 
 from psdi_data_conversion import log_utility
 
@@ -124,7 +125,10 @@ class FileConverter:
                 self._convert_ato()
             else:
                 self._abort(f"ERROR: Unknown logger '{self.converter}' requested")
-        except Exception:
+        except Exception as e:
+            if isinstance(e, HTTPException):
+                # Don't catch a deliberate abort; let it pass through
+                raise
             self._abort(f"The application encountered an unexpected error:\n{traceback.format_exc()}")
 
         self._append_to_log_file("conversions")
@@ -377,10 +381,10 @@ class FileConverter:
         # Write the converted file
         ob_conversion.WriteFile(mol, self.out_filename)
 
-        self.in_size, self.out_size = self._check_file_size()
-
         self.out, self.err = stdouterr_ob.reset()   # Grab stdout and stderr
         stdouterr_ob.done()
+
+        self.in_size, self.out_size = self._check_file_size()
 
         if self.file_to_convert != 'file':  # Website only (i.e., not command line option)
             os.remove(self.in_filename)
