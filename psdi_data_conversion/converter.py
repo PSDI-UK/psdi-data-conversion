@@ -11,7 +11,8 @@ import os
 import py.io
 import subprocess
 from openbabel import openbabel
-from flask import request, abort
+from flask import abort
+from werkzeug.datastructures import FileStorage
 
 from psdi_data_conversion import log_utility
 
@@ -67,61 +68,102 @@ def check_file_size(in_filename, out_filename):
     return in_size, out_size
 
 
-def convert_file(file):
-    """Convert the uploaded file to the required format, generating atomic coordinates if required
+class FileConverter:
+    """Class to handle conversion of files from one type to another
     """
 
-    f = request.files[file]
-    filename_base = f.filename.split(".")[0]  # E.g. ethane.mol --> ethane
+    def __init__(self,
+                 files: dict[str, FileStorage],
+                 form: dict[str, str],
+                 file_to_convert: str):
+        """Initialize the object, storing needed data and setting up loggers.
 
-    in_filename = 'static/uploads/' + f.filename
+        Parameters
+        ----------
+        files : ImmutableMultiDict[str, FileStorage]
+            The file dict provided by Flask at `request.files`
+        form : ImmutableMultiDict[str, str]
+            The form dict provided by Flask at `request.form`
+        file_to_convert : str
+            The key for the file in the `files` dict to convert
+        """
+        self.files = files
+        self.form = form
+        self.file_to_convert = file_to_convert
 
-    f.save(in_filename)
+        self.f = self.files[self.file_to_convert]
+        self.filename_base = self.f.filename.split(".")[0]  # E.g. ethane.mol --> ethane
 
-    # Retrieve 'from' and 'to' file formats
-    from_format = request.form['from']
-    to_format = request.form['to']
+        self.in_filename = f"{UPLOAD_DIR}/{self.f.filename}"
 
-    converter = request.form['converter']
+        self.f.save(self.in_filename)
 
-    out_filename = f"{DOWNLOAD_DIR}/{filename_base}.{to_format}"
+        # Retrieve 'from' and 'to' file formats
+        self.from_format = self.form['from']
+        self.to_format = self.form['to']
 
-    # Set up files to log to
-    local_log_base = f"{DOWNLOAD_DIR}/{f.filename}-{filename_base}.{to_format}"
-    local_log = f"{local_log_base}.log"
-    local_error = f"{local_log_base}.err"
-    output_log = f"{DOWNLOAD_DIR}/{filename_base}.log.txt"
+        self.converter = self.form['converter']
 
-    # If any previous local logs exist, delete them
-    if os.path.exists(local_log):
-        os.remove(local_log)
-    if os.path.exists(local_error):
-        os.remove(local_error)
-    if os.path.exists(output_log):
-        os.remove(output_log)
+        self.out_filename = f"{DOWNLOAD_DIR}/{self.filename_base}.{self.to_format}"
 
-    # Set up loggers - one for general-purpose log_utility, and one just for what we want to output to the user
-    log_utility.setUpDataConversionLogger(local_log_file=local_log,
-                                          local_logger_level=log_utility.DEFAULT_LOCAL_LOGGER_LEVEL,
-                                          stdout_output_level=logging.INFO)
-    log_utility.setUpDataConversionLogger(name="output",
-                                          local_log_file=output_log,
-                                          local_logger_raw_output=True,
-                                          extra_loggers=[(local_log, log_utility.DEFAULT_LOCAL_LOGGER_LEVEL, False)])
+        # Set up files to log to
+        local_log_base = f"{DOWNLOAD_DIR}/{self.f.filename}-{self.filename_base}.{self.to_format}"
+        local_log = f"{local_log_base}.log"
+        local_error = f"{local_log_base}.err"
+        output_log = f"{DOWNLOAD_DIR}/{self.filename_base}.log.txt"
 
-    if converter == 'Open Babel':
+        # If any previous local logs exist, delete them
+        if os.path.exists(local_log):
+            os.remove(local_log)
+        if os.path.exists(local_error):
+            os.remove(local_error)
+        if os.path.exists(output_log):
+            os.remove(output_log)
+
+        # Set up loggers - one for general-purpose log_utility, and one just for what we want to output to the user
+        self.logger = log_utility.setUpDataConversionLogger(local_log_file=local_log,
+                                                            local_logger_level=log_utility.DEFAULT_LOCAL_LOGGER_LEVEL,
+                                                            stdout_output_level=logging.INFO)
+        self.output_logger = log_utility.setUpDataConversionLogger(name="output",
+                                                                   local_log_file=output_log,
+                                                                   local_logger_raw_output=True,
+                                                                   extra_loggers=[(
+                                                                       local_log,
+                                                                       log_utility.DEFAULT_LOCAL_LOGGER_LEVEL,
+                                                                       False)])
+
+    def __call__(self):
+        """Run the file conversion
+        """
+
+        if self.converter == 'Open Babel':
+            self._convert_ob()
+        elif self.converter == 'Atomsk':
+            self._convert_ato()
+        else:
+            self.output_logger.error(f"ERROR: Unknown logger '{self.converter}' requested")
+            abort(405)
+
+        self.in_size, self.out_size = check_file_size(self.in_filename, self.out_filename)
+
+        self._append_to_log_file("conversions")
+
+        return ('\nConverting from ' + self.filename_base + '.' + self.from_format + ' to ' + self.filename_base +
+                '.' + self.to_format + '\n')
+
+    def _convert_ob(self):
         stdouterr_ob = py.io.StdCaptureFD(in_=False)
 
         ob_conversion = openbabel.OBConversion()
-        ob_conversion.SetInAndOutFormats(from_format, to_format)
+        ob_conversion.SetInAndOutFormats(self.from_format, self.to_format)
 
         # Retrieve 'from' and 'to' option flags and arguments
-        from_flags = request.form['from_flags']
-        to_flags = request.form['to_flags']
-        from_arg_flags = request.form['from_arg_flags']
-        to_arg_flags = request.form['to_arg_flags']
-        from_args = request.form['from_args']
-        to_args = request.form['to_args']
+        from_flags = self.form['from_flags']
+        to_flags = self.form['to_flags']
+        from_arg_flags = self.form['from_arg_flags']
+        to_arg_flags = self.form['to_arg_flags']
+        from_args = self.form['from_args']
+        to_args = self.form['to_args']
 
         # Add option flags and arguments as appropriate
         for char in from_flags:
@@ -149,109 +191,87 @@ def convert_file(file):
 
         # Read the file to be converted
         mol = openbabel.OBMol()
-        ob_conversion.ReadFile(mol, in_filename)
+        ob_conversion.ReadFile(mol, self.in_filename)
 
         # Retrieve coordinate calculation type (Gen2D, Gen3D, neither)
-        calc_type = request.form['coordinates']
+        calc_type = self.form['coordinates']
 
         option = 'N/A'
 
         # Calculate atomic coordinates
         if calc_type != 'neither':
             # Retrieve coordinate calculation option (fastest, fast, medium, better, best)
-            option = request.form['coordOption']
+            option = self.form['coordOption']
 
             gen = openbabel.OBOp.FindType(calc_type)
             gen.Do(mol, option)
 
         # Write the converted file
-        ob_conversion.WriteFile(mol, out_filename)
+        ob_conversion.WriteFile(mol, self.out_filename)
 
-        out, err = stdouterr_ob.reset()   # Grab stdout and stderr
+        self.out, self.err = stdouterr_ob.reset()   # Grab stdout and stderr
 
-        # Determine file sizes for logging purposes and check output isn't too large
-        in_size, out_size = check_file_size(in_filename, out_filename)
-
-        if file != 'file':  # Website only (i.e., not command line option)
-            os.remove(in_filename)
-            from_format = request.form['from_full']
-            to_format = request.form['to_full']
-            quality = request.form['success']
+        if self.file != 'file':  # Website only (i.e., not command line option)
+            os.remove(self.in_filename)
+            self.from_format = self.form['from_full']
+            self.to_format = self.form['to_full']
+            self.quality = self.form['success']
         else:
-            quality = get_quality(from_format, to_format)
+            self.quality = self.get_quality(self.from_format, self.to_format)
 
-        if err.find('Error') > -1:
-            log_utility.log_error(from_format, to_format, converter, filename_base, calc_type, option, from_flags,
-                                  to_flags, read_flags_args, write_flags_args, err)
+        if self.err.find('Error') > -1:
+            self._log_error_ob()
             stdouterr_ob.done()
             abort(405)  # return http status code 405
         else:
-            log_utility.log(from_format, to_format, converter, filename_base, calc_type, option, from_flags,
-                            to_flags, read_flags_args, write_flags_args, quality, out, err)
+            self._log_success_ob()
+            stdouterr_ob.done()
 
-        stdouterr_ob.done()
-    elif request.form['converter'] == 'Atomsk':
-        atomsk = subprocess.run(['sh', 'atomsk.sh', f.filename, filename_base,
-                                to_format], capture_output=True, text=True)
+    def _convert_ato(self):
+        atomsk = subprocess.run(['sh', 'atomsk.sh', self.f.filename, self.filename_base,
+                                self.to_format], capture_output=True, text=True)
 
-        out = atomsk.stdout
-        err = atomsk.stderr
+        self.out = atomsk.stdout
+        self.err = atomsk.stderr
 
-        # Determine file sizes for logging purposes and check output isn't too large
-        in_size, out_size = check_file_size(in_filename, out_filename)
-
-        if file != 'file':   # Website only (i.e., not command line option)
-            os.remove(in_filename)
-            from_format = request.form['from_full']
-            to_format = request.form['to_full']
-            quality = request.form['success']
+        if self.file != 'file':   # Website only (i.e., not command line option)
+            os.remove(self.in_filename)
+            self.from_format = self.form['from_full']
+            self.to_format = self.form['to_full']
+            self.quality = self.form['success']
         else:
-            quality = get_quality(from_format, to_format)
+            self.quality = self.get_quality(self.from_format, self.to_format)
 
-        if err.find('Error') > -1:
-            log_utility.log_error_ato(from_format, to_format, converter, filename_base, err)
+        if self.err.find('Error') > -1:
+            self._log_error_ato()
             abort(405)   # return http status code 405
         else:
-            log_utility.log_ato(from_format, to_format, converter, filename_base, quality, out, err)
+            self._log_success_ato()
 
-    log_utility.append_to_log_file("conversions", {
-        "datetime": log_utility.get_date_time(),
-        "fromFormat": from_format,
-        "toFormat": to_format,
-        "converter": converter,
-        "fname": filename_base,
-        "inSize": in_size,
-        "outSize": out_size,
-        "quality": quality,
-    })
+    @staticmethod
+    def get_quality(from_ext, to_ext):
+        """Query the JSON file to obtain conversion quality
+        """
 
-    return '\nConverting from ' + filename_base + '.' + from_format + ' to ' + filename_base + '.' + to_format + '\n'
+        try:
 
+            # Load JSON file.
+            with open("static/data/data.json") as datafile:
+                data = json.load(datafile)
 
-# Query the JSON file to obtain conversion quality
-def get_quality(from_ext, to_ext):
-    """Query the JSON file to obtain conversion quality
-    """
+            from_format = [d for d in data["formats"] if d["extension"] == from_ext]
+            to_format = [d for d in data["formats"] if d["extension"] == to_ext]
+            open_babel = [d for d in data["converters"] if d["name"] == "Open Babel"]
 
-    try:
+            open_babel_id = open_babel[0]["id"]
+            from_id = from_format[0]["id"]
+            to_id = to_format[0]["id"]
 
-        # Load JSON file.
-        with open("static/data/data.json") as datafile:
-            data = json.load(datafile)
+            converts_to = [d for d in data["converts_to"] if
+                           d["converters_id"] == open_babel_id and d["in_id"] == from_id and d["out_id"] == to_id]
 
-        from_format = [d for d in data["formats"] if d["extension"] == from_ext]
-        to_format = [d for d in data["formats"] if d["extension"] == to_ext]
-        open_babel = [d for d in data["converters"] if d["name"] == "Open Babel"]
+            return converts_to[0]["degree_of_success"]
 
-        open_babel_id = open_babel[0]["id"]
-        from_id = from_format[0]["id"]
-        to_id = to_format[0]["id"]
+        except Exception:
 
-        converts_to = [d for d in data["converts_to"] if
-                       d["converters_id"] == open_babel_id and d["in_id"] == from_id and d["out_id"] == to_id]
-
-        return converts_to[0]["degree_of_success"]
-
-    except Exception:
-
-        return "unknown"
+            return "unknown"
