@@ -290,8 +290,8 @@ class FileConverter:
             os.remove(self.out_filename)
 
             self._abort(413,
-                        f"ERROR converting {os.path.basename(self.in_filename)} to {
-                            os.path.basename(self.out_filename)}: "
+                        f"ERROR converting {os.path.basename(self.in_filename)} to " +
+                        os.path.basename(self.out_filename) + ": "
                         f"Output file exceeds maximum size.\nInput file size is "
                         f"{in_size/MEGABYTE:.2f} MB; Output file size is {out_size/MEGABYTE:.2f} "
                         f"MB; maximum output file size is {self.max_file_size/MEGABYTE:.2f} MB.\n")
