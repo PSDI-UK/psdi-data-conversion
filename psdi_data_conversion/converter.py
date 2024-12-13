@@ -114,13 +114,16 @@ class FileConverter:
         """Run the file conversion
         """
 
-        if self.converter == 'Open Babel':
-            self._convert_ob()
-        elif self.converter == 'Atomsk':
-            self._convert_ato()
-        else:
-            self.output_logger.error(f"ERROR: Unknown logger '{self.converter}' requested")
-            abort(405)
+        try:
+            if self.converter == 'Open Babel':
+                self._convert_ob()
+            elif self.converter == 'Atomsk':
+                self._convert_ato()
+            else:
+                self.output_logger.error(f"ERROR: Unknown logger '{self.converter}' requested")
+                abort(405)
+        except Exception as e:
+            self.output_logger.error(f"The application encountered an unexpected error:\n{str(e)}")
 
         self._append_to_log_file("conversions")
 
