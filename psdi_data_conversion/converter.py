@@ -31,43 +31,6 @@ if not os.path.exists(DOWNLOAD_DIR):
     os.makedirs(DOWNLOAD_DIR, exist_ok=True)
 
 
-def check_file_size(in_filename, out_filename):
-    """Get file sizes, checking that output file isn't too large
-
-    Parameters
-    ----------
-    in_filename : str
-        Fully-qualified name of input file
-    out_filename : str
-        Fully-qualified name of output file
-
-    Returns
-    -------
-    in_size : int
-        Size of input file in bytes
-    out_size : int
-        Size of output file in bytes
-    """
-    in_size = os.path.getsize(in_filename)
-    out_size = os.path.getsize(out_filename)
-
-    # Check that the output file doesn't exceed the maximum allowed size
-    if out_size > MAX_FILE_SIZE:
-        log_utility.getDataConversionLogger("output").error(
-            f"ERROR converting {os.path.basename(in_filename)} to {os.path.basename(out_filename)}: "
-            f"Output file exceeds maximum size.\nInput file size is "
-            f"{in_size/MEGABYTE:.2f} MB; Output file size is {out_size/MEGABYTE:.2f} "
-            f"MB; maximum output file size is {MAX_FILE_SIZE/MEGABYTE:.2f} MB.\n")
-
-        # Delete output and input files
-        os.remove(in_filename)
-        os.remove(out_filename)
-
-        abort(405)   # return http status code 405
-
-    return in_size, out_size
-
-
 class FileConverter:
     """Class to handle conversion of files from one type to another
     """
@@ -145,6 +108,7 @@ class FileConverter:
         self.read_flags_args: list[str] | None = None
         self.write_flags_args: list[str] | None = None
         self.calc_type: str | None = None
+        self.option: str | None = None
 
     def run(self):
         """Run the file conversion
@@ -157,8 +121,6 @@ class FileConverter:
         else:
             self.output_logger.error(f"ERROR: Unknown logger '{self.converter}' requested")
             abort(405)
-
-        self.in_size, self.out_size = check_file_size(self.in_filename, self.out_filename)
 
         self._append_to_log_file("conversions")
 
@@ -180,7 +142,8 @@ class FileConverter:
         elif self.calc_type:
             message += 'Coord. gen.:       ' + self.calc_type + '\n'
 
-        message += 'Coord. option:     ' + self.option + '\n'
+        if self.option:
+            message += 'Coord. option:     ' + self.option + '\n'
 
         if self.from_flags == '':
             message += 'Read options:      none\n'
@@ -237,6 +200,98 @@ class FileConverter:
                 'To:                ' + self.to_format + '\n'
                 'Converter:         ' + self.converter + '\n')
 
+    def _log_success(self):
+        """Write conversion information to server-side file, ready for downloading to user
+        """
+
+        message = (self._create_message() +
+                   'Quality:           ' + self.quality + '\n'
+                   'Success:           Assuming that the data provided was of the correct format, the conversion\n'
+                   '                   was successful (to the best of our knowledge) subject to any warnings below.\n' +
+                   self.out + '\n' + self.err)
+
+        self.output_logger.info(message)
+
+    def _append_to_log_file(self, log_name):
+        """Append data to a log file
+
+        Parameters
+        ----------
+        log_name : _type_
+            _description_
+        """
+
+        data = {
+            "datetime": log_utility.get_date_time(),
+            "fromFormat": self.from_format,
+            "toFormat": self.to_format,
+            "converter": self.converter,
+            "fname": self.filename_base,
+            "inSize": self.in_size,
+            "outSize": self.out_size,
+            "quality": self.quality,
+        }
+
+        if (os.environ.get('ENABLE_DCS_LOG') is not None):
+            print(json.dumps(data))
+
+    def _check_file_size(self):
+        """Get file sizes, checking that output file isn't too large
+
+        Returns
+        -------
+        in_size : int
+            Size of input file in bytes
+        out_size : int
+            Size of output file in bytes
+        """
+        in_size = os.path.getsize(self.in_filename)
+        out_size = os.path.getsize(self.out_filename)
+
+        # Check that the output file doesn't exceed the maximum allowed size
+        if out_size > MAX_FILE_SIZE:
+            self.output_logger.error(
+                f"ERROR converting {os.path.basename(self.in_filename)} to {os.path.basename(self.out_filename)}: "
+                f"Output file exceeds maximum size.\nInput file size is "
+                f"{in_size/MEGABYTE:.2f} MB; Output file size is {out_size/MEGABYTE:.2f} "
+                f"MB; maximum output file size is {MAX_FILE_SIZE/MEGABYTE:.2f} MB.\n")
+
+            # Delete output and input files
+            os.remove(self.in_filename)
+            os.remove(self.out_filename)
+
+            abort(405)   # return http status code 405
+
+        return in_size, out_size
+
+    @staticmethod
+    def get_quality(from_ext, to_ext):
+        """Query the JSON file to obtain conversion quality
+        """
+
+        try:
+
+            # Load JSON file.
+            with open("static/data/data.json") as datafile:
+                data = json.load(datafile)
+
+            from_format = [d for d in data["formats"] if d["extension"] == from_ext]
+            to_format = [d for d in data["formats"] if d["extension"] == to_ext]
+            open_babel = [d for d in data["converters"] if d["name"] == "Open Babel"]
+
+            open_babel_id = open_babel[0]["id"]
+            from_id = from_format[0]["id"]
+            to_id = to_format[0]["id"]
+
+            converts_to = [d for d in data["converts_to"] if
+                           d["converters_id"] == open_babel_id and d["in_id"] == from_id and d["out_id"] == to_id]
+
+            return converts_to[0]["degree_of_success"]
+
+        except Exception:
+
+            return "unknown"
+
     def _convert_ob(self):
         stdouterr_ob = py.io.StdCaptureFD(in_=False)
 
@@ -282,22 +337,24 @@ class FileConverter:
         # Retrieve coordinate calculation type (Gen2D, Gen3D, neither)
         self.calc_type = self.form['coordinates']
 
-        option = 'N/A'
+        self.option = 'N/A'
 
         # Calculate atomic coordinates
         if self.calc_type != 'neither':
             # Retrieve coordinate calculation option (fastest, fast, medium, better, best)
-            option = self.form['coordOption']
+            self.option = self.form['coordOption']
 
             gen = openbabel.OBOp.FindType(self.calc_type)
-            gen.Do(mol, option)
+            gen.Do(mol, self.option)
 
         # Write the converted file
         ob_conversion.WriteFile(mol, self.out_filename)
 
+        self.in_size, self.out_size = self._check_file_size()
+
         self.out, self.err = stdouterr_ob.reset()   # Grab stdout and stderr
 
-        if self.file != 'file':  # Website only (i.e., not command line option)
+        if self.file_to_convert != 'file':  # Website only (i.e., not command line option)
             os.remove(self.in_filename)
             self.from_format = self.form['from_full']
             self.to_format = self.form['to_full']
@@ -313,26 +370,16 @@ class FileConverter:
             self._log_success()
             stdouterr_ob.done()
 
-    def _log_success(self):
-        """Write Open Babel conversion information to server-side file, ready for downloading to user
-        """
-
-        message = (self._create_message() +
-                   'Quality:           ' + self.quality + '\n'
-                   'Success:           Assuming that the data provided was of the correct format, the conversion\n'
-                   '                   was successful (to the best of our knowledge) subject to any warnings below.\n' +
-                   self.out + '\n' + self.err)
-
-        self.output_logger.info(message)
-
     def _convert_ato(self):
         atomsk = subprocess.run(['sh', 'atomsk.sh', self.f.filename, self.filename_base,
                                 self.to_format], capture_output=True, text=True)
 
+        self.in_size, self.out_size = self._check_file_size()
+
         self.out = atomsk.stdout
         self.err = atomsk.stderr
 
-        if self.file != 'file':   # Website only (i.e., not command line option)
+        if self.file_to_convert != 'file':   # Website only (i.e., not command line option)
             os.remove(self.in_filename)
             self.from_format = self.form['from_full']
             self.to_format = self.form['to_full']
@@ -345,31 +392,3 @@ class FileConverter:
             abort(405)   # return http status code 405
         else:
             self._log_success()
-
-    @staticmethod
-    def get_quality(from_ext, to_ext):
-        """Query the JSON file to obtain conversion quality
-        """
-
-        try:
-
-            # Load JSON file.
-            with open("static/data/data.json") as datafile:
-                data = json.load(datafile)
-
-            from_format = [d for d in data["formats"] if d["extension"] == from_ext]
-            to_format = [d for d in data["formats"] if d["extension"] == to_ext]
-            open_babel = [d for d in data["converters"] if d["name"] == "Open Babel"]
-
-            open_babel_id = open_babel[0]["id"]
-            from_id = from_format[0]["id"]
-            to_id = to_format[0]["id"]
-
-            converts_to = [d for d in data["converts_to"] if
-                           d["converters_id"] == open_babel_id and d["in_id"] == from_id and d["out_id"] == to_id]
-
-            return converts_to[0]["degree_of_success"]
-
-        except Exception:
-
-            return "unknown"

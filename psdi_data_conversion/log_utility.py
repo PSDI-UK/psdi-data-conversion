@@ -6,7 +6,6 @@ Functions and classes related to logging
 """
 
 from datetime import datetime
-import json
 import logging
 import os
 import sys
@@ -178,21 +177,6 @@ def get_date_time():
         Current date and time in the format YYYY-MM-DD HH:MM:SS
     """
     return get_date() + ' ' + get_time()
-
-
-def append_to_log_file(log_name, data):
-    """Append data to a log file
-
-    Parameters
-    ----------
-    log_name : _type_
-        _description_
-    data : _type_
-        _description_
-    """
-
-    if (os.environ.get('ENABLE_DCS_LOG') is not None):
-        print(json.dumps(data))
 
 
 def format(time):
