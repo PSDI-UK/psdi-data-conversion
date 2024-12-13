@@ -137,12 +137,12 @@ def convert_file(file):
 
     # Set up loggers - one for general-purpose log_utility, and one just for what we want to output to the user
     log_utility.setUpDataConversionLogger(local_log_file=local_log,
-                                          local_error_file=local_error,
-                                          local_error_raw_output=True,
+                                          local_logger_level=log_utility.DEFAULT_LOCAL_LOGGER_LEVEL,
                                           stdout_output_level=logging.INFO)
     log_utility.setUpDataConversionLogger(name="output",
                                           local_log_file=output_log,
-                                          local_logger_raw_output=True)
+                                          local_logger_raw_output=True,
+                                          extra_loggers=[(local_log, log_utility.DEFAULT_LOCAL_LOGGER_LEVEL, False)])
 
     if converter == 'Open Babel':
         stdouterr_ob = py.io.StdCaptureFD(in_=False)
