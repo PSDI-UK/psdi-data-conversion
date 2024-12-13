@@ -73,8 +73,7 @@ def test_get_logger(tmp_path):
     log_utility.setUpDataConversionLogger("fn-test",
                                           local_log_file=test_log_filename,
                                           local_logger_level=test_log_level,
-                                          local_error_file=test_error_filename,
-                                          local_error_level=test_error_level)
+                                          extra_loggers=[(test_error_filename, test_error_level, False)])
 
     # Search through the logger's handlers to get all files it logs to and at what levels
     l_files_and_levels = []
