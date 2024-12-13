@@ -19,7 +19,7 @@ from psdi_data_conversion import log_utility
 
 # Maximum output file size in bytes
 MEGABYTE = 1024*1024
-MAX_FILE_SIZE = 1*MEGABYTE
+DEFAULT_MAX_FILE_SIZE = 0.1*MEGABYTE
 
 # Create directory 'uploads' if not extant.
 UPLOAD_DIR = './static/uploads'
@@ -35,6 +35,8 @@ if not os.path.exists(DOWNLOAD_DIR):
 class FileConverter:
     """Class to handle conversion of files from one type to another
     """
+
+    max_file_size = DEFAULT_MAX_FILE_SIZE
 
     def __init__(self,
                  files: dict[str, FileStorage],
@@ -275,7 +277,7 @@ class FileConverter:
         out_size = os.path.getsize(self.out_filename)
 
         # Check that the output file doesn't exceed the maximum allowed size
-        if out_size > MAX_FILE_SIZE:
+        if out_size > self.max_file_size:
 
             # Delete output and input files
             os.remove(self.in_filename)
@@ -285,7 +287,7 @@ class FileConverter:
                 f"ERROR converting {os.path.basename(self.in_filename)} to {os.path.basename(self.out_filename)}: "
                 f"Output file exceeds maximum size.\nInput file size is "
                 f"{in_size/MEGABYTE:.2f} MB; Output file size is {out_size/MEGABYTE:.2f} "
-                f"MB; maximum output file size is {MAX_FILE_SIZE/MEGABYTE:.2f} MB.\n")
+                f"MB; maximum output file size is {self.max_file_size/MEGABYTE:.2f} MB.\n")
 
         return in_size, out_size
 
