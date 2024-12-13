@@ -124,23 +124,25 @@ class FileConverter:
             elif self.converter == 'Atomsk':
                 self._convert_ato()
             else:
-                self._abort(f"ERROR: Unknown logger '{self.converter}' requested")
+                self._abort(405, f"ERROR: Unknown logger '{self.converter}' requested")
         except Exception as e:
             if isinstance(e, HTTPException):
                 # Don't catch a deliberate abort; let it pass through
                 raise
-            self._abort(f"The application encountered an unexpected error:\n{traceback.format_exc()}")
+            self._abort(message=f"The application encountered an unexpected error:\n{traceback.format_exc()}")
 
         self._append_to_log_file("conversions")
 
         return ('\nConverting from ' + self.filename_base + '.' + self.from_format + ' to ' + self.filename_base +
                 '.' + self.to_format + '\n')
 
-    def _abort(self, message=None):
+    def _abort(self, status_code=422, message=None):
         """Abort the conversion, reporting the desired message to the user at the top of the output
 
         Parameters
         ----------
+        status_code : int
+            The HTTP status code to exit with. Default is 422: Unprocessable Content
         message : str | None
             If provided, this message will be logged in the user output log at the top of the file. This should
             typically explain the reason the process failed
@@ -157,13 +159,13 @@ class FileConverter:
             # Note this message in the dev logger as well
             self.logger.error(message)
 
-        abort(405)
+        abort(status_code)
 
     def _abort_from_err(self):
         """Write conversion error information to server-side log file and abort the conversion
         """
         self.output_logger.info(self._create_message())
-        self._abort(self.err)
+        self._abort(message=self.err)
 
     def _create_message(self):
 
@@ -287,11 +289,12 @@ class FileConverter:
             os.remove(self.in_filename)
             os.remove(self.out_filename)
 
-            self._abort(
-                f"ERROR converting {os.path.basename(self.in_filename)} to {os.path.basename(self.out_filename)}: "
-                f"Output file exceeds maximum size.\nInput file size is "
-                f"{in_size/MEGABYTE:.2f} MB; Output file size is {out_size/MEGABYTE:.2f} "
-                f"MB; maximum output file size is {self.max_file_size/MEGABYTE:.2f} MB.\n")
+            self._abort(413,
+                        f"ERROR converting {os.path.basename(self.in_filename)} to {
+                            os.path.basename(self.out_filename)}: "
+                        f"Output file exceeds maximum size.\nInput file size is "
+                        f"{in_size/MEGABYTE:.2f} MB; Output file size is {out_size/MEGABYTE:.2f} "
+                        f"MB; maximum output file size is {self.max_file_size/MEGABYTE:.2f} MB.\n")
 
         return in_size, out_size
 
