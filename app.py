@@ -87,7 +87,7 @@ def check_file_size(in_filename, out_filename):
 
     # Check that the output file doesn't exceed the maximum allowed size
     if out_size > MAX_FILE_SIZE:
-        log_utility.getDataConversionLogger().error(
+        log_utility.getDataConversionLogger("output").error(
             f"ERROR converting {os.path.basename(in_filename)} to {os.path.basename(out_filename)}: "
             f"Output file exceeds maximum size.\nInput file size is "
             f"{in_size/MEGABYTE:.2f} MB; Output file size is {out_size/MEGABYTE:.2f} "
@@ -124,14 +124,11 @@ def convert_file(file):
     # Set up files to log to
     local_log_base = f"{DOWNLOAD_DIR}/{f.filename}-{filename_base}.{to_format}"
     local_log = f"{local_log_base}.log"
-    local_error = f"{local_log_base}.err"
     output_log = f"{DOWNLOAD_DIR}/{filename_base}.log.txt"
 
     # If any previous local logs exist, delete them
     if os.path.exists(local_log):
         os.remove(local_log)
-    if os.path.exists(local_error):
-        os.remove(local_error)
     if os.path.exists(output_log):
         os.remove(output_log)
 

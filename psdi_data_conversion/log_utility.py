@@ -287,7 +287,7 @@ def log_error(from_format, to_format, converter, fname, calc_type, option, from_
     """
     message = create_message(fname, from_format, to_format, converter, calc_type, option,
                              from_flags, to_flags, read_flags_args, write_flags_args) + err
-    getDataConversionLogger().error(message)
+    getDataConversionLogger("output").error(message)
 
 
 def log_error_ato(from_format, to_format, converter, fname, err):
@@ -307,7 +307,7 @@ def log_error_ato(from_format, to_format, converter, fname, err):
         _description_
     """
     message = create_message(fname, from_format, to_format, converter) + err
-    getDataConversionLogger().error(message)
+    getDataConversionLogger("output").error(message)
 
 
 def create_message(fname, from_format, to_format, converter, calc_type, option, from_flags, to_flags, read_flags_args,
