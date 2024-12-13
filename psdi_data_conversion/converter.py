@@ -20,7 +20,7 @@ from psdi_data_conversion import log_utility
 
 # Maximum output file size in bytes
 MEGABYTE = 1024*1024
-DEFAULT_MAX_FILE_SIZE = 0.1*MEGABYTE
+DEFAULT_MAX_FILE_SIZE = 1*MEGABYTE
 
 # Create directory 'uploads' if not extant.
 UPLOAD_DIR = './static/uploads'
