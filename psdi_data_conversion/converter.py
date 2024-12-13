@@ -8,6 +8,7 @@ Class and functions to perform file conversion
 import json
 import logging
 import os
+import traceback
 import py.io
 import subprocess
 from openbabel import openbabel
@@ -73,22 +74,22 @@ class FileConverter:
         local_log_base = f"{DOWNLOAD_DIR}/{self.f.filename}-{self.filename_base}.{self.to_format}"
         local_log = f"{local_log_base}.log"
         local_error = f"{local_log_base}.err"
-        output_log = f"{DOWNLOAD_DIR}/{self.filename_base}.log.txt"
+        self.output_log = f"{DOWNLOAD_DIR}/{self.filename_base}.log.txt"
 
         # If any previous local logs exist, delete them
         if os.path.exists(local_log):
             os.remove(local_log)
         if os.path.exists(local_error):
             os.remove(local_error)
-        if os.path.exists(output_log):
-            os.remove(output_log)
+        if os.path.exists(self.output_log):
+            os.remove(self.output_log)
 
         # Set up loggers - one for general-purpose log_utility, and one just for what we want to output to the user
         self.logger = log_utility.setUpDataConversionLogger(local_log_file=local_log,
                                                             local_logger_level=log_utility.DEFAULT_LOCAL_LOGGER_LEVEL,
                                                             stdout_output_level=logging.INFO)
         self.output_logger = log_utility.setUpDataConversionLogger(name="output",
-                                                                   local_log_file=output_log,
+                                                                   local_log_file=self.output_log,
                                                                    local_logger_raw_output=True,
                                                                    extra_loggers=[(
                                                                        local_log,
@@ -120,21 +121,43 @@ class FileConverter:
             elif self.converter == 'Atomsk':
                 self._convert_ato()
             else:
-                self.output_logger.error(f"ERROR: Unknown logger '{self.converter}' requested")
-                abort(405)
-        except Exception as e:
-            self.output_logger.error(f"The application encountered an unexpected error:\n{str(e)}")
+                self._abort(f"ERROR: Unknown logger '{self.converter}' requested")
+        except Exception:
+            self._abort(f"The application encountered an unexpected error:\n{traceback.format_exc()}")
 
         self._append_to_log_file("conversions")
 
         return ('\nConverting from ' + self.filename_base + '.' + self.from_format + ' to ' + self.filename_base +
                 '.' + self.to_format + '\n')
 
-    def _log_error(self):
-        """Write conversion error information to server-side log file
+    def _abort(self, message=None):
+        """Abort the conversion, reporting the desired message to the user at the top of the output
+
+        Parameters
+        ----------
+        message : str | None
+            If provided, this message will be logged in the user output log at the top of the file. This should
+            typically explain the reason the process failed
         """
-        message = self._create_message() + self.err
-        self.output_logger.error(message)
+        if message:
+            # If we're adding a message, read in any prior logs, clear the log, write the message, then write the
+            # prior logs
+            prior_output_log = open(self.output_log, "r").read()
+            os.remove(self.output_log)
+            with open(self.output_log, "w") as fo:
+                fo.write(message + "\n")
+                fo.write(prior_output_log)
+
+            # Note this message in the dev logger as well
+            self.logger.error(message)
+
+        abort(405)
+
+    def _abort_from_err(self):
+        """Write conversion error information to server-side log file and abort the conversion
+        """
+        self.output_logger.info(self._create_message())
+        self._abort(self.err)
 
     def _create_message(self):
 
@@ -253,17 +276,16 @@ class FileConverter:
 
         # Check that the output file doesn't exceed the maximum allowed size
         if out_size > MAX_FILE_SIZE:
-            self.output_logger.error(
-                f"ERROR converting {os.path.basename(self.in_filename)} to {os.path.basename(self.out_filename)}: "
-                f"Output file exceeds maximum size.\nInput file size is "
-                f"{in_size/MEGABYTE:.2f} MB; Output file size is {out_size/MEGABYTE:.2f} "
-                f"MB; maximum output file size is {MAX_FILE_SIZE/MEGABYTE:.2f} MB.\n")
 
             # Delete output and input files
             os.remove(self.in_filename)
             os.remove(self.out_filename)
 
-            abort(405)   # return http status code 405
+            self._abort(
+                f"ERROR converting {os.path.basename(self.in_filename)} to {os.path.basename(self.out_filename)}: "
+                f"Output file exceeds maximum size.\nInput file size is "
+                f"{in_size/MEGABYTE:.2f} MB; Output file size is {out_size/MEGABYTE:.2f} "
+                f"MB; maximum output file size is {MAX_FILE_SIZE/MEGABYTE:.2f} MB.\n")
 
         return in_size, out_size
 
@@ -356,6 +378,7 @@ class FileConverter:
         self.in_size, self.out_size = self._check_file_size()
 
         self.out, self.err = stdouterr_ob.reset()   # Grab stdout and stderr
+        stdouterr_ob.done()
 
         if self.file_to_convert != 'file':  # Website only (i.e., not command line option)
             os.remove(self.in_filename)
@@ -366,12 +389,9 @@ class FileConverter:
             self.quality = self.get_quality(self.from_format, self.to_format)
 
         if self.err.find('Error') > -1:
-            self._log_error()
-            stdouterr_ob.done()
-            abort(405)  # return http status code 405
+            self._abort_from_err()
         else:
             self._log_success()
-            stdouterr_ob.done()
 
     def _convert_ato(self):
         atomsk = subprocess.run(['sh', 'atomsk.sh', self.f.filename, self.filename_base,
@@ -391,7 +411,6 @@ class FileConverter:
             self.quality = self.get_quality(self.from_format, self.to_format)
 
         if self.err.find('Error') > -1:
-            self._log_error()
-            abort(405)   # return http status code 405
+            self._abort_from_err()
         else:
             self._log_success()
