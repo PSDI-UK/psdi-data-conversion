@@ -2550,6 +2550,306 @@
         {
             "formats_id": 1,
             "obflags_in_id": 25
+        },
+        {
+            "formats_id": 110,
+            "obflags_in_id": 26
+        },
+        {
+            "formats_id": 76,
+            "obflags_in_id": 27
+        },
+        {
+            "formats_id": 64,
+            "obflags_in_id": 28
+        },
+        {
+            "formats_id": 107,
+            "obflags_in_id": 29
+        },
+        {
+            "formats_id": 8,
+            "obflags_in_id": 30
+        },
+        {
+            "formats_id": 76,
+            "obflags_in_id": 31
+        },
+        {
+            "formats_id": 136,
+            "obflags_in_id": 32
+        },
+        {
+            "formats_id": 149,
+            "obflags_in_id": 33
+        },
+        {
+            "formats_id": 9,
+            "obflags_in_id": 33
+        },
+        {
+            "formats_id": 156,
+            "obflags_in_id": 33
+        },
+        {
+            "formats_id": 190,
+            "obflags_in_id": 33
+        },
+        {
+            "formats_id": 28,
+            "obflags_in_id": 33
+        },
+        {
+            "formats_id": 30,
+            "obflags_in_id": 33
+        },
+        {
+            "formats_id": 34,
+            "obflags_in_id": 33
+        },
+        {
+            "formats_id": 193,
+            "obflags_in_id": 33
+        },
+        {
+            "formats_id": 37,
+            "obflags_in_id": 33
+        },
+        {
+            "formats_id": 38,
+            "obflags_in_id": 33
+        },
+        {
+            "formats_id": 39,
+            "obflags_in_id": 33
+        },
+        {
+            "formats_id": 158,
+            "obflags_in_id": 33
+        },
+        {
+            "formats_id": 40,
+            "obflags_in_id": 33
+        },
+        {
+            "formats_id": 41,
+            "obflags_in_id": 33
+        },
+        {
+            "formats_id": 44,
+            "obflags_in_id": 33
+        },
+        {
+            "formats_id": 160,
+            "obflags_in_id": 33
+        },
+        {
+            "formats_id": 161,
+            "obflags_in_id": 33
+        },
+        {
+            "formats_id": 165,
+            "obflags_in_id": 33
+        },
+        {
+            "formats_id": 166,
+            "obflags_in_id": 33
+        },
+        {
+            "formats_id": 167,
+            "obflags_in_id": 33
+        },
+        {
+            "formats_id": 168,
+            "obflags_in_id": 33
+        },
+        {
+            "formats_id": 169,
+            "obflags_in_id": 33
+        },
+        {
+            "formats_id": 170,
+            "obflags_in_id": 33
+        },
+        {
+            "formats_id": 49,
+            "obflags_in_id": 33
+        },
+        {
+            "formats_id": 50,
+            "obflags_in_id": 33
+        },
+        {
+            "formats_id": 54,
+            "obflags_in_id": 33
+        },
+        {
+            "formats_id": 55,
+            "obflags_in_id": 33
+        },
+        {
+            "formats_id": 56,
+            "obflags_in_id": 33
+        },
+        {
+            "formats_id": 173,
+            "obflags_in_id": 33
+        },
+        {
+            "formats_id": 174,
+            "obflags_in_id": 33
+        },
+        {
+            "formats_id": 58,
+            "obflags_in_id": 33
+        },
+        {
+            "formats_id": 175,
+            "obflags_in_id": 33
+        },
+        {
+            "formats_id": 59,
+            "obflags_in_id": 33
+        },
+        {
+            "formats_id": 62,
+            "obflags_in_id": 33
+        },
+        {
+            "formats_id": 64,
+            "obflags_in_id": 33
+        },
+        {
+            "formats_id": 66,
+            "obflags_in_id": 33
+        },
+        {
+            "formats_id": 70,
+            "obflags_in_id": 33
+        },
+        {
+            "formats_id": 71,
+            "obflags_in_id": 33
+        },
+        {
+            "formats_id": 176,
+            "obflags_in_id": 33
+        },
+        {
+            "formats_id": 73,
+            "obflags_in_id": 33
+        },
+        {
+            "formats_id": 177,
+            "obflags_in_id": 33
+        },
+        {
+            "formats_id": 1,
+            "obflags_in_id": 33
+        },
+        {
+            "formats_id": 81,
+            "obflags_in_id": 33
+        },
+        {
+            "formats_id": 82,
+            "obflags_in_id": 33
+        },
+        {
+            "formats_id": 178,
+            "obflags_in_id": 33
+        },
+        {
+            "formats_id": 83,
+            "obflags_in_id": 33
+        },
+        {
+            "formats_id": 3,
+            "obflags_in_id": 33
+        },
+        {
+            "formats_id": 4,
+            "obflags_in_id": 33
+        },
+        {
+            "formats_id": 103,
+            "obflags_in_id": 33
+        },
+        {
+            "formats_id": 104,
+            "obflags_in_id": 33
+        },
+        {
+            "formats_id": 182,
+            "obflags_in_id": 33
+        },
+        {
+            "formats_id": 105,
+            "obflags_in_id": 33
+        },
+        {
+            "formats_id": 109,
+            "obflags_in_id": 33
+        },
+        {
+            "formats_id": 115,
+            "obflags_in_id": 33
+        },
+        {
+            "formats_id": 122,
+            "obflags_in_id": 33
+        },
+        {
+            "formats_id": 130,
+            "obflags_in_id": 33
+        },
+        {
+            "formats_id": 188,
+            "obflags_in_id": 33
+        },
+        {
+            "formats_id": 142,
+            "obflags_in_id": 33
+        },
+        {
+            "formats_id": 131,
+            "obflags_in_id": 33
+        },
+        {
+            "formats_id": 132,
+            "obflags_in_id": 33
+        },
+        {
+            "formats_id": 137,
+            "obflags_in_id": 33
+        },
+        {
+            "formats_id": 153,
+            "obflags_in_id": 33
+        },
+        {
+            "formats_id": 154,
+            "obflags_in_id": 33
+        },
+        {
+            "formats_id": 155,
+            "obflags_in_id": 33
+        },
+        {
+            "formats_id": 20,
+            "obflags_in_id": 33
+        },
+        {
+            "formats_id": 120,
+            "obflags_in_id": 34
+        },
+        {
+            "formats_id": 128,
+            "obflags_in_id": 35
+        },
+        {
+            "formats_id": 107,
+            "obflags_in_id": 36
         }
     ],
     "obflags_in": [
@@ -2701,6 +3001,72 @@
             "id": 25,
             "flag": "B",
             "description": "Use bonds listed in CIF file from _geom_bond_etc records (overrides option b).",
+            "further_info": "N/A"
+        },
+        {
+            "id": 26,
+            "flag": "d",
+            "description": "Input file is in DLG (AutoDock docking log) format.",
+            "further_info": "N/A"
+        },
+        {
+            "id": 27,
+            "flag": "e",
+            "description": "Exact match.",
+            "further_info": "Alternative to using 'exact' with option s."
+        },
+        {
+            "id": 28,
+            "flag": "f",
+            "description": "Overwrite molecule if more than one.",
+            "further_info": "Calculation with different molecules is present in the output file (last calculation will be preferred)."
+        },
+        {
+            "id": 29,
+            "flag": "L",
+            "description": "Reactions have labels (usually optional).",
+            "further_info": "N/A"
+        },
+        {
+            "id": 30,
+            "flag": "n",
+            "description": "Molecule name follows InChI on same line.",
+            "further_info": "N/A"
+        },
+        {
+            "id": 31,
+            "flag": "n",
+            "description": "No further SMARTS filtering after fingerprint phase.",
+            "further_info": "N/A"
+        },
+        {
+            "id": 32,
+            "flag": "n",
+            "description": "Read objects of first namespace only.",
+            "further_info": "N/A"
+        },
+        {
+            "id": 33,
+            "flag": "s",
+            "description": "Output single bonds only.",
+            "further_info": "N/A"
+        },
+        {
+            "id": 34,
+            "flag": "s",
+            "description": "Generate single bonds only.",
+            "further_info": "N/A"
+        },
+        {
+            "id": 35,
+            "flag": "s",
+            "description": "Disable stereo perception and just read stereo information from input.",
+            "further_info": "N/A"
+        },
+        {
+            "id": 36,
+            "flag": "z",
+            "description": "Use standard thermo only.",
             "further_info": "N/A"
         }
     ],
@@ -3436,6 +3802,134 @@
         {
             "formats_id": 77,
             "obflags_out_id": 90
+        },
+        {
+            "formats_id": 75,
+            "obflags_out_id": 91
+        },
+        {
+            "formats_id": 86,
+            "obflags_out_id": 92
+        },
+        {
+            "formats_id": 110,
+            "obflags_out_id": 93
+        },
+        {
+            "formats_id": 8,
+            "obflags_out_id": 94
+        },
+        {
+            "formats_id": 86,
+            "obflags_out_id": 95
+        },
+        {
+            "formats_id": 110,
+            "obflags_out_id": 96
+        },
+        {
+            "formats_id": 8,
+            "obflags_out_id": 97
+        },
+        {
+            "formats_id": 77,
+            "obflags_out_id": 98
+        },
+        {
+            "formats_id": 90,
+            "obflags_out_id": 99
+        },
+        {
+            "formats_id": 92,
+            "obflags_out_id": 100
+        },
+        {
+            "formats_id": 107,
+            "obflags_out_id": 101
+        },
+        {
+            "formats_id": 110,
+            "obflags_out_id": 102
+        },
+        {
+            "formats_id": 94,
+            "obflags_out_id": 103
+        },
+        {
+            "formats_id": 8,
+            "obflags_out_id": 104
+        },
+        {
+            "formats_id": 90,
+            "obflags_out_id": 105
+        },
+        {
+            "formats_id": 92,
+            "obflags_out_id": 106
+        },
+        {
+            "formats_id": 107,
+            "obflags_out_id": 107
+        },
+        {
+            "formats_id": 8,
+            "obflags_out_id": 108
+        },
+        {
+            "formats_id": 76,
+            "obflags_out_id": 109
+        },
+        {
+            "formats_id": 77,
+            "obflags_out_id": 110
+        },
+        {
+            "formats_id": 8,
+            "obflags_out_id": 111
+        },
+        {
+            "formats_id": 127,
+            "obflags_out_id": 112
+        },
+        {
+            "formats_id": 8,
+            "obflags_out_id": 113
+        },
+        {
+            "formats_id": 127,
+            "obflags_out_id": 114
+        },
+        {
+            "formats_id": 128,
+            "obflags_out_id": 115
+        },
+        {
+            "formats_id": 86,
+            "obflags_out_id": 116
+        },
+        {
+            "formats_id": 94,
+            "obflags_out_id": 117
+        },
+        {
+            "formats_id": 125,
+            "obflags_out_id": 118
+        },
+        {
+            "formats_id": 94,
+            "obflags_out_id": 119
+        },
+        {
+            "formats_id": 194,
+            "obflags_out_id": 120
+        },
+        {
+            "formats_id": 19,
+            "obflags_out_id": 120
+        },
+        {
+            "formats_id": 150,
+            "obflags_out_id": 120
         }
     ],
     "obflags_out": [
@@ -3766,7 +4260,7 @@
         {
             "id": 55,
             "flag": "a",
-            "description": "Aspect ratio of image height:width (default is 1.5).",
+            "description": "Aspect ratio of image (height to width, default is 1.5).",
             "further_info": "N/A"
         },
         {
@@ -3887,7 +4381,7 @@
             "id": 75,
             "flag": "i",
             "description": "Add index to each atom.",
-            "further_info": "These indices are those in SD or MOL files and correspond to the order or atoms in a SMILES string."
+            "further_info": "These indices are those in SD or MOL files and correspond to the order of atoms in a SMILES string."
         },
         {
             "id": 76,
@@ -3977,6 +4471,186 @@
             "id": 90,
             "flag": "o",
             "description": "Hex output only.",
+            "further_info": "N/A"
+        },
+        {
+            "id": 91,
+            "flag": "p",
+            "description": "Use full input path as source, not just filename.",
+            "further_info": "N/A"
+        },
+        {
+            "id": 92,
+            "flag": "p",
+            "description": "Add properties to molecules.",
+            "further_info": "N/A"
+        },
+        {
+            "id": 93,
+            "flag": "p",
+            "description": "Preserve atom indices from input file (default is to renumber atoms sequentially).",
+            "further_info": "N/A"
+        },
+        {
+            "id": 94,
+            "flag": "r",
+            "description": "Recalculate InChI. Normally an input InChI is reused.",
+            "further_info": "N/A"
+        },
+        {
+            "id": 95,
+            "flag": "r",
+            "description": "Omit rate constant data.",
+            "further_info": "N/A"
+        },
+        {
+            "id": 96,
+            "flag": "r",
+            "description": "Output as a rigid molecule (i.e., no branches or torsion tree).",
+            "further_info": "N/A"
+        },
+        {
+            "id": 97,
+            "flag": "s",
+            "description": "Recalculate wedge and hash bonds (2D structures only).",
+            "further_info": "N/A"
+        },
+        {
+            "id": 98,
+            "flag": "s",
+            "description": "Describe each set bit.",
+            "further_info": "N/A"
+        },
+        {
+            "id": 99,
+            "flag": "s",
+            "description": "Display a square. This is useful for correcting the aspect ratio.",
+            "further_info": "N/A"
+        },
+        {
+            "id": 100,
+            "flag": "s",
+            "description": "Add a sky (with clouds).",
+            "further_info": "N/A"
+        },
+        {
+            "id": 101,
+            "flag": "s",
+            "description": "Simple output (reactions only).",
+            "further_info": "N/A"
+        },
+        {
+            "id": 102,
+            "flag": "s",
+            "description": "Output as a flexible residue.",
+            "further_info": "N/A"
+        },
+        {
+            "id": 103,
+            "flag": "S",
+            "description": "Ball and stick depiction of molecules.",
+            "further_info": "Depicts molecules as balls and sticks instead of the normal line style."
+        },
+        {
+            "id": 104,
+            "flag": "t",
+            "description": "Add molecule name after InChI.",
+            "further_info": "N/A"
+        },
+        {
+            "id": 105,
+            "flag": "t",
+            "description": "Write the output molecule index and title.",
+            "further_info": "N/A"
+        },
+        {
+            "id": 106,
+            "flag": "t",
+            "description": "Use transparent textures.",
+            "further_info": "N/A"
+        },
+        {
+            "id": 107,
+            "flag": "t",
+            "description": "Do not include species thermo data.",
+            "further_info": "N/A"
+        },
+        {
+            "id": 108,
+            "flag": "u",
+            "description": "Output only unique molecules.",
+            "further_info": "N/A"
+        },
+        {
+            "id": 109,
+            "flag": "u",
+            "description": "Update an existing index.",
+            "further_info": "N/A"
+        },
+        {
+            "id": 110,
+            "flag": "u",
+            "description": "Describe each unset bit.",
+            "further_info": "N/A"
+        },
+        {
+            "id": 111,
+            "flag": "U",
+            "description": "Output only unique molecules and sort them.",
+            "further_info": "N/A"
+        },
+        {
+            "id": 112,
+            "flag": "v",
+            "description": "Verbose output (include default values).",
+            "further_info": "N/A"
+        },
+        {
+            "id": 113,
+            "flag": "w",
+            "description": "Ignore less important warnings.",
+            "further_info": "Less important warnings are 'Omitted undefined stereo,' 'Charges were rearranged,' 'Proton(s) added/removed' and 'Metal was disconnected.'"
+        },
+        {
+            "id": 114,
+            "flag": "w",
+            "description": "Use wedge/hash bonds from input instead of perceived stereochemistry.",
+            "further_info": "N/A"
+        },
+        {
+            "id": 115,
+            "flag": "w",
+            "description": "Use bond styles from input instead of perceived stereochemistry.",
+            "further_info": "N/A"
+        },
+        {
+            "id": 116,
+            "flag": "x",
+            "description": "Omit XML declaration.",
+            "further_info": "N/A"
+        },
+        {
+            "id": 117,
+            "flag": "x",
+            "description": "Omit XML declaration (not displayed in GUI).",
+            "further_info": "Useful if the output is to be embedded in another XML file."
+        },
+        {
+            "id": 118,
+            "flag": "x",
+            "description": "Output in XYZ format.",
+            "further_info": "N/A"
+        },
+        {
+            "id": 119,
+            "flag": "X",
+            "description": "All atoms are explicitly declared.",
+            "further_info": "Useful if we do not want any extra hydrogens drawn to fill the valence."
+        },
+        {
+            "id": 120,
+            "flag": "h",
+            "description": "Output explicit hydrogens as such.",
             "further_info": "N/A"
         }
     ],
@@ -128169,6 +128843,286 @@
             "brief": "atom numbers",
             "description": "Generate SMILES for a fragment.",
             "further_info": "The atom numbers should be specified like 1 2 4 7."
+        },
+        {
+            "id": 4,
+            "flag": "b",
+            "brief": "colour",
+            "description": "Background colour (default is white).",
+            "further_info": "For example, 'yellow' or '#88ff00' ('none' is transparent and leaving blank is black with white bonds). The atom symbol colours work with black and white backgrounds, but may not with other colours."
+        },
+        {
+            "id": 5,
+            "flag": "B",
+            "brief": "colour",
+            "description": "Bond colour (default is black).",
+            "further_info": "For example, 'yellow' or '#88ff00.'"
+        },
+        {
+            "id": 6,
+            "flag": "c",
+            "brief": "num",
+            "description": "Number of columns in table.",
+            "further_info": "N/A"
+        },
+        {
+            "id": 7,
+            "flag": "c",
+            "brief": "num",
+            "description": "Coordinate multiplier (default is 20).",
+            "further_info": "N/A"
+        },
+        {
+            "id": 8,
+            "flag": "c",
+            "brief": "vectorcells",
+            "description": "Set the cell vectors if not present.",
+            "further_info": "For example, 10.0,0.0,0.0,10.0,0.0,0.0,0.0,20.0"
+        },
+        {
+            "id": 9,
+            "flag": "d",
+            "brief": "length",
+            "description": "Set the length of the boundary box around the molecule.",
+            "further_info": "The default is to make a cube around the molecule, adding 50% to the most positive and negative cartesian coordinate."
+        },
+        {
+            "id": 10,
+            "flag": "d",
+            "brief": "densities",
+            "description": "For each surface, specify the point density (default is 1.0 angstrom^2).",
+            "further_info": "A comma-separated list of densities."
+        },
+        {
+            "id": 11,
+            "flag": "f",
+            "brief": "id",
+            "description": "Fingerprint type.",
+            "further_info": "N/A"
+        },
+        {
+            "id": 12,
+            "flag": "f",
+            "brief": "num",
+            "description": "Fingerprint type.",
+            "further_info": "If not specified, the default fingerprint (currently FP2) is used."
+        },
+        {
+            "id": 13,
+            "flag": "f",
+            "brief": "num",
+            "description": "Indicate the level of the output file: 0 (default), 1 or 2.",
+            "further_info": "N/A"
+        },
+        {
+            "id": 14,
+            "flag": "F",
+            "brief": "atom numbers",
+            "description": "Generate Canonical SMILES for a fragment.",
+            "further_info": "The atom numbers should be specified like 1 2 4 7."
+        },
+        {
+            "id": 15,
+            "flag": "h",
+            "brief": "characters",
+            "description": "Image height in characters (default is width/aspect).",
+            "further_info": "N/A"
+        },
+        {
+            "id": 16,
+            "flag": "h",
+            "brief": "pixels",
+            "description": "Image height (or from image size).",
+            "further_info": "N/A"
+        },
+        {
+            "id": 17,
+            "flag": "h",
+            "brief": "condition",
+            "description": "Highlight mol if condition is met.",
+            "further_info": "The condition can use descriptors and properties. See documentation on --filter option for details. To highlight in a particular colour, follow the condition by a colour."
+        },
+        {
+            "id": 18,
+            "flag": "k",
+            "brief": "basis",
+            "description": "Specify basis set to use.",
+            "further_info": "For example, ST0-3G."
+        },
+        {
+            "id": 19,
+            "flag": "k",
+            "brief": "keywords",
+            "description": "Use the specified keywords for input.",
+            "further_info": "N/A"
+        },
+        {
+            "id": 20,
+            "flag": "L",
+            "brief": "num",
+            "description": "Levels (default is 2).",
+            "further_info": "N/A"
+        },
+        {
+            "id": 21,
+            "flag": "m",
+            "brief": "model-type",
+            "description": "BAS (ball-and-stick), SPF (space-fill) or CST (capped sticks).",
+            "further_info": "The default option is ball-and-stick."
+        },
+        {
+            "id": 22,
+            "flag": "m",
+            "brief": "num",
+            "description": "Indicate the mode for level 2 output files.",
+            "further_info": "0 (default) is for acceleration and 1 for forces."
+        },
+        {
+            "id": 23,
+            "flag": "N",
+            "brief": "prefix",
+            "description": "Add namespace prefix to elements.",
+            "further_info": "N/A"
+        },
+        {
+            "id": 24,
+            "flag": "N",
+            "brief": "num",
+            "description": "Fold to specified number of bits, 32, 64, 128, etc.",
+            "further_info": "N/A"
+        },
+        {
+            "id": 25,
+            "flag": "N",
+            "brief": "num",
+            "description": "Maximum number of objects to be output.",
+            "further_info": "N/A"
+        },
+        {
+            "id": 26,
+            "flag": "o",
+            "brief": "ordering",
+            "description": "Output in user-specified order.",
+            "further_info": "Ordering should be specified like 4-2-1-3 for a 4-atom molecule. This gives canonical labels 1,2,3,4 to atoms 4,2,1,3 respectively, so that atom 4 will be visited first and the remaining atoms visited in a depth-first manner following the lowest canonical labels."
+        },
+        {
+            "id": 27,
+            "flag": "p",
+            "brief": "pixels",
+            "description": "Image size (default is 300).",
+            "further_info": "N/A"
+        },
+        {
+            "id": 28,
+            "flag": "p",
+            "brief": "num",
+            "description": "px Scale to bond length (single mol only).",
+            "further_info": "N/A"
+        },
+        {
+            "id": 29,
+            "flag": "p",
+            "brief": "radius",
+            "description": "Radius of the probe atom in angstroms (default is 0.0).",
+            "further_info": "N/A"
+        },
+        {
+            "id": 30,
+            "flag": "p",
+            "brief": "radius",
+            "description": "Radius of the probe particle in angstroms (default is 0.0).",
+            "further_info": "N/A"
+        },
+        {
+            "id": 31,
+            "flag": "P",
+            "brief": "num",
+            "description": "px Single mol in defined size image.",
+            "further_info": "N/A"
+        },
+        {
+            "id": 32,
+            "flag": "q",
+            "brief": "water-model",
+            "description": "Set atomic charges for water.",
+            "further_info": "The two options are SPC (default) or SPCE."
+        },
+        {
+            "id": 33,
+            "flag": "r",
+            "brief": "radii",
+            "description": "Create a surface for each VDW radius (default is 1.0).",
+            "further_info": "A comma-separated list of VDW radius multiples."
+        },
+        {
+            "id": 34,
+            "flag": "r",
+            "brief": "num",
+            "description": "Number of rows in table.",
+            "further_info": "N/A"
+        },
+        {
+            "id": 35,
+            "flag": "s",
+            "brief": "scale",
+            "description": "Scale-factor for VDW radius in angstroms (default is 1.0).",
+            "further_info": "N/A"
+        },
+        {
+            "id": 36,
+            "flag": "t",
+            "brief": "text",
+            "description": "Use 'text' as source in header.",
+            "further_info": "N/A"
+        },
+        {
+            "id": 37,
+            "flag": "T",
+            "brief": "max seconds",
+            "description": "Specify the canonicalisation timeout.",
+            "further_info": "Canonicalisation can take a while for symmetrical molecules and so a timeout is used. The default is 5 seconds."
+        },
+        {
+            "id": 38,
+            "flag": "u",
+            "brief": "element list",
+            "description": "Sort atoms by list of element symbols provided in comma-separated string without spaces.",
+            "further_info": "N/A"
+        },
+        {
+            "id": 39,
+            "flag": "w",
+            "brief": "characters",
+            "description": "Image width in characters (default is 79).",
+            "further_info": "N/A"
+        },
+        {
+            "id": 40,
+            "flag": "w",
+            "brief": "pixels",
+            "description": "Image width (or from image size).",
+            "further_info": "N/A"
+        },
+        {
+            "id": 41,
+            "flag": "y",
+            "brief": "additional chunk ID",
+            "description": "Write to a chunk with specified ID.",
+            "further_info": "N/A"
+        },
+        {
+            "id": 42,
+            "flag": "z",
+            "brief": "list of atoms",
+            "description": "Specify the order to write out atoms.",
+            "further_info": "atom1 atom2 ... (atom1 first, atom2 second, etc.). The remaining atoms are written in the default order or (if option w is specified) in order of atomic number."
+        },
+        {
+            "id": 43,
+            "flag": "T",
+            "brief": "param",
+            "description": "Truncate InChI according to various parameters.",
+            "further_info": "/formula (formula only). /connect (formula and connectivity only). /nostereo (ignore E/Z and sp3 stereochemistry). /nosp3 (ignore sp3 stereochemistry). /noEZ (ignore E/Z stereochemistry). /nochg (ignore charge and protonation). /noiso (ignore isotopes). Note that these can be combined (e.g., /nochg/noiso)."
         }
     ],
     "obformat_to_argflags_out": [
@@ -128183,6 +129137,274 @@
         {
             "formats_id": 19,
             "obargflags_out_id": 3
+        },
+        {
+            "formats_id": 94,
+            "obargflags_out_id": 4
+        },
+        {
+            "formats_id": 94,
+            "obargflags_out_id": 5
+        },
+        {
+            "formats_id": 5,
+            "obargflags_out_id": 4
+        },
+        {
+            "formats_id": 5,
+            "obargflags_out_id": 5
+        },
+        {
+            "formats_id": 94,
+            "obargflags_out_id": 6
+        },
+        {
+            "formats_id": 5,
+            "obargflags_out_id": 6
+        },
+        {
+            "formats_id": 127,
+            "obargflags_out_id": 7
+        },
+        {
+            "formats_id": 115,
+            "obargflags_out_id": 8
+        },
+        {
+            "formats_id": 119,
+            "obargflags_out_id": 9
+        },
+        {
+            "formats_id": 125,
+            "obargflags_out_id": 10
+        },
+        {
+            "formats_id": 75,
+            "obargflags_out_id": 11
+        },
+        {
+            "formats_id": 76,
+            "obargflags_out_id": 12
+        },
+        {
+            "formats_id": 115,
+            "obargflags_out_id": 13
+        },
+        {
+            "formats_id": 194,
+            "obargflags_out_id": 14
+        },
+        {
+            "formats_id": 90,
+            "obargflags_out_id": 15
+        },
+        {
+            "formats_id": 5,
+            "obargflags_out_id": 16
+        },
+        {
+            "formats_id": 94,
+            "obargflags_out_id": 17
+        },
+        {
+            "formats_id": 37,
+            "obargflags_out_id": 18
+        },
+        {
+            "formats_id": 17,
+            "obargflags_out_id": 19
+        },
+        {
+            "formats_id": 159,
+            "obargflags_out_id": 19
+        },
+        {
+            "formats_id": 162,
+            "obargflags_out_id": 19
+        },
+        {
+            "formats_id": 48,
+            "obargflags_out_id": 19
+        },
+        {
+            "formats_id": 163,
+            "obargflags_out_id": 19
+        },
+        {
+            "formats_id": 164,
+            "obargflags_out_id": 19
+        },
+        {
+            "formats_id": 50,
+            "obargflags_out_id": 19
+        },
+        {
+            "formats_id": 56,
+            "obargflags_out_id": 19
+        },
+        {
+            "formats_id": 173,
+            "obargflags_out_id": 19
+        },
+        {
+            "formats_id": 174,
+            "obargflags_out_id": 19
+        },
+        {
+            "formats_id": 57,
+            "obargflags_out_id": 19
+        },
+        {
+            "formats_id": 65,
+            "obargflags_out_id": 19
+        },
+        {
+            "formats_id": 69,
+            "obargflags_out_id": 19
+        },
+        {
+            "formats_id": 139,
+            "obargflags_out_id": 20
+        },
+        {
+            "formats_id": 92,
+            "obargflags_out_id": 21
+        },
+        {
+            "formats_id": 115,
+            "obargflags_out_id": 22
+        },
+        {
+            "formats_id": 7,
+            "obargflags_out_id": 23
+        },
+        {
+            "formats_id": 146,
+            "obargflags_out_id": 23
+        },
+        {
+            "formats_id": 86,
+            "obargflags_out_id": 23
+        },
+        {
+            "formats_id": 75,
+            "obargflags_out_id": 24
+        },
+        {
+            "formats_id": 76,
+            "obargflags_out_id": 24
+        },
+        {
+            "formats_id": 77,
+            "obargflags_out_id": 24
+        },
+        {
+            "formats_id": 5,
+            "obargflags_out_id": 25
+        },
+        {
+            "formats_id": 94,
+            "obargflags_out_id": 25
+        },
+        {
+            "formats_id": 19,
+            "obargflags_out_id": 26
+        },
+        {
+            "formats_id": 150,
+            "obargflags_out_id": 26
+        },
+        {
+            "formats_id": 5,
+            "obargflags_out_id": 27
+        },
+        {
+            "formats_id": 94,
+            "obargflags_out_id": 28
+        },
+        {
+            "formats_id": 125,
+            "obargflags_out_id": 29
+        },
+        {
+            "formats_id": 126,
+            "obargflags_out_id": 30
+        },
+        {
+            "formats_id": 94,
+            "obargflags_out_id": 31
+        },
+        {
+            "formats_id": 119,
+            "obargflags_out_id": 32
+        },
+        {
+            "formats_id": 125,
+            "obargflags_out_id": 33
+        },
+        {
+            "formats_id": 5,
+            "obargflags_out_id": 34
+        },
+        {
+            "formats_id": 94,
+            "obargflags_out_id": 34
+        },
+        {
+            "formats_id": 126,
+            "obargflags_out_id": 35
+        },
+        {
+            "formats_id": 75,
+            "obargflags_out_id": 36
+        },
+        {
+            "formats_id": 19,
+            "obargflags_out_id": 37
+        },
+        {
+            "formats_id": 150,
+            "obargflags_out_id": 37
+        },
+        {
+            "formats_id": 184,
+            "obargflags_out_id": 38
+        },
+        {
+            "formats_id": 185,
+            "obargflags_out_id": 38
+        },
+        {
+            "formats_id": 116,
+            "obargflags_out_id": 38
+        },
+        {
+            "formats_id": 90,
+            "obargflags_out_id": 39
+        },
+        {
+            "formats_id": 5,
+            "obargflags_out_id": 40
+        },
+        {
+            "formats_id": 5,
+            "obargflags_out_id": 41
+        },
+        {
+            "formats_id": 176,
+            "obargflags_out_id": 42
+        },
+        {
+            "formats_id": 73,
+            "obargflags_out_id": 42
+        },
+        {
+            "formats_id": 177,
+            "obargflags_out_id": 42
+        },
+        {
+            "formats_id": 8,
+            "obargflags_out_id": 43
         }
     ],
     "obargflags_in": [
@@ -128192,12 +129414,64 @@
             "brief": "num",
             "description": "Coordinate multiplier (default is 20).",
             "further_info": "N/A"
+        },
+        {
+            "id": 2,
+            "flag": "f",
+            "brief": "num",
+            "description": "Maximum number of candidates (default is 4000).",
+            "further_info": "N/A"
+        },
+        {
+            "id": 3,
+            "flag": "t",
+            "brief": "num",
+            "description": "Do similarity search ('num' mols or 'num' as min Tanimoto).",
+            "further_info": "N/A"
+        },
+        {
+            "id": 4,
+            "flag": "t",
+            "brief": "turns",
+            "description": "Use the specified number of base pairs per turn (e.g., 10).",
+            "further_info": "N/A"
+        },
+        {
+            "id": 5,
+            "flag": "y",
+            "brief": "additional chunk ID",
+            "description": "Look also in chunks with specified ID.",
+            "further_info": "N/A"
         }
     ],
     "obformat_to_argflags_in": [
         {
             "formats_id": 127,
             "obargflags_in_id": 1
+        },
+        {
+            "formats_id": 76,
+            "obargflags_in_id": 2
+        },
+        {
+            "formats_id": 76,
+            "obargflags_in_id": 3
+        },
+        {
+            "formats_id": 130,
+            "obargflags_in_id": 4
+        },
+        {
+            "formats_id": 188,
+            "obargflags_in_id": 4
+        },
+        {
+            "formats_id": 142,
+            "obargflags_in_id": 4
+        },
+        {
+            "formats_id": 5,
+            "obargflags_in_id": 5
         }
     ]
 }

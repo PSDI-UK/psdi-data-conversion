@@ -1,6 +1,6 @@
 /*
   convert.js
-  Version 1.0, 8th November 2024
+  Version 1.0, 12th December 2024
 
   This is the JavaScript which makes the convert.htm gui work.
 */
@@ -72,8 +72,7 @@ function writeLog(message) {
 
 // On ticking a checkbox, a text box for entry of an option flag argument appears next to it. On unticking, the text box disappears.
 function enterArgument(event) {
-    var //flags_text = $('#' + this.id).val(),
-        arg_id = this.id.replace('check', 'text'),
+    var arg_id = this.id.replace('check', 'text'),
         arg_label_id = this.id.replace('check', 'label');
 
     if ($('#' + this.id).is(':checked')) {
@@ -359,6 +358,8 @@ function addCheckboxes(argFlags, type) {
 
             flagCount++;
         }
+
+        container.append(`<br>`);
     }
     else {
         $(`#${type}Label`).hide();
@@ -404,11 +405,11 @@ function populateFlagBox(entries, type) {
 
     for (const infoLine of infoLines) {
 
-        const p = $("<p>");
+        const div = $("<div>");
 
-        p.text(infoLine);
+        div.text(infoLine);
 
-        flagInfo.append(p);
+        flagInfo.append(div);
     }
 }
 
