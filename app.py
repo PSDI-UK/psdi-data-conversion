@@ -20,6 +20,9 @@ token = hashlib.md5(dt.encode('utf8')).hexdigest()
 
 app = Flask(__name__)
 
+FILE_KEY = 'file'
+FILE_TO_UPLOAD_KEY = 'fileToUpload'
+
 
 @app.route('/')
 def website():
@@ -37,7 +40,7 @@ def convert():
     if request.form['token'] == token and token != '':
         return FileConverter(files=request.files,
                              form=request.form,
-                             file_to_convert='fileToUpload',
+                             file_to_convert=FILE_TO_UPLOAD_KEY,
                              abort_callback=abort).run()
     else:
         # return http status code 405
@@ -50,7 +53,7 @@ def conv():
     """
     return FileConverter(files=request.files,
                          form=request.form,
-                         file_to_convert='file',
+                         file_to_convert=FILE_KEY,
                          abort_callback=abort).run()
 
 
