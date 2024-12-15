@@ -32,6 +32,10 @@ DEFAULT_DOWNLOAD_DIR = './static/downloads'
 if not os.path.exists(DEFAULT_DOWNLOAD_DIR):
     os.makedirs(DEFAULT_DOWNLOAD_DIR, exist_ok=True)
 
+# Constant strings for converter types
+CONVERTER_OB = 'Open Babel'
+CONVERTER_ATO = 'Atomsk'
+
 
 class FileConverter:
     """Class to handle conversion of files from one type to another
@@ -145,9 +149,9 @@ class FileConverter:
         """
 
         try:
-            if self.converter == 'Open Babel':
+            if self.converter == CONVERTER_OB:
                 self._convert_ob()
-            elif self.converter == 'Atomsk':
+            elif self.converter == CONVERTER_ATO:
                 self._convert_ato()
             else:
                 self._abort(405, f"ERROR: Unknown logger '{self.converter}' requested")
