@@ -309,8 +309,8 @@ class FileConverter:
         out_size : int
             Size of output file in bytes
         """
-        in_size = os.path.getsize(self.in_filename)
-        out_size = os.path.getsize(self.out_filename)
+        in_size = os.path.getsize(os.path.realpath(self.in_filename))
+        out_size = os.path.getsize(os.path.realpath(self.out_filename))
 
         # Check that the output file doesn't exceed the maximum allowed size
         if out_size > self.max_file_size:
