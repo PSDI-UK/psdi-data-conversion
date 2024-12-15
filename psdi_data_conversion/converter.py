@@ -23,27 +23,32 @@ MEGABYTE = 1024*1024
 DEFAULT_MAX_FILE_SIZE = 1*MEGABYTE
 
 # Create directory 'uploads' if not extant.
-UPLOAD_DIR = './static/uploads'
-if not os.path.exists(UPLOAD_DIR):
-    os.makedirs(UPLOAD_DIR, exist_ok=True)
+DEFAULT_UPLOAD_DIR = './static/uploads'
+if not os.path.exists(DEFAULT_UPLOAD_DIR):
+    os.makedirs(DEFAULT_UPLOAD_DIR, exist_ok=True)
 
 # Create directory 'downloads' if not extant.
-DOWNLOAD_DIR = './static/downloads'
-if not os.path.exists(DOWNLOAD_DIR):
-    os.makedirs(DOWNLOAD_DIR, exist_ok=True)
+DEFAULT_DOWNLOAD_DIR = './static/downloads'
+if not os.path.exists(DEFAULT_DOWNLOAD_DIR):
+    os.makedirs(DEFAULT_DOWNLOAD_DIR, exist_ok=True)
 
 
 class FileConverter:
     """Class to handle conversion of files from one type to another
     """
 
+    # Class variables - these are normally set to defaults and not modified in operation. They're intended to be
+    # modified after creation of an object in unit testing
     max_file_size = DEFAULT_MAX_FILE_SIZE
+    upload_dir = DEFAULT_UPLOAD_DIR
+    download_dir = DEFAULT_DOWNLOAD_DIR
 
     def __init__(self,
                  files: dict[str, FileStorage],
                  form: dict[str, str],
                  file_to_convert: str,
-                 abort_callback: Callable[[int], None] = exit):
+                 abort_callback: Callable[[int], None] = exit,
+                 **kwargs):
         """Initialize the object, storing needed data and setting up loggers.
 
         Parameters
@@ -56,32 +61,64 @@ class FileConverter:
             The key for the file in the `files` dict to convert
         abort_callback : Callable[[int], None]
             Function to be called if the conversion hits an error and must be aborted, default `exit`
+        **kwargs
+            Any additional arguments provided to this class's initializer which correspond to class or instance
+            variables will be set at init, before any derived variables are determined - this is useful primarily for
+            testing.
         """
+
+        # Set member variables directly from input
         self.files = files
         self.form = form
         self.file_to_convert = file_to_convert
         self.abort_callback = abort_callback
 
+        # Set member variables from dict values in input
+        self.from_format = self.form['from']
+        self.to_format = self.form['to']
+        self.converter = self.form['converter']
+
+        # Set placeholders for member variables which will be set when conversion is run
+        self.in_size: int | None = None
+        self.out_size: int | None = None
+        self.out: str | None = None
+        self.err: str | None = None
+        self.quality: str | None = None
+
+        # Set placeholders for member variables used only by OB conversion
+        self.from_flags: str | None = None
+        self.to_flags: str | None = None
+        self.read_flags_args: list[str] | None = None
+        self.write_flags_args: list[str] | None = None
+        self.calc_type: str | None = None
+        self.option: str | None = None
+
+        # If any kwargs are provided, use them to override matching class/instance variables defined to this point
+        for key, value in kwargs.items():
+            if hasattr(self, key):
+                setattr(self, key, value)
+            else:
+                raise ValueError(f"Unrecognized class/instance variable name: {key}")
+
         self.f = self.files[self.file_to_convert]
         self.filename_base = self.f.filename.split(".")[0]  # E.g. ethane.mol --> ethane
 
-        self.in_filename = f"{UPLOAD_DIR}/{self.f.filename}"
+        self.in_filename = f"{self.upload_dir}/{self.f.filename}"
 
         self.f.save(self.in_filename)
 
-        # Retrieve 'from' and 'to' file formats
-        self.from_format = self.form['from']
-        self.to_format = self.form['to']
-
-        self.converter = self.form['converter']
-
-        self.out_filename = f"{DOWNLOAD_DIR}/{self.filename_base}.{self.to_format}"
+        self.out_filename = f"{self.download_dir}/{self.filename_base}.{self.to_format}"
 
         # Set up files to log to
-        local_log_base = f"{DOWNLOAD_DIR}/{self.f.filename}-{self.filename_base}.{self.to_format}"
+        self._setup_loggers()
+
+    def _setup_loggers(self):
+        """Run at init to set up loggers for this object.
+        """
+        local_log_base = f"{self.download_dir}/{self.f.filename}-{self.filename_base}.{self.to_format}"
         local_log = f"{local_log_base}.log"
         local_error = f"{local_log_base}.err"
-        self.output_log = f"{DOWNLOAD_DIR}/{self.filename_base}.log.txt"
+        self.output_log = f"{self.download_dir}/{self.filename_base}.log.txt"
 
         # If any previous local logs exist, delete them
         if os.path.exists(local_log):
@@ -102,21 +139,6 @@ class FileConverter:
                                                                        local_log,
                                                                        log_utility.DEFAULT_LOCAL_LOGGER_LEVEL,
                                                                        False)])
-
-        # Member variables which will be set when conversion is run
-        self.in_size: int | None = None
-        self.out_size: int | None = None
-        self.out: str | None = None
-        self.err: str | None = None
-        self.quality: str | None = None
-
-        # Used by OB conversion
-        self.from_flags: str | None = None
-        self.to_flags: str | None = None
-        self.read_flags_args: list[str] | None = None
-        self.write_flags_args: list[str] | None = None
-        self.calc_type: str | None = None
-        self.option: str | None = None
 
     def run(self):
         """Run the file conversion
