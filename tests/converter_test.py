@@ -7,7 +7,9 @@ Unit tests of the converter class
 
 import os
 import pytest
+
 from app import FILE_KEY, FILE_TO_UPLOAD_KEY
+from psdi_data_conversion.converter import CONVERTER_OB, FileConverter
 
 TEST_DATA_LOC = "./test_data"
 
@@ -44,17 +46,54 @@ def get_mock_files(source_filename):
 
 @pytest.fixture()
 def base_mock_form():
-    return {'to': None,
-            'from': None,
-            'converter': None,
-            'from_flags': None,
-            'to_flags': None,
-            'from_arg_flags': None,
-            'to_arg_flags': None,
-            'from_args': None,
-            'to_args': None,
-            'coordinates': None,
-            'coordOption': None,
-            'from_full': None,
-            'to_full': None,
-            'success': None, }
+    """A fixture providing a default `form` object which can be used to instantiate a converter
+    """
+    return {'token': '1041c0a661d118d5f28e7c6830375dd0',
+            'converter': CONVERTER_OB,
+            'from': 'mmcif',
+            'to': 'pdb',
+            'from_full': 'mmcif: Macromolecular Crystallographic Info',
+            'to_full': 'pdb: Protein Data Bank',
+            'success': 'good',
+            'from_flags': '',
+            'to_flags': '',
+            'from_arg_flags': '',
+            'from_args': '',
+            'to_arg_flags': '',
+            'to_args': '',
+            'coordinates': 'neither',
+            'coordOption': 'medium',
+            'upload_file': 'true'}
+
+
+@pytest.fixture()
+def tmp_upload_path(tmp_path):
+    """Fixture providing a temporary directory for upload files
+    """
+    upload_path = os.path.join(tmp_path, "uploads")
+    os.makedirs(upload_path, exist_ok=True)
+    return upload_path
+
+
+@pytest.fixture()
+def tmp_download_path(tmp_path):
+    """Fixture providing a temporary directory for download files
+    """
+    download_path = os.path.join(tmp_path, "downloads")
+    os.makedirs(download_path, exist_ok=True)
+    return download_path
+
+
+def test_mmcif_to_pdb(base_mock_form, tmp_upload_path, tmp_download_path):
+    """Run a test of the converter on a straightforward `.mmcif` to `.pdb` conversion
+    """
+
+    source_filename = os.path.join(TEST_DATA_LOC, "1NE6.mmcif")
+
+    test_converter = FileConverter(files=get_mock_files(source_filename),
+                                   form=base_mock_form,
+                                   file_to_convert=FILE_TO_UPLOAD_KEY,
+                                   upload_dir=tmp_upload_path,
+                                   download_dir=tmp_download_path)
+
+    test_converter.run()
