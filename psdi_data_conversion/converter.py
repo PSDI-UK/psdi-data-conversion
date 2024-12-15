@@ -42,6 +42,21 @@ STATUS_CODE_SIZE = 413
 STATUS_CODE_GENERAL = 422
 
 
+class FileConverterAbortException(Exception):
+    """Class representing an exception triggered by a call to abort a file conversion
+    """
+
+    def __init__(self, status_code, *args):
+        super().__init__(*args)
+        self.status_code = status_code
+
+
+def abort_raise(status_code):
+    """Callback for aborting during a file conversion, which re-raises any raised exceptions
+    """
+    raise FileConverterAbortException(status_code)
+
+
 class FileConverter:
     """Class to handle conversion of files from one type to another
     """
@@ -56,7 +71,7 @@ class FileConverter:
                  files: dict[str, FileStorage],
                  form: dict[str, str],
                  file_to_convert: str,
-                 abort_callback: Callable[[int], None] = exit,
+                 abort_callback: Callable[[int], None] = abort_raise,
                  **kwargs):
         """Initialize the object, storing needed data and setting up loggers.
 
@@ -161,7 +176,7 @@ class FileConverter:
             else:
                 self._abort(STATUS_CODE_BAD_METHOD, f"ERROR: Unknown logger '{self.converter}' requested")
         except Exception as e:
-            if isinstance(e, HTTPException):
+            if isinstance(e, (HTTPException, FileConverterAbortException)):
                 # Don't catch a deliberate abort; let it pass through
                 raise
             self._abort(message=f"The application encountered an unexpected error:\n{traceback.format_exc()}")

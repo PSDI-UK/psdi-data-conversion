@@ -9,7 +9,7 @@ import os
 import pytest
 
 from app import FILE_KEY, FILE_TO_UPLOAD_KEY
-from psdi_data_conversion.converter import CONVERTER_OB, STATUS_CODE_SIZE, FileConverter
+from psdi_data_conversion.converter import CONVERTER_OB, STATUS_CODE_SIZE, FileConverter, FileConverterAbortException
 
 TEST_DATA_LOC = os.path.abspath("./test_data")
 
@@ -84,39 +84,19 @@ def tmp_download_path(tmp_path):
     return download_path
 
 
-p_status_code = [0]
-
-
-def abort_raise(status_code):
-    """Callback for aborting during a test, which re-raises any raised exceptions
-    """
-    try:
-        raise
-    except RuntimeError as e:
-        if "No active exception to reraise" not in str(e):
-            raise
-        p_status_code[0] = status_code
-
-
 def test_mmcif_to_pdb(base_mock_form, tmp_upload_path, tmp_download_path):
     """Run a test of the converter on a straightforward `.mmcif` to `.pdb` conversion
     """
 
     source_filename = os.path.join(TEST_DATA_LOC, "1NE6.mmcif")
 
-    # Reset the stored status code to zero - will be changed if something goes wrong
-    p_status_code[0] = 0
-
     test_converter = FileConverter(files=get_mock_files(source_filename),
                                    form=base_mock_form,
                                    file_to_convert=FILE_TO_UPLOAD_KEY,
-                                   abort_callback=abort_raise,
                                    upload_dir=tmp_upload_path,
                                    download_dir=tmp_download_path)
 
     test_converter.run()
-
-    assert p_status_code[0] == 0, f"Converter aborted with status code {p_status_code[0]}"
 
 
 def test_exceed_output_file_size(base_mock_form, tmp_upload_path, tmp_download_path):
@@ -125,19 +105,13 @@ def test_exceed_output_file_size(base_mock_form, tmp_upload_path, tmp_download_p
 
     source_filename = os.path.join(TEST_DATA_LOC, "1NE6.mmcif")
 
-    # Reset the stored status code to zero - we want to make sure it gets set to 413 correctly
-    p_status_code[0] = 0
-
     test_converter = FileConverter(files=get_mock_files(source_filename),
                                    form=base_mock_form,
                                    file_to_convert=FILE_TO_UPLOAD_KEY,
-                                   abort_callback=abort_raise,
                                    upload_dir=tmp_upload_path,
                                    download_dir=tmp_download_path,
                                    max_file_size=0)
 
-    test_converter.run()
-
-    assert p_status_code[0] == STATUS_CODE_SIZE, f"Converter did not abort with status code {STATUS_CODE_SIZE}"
-
-    test_converter.run()
+    with pytest.raises(FileConverterAbortException) as esc_info:
+        test_converter.run()
+    assert esc_info.value.status_code == STATUS_CODE_SIZE
