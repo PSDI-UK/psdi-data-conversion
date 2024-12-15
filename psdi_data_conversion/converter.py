@@ -36,6 +36,11 @@ if not os.path.exists(DEFAULT_DOWNLOAD_DIR):
 CONVERTER_OB = 'Open Babel'
 CONVERTER_ATO = 'Atomsk'
 
+# Status codes for various types of errors
+STATUS_CODE_BAD_METHOD = 405
+STATUS_CODE_SIZE = 413
+STATUS_CODE_GENERAL = 422
+
 
 class FileConverter:
     """Class to handle conversion of files from one type to another
@@ -154,7 +159,7 @@ class FileConverter:
             elif self.converter == CONVERTER_ATO:
                 self._convert_ato()
             else:
-                self._abort(405, f"ERROR: Unknown logger '{self.converter}' requested")
+                self._abort(STATUS_CODE_BAD_METHOD, f"ERROR: Unknown logger '{self.converter}' requested")
         except Exception as e:
             if isinstance(e, HTTPException):
                 # Don't catch a deliberate abort; let it pass through
@@ -166,7 +171,7 @@ class FileConverter:
         return ('\nConverting from ' + self.filename_base + '.' + self.from_format + ' to ' + self.filename_base +
                 '.' + self.to_format + '\n')
 
-    def _abort(self, status_code=422, message=None):
+    def _abort(self, status_code=STATUS_CODE_GENERAL, message=None):
         """Abort the conversion, reporting the desired message to the user at the top of the output
 
         Parameters
@@ -319,7 +324,7 @@ class FileConverter:
             os.remove(self.in_filename)
             os.remove(self.out_filename)
 
-            self._abort(413,
+            self._abort(STATUS_CODE_SIZE,
                         f"ERROR converting {os.path.basename(self.in_filename)} to " +
                         os.path.basename(self.out_filename) + ": "
                         f"Output file exceeds maximum size.\nInput file size is "
