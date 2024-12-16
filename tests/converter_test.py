@@ -93,9 +93,9 @@ def tmp_download_path(tmp_path):
 class TestConverter:
 
     @pytest.fixture(autouse=True)
-    def setup_test(self, tmp_upload_path, tmp_download_path):
+    def setup_test(self, base_mock_form, tmp_upload_path, tmp_download_path):
         """Reset global aspects before a test, so that different tests won't interfere with each other,
-        and set up tmp directories.
+        and save references to fixtures.
         """
 
         # Remove the global log file if one exists
@@ -108,21 +108,20 @@ class TestConverter:
         logging.Logger.manager.loggerDict.clear()
 
         # Save tmp directories
+        self.base_mock_form = base_mock_form
         self.tmp_upload_path = tmp_upload_path
         self.tmp_download_path = tmp_download_path
 
-    def get_input_info(self, base_mock_form: dict[str, str], filename: str, **kwargs):
+    def get_input_info(self, filename: str, **kwargs):
         """Sets up a mock form for input and gets various variables we'll want to use for checks on output
 
         Parameters
         ----------
-        base_mock_form : dict[str, str]
-            The base of the mock `form` object, which we'll use as a starting point before modifying with kwargs
         filename : str
             The name of the file to use as input for the test
         """
 
-        self.mock_form = deepcopy(base_mock_form)
+        self.mock_form = deepcopy(self.base_mock_form)
 
         for key, value in kwargs.items():
             if key in self.mock_form:
@@ -160,11 +159,11 @@ class TestConverter:
                 self.test_converter.run()
             assert esc_info.value.status_code == expect_code
 
-    def test_mmcif_to_pdb(self, base_mock_form):
+    def test_mmcif_to_pdb(self):
         """Run a test of the converter on a straightforward `.mmcif` to `.pdb` conversion
         """
 
-        self.get_input_info(base_mock_form, filename="1NE6.mmcif")
+        self.get_input_info(filename="1NE6.mmcif")
 
         self.run_converter()
 
@@ -200,11 +199,11 @@ class TestConverter:
             else:
                 assert not timestamp_re.search(log_text)
 
-    def test_exceed_output_file_size(self, base_mock_form, tmp_upload_path, tmp_download_path):
+    def test_exceed_output_file_size(self, tmp_upload_path, tmp_download_path):
         """Run a test of the converter to ensure it reports an error properly if the output file size is too large
         """
 
-        self.get_input_info(base_mock_form, filename="1NE6.mmcif")
+        self.get_input_info(filename="1NE6.mmcif")
 
         self.run_converter(STATUS_CODE_SIZE,
                            max_file_size=0)
@@ -238,12 +237,11 @@ class TestConverter:
             log_text = open(filename).read()
             assert "Output file exceeds maximum size" in log_text
 
-    def test_invalid_converter(self, base_mock_form, tmp_upload_path, tmp_download_path):
+    def test_invalid_converter(self, tmp_upload_path, tmp_download_path):
         """Run a test of the converter to ensure it reports an error properly if an invalid converter is requested
         """
 
-        self.get_input_info(base_mock_form,
-                            filename="1NE6.mmcif",
+        self.get_input_info(filename="1NE6.mmcif",
                             converter="INVALID")
 
         self.run_converter(STATUS_CODE_BAD_METHOD)
@@ -277,12 +275,11 @@ class TestConverter:
             log_text = open(filename).read()
             assert "ERROR: Unknown converter" in log_text
 
-    def test_xyz_to_inchi(self, base_mock_form, tmp_upload_path, tmp_download_path):
+    def test_xyz_to_inchi(self, tmp_upload_path, tmp_download_path):
         """Run a test of the converter on a straightforward `.xyz` to `.inchi` conversion
         """
 
-        self.get_input_info(base_mock_form,
-                            filename="quartz.xyz",
+        self.get_input_info(filename="quartz.xyz",
                             to="inchi")
 
         # "from" is a reserved work so we can't set it as a kwarg in the function call above
@@ -298,12 +295,11 @@ class TestConverter:
         ex_output_filename = os.path.join(tmp_download_path, f"{self.filename_base}.{self.to_format}")
         assert os.path.isfile(ex_output_filename)
 
-    def test_xyz_to_inchi_err(self, base_mock_form, tmp_upload_path, tmp_download_path):
+    def test_xyz_to_inchi_err(self, tmp_upload_path, tmp_download_path):
         """Run a test of the converter on an `.xyz` to `.inchi` conversion we expect to fail
         """
 
-        self.get_input_info(base_mock_form,
-                            filename="quartz_err.xyz",
+        self.get_input_info(filename="quartz_err.xyz",
                             to="inchi")
 
         # "from" is a reserved work so we can't set it as a kwarg in the function call above
