@@ -36,6 +36,10 @@ if not os.path.exists(DEFAULT_DOWNLOAD_DIR):
 CONVERTER_OB = 'Open Babel'
 CONVERTER_ATO = 'Atomsk'
 
+# Extensions for logs
+LOCAL_LOG_EXT = "log"
+OUTPUT_LOG_EXT = "log.txt"
+
 # Status codes for various types of errors
 STATUS_CODE_BAD_METHOD = 405
 STATUS_CODE_SIZE = 413
@@ -140,15 +144,12 @@ class FileConverter:
         """Run at init to set up loggers for this object.
         """
         local_log_base = f"{self.download_dir}/{self.f.filename}-{self.filename_base}.{self.to_format}"
-        local_log = f"{local_log_base}.log"
-        local_error = f"{local_log_base}.err"
-        self.output_log = f"{self.download_dir}/{self.filename_base}.log.txt"
+        local_log = f"{local_log_base}.{LOCAL_LOG_EXT}"
+        self.output_log = f"{self.download_dir}/{self.filename_base}.{OUTPUT_LOG_EXT}"
 
         # If any previous local logs exist, delete them
         if os.path.exists(local_log):
             os.remove(local_log)
-        if os.path.exists(local_error):
-            os.remove(local_error)
         if os.path.exists(self.output_log):
             os.remove(self.output_log)
 
