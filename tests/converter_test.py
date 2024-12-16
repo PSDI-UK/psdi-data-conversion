@@ -5,6 +5,7 @@ Created 2024-12-15 by Bryan Gillis.
 Unit tests of the converter class
 """
 
+import logging
 import os
 import re
 import pytest
@@ -87,8 +88,8 @@ def tmp_download_path(tmp_path):
     return download_path
 
 
-def test_mmcif_to_pdb(base_mock_form, tmp_upload_path, tmp_download_path):
-    """Run a test of the converter on a straightforward `.mmcif` to `.pdb` conversion
+def reset_global():
+    """Reset global aspects before a test, so that different tests won't interfere with each other.
     """
 
     # Remove the global log file if one exists
@@ -96,6 +97,16 @@ def test_mmcif_to_pdb(base_mock_form, tmp_upload_path, tmp_download_path):
         os.remove(GLOBAL_LOG_FILENAME)
     except FileNotFoundError:
         pass
+
+    # Clear any existing loggers so new ones will be created fresh
+    logging.Logger.manager.loggerDict.clear()
+
+
+def test_mmcif_to_pdb(base_mock_form, tmp_upload_path, tmp_download_path):
+    """Run a test of the converter on a straightforward `.mmcif` to `.pdb` conversion
+    """
+
+    reset_global()
 
     # Save some variables from input we'll be using throughout this test
     source_filename = os.path.join(TEST_DATA_LOC, "1NE6.mmcif")
@@ -144,21 +155,27 @@ def test_mmcif_to_pdb(base_mock_form, tmp_upload_path, tmp_download_path):
         assert re.compile(r"File name:\s+"+filename_base).search(log_text)
         assert "Open Babel Warning" in log_text
         assert "Failed to kekulize aromatic bonds" in log_text
-        assert log_text
+
+        # Check that we only have the timestamp in the local log, not the output log
+        timestamp_re = re.compile(r"\d{4}-[0-1]\d-[0-3]\d [0-2]\d:[0-5]\d:[0-5]\d")
+        if filename == local_log_filename:
+            assert timestamp_re.search(log_text)
+        else:
+            assert not timestamp_re.search(log_text)
 
 
 def test_exceed_output_file_size(base_mock_form, tmp_upload_path, tmp_download_path):
     """Run a test of the converter to ensure it reports an error properly if the output file size is too large
     """
 
-    # Remove the global log file if one exists
-    try:
-        os.remove(GLOBAL_LOG_FILENAME)
-    except FileNotFoundError:
-        pass
+    reset_global()
 
+    # Save some variables from input we'll be using throughout this test
     source_filename = os.path.join(TEST_DATA_LOC, "1NE6.mmcif")
     files = get_mock_files(source_filename)
+    filename = files[FILE_TO_UPLOAD_KEY].filename
+    filename_base = os.path.splitext(filename)[0]
+    to_format = base_mock_form["to"]
 
     test_converter = FileConverter(files=files,
                                    form=base_mock_form,
@@ -180,3 +197,22 @@ def test_exceed_output_file_size(base_mock_form, tmp_upload_path, tmp_download_p
     ex_output_ext = base_mock_form["to"]
     ex_output_filename = os.path.join(tmp_download_path, f"{ex_output_filename_base}.{ex_output_ext}")
     assert not os.path.exists(ex_output_filename)
+
+    # Check that the logs are as we expect
+
+    # Check that the global log file exists and is empty
+    assert os.path.isfile(GLOBAL_LOG_FILENAME)
+    global_log_text = open(GLOBAL_LOG_FILENAME).read()
+    assert "Output file exceeds maximum size" in global_log_text
+
+    # Check that the local log and output logs exist and contain expected information
+    local_log_filename = os.path.join(tmp_download_path,
+                                      f"{filename}-{filename_base}.{to_format}.{LOCAL_LOG_EXT}")
+    assert os.path.isfile(local_log_filename)
+    output_log_filename = os.path.join(tmp_download_path,
+                                       f"{filename_base}.{OUTPUT_LOG_EXT}")
+    assert os.path.isfile(local_log_filename)
+
+    for filename in (local_log_filename, output_log_filename):
+        log_text = open(filename).read()
+        assert "Output file exceeds maximum size" in log_text
