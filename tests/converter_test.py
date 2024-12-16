@@ -104,21 +104,58 @@ def reset_global():
     logging.Logger.manager.loggerDict.clear()
 
 
+def get_input_info(base_mock_form: dict[str, str], filename: str, **kwargs):
+    """Sets up a mock form for input and gets various variables we'll want to use for checks on output
+
+    Parameters
+    ----------
+    base_mock_form : dict[str, str]
+        The base of the mock `form` object, which we'll use as a starting point before modifying with kwargs
+    filename : str
+        The name of the file to use as input for the test
+
+    Returns
+    -------
+    mock_form : dict[str, str]
+    files : dict[str, MockFileStorage]
+    filename: str
+    filename_base: str
+    to_format: str
+    """
+
+    mock_form = deepcopy(base_mock_form)
+
+    for key, value in kwargs.items():
+        if key in mock_form:
+            mock_form[key] = value
+        else:
+            raise RuntimeError(f"Invalid key {key} provided for form")
+
+    # Save some variables from input we'll be using throughout this test
+    source_filename = os.path.join(TEST_DATA_LOC, filename)
+    files = get_mock_files(source_filename)
+    filename = files[FILE_TO_UPLOAD_KEY].filename
+    filename_base = os.path.splitext(filename)[0]
+    to_format = mock_form["to"]
+
+    return mock_form, files, filename, filename_base, to_format
+
+
 def test_mmcif_to_pdb(base_mock_form, tmp_upload_path, tmp_download_path):
     """Run a test of the converter on a straightforward `.mmcif` to `.pdb` conversion
     """
 
     reset_global()
 
-    # Save some variables from input we'll be using throughout this test
-    source_filename = os.path.join(TEST_DATA_LOC, "1NE6.mmcif")
-    files = get_mock_files(source_filename)
-    filename = files[FILE_TO_UPLOAD_KEY].filename
-    filename_base = os.path.splitext(filename)[0]
-    to_format = base_mock_form["to"]
+    (mock_form,
+     files,
+     filename,
+     filename_base,
+     to_format) = get_input_info(base_mock_form,
+                                 filename="1NE6.mmcif")
 
     test_converter = FileConverter(files=files,
-                                   form=base_mock_form,
+                                   form=mock_form,
                                    file_to_convert=FILE_TO_UPLOAD_KEY,
                                    upload_dir=tmp_upload_path,
                                    download_dir=tmp_download_path)
@@ -172,15 +209,15 @@ def test_exceed_output_file_size(base_mock_form, tmp_upload_path, tmp_download_p
 
     reset_global()
 
-    # Save some variables from input we'll be using throughout this test
-    source_filename = os.path.join(TEST_DATA_LOC, "1NE6.mmcif")
-    files = get_mock_files(source_filename)
-    filename = files[FILE_TO_UPLOAD_KEY].filename
-    filename_base = os.path.splitext(filename)[0]
-    to_format = base_mock_form["to"]
+    (mock_form,
+     files,
+     filename,
+     filename_base,
+     to_format) = get_input_info(base_mock_form,
+                                 filename="1NE6.mmcif")
 
     test_converter = FileConverter(files=files,
-                                   form=base_mock_form,
+                                   form=mock_form,
                                    file_to_convert=FILE_TO_UPLOAD_KEY,
                                    upload_dir=tmp_upload_path,
                                    download_dir=tmp_download_path,
@@ -196,7 +233,7 @@ def test_exceed_output_file_size(base_mock_form, tmp_upload_path, tmp_download_p
 
     # Check that the expected output file is not found in the downloads directory
     ex_output_filename_base = os.path.splitext(files[FILE_TO_UPLOAD_KEY].filename)[0]
-    ex_output_ext = base_mock_form["to"]
+    ex_output_ext = to_format
     ex_output_filename = os.path.join(tmp_download_path, f"{ex_output_filename_base}.{ex_output_ext}")
     assert not os.path.exists(ex_output_filename)
 
@@ -226,15 +263,16 @@ def test_invalid_converter(base_mock_form, tmp_upload_path, tmp_download_path):
 
     reset_global()
 
+    (mock_form,
+     files,
+     filename,
+     filename_base,
+     to_format) = get_input_info(base_mock_form,
+                                 filename="1NE6.mmcif",
+                                 converter="INVALID")
+
     mock_form = deepcopy(base_mock_form)
     mock_form["converter"] = "INVALID"
-
-    # Save some variables from input we'll be using throughout this test
-    source_filename = os.path.join(TEST_DATA_LOC, "1NE6.mmcif")
-    files = get_mock_files(source_filename)
-    filename = files[FILE_TO_UPLOAD_KEY].filename
-    filename_base = os.path.splitext(filename)[0]
-    to_format = mock_form["to"]
 
     test_converter = FileConverter(files=files,
                                    form=mock_form,
@@ -252,7 +290,7 @@ def test_invalid_converter(base_mock_form, tmp_upload_path, tmp_download_path):
 
     # Check that the expected output file is not found in the downloads directory
     ex_output_filename_base = os.path.splitext(files[FILE_TO_UPLOAD_KEY].filename)[0]
-    ex_output_ext = base_mock_form["to"]
+    ex_output_ext = to_format
     ex_output_filename = os.path.join(tmp_download_path, f"{ex_output_filename_base}.{ex_output_ext}")
     assert not os.path.exists(ex_output_filename)
 
@@ -282,16 +320,16 @@ def test_xyz_to_inchi(base_mock_form, tmp_upload_path, tmp_download_path):
 
     reset_global()
 
-    mock_form = deepcopy(base_mock_form)
-    mock_form["from"] = "xyz"
-    mock_form["to"] = "inchi"
+    (mock_form,
+     files,
+     filename,
+     filename_base,
+     to_format) = get_input_info(base_mock_form,
+                                 filename="quartz.xyz",
+                                 to="inchi")
 
-    # Save some variables from input we'll be using throughout this test
-    source_filename = os.path.join(TEST_DATA_LOC, "quartz.xyz")
-    files = get_mock_files(source_filename)
-    filename = files[FILE_TO_UPLOAD_KEY].filename
-    filename_base = os.path.splitext(filename)[0]
-    to_format = mock_form["to"]
+    # "from" is a reserved work so we can't set it as a kwarg in the function call above
+    mock_form["from"] = "xyz"
 
     test_converter = FileConverter(files=files,
                                    form=mock_form,
@@ -320,16 +358,16 @@ def test_xyz_to_inchi_err(base_mock_form, tmp_upload_path, tmp_download_path):
 
     reset_global()
 
-    mock_form = deepcopy(base_mock_form)
-    mock_form["from"] = "xyz"
-    mock_form["to"] = "inchi"
+    (mock_form,
+     files,
+     filename,
+     filename_base,
+     to_format) = get_input_info(base_mock_form,
+                                 filename="quartz_err.xyz",
+                                 to="inchi")
 
-    # Save some variables from input we'll be using throughout this test
-    source_filename = os.path.join(TEST_DATA_LOC, "quartz_err.xyz")
-    files = get_mock_files(source_filename)
-    filename = files[FILE_TO_UPLOAD_KEY].filename
-    filename_base = os.path.splitext(filename)[0]
-    to_format = mock_form["to"]
+    # "from" is a reserved work so we can't set it as a kwarg in the function call above
+    mock_form["from"] = "xyz"
 
     test_converter = FileConverter(files=files,
                                    form=mock_form,
