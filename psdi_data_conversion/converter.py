@@ -175,7 +175,9 @@ class FileConverter:
             elif self.converter == CONVERTER_ATO:
                 self._convert_ato()
             else:
-                self._abort(STATUS_CODE_BAD_METHOD, f"ERROR: Unknown logger '{self.converter}' requested")
+                # Unrecognized converter - Delete input file and abort
+                os.remove(self.in_filename)
+                self._abort(STATUS_CODE_BAD_METHOD, f"ERROR: Unknown converter '{self.converter}' requested")
         except Exception as e:
             if isinstance(e, (HTTPException, FileConverterAbortException)):
                 # Don't catch a deliberate abort; let it pass through

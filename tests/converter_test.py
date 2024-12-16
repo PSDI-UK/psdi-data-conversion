@@ -5,6 +5,7 @@ Created 2024-12-15 by Bryan Gillis.
 Unit tests of the converter class
 """
 
+from copy import deepcopy
 import logging
 import os
 import re
@@ -12,8 +13,8 @@ import pytest
 
 from app import FILE_KEY, FILE_TO_UPLOAD_KEY
 from psdi_data_conversion.log_utility import GLOBAL_LOG_FILENAME
-from psdi_data_conversion.converter import (CONVERTER_OB, LOCAL_LOG_EXT, OUTPUT_LOG_EXT, STATUS_CODE_SIZE,
-                                            FileConverter, FileConverterAbortException)
+from psdi_data_conversion.converter import (CONVERTER_OB, LOCAL_LOG_EXT, OUTPUT_LOG_EXT, STATUS_CODE_BAD_METHOD,
+                                            STATUS_CODE_SIZE, FileConverter, FileConverterAbortException)
 
 TEST_DATA_LOC = os.path.abspath("./test_data")
 
@@ -216,3 +217,59 @@ def test_exceed_output_file_size(base_mock_form, tmp_upload_path, tmp_download_p
     for filename in (local_log_filename, output_log_filename):
         log_text = open(filename).read()
         assert "Output file exceeds maximum size" in log_text
+
+
+def test_invalid_converter(base_mock_form, tmp_upload_path, tmp_download_path):
+    """Run a test of the converter to ensure it reports an error properly if an invalid converter is requested
+    """
+
+    reset_global()
+
+    # Save some variables from input we'll be using throughout this test
+    source_filename = os.path.join(TEST_DATA_LOC, "1NE6.mmcif")
+    files = get_mock_files(source_filename)
+    filename = files[FILE_TO_UPLOAD_KEY].filename
+    filename_base = os.path.splitext(filename)[0]
+    to_format = base_mock_form["to"]
+
+    mock_form = deepcopy(base_mock_form)
+    mock_form["converter"] = "INVALID"
+
+    test_converter = FileConverter(files=files,
+                                   form=mock_form,
+                                   file_to_convert=FILE_TO_UPLOAD_KEY,
+                                   upload_dir=tmp_upload_path,
+                                   download_dir=tmp_download_path)
+
+    with pytest.raises(FileConverterAbortException) as esc_info:
+        test_converter.run()
+    assert esc_info.value.status_code == STATUS_CODE_BAD_METHOD
+
+    # Check that the input file has been properly deleted from the uploads directory
+    ex_input_filename = os.path.join(tmp_upload_path, files[FILE_TO_UPLOAD_KEY].filename)
+    assert not os.path.exists(ex_input_filename)
+
+    # Check that the expected output file is not found in the downloads directory
+    ex_output_filename_base = os.path.splitext(files[FILE_TO_UPLOAD_KEY].filename)[0]
+    ex_output_ext = base_mock_form["to"]
+    ex_output_filename = os.path.join(tmp_download_path, f"{ex_output_filename_base}.{ex_output_ext}")
+    assert not os.path.exists(ex_output_filename)
+
+    # Check that the logs are as we expect
+
+    # Check that the global log file exists and is empty
+    assert os.path.isfile(GLOBAL_LOG_FILENAME)
+    global_log_text = open(GLOBAL_LOG_FILENAME).read()
+    assert "ERROR: Unknown converter" in global_log_text
+
+    # Check that the local log and output logs exist and contain expected information
+    local_log_filename = os.path.join(tmp_download_path,
+                                      f"{filename}-{filename_base}.{to_format}.{LOCAL_LOG_EXT}")
+    assert os.path.isfile(local_log_filename)
+    output_log_filename = os.path.join(tmp_download_path,
+                                       f"{filename_base}.{OUTPUT_LOG_EXT}")
+    assert os.path.isfile(local_log_filename)
+
+    for filename in (local_log_filename, output_log_filename):
+        log_text = open(filename).read()
+        assert "ERROR: Unknown converter" in log_text
