@@ -6,10 +6,13 @@ Unit tests of the converter class
 """
 
 import os
+import re
 import pytest
 
 from app import FILE_KEY, FILE_TO_UPLOAD_KEY
-from psdi_data_conversion.converter import CONVERTER_OB, STATUS_CODE_SIZE, FileConverter, FileConverterAbortException
+from psdi_data_conversion.log_utility import GLOBAL_LOG_FILENAME
+from psdi_data_conversion.converter import (CONVERTER_OB, LOCAL_LOG_EXT, OUTPUT_LOG_EXT, STATUS_CODE_SIZE,
+                                            FileConverter, FileConverterAbortException)
 
 TEST_DATA_LOC = os.path.abspath("./test_data")
 
@@ -88,8 +91,18 @@ def test_mmcif_to_pdb(base_mock_form, tmp_upload_path, tmp_download_path):
     """Run a test of the converter on a straightforward `.mmcif` to `.pdb` conversion
     """
 
+    # Remove the global log file if one exists
+    try:
+        os.remove(GLOBAL_LOG_FILENAME)
+    except FileNotFoundError:
+        pass
+
+    # Save some variables from input we'll be using throughout this test
     source_filename = os.path.join(TEST_DATA_LOC, "1NE6.mmcif")
     files = get_mock_files(source_filename)
+    filename = files[FILE_TO_UPLOAD_KEY].filename
+    filename_base = os.path.splitext(filename)[0]
+    to_format = base_mock_form["to"]
 
     test_converter = FileConverter(files=files,
                                    form=base_mock_form,
@@ -98,25 +111,51 @@ def test_mmcif_to_pdb(base_mock_form, tmp_upload_path, tmp_download_path):
                                    download_dir=tmp_download_path)
 
     # Check that the input file now exists where we expect it to
-    ex_input_filename = os.path.join(tmp_upload_path, files[FILE_TO_UPLOAD_KEY].filename)
+    ex_input_filename = os.path.join(tmp_upload_path, filename)
     assert os.path.exists(ex_input_filename)
 
     test_converter.run()
 
     # Check that the input file has been properly deleted from the uploads directory
-    ex_input_filename = os.path.join(tmp_upload_path, files[FILE_TO_UPLOAD_KEY].filename)
+    ex_input_filename = os.path.join(tmp_upload_path, filename)
     assert not os.path.exists(ex_input_filename)
 
     # Check that the expected output file is found in the downloads directory
-    ex_output_filename_base = os.path.splitext(files[FILE_TO_UPLOAD_KEY].filename)[0]
-    ex_output_ext = base_mock_form["to"]
-    ex_output_filename = os.path.join(tmp_download_path, f"{ex_output_filename_base}.{ex_output_ext}")
+    ex_output_filename = os.path.join(tmp_download_path, f"{filename_base}.{to_format}")
     assert os.path.isfile(ex_output_filename)
+
+    # Check that the logs are as we expect
+
+    # Check that the global log file exists and is empty
+    assert os.path.isfile(GLOBAL_LOG_FILENAME)
+    global_log_text = open(GLOBAL_LOG_FILENAME).read()
+    assert len(global_log_text) == 0
+
+    # Check that the local log and output logs exist and contain expected information
+    local_log_filename = os.path.join(tmp_download_path,
+                                      f"{filename}-{filename_base}.{to_format}.{LOCAL_LOG_EXT}")
+    assert os.path.isfile(local_log_filename)
+    output_log_filename = os.path.join(tmp_download_path,
+                                       f"{filename_base}.{OUTPUT_LOG_EXT}")
+    assert os.path.isfile(local_log_filename)
+
+    for filename in (local_log_filename, output_log_filename):
+        log_text = open(filename).read()
+        assert re.compile(r"File name:\s+"+filename_base).search(log_text)
+        assert "Open Babel Warning" in log_text
+        assert "Failed to kekulize aromatic bonds" in log_text
+        assert log_text
 
 
 def test_exceed_output_file_size(base_mock_form, tmp_upload_path, tmp_download_path):
     """Run a test of the converter to ensure it reports an error properly if the output file size is too large
     """
+
+    # Remove the global log file if one exists
+    try:
+        os.remove(GLOBAL_LOG_FILENAME)
+    except FileNotFoundError:
+        pass
 
     source_filename = os.path.join(TEST_DATA_LOC, "1NE6.mmcif")
     files = get_mock_files(source_filename)
