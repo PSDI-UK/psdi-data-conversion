@@ -175,8 +175,7 @@ class FileConverter:
             elif self.converter == CONVERTER_ATO:
                 self._convert_ato()
             else:
-                # Unrecognized converter - Delete input file and abort
-                os.remove(self.in_filename)
+                # Unrecognized converter - abort
                 self._abort(STATUS_CODE_BAD_METHOD, f"ERROR: Unknown converter '{self.converter}' requested")
         except Exception as e:
             if isinstance(e, (HTTPException, FileConverterAbortException)):
@@ -200,6 +199,17 @@ class FileConverter:
             If provided, this message will be logged in the user output log at the top of the file. This should
             typically explain the reason the process failed
         """
+
+        # Remove the input and output files if they exist
+        try:
+            os.remove(self.in_filename)
+        except FileNotFoundError:
+            pass
+        try:
+            os.remove(self.out_filename)
+        except FileNotFoundError:
+            pass
+
         if message:
             # If we're adding a message, read in any prior logs, clear the log, write the message, then write the
             # prior logs
@@ -337,10 +347,6 @@ class FileConverter:
 
         # Check that the output file doesn't exceed the maximum allowed size
         if out_size > self.max_file_size:
-
-            # Delete output and input files
-            os.remove(self.in_filename)
-            os.remove(self.out_filename)
 
             self._abort(STATUS_CODE_SIZE,
                         f"ERROR converting {os.path.basename(self.in_filename)} to " +
