@@ -89,8 +89,9 @@ def test_mmcif_to_pdb(base_mock_form, tmp_upload_path, tmp_download_path):
     """
 
     source_filename = os.path.join(TEST_DATA_LOC, "1NE6.mmcif")
+    files = get_mock_files(source_filename)
 
-    test_converter = FileConverter(files=get_mock_files(source_filename),
+    test_converter = FileConverter(files=files,
                                    form=base_mock_form,
                                    file_to_convert=FILE_TO_UPLOAD_KEY,
                                    upload_dir=tmp_upload_path,
@@ -98,14 +99,21 @@ def test_mmcif_to_pdb(base_mock_form, tmp_upload_path, tmp_download_path):
 
     test_converter.run()
 
+    # Check that the expected output file is found in the downloads directory
+    ex_output_filename_base = os.path.splitext(files[FILE_TO_UPLOAD_KEY].filename)[0]
+    ex_output_ext = base_mock_form["to"]
+    ex_output_filename = os.path.join(tmp_download_path, f"{ex_output_filename_base}.{ex_output_ext}")
+    assert os.path.isfile(ex_output_filename)
+
 
 def test_exceed_output_file_size(base_mock_form, tmp_upload_path, tmp_download_path):
     """Run a test of the converter to ensure it reports an error properly if the output file size is too large
     """
 
     source_filename = os.path.join(TEST_DATA_LOC, "1NE6.mmcif")
+    files = get_mock_files(source_filename)
 
-    test_converter = FileConverter(files=get_mock_files(source_filename),
+    test_converter = FileConverter(files=files,
                                    form=base_mock_form,
                                    file_to_convert=FILE_TO_UPLOAD_KEY,
                                    upload_dir=tmp_upload_path,
@@ -115,3 +123,15 @@ def test_exceed_output_file_size(base_mock_form, tmp_upload_path, tmp_download_p
     with pytest.raises(FileConverterAbortException) as esc_info:
         test_converter.run()
     assert esc_info.value.status_code == STATUS_CODE_SIZE
+
+    # Check that the input file has been properly deleted from the uploads directory
+    ex_input_filename_base = os.path.splitext(files[FILE_TO_UPLOAD_KEY].filename)[0]
+    ex_input_ext = base_mock_form["to"]
+    ex_input_filename = os.path.join(tmp_upload_path, f"{ex_input_filename_base}.{ex_input_ext}")
+    assert not os.path.exists(ex_input_filename)
+
+    # Check that the expected output file is not found in the downloads directory
+    ex_output_filename_base = os.path.splitext(files[FILE_TO_UPLOAD_KEY].filename)[0]
+    ex_output_ext = base_mock_form["to"]
+    ex_output_filename = os.path.join(tmp_download_path, f"{ex_output_filename_base}.{ex_output_ext}")
+    assert not os.path.exists(ex_output_filename)
