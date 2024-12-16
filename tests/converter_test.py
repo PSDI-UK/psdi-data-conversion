@@ -97,7 +97,15 @@ def test_mmcif_to_pdb(base_mock_form, tmp_upload_path, tmp_download_path):
                                    upload_dir=tmp_upload_path,
                                    download_dir=tmp_download_path)
 
+    # Check that the input file now exists where we expect it to
+    ex_input_filename = os.path.join(tmp_upload_path, files[FILE_TO_UPLOAD_KEY].filename)
+    assert os.path.exists(ex_input_filename)
+
     test_converter.run()
+
+    # Check that the input file has been properly deleted from the uploads directory
+    ex_input_filename = os.path.join(tmp_upload_path, files[FILE_TO_UPLOAD_KEY].filename)
+    assert not os.path.exists(ex_input_filename)
 
     # Check that the expected output file is found in the downloads directory
     ex_output_filename_base = os.path.splitext(files[FILE_TO_UPLOAD_KEY].filename)[0]
@@ -125,9 +133,7 @@ def test_exceed_output_file_size(base_mock_form, tmp_upload_path, tmp_download_p
     assert esc_info.value.status_code == STATUS_CODE_SIZE
 
     # Check that the input file has been properly deleted from the uploads directory
-    ex_input_filename_base = os.path.splitext(files[FILE_TO_UPLOAD_KEY].filename)[0]
-    ex_input_ext = base_mock_form["to"]
-    ex_input_filename = os.path.join(tmp_upload_path, f"{ex_input_filename_base}.{ex_input_ext}")
+    ex_input_filename = os.path.join(tmp_upload_path, files[FILE_TO_UPLOAD_KEY].filename)
     assert not os.path.exists(ex_input_filename)
 
     # Check that the expected output file is not found in the downloads directory
