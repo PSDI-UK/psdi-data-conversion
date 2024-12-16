@@ -92,8 +92,10 @@ def tmp_download_path(tmp_path):
 
 class TestConverter:
 
-    def reset_global(self):
-        """Reset global aspects before a test, so that different tests won't interfere with each other.
+    @pytest.fixture(autouse=True)
+    def setup_test(self, tmp_upload_path, tmp_download_path):
+        """Reset global aspects before a test, so that different tests won't interfere with each other,
+        and set up tmp directories.
         """
 
         # Remove the global log file if one exists
@@ -104,6 +106,10 @@ class TestConverter:
 
         # Clear any existing loggers so new ones will be created fresh
         logging.Logger.manager.loggerDict.clear()
+
+        # Save tmp directories
+        self.tmp_upload_path = tmp_upload_path
+        self.tmp_download_path = tmp_download_path
 
     def get_input_info(self, base_mock_form: dict[str, str], filename: str, **kwargs):
         """Sets up a mock form for input and gets various variables we'll want to use for checks on output
@@ -131,32 +137,39 @@ class TestConverter:
         self.filename_base = os.path.splitext(filename)[0]
         self.to_format = self.mock_form["to"]
 
-    def test_mmcif_to_pdb(self, base_mock_form, tmp_upload_path, tmp_download_path):
+    def run_converter(self, expect_code=None, **kwargs):
+        """_summary_
+        """
+
+        self.test_converter = FileConverter(files=self.files,
+                                            form=self.mock_form,
+                                            file_to_convert=FILE_TO_UPLOAD_KEY,
+                                            upload_dir=self.tmp_upload_path,
+                                            download_dir=self.tmp_download_path,
+                                            **kwargs)
+
+        # Check that the input file now exists where we expect it to
+        ex_input_filename = os.path.join(self.tmp_upload_path, self.filename)
+        assert os.path.exists(ex_input_filename)
+
+        if expect_code is None:
+            # If we don't expect an error, just try running the converter
+            self.test_converter.run()
+        else:
+            with pytest.raises(FileConverterAbortException) as esc_info:
+                self.test_converter.run()
+            assert esc_info.value.status_code == expect_code
+
+    def test_mmcif_to_pdb(self, base_mock_form):
         """Run a test of the converter on a straightforward `.mmcif` to `.pdb` conversion
         """
 
-        self.reset_global()
-
         self.get_input_info(base_mock_form, filename="1NE6.mmcif")
 
-        test_converter = FileConverter(files=self.files,
-                                       form=self.mock_form,
-                                       file_to_convert=FILE_TO_UPLOAD_KEY,
-                                       upload_dir=tmp_upload_path,
-                                       download_dir=tmp_download_path)
-
-        # Check that the input file now exists where we expect it to
-        ex_input_filename = os.path.join(tmp_upload_path, self.filename)
-        assert os.path.exists(ex_input_filename)
-
-        test_converter.run()
-
-        # Check that the input file has been properly deleted from the uploads directory
-        ex_input_filename = os.path.join(tmp_upload_path, self.filename)
-        assert not os.path.exists(ex_input_filename)
+        self.run_converter()
 
         # Check that the expected output file is found in the downloads directory
-        ex_output_filename = os.path.join(tmp_download_path, f"{self.filename_base}.{self.to_format}")
+        ex_output_filename = os.path.join(self.tmp_download_path, f"{self.filename_base}.{self.to_format}")
         assert os.path.isfile(ex_output_filename)
 
         # Check that the logs are as we expect
@@ -167,10 +180,10 @@ class TestConverter:
         assert len(global_log_text) == 0
 
         # Check that the local log and output logs exist and contain expected information
-        local_log_filename = os.path.join(tmp_download_path,
+        local_log_filename = os.path.join(self.tmp_download_path,
                                           f"{self.filename}-{self.filename_base}.{self.to_format}.{LOCAL_LOG_EXT}")
         assert os.path.isfile(local_log_filename)
-        output_log_filename = os.path.join(tmp_download_path,
+        output_log_filename = os.path.join(self.tmp_download_path,
                                            f"{self.filename_base}.{OUTPUT_LOG_EXT}")
         assert os.path.isfile(local_log_filename)
 
@@ -191,20 +204,10 @@ class TestConverter:
         """Run a test of the converter to ensure it reports an error properly if the output file size is too large
         """
 
-        self.reset_global()
-
         self.get_input_info(base_mock_form, filename="1NE6.mmcif")
 
-        test_converter = FileConverter(files=self.files,
-                                       form=self.mock_form,
-                                       file_to_convert=FILE_TO_UPLOAD_KEY,
-                                       upload_dir=tmp_upload_path,
-                                       download_dir=tmp_download_path,
-                                       max_file_size=0)
-
-        with pytest.raises(FileConverterAbortException) as esc_info:
-            test_converter.run()
-        assert esc_info.value.status_code == STATUS_CODE_SIZE
+        self.run_converter(STATUS_CODE_SIZE,
+                           max_file_size=0)
 
         # Check that the input file has been properly deleted from the uploads directory
         ex_input_filename = os.path.join(tmp_upload_path, self.files[FILE_TO_UPLOAD_KEY].filename)
@@ -239,24 +242,11 @@ class TestConverter:
         """Run a test of the converter to ensure it reports an error properly if an invalid converter is requested
         """
 
-        self.reset_global()
-
         self.get_input_info(base_mock_form,
                             filename="1NE6.mmcif",
                             converter="INVALID")
 
-        mock_form = deepcopy(base_mock_form)
-        mock_form["converter"] = "INVALID"
-
-        test_converter = FileConverter(files=self.files,
-                                       form=mock_form,
-                                       file_to_convert=FILE_TO_UPLOAD_KEY,
-                                       upload_dir=tmp_upload_path,
-                                       download_dir=tmp_download_path)
-
-        with pytest.raises(FileConverterAbortException) as esc_info:
-            test_converter.run()
-        assert esc_info.value.status_code == STATUS_CODE_BAD_METHOD
+        self.run_converter(STATUS_CODE_BAD_METHOD)
 
         # Check that the input file has been properly deleted from the uploads directory
         ex_input_filename = os.path.join(tmp_upload_path, self.files[FILE_TO_UPLOAD_KEY].filename)
@@ -291,8 +281,6 @@ class TestConverter:
         """Run a test of the converter on a straightforward `.xyz` to `.inchi` conversion
         """
 
-        self.reset_global()
-
         self.get_input_info(base_mock_form,
                             filename="quartz.xyz",
                             to="inchi")
@@ -300,17 +288,7 @@ class TestConverter:
         # "from" is a reserved work so we can't set it as a kwarg in the function call above
         self.mock_form["from"] = "xyz"
 
-        test_converter = FileConverter(files=self.files,
-                                       form=self.mock_form,
-                                       file_to_convert=FILE_TO_UPLOAD_KEY,
-                                       upload_dir=tmp_upload_path,
-                                       download_dir=tmp_download_path)
-
-        # Check that the input file now exists where we expect it to
-        ex_input_filename = os.path.join(tmp_upload_path, self.filename)
-        assert os.path.exists(ex_input_filename)
-
-        test_converter.run()
+        self.run_converter()
 
         # Check that the input file has been properly deleted from the uploads directory
         ex_input_filename = os.path.join(tmp_upload_path, self.filename)
@@ -324,8 +302,6 @@ class TestConverter:
         """Run a test of the converter on an `.xyz` to `.inchi` conversion we expect to fail
         """
 
-        self.reset_global()
-
         self.get_input_info(base_mock_form,
                             filename="quartz_err.xyz",
                             to="inchi")
@@ -333,19 +309,7 @@ class TestConverter:
         # "from" is a reserved work so we can't set it as a kwarg in the function call above
         self.mock_form["from"] = "xyz"
 
-        test_converter = FileConverter(files=self.files,
-                                       form=self.mock_form,
-                                       file_to_convert=FILE_TO_UPLOAD_KEY,
-                                       upload_dir=tmp_upload_path,
-                                       download_dir=tmp_download_path)
-
-        # Check that the input file now exists where we expect it to
-        ex_input_filename = os.path.join(tmp_upload_path, self.filename)
-        assert os.path.exists(ex_input_filename)
-
-        with pytest.raises(FileConverterAbortException) as esc_info:
-            test_converter.run()
-        assert esc_info.value.status_code == STATUS_CODE_GENERAL
+        self.run_converter(STATUS_CODE_GENERAL)
 
         # Check that the input file has been properly deleted from the uploads directory
         ex_input_filename = os.path.join(tmp_upload_path, self.filename)
