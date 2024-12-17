@@ -5,45 +5,15 @@
   This is the JavaScript which makes the convert.htm gui work.
 */
 
-import { getInputFlags, getOutputFlags, getInputArgFlags, getOutputArgFlags } from "./data.js";
-
-const MEGABYTE = 1024*1024;
-const MAX_FILESIZE = 1*MEGABYTE;
-
-const fromList = new Array(),
-      toList = new Array();
+import { commonConvertReady, convertFile } from "./convert_common.js"
 
 var token = "",
-    last_select = "",
     in_ext = "",
     out_ext = "",
     in_str = "",
     out_str = "";
 
-export function commonConvertReady(converter) {
-    token = sessionStorage.getItem("token");
-
-    in_str = sessionStorage.getItem("in_str");
-    out_str = sessionStorage.getItem("out_str");
-
-    // $$$$$ FUNCTION FOR THIS? $$$$$
-    const in_str_array = in_str.split(": ");
-    in_ext = in_str_array[0];                // e.g. "ins"
-    const in_note = in_str_array[1];         // e.g. "ShelX"
-
-    const out_str_array = out_str.split(": ");
-    out_ext = out_str_array[0];
-    const out_note = out_str_array[1];
-
-    $("#heading").html("Convert from \'" + in_ext + "\' (" + in_note + ") to \'" + out_ext + "\' (" + out_note + 
-        ") using " + converter);
-
-    $("#fileToUpload").change(checkFile);
-
-    return [token, in_str, in_ext, out_str, out_ext];
-}
-
-$(document).ready(function() {
+$(document).ready(function () {
     [token, in_str, in_ext, out_str, out_ext] = commonConvertReady("Open Babel");
 
     $('input[name="coordinates"]').change(coordOptionAvailability);
@@ -54,21 +24,6 @@ $(document).ready(function() {
     getFlags("in_arg", in_str);
     getFlags("out_arg", out_str);
 });
-
-// $$$$$$$$$$ Retained in case of future need to write to a log file $$$$$$$$$$
-// Writes user input to a server-side file
-function writeLog(message) {
-    var jqXHR = $.get(`/data/`, {
-            'token': token,
-            'data': message
-        })
-        .fail(function(e) {
-            // For debugging
-            console.log("Error writing to log");
-            console.log(e.status);
-            console.log(e.responseText);
-        })
-}
 
 // On ticking a checkbox, a text box for entry of an option flag argument appears next to it. On unticking, the text box disappears.
 function enterArgument(event) {
@@ -90,26 +45,26 @@ function enterArgument(event) {
 // Uploads a user-supplied file
 function submitFile() {
     const file = $("#fileToUpload")[0].files[0],
-          fname = file.name.split(".")[0],
-          extension = file.name.split(".")[1];
+        fname = file.name.split(".")[0],
+        extension = file.name.split(".")[1];
 
     var quality = sessionStorage.getItem("success"),
         start = quality.indexOf(':') + 2,
         finish = quality.lastIndexOf('(') - 1;
 
     quality = quality.substring(start, finish);
-    
+
     if (extension != in_ext) {
         alert("The file extension is not " + in_ext + ": please select another file or change the 'from' format on the 'Home' page.");
-        $("#uploadButton").css({"background-color": "var(--psdi-bg-color-secondary)", "color": "gray"});
+        $("#uploadButton").css({ "background-color": "var(--psdi-bg-color-secondary)", "color": "gray" });
         return;
     }
 
     const read_flags_text = $("#inFlags").find(":selected").text(),
-          read_flags = extractFlags(read_flags_text);
+        read_flags = extractFlags(read_flags_text);
 
     const write_flags_text = $("#outFlags").find(":selected").text(),
-          write_flags = extractFlags(write_flags_text);
+        write_flags = extractFlags(write_flags_text);
 
     var count = 0,
         read_arg_flags = '',
@@ -119,9 +74,9 @@ function submitFile() {
         all_args_entered = true;
 
     const checked_in = $('input[name=in_arg_check]:checked'),
-          checked_out = $('input[name=out_arg_check]:checked');
+        checked_out = $('input[name=out_arg_check]:checked');
 
-    checked_in.each(function() {
+    checked_in.each(function () {
         read_arg_flags += $("#" + this.id).val()[0];
         const arg = $("#in_arg_text" + this.id.substring(this.id.length - 1, this.id.length)).val();
 
@@ -133,7 +88,7 @@ function submitFile() {
         }
     })
 
-    checked_out.each(function() {
+    checked_out.each(function () {
         write_arg_flags += $("#" + this.id).val()[0];
         const arg = $("#out_arg_text" + this.id.substring(this.id.length - 1, this.id.length)).val();
 
@@ -151,8 +106,8 @@ function submitFile() {
     }
 
     const coordinates = $('input[name="coordinates"]:checked').val(),
-          coordOption = $('input[name="coordOptions"]:checked').val(),
-          download_fname = file.name.split(".")[0] + "." + out_ext;
+        coordOption = $('input[name="coordOptions"]:checked').val(),
+        download_fname = file.name.split(".")[0] + "." + out_ext;
 
     var form_data = new FormData();
 
@@ -190,101 +145,8 @@ function extractFlags(flags_text) {
     return flags;
 }
 
-// Retrieves option flags requiring arguments from selected text
-function extractArgFlags(flags_text) {
-    var flags = "",
-        regex = /[.]/g,
-        match = "";
-
-    if (flags_text.length > 0)
-        flags += flags_text[0];
-
-    while ((match = regex.exec(flags_text)) != null && match.index < flags_text.length - 1) {
-        flags += flags_text[match.index + 1];
-    }
-
-    return flags;
-}
-
-// Converts user-supplied file to another format and downloads the resulting file
-export function convertFile(form_data, download_fname, fname) {
-    var jqXHR = $.ajax({
-            url: `/convert/`,
-            type: "POST",
-            data: form_data,
-            processData: false,
-            contentType: false,
-            success: async function() {
-                const delay = ms => new Promise(response => setTimeout(response, ms));
-
-                downloadFile(`../downloads/${fname}.log.txt`, fname + '.log.txt')
-                await delay(300);
-                downloadFile(`../downloads/${download_fname}`, download_fname)
-                await delay(300);
-
-                var fdata = new FormData();
-
-                fdata.append("filename", download_fname);
-                fdata.append("logname", fname + '.log.txt');
-
-                $.ajax({
-                    url: `/delete/`,
-                    type: "POST",
-                    data: fdata,
-                    processData: false,
-                    contentType: false
-                })
-                .fail(function(e) {
-                    // For debugging
-                    console.log("Error deleting remote files after download");
-                    console.log(e.status);
-                    console.log(e.responseText);
-                })
-            },
-            error: function(data) {
-                //alert("ajax error, FormData: " + data);
-                }
-            })
-            .done(response => {
-                alert("To the best of our knowledge, this conversion has worked. Your output file should download automatically " +
-                      "when you close this alert. Please report any problems by clicking on 'Contact' in the navigation bar.");
-            })
-            .fail(function(e) {
-                let errLog = `/static/downloads/${fname}.log.txt`;
-
-                fetch(errLog, {cache: "no-store"})
-                .then(function (response) {
-                    if (response.status==404) {
-                        return "An unknown error occurred, which produced no error log. Please provide feedback on " +
-                            "the conversion that you were attempting by clicking on 'Contact' in the navigation bar.";
-                    } else {
-                        return response.text();
-                    }
-                })
-                .then(function (text) {
-                    if (text!="")
-                        alert(text);
-                })
-
-                // For debugging
-                console.log("Error converting file");
-                console.log(e.status);
-                console.log(e.responseText);
-            })
-}
-
-// A link is created, clicked and removed, resulting in the download of a file
-function downloadFile(path, filename) {
-    const a = $("<a>")
-          .attr("href", path)
-          .attr("download", filename)
-          .appendTo("body");
-    a[0].click();
-    a.remove();
-}
-
 // Retrieves read or write option flags associated with a file format
-function getFlags (type, str) {
+function getFlags(type, str) {
 
     try {
         const [ext, note] = str.split(": ");
@@ -302,8 +164,8 @@ function getFlags (type, str) {
         else if (type == "in_arg") {
 
             const in_arg_str_array = str.split(": "),
-                  in_arg_ext = in_arg_str_array[0],          // e.g. "ins"
-                  in_arg_note = in_arg_str_array[1];         // e.g. "ShelX"
+                in_arg_ext = in_arg_str_array[0],          // e.g. "ins"
+                in_arg_note = in_arg_str_array[1];         // e.g. "ShelX"
 
             getInputArgFlags(in_arg_ext, in_arg_note).then((argFlags) => {
                 addCheckboxes(argFlags, "in_arg");
@@ -312,8 +174,8 @@ function getFlags (type, str) {
         else if (type == "out_arg") {
 
             const out_arg_str_array = str.split(": "),
-                  out_arg_ext = out_arg_str_array[0],          // e.g. "ins"
-                  out_arg_note = out_arg_str_array[1];         // e.g. "ShelX"
+                out_arg_ext = out_arg_str_array[0],          // e.g. "ins"
+                out_arg_note = out_arg_str_array[1];         // e.g. "ShelX"
 
             getOutputArgFlags(out_arg_ext, out_arg_note).then((argFlags) => {
                 addCheckboxes(argFlags, "out_arg");
@@ -381,7 +243,7 @@ function populateFlagBox(entries, type) {
 
     if (entries.length != 0) {
 
-        disp.css({display: "inline"});
+        disp.css({ display: "inline" });
 
         for (const entry of entries) {
 
@@ -396,8 +258,8 @@ function populateFlagBox(entries, type) {
 
     } else {
 
-        $("#" + type + "_label").hide(); 
-        $("#" + type + "_flag_break").hide(); 
+        $("#" + type + "_label").hide();
+        $("#" + type + "_flag_break").hide();
         el.hide();
     }
 
@@ -418,46 +280,10 @@ function coordOptionAvailability(event) {
     const calcType = $('input[name="coordinates"]:checked').val();
 
     if (calcType == 'neither') {
-        $('input[name="coordOptions"]').prop({disabled: true}); 
-    }       
+        $('input[name="coordOptions"]').prop({ disabled: true });
+    }
     else {
-        $('input[name="coordOptions"]').prop({disabled: false}); 
-    }
-}
-
-// Check that the file meets requirements for upload
-function checkFile(event) {
-
-    let allGood = true;
-    let file = this.files[0];
-    let message = "";
-    
-    // Check file has the proper extension
-    const file_name = file.name;
-    const file_name_array = file_name.split(".");
-    const extension = file_name_array[1];
-    if (extension != in_ext) {
-        message += "The file extension is not " + in_ext +
-            ": please select another file or change the 'from' format on the 'Home' page.";
-        allGood = false;
-    }
-
-    // Check file does not exceed maximum size
-    if (file.size > MAX_FILESIZE) {
-        if (message!=="")
-            message += "\n\n";
-        message += "The file exceeds the maximum size limit of " + (MAX_FILESIZE/MEGABYTE).toFixed(2) +
-          " MB; its size is " + (file.size/MEGABYTE).toFixed(2) + " MB.";
-        allGood = false;
-    }
-
-    if(allGood) {
-        $("#uploadButton").css({"background-color": "var(--ifm-color-primary)", "color": "var(--ifm-hero-text-color)"});
-        $("#uploadButton").prop({disabled: false});
-    } else {
-        $("#uploadButton").css({"background-color": "var(--psdi-bg-color-secondary)", "color": "gray"});
-        $("#uploadButton").prop({disabled: true});
-        alert(message);
+        $('input[name="coordOptions"]').prop({ disabled: false });
     }
 }
 

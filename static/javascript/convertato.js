@@ -5,13 +5,9 @@
   This is the JavaScript which makes the convertato.htm gui work.
 */
 
-import { commonConvertReady, convertFile } from "./convert.js"
-
-const fromList = new Array(),
-    toList = new Array();
+import { commonConvertReady, convertFile } from "./convert_common.js"
 
 var token = "",
-    last_select = "",
     in_ext = "",
     out_ext = "",
     in_str = "",
