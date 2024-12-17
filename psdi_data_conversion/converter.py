@@ -462,13 +462,16 @@ class FileConverter:
             self._log_success()
 
     def _convert_ato(self):
-        atomsk = subprocess.run(['sh', 'atomsk.sh', self.f.filename, self.filename_base,
-                                self.to_format], capture_output=True, text=True)
-
-        self.in_size, self.out_size = self._check_file_size()
+        atomsk = subprocess.run(['sh', 'atomsk.sh', self.in_filename, self.out_filename],
+                                capture_output=True, text=True)
 
         self.out = atomsk.stdout
         self.err = atomsk.stderr
+
+        if self.err.find('Error') > -1:
+            self._abort_from_err()
+
+        self.in_size, self.out_size = self._check_file_size()
 
         if self.file_to_convert != 'file':   # Website only (i.e., not command line option)
             os.remove(self.in_filename)
@@ -478,7 +481,4 @@ class FileConverter:
         else:
             self.quality = self.get_quality(self.from_format, self.to_format)
 
-        if self.err.find('Error') > -1:
-            self._abort_from_err()
-        else:
-            self._log_success()
+        self._log_success()

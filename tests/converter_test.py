@@ -13,9 +13,9 @@ import pytest
 
 from app import FILE_KEY, FILE_TO_UPLOAD_KEY
 from psdi_data_conversion.log_utility import DATETIME_RE_RAW, GLOBAL_LOG_FILENAME
-from psdi_data_conversion.converter import (CONVERTER_ATO, CONVERTER_OB, LOCAL_LOG_EXT, OUTPUT_LOG_EXT, STATUS_CODE_BAD_METHOD,
-                                            STATUS_CODE_GENERAL, STATUS_CODE_SIZE, FileConverter,
-                                            FileConverterAbortException)
+from psdi_data_conversion.converter import (CONVERTER_ATO, CONVERTER_OB, LOCAL_LOG_EXT, OUTPUT_LOG_EXT,
+                                            STATUS_CODE_BAD_METHOD, STATUS_CODE_GENERAL, STATUS_CODE_SIZE,
+                                            FileConverter, FileConverterAbortException)
 
 TEST_DATA_LOC = os.path.abspath("./test_data")
 
@@ -234,7 +234,7 @@ class TestConverter:
             else:
                 assert not timestamp_re.search(log_text)
 
-    def test_exceed_output_file_size(self, tmp_upload_path, tmp_download_path):
+    def test_exceed_output_file_size(self):
         """Run a test of the converter to ensure it reports an error properly if the output file size is too large
         """
 
@@ -256,7 +256,7 @@ class TestConverter:
                                                                     f"{log_type} log at " +
                                                                     getattr(self, f"{log_type}_log_filename"))
 
-    def test_invalid_converter(self, tmp_upload_path, tmp_download_path):
+    def test_invalid_converter(self):
         """Run a test of the converter to ensure it reports an error properly if an invalid converter is requested
         """
 
@@ -278,7 +278,7 @@ class TestConverter:
                                                             f"{log_type} log at " +
                                                             getattr(self, f"{log_type}_log_filename"))
 
-    def test_xyz_to_inchi(self, tmp_upload_path, tmp_download_path):
+    def test_xyz_to_inchi(self):
         """Run a test of the converter on a straightforward `.xyz` to `.inchi` conversion
         """
 
@@ -293,11 +293,11 @@ class TestConverter:
         # Check that the input file has been deleted and the output file exists where we expect it to
         self.check_file_status(input_exist=False, output_exist=True)
 
-    def test_pdb_to_cif(self, tmp_upload_path, tmp_download_path):
-        """Run a test of the converter on a straightforward `.pdb` to `.cif` conversion
+    def test_atomsk(self):
+        """Run a test of the Atomsk converter on a straightforward `.pdb` to `.cif` conversion
         """
 
-        self.get_input_info(filename="1JGQ.pdb",
+        self.get_input_info(filename="hemoglobin.pdb",
                             to="cif",
                             converter=CONVERTER_ATO)
 
@@ -309,7 +309,7 @@ class TestConverter:
         # Check that the input file has been deleted and the output file exists where we expect it to
         self.check_file_status(input_exist=False, output_exist=True)
 
-    def test_xyz_to_inchi_err(self, tmp_upload_path, tmp_download_path):
+    def test_xyz_to_inchi_err(self):
         """Run a test of the converter on an `.xyz` to `.inchi` conversion we expect to fail
         """
 
