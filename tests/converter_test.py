@@ -186,6 +186,23 @@ class TestConverter:
             else:
                 assert not os.path.exists(filename), f"File {filename} exists, but should have been deleted"
 
+    def get_logs(self):
+        """Get the log filenames and text content after the converter has run, for each of the three log types
+        """
+
+        self.global_log_filename = GLOBAL_LOG_FILENAME
+        self.local_log_filename = os.path.join(self.tmp_download_path,
+                                               f"{self.filename}-{self.filename_base}.{self.to_format}.{LOCAL_LOG_EXT}")
+        self.output_log_filename = os.path.join(self.tmp_download_path,
+                                                f"{self.filename_base}.{OUTPUT_LOG_EXT}")
+
+        self.global_log_text: str | None = None
+        self.local_log_text: str | None = None
+        self.output_log_text: str | None = None
+
+        for log_type in ("global", "local", "output"):
+            setattr(self, f"{log_type}_log_text", open(getattr(self, f"{log_type}_log_filename")).read())
+
     def test_mmcif_to_pdb(self):
         """Run a test of the converter on a straightforward `.mmcif` to `.pdb` conversion
         """
@@ -198,29 +215,21 @@ class TestConverter:
         self.check_file_status(input_exist=False, output_exist=True)
 
         # Check that the logs are as we expect
+        self.get_logs()
 
-        # Check that the global log file exists and is empty
-        assert os.path.isfile(GLOBAL_LOG_FILENAME)
-        global_log_text = open(GLOBAL_LOG_FILENAME).read()
-        assert len(global_log_text) == 0
+        # Check that the global log file is empty
+        assert len(self.global_log_text) == 0
 
-        # Check that the local log and output logs exist and contain expected information
-        local_log_filename = os.path.join(self.tmp_download_path,
-                                          f"{self.filename}-{self.filename_base}.{self.to_format}.{LOCAL_LOG_EXT}")
-        assert os.path.isfile(local_log_filename)
-        output_log_filename = os.path.join(self.tmp_download_path,
-                                           f"{self.filename_base}.{OUTPUT_LOG_EXT}")
-        assert os.path.isfile(local_log_filename)
+        # Check that the local log and output logs contain expected information
 
-        for filename in (local_log_filename, output_log_filename):
-            log_text = open(filename).read()
+        for log_text in (self.local_log_text, self.output_log_text):
             assert re.compile(r"File name:\s+"+self.filename_base).search(log_text)
             assert "Open Babel Warning" in log_text
             assert "Failed to kekulize aromatic bonds" in log_text
 
             # Check that we only have the timestamp in the local log, not the output log
             timestamp_re = re.compile(DATETIME_RE_RAW)
-            if filename == local_log_filename:
+            if log_text is self.local_log_text:
                 assert timestamp_re.search(log_text)
             else:
                 assert not timestamp_re.search(log_text)
@@ -231,30 +240,21 @@ class TestConverter:
 
         self.get_input_info(filename="1NE6.mmcif")
 
-        self.run_converter(STATUS_CODE_SIZE,
+        self.run_converter(expect_code=STATUS_CODE_SIZE,
                            max_file_size=0)
 
         # Check that the input and output files have properly been deleted
         self.check_file_status(input_exist=False, output_exist=False)
 
         # Check that the logs are as we expect
+        self.get_logs()
 
-        # Check that the global log file exists and is empty
-        assert os.path.isfile(GLOBAL_LOG_FILENAME)
-        global_log_text = open(GLOBAL_LOG_FILENAME).read()
-        assert "Output file exceeds maximum size" in global_log_text
-
-        # Check that the local log and output logs exist and contain expected information
-        local_log_filename = os.path.join(tmp_download_path,
-                                          f"{self.filename}-{self.filename_base}.{self.to_format}.{LOCAL_LOG_EXT}")
-        assert os.path.isfile(local_log_filename)
-        output_log_filename = os.path.join(tmp_download_path,
-                                           f"{self.filename_base}.{OUTPUT_LOG_EXT}")
-        assert os.path.isfile(local_log_filename)
-
-        for filename in (local_log_filename, output_log_filename):
-            log_text = open(filename).read()
-            assert "Output file exceeds maximum size" in log_text
+        # Check that all logs contain the expected error
+        for log_type in ("global", "local", "output"):
+            log_text = getattr(self, f"{log_type}_log_text")
+            assert "Output file exceeds maximum size" in log_text, ("Did not find expected error message in "
+                                                                    f"{log_type} log at " +
+                                                                    getattr(self, f"{log_type}_log_filename"))
 
     def test_invalid_converter(self, tmp_upload_path, tmp_download_path):
         """Run a test of the converter to ensure it reports an error properly if an invalid converter is requested
@@ -263,29 +263,20 @@ class TestConverter:
         self.get_input_info(filename="1NE6.mmcif",
                             converter="INVALID")
 
-        self.run_converter(STATUS_CODE_BAD_METHOD)
+        self.run_converter(expect_code=STATUS_CODE_BAD_METHOD)
 
         # Check that the input and output files have properly been deleted
         self.check_file_status(input_exist=False, output_exist=False)
 
         # Check that the logs are as we expect
+        self.get_logs()
 
-        # Check that the global log file exists and is empty
-        assert os.path.isfile(GLOBAL_LOG_FILENAME)
-        global_log_text = open(GLOBAL_LOG_FILENAME).read()
-        assert "ERROR: Unknown converter" in global_log_text
-
-        # Check that the local log and output logs exist and contain expected information
-        local_log_filename = os.path.join(tmp_download_path,
-                                          f"{self.filename}-{self.filename_base}.{self.to_format}.{LOCAL_LOG_EXT}")
-        assert os.path.isfile(local_log_filename)
-        output_log_filename = os.path.join(tmp_download_path,
-                                           f"{self.filename_base}.{OUTPUT_LOG_EXT}")
-        assert os.path.isfile(local_log_filename)
-
-        for filename in (local_log_filename, output_log_filename):
-            log_text = open(filename).read()
-            assert "ERROR: Unknown converter" in log_text
+        # Check that all logs contain the expected error
+        for log_type in ("global", "local", "output"):
+            log_text = getattr(self, f"{log_type}_log_text")
+            assert "ERROR: Unknown converter" in log_text, ("Did not find expected error message in "
+                                                            f"{log_type} log at " +
+                                                            getattr(self, f"{log_type}_log_filename"))
 
     def test_xyz_to_inchi(self, tmp_upload_path, tmp_download_path):
         """Run a test of the converter on a straightforward `.xyz` to `.inchi` conversion
@@ -312,7 +303,7 @@ class TestConverter:
         # "from" is a reserved work so we can't set it as a kwarg in the function call above
         self.mock_form["from"] = "xyz"
 
-        self.run_converter(STATUS_CODE_GENERAL)
+        self.run_converter(expect_code=STATUS_CODE_GENERAL)
 
         # Check that the input and output files have properly been deleted
         self.check_file_status(input_exist=False, output_exist=False)
