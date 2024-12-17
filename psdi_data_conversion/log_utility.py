@@ -12,6 +12,9 @@ import sys
 
 LOG_FORMAT = r'[%(asctime)s] %(levelname)s [%(name)s.%(funcName)s:%(lineno)d] %(message)s'
 TIMESTAMP_FORMAT = r"%Y-%m-%d %H:%M:%S"
+DATE_RE_RAW = r"\d{4}-[0-1]\d-[0-3]\d"
+TIME_RE_RAW = r"[0-2]\d:[0-5]\d:[0-5]\d"
+DATETIME_RE_RAW = f"{DATE_RE_RAW} {TIME_RE_RAW}"
 
 # Settings for global logger
 GLOBAL_LOG_FILENAME = "./error_log.txt"

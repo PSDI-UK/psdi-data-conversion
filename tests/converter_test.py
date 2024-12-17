@@ -12,7 +12,7 @@ import re
 import pytest
 
 from app import FILE_KEY, FILE_TO_UPLOAD_KEY
-from psdi_data_conversion.log_utility import GLOBAL_LOG_FILENAME
+from psdi_data_conversion.log_utility import DATETIME_RE_RAW, GLOBAL_LOG_FILENAME
 from psdi_data_conversion.converter import (CONVERTER_OB, LOCAL_LOG_EXT, OUTPUT_LOG_EXT, STATUS_CODE_BAD_METHOD,
                                             STATUS_CODE_GENERAL, STATUS_CODE_SIZE, FileConverter,
                                             FileConverterAbortException)
@@ -219,7 +219,7 @@ class TestConverter:
             assert "Failed to kekulize aromatic bonds" in log_text
 
             # Check that we only have the timestamp in the local log, not the output log
-            timestamp_re = re.compile(r"\d{4}-[0-1]\d-[0-3]\d [0-2]\d:[0-5]\d:[0-5]\d")
+            timestamp_re = re.compile(DATETIME_RE_RAW)
             if filename == local_log_filename:
                 assert timestamp_re.search(log_text)
             else:

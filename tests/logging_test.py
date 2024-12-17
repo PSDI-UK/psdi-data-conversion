@@ -18,13 +18,9 @@ def test_date_time():
     """
 
     # Use a regex match to test that the date and time are in the right format
-    date_re_raw = r"\d{4}-[0-1]\d-[0-3]\d"
-    time_re_raw = r"[0-2]\d:[0-5]\d:[0-5]\d"
-    datetime_re_raw = f"{date_re_raw} {time_re_raw}"
-
-    date_re = re.compile(date_re_raw)
-    time_re = re.compile(time_re_raw)
-    datetime_re = re.compile(datetime_re_raw)
+    date_re = re.compile(log_utility.DATE_RE_RAW)
+    time_re = re.compile(log_utility.TIME_RE_RAW)
+    datetime_re = re.compile(log_utility.DATETIME_RE_RAW)
 
     date_str_1 = log_utility.get_date()
     time_str_1 = log_utility.get_time()
