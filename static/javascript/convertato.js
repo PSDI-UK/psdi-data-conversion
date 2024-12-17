@@ -5,19 +5,19 @@
   This is the JavaScript which makes the convertato.htm gui work.
 */
 
-import {commonConvertReady, convertFile} from "./convert.js"
+import { commonConvertReady, convertFile } from "./convert.js"
 
 const fromList = new Array(),
-      toList = new Array();
+    toList = new Array();
 
 var token = "",
     last_select = "",
     in_ext = "",
     out_ext = "",
-    in_str = ""
+    in_str = "",
     out_str = "";
 
-$(document).ready(function() {
+$(document).ready(function () {
     [token, in_str, in_ext, out_str, out_ext] = commonConvertReady("Atomsk");
     $("#uploadButton").click(submitFile);
 });
@@ -25,26 +25,26 @@ $(document).ready(function() {
 // Uploads a user-supplied file
 function submitFile() {
     const file = $("#fileToUpload")[0].files[0],
-          fname = file.name.split(".")[0],
-          extension = file.name.split(".")[1];
+        fname = file.name.split(".")[0],
+        extension = file.name.split(".")[1];
 
     var quality = sessionStorage.getItem("success"),
         start = quality.indexOf(':') + 2,
         finish = quality.lastIndexOf('(') - 1;
 
     quality = quality.substring(start, finish);
-    
+
     if (extension != in_ext) {
         alert("The file extension is not " + in_ext + ": please select another file or change the 'from' format on the 'Home' page.");
-        $("#uploadButton").css({"background-color": "var(--psdi-bg-color-secondary)", "color": "gray"});
+        $("#uploadButton").css({ "background-color": "var(--psdi-bg-color-secondary)", "color": "gray" });
         return;
     }
 
     const read_flags_text = $("#inFlags").find(":selected").text(),
-          read_flags = '';
+        read_flags = '';
 
     const write_flags_text = $("#outFlags").find(":selected").text(),
-          write_flags = '';
+        write_flags = '';
 
     var count = 0,
         read_arg_flags = '',
@@ -54,9 +54,9 @@ function submitFile() {
         all_args_entered = true;
 
     const checked_in = $('input[name=in_arg_check]:checked'),
-          checked_out = $('input[name=out_arg_check]:checked');
+        checked_out = $('input[name=out_arg_check]:checked');
 
-    checked_in.each(function() {
+    checked_in.each(function () {
         read_arg_flags += $("#" + this.id).val()[0];
         const arg = $("#in_arg_text" + this.id.substring(this.id.length - 1, this.id.length)).val();
 
@@ -68,7 +68,7 @@ function submitFile() {
         }
     })
 
-    checked_out.each(function() {
+    checked_out.each(function () {
         write_arg_flags += $("#" + this.id).val()[0];
         const arg = $("#out_arg_text" + this.id.substring(this.id.length - 1, this.id.length)).val();
 
@@ -86,8 +86,8 @@ function submitFile() {
     }
 
     const coordinates = 'neither', //$('input[name="coordinates"]:checked').val(),
-          coordOption = 'medium', //$('input[name="coordOptions"]:checked').val(),
-          download_fname = file.name.split(".")[0] + "." + out_ext;
+        coordOption = 'medium', //$('input[name="coordOptions"]:checked').val(),
+        download_fname = file.name.split(".")[0] + "." + out_ext;
 
     var form_data = new FormData();
 
