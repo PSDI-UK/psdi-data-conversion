@@ -159,6 +159,33 @@ class TestConverter:
                 self.test_converter.run()
             assert esc_info.value.status_code == expect_code
 
+    def check_file_status(self, input_exist=None, output_exist=None):
+        """Common check for unit tests on whether the input/output files from a conversion exist or not
+
+        Parameters
+        ----------
+        input_exist : bool | None
+            If True, will check that the input file does exist, if False, will check that it doesn't, if None, won't
+            check either way.
+        output_exist : bool | None
+            If True, will check that the output file does exist, if False, will check that it doesn't, if None, won't
+            check either way.
+        """
+
+        ex_input_filename = os.path.join(self.tmp_upload_path, self.files[FILE_TO_UPLOAD_KEY].filename)
+
+        ex_output_filename_base = os.path.splitext(self.files[FILE_TO_UPLOAD_KEY].filename)[0]
+        ex_output_filename = os.path.join(self.tmp_download_path, f"{ex_output_filename_base}.{self.to_format}")
+
+        for check_condition, filename in ((input_exist, ex_input_filename),
+                                          (output_exist, ex_output_filename)):
+            if check_condition is None:
+                continue
+            if check_condition:
+                assert os.path.isfile(filename), f"Expected file {filename} does not exist"
+            else:
+                assert not os.path.exists(filename), f"File {filename} exists, but should have been deleted"
+
     def test_mmcif_to_pdb(self):
         """Run a test of the converter on a straightforward `.mmcif` to `.pdb` conversion
         """
@@ -167,9 +194,8 @@ class TestConverter:
 
         self.run_converter()
 
-        # Check that the expected output file is found in the downloads directory
-        ex_output_filename = os.path.join(self.tmp_download_path, f"{self.filename_base}.{self.to_format}")
-        assert os.path.isfile(ex_output_filename)
+        # Check that the input file has been deleted and the output file exists where we expect it to
+        self.check_file_status(input_exist=False, output_exist=True)
 
         # Check that the logs are as we expect
 
@@ -208,15 +234,8 @@ class TestConverter:
         self.run_converter(STATUS_CODE_SIZE,
                            max_file_size=0)
 
-        # Check that the input file has been properly deleted from the uploads directory
-        ex_input_filename = os.path.join(tmp_upload_path, self.files[FILE_TO_UPLOAD_KEY].filename)
-        assert not os.path.exists(ex_input_filename)
-
-        # Check that the expected output file is not found in the downloads directory
-        ex_output_filename_base = os.path.splitext(self.files[FILE_TO_UPLOAD_KEY].filename)[0]
-        ex_output_ext = self.to_format
-        ex_output_filename = os.path.join(tmp_download_path, f"{ex_output_filename_base}.{ex_output_ext}")
-        assert not os.path.exists(ex_output_filename)
+        # Check that the input and output files have properly been deleted
+        self.check_file_status(input_exist=False, output_exist=False)
 
         # Check that the logs are as we expect
 
@@ -246,15 +265,8 @@ class TestConverter:
 
         self.run_converter(STATUS_CODE_BAD_METHOD)
 
-        # Check that the input file has been properly deleted from the uploads directory
-        ex_input_filename = os.path.join(tmp_upload_path, self.files[FILE_TO_UPLOAD_KEY].filename)
-        assert not os.path.exists(ex_input_filename)
-
-        # Check that the expected output file is not found in the downloads directory
-        ex_output_filename_base = os.path.splitext(self.files[FILE_TO_UPLOAD_KEY].filename)[0]
-        ex_output_ext = self.to_format
-        ex_output_filename = os.path.join(tmp_download_path, f"{ex_output_filename_base}.{ex_output_ext}")
-        assert not os.path.exists(ex_output_filename)
+        # Check that the input and output files have properly been deleted
+        self.check_file_status(input_exist=False, output_exist=False)
 
         # Check that the logs are as we expect
 
@@ -287,13 +299,8 @@ class TestConverter:
 
         self.run_converter()
 
-        # Check that the input file has been properly deleted from the uploads directory
-        ex_input_filename = os.path.join(tmp_upload_path, self.filename)
-        assert not os.path.exists(ex_input_filename)
-
-        # Check that the expected output file is found in the downloads directory
-        ex_output_filename = os.path.join(tmp_download_path, f"{self.filename_base}.{self.to_format}")
-        assert os.path.isfile(ex_output_filename)
+        # Check that the input file has been deleted and the output file exists where we expect it to
+        self.check_file_status(input_exist=False, output_exist=True)
 
     def test_xyz_to_inchi_err(self, tmp_upload_path, tmp_download_path):
         """Run a test of the converter on an `.xyz` to `.inchi` conversion we expect to fail
@@ -307,10 +314,5 @@ class TestConverter:
 
         self.run_converter(STATUS_CODE_GENERAL)
 
-        # Check that the input file has been properly deleted from the uploads directory
-        ex_input_filename = os.path.join(tmp_upload_path, self.filename)
-        assert not os.path.exists(ex_input_filename)
-
-        # Check that the expected output file is not found in the downloads directory
-        ex_output_filename = os.path.join(tmp_download_path, f"{self.filename_base}.{self.to_format}")
-        assert not os.path.exists(ex_output_filename)
+        # Check that the input and output files have properly been deleted
+        self.check_file_status(input_exist=False, output_exist=False)
