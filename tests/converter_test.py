@@ -13,7 +13,7 @@ import pytest
 
 from app import FILE_KEY, FILE_TO_UPLOAD_KEY
 from psdi_data_conversion.log_utility import DATETIME_RE_RAW, GLOBAL_LOG_FILENAME
-from psdi_data_conversion.converter import (CONVERTER_OB, LOCAL_LOG_EXT, OUTPUT_LOG_EXT, STATUS_CODE_BAD_METHOD,
+from psdi_data_conversion.converter import (CONVERTER_ATO, CONVERTER_OB, LOCAL_LOG_EXT, OUTPUT_LOG_EXT, STATUS_CODE_BAD_METHOD,
                                             STATUS_CODE_GENERAL, STATUS_CODE_SIZE, FileConverter,
                                             FileConverterAbortException)
 
@@ -285,8 +285,24 @@ class TestConverter:
         self.get_input_info(filename="quartz.xyz",
                             to="inchi")
 
-        # "from" is a reserved work so we can't set it as a kwarg in the function call above
+        # "from" is a reserved word so we can't set it as a kwarg in the function call above
         self.mock_form["from"] = "xyz"
+
+        self.run_converter()
+
+        # Check that the input file has been deleted and the output file exists where we expect it to
+        self.check_file_status(input_exist=False, output_exist=True)
+
+    def test_pdb_to_cif(self, tmp_upload_path, tmp_download_path):
+        """Run a test of the converter on a straightforward `.pdb` to `.cif` conversion
+        """
+
+        self.get_input_info(filename="1JGQ.pdb",
+                            to="cif",
+                            converter=CONVERTER_ATO)
+
+        # "from" is a reserved word so we can't set it as a kwarg in the function call above
+        self.mock_form["from"] = "pdb"
 
         self.run_converter()
 
@@ -300,7 +316,7 @@ class TestConverter:
         self.get_input_info(filename="quartz_err.xyz",
                             to="inchi")
 
-        # "from" is a reserved work so we can't set it as a kwarg in the function call above
+        # "from" is a reserved word so we can't set it as a kwarg in the function call above
         self.mock_form["from"] = "xyz"
 
         self.run_converter(expect_code=STATUS_CODE_GENERAL)
