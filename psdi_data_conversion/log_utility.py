@@ -60,7 +60,7 @@ def setUpDataConversionLogger(name=NAME,
     """
 
     # Get a logger using the inherited method before setting up any file handling for it
-    logger = logging.getLogger(name)
+    logger = logging.Logger(name)
 
     if extra_loggers is None:
         extra_loggers = []
@@ -133,15 +133,6 @@ def _add_filehandler_to_logger(logger, filename, level, raw_output):
         file_handler.setFormatter(logging.Formatter(LOG_FORMAT, datefmt=TIMESTAMP_FORMAT))
 
     return
-
-
-def getDataConversionLogger(name=NAME):
-    """A specialisation of getting a logger with `logging.getLogger` which uses a default name, to provide a bulwark
-    against using the root logger and potentially breaking something with Flask.
-    """
-
-    # Get a logger using the inherited method before setting up any file handling for it
-    return logging.getLogger(name)
 
 
 def get_date():
