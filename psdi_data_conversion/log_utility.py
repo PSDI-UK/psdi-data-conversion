@@ -6,13 +6,15 @@ Functions and classes related to logging
 """
 
 from datetime import datetime
-import json
 import logging
 import os
 import sys
 
 LOG_FORMAT = r'[%(asctime)s] %(levelname)s [%(name)s.%(funcName)s:%(lineno)d] %(message)s'
 TIMESTAMP_FORMAT = r"%Y-%m-%d %H:%M:%S"
+DATE_RE_RAW = r"\d{4}-[0-1]\d-[0-3]\d"
+TIME_RE_RAW = r"[0-2]\d:[0-5]\d:[0-5]\d"
+DATETIME_RE_RAW = f"{DATE_RE_RAW} {TIME_RE_RAW}"
 
 # Settings for global logger
 GLOBAL_LOG_FILENAME = "./error_log.txt"
@@ -61,7 +63,7 @@ def setUpDataConversionLogger(name=NAME,
     """
 
     # Get a logger using the inherited method before setting up any file handling for it
-    logger = logging.getLogger(name)
+    logger = logging.Logger(name)
 
     if extra_loggers is None:
         extra_loggers = []
@@ -136,15 +138,6 @@ def _add_filehandler_to_logger(logger, filename, level, raw_output):
     return
 
 
-def getDataConversionLogger(name=NAME):
-    """A specialisation of getting a logger with `logging.getLogger` which uses a default name, to provide a bulwark
-    against using the root logger and potentially breaking something with Flask.
-    """
-
-    # Get a logger using the inherited method before setting up any file handling for it
-    return logging.getLogger(name)
-
-
 def get_date():
     """Retrieve current date as a string
 
@@ -178,256 +171,6 @@ def get_date_time():
         Current date and time in the format YYYY-MM-DD HH:MM:SS
     """
     return get_date() + ' ' + get_time()
-
-
-def log(from_format, to_format, converter, fname, calc_type, option, from_flags, to_flags, read_flags_args,
-        write_flags_args, quality, out, err):
-    """Write Open Babel conversion information to server-side file, ready for downloading to user
-
-    Parameters
-    ----------
-    from_format : _type_
-        _description_
-    to_format : _type_
-        _description_
-    converter : _type_
-        _description_
-    fname : _type_
-        _description_
-    calc_type : _type_
-        _description_
-    option : _type_
-        _description_
-    from_flags : _type_
-        _description_
-    to_flags : _type_
-        _description_
-    read_flags_args : _type_
-        _description_
-    write_flags_args : _type_
-        _description_
-    quality : _type_
-        _description_
-    out : _type_
-        _description_
-    err : _type_
-        _description_
-    """
-
-    message = (create_message(fname, from_format, to_format, converter, calc_type, option, from_flags, to_flags,
-                              read_flags_args, write_flags_args) +
-               'Quality:           ' + quality + '\n'
-               'Success:           Assuming that the data provided was of the correct format, the conversion\n'
-               '                   was successful (to the best of our knowledge) subject to any warnings below.\n' +
-               out + '\n' + err)
-
-    getDataConversionLogger("output").info(message)
-
-
-def log_ato(from_format, to_format, converter, fname, quality, out, err, logger):
-    """Write Atomsk conversion information to server-side file, ready for downloading to user
-
-    Parameters
-    ----------
-    from_format : _type_
-        _description_
-    to_format : _type_
-        _description_
-    converter : _type_
-        _description_
-    fname : _type_
-        _description_
-    quality : _type_
-        _description_
-    out : _type_
-        _description_
-    err : _type_
-        _description_
-    logger : Logger
-        The logger to use to log the message
-    """
-
-    message = (create_message_start(fname, from_format, to_format, converter) +
-               'Quality:           ' + quality + '\n'
-               'Success:           Assuming that the data provided was of the correct format, the conversion\n'
-               '                   was successful (to the best of our knowledge) subject to any warnings below.\n' +
-               out + '\n' + err)
-
-    getDataConversionLogger("output").info(message)
-
-
-def log_error(from_format, to_format, converter, fname, calc_type, option, from_flags, to_flags, read_flags_args,
-              write_flags_args, err):
-    """Write Open Babel conversion error information to server-side log file
-
-    Parameters
-    ----------
-    from_format : _type_
-        _description_
-    to_format : _type_
-        _description_
-    converter : _type_
-        _description_
-    fname : _type_
-        _description_
-    calc_type : _type_
-        _description_
-    option : _type_
-        _description_
-    from_flags : _type_
-        _description_
-    to_flags : _type_
-        _description_
-    read_flags_args : _type_
-        _description_
-    write_flags_args : _type_
-        _description_
-    err : _type_
-        _description_
-    """
-    message = create_message(fname, from_format, to_format, converter, calc_type, option,
-                             from_flags, to_flags, read_flags_args, write_flags_args) + err
-    getDataConversionLogger("output").error(message)
-
-
-def log_error_ato(from_format, to_format, converter, fname, err):
-    """Write Atomsk conversion error information to server-side log file
-
-    Parameters
-    ----------
-    from_format : _type_
-        _description_
-    to_format : _type_
-        _description_
-    converter : _type_
-        _description_
-    fname : _type_
-        _description_
-    err : _type_
-        _description_
-    """
-    message = create_message(fname, from_format, to_format, converter) + err
-    getDataConversionLogger("output").error(message)
-
-
-def create_message(fname, from_format, to_format, converter, calc_type, option, from_flags, to_flags, read_flags_args,
-                   write_flags_args):
-    """Create message for log files
-
-    Parameters
-    ----------
-    fname : _type_
-        _description_
-    from_format : _type_
-        _description_
-    to_format : _type_
-        _description_
-    converter : _type_
-        _description_
-    calc_type : _type_
-        _description_
-    option : _type_
-        _description_
-    from_flags : _type_
-        _description_
-    to_flags : _type_
-        _description_
-    read_flags_args : _type_
-        _description_
-    write_flags_args : _type_
-        _description_
-
-    Returns
-    -------
-    message : str
-        The message for log files
-    """
-    message = ''
-
-    if calc_type == 'neither':
-        message = 'Coord. gen.:       none\n'
-    else:
-        message += 'Coord. gen.:       ' + calc_type + '\n'
-
-    message += 'Coord. option:     ' + option + '\n'
-
-    if from_flags == '':
-        message += 'Read options:      none\n'
-    else:
-        message += 'Read options:      ' + from_flags + '\n'
-
-    if to_flags == '':
-        message += 'Write options:     none\n'
-    else:
-        message += 'Write options:     ' + to_flags + '\n'
-
-    if len(read_flags_args) == 0:
-        message += 'Read opts + args:  none\n'
-    else:
-        heading_added = False
-
-        for pair in read_flags_args:
-            if not heading_added:
-                message += 'Read opts + args:  ' + pair + '\n'
-                heading_added = True
-            else:
-                message += '                   ' + pair + '\n'
-
-    if len(write_flags_args) == 0:
-        message += 'Write opts + args: none\n'
-    else:
-        heading_added = False
-
-        for pair in write_flags_args:
-            if not heading_added:
-                message += 'Write opts + args: ' + pair + '\n'
-                heading_added = True
-            else:
-                message += '                   ' + pair + '\n'
-
-    return create_message_start(fname, from_format, to_format, converter) + message
-
-
-def create_message_start(fname, from_format, to_format, converter):
-    """Create beginning of message for log files
-
-    Parameters
-    ----------
-    fname : _type_
-        _description_
-    from_format : _type_
-        _description_
-    to_format : _type_
-        _description_
-    converter : _type_
-        _description_
-
-    Returns
-    -------
-    str
-        The beginning of a message for log files, containing generic information about what was trying to be done
-    """
-    return ('Date:              ' + get_date() + '\n'
-            'Time:              ' + get_time() + '\n'
-            'File name:         ' + fname + '\n'
-            'From:              ' + from_format + '\n'
-            'To:                ' + to_format + '\n'
-            'Converter:         ' + converter + '\n')
-
-
-def append_to_log_file(log_name, data):
-    """Append data to a log file
-
-    Parameters
-    ----------
-    log_name : _type_
-        _description_
-    data : _type_
-        _description_
-    """
-
-    if (os.environ.get('ENABLE_DCS_LOG') is not None):
-        print(json.dumps(data))
 
 
 def format(time):

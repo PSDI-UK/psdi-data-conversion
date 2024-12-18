@@ -18,13 +18,9 @@ def test_date_time():
     """
 
     # Use a regex match to test that the date and time are in the right format
-    date_re_raw = r"\d{4}-[0-1]\d-[0-3]\d"
-    time_re_raw = r"[0-2]\d:[0-5]\d:[0-5]\d"
-    datetime_re_raw = f"{date_re_raw} {time_re_raw}"
-
-    date_re = re.compile(date_re_raw)
-    time_re = re.compile(time_re_raw)
-    datetime_re = re.compile(datetime_re_raw)
+    date_re = re.compile(log_utility.DATE_RE_RAW)
+    time_re = re.compile(log_utility.TIME_RE_RAW)
+    datetime_re = re.compile(log_utility.DATETIME_RE_RAW)
 
     date_str_1 = log_utility.get_date()
     time_str_1 = log_utility.get_time()
@@ -46,22 +42,22 @@ def test_date_time():
     assert datetime_str_2 != datetime_str_1
 
 
-def test_get_logger(tmp_path):
-    """Tests of `log_utility.getDataConversionLogger`
+def test_setup_logger(tmp_path):
+    """Tests of `log_utility.setUpDataConversionLogger`
     """
     # Get a logger to test with
-    logger = log_utility.getDataConversionLogger("test")
+    logger = log_utility.setUpDataConversionLogger("test")
 
-    # Test getting a second logger with the same name returns the same as the first
-    same_name_logger = log_utility.getDataConversionLogger("test")
-    assert same_name_logger is logger
+    # Test getting a second logger with the same name does not return the same as the first
+    same_name_logger = log_utility.setUpDataConversionLogger("test")
+    assert same_name_logger is not logger
 
     # Test getting a logger with a different name returns a different logger
-    diff_name_logger = log_utility.getDataConversionLogger("not.test")
+    diff_name_logger = log_utility.setUpDataConversionLogger("not.test")
     assert diff_name_logger is not logger
 
     # Test that a logger without a name provided will also differ
-    no_name_logger = log_utility.getDataConversionLogger()
+    no_name_logger = log_utility.setUpDataConversionLogger()
     assert no_name_logger is not logger
 
     # Test that the filenames are as expected
@@ -69,11 +65,10 @@ def test_get_logger(tmp_path):
     test_log_level = logging.WARN
     test_error_filename = os.path.join(tmp_path, "err.txt")
     test_error_level = logging.CRITICAL
-    fn_logger = log_utility.getDataConversionLogger("fn-test")
-    log_utility.setUpDataConversionLogger("fn-test",
-                                          local_log_file=test_log_filename,
-                                          local_logger_level=test_log_level,
-                                          extra_loggers=[(test_error_filename, test_error_level, False)])
+    fn_logger = log_utility.setUpDataConversionLogger("fn-test",
+                                                      local_log_file=test_log_filename,
+                                                      local_logger_level=test_log_level,
+                                                      extra_loggers=[(test_error_filename, test_error_level, False)])
 
     # Search through the logger's handlers to get all files it logs to and at what levels
     l_files_and_levels = []
