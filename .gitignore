@@ -6,6 +6,10 @@
 *.pyc
 *.pyo
 
+# Build files
+dist/*
+*.egg-info
+
 # Created error log
 error_log.txt
 
