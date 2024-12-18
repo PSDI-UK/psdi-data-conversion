@@ -37,5 +37,10 @@ dependencies = [
 requires-python = ">= 3.10"
 dynamic = ["version"]
 
+[project.urls]
+Homepage = "https://psdidev2.azurewebsites.net/"
+Repository = "https://github.com/PSDI-UK/psdi-data-conversion"
+Issues = "https://github.com/PSDI-UK/psdi-data-conversion/issues"
+
 [tool.pytest.ini_options]
 pythonpath = ["."]
