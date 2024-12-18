@@ -5,6 +5,8 @@
   This is the JavaScript which makes the convert.htm gui work.
 */
 
+
+import { getInputFlags, getOutputFlags, getInputArgFlags, getOutputArgFlags } from "./data.js";
 import { commonConvertReady, convertFile } from "./convert_common.js"
 
 var token = "",
