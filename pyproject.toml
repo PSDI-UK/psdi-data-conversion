@@ -42,5 +42,8 @@ Homepage = "https://psdidev2.azurewebsites.net/"
 Repository = "https://github.com/PSDI-UK/psdi-data-conversion"
 Issues = "https://github.com/PSDI-UK/psdi-data-conversion/issues"
 
+[tool.setuptools]
+packages = ["psdi_data_conversion"]
+
 [tool.pytest.ini_options]
 pythonpath = ["."]
