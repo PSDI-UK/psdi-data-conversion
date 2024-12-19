@@ -7,6 +7,13 @@ This is the repository for the Pathfinder 2 Chemistry File Format Conversion sou
 
 ```
 app.py
+atomsk.sh
+LICENSE
+psdi_data_conversion
+  __init__.py
+  converter.py
+  log_utility.py
+pyproject.toml
 requirements.txt
   (azure-functions, requests, openbabel-wheel:
    installed by yaml workflow file on GitHub)
@@ -52,7 +59,7 @@ Install the package requirements locally (ideally within a virtual environment) 
 
 ```bash
 source .venv/bin/activate # Create a venv first if necessary with `python -m venv .venv`
-pip install -r requirements-local.txt
+pip install .[test]
 pytest
 ```
 
