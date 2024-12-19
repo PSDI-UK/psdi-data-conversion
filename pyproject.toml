@@ -37,6 +37,11 @@ dependencies = [
 requires-python = ">= 3.10"
 dynamic = ["version"]
 
+[project.optional-dependencies]
+test = [
+    "pytest",
+]
+
 [project.urls]
 Homepage = "https://psdidev2.azurewebsites.net/"
 Repository = "https://github.com/PSDI-UK/psdi-data-conversion"
