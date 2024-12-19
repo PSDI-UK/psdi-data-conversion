@@ -37,7 +37,7 @@ RUN pip install gunicorn
 RUN apt update
 RUN apt-get -y install libxrender1 libxext6
 
-ENV FLASK_APP=app.py
+ENV FLASK_APP=psdi_data_conversion/app.py
 ENV FLASK_RUN_HOST=0.0.0.0
 ENV PYTHONPATH="."
 

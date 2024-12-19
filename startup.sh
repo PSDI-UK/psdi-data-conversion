@@ -3,4 +3,4 @@
 apt update
 apt-get install -y libxrender1 libxext6
 
-gunicorn app:app
+gunicorn psdi_data_conversion.app:app

@@ -23,12 +23,12 @@ MEGABYTE = 1024*1024
 DEFAULT_MAX_FILE_SIZE = 1*MEGABYTE
 
 # Create directory 'uploads' if not extant.
-DEFAULT_UPLOAD_DIR = './static/uploads'
+DEFAULT_UPLOAD_DIR = './psdi_data_conversion/static/uploads'
 if not os.path.exists(DEFAULT_UPLOAD_DIR):
     os.makedirs(DEFAULT_UPLOAD_DIR, exist_ok=True)
 
 # Create directory 'downloads' if not extant.
-DEFAULT_DOWNLOAD_DIR = './static/downloads'
+DEFAULT_DOWNLOAD_DIR = './psdi_data_conversion/static/downloads'
 if not os.path.exists(DEFAULT_DOWNLOAD_DIR):
     os.makedirs(DEFAULT_DOWNLOAD_DIR, exist_ok=True)
 
@@ -462,8 +462,8 @@ class FileConverter:
             self._log_success()
 
     def _convert_ato(self):
-        atomsk = subprocess.run(['sh', 'atomsk.sh', self.in_filename, self.out_filename],
-                                capture_output=True, text=True)
+        atomsk = subprocess.run(['sh', 'psdi_data_conversion/atomsk.sh', self.in_filename,
+                                 self.out_filename], capture_output=True, text=True)
 
         self.out = atomsk.stdout
         self.err = atomsk.stderr

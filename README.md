@@ -6,41 +6,43 @@ This is the repository for the Pathfinder 2 Chemistry File Format Conversion sou
 ## Directory structure of the Python Flask app website:
 
 ```
-app.py
-atomsk.sh
 LICENSE
 psdi_data_conversion
-  __init__.py
-  converter.py
-  log_utility.py
+    __init__.py
+    app.py
+    atomsk.sh
+    bin
+        atomsk
+    converter.py
+    log_utility.py
+    static
+        content
+            accessibility.htm
+            convert.htm
+            convertato.htm
+            documentation.htm
+            feedback.htm
+            header-links.htm
+            index-header-links.htm
+            report.htm
+        downloads (created by app.py if not extant)
+        javascript
+            convert.js
+            convert.py
+            convertato.js
+            format.js
+            load_accessibility.js
+            report.js
+        styles
+            format.css
+        uploads (created by app.py if not extant)
+    templates
+        index.htm
 pyproject.toml
 requirements.txt
   (azure-functions, requests, openbabel-wheel:
    installed by yaml workflow file on GitHub)
 startup.sh*
-static
-    content
-        accessibility.htm
-        convert.htm
-        convertato.htm
-        documentation.htm
-        feedback.htm
-        header-links.htm
-        index-header-links.htm
-        report.htm
-    downloads (created by app.py if not extant)
-    javascript
-        convert.js
-        convert.py
-        convertato.js
-        format.js
-        load_accessibility.js
-        report.js
-    styles
-        format.css
-    uploads (created by app.py if not extant)
-templates
-    index.htm
 tests
     logging_test.py
 ```
@@ -69,7 +71,7 @@ pytest
 Python and Open Babel must be installed.
 
 From the command line (in the appropriate directory), enter:
-export FLASK_APP=app.py
+export FLASK_APP=psdi_data_conversion/app.py
 
 To enable debug mode, if required, enter:
 export FLASK_ENV=development

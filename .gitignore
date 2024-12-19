@@ -15,8 +15,8 @@ dist/*
 error_log.txt
 
 # Contents of the downloads and uploads directories, which are created in-use but shouldn't be persistent
-static/downloads/*
-static/uploads/*
+psdi_data_conversion/static/downloads/*
+psdi_data_conversion/static/uploads/*
 
 # Any zone identifiers created by Windows copying
 *:Zone.Identifier
