@@ -70,15 +70,31 @@ pytest
 
 Python and Open Babel must be installed.
 
-From the command line (in the appropriate directory), enter:
-export FLASK_APP=psdi_data_conversion/app.py
+Install the package and its requirements via:
+
+```bash
+pip install .
+```
 
 To enable debug mode, if required, enter:
+
+```bash
 export FLASK_ENV=development
+```
 
-Run server app.py by entering    Python3.9 -m flask run    (the Python version may differ) at the command line (in the appropriate directory).
+If you've cloned this repository, you can then execute the `run_local.sh` bash script to run the application. Otherwise (e.g. if you've installed from a wheel or PyPI), copy and paste the following into a script and then execute it at the command-line:
 
-Run the website by entering    127.0.0.1:5000    in a browser.
+```bash
+#!/bin/bash
+
+# Execute a local run of the application from the proper path
+
+PACKAGE_PATH=`python -c "import psdi_data_conversion; print(psdi_data_conversion.__path__[0])"`
+cd $PACKAGE_PATH/..
+python -m flask --app psdi_data_conversion/app.py run
+```
+
+This will start the server. You can then access the website by going to <http://127.0.0.1:5000> in a browser (this will also be printed in the terminal, and you can CTRL+click it there to open it in your default browser).
 
 The database can only be accessed from the University of Southampton or when using Global Connect. The current IP address must be added to the database's firewall rules on the Azure site.
 
@@ -93,6 +109,6 @@ Guidance on usage is given on each page of the website.
 
 ## Dependencies
 
-In addition to the dependencies listed in the `requirements.txt` file, this project depends on the assets made public by PSDI's common style project at https://github.com/PSDI-UK/psdi-common-style.. Any changes to these assets will be reflected in this project's web pages, and this project should ideally be tested with any changes before they're made live. An issue with retrieving these assets will appear as the website appearing unstyled and missing its header and footer.
+In addition to the dependencies listed in the `pyproject.toml` file, this project depends on the assets made public by PSDI's common style project at https://github.com/PSDI-UK/psdi-common-style.. Any changes to these assets will be reflected in this project's web pages, and this project should ideally be tested with any changes before they're made live. An issue with retrieving these assets will appear as the website appearing unstyled and missing its header and footer.
 
 In case these assets become no longer available for some reason, the commit `f1908b3627addfe5072c1e2ad4a648203bd8dee7` can be used as a reference to restore local versions of them.
