@@ -35,6 +35,7 @@ if not os.path.exists(DEFAULT_DOWNLOAD_DIR):
 # Constant strings for converter types
 CONVERTER_OB = 'Open Babel'
 CONVERTER_ATO = 'Atomsk'
+CONVERTER_C2X = 'c2x'
 
 # Extensions for logs
 LOCAL_LOG_EXT = "log"
@@ -174,6 +175,8 @@ class FileConverter:
                 self._convert_ob()
             elif self.converter == CONVERTER_ATO:
                 self._convert_ato()
+            elif self.converter == CONVERTER_C2X:
+                self._convert_c2x()
             else:
                 # Unrecognized converter - abort
                 self._abort(STATUS_CODE_BAD_METHOD, f"ERROR: Unknown converter '{self.converter}' requested")
@@ -467,6 +470,28 @@ class FileConverter:
 
         self.out = atomsk.stdout
         self.err = atomsk.stderr
+
+        if self.err.find('Error') > -1:
+            self._abort_from_err()
+
+        self.in_size, self.out_size = self._check_file_size()
+
+        if self.file_to_convert != 'file':   # Website only (i.e., not command line option)
+            os.remove(self.in_filename)
+            self.from_format = self.form['from_full']
+            self.to_format = self.form['to_full']
+            self.quality = self.form['success']
+        else:
+            self.quality = self.get_quality(self.from_format, self.to_format)
+
+        self._log_success()
+
+    def _convert_c2x(self):
+        c2x = subprocess.run(['sh', 'c2x.sh', self.in_filename, self.out_filename],
+                             capture_output=True, text=True)
+
+        self.out = c2x.stdout
+        self.err = c2x.stderr
 
         if self.err.find('Error') > -1:
             self._abort_from_err()
