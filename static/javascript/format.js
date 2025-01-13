@@ -214,7 +214,9 @@ function getQuality(entries, rows) {
     });
 
     for (var i = 0; i < rows.length; i++) {
-        const support = rows[i].substring(0, 10) == "Open Babel" || rows[i].substring(0, 6) == "Atomsk" ? " (supported)" : " (unsupported)";
+        const support = rows[i].substring(0, 10) == "Open Babel" ||
+                        rows[i].substring(0, 6) == "Atomsk" ||
+                        rows[i].substring(0, 3) == "c2x" ? " (supported)" : " (unsupported)";
 
         $("#success").append($('<option>', { text: rows[i] + qualityText + support }));
     }
@@ -258,7 +260,7 @@ function showOffer() {
           to_format = getFormat($("#searchTo").val()),
           quest = " like to convert a file from '" + from_format + "' to '" + to_format + "' on this site";
 
-    if ($("#name").html() == "Open Babel" || $("#name").html() == "Atomsk") {
+    if ($("#name").html() == "Open Babel" || $("#name").html() == "Atomsk" || $("#name").html() == "c2x") {
         $("#info").html("");
         $("#visit").html("visit website");
         $("#question").html("Would you" + quest + " using " + $("#name").html() + "?");
@@ -451,6 +453,9 @@ function goToConversionPage(event) {
     }
     else if ($("#name").html() == "Atomsk") {
         path = `static/content/convertato.htm`;
+    }
+    else if ($("#name").html() == "c2x") {
+        path = `static/content/convertc2x.htm`;
     }
 
     const a = $("<a>")
