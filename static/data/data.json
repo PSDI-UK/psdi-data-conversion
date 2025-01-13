@@ -129321,6 +129321,60 @@
             "in_id": 225,
             "out_id": 224,
             "degree_of_success": "not tested"
+        },
+        {
+            "converters_id": 9,
+            "in_id": 1,
+            "out_id": 4,
+            "degree_of_success": "not tested"
+        },
+        {
+            "converters_id": 9,
+            "in_id": 1,
+            "out_id": 6,
+            "degree_of_success": "not tested"
+        },
+        {
+            "converters_id": 9,
+            "in_id": 1,
+            "out_id": 7,
+            "degree_of_success": "not tested"
+        },
+        {
+            "converters_id": 9,
+            "in_id": 1,
+            "out_id": 9,
+            "degree_of_success": "not tested"
+        },
+        {
+            "converters_id": 9,
+            "in_id": 1,
+            "out_id": 18,
+            "degree_of_success": "not tested"
+        },
+        {
+            "converters_id": 9,
+            "in_id": 1,
+            "out_id": 20,
+            "degree_of_success": "not tested"
+        },
+        {
+            "converters_id": 9,
+            "in_id": 1,
+            "out_id": 73,
+            "degree_of_success": "not tested"
+        },
+        {
+            "converters_id": 9,
+            "in_id": 1,
+            "out_id": 105,
+            "degree_of_success": "not tested"
+        },
+        {
+            "converters_id": 9,
+            "in_id": 1,
+            "out_id": 123,
+            "degree_of_success": "not tested"
         }
     ],
     "obargflags_out": [
