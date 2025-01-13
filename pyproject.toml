@@ -7,7 +7,7 @@ name = "psdi_data_conversion"
 authors = [
   { name = "Ray Whorley" },
   { name = "Don Cruickshank" },
-  { name = "Samantha Pearman-Kanza" },
+  { name = "Samantha Pearman-Kanza", email = "s.pearman-kanza@soton.ac.uk" },
   { name = "Bryan Gillis", email = "7204836+brgillis@users.noreply.github.com" },
 ]
 description = "Chemistry file format conversion service, provided by PSDI"

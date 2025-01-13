@@ -246,7 +246,7 @@
         {
             "id": 28,
             "extension": "abinit",
-            "note": "ABINIT Output",
+            "note": "ABINIT output",
             "composition": false,
             "connections": false,
             "two_dim": false,
@@ -2020,6 +2020,501 @@
             "id": 225,
             "extension": "sxyz",
             "note": "Special XYZ cartesian coordinates",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 226,
+            "extension": "abi",
+            "note": "ABINIT input",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 227,
+            "extension": "bands",
+            "note": "CASTEP",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 228,
+            "extension": "cst_esp",
+            "note": "CASTEP potential",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 229,
+            "extension": "dat",
+            "note": "Onetep cartesian and fractional",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 230,
+            "extension": "den_fmt",
+            "note": "CASTEP formatted density",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 231,
+            "extension": "EIG",
+            "note": "ABINIT eigenvalues",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 232,
+            "extension": "EIG",
+            "note": "SIESTA eigenvalues",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 233,
+            "extension": "elf",
+            "note": "CASTEP ELF",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 234,
+            "extension": "elf_fmt",
+            "note": "CASTEP ELF",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 235,
+            "extension": "geom",
+            "note": "CASTEP",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 236,
+            "extension": "in",
+            "note": "Quantum Espresso input",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 237,
+            "extension": "kp",
+            "note": "SIESTA kpoints",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 238,
+            "extension": "KP",
+            "note": "SIESTA kpoints",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 239,
+            "extension": "pdbx",
+            "note": "PDBX (mmCIF)",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 240,
+            "extension": "pot_fmt",
+            "note": "CASTEP",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 241,
+            "extension": "rho",
+            "note": "SIESTA RHO",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 242,
+            "extension": "RHO",
+            "note": "SIESTA RHO",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 243,
+            "extension": "vh",
+            "note": "SIESTA potential",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 244,
+            "extension": "VH",
+            "note": "SIESTA potential",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 245,
+            "extension": "vt",
+            "note": "SIESTA potential",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 246,
+            "extension": "VT",
+            "note": "SIESTA potential",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 247,
+            "extension": "xml",
+            "note": "Quantum Espresso PWscf output",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 248,
+            "extension": "XV",
+            "note": "SIESTA XV",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 249,
+            "extension": "in",
+            "note": "Abinit version 8",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 250,
+            "extension": "cell",
+            "note": "CASTEP cartesian and fractional",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 251,
+            "extension": "cell",
+            "note": "CASTEP abc and fractional",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 252,
+            "extension": "cell",
+            "note": "CASTEP cartesian and absolute",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 253,
+            "extension": "cell",
+            "note": "CASTEP abc and absolute",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 254,
+            "extension": "mocube",
+            "note": "Gaussian molecular orbital cube, single dataset",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 255,
+            "extension": "npy",
+            "note": "NumPy array, single dataset as doubles with -15",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 256,
+            "extension": "dat",
+            "note": "Onetep abc and fractional",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 257,
+            "extension": "dat",
+            "note": "Onetep cartesian and absolute",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 258,
+            "extension": "dat",
+            "note": "Onetep abc and absolute",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 259,
+            "extension": "pdb",
+            "note": "Protein Data Bank with atoms numbered",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 260,
+            "extension": "py",
+            "note": "Python dictionary",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 261,
+            "extension": "py",
+            "note": "Python ASE Atoms",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 262,
+            "extension": "in",
+            "note": "Quantum Espresso input, fractional atomic coords",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 263,
+            "extension": "CHG",
+            "note": "VASP atomic positions",
+            "composition": true,
+            "connections": false,
+            "two_dim": true,
+            "three_dim": true
+        },
+        {
+            "id": 264,
+            "extension": "CHGCAR",
+            "note": "VASP",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 265,
+            "extension": "verts",
+            "note": "Vertices of FBZ/IBZ, cartesian coords",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 266,
+            "extension": "verts",
+            "note": "Vertices of FBZ/IBZ, fractional coords",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 267,
+            "extension": "WAVECAR",
+            "note": "VASP WAVECAR output",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 268,
+            "extension": "WAVECAR",
+            "note": "VASP WAVECAR output, VASP 4.5-compatible",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 269,
+            "extension": "xplor",
+            "note": "Xplor",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 270,
+            "extension": "INCAR",
+            "note": "VASP INCAR, spin and magmom only",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 271,
+            "extension": "gnu",
+            "note": "Gnuplot",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 272,
+            "extension": "ccp4",
+            "note": "CCP4 electron density (grid data only, no atoms)",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 273,
+            "extension": "dat",
+            "note": "Onetep",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 274,
+            "extension": "DEN",
+            "note": "ABINIT binary",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 275,
+            "extension": "POT",
+            "note": "ABINIT binary",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 276,
+            "extension": "VCLMB",
+            "note": "ABINIT binary",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 277,
+            "extension": "WFK",
+            "note": "ABINIT binary",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 278,
+            "extension": "LOCPOT",
+            "note": "VASP",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 279,
+            "extension": "EIGENVAL",
+            "note": "VASP",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 280,
+            "extension": "12",
+            "note": "Crystal",
             "composition": null,
             "connections": null,
             "two_dim": null,
@@ -4702,6 +5197,12 @@
             "name": "Atomsk",
             "description": "University of Lille",
             "url": "https://atomsk.univ-lille.fr"
+        },
+        {
+            "id": 9,
+            "name": "c2x",
+            "description": "DFT electronic structure, University of Cambridge",
+            "url": "https://www.c2x.org.uk"
         }
     ],
     "converts_to": [
@@ -128819,6 +129320,60 @@
             "converters_id": 8,
             "in_id": 225,
             "out_id": 224,
+            "degree_of_success": "not tested"
+        },
+        {
+            "converters_id": 9,
+            "in_id": 1,
+            "out_id": 4,
+            "degree_of_success": "not tested"
+        },
+        {
+            "converters_id": 9,
+            "in_id": 1,
+            "out_id": 6,
+            "degree_of_success": "not tested"
+        },
+        {
+            "converters_id": 9,
+            "in_id": 1,
+            "out_id": 7,
+            "degree_of_success": "not tested"
+        },
+        {
+            "converters_id": 9,
+            "in_id": 1,
+            "out_id": 9,
+            "degree_of_success": "not tested"
+        },
+        {
+            "converters_id": 9,
+            "in_id": 1,
+            "out_id": 18,
+            "degree_of_success": "not tested"
+        },
+        {
+            "converters_id": 9,
+            "in_id": 1,
+            "out_id": 20,
+            "degree_of_success": "not tested"
+        },
+        {
+            "converters_id": 9,
+            "in_id": 1,
+            "out_id": 73,
+            "degree_of_success": "not tested"
+        },
+        {
+            "converters_id": 9,
+            "in_id": 1,
+            "out_id": 105,
+            "degree_of_success": "not tested"
+        },
+        {
+            "converters_id": 9,
+            "in_id": 1,
+            "out_id": 123,
             "degree_of_success": "not tested"
         }
     ],
