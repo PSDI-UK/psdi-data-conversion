@@ -42,6 +42,9 @@ test = [
     "pytest",
 ]
 
+[project.scripts]
+psdi-data-convert = "main:main"
+
 [project.urls]
 Homepage = "https://psdidev2.azurewebsites.net/"
 Repository = "https://github.com/PSDI-UK/psdi-data-conversion"
