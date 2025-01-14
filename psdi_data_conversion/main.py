@@ -24,7 +24,7 @@ def get_argument_parser():
 
     parser = ArgumentParser()
 
-    parser.add_argument("--log-level", type=str, default="INFO",
+    parser.add_argument("--log-level", type=str, default="WARNING",
                         help="The desired level to log at. Allowed values are: 'DEBUG', 'INFO', 'WARNING', 'ERROR, "
                              "'CRITICAL'. Default: 'INFO'")
 
@@ -56,7 +56,11 @@ def run_from_args(args):
         The parsed arguments for this script.
     """
 
-    logger.info("This is currently a dummy executable, with functionality TBD.")
+    logger.debug("# Entering function `run_from_args`")
+
+    print("This is currently a dummy executable, with functionality TBD.")
+
+    logger.debug("# Exiting function `run_from_args`")
 
 
 def main():
@@ -67,15 +71,15 @@ def main():
 
     logging.basicConfig(level=args.log_level)
 
-    logger.debug("#")
-    logger.debug("# Beginning execution of script `%s`", __file__)
-    logger.debug("#")
+    logger.info("#")
+    logger.info("# Beginning execution of script `%s`", __file__)
+    logger.info("#")
 
     run_from_args(args)
 
-    logger.debug("#")
-    logger.debug("# Finished execution of script `%s`", __file__)
-    logger.debug("#")
+    logger.info("#")
+    logger.info("# Finished execution of script `%s`", __file__)
+    logger.info("#")
 
 
 if __name__ == "__main__":
