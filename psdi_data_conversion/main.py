@@ -67,15 +67,15 @@ def main():
 
     logging.basicConfig(level=args.log_level)
 
-    logger.info("#")
-    logger.info("# Beginning execution of script `%s`", __file__)
-    logger.info("#")
+    logger.debug("#")
+    logger.debug("# Beginning execution of script `%s`", __file__)
+    logger.debug("#")
 
     run_from_args(args)
 
-    logger.info("#")
-    logger.info("# Finished execution of script `%s`", __file__)
-    logger.info("#")
+    logger.debug("#")
+    logger.debug("# Finished execution of script `%s`", __file__)
+    logger.debug("#")
 
 
 if __name__ == "__main__":
