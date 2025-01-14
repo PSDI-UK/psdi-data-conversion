@@ -11,7 +11,7 @@ import os
 import re
 import pytest
 
-from app import FILE_KEY, FILE_TO_UPLOAD_KEY
+from psdi_data_conversion.app import FILE_KEY, FILE_TO_UPLOAD_KEY
 from psdi_data_conversion.log_utility import DATETIME_RE_RAW, GLOBAL_LOG_FILENAME
 from psdi_data_conversion.converter import (CONVERTER_ATO, CONVERTER_OB, LOCAL_LOG_EXT, OUTPUT_LOG_EXT,
                                             STATUS_CODE_BAD_METHOD, STATUS_CODE_GENERAL, STATUS_CODE_SIZE,

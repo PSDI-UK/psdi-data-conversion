@@ -9,7 +9,7 @@
 # arg1 is the fully-qualified input file name (e.g., /path/to/nacl.cif)
 # arg2 is the fully-qualified output file name
 
-bin/atomsk <<EOD
+psdi_data_conversion/bin/atomsk <<EOD
 read $1
 write $2
 clear
