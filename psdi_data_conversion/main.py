@@ -13,6 +13,34 @@ from argparse import ArgumentParser
 logger = logging.getLogger(__name__)
 
 
+class ConvertArgs:
+    """Class storing arguments for data conversion, processed and determined from the input arguments.
+    """
+
+    def __init__(self, args):
+
+        # Start by copying over arguments. Some share names with reserved words, so we have to use `getattr` for them
+
+        # Positional arguments
+        self.l_args: list[str] = args.l_args
+
+        # Keyword arguments for standard conversion
+        self._from_format: str | None = getattr(args, "from")
+        self._input_dir: str | None = getattr(args, "in")
+        self.to_format: str | None = args.to
+        self._output_dir: str | None = args.at
+        self.converter: str = getattr(args, "with")
+        self.flags: str = args.flags
+
+        # Keyword arguments for alternative functionality
+        self.list: bool = args.list
+
+        # Logging/stdout arguments
+        self.quiet: bool = args.quiet
+        self._log_file: str | None = args.log_file
+        self.log_level: str = args.log_level
+
+
 def get_argument_parser():
     """Get an argument parser for this script.
 
@@ -76,7 +104,7 @@ def parse_args():
 
     parser = get_argument_parser()
 
-    args = parser.parse_args()
+    args = ConvertArgs(parser.parse_args())
 
     return args
 
