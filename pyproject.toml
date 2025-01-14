@@ -43,7 +43,7 @@ test = [
 ]
 
 [project.scripts]
-psdi-data-convert = "main:main"
+psdi-data-convert = "psdi_data_conversion.main:main"
 
 [project.urls]
 Homepage = "https://psdidev2.azurewebsites.net/"
