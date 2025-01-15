@@ -42,13 +42,10 @@ pyproject.toml
 requirements.txt
   (azure-functions, requests, openbabel-wheel:
    installed by yaml workflow file on GitHub)
-startup.sh*
+startup.sh
 tests
     logging_test.py
 ```
-
-*Must be copied to another location on the Azure site. Once there, it persists. Installs libraries missing from the Docker container (required by Open Babel). Go to     Development Tools > SSH > Go    to arrive at a terminal for the site. At    /home    place file startup.sh. Go to    Settings > Configurations > General settings    and enter    /home/startup.sh    in Startup Command. Note that startup.sh can be placed anywhere below    /home    (provided the paths match).
-
 
 ## Running the Python Flask app hosted on the Microsoft Azure site
 
