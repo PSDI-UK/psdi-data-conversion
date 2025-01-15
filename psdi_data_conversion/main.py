@@ -1,0 +1,230 @@
+#!/usr/bin/env python3
+
+"""@file psdi_data_conversion/main.py
+
+Created 2025-01-14 by Bryan Gillis.
+
+Entry-point file for the command-line interface for data conversion.
+"""
+
+import logging
+from argparse import ArgumentParser
+import os
+
+from psdi_data_conversion.converter import FileConverterException
+
+LOG_EXT = ".log"
+DEFAULT_LISTING_LOG_FILE = "data-convert-list" + LOG_EXT
+
+logger = logging.getLogger(__name__)
+
+
+class FileConverterInputException(FileConverterException):
+    """Exception class to represent errors encountered with input parameters for the data conversion script.
+    """
+    pass
+
+
+class ConvertArgs:
+    """Class storing arguments for data conversion, processed and determined from the input arguments.
+    """
+
+    def __init__(self, args):
+
+        # Start by copying over arguments. Some share names with reserved words, so we have to use `getattr` for them
+
+        # Positional arguments
+        self.l_args: list[str] = args.l_args
+
+        # Keyword arguments for standard conversion
+        self._from_format: str | None = getattr(args, "from")
+        self._input_dir: str | None = getattr(args, "in")
+        self.to_format: str | None = args.to
+        self._output_dir: str | None = args.at
+        self.converter: str = getattr(args, "with")
+        self.flags: str = args.flags.replace(r"\-", "-")
+
+        # Keyword arguments for alternative functionality
+        self.list: bool = args.list
+
+        # Logging/stdout arguments
+        self.quiet: bool = args.quiet
+        self._log_file: str | None = args.log_file
+        self.log_level: str = args.log_level
+
+        # Check validity of input
+
+        if self.list:
+            # If requesting to list converters, any other arguments can be ignored
+            return
+
+        if len(self.l_args) == 0:
+            raise FileConverterInputException("One or more names of files to convert must be provided")
+
+        if self._input_dir is not None and not os.path.isdir(self._input_dir):
+            raise FileConverterInputException(f"The provided input directory '{self._input_dir}' does not exist as a "
+                                              "directory")
+
+        if self.to_format is None:
+            raise FileConverterInputException("Output format (-t or --to) must be provided")
+
+        # If the output directory doesn't exist, silently create it
+        if self._output_dir is not None and not os.path.isdir(self._output_dir):
+            if os.path.exists(self._output_dir):
+                raise FileConverterInputException(
+                    f"Output directory '{self._output_dir}' exists but is not a directory")
+            os.makedirs(self._output_dir, exist_ok=True)
+
+    @property
+    def from_format(self):
+        """If the input file format isn't provided, determine it from the first file in the list.
+        """
+        if self._from_format is None:
+            first_filename = self.l_args[0]
+            ext = os.path.splitext(first_filename)[1]
+            if len(ext) == 0:
+                raise FileConverterInputException("Input file format (-f or --from) was not provided, and cannot "
+                                                  f"determine it automatically from filename '{first_filename}'")
+            # Format will be the extension, minus the leading period
+            self._from_format = ext[1:]
+        return self._from_format
+
+    @property
+    def input_dir(self):
+        """If the input directory isn't provided, use the current directory.
+        """
+        if self._input_dir is None:
+            self._input_dir = os.getcwd()
+        return self._input_dir
+
+    @property
+    def output_dir(self):
+        """If the output directory isn't provided, use the input directory.
+        """
+        if self._output_dir is None:
+            self._output_dir = self.input_dir
+        return self._output_dir
+
+    @property
+    def log_file(self):
+        """Determine a name for the log file if one is not provided.
+        """
+        if self._log_file is None:
+            if self.list:
+                self._log_file = DEFAULT_LISTING_LOG_FILE
+            else:
+                first_filename = self.l_args[0]
+                base = os.path.splitext(first_filename)[0]
+                self._log_file = base + LOG_EXT
+        return self._log_file
+
+
+def get_argument_parser():
+    """Get an argument parser for this script.
+
+    Returns
+    -------
+    parser : ArgumentParser
+        An argument parser set up with the allowed command-line arguments for this script.
+    """
+
+    parser = ArgumentParser()
+
+    # Positional arguments
+    parser.add_argument("l_args", type=str, nargs="*",
+                        help="Normally, file(s) to be converted. Filenames should be provided as either relative to "
+                             "the input directory (default current directory) or absolute. If the '-l' or '--list' "
+                             "flag is set, instead the name of a converter can be used here to get information on it.")
+
+    # Keyword arguments for standard conversion
+    parser.add_argument("-f", "--from", type=str, default=None,
+                        help="The input (convert from) file extension (e.g., smi). If not provided, will attempt to "
+                             "auto-detect format.")
+    parser.add_argument("-i", "--in", type=str, default=None,
+                        help="The directory containing the input file(s), default current directory.")
+    parser.add_argument("-t", "--to", type=str, default=None,
+                        help="The output (convert to) file extension (e.g., cmi).")
+    parser.add_argument("-a", "--at", type=str, default=None,
+                        help="The directory where output files should be created, default same as input directory.")
+    parser.add_argument("-w", "--with", type=str, default="Open Babel",
+                        help="The converter to be used (default 'Open Babel').")
+    parser.add_argument("--flags", type=str, default="",
+                        help="Any command-line flags to be provided to the converter. For information on the flags "
+                             "accepted by a converter, call this script with '-l <converter name>'. The first "
+                             "preceding hyphen for each flag must be backslash-escaped, e.g. "
+                             r"--flags '\-a \-bc \--example'")
+
+    # Keyword arguments for alternative functionality
+    parser.add_argument("--list", action="store_true",
+                        help="If provided alone, lists all available converters. If the name of a converter is "
+                             "provided, gives information on the converter and any command-line flags it accepts.")
+
+    # Logging/stdout arguments
+    parser.add_argument("-q", "--quiet", action="store_true",
+                        help="If set, all output aside from errors will be suppressed and no log file will be "
+                             "generated.")
+    parser.add_argument("-l", "--log-file", type=str, default=None,
+                        help="The name of the file to log to. If not provided, the log file will be named after the "
+                             "first input file (+'.log') and placed in the current directory.")
+    parser.add_argument("--log-level", type=str, default="WARNING",
+                        help="The desired level to log at. Allowed values are: 'DEBUG', 'INFO', 'WARNING', 'ERROR, "
+                             "'CRITICAL'. Default: 'INFO'")
+
+    return parser
+
+
+def parse_args():
+    """Parses arguments for this executable.
+
+    Returns
+    -------
+    args : Namespace
+        The parsed arguments.
+    """
+
+    parser = get_argument_parser()
+
+    args = ConvertArgs(parser.parse_args())
+
+    return args
+
+
+def run_from_args(args):
+    """Workhorse function to perform primary execution of this script, using the provided parsed arguments.
+
+    Parameters
+    ----------
+    args : Namespace
+        The parsed arguments for this script.
+    """
+
+    logger.debug("# Entering function `run_from_args`")
+
+    print("This is currently a dummy executable, with functionality TBD.")
+
+    logger.debug("# Exiting function `run_from_args`")
+
+
+def main():
+    """Standard entry-point function for this script.
+    """
+
+    args = parse_args()
+
+    logging.basicConfig(filename=args.log_file,
+                        level=args.log_level)
+
+    logger.info("#")
+    logger.info("# Beginning execution of script `%s`", __file__)
+    logger.info("#")
+
+    run_from_args(args)
+
+    logger.info("#")
+    logger.info("# Finished execution of script `%s`", __file__)
+    logger.info("#")
+
+
+if __name__ == "__main__":
+
+    main()

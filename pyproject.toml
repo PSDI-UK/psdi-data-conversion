@@ -26,21 +26,15 @@ classifiers = [
   "Topic :: File Formats",
   "Topic :: Scientific/Engineering :: Chemistry",
 ]
-dependencies = [
-  "azure-functions",
-  "Flask",
-  "openbabel-wheel",
-  "py",
-  "pytest",
-  "requests",
-]
+dependencies = ["azure-functions", "Flask", "openbabel-wheel", "py", "requests"]
 requires-python = ">= 3.10"
 dynamic = ["version"]
 
 [project.optional-dependencies]
-test = [
-    "pytest",
-]
+test = ["pytest"]
+
+[project.scripts]
+psdi-data-convert = "psdi_data_conversion.main:main"
 
 [project.urls]
 Homepage = "https://psdidev2.azurewebsites.net/"
