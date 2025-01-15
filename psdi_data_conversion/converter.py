@@ -13,7 +13,6 @@ from typing import Callable
 import py.io
 import subprocess
 from openbabel import openbabel
-from werkzeug.datastructures import FileStorage
 from werkzeug.exceptions import HTTPException
 
 from psdi_data_conversion import log_utility
@@ -45,6 +44,39 @@ OUTPUT_LOG_EXT = "log.txt"
 STATUS_CODE_BAD_METHOD = 405
 STATUS_CODE_SIZE = 413
 STATUS_CODE_GENERAL = 422
+
+# Keys used commonly by dicts
+FILE_KEY = 'file'
+FILE_TO_UPLOAD_KEY = 'fileToUpload'
+
+
+class FileStorage:
+    """Local version of the `FileStorage` class which provides the needed functionality for the converter.
+    """
+    filename: str | None = None
+    source_filename: str | None = None
+
+    def __init__(self, source_filename):
+        self.source_filename = source_filename
+        self.filename = os.path.split(self.source_filename)[1]
+
+    def save(self, dest_filename):
+        """To speed things up, symlink the file instead of creating a copy
+        """
+
+        # Silently make sure the destination directory exists
+        os.makedirs(os.path.split(dest_filename)[0], exist_ok=True)
+
+        os.symlink(self.source_filename, dest_filename)
+
+
+def get_mock_files(source_filename):
+    """Convenience function for unit test to get a mock `files` dict to pass as an argument to initializing a converter
+    """
+    mock_file_storage = FileStorage(source_filename)
+    return {FILE_KEY: mock_file_storage,
+            FILE_TO_UPLOAD_KEY: mock_file_storage,
+            }
 
 
 class FileConverterException(RuntimeError):

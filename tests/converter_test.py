@@ -11,43 +11,12 @@ import os
 import re
 import pytest
 
-from psdi_data_conversion.app import FILE_KEY, FILE_TO_UPLOAD_KEY
 from psdi_data_conversion.log_utility import DATETIME_RE_RAW, GLOBAL_LOG_FILENAME
-from psdi_data_conversion.converter import (CONVERTER_ATO, CONVERTER_OB, LOCAL_LOG_EXT, OUTPUT_LOG_EXT,
-                                            STATUS_CODE_BAD_METHOD, STATUS_CODE_GENERAL, STATUS_CODE_SIZE,
-                                            FileConverter, FileConverterAbortException)
+from psdi_data_conversion.converter import (CONVERTER_ATO, CONVERTER_OB, get_mock_files, LOCAL_LOG_EXT, OUTPUT_LOG_EXT,
+                                            FILE_TO_UPLOAD_KEY, STATUS_CODE_BAD_METHOD, STATUS_CODE_GENERAL,
+                                            STATUS_CODE_SIZE, FileConverter, FileConverterAbortException)
 
 TEST_DATA_LOC = os.path.abspath("./test_data")
-
-
-class MockFileStorage:
-    """Mock version of the `FileStorage` class which provides the needed functionality in a way convenient for unit
-    tests.
-    """
-    filename: str | None = None
-    source_filename: str | None = None
-
-    def __init__(self, source_filename):
-        self.source_filename = source_filename
-        self.filename = os.path.split(self.source_filename)[1]
-
-    def save(self, dest_filename):
-        """To speed things up, symlink the file instead of creating a copy
-        """
-
-        # Silently make sure the destination directory exists
-        os.makedirs(os.path.split(dest_filename)[0], exist_ok=True)
-
-        os.symlink(self.source_filename, dest_filename)
-
-
-def get_mock_files(source_filename):
-    """Convenience function for unit test to get a mock `files` dict to pass as an argument to initializing a converter
-    """
-    mock_file_storage = MockFileStorage(source_filename)
-    return {FILE_KEY: mock_file_storage,
-            FILE_TO_UPLOAD_KEY: mock_file_storage,
-            }
 
 
 @pytest.fixture()
