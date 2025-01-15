@@ -47,7 +47,13 @@ STATUS_CODE_SIZE = 413
 STATUS_CODE_GENERAL = 422
 
 
-class FileConverterAbortException(Exception):
+class FileConverterException(RuntimeError):
+    """Exception class to represent any runtime error encountered by this package.
+    """
+    pass
+
+
+class FileConverterAbortException(FileConverterException):
     """Class representing an exception triggered by a call to abort a file conversion
     """
 

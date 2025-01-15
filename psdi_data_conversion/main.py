@@ -11,19 +11,15 @@ import logging
 from argparse import ArgumentParser
 import os
 
+from psdi_data_conversion.converter import FileConverterException
+
 LOG_EXT = ".log"
 DEFAULT_LISTING_LOG_FILE = "data-convert-list" + LOG_EXT
 
 logger = logging.getLogger(__name__)
 
 
-class DataConversionError(RuntimeError):
-    """Exception class to represent any runtime error encountered by this package.
-    """
-    pass
-
-
-class DataConversionInputError(DataConversionError):
+class FileConverterInputException(FileConverterException):
     """Exception class to represent errors encountered with input parameters for the data conversion script.
     """
     pass
@@ -63,19 +59,20 @@ class ConvertArgs:
             return
 
         if len(self.l_args) == 0:
-            raise DataConversionInputError("One or more names of files to convert must be provided")
+            raise FileConverterInputException("One or more names of files to convert must be provided")
 
         if self._input_dir is not None and not os.path.isdir(self._input_dir):
-            raise DataConversionInputError(f"The provided input directory '{self._input_dir}' does not exist as a "
-                                           "directory")
+            raise FileConverterInputException(f"The provided input directory '{self._input_dir}' does not exist as a "
+                                              "directory")
 
         if self.to_format is None:
-            raise DataConversionInputError("Output format (-t or --to) must be provided")
+            raise FileConverterInputException("Output format (-t or --to) must be provided")
 
         # If the output directory doesn't exist, silently create it
         if self._output_dir is not None and not os.path.isdir(self._output_dir):
             if os.path.exists(self._output_dir):
-                raise DataConversionInputError(f"Output directory '{self._output_dir}' exists but is not a directory")
+                raise FileConverterInputException(
+                    f"Output directory '{self._output_dir}' exists but is not a directory")
             os.makedirs(self._output_dir, exist_ok=True)
 
     @property
@@ -86,8 +83,8 @@ class ConvertArgs:
             first_filename = self.l_args[0]
             ext = os.path.splitext(first_filename)[1]
             if len(ext) == 0:
-                raise DataConversionInputError("Input file format (-f or --from) was not provided, and cannot "
-                                               f"determine it automatically from filename '{first_filename}'")
+                raise FileConverterInputException("Input file format (-f or --from) was not provided, and cannot "
+                                                  f"determine it automatically from filename '{first_filename}'")
             # Format will be the extension, minus the leading period
             self._from_format = ext[1:]
         return self._from_format
