@@ -29,14 +29,15 @@ def test_input_validity():
     # Test that we get what we put in for a standard execution
     cwd = os.getcwd()
     args = get_parsed_args(f"file1 file2 -f mmcif -i {cwd} -t pdb -a {cwd}/.. -w 'Atomsk' "
-                           r"--flags '\-ab \-c \--example'")
+                           r"--from-flags '\-ab \-c \--example' --to-flags '\-d'")
     assert args.l_args[0] == "file1"
     assert args.l_args[1] == "file2"
     assert args.input_dir == cwd
     assert args.to_format == "pdb"
     assert args.output_dir == f"{cwd}/.."
     assert args.converter == "Atomsk"
-    assert args.flags == "-ab -c --example"
+    assert args.from_flags == "-ab -c --example"
+    assert args.to_flags == "-d"
 
     # It should fail with no arguments
     with pytest.raises(FileConverterException):

@@ -42,7 +42,8 @@ class ConvertArgs:
         self.to_format: str | None = args.to
         self._output_dir: str | None = args.at
         self.converter: str = getattr(args, "with")
-        self.flags: str = args.flags.replace(r"\-", "-")
+        self.from_flags: str = args.from_flags.replace(r"\-", "-")
+        self.to_flags: str = args.to_flags.replace(r"\-", "-")
 
         # Keyword arguments for alternative functionality
         self.list: bool = args.list
@@ -148,11 +149,16 @@ def get_argument_parser():
                         help="The directory where output files should be created, default same as input directory.")
     parser.add_argument("-w", "--with", type=str, default="Open Babel",
                         help="The converter to be used (default 'Open Babel').")
-    parser.add_argument("--flags", type=str, default="",
-                        help="Any command-line flags to be provided to the converter. For information on the flags "
-                             "accepted by a converter, call this script with '-l <converter name>'. The first "
-                             "preceding hyphen for each flag must be backslash-escaped, e.g. "
-                             r"--flags '\-a \-bc \--example'")
+    parser.add_argument("--from-flags", type=str, default="",
+                        help="Any command-line flags to be provided to the converter for reading in the input file(s). "
+                             "For information on the flags accepted by a converter, call this script with '-l "
+                             "<converter name>'. The first preceding hyphen for each flag must be backslash-escaped, "
+                             "e.g. " + r"--from-flags '\-a \-bc \--example'")
+    parser.add_argument("--to-flags", type=str, default="",
+                        help="Any command-line flags to be provided to the converter for writing the output file(s). "
+                             "For information on the flags accepted by a converter, call this script with '-l "
+                             "<converter name>'. The first preceding hyphen for each flag must be backslash-escaped, "
+                             "e.g. " + r"--to-flags '\-a \-bc \--example'")
 
     # Keyword arguments for alternative functionality
     parser.add_argument("--list", action="store_true",
