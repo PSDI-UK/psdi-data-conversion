@@ -42,7 +42,7 @@ class ConvertArgs:
         self.to_format: str | None = args.to
         self._output_dir: str | None = args.at
         self.converter: str = getattr(args, "with")
-        self.flags: str = args.flags
+        self.flags: str = args.flags.replace(r"\-", "-")
 
         # Keyword arguments for alternative functionality
         self.list: bool = args.list
@@ -150,15 +150,17 @@ def get_argument_parser():
                         help="The converter to be used (default 'Open Babel').")
     parser.add_argument("--flags", type=str, default="",
                         help="Any command-line flags to be provided to the converter. For information on the flags "
-                             "accepted by a converter, call this script with '-l <converter name>'.")
+                             "accepted by a converter, call this script with '-l <converter name>'. The first "
+                             "preceding hyphen for each flag must be backslash-escaped, e.g. "
+                             r"--flags '\-a \-bc \--example'")
 
     # Keyword arguments for alternative functionality
-    parser.add_argument("-l", "--list", type=bool, action="store_true",
+    parser.add_argument("--list", action="store_true",
                         help="If provided alone, lists all available converters. If the name of a converter is "
                              "provided, gives information on the converter and any command-line flags it accepts.")
 
     # Logging/stdout arguments
-    parser.add_argument("-q", "--quiet", type=bool, action="store_true",
+    parser.add_argument("-q", "--quiet", action="store_true",
                         help="If set, all output aside from errors will be suppressed and no log file will be "
                              "generated.")
     parser.add_argument("-l", "--log-file", type=str, default=None,
