@@ -212,7 +212,8 @@ def main():
 
     args = parse_args()
 
-    logging.basicConfig(level=args.log_level)
+    logging.basicConfig(filename=args.log_file,
+                        level=args.log_level)
 
     logger.info("#")
     logger.info("# Beginning execution of script `%s`", __file__)
