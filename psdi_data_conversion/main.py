@@ -9,8 +9,21 @@ Entry-point file for the command-line interface for data conversion.
 
 import logging
 from argparse import ArgumentParser
+import os
 
 logger = logging.getLogger(__name__)
+
+
+class DataConversionError(RuntimeError):
+    """Exception class to represent any runtime error encountered by this package.
+    """
+    pass
+
+
+class DataConversionInputError(DataConversionError):
+    """Exception class to represent errors encountered with input parameters for the data conversion script.
+    """
+    pass
 
 
 class ConvertArgs:
@@ -40,6 +53,44 @@ class ConvertArgs:
         self._log_file: str | None = args.log_file
         self.log_level: str = args.log_level
 
+        # Check validity of input
+
+        if self.list:
+            # If requesting to list converters, any other arguments can be ignored
+            return
+
+        if len(self.l_args) == 0:
+            raise DataConversionInputError("One or more names of files to convert must be provided")
+
+        if self.to_format is None:
+            raise DataConversionInputError("Output format (-t or --to) must be provided")
+
+    @property
+    def from_format(self):
+        """If the input file format isn't provided, determine it from the first file in the list.
+        """
+        if self._from_format is None:
+            first_filename = self.l_args[0]
+            ext = os.path.splitext(first_filename)[1]
+            if len(ext) == 0:
+                raise DataConversionInputError("Input file format (-f or --from) was not provided, and cannot "
+                                               f"determine it automatically from filename '{first_filename}'")
+            # Format will be the extension, minus the leading period
+            self._from_format = ext[1:]
+        return self._from_format
+
+    @property
+    def input_dir(self):
+        return self._input_dir
+
+    @property
+    def output_dir(self):
+        return self._output_dir
+
+    @property
+    def log_file(self):
+        return self._log_file
+
 
 def get_argument_parser():
     """Get an argument parser for this script.
@@ -64,7 +115,7 @@ def get_argument_parser():
                              "auto-detect format.")
     parser.add_argument("-i", "--in", type=str, default=None,
                         help="The directory containing the input file(s), default current directory.")
-    parser.add_argument("-t", "--to", type=str,
+    parser.add_argument("-t", "--to", type=str, default=None,
                         help="The output (convert to) file extension (e.g., cmi).")
     parser.add_argument("-a", "--at", type=str, default=None,
                         help="The directory where output files should be created, default same as input directory.")
