@@ -70,7 +70,7 @@ class FileStorage:
         os.symlink(self.source_filename, dest_filename)
 
 
-def get_mock_files(source_filename):
+def get_file_storage(source_filename):
     """Convenience function for unit test to get a mock `files` dict to pass as an argument to initializing a converter
     """
     mock_file_storage = FileStorage(source_filename)

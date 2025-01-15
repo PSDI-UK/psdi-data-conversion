@@ -11,7 +11,7 @@ import logging
 from argparse import ArgumentParser
 import os
 
-from psdi_data_conversion.converter import FileConverterException
+from psdi_data_conversion.converter import FILE_TO_UPLOAD_KEY, FileConverter, FileConverterException, get_file_storage
 
 LOG_EXT = ".log"
 DEFAULT_LISTING_LOG_FILE = "data-convert-list" + LOG_EXT
@@ -189,18 +189,43 @@ def parse_args():
     return args
 
 
-def run_from_args(args):
+def run_from_args(args: ConvertArgs):
     """Workhorse function to perform primary execution of this script, using the provided parsed arguments.
 
     Parameters
     ----------
-    args : Namespace
+    args : ConvertArgs
         The parsed arguments for this script.
     """
 
     logger.debug("# Entering function `run_from_args`")
 
-    print("This is currently a dummy executable, with functionality TBD.")
+    form = {'token': '1041c0a661d118d5f28e7c6830375dd0',
+            'converter': args.converter,
+            'from': args.from_format,
+            'to': args.to_format,
+            'from_full': args.from_format,
+            'to_full': args.to_format,
+            'success': 'unknown',
+            'from_flags': args.from_flags,
+            'to_flags': args.to_flags,
+            'from_arg_flags': '',
+            'from_args': '',
+            'to_arg_flags': '',
+            'to_args': '',
+            'coordinates': 'neither',
+            'coordOption': 'medium',
+            'upload_file': 'true'}
+
+    for filename in args.l_args:
+        file_storage = get_file_storage(filename)
+
+        converter = FileConverter(files=file_storage,
+                                  form=form,
+                                  file_to_convert=FILE_TO_UPLOAD_KEY,
+                                  upload_dir=args.input_dir,
+                                  download_dir=args.output_dir)
+        converter.run()
 
     logger.debug("# Exiting function `run_from_args`")
 

@@ -12,9 +12,10 @@ import re
 import pytest
 
 from psdi_data_conversion.log_utility import DATETIME_RE_RAW, GLOBAL_LOG_FILENAME
-from psdi_data_conversion.converter import (CONVERTER_ATO, CONVERTER_OB, get_mock_files, LOCAL_LOG_EXT, OUTPUT_LOG_EXT,
-                                            FILE_TO_UPLOAD_KEY, STATUS_CODE_BAD_METHOD, STATUS_CODE_GENERAL,
-                                            STATUS_CODE_SIZE, FileConverter, FileConverterAbortException)
+from psdi_data_conversion.converter import (CONVERTER_ATO, CONVERTER_OB, get_file_storage, LOCAL_LOG_EXT,
+                                            OUTPUT_LOG_EXT, FILE_TO_UPLOAD_KEY, STATUS_CODE_BAD_METHOD,
+                                            STATUS_CODE_GENERAL, STATUS_CODE_SIZE, FileConverter,
+                                            FileConverterAbortException)
 
 TEST_DATA_LOC = os.path.abspath("./test_data")
 
@@ -100,7 +101,7 @@ class TestConverter:
 
         # Save some variables from input we'll be using throughout this test
         self.source_filename = os.path.join(TEST_DATA_LOC, filename)
-        self.files = get_mock_files(self.source_filename)
+        self.files = get_file_storage(self.source_filename)
         self.filename = self.files[FILE_TO_UPLOAD_KEY].filename
         self.filename_base = os.path.splitext(filename)[0]
         self.to_format = self.mock_form["to"]
