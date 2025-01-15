@@ -62,6 +62,10 @@ class ConvertArgs:
         if len(self.l_args) == 0:
             raise DataConversionInputError("One or more names of files to convert must be provided")
 
+        if self._input_dir is not None and not os.path.isdir(self._input_dir):
+            raise DataConversionInputError(f"The provided input directory '{self._input_dir}' does not exist as a "
+                                           "directory")
+
         if self.to_format is None:
             raise DataConversionInputError("Output format (-t or --to) must be provided")
 
@@ -81,6 +85,10 @@ class ConvertArgs:
 
     @property
     def input_dir(self):
+        """If the input directory isn't provided, use the current directory.
+        """
+        if self._input_dir is None:
+            self._input_dir = os.getcwd()
         return self._input_dir
 
     @property
