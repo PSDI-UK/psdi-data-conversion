@@ -11,6 +11,9 @@ import logging
 from argparse import ArgumentParser
 import os
 
+LOG_EXT = ".log"
+DEFAULT_LISTING_LOG_FILE = "data-convert-list" + LOG_EXT
+
 logger = logging.getLogger(__name__)
 
 
@@ -107,6 +110,15 @@ class ConvertArgs:
 
     @property
     def log_file(self):
+        """Determine a name for the log file if one is not provided.
+        """
+        if self._log_file is None:
+            if self.list:
+                self._log_file = DEFAULT_LISTING_LOG_FILE
+            else:
+                first_filename = self.l_args[0]
+                base = os.path.splitext(first_filename)[0]
+                self._log_file = base + LOG_EXT
         return self._log_file
 
 
