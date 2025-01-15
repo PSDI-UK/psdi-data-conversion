@@ -69,6 +69,12 @@ class ConvertArgs:
         if self.to_format is None:
             raise DataConversionInputError("Output format (-t or --to) must be provided")
 
+        # If the output directory doesn't exist, silently create it
+        if self._output_dir is not None and not os.path.isdir(self._output_dir):
+            if os.path.exists(self._output_dir):
+                raise DataConversionInputError(f"Output directory '{self._output_dir}' exists but is not a directory")
+            os.makedirs(self._output_dir, exist_ok=True)
+
     @property
     def from_format(self):
         """If the input file format isn't provided, determine it from the first file in the list.
@@ -93,6 +99,10 @@ class ConvertArgs:
 
     @property
     def output_dir(self):
+        """If the output directory isn't provided, use the input directory.
+        """
+        if self._output_dir is None:
+            self._output_dir = self.input_dir
         return self._output_dir
 
     @property
