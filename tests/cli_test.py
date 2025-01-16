@@ -12,7 +12,7 @@ import sys
 from unittest.mock import patch
 
 from psdi_data_conversion.main import (DEFAULT_COORD_GEN, DEFAULT_COORD_GEN_QUAL, DEFAULT_LISTING_LOG_FILE,
-                                       FileConverterInputException, main, LOG_EXT, parse_args)
+                                       L_ALLOWED_CONVERTERS, FileConverterInputException, main, LOG_EXT, parse_args)
 
 
 def get_parsed_args(s):
@@ -110,7 +110,11 @@ def test_input_processing():
     assert list_check_args.log_file == DEFAULT_LISTING_LOG_FILE
 
 
-def test_list_converters():
+def test_list_converters(capsys):
     """Test the option to list available converters
     """
     run_with_arg_string("--list")
+    captured = capsys.readouterr()
+    assert "Available converters are:" in captured.out
+    for converter_name in L_ALLOWED_CONVERTERS:
+        assert converter_name in captured.out
