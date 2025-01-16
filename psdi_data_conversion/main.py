@@ -244,6 +244,25 @@ def parse_args():
     return args
 
 
+def detail_converter_use(converter_name: str):
+    """TODO
+    """
+    print("Converter use detailing is still TBD")
+
+
+def detail_converters(l_args: list[str]):
+    """Prints details on available converters for the user.
+    """
+    converter_name = " ".join(l_args)
+    if converter_name in L_ALLOWED_CONVERTERS:
+        return detail_converter_use(converter_name)
+    elif converter_name != "":
+        print(f"Converter {converter_name} not recognized.")
+    print("Available converters are: \n" + "\n".join(L_ALLOWED_CONVERTERS) + "\n" +
+          "For more details on a converter, call: \n" +
+          "psdi-data-convert --list <Converter name>")
+
+
 def run_from_args(args: ConvertArgs):
     """Workhorse function to perform primary execution of this script, using the provided parsed arguments.
 
