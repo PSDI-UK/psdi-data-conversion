@@ -19,5 +19,5 @@ jobs:
   # Run this only on the main branch
   tag-container-push:
     uses: ./.github/workflows/tag-container-push.yml
-    needs: [anchore-scan]
+    needs: [test-package]
     if: github.ref == 'refs/heads/main'
