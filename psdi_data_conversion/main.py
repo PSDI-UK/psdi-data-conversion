@@ -16,6 +16,12 @@ from psdi_data_conversion.converter import FILE_TO_UPLOAD_KEY, FileConverter, Fi
 LOG_EXT = ".log"
 DEFAULT_LISTING_LOG_FILE = "data-convert-list" + LOG_EXT
 
+# Allowed and default options for command-line arguments
+L_ALLOWED_COORD_GEN_TYPES = ["Gen2D", "Gen3D", "neither"]
+DEFAULT_COORD_GEN = "neither"
+L_ALLOWED_COORD_GEN_QUALS = ["fastest", "fast", "medium", "better", "best"]
+DEFAULT_COORD_GEN_QUAL = "medium"
+
 logger = logging.getLogger(__name__)
 
 
@@ -44,6 +50,19 @@ class ConvertArgs:
         self.converter: str = getattr(args, "with")
         self.from_flags: str = args.from_flags.replace(r"\-", "-")
         self.to_flags: str = args.to_flags.replace(r"\-", "-")
+
+        # Keyword arguments specific to OpenBabel conversion
+        self.coord_gen: str
+        if args.coord_gen is None:
+            self.coord_gen = DEFAULT_COORD_GEN
+        else:
+            self.coord_gen = args.coord_gen[0]
+
+        self.coord_gen_qual: str
+        if args.coord_gen is None or len(args.coord_gen) == 1:
+            self.coord_gen_qual = DEFAULT_COORD_GEN_QUAL
+        else:
+            self.coord_gen_qual = args.coord_gen[1]
 
         # Keyword arguments for alternative functionality
         self.list: bool = args.list
@@ -75,6 +94,11 @@ class ConvertArgs:
                 raise FileConverterInputException(
                     f"Output directory '{self._output_dir}' exists but is not a directory")
             os.makedirs(self._output_dir, exist_ok=True)
+
+        # No more than two arguments supplied to --coord-gen
+        if args.coord_gen is not None and len(args.coord_gen) > 2:
+            raise FileConverterInputException("At most two arguments may be provided to --coord-gen, the mode and "
+                                              "quality, e.g. '--coord-gen Gen3D best'")
 
     @property
     def from_format(self):
@@ -153,12 +177,20 @@ def get_argument_parser():
                         help="Any command-line flags to be provided to the converter for reading in the input file(s). "
                              "For information on the flags accepted by a converter, call this script with '-l "
                              "<converter name>'. The first preceding hyphen for each flag must be backslash-escaped, "
-                             "e.g. " + r"--from-flags '\-a \-bc \--example'")
+                             "e.g. '--from-flags \"\\-a \\-bc \\--example\"'")
     parser.add_argument("--to-flags", type=str, default="",
                         help="Any command-line flags to be provided to the converter for writing the output file(s). "
                              "For information on the flags accepted by a converter, call this script with '-l "
                              "<converter name>'. The first preceding hyphen for each flag must be backslash-escaped, "
-                             "e.g. " + r"--to-flags '\-a \-bc \--example'")
+                             "e.g. '--to-flags \"\\-a \\-bc \\--example\"'")
+
+    # Keyword arguments specific to OpenBabel conversion
+    parser.add_argument("--coord-gen", type=str, default=None, nargs="+",
+                        help="(Open Babel converter only). The mode to be used for Open Babel calculation of atomic "
+                             "coordinates, and optionally the quality of the conversion. The mode should be one of "
+                             "'Gen2D', 'Gen3D', or 'neither' (default 'neither'). The quality, if supplied, should be "
+                             "one of 'fastest', 'fast', 'medium', 'better' or 'best' (default 'medium'). E.g. "
+                             "'--coord-gen Gen2D' (quality defaults to 'medium'), '--coord-gen Gen3D best'")
 
     # Keyword arguments for alternative functionality
     parser.add_argument("--list", action="store_true",
