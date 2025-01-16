@@ -11,14 +11,19 @@ import logging
 from argparse import ArgumentParser
 import os
 
-from psdi_data_conversion.converter import FILE_TO_UPLOAD_KEY, FileConverter, FileConverterException, get_file_storage
+from psdi_data_conversion.converter import (CONVERTER_ATO, CONVERTER_C2X, CONVERTER_OB, FILE_TO_UPLOAD_KEY,
+                                            FileConverter, FileConverterException, get_file_storage)
 
 LOG_EXT = ".log"
 DEFAULT_LISTING_LOG_FILE = "data-convert-list" + LOG_EXT
 
 # Allowed and default options for command-line arguments
+
+L_ALLOWED_CONVERTERS = [CONVERTER_OB, CONVERTER_ATO, CONVERTER_C2X]
+
 L_ALLOWED_COORD_GENS = ["Gen2D", "Gen3D", "neither"]
 DEFAULT_COORD_GEN = "neither"
+
 L_ALLOWED_COORD_GEN_QUALS = ["fastest", "fast", "medium", "better", "best"]
 DEFAULT_COORD_GEN_QUAL = "medium"
 
@@ -94,6 +99,10 @@ class ConvertArgs:
                 raise FileConverterInputException(
                     f"Output directory '{self._output_dir}' exists but is not a directory")
             os.makedirs(self._output_dir, exist_ok=True)
+
+        # Check the converter is recognized
+        if self.converter not in L_ALLOWED_CONVERTERS:
+            raise FileConverterInputException(f"Converter '{self.converter}' not recognised")
 
         # No more than two arguments supplied to --coord-gen
         if args.coord_gen is not None and len(args.coord_gen) > 2:
@@ -245,6 +254,11 @@ def run_from_args(args: ConvertArgs):
     """
 
     logger.debug("# Entering function `run_from_args`")
+
+    # Check if we've been asked to list options
+    if args.list:
+        # TODO
+        pass
 
     form = {'token': '1041c0a661d118d5f28e7c6830375dd0',
             'converter': args.converter,

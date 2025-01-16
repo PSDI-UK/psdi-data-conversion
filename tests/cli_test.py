@@ -55,6 +55,10 @@ def test_input_validity():
     with pytest.raises(FileConverterInputException):
         get_parsed_args("file1.mmcif -i /no/where -t pdb")
 
+    # It should fail if the converter isn't recognized
+    with pytest.raises(FileConverterInputException):
+        get_parsed_args("file1.mmcif -t pdb -w Ato")
+
     # It should fail with bad or too many arguments to --coord-gen
     with pytest.raises(FileConverterInputException):
         get_parsed_args("file1.mmcif -t pdb --coord-gen Gen1D")
