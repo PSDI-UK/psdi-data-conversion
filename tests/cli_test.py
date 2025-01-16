@@ -55,7 +55,11 @@ def test_input_validity():
     with pytest.raises(FileConverterInputException):
         get_parsed_args("file1.mmcif -i /no/where -t pdb")
 
-    # It should fail with too many arguments to --coord-gen
+    # It should fail with bad or too many arguments to --coord-gen
+    with pytest.raises(FileConverterInputException):
+        get_parsed_args("file1.mmcif -t pdb --coord-gen Gen1D")
+    with pytest.raises(FileConverterInputException):
+        get_parsed_args("file1.mmcif -t pdb --coord-gen Gen3D worst")
     with pytest.raises(FileConverterInputException):
         get_parsed_args("file1.mmcif -t pdb --coord-gen Gen3D best quality")
 

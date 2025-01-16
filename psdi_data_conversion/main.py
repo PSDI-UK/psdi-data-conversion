@@ -17,7 +17,7 @@ LOG_EXT = ".log"
 DEFAULT_LISTING_LOG_FILE = "data-convert-list" + LOG_EXT
 
 # Allowed and default options for command-line arguments
-L_ALLOWED_COORD_GEN_TYPES = ["Gen2D", "Gen3D", "neither"]
+L_ALLOWED_COORD_GENS = ["Gen2D", "Gen3D", "neither"]
 DEFAULT_COORD_GEN = "neither"
 L_ALLOWED_COORD_GEN_QUALS = ["fastest", "fast", "medium", "better", "best"]
 DEFAULT_COORD_GEN_QUAL = "medium"
@@ -99,6 +99,14 @@ class ConvertArgs:
         if args.coord_gen is not None and len(args.coord_gen) > 2:
             raise FileConverterInputException("At most two arguments may be provided to --coord-gen, the mode and "
                                               "quality, e.g. '--coord-gen Gen3D best'")
+
+        # Coordinate generation options are valid
+        if self.coord_gen not in L_ALLOWED_COORD_GENS:
+            raise FileConverterInputException(f"Coordinate generation type '{self.coord_gen}' not recognised. Allowed "
+                                              f"types are: {L_ALLOWED_COORD_GENS}")
+        if self.coord_gen_qual not in L_ALLOWED_COORD_GEN_QUALS:
+            raise FileConverterInputException(f"Coordinate generation quality '{self.coord_gen_qual}' not recognised. "
+                                              f"Allowed qualities are: {L_ALLOWED_COORD_GEN_QUALS}")
 
     @property
     def from_format(self):
