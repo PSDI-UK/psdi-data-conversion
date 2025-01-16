@@ -12,7 +12,7 @@ import sys
 from unittest.mock import patch
 
 from psdi_data_conversion.main import (DEFAULT_COORD_GEN, DEFAULT_COORD_GEN_QUAL, DEFAULT_LISTING_LOG_FILE,
-                                       FileConverterInputException, LOG_EXT, parse_args)
+                                       FileConverterInputException, main, LOG_EXT, parse_args)
 
 
 def get_parsed_args(s):
@@ -21,6 +21,14 @@ def get_parsed_args(s):
     l_args = shlex.split("test " + s)
     with patch.object(sys, 'argv', l_args):
         return parse_args()
+
+
+def run_with_arg_string(s):
+    """Runs the convert script with the provided argument string
+    """
+    l_args = shlex.split("test " + s)
+    with patch.object(sys, 'argv', l_args):
+        main()
 
 
 def test_input_validity():
@@ -100,3 +108,9 @@ def test_input_processing():
     # Check that the log file uses the expected default value in list mode
     list_check_args = get_parsed_args("--list")
     assert list_check_args.log_file == DEFAULT_LISTING_LOG_FILE
+
+
+def test_list_converters():
+    """Test the option to list available converters
+    """
+    run_with_arg_string("--list")

@@ -276,8 +276,7 @@ def run_from_args(args: ConvertArgs):
 
     # Check if we've been asked to list options
     if args.list:
-        # TODO
-        pass
+        return detail_converters(args.l_args)
 
     form = {'token': '1041c0a661d118d5f28e7c6830375dd0',
             'converter': args.converter,
