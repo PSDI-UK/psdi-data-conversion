@@ -135,3 +135,16 @@ def test_detail_converter(capsys):
     run_with_arg_string("--list bad_converter")
     captured = capsys.readouterr()
     assert "not recognized" in captured.err
+
+
+def test_convert(tmp_path_factory, capsys):
+    """Test running file conversions
+    """
+    input_dir = tmp_path_factory.mktemp("input")
+    output_dir = tmp_path_factory.mktemp("output")
+
+    test_filename = "1NE6.mmcif"
+
+    source_filename = os.path.join(TEST_DATA_LOC, "1NE6.mmcif")
+
+    run_with_arg_string(f"{test_filename} -t pdb -i {input_dir} -a {output_dir}")
