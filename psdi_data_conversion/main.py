@@ -13,7 +13,8 @@ import os
 import sys
 
 from psdi_data_conversion.converter import (CONVERTER_ATO, CONVERTER_C2X, CONVERTER_OB, FILE_TO_UPLOAD_KEY,
-                                            FileConverter, FileConverterException, get_file_storage)
+                                            FileConverter, FileConverterAbortException, FileConverterException,
+                                            get_file_storage)
 
 LOG_EXT = ".log"
 DEFAULT_LISTING_LOG_FILE = "data-convert-list" + LOG_EXT
@@ -304,7 +305,11 @@ def run_from_args(args: ConvertArgs):
                                   file_to_convert=FILE_TO_UPLOAD_KEY,
                                   upload_dir=args.input_dir,
                                   download_dir=args.output_dir)
-        converter.run()
+        try:
+            converter.run()
+        except FileConverterAbortException as e:
+            print(f"Attempt to convert file {filename} failed with status code {e.status_code} and message: \n" +
+                  str(e) + "\n", file=sys.stderr)
 
     logger.debug("# Exiting function `run_from_args`")
 
