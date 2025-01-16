@@ -28,18 +28,18 @@ FROM python:3.12-slim-bookworm
 WORKDIR /app
 COPY . .
 
-# Install ubuntu dependencies
-RUN apt update
-RUN apt-get -y install libxrender1 libxext6 libpq-dev gcc
-
 # Install Python packages (including openbabel-wheel)
 RUN pip install --upgrade pip
 RUN pip install -r requirements.txt
 RUN pip install flask
 RUN pip install gunicorn
 
-ENV FLASK_APP=app.py
+RUN apt update
+RUN apt-get -y install libxrender1 libxext6
+
+ENV FLASK_APP=psdi_data_conversion/app.py
 ENV FLASK_RUN_HOST=0.0.0.0
+ENV PYTHONPATH="."
 
 EXPOSE 5000
 
