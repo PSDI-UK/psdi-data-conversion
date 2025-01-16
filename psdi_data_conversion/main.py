@@ -259,8 +259,8 @@ def run_from_args(args: ConvertArgs):
             'from_args': '',
             'to_arg_flags': '',
             'to_args': '',
-            'coordinates': 'neither',
-            'coordOption': 'medium',
+            'coordinates': args.coord_gen,
+            'coordOption': args.coord_gen_qual,
             'upload_file': 'true'}
 
     for filename in args.l_args:
