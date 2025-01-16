@@ -10,6 +10,7 @@ Entry-point file for the command-line interface for data conversion.
 import logging
 from argparse import ArgumentParser
 import os
+import sys
 
 from psdi_data_conversion.converter import (CONVERTER_ATO, CONVERTER_C2X, CONVERTER_OB, FILE_TO_UPLOAD_KEY,
                                             FileConverter, FileConverterException, get_file_storage)
@@ -257,7 +258,7 @@ def detail_converters(l_args: list[str]):
     if converter_name in L_ALLOWED_CONVERTERS:
         return detail_converter_use(converter_name)
     elif converter_name != "":
-        print(f"Converter {converter_name} not recognized.")
+        print(f"Converter {converter_name} not recognized.", file=sys.stderr)
     print("Available converters are: \n" + "\n".join(L_ALLOWED_CONVERTERS) + "\n" +
           "For more details on a converter, call: \n" +
           "psdi-data-convert --list <Converter name>")

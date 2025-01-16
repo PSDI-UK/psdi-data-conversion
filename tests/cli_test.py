@@ -118,3 +118,20 @@ def test_list_converters(capsys):
     assert "Available converters are:" in captured.out
     for converter_name in L_ALLOWED_CONVERTERS:
         assert converter_name in captured.out
+
+
+def test_detail_converter(capsys):
+    """Test the option to provide detail on a converter
+    """
+
+    # Test all converters are recognised and don't raise an error
+    for converter_name in L_ALLOWED_CONVERTERS:
+        run_with_arg_string(f"--list {converter_name}")
+        captured = capsys.readouterr()
+        assert "not recognized" not in captured.err
+        assert "Converter use detailing is still TBD" in captured.out
+
+    # Test we do get an error for a bad converter name
+    run_with_arg_string("--list bad_converter")
+    captured = capsys.readouterr()
+    assert "not recognized" in captured.err
