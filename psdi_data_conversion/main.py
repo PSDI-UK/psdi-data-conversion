@@ -305,8 +305,17 @@ def run_from_args(args: ConvertArgs):
         # Search for the file in the input directory
         qualified_filename = os.path.join(args.input_dir, filename)
         if not os.path.isfile(qualified_filename):
-            print(f"ERROR: Cannot find file {filename} in directory {args.input_dir}", file=sys.stderr)
-            continue
+            # Check if we can add the format to it as an extension to find it
+            ex_extension = f".{args.from_format}"
+            if not qualified_filename.endswith(ex_extension):
+                qualified_filename += ex_extension
+                if not os.path.isfile(qualified_filename):
+                    print(f"ERROR: Cannot find file {filename+ex_extension} in directory {args.input_dir}",
+                          file=sys.stderr)
+                    continue
+            else:
+                print(f"ERROR: Cannot find file {filename} in directory {args.input_dir}", file=sys.stderr)
+                continue
 
         if not args.quiet:
             sys.stdout.write(f"Converting {filename} to {args.to_format}... ")

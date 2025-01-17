@@ -180,3 +180,9 @@ def test_convert(tmp_path_factory, capsys, test_data_loc):
     captured = capsys.readouterr()
     assert "Success!" not in captured.out
     assert "ERROR" in captured.err
+
+    # Check that we can specify a file with its format instead of extension
+    run_with_arg_string(f"{test_filename_base} -f {from_format} -t {to_format} -i {input_dir} -a {output_dir}")
+    captured = capsys.readouterr()
+    assert "Success!" in captured.out
+    assert "ERROR" not in captured.err
