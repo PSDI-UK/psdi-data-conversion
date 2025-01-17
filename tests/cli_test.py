@@ -11,7 +11,6 @@ import shlex
 import sys
 from unittest.mock import patch
 
-from psdi_data_conversion.converter import CONVERTER_ATO
 from psdi_data_conversion.main import (DEFAULT_COORD_GEN, DEFAULT_COORD_GEN_QUAL, DEFAULT_LISTING_LOG_FILE,
                                        L_ALLOWED_CONVERTERS, FileConverterInputException, main, LOG_EXT, parse_args)
 
@@ -176,8 +175,8 @@ def test_convert(tmp_path_factory, capsys, test_data_loc):
     assert "Success!" not in captured.out
     assert "ERROR" not in captured.err
 
-    # Test a call we expect to fail due to an incompatible converter
-    run_with_arg_string(basic_arg_string + f" -w {CONVERTER_ATO}")
+    # Test a call we expect to fail due to invalid input type being provided
+    run_with_arg_string(basic_arg_string + " -f pdb")
     captured = capsys.readouterr()
     assert "Success!" not in captured.out
     assert "ERROR" in captured.err
