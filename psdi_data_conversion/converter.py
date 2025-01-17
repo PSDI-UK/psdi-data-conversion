@@ -199,12 +199,16 @@ class FileConverter:
         """Run at init to set up loggers for this object.
         """
 
-        # Determine levels to log at based on quiet status
+        # Determine level to log at based on quiet status
         if self.quiet:
             self._local_logger_level = logging.ERROR
-            self._stdout_output_level = logging.ERROR
         else:
             self._local_logger_level = log_utility.DEFAULT_LOCAL_LOGGER_LEVEL
+
+        # If a log file is provided, only log errors or higher to stdout
+        if self.log_file:
+            self._stdout_output_level = logging.ERROR
+        else:
             self._stdout_output_level = logging.INFO
 
         # If no log file was specified, set up server-style logging
@@ -213,7 +217,8 @@ class FileConverter:
 
         self.logger = log_utility.set_up_data_conversion_logger(local_log_file=self.log_file,
                                                                 local_logger_level=self._local_logger_level,
-                                                                stdout_output_level=self._stdout_output_level)
+                                                                stdout_output_level=self._stdout_output_level,
+                                                                suppress_global_handler=True)
         self.output_logger = self.logger
 
     def _setup_server_loggers(self):
