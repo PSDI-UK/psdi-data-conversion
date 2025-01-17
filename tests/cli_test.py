@@ -155,8 +155,11 @@ def test_convert(tmp_path_factory, capsys, test_data_loc):
     os.symlink(os.path.join(test_data_loc, input_filename),
                os.path.join(input_dir, input_filename))
 
+    # Run a basic conversion
     run_with_arg_string(f"{input_filename} -t {to_format} -i {input_dir} -a {output_dir}")
 
     # Check that the expected output file has been created
     ex_output_file = os.path.join(output_dir, f"{output_filename}")
     assert os.path.isfile(ex_output_file), f"Expected output file {ex_output_file} does not exist"
+
+    # TODO: Check logs and output
