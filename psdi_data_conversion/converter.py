@@ -116,6 +116,7 @@ class FileConverter:
                  form: dict[str, str],
                  file_to_convert: str,
                  abort_callback: Callable[[int], None] = abort_raise,
+                 quiet=False,
                  **kwargs):
         """Initialize the object, storing needed data and setting up loggers.
 
@@ -128,7 +129,11 @@ class FileConverter:
         file_to_convert : str
             The key for the file in the `files` dict to convert
         abort_callback : Callable[[int], None]
-            Function to be called if the conversion hits an error and must be aborted, default `exit`
+            Function to be called if the conversion hits an error and must be aborted, default `abort_raise`, which
+            raises an appropriate exception
+        quiet : bool
+            If set to True, will suppress any output from normal execution (any errors will still be output and logged),
+            default `False`.
         **kwargs
             Any additional arguments provided to this class's initializer which correspond to class or instance
             variables will be set at init, before any derived variables are determined - this is useful primarily for
@@ -140,6 +145,7 @@ class FileConverter:
         self.form = form
         self.file_to_convert = file_to_convert
         self.abort_callback = abort_callback
+        self.quiet = quiet
 
         # Set member variables from dict values in input
         self.from_format = self.form['from']
@@ -193,17 +199,23 @@ class FileConverter:
         if os.path.exists(self.output_log):
             os.remove(self.output_log)
 
+        if self.quiet:
+            local_logger_level = logging.ERROR
+            stdout_output_level = logging.ERROR
+        else:
+            local_logger_level = log_utility.DEFAULT_LOCAL_LOGGER_LEVEL
+            stdout_output_level = logging.INFO
+
         # Set up loggers - one for general-purpose log_utility, and one just for what we want to output to the user
         self.logger = log_utility.setUpDataConversionLogger(local_log_file=local_log,
-                                                            local_logger_level=log_utility.DEFAULT_LOCAL_LOGGER_LEVEL,
-                                                            stdout_output_level=logging.INFO)
+                                                            local_logger_level=local_logger_level,
+                                                            stdout_output_level=stdout_output_level)
         self.output_logger = log_utility.setUpDataConversionLogger(name="output",
                                                                    local_log_file=self.output_log,
                                                                    local_logger_raw_output=True,
-                                                                   extra_loggers=[(
-                                                                       local_log,
-                                                                       log_utility.DEFAULT_LOCAL_LOGGER_LEVEL,
-                                                                       False)])
+                                                                   extra_loggers=[(local_log,
+                                                                                   local_logger_level,
+                                                                                   False)])
 
     def run(self):
         """Run the file conversion
@@ -359,6 +371,9 @@ class FileConverter:
         log_name : _type_
             _description_
         """
+
+        if self.quiet:
+            return
 
         data = {
             "datetime": log_utility.get_date_time(),

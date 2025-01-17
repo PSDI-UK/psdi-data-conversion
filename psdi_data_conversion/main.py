@@ -313,7 +313,8 @@ def run_from_args(args: ConvertArgs):
                                   form=form,
                                   file_to_convert=FILE_TO_UPLOAD_KEY,
                                   upload_dir=args.input_dir,
-                                  download_dir=args.output_dir)
+                                  download_dir=args.output_dir,
+                                  quiet=args.quiet)
         try:
             converter.run()
         except FileConverterAbortException as e:

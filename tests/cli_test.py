@@ -157,7 +157,8 @@ def test_convert(tmp_path_factory, capsys, test_data_loc):
                os.path.join(input_dir, input_filename))
 
     # Run a basic conversion
-    run_with_arg_string(f"{input_filename} -t {to_format} -i {input_dir} -a {output_dir}")
+    basic_arg_string = f"{input_filename} -t {to_format} -i {input_dir} -a {output_dir}"
+    run_with_arg_string(basic_arg_string)
 
     # Check that the expected output file has been created
     ex_output_file = os.path.join(output_dir, f"{output_filename}")
@@ -168,8 +169,14 @@ def test_convert(tmp_path_factory, capsys, test_data_loc):
     assert "Success!" in captured.out
     assert "ERROR" not in captured.err
 
+    # Check that running in quiet mode suppresses output
+    run_with_arg_string(basic_arg_string + " -q")
+    captured = capsys.readouterr()
+    assert "Success!" not in captured.out
+    assert "ERROR" not in captured.err
+
     # Test a call we expect to fail due to an incompatible converter
-    run_with_arg_string(f"{input_filename} -t {to_format} -i {input_dir} -a {output_dir} -w {CONVERTER_ATO}")
+    run_with_arg_string(basic_arg_string + f" -w {CONVERTER_ATO}")
     captured = capsys.readouterr()
     assert "Success!" not in captured.out
     assert "ERROR" in captured.err
