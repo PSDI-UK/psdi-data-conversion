@@ -112,7 +112,7 @@ Enter https://psdidev2.azurewebsites.net in a browser.
 
 ## Testing
 
-Install the package requirements locally (ideally within a virtual environment) and test with pytest:
+Install the package requirements locally (ideally within a virtual environment) and test with pytest by executing the following commands from this project's directory:
 
 ```bash
 source .venv/bin/activate # Create a venv first if necessary with `python -m venv .venv`
@@ -124,7 +124,7 @@ pytest
 
 Python and Open Babel must be installed.
 
-Install the package and its requirements via:
+Install the package and its requirements by executing the following command from this project's directory:
 
 ```bash
 pip install .
