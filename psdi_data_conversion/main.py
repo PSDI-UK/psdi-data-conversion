@@ -299,6 +299,9 @@ def run_from_args(args: ConvertArgs):
 
     for filename in args.l_args:
 
+        if not args.quiet:
+            sys.stdout.write(f"Converting {filename} to {args.to_format}... ")
+
         # Search for the file in the input directory
         qualified_filename = os.path.join(args.input_dir, filename)
         if not os.path.isfile(qualified_filename):
@@ -314,8 +317,15 @@ def run_from_args(args: ConvertArgs):
         try:
             converter.run()
         except FileConverterAbortException as e:
+            # Close the dangling line before writing an error message
+            if not args.quiet:
+                sys.stdout.write("\n")
             print(f"ERROR: Attempt to convert file {filename} failed with status code {e.status_code} and message: \n" +
                   str(e) + "\n", file=sys.stderr)
+            continue
+
+        if not args.quiet:
+            sys.stdout.write("Success!\n")
 
     logger.debug("# Exiting function `run_from_args`")
 

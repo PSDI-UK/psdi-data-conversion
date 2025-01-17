@@ -11,6 +11,7 @@ import shlex
 import sys
 from unittest.mock import patch
 
+from psdi_data_conversion.converter import CONVERTER_ATO
 from psdi_data_conversion.main import (DEFAULT_COORD_GEN, DEFAULT_COORD_GEN_QUAL, DEFAULT_LISTING_LOG_FILE,
                                        L_ALLOWED_CONVERTERS, FileConverterInputException, main, LOG_EXT, parse_args)
 
@@ -162,4 +163,13 @@ def test_convert(tmp_path_factory, capsys, test_data_loc):
     ex_output_file = os.path.join(output_dir, f"{output_filename}")
     assert os.path.isfile(ex_output_file), f"Expected output file {ex_output_file} does not exist"
 
-    # TODO: Check logs and output
+    # Check logs and output
+    captured = capsys.readouterr()
+    assert "Success!" in captured.out
+    assert "ERROR" not in captured.err
+
+    # Test a call we expect to fail due to an incompatible converter
+    run_with_arg_string(f"{input_filename} -t {to_format} -i {input_dir} -a {output_dir} -w {CONVERTER_ATO}")
+    captured = capsys.readouterr()
+    assert "Success!" not in captured.out
+    assert "ERROR" in captured.err
