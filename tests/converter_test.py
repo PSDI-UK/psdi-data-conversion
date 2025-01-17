@@ -11,43 +11,11 @@ import os
 import re
 import pytest
 
-from psdi_data_conversion.app import FILE_KEY, FILE_TO_UPLOAD_KEY
 from psdi_data_conversion.log_utility import DATETIME_RE_RAW, GLOBAL_LOG_FILENAME
-from psdi_data_conversion.converter import (CONVERTER_ATO, CONVERTER_OB, LOCAL_LOG_EXT, OUTPUT_LOG_EXT,
-                                            STATUS_CODE_BAD_METHOD, STATUS_CODE_GENERAL, STATUS_CODE_SIZE,
-                                            FileConverter, FileConverterAbortException)
-
-TEST_DATA_LOC = os.path.abspath("./test_data")
-
-
-class MockFileStorage:
-    """Mock version of the `FileStorage` class which provides the needed functionality in a way convenient for unit
-    tests.
-    """
-    filename: str | None = None
-    source_filename: str | None = None
-
-    def __init__(self, source_filename):
-        self.source_filename = source_filename
-        self.filename = os.path.split(self.source_filename)[1]
-
-    def save(self, dest_filename):
-        """To speed things up, symlink the file instead of creating a copy
-        """
-
-        # Silently make sure the destination directory exists
-        os.makedirs(os.path.split(dest_filename)[0], exist_ok=True)
-
-        os.symlink(self.source_filename, dest_filename)
-
-
-def get_mock_files(source_filename):
-    """Convenience function for unit test to get a mock `files` dict to pass as an argument to initializing a converter
-    """
-    mock_file_storage = MockFileStorage(source_filename)
-    return {FILE_KEY: mock_file_storage,
-            FILE_TO_UPLOAD_KEY: mock_file_storage,
-            }
+from psdi_data_conversion.converter import (CONVERTER_ATO, CONVERTER_OB, get_file_storage, LOCAL_LOG_EXT,
+                                            OUTPUT_LOG_EXT, FILE_TO_UPLOAD_KEY, STATUS_CODE_BAD_METHOD,
+                                            STATUS_CODE_GENERAL, STATUS_CODE_SIZE, FileConverter,
+                                            FileConverterAbortException)
 
 
 @pytest.fixture()
@@ -93,7 +61,7 @@ def tmp_download_path(tmp_path):
 class TestConverter:
 
     @pytest.fixture(autouse=True)
-    def setup_test(self, base_mock_form, tmp_upload_path, tmp_download_path):
+    def setup_test(self, base_mock_form, tmp_upload_path, tmp_download_path, test_data_loc):
         """Reset global aspects before a test, so that different tests won't interfere with each other,
         and save references to fixtures.
         """
@@ -107,12 +75,15 @@ class TestConverter:
         # Clear any existing loggers so new ones will be created fresh
         logging.Logger.manager.loggerDict.clear()
 
+        # Save test data location
+        self.test_data_loc = test_data_loc
+
         # Save tmp directories
         self.base_mock_form = base_mock_form
         self.tmp_upload_path = tmp_upload_path
         self.tmp_download_path = tmp_download_path
 
-    def get_input_info(self, filename: str, **kwargs):
+    def get_input_info(self, filename: str, **kwargs,):
         """Sets up a mock form for input and gets various variables we'll want to use for checks on output
 
         Parameters
@@ -130,8 +101,8 @@ class TestConverter:
                 raise RuntimeError(f"Invalid key {key} provided for form")
 
         # Save some variables from input we'll be using throughout this test
-        self.source_filename = os.path.join(TEST_DATA_LOC, filename)
-        self.files = get_mock_files(self.source_filename)
+        self.source_filename = os.path.join(self.test_data_loc, filename)
+        self.files = get_file_storage(self.source_filename)
         self.filename = self.files[FILE_TO_UPLOAD_KEY].filename
         self.filename_base = os.path.splitext(filename)[0]
         self.to_format = self.mock_form["to"]

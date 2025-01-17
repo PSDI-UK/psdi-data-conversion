@@ -12,16 +12,13 @@ from datetime import datetime
 from flask import Flask, request, render_template, abort, Response
 
 from psdi_data_conversion import log_utility
-from psdi_data_conversion.converter import DEFAULT_DOWNLOAD_DIR, FileConverter
+from psdi_data_conversion.converter import DEFAULT_DOWNLOAD_DIR, FILE_KEY, FILE_TO_UPLOAD_KEY, FileConverter
 
 # Create a token by hashing the current date and time.
 dt = str(datetime.now())
 token = hashlib.md5(dt.encode('utf8')).hexdigest()
 
 app = Flask(__name__)
-
-FILE_KEY = 'file'
-FILE_TO_UPLOAD_KEY = 'fileToUpload'
 
 
 @app.route('/')

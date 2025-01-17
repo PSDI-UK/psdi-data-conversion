@@ -13,7 +13,6 @@ from typing import Callable
 import py.io
 import subprocess
 from openbabel import openbabel
-from werkzeug.datastructures import FileStorage
 from werkzeug.exceptions import HTTPException
 
 from psdi_data_conversion import log_utility
@@ -45,6 +44,40 @@ OUTPUT_LOG_EXT = "log.txt"
 STATUS_CODE_BAD_METHOD = 405
 STATUS_CODE_SIZE = 413
 STATUS_CODE_GENERAL = 422
+
+# Keys used commonly by dicts
+FILE_KEY = 'file'
+FILE_TO_UPLOAD_KEY = 'fileToUpload'
+
+
+class FileStorage:
+    """Local version of the `FileStorage` class which provides the needed functionality for the converter.
+    """
+    filename: str | None = None
+    source_filename: str | None = None
+
+    def __init__(self, source_filename):
+        self.source_filename = source_filename
+        self.filename = os.path.split(self.source_filename)[1]
+
+    def save(self, dest_filename):
+        """To speed things up, symlink the file instead of creating a copy
+        """
+
+        # Silently make sure the destination directory exists
+        os.makedirs(os.path.split(dest_filename)[0], exist_ok=True)
+
+        if not os.path.realpath(self.source_filename) == os.path.realpath(dest_filename):
+            os.symlink(self.source_filename, dest_filename)
+
+
+def get_file_storage(source_filename):
+    """Convenience function for unit test to get a mock `files` dict to pass as an argument to initializing a converter
+    """
+    mock_file_storage = FileStorage(source_filename)
+    return {FILE_KEY: mock_file_storage,
+            FILE_TO_UPLOAD_KEY: mock_file_storage,
+            }
 
 
 class FileConverterException(RuntimeError):
@@ -83,6 +116,9 @@ class FileConverter:
                  form: dict[str, str],
                  file_to_convert: str,
                  abort_callback: Callable[[int], None] = abort_raise,
+                 log_file: str | None = None,
+                 quiet=False,
+                 delete_input=True,
                  **kwargs):
         """Initialize the object, storing needed data and setting up loggers.
 
@@ -95,7 +131,16 @@ class FileConverter:
         file_to_convert : str
             The key for the file in the `files` dict to convert
         abort_callback : Callable[[int], None]
-            Function to be called if the conversion hits an error and must be aborted, default `exit`
+            Function to be called if the conversion hits an error and must be aborted, default `abort_raise`, which
+            raises an appropriate exception
+        log_file : str | None
+            If provided, all logging will go to a single file or stream. Otherwise, logs will be split up among multiple
+            files for server-style logging.
+        quiet : bool
+            If set to True, will suppress any output from normal execution (any errors will still be output and logged),
+            default `False`.
+        delete_input : bool
+            Whether or not to delete input files after conversion, default True
         **kwargs
             Any additional arguments provided to this class's initializer which correspond to class or instance
             variables will be set at init, before any derived variables are determined - this is useful primarily for
@@ -107,6 +152,9 @@ class FileConverter:
         self.form = form
         self.file_to_convert = file_to_convert
         self.abort_callback = abort_callback
+        self.log_file = log_file
+        self.quiet = quiet
+        self.delete_input = delete_input
 
         # Set member variables from dict values in input
         self.from_format = self.form['from']
@@ -150,6 +198,33 @@ class FileConverter:
     def _setup_loggers(self):
         """Run at init to set up loggers for this object.
         """
+
+        # Determine level to log at based on quiet status
+        if self.quiet:
+            self._local_logger_level = logging.ERROR
+        else:
+            self._local_logger_level = log_utility.DEFAULT_LOCAL_LOGGER_LEVEL
+
+        # If a log file is provided, only log errors or higher to stdout
+        if self.log_file:
+            self._stdout_output_level = logging.ERROR
+        else:
+            self._stdout_output_level = logging.INFO
+
+        # If no log file was specified, set up server-style logging
+        if self.log_file is None:
+            return self._setup_server_loggers()
+        self.output_log = self.log_file
+
+        self.logger = log_utility.set_up_data_conversion_logger(local_log_file=self.log_file,
+                                                                local_logger_level=self._local_logger_level,
+                                                                stdout_output_level=self._stdout_output_level,
+                                                                suppress_global_handler=True)
+        self.output_logger = self.logger
+
+    def _setup_server_loggers(self):
+        """Run at init to set up loggers for this object in server-style execution
+        """
         local_log_base = f"{self.download_dir}/{self.f.filename}-{self.filename_base}.{self.to_format}"
         local_log = f"{local_log_base}.{LOCAL_LOG_EXT}"
         self.output_log = f"{self.download_dir}/{self.filename_base}.{OUTPUT_LOG_EXT}"
@@ -161,16 +236,15 @@ class FileConverter:
             os.remove(self.output_log)
 
         # Set up loggers - one for general-purpose log_utility, and one just for what we want to output to the user
-        self.logger = log_utility.setUpDataConversionLogger(local_log_file=local_log,
-                                                            local_logger_level=log_utility.DEFAULT_LOCAL_LOGGER_LEVEL,
-                                                            stdout_output_level=logging.INFO)
-        self.output_logger = log_utility.setUpDataConversionLogger(name="output",
-                                                                   local_log_file=self.output_log,
-                                                                   local_logger_raw_output=True,
-                                                                   extra_loggers=[(
-                                                                       local_log,
-                                                                       log_utility.DEFAULT_LOCAL_LOGGER_LEVEL,
-                                                                       False)])
+        self.logger = log_utility.set_up_data_conversion_logger(local_log_file=local_log,
+                                                                local_logger_level=self._local_logger_level,
+                                                                stdout_output_level=self._stdout_output_level)
+        self.output_logger = log_utility.set_up_data_conversion_logger(name="output",
+                                                                       local_log_file=self.output_log,
+                                                                       local_logger_raw_output=True,
+                                                                       extra_loggers=[(local_log,
+                                                                                       self._local_logger_level,
+                                                                                       False)])
 
     def run(self):
         """Run the file conversion
@@ -210,23 +284,25 @@ class FileConverter:
         """
 
         # Remove the input and output files if they exist
-        try:
-            os.remove(self.in_filename)
-        except FileNotFoundError:
-            pass
+        if self.delete_input:
+            try:
+                os.remove(self.in_filename)
+            except FileNotFoundError:
+                pass
         try:
             os.remove(self.out_filename)
         except FileNotFoundError:
             pass
 
         if message:
-            # If we're adding a message, read in any prior logs, clear the log, write the message, then write the
-            # prior logs
-            prior_output_log = open(self.output_log, "r").read()
-            os.remove(self.output_log)
-            with open(self.output_log, "w") as fo:
-                fo.write(message + "\n")
-                fo.write(prior_output_log)
+            # If we're adding a message in server mode, read in any prior logs, clear the log, write the message, then
+            # write the prior logs
+            if self.log_file is None:
+                prior_output_log = open(self.output_log, "r").read()
+                os.remove(self.output_log)
+                with open(self.output_log, "w") as fo:
+                    fo.write(message + "\n")
+                    fo.write(prior_output_log)
 
             # Note this message in the dev logger as well
             self.logger.error(message)
@@ -326,6 +402,9 @@ class FileConverter:
         log_name : _type_
             _description_
         """
+
+        if self.quiet:
+            return
 
         data = {
             "datetime": log_utility.get_date_time(),
@@ -458,7 +537,8 @@ class FileConverter:
         self.in_size, self.out_size = self._check_file_size()
 
         if self.file_to_convert != 'file':  # Website only (i.e., not command line option)
-            os.remove(self.in_filename)
+            if self.delete_input:
+                os.remove(self.in_filename)
             self.from_format = self.form['from_full']
             self.to_format = self.form['to_full']
             self.quality = self.form['success']
@@ -483,7 +563,8 @@ class FileConverter:
         self.in_size, self.out_size = self._check_file_size()
 
         if self.file_to_convert != 'file':   # Website only (i.e., not command line option)
-            os.remove(self.in_filename)
+            if self.delete_input:
+                os.remove(self.in_filename)
             self.from_format = self.form['from_full']
             self.to_format = self.form['to_full']
             self.quality = self.form['success']
@@ -505,7 +586,8 @@ class FileConverter:
         self.in_size, self.out_size = self._check_file_size()
 
         if self.file_to_convert != 'file':   # Website only (i.e., not command line option)
-            os.remove(self.in_filename)
+            if self.delete_input:
+                os.remove(self.in_filename)
             self.from_format = self.form['from_full']
             self.to_format = self.form['to_full']
             self.quality = self.form['success']
