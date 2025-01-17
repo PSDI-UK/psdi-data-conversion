@@ -116,6 +116,7 @@ class FileConverter:
                  form: dict[str, str],
                  file_to_convert: str,
                  abort_callback: Callable[[int], None] = abort_raise,
+                 log_file: str | None = None,
                  quiet=False,
                  delete_input=True,
                  **kwargs):
@@ -132,6 +133,9 @@ class FileConverter:
         abort_callback : Callable[[int], None]
             Function to be called if the conversion hits an error and must be aborted, default `abort_raise`, which
             raises an appropriate exception
+        log_file : str | None
+            If provided, all logging will go to a single file or stream. Otherwise, logs will be split up among multiple
+            files for server-style logging.
         quiet : bool
             If set to True, will suppress any output from normal execution (any errors will still be output and logged),
             default `False`.
@@ -148,6 +152,7 @@ class FileConverter:
         self.form = form
         self.file_to_convert = file_to_convert
         self.abort_callback = abort_callback
+        self.log_file = log_file
         self.quiet = quiet
         self.delete_input = delete_input
 
@@ -193,6 +198,27 @@ class FileConverter:
     def _setup_loggers(self):
         """Run at init to set up loggers for this object.
         """
+
+        # Determine levels to log at based on quiet status
+        if self.quiet:
+            self._local_logger_level = logging.ERROR
+            self._stdout_output_level = logging.ERROR
+        else:
+            self._local_logger_level = log_utility.DEFAULT_LOCAL_LOGGER_LEVEL
+            self._stdout_output_level = logging.INFO
+
+        # If no log file was specified, set up server-style logging
+        if self.log_file is None:
+            return self._setup_server_loggers()
+
+        self.logger = log_utility.set_up_data_conversion_logger(local_log_file=self.log_file,
+                                                                local_logger_level=self._local_logger_level,
+                                                                stdout_output_level=self._stdout_output_level)
+        self.output_logger = self.logger
+
+    def _setup_server_loggers(self):
+        """Run at init to set up loggers for this object in server-style execution
+        """
         local_log_base = f"{self.download_dir}/{self.f.filename}-{self.filename_base}.{self.to_format}"
         local_log = f"{local_log_base}.{LOCAL_LOG_EXT}"
         self.output_log = f"{self.download_dir}/{self.filename_base}.{OUTPUT_LOG_EXT}"
@@ -203,23 +229,16 @@ class FileConverter:
         if os.path.exists(self.output_log):
             os.remove(self.output_log)
 
-        if self.quiet:
-            local_logger_level = logging.ERROR
-            stdout_output_level = logging.ERROR
-        else:
-            local_logger_level = log_utility.DEFAULT_LOCAL_LOGGER_LEVEL
-            stdout_output_level = logging.INFO
-
         # Set up loggers - one for general-purpose log_utility, and one just for what we want to output to the user
-        self.logger = log_utility.setUpDataConversionLogger(local_log_file=local_log,
-                                                            local_logger_level=local_logger_level,
-                                                            stdout_output_level=stdout_output_level)
-        self.output_logger = log_utility.setUpDataConversionLogger(name="output",
-                                                                   local_log_file=self.output_log,
-                                                                   local_logger_raw_output=True,
-                                                                   extra_loggers=[(local_log,
-                                                                                   local_logger_level,
-                                                                                   False)])
+        self.logger = log_utility.set_up_data_conversion_logger(local_log_file=local_log,
+                                                                local_logger_level=self._local_logger_level,
+                                                                stdout_output_level=self._stdout_output_level)
+        self.output_logger = log_utility.set_up_data_conversion_logger(name="output",
+                                                                       local_log_file=self.output_log,
+                                                                       local_logger_raw_output=True,
+                                                                       extra_loggers=[(local_log,
+                                                                                       self._local_logger_level,
+                                                                                       False)])
 
     def run(self):
         """Run the file conversion

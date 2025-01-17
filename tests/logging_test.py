@@ -46,18 +46,18 @@ def test_setup_logger(tmp_path):
     """Tests of `log_utility.setUpDataConversionLogger`
     """
     # Get a logger to test with
-    logger = log_utility.setUpDataConversionLogger("test")
+    logger = log_utility.set_up_data_conversion_logger("test")
 
     # Test getting a second logger with the same name does not return the same as the first
-    same_name_logger = log_utility.setUpDataConversionLogger("test")
+    same_name_logger = log_utility.set_up_data_conversion_logger("test")
     assert same_name_logger is not logger
 
     # Test getting a logger with a different name returns a different logger
-    diff_name_logger = log_utility.setUpDataConversionLogger("not.test")
+    diff_name_logger = log_utility.set_up_data_conversion_logger("not.test")
     assert diff_name_logger is not logger
 
     # Test that a logger without a name provided will also differ
-    no_name_logger = log_utility.setUpDataConversionLogger()
+    no_name_logger = log_utility.set_up_data_conversion_logger()
     assert no_name_logger is not logger
 
     # Test that the filenames are as expected
@@ -65,10 +65,10 @@ def test_setup_logger(tmp_path):
     test_log_level = logging.WARN
     test_error_filename = os.path.join(tmp_path, "err.txt")
     test_error_level = logging.CRITICAL
-    fn_logger = log_utility.setUpDataConversionLogger("fn-test",
-                                                      local_log_file=test_log_filename,
-                                                      local_logger_level=test_log_level,
-                                                      extra_loggers=[(test_error_filename, test_error_level, False)])
+    fn_logger = log_utility.set_up_data_conversion_logger("fn-test",
+                                                          local_log_file=test_log_filename,
+                                                          local_logger_level=test_log_level,
+                                                          extra_loggers=[(test_error_filename, test_error_level, False)])
 
     # Search through the logger's handlers to get all files it logs to and at what levels
     l_files_and_levels = []
@@ -95,7 +95,7 @@ def test_logging(tmp_path):
     logger_name = "log_utility-test"
 
     # Create a logger to work with
-    logger = log_utility.setUpDataConversionLogger(logger_name, test_filename)
+    logger = log_utility.set_up_data_conversion_logger(logger_name, test_filename)
     logger.setLevel(logging.INFO)
 
     # Try logging a few messages at different levels

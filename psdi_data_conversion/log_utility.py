@@ -29,12 +29,12 @@ global_handler = logging.FileHandler(GLOBAL_LOG_FILENAME)
 global_handler.setLevel(GLOBAL_LOGGER_LEVEL)
 
 
-def setUpDataConversionLogger(name=NAME,
-                              local_log_file=None,
-                              local_logger_level=DEFAULT_LOCAL_LOGGER_LEVEL,
-                              local_logger_raw_output=False,
-                              extra_loggers=None,
-                              stdout_output_level=None):
+def set_up_data_conversion_logger(name=NAME,
+                                  local_log_file=None,
+                                  local_logger_level=DEFAULT_LOCAL_LOGGER_LEVEL,
+                                  local_logger_raw_output=False,
+                                  extra_loggers=None,
+                                  stdout_output_level=None):
     """Registers a logger with the provided name and sets it up with the desired options
 
     Parameters
