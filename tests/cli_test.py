@@ -103,8 +103,9 @@ def test_input_processing():
     assert args.coord_gen_qual == DEFAULT_COORD_GEN_QUAL
     assert get_parsed_args("file1.mmcif -t pdb --coord-gen Gen3D").coord_gen_qual == DEFAULT_COORD_GEN_QUAL
 
-    # Check that log file is based off of the first file name in normal mode
-    assert args.log_file == "file1" + LOG_EXT
+    # Check that trying to get the log file raises an exception due to the test file not existing
+    with pytest.raises(FileConverterInputException):
+        assert args.log_file == "file1" + LOG_EXT
 
     # Check that the log file uses the expected default value in list mode
     list_check_args = get_parsed_args("--list")

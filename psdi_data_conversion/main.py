@@ -158,7 +158,17 @@ class ConvertArgs:
             if self.list:
                 self._log_file = DEFAULT_LISTING_LOG_FILE
             else:
-                first_filename = self.l_args[0]
+                first_filename = os.path.join(self.input_dir, self.l_args[0])
+
+                # Find the path to this file
+                if not os.path.isfile(first_filename):
+                    test_filename = first_filename + f".{self.from_format}"
+                    if os.path.isfile(test_filename):
+                        first_filename = test_filename
+                    else:
+                        raise FileConverterInputException(f"ERROR: Input file {first_filename} cannot be found. Also "
+                                                          f"checked for {test_filename}.")
+
                 base = os.path.splitext(first_filename)[0]
                 self._log_file = base + LOG_EXT
         return self._log_file
