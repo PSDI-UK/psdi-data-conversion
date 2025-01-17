@@ -38,7 +38,7 @@ def test_input_validity():
 
     # Test that we get what we put in for a standard execution
     cwd = os.getcwd()
-    args = get_parsed_args(f"file1 file2 -f mmcif -i {cwd} -t pdb -a {cwd}/.. -w 'Atomsk' "
+    args = get_parsed_args(f"file1 file2 -f mmcif -i {cwd} -t pdb -a {cwd}/.. -w 'Atomsk' -d " +
                            r"--from-flags '\-ab \-c \--example' --to-flags '\-d' " +
                            "--coord-gen Gen3D best")
     assert args.l_args[0] == "file1"
@@ -47,6 +47,7 @@ def test_input_validity():
     assert args.to_format == "pdb"
     assert args.output_dir == f"{cwd}/.."
     assert args.converter == "Atomsk"
+    assert args.delete_input is True
     assert args.from_flags == "-ab -c --example"
     assert args.to_flags == "-d"
     assert args.coord_gen == "Gen3D"

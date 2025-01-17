@@ -117,6 +117,7 @@ class FileConverter:
                  file_to_convert: str,
                  abort_callback: Callable[[int], None] = abort_raise,
                  quiet=False,
+                 delete_input=True,
                  **kwargs):
         """Initialize the object, storing needed data and setting up loggers.
 
@@ -134,6 +135,8 @@ class FileConverter:
         quiet : bool
             If set to True, will suppress any output from normal execution (any errors will still be output and logged),
             default `False`.
+        delete_input : bool
+            Whether or not to delete input files after conversion, default True
         **kwargs
             Any additional arguments provided to this class's initializer which correspond to class or instance
             variables will be set at init, before any derived variables are determined - this is useful primarily for
@@ -146,6 +149,7 @@ class FileConverter:
         self.file_to_convert = file_to_convert
         self.abort_callback = abort_callback
         self.quiet = quiet
+        self.delete_input = delete_input
 
         # Set member variables from dict values in input
         self.from_format = self.form['from']
@@ -255,10 +259,11 @@ class FileConverter:
         """
 
         # Remove the input and output files if they exist
-        try:
-            os.remove(self.in_filename)
-        except FileNotFoundError:
-            pass
+        if self.delete_input:
+            try:
+                os.remove(self.in_filename)
+            except FileNotFoundError:
+                pass
         try:
             os.remove(self.out_filename)
         except FileNotFoundError:
@@ -506,7 +511,8 @@ class FileConverter:
         self.in_size, self.out_size = self._check_file_size()
 
         if self.file_to_convert != 'file':  # Website only (i.e., not command line option)
-            os.remove(self.in_filename)
+            if self.delete_input:
+                os.remove(self.in_filename)
             self.from_format = self.form['from_full']
             self.to_format = self.form['to_full']
             self.quality = self.form['success']
@@ -531,7 +537,8 @@ class FileConverter:
         self.in_size, self.out_size = self._check_file_size()
 
         if self.file_to_convert != 'file':   # Website only (i.e., not command line option)
-            os.remove(self.in_filename)
+            if self.delete_input:
+                os.remove(self.in_filename)
             self.from_format = self.form['from_full']
             self.to_format = self.form['to_full']
             self.quality = self.form['success']
@@ -553,7 +560,8 @@ class FileConverter:
         self.in_size, self.out_size = self._check_file_size()
 
         if self.file_to_convert != 'file':   # Website only (i.e., not command line option)
-            os.remove(self.in_filename)
+            if self.delete_input:
+                os.remove(self.in_filename)
             self.from_format = self.form['from_full']
             self.to_format = self.form['to_full']
             self.quality = self.form['success']

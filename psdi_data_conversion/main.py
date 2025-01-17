@@ -55,6 +55,7 @@ class ConvertArgs:
         self.to_format: str | None = args.to
         self._output_dir: str | None = args.at
         self.converter: str = getattr(args, "with")
+        self.delete_input = args.delete_input
         self.from_flags: str = args.from_flags.replace(r"\-", "-")
         self.to_flags: str = args.to_flags.replace(r"\-", "-")
 
@@ -192,6 +193,8 @@ def get_argument_parser():
                         help="The directory where output files should be created, default same as input directory.")
     parser.add_argument("-w", "--with", type=str, default="Open Babel",
                         help="The converter to be used (default 'Open Babel').")
+    parser.add_argument("-d", "--delete-input", action="store_true",
+                        help="If set, input files will be deleted after conversion, default they will be kept")
     parser.add_argument("--from-flags", type=str, default="",
                         help="Any command-line flags to be provided to the converter for reading in the input file(s). "
                              "For information on the flags accepted by a converter, call this script with '-l "
@@ -314,7 +317,8 @@ def run_from_args(args: ConvertArgs):
                                   file_to_convert=FILE_TO_UPLOAD_KEY,
                                   upload_dir=args.input_dir,
                                   download_dir=args.output_dir,
-                                  quiet=args.quiet)
+                                  quiet=args.quiet,
+                                  delete_input=args.delete_input)
         try:
             converter.run()
         except FileConverterAbortException as e:
