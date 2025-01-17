@@ -302,13 +302,13 @@ def run_from_args(args: ConvertArgs):
 
     for filename in args.l_args:
 
-        if not args.quiet:
-            sys.stdout.write(f"Converting {filename} to {args.to_format}... ")
-
         # Search for the file in the input directory
         qualified_filename = os.path.join(args.input_dir, filename)
         if not os.path.isfile(qualified_filename):
             print(f"ERROR: Cannot find file {filename} in directory {args.input_dir}", file=sys.stderr)
+
+        if not args.quiet:
+            sys.stdout.write(f"Converting {filename} to {args.to_format}... ")
 
         file_storage = get_file_storage(qualified_filename)
 
