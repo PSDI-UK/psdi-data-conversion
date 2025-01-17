@@ -259,7 +259,7 @@ def detail_converters(l_args: list[str]):
     if converter_name in L_ALLOWED_CONVERTERS:
         return detail_converter_use(converter_name)
     elif converter_name != "":
-        print(f"Converter {converter_name} not recognized.", file=sys.stderr)
+        print(f"ERROR: Converter {converter_name} not recognized.", file=sys.stderr)
     print("Available converters are: \n" + "\n".join(L_ALLOWED_CONVERTERS) + "\n" +
           "For more details on a converter, call: \n" +
           "psdi-data-convert --list <Converter name>")
@@ -298,7 +298,13 @@ def run_from_args(args: ConvertArgs):
             'upload_file': 'true'}
 
     for filename in args.l_args:
-        file_storage = get_file_storage(filename)
+
+        # Search for the file in the input directory
+        qualified_filename = os.path.join(args.input_dir, filename)
+        if not os.path.isfile(qualified_filename):
+            print(f"ERROR: Cannot find file {filename} in directory {args.input_dir}", file=sys.stderr)
+
+        file_storage = get_file_storage(qualified_filename)
 
         converter = FileConverter(files=file_storage,
                                   form=form,
@@ -308,7 +314,7 @@ def run_from_args(args: ConvertArgs):
         try:
             converter.run()
         except FileConverterAbortException as e:
-            print(f"Attempt to convert file {filename} failed with status code {e.status_code} and message: \n" +
+            print(f"ERROR: Attempt to convert file {filename} failed with status code {e.status_code} and message: \n" +
                   str(e) + "\n", file=sys.stderr)
 
     logger.debug("# Exiting function `run_from_args`")

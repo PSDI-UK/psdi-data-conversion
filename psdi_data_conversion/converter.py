@@ -67,7 +67,8 @@ class FileStorage:
         # Silently make sure the destination directory exists
         os.makedirs(os.path.split(dest_filename)[0], exist_ok=True)
 
-        os.symlink(self.source_filename, dest_filename)
+        if not os.path.realpath(self.source_filename) == os.path.realpath(dest_filename):
+            os.symlink(self.source_filename, dest_filename)
 
 
 def get_file_storage(source_filename):

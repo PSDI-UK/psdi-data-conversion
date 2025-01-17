@@ -17,8 +17,6 @@ from psdi_data_conversion.converter import (CONVERTER_ATO, CONVERTER_OB, get_fil
                                             STATUS_CODE_GENERAL, STATUS_CODE_SIZE, FileConverter,
                                             FileConverterAbortException)
 
-TEST_DATA_LOC = os.path.abspath("./test_data")
-
 
 @pytest.fixture()
 def base_mock_form():
@@ -63,7 +61,7 @@ def tmp_download_path(tmp_path):
 class TestConverter:
 
     @pytest.fixture(autouse=True)
-    def setup_test(self, base_mock_form, tmp_upload_path, tmp_download_path):
+    def setup_test(self, base_mock_form, tmp_upload_path, tmp_download_path, test_data_loc):
         """Reset global aspects before a test, so that different tests won't interfere with each other,
         and save references to fixtures.
         """
@@ -77,12 +75,15 @@ class TestConverter:
         # Clear any existing loggers so new ones will be created fresh
         logging.Logger.manager.loggerDict.clear()
 
+        # Save test data location
+        self.test_data_loc = test_data_loc
+
         # Save tmp directories
         self.base_mock_form = base_mock_form
         self.tmp_upload_path = tmp_upload_path
         self.tmp_download_path = tmp_download_path
 
-    def get_input_info(self, filename: str, **kwargs):
+    def get_input_info(self, filename: str, **kwargs,):
         """Sets up a mock form for input and gets various variables we'll want to use for checks on output
 
         Parameters
@@ -100,7 +101,7 @@ class TestConverter:
                 raise RuntimeError(f"Invalid key {key} provided for form")
 
         # Save some variables from input we'll be using throughout this test
-        self.source_filename = os.path.join(TEST_DATA_LOC, filename)
+        self.source_filename = os.path.join(self.test_data_loc, filename)
         self.files = get_file_storage(self.source_filename)
         self.filename = self.files[FILE_TO_UPLOAD_KEY].filename
         self.filename_base = os.path.splitext(filename)[0]
