@@ -51,6 +51,61 @@ tests
     logging_test.py
 ```
 
+## Running the Python command-line interface
+
+### Installation
+
+This package is not yet available on PyPI, and so must be installed locally. This can be done most easily with:
+
+```bash
+pip install .
+```
+
+executed from this project's directory. You can also replace the '.' in this command with the path to this project's directory to install it from elsewhere.
+
+### Execution
+
+Once installed, the command-line script `psdi-data-convert` will be made available, which can be called to either perform a data conversion or to get information about possible conversions or converters (the latter TODO). You can see the full options for it by calling:
+
+```bash
+psdi-data-convert -h
+```
+
+This script has two modes of execution: Data conversion, and requesting information on possible conversions.
+
+#### Data Conversion
+
+Data conversion is the default mode of the script. At its most basic, the syntax for it will look like:
+
+```bash
+psdi-data-convert filename.ext1 -t ext2
+```
+
+This will convert the file 'filename.ext1' to format 'ext2' using the default converter (Open Babel). A list of files can also be provided, and they will each be converted in turn.
+
+The full possible syntax for the script is:
+
+```
+psdi-data-convert <input file 1> [<input file 2>, <input file 3>, ...] -t/--to <output format> [-f/--from <input file format>] [-i/--in <input file location>] [-a/--at <location for output files>] [-w/--with <converter>] [-d] [--from-flags '<flags to be provided to the converter for reading input>'] [--to-flags '<flags to be provided to the converter for writing output>'] [--coord-gen <coordinate generation options] [-q/--quiet] [-l/--log-file <log file name] [--log-level <level>]
+```
+
+Call `psdi-data-convert -h` for details on each of these options.
+
+#### Requesting information on possible conversions
+
+The script can also be used to get information on possible conversions by providing the `-l/--list` argument:
+
+```bash
+psdi-data-convert -l
+```
+
+Without any further arguments, the script will list converters available for use.
+
+Further functionality planned for this script, but yet to be implemented:
+
+- If the name of a converter is provided as an argument, it should provide information on the converter, such as what flags it will accept
+- If the names of two formats are provided as arguments, it should provide information on the possible converters that can be used for this conversion and the expected quality of the conversion
+
 ## Running the Python Flask app hosted on the Microsoft Azure site
 
 Enter https://psdidev2.azurewebsites.net in a browser.
