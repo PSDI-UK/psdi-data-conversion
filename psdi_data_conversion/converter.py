@@ -214,6 +214,7 @@ class FileConverter:
         # If no log file was specified, set up server-style logging
         if self.log_file is None:
             return self._setup_server_loggers()
+        self.output_log = self.log_file
 
         self.logger = log_utility.set_up_data_conversion_logger(local_log_file=self.log_file,
                                                                 local_logger_level=self._local_logger_level,
@@ -294,13 +295,14 @@ class FileConverter:
             pass
 
         if message:
-            # If we're adding a message, read in any prior logs, clear the log, write the message, then write the
-            # prior logs
-            prior_output_log = open(self.output_log, "r").read()
-            os.remove(self.output_log)
-            with open(self.output_log, "w") as fo:
-                fo.write(message + "\n")
-                fo.write(prior_output_log)
+            # If we're adding a message in server mode, read in any prior logs, clear the log, write the message, then
+            # write the prior logs
+            if self.log_file is None:
+                prior_output_log = open(self.output_log, "r").read()
+                os.remove(self.output_log)
+                with open(self.output_log, "w") as fo:
+                    fo.write(message + "\n")
+                    fo.write(prior_output_log)
 
             # Note this message in the dev logger as well
             self.logger.error(message)
