@@ -40,10 +40,13 @@ if not os.path.exists(DEFAULT_DOWNLOAD_DIR):
     os.makedirs(DEFAULT_DOWNLOAD_DIR, exist_ok=True)
 
 # Constant strings for how to log
+LOGGING_ENVVAR = "LOGGING"
+
 LOGGING_FULL = "full"
 LOGGING_SIMPLE = "simple"
 LOGGING_NONE = "none"
 
+LOGGING_DEFAULT = LOGGING_SIMPLE
 L_ALLOWED_LOGGING_TYPES = (LOGGING_FULL, LOGGING_SIMPLE, LOGGING_NONE)
 
 # Constant strings for converter types
