@@ -26,12 +26,13 @@ classifiers = [
   "Topic :: File Formats",
   "Topic :: Scientific/Engineering :: Chemistry",
 ]
-dependencies = ["azure-functions", "Flask", "openbabel-wheel", "py", "requests"]
+dependencies = ["openbabel-wheel", "py"]
 requires-python = ">= 3.10"
 dynamic = ["version"]
 
 [project.optional-dependencies]
 test = ["pytest"]
+gui = ["Flask", "requests"]
 
 [project.scripts]
 psdi-data-convert = "psdi_data_conversion.main:main"

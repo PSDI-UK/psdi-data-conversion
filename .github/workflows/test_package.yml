@@ -5,9 +5,9 @@ name: Python application
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "main", "release" ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ "main", "release" ]
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
@@ -30,12 +30,18 @@ jobs:
         python -m pip install --upgrade pip
         pip install flake8
         pip install .[test]
+    - name: Test with pytest - basic install
+      run: |
+        pytest
+    - name: Install dependencies for the GUI
+      run: |
+        pip install .[gui]
+    - name: Test with pytest - GUI install
+      run: |
+        pytest
     - name: Lint with flake8
       run: |
         # stop the build if there are Python syntax errors or undefined names
         flake8 tests psdi_data_conversion --count --select=E9,F63,F7,F82 --show-source --statistics
         # exit-zero treats all errors as warnings
         flake8 tests psdi_data_conversion --count --exit-zero --max-complexity=10 --max-line-length=120 --statistics
-    - name: Test with pytest
-      run: |
-        pytest
