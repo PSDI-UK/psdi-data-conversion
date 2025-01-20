@@ -111,6 +111,7 @@ class FileConverter:
                  form: dict[str, str],
                  file_to_convert: str,
                  abort_callback: Callable[[int], None] = abort_raise,
+                 use_envvars=False,
                  upload_dir=DEFAULT_UPLOAD_DIR,
                  download_dir=DEFAULT_DOWNLOAD_DIR,
                  max_file_size=DEFAULT_MAX_FILE_SIZE,
@@ -131,6 +132,9 @@ class FileConverter:
         abort_callback : Callable[[int], None]
             Function to be called if the conversion hits an error and must be aborted, default `abort_raise`, which
             raises an appropriate exception
+        use_envvars : bool
+            If set to True, environment variables will be checked for any that set options for this class and used,
+            default False
         upload_dir : str
             The location of input files relative to the current directory
         download_dir : str
@@ -189,6 +193,13 @@ class FileConverter:
                 setattr(self, key, value)
             else:
                 raise ValueError(f"Unrecognized class/instance variable name: {key}")
+
+        # Set values from envvars if desired
+        if use_envvars:
+            # Get the maximum allowed size from the envvar for it
+            ev_max_file_size = os.environ.get(MAX_FILESIZE_ENVVAR)
+            if ev_max_file_size is not None:
+                self.max_file_size = float(ev_max_file_size)*MEGABYTE
 
         self.f = self.files[self.file_to_convert]
         self.filename_base = self.f.filename.split(".")[0]  # E.g. ethane.mol --> ethane
@@ -604,13 +615,8 @@ class FileConverter:
         self._log_success()
 
 
-def run_converter_with_envvars(**converter_kwargs):
-    """Run the file converter, adding values to the keyword arguments based on environmental variables
+def run_converter(**converter_kwargs):
+    """Shortcut to create and run a FileConverter in one step
     """
-
-    # Get the maximum allowed size from the envvar for it
-    max_file_size = os.environ.get(MAX_FILESIZE_ENVVAR)
-    if max_file_size is not None:
-        converter_kwargs["max_file_size"] = max_file_size
 
     return FileConverter(**converter_kwargs).run()

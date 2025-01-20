@@ -13,7 +13,7 @@ from flask import Flask, request, render_template, abort, Response
 
 from psdi_data_conversion import log_utility
 from psdi_data_conversion.converter import (DEFAULT_DOWNLOAD_DIR, FILE_KEY, FILE_TO_UPLOAD_KEY,
-                                            run_converter_with_envvars)
+                                            run_converter)
 
 # Create a token by hashing the current date and time.
 dt = str(datetime.now())
@@ -36,10 +36,10 @@ def convert():
     achieved in format.js
     """
     if request.form['token'] == token and token != '':
-        return run_converter_with_envvars(files=request.files,
-                                          form=request.form,
-                                          file_to_convert=FILE_TO_UPLOAD_KEY,
-                                          abort_callback=abort)
+        return run_converter(files=request.files,
+                             form=request.form,
+                             file_to_convert=FILE_TO_UPLOAD_KEY,
+                             abort_callback=abort)
     else:
         # return http status code 405
         abort(405)
@@ -49,10 +49,10 @@ def convert():
 def conv():
     """Convert file (cURL)
     """
-    return run_converter_with_envvars(files=request.files,
-                                      form=request.form,
-                                      file_to_convert=FILE_KEY,
-                                      abort_callback=abort)
+    return run_converter(files=request.files,
+                         form=request.form,
+                         file_to_convert=FILE_KEY,
+                         abort_callback=abort)
 
 
 @app.route('/feedback/', methods=['POST'])
