@@ -11,7 +11,7 @@ import shlex
 import sys
 from unittest.mock import patch
 
-from psdi_data_conversion.converter import L_ALLOWED_CONVERTERS
+from psdi_data_conversion.converter import L_ALLOWED_CONVERTERS, LOGGING_NONE
 from psdi_data_conversion.main import (DEFAULT_COORD_GEN, DEFAULT_COORD_GEN_QUAL, DEFAULT_LISTING_LOG_FILE,
                                        FileConverterInputException, main, LOG_EXT, parse_args)
 
@@ -40,7 +40,7 @@ def test_input_validity():
     cwd = os.getcwd()
     args = get_parsed_args(f"file1 file2 -f mmcif -i {cwd} -t pdb -a {cwd}/.. -w 'Atomsk' -d " +
                            r"--from-flags '\-ab \-c \--example' --to-flags '\-d' " +
-                           "--coord-gen Gen3D best")
+                           "--coord-gen Gen3D best -q --log-file text.log")
     assert args.l_args[0] == "file1"
     assert args.l_args[1] == "file2"
     assert args.input_dir == cwd
@@ -52,6 +52,9 @@ def test_input_validity():
     assert args.to_flags == "-d"
     assert args.coord_gen == "Gen3D"
     assert args.coord_gen_qual == "best"
+    assert args.quiet is True
+    assert args.log_file == "text.log"
+    assert args.logging_mode == LOGGING_NONE
 
     # It should fail with no arguments
     with pytest.raises(FileConverterInputException):
