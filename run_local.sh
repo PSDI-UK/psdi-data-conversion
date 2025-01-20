@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Set the maximum allowed filesize in MB - 0 indicates no maximum
+MAX_FILESIZE=0
+
 # Uncomment the following line to enable debug mode
 # export FLASK_ENV=development
 

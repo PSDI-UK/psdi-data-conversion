@@ -2,7 +2,6 @@
 
 This is the repository for the Pathfinder 2 Chemistry File Format Conversion source code.
 
-
 ## Directory structure of the Python Flask app website:
 
 ```
@@ -49,8 +48,7 @@ tests
 
 ## Running the Python Flask app hosted on the Microsoft Azure site
 
-Enter    https://psdidev2.azurewebsites.net    in a browser.
-
+Enter https://psdidev2.azurewebsites.net in a browser.
 
 ## Testing
 
@@ -61,7 +59,6 @@ source .venv/bin/activate # Create a venv first if necessary with `python -m ven
 pip install .[test]
 pytest
 ```
-
 
 ## Running the Python/Flask app locally
 
@@ -84,6 +81,9 @@ If you've cloned this repository, you can then execute the `run_local.sh` bash s
 ```bash
 #!/bin/bash
 
+# Set the maximum allowed filesize in MB - 0 indicates no maximum
+MAX_FILESIZE=0
+
 # Uncomment the following line to enable debug mode
 # export FLASK_ENV=development
 
@@ -101,11 +101,9 @@ The database can only be accessed from the University of Southampton or when usi
 In case of problems when using Chrome, try opening Chrome from the command line:
 open -a "Google Chrome.app" --args --allow-file-access-from-files
 
-
 ## Using the website
 
 Guidance on usage is given on each page of the website.
-
 
 ## Dependencies
 
