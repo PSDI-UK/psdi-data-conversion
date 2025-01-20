@@ -12,7 +12,7 @@ from argparse import ArgumentParser
 import os
 import sys
 
-from psdi_data_conversion.converter import (CONVERTER_ATO, CONVERTER_C2X, CONVERTER_OB, FILE_TO_UPLOAD_KEY,
+from psdi_data_conversion.converter import (FILE_TO_UPLOAD_KEY, L_ALLOWED_CONVERTERS,
                                             FileConverter, FileConverterAbortException, FileConverterException,
                                             get_file_storage)
 
@@ -20,8 +20,6 @@ LOG_EXT = ".log"
 DEFAULT_LISTING_LOG_FILE = "data-convert-list" + LOG_EXT
 
 # Allowed and default options for command-line arguments
-
-L_ALLOWED_CONVERTERS = [CONVERTER_OB, CONVERTER_ATO, CONVERTER_C2X]
 
 L_ALLOWED_COORD_GENS = ["Gen2D", "Gen3D", "neither"]
 DEFAULT_COORD_GEN = "neither"

@@ -39,10 +39,19 @@ DEFAULT_DOWNLOAD_DIR = './psdi_data_conversion/static/downloads'
 if not os.path.exists(DEFAULT_DOWNLOAD_DIR):
     os.makedirs(DEFAULT_DOWNLOAD_DIR, exist_ok=True)
 
+# Constant strings for how to log
+LOGGING_FULL = "full"
+LOGGING_SIMPLE = "simple"
+LOGGING_NONE = "none"
+
+L_ALLOWED_LOGGING_TYPES = (LOGGING_FULL, LOGGING_SIMPLE, LOGGING_NONE)
+
 # Constant strings for converter types
 CONVERTER_OB = 'Open Babel'
 CONVERTER_ATO = 'Atomsk'
 CONVERTER_C2X = 'c2x'
+
+L_ALLOWED_CONVERTERS = (CONVERTER_OB, CONVERTER_ATO, CONVERTER_C2X)
 
 # Extensions for logs
 LOCAL_LOG_EXT = "log"

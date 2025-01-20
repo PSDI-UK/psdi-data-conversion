@@ -11,8 +11,9 @@ import shlex
 import sys
 from unittest.mock import patch
 
+from psdi_data_conversion.converter import L_ALLOWED_CONVERTERS
 from psdi_data_conversion.main import (DEFAULT_COORD_GEN, DEFAULT_COORD_GEN_QUAL, DEFAULT_LISTING_LOG_FILE,
-                                       L_ALLOWED_CONVERTERS, FileConverterInputException, main, LOG_EXT, parse_args)
+                                       FileConverterInputException, main, LOG_EXT, parse_args)
 
 
 def get_parsed_args(s):
