@@ -64,10 +64,10 @@ pytest
 
 Python, Open Babel, and Flask must be installed.
 
-Install the package and its requirements, including the optional requirements used to run a server locally via:
+Install the package and its requirements, including the optional requirements used to run the GUI locally via:
 
 ```bash
-pip install .[server]
+pip install .[gui]
 ```
 
 To enable debug mode, if required, enter:

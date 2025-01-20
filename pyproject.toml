@@ -32,7 +32,7 @@ dynamic = ["version"]
 
 [project.optional-dependencies]
 test = ["pytest"]
-server = ["Flask", "requests"]
+gui = ["Flask", "requests"]
 
 [project.scripts]
 psdi-data-convert = "psdi_data_conversion.main:main"
