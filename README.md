@@ -93,7 +93,7 @@ fi
 
 PACKAGE_PATH=`python -c "import psdi_data_conversion; print(psdi_data_conversion.__path__[0])"`
 cd $PACKAGE_PATH/..
-python -m flask --app psdi_data_conversion/app.py run
+MAX_FILESIZE=$MAX_FILESIZE python -m flask --app psdi_data_conversion/app.py run
 ```
 
 If desired, you can modify the environmental variables set in this script to modify the operation - see the comments on each for details. Running this script will start the server. You can then access the website by going to <http://127.0.0.1:5000> in a browser (this will also be printed in the terminal, and you can CTRL+click it there to open it in your default browser).
