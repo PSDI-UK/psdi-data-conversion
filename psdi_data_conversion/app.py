@@ -15,8 +15,6 @@ from psdi_data_conversion import log_utility
 from psdi_data_conversion.converter import (DEFAULT_DOWNLOAD_DIR, FILE_KEY, FILE_TO_UPLOAD_KEY,
                                             run_converter_with_envvars)
 
-MAX_FILESIZE_ENVVAR = "MAX_FILESIZE"
-
 # Create a token by hashing the current date and time.
 dt = str(datetime.now())
 token = hashlib.md5(dt.encode('utf8')).hexdigest()

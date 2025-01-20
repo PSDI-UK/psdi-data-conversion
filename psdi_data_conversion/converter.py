@@ -9,18 +9,18 @@ import json
 import logging
 import os
 import traceback
-from typing import Callable
+from collections.abc import Callable
 import py.io
 import subprocess
 from openbabel import openbabel
 from werkzeug.exceptions import HTTPException
 
 from psdi_data_conversion import log_utility
-from psdi_data_conversion.app import MAX_FILESIZE_ENVVAR
 
 # Maximum output file size in bytes
 MEGABYTE = 1024*1024
 DEFAULT_MAX_FILE_SIZE = 1*MEGABYTE
+MAX_FILESIZE_ENVVAR = "MAX_FILESIZE"
 
 # Create directory 'uploads' if not extant.
 DEFAULT_UPLOAD_DIR = './psdi_data_conversion/static/uploads'
