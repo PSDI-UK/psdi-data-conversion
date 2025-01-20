@@ -440,7 +440,7 @@ class FileConverter:
         out_size = os.path.getsize(os.path.realpath(self.out_filename))
 
         # Check that the output file doesn't exceed the maximum allowed size
-        if out_size > self.max_file_size:
+        if self.max_file_size > 0 and out_size > self.max_file_size:
 
             self._abort(STATUS_CODE_SIZE,
                         f"ERROR converting {os.path.basename(self.in_filename)} to " +
