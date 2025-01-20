@@ -7,15 +7,16 @@ Unit tests of the converter class
 
 from copy import deepcopy
 import logging
+import math
 import os
 import re
 import pytest
 
 from psdi_data_conversion.log_utility import DATETIME_RE_RAW, GLOBAL_LOG_FILENAME
-from psdi_data_conversion.converter import (CONVERTER_ATO, CONVERTER_OB, get_file_storage, LOCAL_LOG_EXT,
-                                            OUTPUT_LOG_EXT, FILE_TO_UPLOAD_KEY, STATUS_CODE_BAD_METHOD,
-                                            STATUS_CODE_GENERAL, STATUS_CODE_SIZE, FileConverter,
-                                            FileConverterAbortException)
+from psdi_data_conversion.converter import (CONVERTER_ATO, CONVERTER_OB, MAX_FILESIZE_ENVVAR, MEGABYTE,
+                                            get_file_storage, LOCAL_LOG_EXT, OUTPUT_LOG_EXT, FILE_TO_UPLOAD_KEY,
+                                            STATUS_CODE_BAD_METHOD, STATUS_CODE_GENERAL, STATUS_CODE_SIZE,
+                                            FileConverter, FileConverterAbortException, run_converter)
 
 
 @pytest.fixture()
@@ -107,27 +108,29 @@ class TestConverter:
         self.filename_base = os.path.splitext(filename)[0]
         self.to_format = self.mock_form["to"]
 
+    def get_converter_kwargs(self, **kwargs):
+        """Get the keyword arguments to be passed to a FileConverter for testing
+        """
+        kwargs.update({"files": self.files,
+                       "form": self.mock_form,
+                       "file_to_convert": FILE_TO_UPLOAD_KEY,
+                       "upload_dir": self.tmp_upload_path,
+                       "download_dir": self.tmp_download_path})
+        return kwargs
+
     def run_converter(self, expect_code=None, **kwargs):
-        """_summary_
+        """Runs a test on a file converter and checks that it returns successfully or else fails with an expected error
+        code.
         """
 
-        self.test_converter = FileConverter(files=self.files,
-                                            form=self.mock_form,
-                                            file_to_convert=FILE_TO_UPLOAD_KEY,
-                                            upload_dir=self.tmp_upload_path,
-                                            download_dir=self.tmp_download_path,
-                                            **kwargs)
-
-        # Check that the input file now exists where we expect it to
-        ex_input_filename = os.path.join(self.tmp_upload_path, self.filename)
-        assert os.path.exists(ex_input_filename)
+        converter_kwargs = self.get_converter_kwargs(**kwargs)
 
         if expect_code is None:
             # If we don't expect an error, just try running the converter
-            self.test_converter.run()
+            run_converter(**converter_kwargs)
         else:
             with pytest.raises(FileConverterAbortException) as esc_info:
-                self.test_converter.run()
+                run_converter(**converter_kwargs)
             assert esc_info.value.status_code == expect_code
 
     def check_file_status(self, input_exist=None, output_exist=None):
@@ -212,7 +215,7 @@ class TestConverter:
         self.get_input_info(filename="1NE6.mmcif")
 
         self.run_converter(expect_code=STATUS_CODE_SIZE,
-                           max_file_size=0)
+                           max_file_size=0.0001)
 
         # Check that the input and output files have properly been deleted
         self.check_file_status(input_exist=False, output_exist=False)
@@ -226,6 +229,11 @@ class TestConverter:
             assert "Output file exceeds maximum size" in log_text, ("Did not find expected error message in "
                                                                     f"{log_type} log at " +
                                                                     getattr(self, f"{log_type}_log_filename"))
+
+        # Now check that 0 properly works to indicate unlimited size
+        self.get_input_info(filename="1NE6.mmcif")
+        self.run_converter(max_file_size=0)
+        self.check_file_status(input_exist=False, output_exist=True)
 
     def test_invalid_converter(self):
         """Run a test of the converter to ensure it reports an error properly if an invalid converter is requested
@@ -294,3 +302,20 @@ class TestConverter:
 
         # Check that the input and output files have properly been deleted
         self.check_file_status(input_exist=False, output_exist=False)
+
+    def test_envvars(self):
+        """Test that setting appropriate envvars will set them for a file converter
+        """
+
+        test_file_size = 1234
+        os.environ[MAX_FILESIZE_ENVVAR] = str(test_file_size)
+
+        self.get_input_info(filename="1NE6.mmcif")
+        converter = FileConverter(use_envvars=True,
+                                  **self.get_converter_kwargs())
+        assert math.isclose(converter.max_file_size, test_file_size*MEGABYTE)
+
+        # And also check it isn't applied if we don't ask it to use envvars
+        converter_no_ev = FileConverter(use_envvars=False,
+                                        **self.get_converter_kwargs())
+        assert not math.isclose(converter_no_ev.max_file_size, test_file_size*MEGABYTE)

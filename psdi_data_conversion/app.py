@@ -12,7 +12,8 @@ from datetime import datetime
 from flask import Flask, request, render_template, abort, Response
 
 from psdi_data_conversion import log_utility
-from psdi_data_conversion.converter import DEFAULT_DOWNLOAD_DIR, FILE_KEY, FILE_TO_UPLOAD_KEY, FileConverter
+from psdi_data_conversion.converter import (DEFAULT_DOWNLOAD_DIR, DEFAULT_MAX_FILE_SIZE, FILE_KEY, FILE_TO_UPLOAD_KEY,
+                                            MAX_FILESIZE_ENVVAR, MEGABYTE, run_converter)
 
 # Create a token by hashing the current date and time.
 dt = str(datetime.now())
@@ -25,7 +26,15 @@ app = Flask(__name__)
 def website():
     """Return the web page along with the token
     """
-    data = [{'token': token}]
+    # Get the maximum allowed size from the envvar for it
+    ev_max_file_size = os.environ.get(MAX_FILESIZE_ENVVAR)
+    if ev_max_file_size is not None:
+        max_file_size = float(ev_max_file_size)*MEGABYTE
+    else:
+        max_file_size = DEFAULT_MAX_FILE_SIZE
+
+    data = [{'token': token,
+             'max_file_size': max_file_size}]
     return render_template("index.htm", data=data)
 
 
@@ -35,10 +44,10 @@ def convert():
     achieved in format.js
     """
     if request.form['token'] == token and token != '':
-        return FileConverter(files=request.files,
+        return run_converter(files=request.files,
                              form=request.form,
                              file_to_convert=FILE_TO_UPLOAD_KEY,
-                             abort_callback=abort).run()
+                             abort_callback=abort)
     else:
         # return http status code 405
         abort(405)
@@ -48,10 +57,10 @@ def convert():
 def conv():
     """Convert file (cURL)
     """
-    return FileConverter(files=request.files,
+    return run_converter(files=request.files,
                          form=request.form,
                          file_to_convert=FILE_KEY,
-                         abort_callback=abort).run()
+                         abort_callback=abort)
 
 
 @app.route('/feedback/', methods=['POST'])

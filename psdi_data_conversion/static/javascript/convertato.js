@@ -8,13 +8,14 @@
 import { commonConvertReady, convertFile } from "./convert_common.js"
 
 var token = "",
+    max_file_size = 0,
     in_ext = "",
     out_ext = "",
     in_str = "",
     out_str = "";
 
 $(document).ready(function () {
-    [token, in_str, in_ext, out_str, out_ext] = commonConvertReady("Atomsk");
+    [token, max_file_size, in_str, in_ext, out_str, out_ext] = commonConvertReady("Atomsk");
     $("#uploadButton").click(submitFile);
 });
 
