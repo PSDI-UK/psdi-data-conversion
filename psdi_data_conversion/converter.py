@@ -9,7 +9,7 @@ import json
 import logging
 import os
 import traceback
-from typing import Callable
+from collections.abc import Callable
 import py.io
 import subprocess
 from openbabel import openbabel
@@ -20,6 +20,7 @@ from psdi_data_conversion import log_utility
 # Maximum output file size in bytes
 MEGABYTE = 1024*1024
 DEFAULT_MAX_FILE_SIZE = 1*MEGABYTE
+MAX_FILESIZE_ENVVAR = "MAX_FILESIZE"
 
 # Create directory 'uploads' if not extant.
 DEFAULT_UPLOAD_DIR = './psdi_data_conversion/static/uploads'
@@ -105,17 +106,15 @@ class FileConverter:
     """Class to handle conversion of files from one type to another
     """
 
-    # Class variables - these are normally set to defaults and not modified in operation. They're intended to be
-    # modified after creation of an object in unit testing
-    max_file_size = DEFAULT_MAX_FILE_SIZE
-    upload_dir = DEFAULT_UPLOAD_DIR
-    download_dir = DEFAULT_DOWNLOAD_DIR
-
     def __init__(self,
                  files: dict[str, FileStorage],
                  form: dict[str, str],
                  file_to_convert: str,
                  abort_callback: Callable[[int], None] = abort_raise,
+                 use_envvars=False,
+                 upload_dir=DEFAULT_UPLOAD_DIR,
+                 download_dir=DEFAULT_DOWNLOAD_DIR,
+                 max_file_size=DEFAULT_MAX_FILE_SIZE,
                  log_file: str | None = None,
                  quiet=False,
                  delete_input=True,
@@ -133,6 +132,15 @@ class FileConverter:
         abort_callback : Callable[[int], None]
             Function to be called if the conversion hits an error and must be aborted, default `abort_raise`, which
             raises an appropriate exception
+        use_envvars : bool
+            If set to True, environment variables will be checked for any that set options for this class and used,
+            default False
+        upload_dir : str
+            The location of input files relative to the current directory
+        download_dir : str
+            The location of output files relative to the current directory
+        max_file_size : float
+            The maximum allowed file size for input/output files, in MB, default 1 MB. If 0, will be unlimited
         log_file : str | None
             If provided, all logging will go to a single file or stream. Otherwise, logs will be split up among multiple
             files for server-style logging.
@@ -152,6 +160,9 @@ class FileConverter:
         self.form = form
         self.file_to_convert = file_to_convert
         self.abort_callback = abort_callback
+        self.upload_dir = upload_dir
+        self.download_dir = download_dir
+        self.max_file_size = max_file_size*MEGABYTE
         self.log_file = log_file
         self.quiet = quiet
         self.delete_input = delete_input
@@ -182,6 +193,13 @@ class FileConverter:
                 setattr(self, key, value)
             else:
                 raise ValueError(f"Unrecognized class/instance variable name: {key}")
+
+        # Set values from envvars if desired
+        if use_envvars:
+            # Get the maximum allowed size from the envvar for it
+            ev_max_file_size = os.environ.get(MAX_FILESIZE_ENVVAR)
+            if ev_max_file_size is not None:
+                self.max_file_size = float(ev_max_file_size)*MEGABYTE
 
         self.f = self.files[self.file_to_convert]
         self.filename_base = self.f.filename.split(".")[0]  # E.g. ethane.mol --> ethane
@@ -434,7 +452,7 @@ class FileConverter:
         out_size = os.path.getsize(os.path.realpath(self.out_filename))
 
         # Check that the output file doesn't exceed the maximum allowed size
-        if out_size > self.max_file_size:
+        if self.max_file_size > 0 and out_size > self.max_file_size:
 
             self._abort(STATUS_CODE_SIZE,
                         f"ERROR converting {os.path.basename(self.in_filename)} to " +
@@ -595,3 +613,10 @@ class FileConverter:
             self.quality = self.get_quality(self.from_format, self.to_format)
 
         self._log_success()
+
+
+def run_converter(**converter_kwargs):
+    """Shortcut to create and run a FileConverter in one step
+    """
+
+    return FileConverter(**converter_kwargs).run()

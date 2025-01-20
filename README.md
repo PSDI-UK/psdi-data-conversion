@@ -2,7 +2,6 @@
 
 This is the repository for the Pathfinder 2 Chemistry File Format Conversion source code.
 
-
 ## Directory structure of the Python Flask app website:
 
 ```
@@ -49,8 +48,7 @@ tests
 
 ## Running the Python Flask app hosted on the Microsoft Azure site
 
-Enter    https://psdidev2.azurewebsites.net    in a browser.
-
+Enter https://psdidev2.azurewebsites.net in a browser.
 
 ## Testing
 
@@ -61,7 +59,6 @@ source .venv/bin/activate # Create a venv first if necessary with `python -m ven
 pip install .[test]
 pytest
 ```
-
 
 ## Running the Python/Flask app locally
 
@@ -79,10 +76,15 @@ To enable debug mode, if required, enter:
 export FLASK_ENV=development
 ```
 
-If you've cloned this repository, you can then execute the `run_local.sh` bash script to run the application. Otherwise (e.g. if you've installed from a wheel or PyPI), copy and paste the following into a script and then execute it at the command-line:
+If you've cloned this repository, you can use the `run_local.sh` bash script to run the application. Otherwise (e.g. if you've installed from a wheel or PyPI), copy and paste the following into a script:
 
 ```bash
 #!/bin/bash
+
+# Set the maximum allowed filesize in MB - 0 indicates no maximum
+if [ -z $MAX_FILESIZE ]; then
+  MAX_FILESIZE=0
+fi
 
 # Uncomment the following line to enable debug mode
 # export FLASK_ENV=development
@@ -91,21 +93,19 @@ If you've cloned this repository, you can then execute the `run_local.sh` bash s
 
 PACKAGE_PATH=`python -c "import psdi_data_conversion; print(psdi_data_conversion.__path__[0])"`
 cd $PACKAGE_PATH/..
-python -m flask --app psdi_data_conversion/app.py run
+MAX_FILESIZE=$MAX_FILESIZE python -m flask --app psdi_data_conversion/app.py run
 ```
 
-This will start the server. You can then access the website by going to <http://127.0.0.1:5000> in a browser (this will also be printed in the terminal, and you can CTRL+click it there to open it in your default browser).
+If desired, you can modify the environmental variables set in this script to modify the operation - see the comments on each for details. Running this script will start the server. You can then access the website by going to <http://127.0.0.1:5000> in a browser (this will also be printed in the terminal, and you can CTRL+click it there to open it in your default browser).
 
 The database can only be accessed from the University of Southampton or when using Global Connect. The current IP address must be added to the database's firewall rules on the Azure site.
 
 In case of problems when using Chrome, try opening Chrome from the command line:
 open -a "Google Chrome.app" --args --allow-file-access-from-files
 
-
 ## Using the website
 
 Guidance on usage is given on each page of the website.
-
 
 ## Dependencies
 

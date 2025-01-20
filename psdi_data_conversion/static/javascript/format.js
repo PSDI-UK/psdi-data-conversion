@@ -26,6 +26,7 @@ $(document).ready(function() {
     });
 
     sessionStorage.setItem("token", token);
+    sessionStorage.setItem("max_file_size", max_file_size);
     sessionStorage.setItem("in_str", "");
     sessionStorage.setItem("out_str", "");
     sessionStorage.setItem("success", "");

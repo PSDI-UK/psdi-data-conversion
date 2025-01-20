@@ -335,11 +335,13 @@ def run_from_args(args: ConvertArgs):
         converter = FileConverter(files=file_storage,
                                   form=form,
                                   file_to_convert=FILE_TO_UPLOAD_KEY,
+                                  use_envvars=False,
                                   upload_dir=args.input_dir,
                                   download_dir=args.output_dir,
                                   log_file=args.log_file,
                                   quiet=args.quiet,
-                                  delete_input=args.delete_input)
+                                  delete_input=args.delete_input,
+                                  max_file_size=0)
         try:
             converter.run()
         except FileConverterAbortException as e:

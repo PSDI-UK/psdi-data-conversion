@@ -3,10 +3,8 @@
   Version 1.0, 17th December 2024
 */
 
-const MEGABYTE = 1024 * 1024;
-const MAX_FILESIZE = 1 * MEGABYTE;
-
 var token = "",
+    max_file_size = 0,
     in_ext = "",
     out_ext = "",
     in_str = "",
@@ -14,6 +12,7 @@ var token = "",
 
 export function commonConvertReady(converter) {
     token = sessionStorage.getItem("token");
+    max_file_size = sessionStorage.getItem("max_file_size");
 
     in_str = sessionStorage.getItem("in_str");
     out_str = sessionStorage.getItem("out_str");
@@ -32,7 +31,7 @@ export function commonConvertReady(converter) {
 
     $("#fileToUpload").change(checkFile);
 
-    return [token, in_str, in_ext, out_str, out_ext];
+    return [token, max_file_size, in_str, in_ext, out_str, out_ext];
 }
 
 // Converts user-supplied file to another format and downloads the resulting file
@@ -120,10 +119,10 @@ function checkFile(event) {
     }
 
     // Check file does not exceed maximum size
-    if (file.size > MAX_FILESIZE) {
+    if (max_file_size > 0 && file.size > max_file_size) {
         if (message !== "")
             message += "\n\n";
-        message += "The file exceeds the maximum size limit of " + (MAX_FILESIZE / MEGABYTE).toFixed(2) +
+        message += "The file exceeds the maximum size limit of " + (max_file_size / MEGABYTE).toFixed(2) +
             " MB; its size is " + (file.size / MEGABYTE).toFixed(2) + " MB.";
         allGood = false;
     }
