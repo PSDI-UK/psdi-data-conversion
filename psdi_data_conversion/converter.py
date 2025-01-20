@@ -8,6 +8,7 @@ Class and functions to perform file conversion
 import json
 import logging
 import os
+import sys
 import traceback
 from collections.abc import Callable
 import py.io
@@ -142,6 +143,7 @@ class FileConverter:
                  max_file_size=DEFAULT_MAX_FILE_SIZE,
                  log_file: str | None = None,
                  quiet=False,
+                 logging_mode=LOGGING_FULL,
                  delete_input=True,
                  **kwargs):
         """Initialize the object, storing needed data and setting up loggers.
@@ -170,8 +172,12 @@ class FileConverter:
             If provided, all logging will go to a single file or stream. Otherwise, logs will be split up among multiple
             files for server-style logging.
         quiet : bool
-            If set to True, will suppress any output from normal execution (any errors will still be output and logged),
-            default `False`.
+            If set to True, only error messages will be output to stdout, default False
+        logging_mode : str
+            How logs should be stores. Allowed values are:
+            - 'full' - multi-file logging, only recommended when running as a public web app
+            - 'simple' - logs saved to one file
+            - 'none' - output only to stdout/stderr
         delete_input : bool
             Whether or not to delete input files after conversion, default True
         **kwargs
@@ -190,6 +196,7 @@ class FileConverter:
         self.max_file_size = max_file_size*MEGABYTE
         self.log_file = log_file
         self.quiet = quiet
+        self.logging_mode = logging_mode
         self.delete_input = delete_input
 
         # Set member variables from dict values in input
@@ -243,20 +250,21 @@ class FileConverter:
         """
 
         # Determine level to log at based on quiet status
-        if self.quiet:
-            self._local_logger_level = logging.ERROR
-        else:
+        if self.logging_mode == LOGGING_NONE:
+            self._local_logger_level = None
+            if self.quiet:
+                self._stdout_output_level = logging.ERROR
+            else:
+                self._stdout_output_level = logging.INFO
+        elif self.logging_mode == LOGGING_SIMPLE:
             self._local_logger_level = log_utility.DEFAULT_LOCAL_LOGGER_LEVEL
-
-        # If a log file is provided, only log errors or higher to stdout
-        if self.log_file:
             self._stdout_output_level = logging.ERROR
-        else:
-            self._stdout_output_level = logging.INFO
-
-        # If no log file was specified, set up server-style logging
-        if self.log_file is None:
+        elif self.logging_mode == LOGGING_FULL:
             return self._setup_server_loggers()
+        else:
+            raise FileConverterException(f"ERROR: Unrecognised logging option: {self.logging_mode}. Allowed options "
+                                         f"are: {L_ALLOWED_LOGGING_TYPES}", file=sys.stderr)
+
         self.output_log = self.log_file
 
         self.logger = log_utility.set_up_data_conversion_logger(local_log_file=self.log_file,

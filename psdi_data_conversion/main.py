@@ -12,7 +12,7 @@ from argparse import ArgumentParser
 import os
 import sys
 
-from psdi_data_conversion.converter import (FILE_TO_UPLOAD_KEY, L_ALLOWED_CONVERTERS,
+from psdi_data_conversion.converter import (FILE_TO_UPLOAD_KEY, L_ALLOWED_CONVERTERS, LOGGING_NONE, LOGGING_SIMPLE,
                                             FileConverter, FileConverterAbortException, FileConverterException,
                                             get_file_storage)
 
@@ -77,6 +77,10 @@ class ConvertArgs:
         self.quiet: bool = args.quiet
         self._log_file: str | None = args.log_file
         self.log_level: str = args.log_level
+        if self.quiet:
+            self.logging_mode = LOGGING_NONE
+        else:
+            self.logging_mode = LOGGING_SIMPLE
 
         # Check validity of input
 
@@ -338,6 +342,7 @@ def run_from_args(args: ConvertArgs):
                                   download_dir=args.output_dir,
                                   log_file=args.log_file,
                                   quiet=args.quiet,
+                                  logging_mode=args.logging_mode,
                                   delete_input=args.delete_input,
                                   max_file_size=0)
         try:
