@@ -424,8 +424,7 @@ class FileConverter:
         str
             The beginning of a message for log files, containing generic information about what was trying to be done
         """
-        return ('Date:              ' + log_utility.get_date() + '\n'
-                'Time:              ' + log_utility.get_time() + '\n'
+        return ('\n'
                 'File name:         ' + self.filename_base + '\n'
                 'From:              ' + self.from_format + '\n'
                 'To:                ' + self.to_format + '\n'
@@ -439,7 +438,7 @@ class FileConverter:
                    'Quality:           ' + self.quality + '\n'
                    'Success:           Assuming that the data provided was of the correct format, the conversion\n'
                    '                   was successful (to the best of our knowledge) subject to any warnings below.\n' +
-                   self.out + '\n' + self.err)
+                   self.out + '\n' + self.err).strip() + '\n'
 
         self.output_logger.info(message)
 
