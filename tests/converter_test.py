@@ -227,6 +227,11 @@ class TestConverter:
                                                                     f"{log_type} log at " +
                                                                     getattr(self, f"{log_type}_log_filename"))
 
+        # Now check that 0 properly works to indicate unlimited size
+        self.get_input_info(filename="1NE6.mmcif")
+        self.run_converter(max_file_size=0)
+        self.check_file_status(input_exist=False, output_exist=True)
+
     def test_invalid_converter(self):
         """Run a test of the converter to ensure it reports an error properly if an invalid converter is requested
         """
