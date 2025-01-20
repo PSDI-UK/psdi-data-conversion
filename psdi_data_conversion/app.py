@@ -12,7 +12,8 @@ from datetime import datetime
 from flask import Flask, request, render_template, abort, Response
 
 from psdi_data_conversion import log_utility
-from psdi_data_conversion.converter import DEFAULT_DOWNLOAD_DIR, FILE_KEY, FILE_TO_UPLOAD_KEY, FileConverter
+from psdi_data_conversion.converter import (DEFAULT_DOWNLOAD_DIR, FILE_KEY, FILE_TO_UPLOAD_KEY,
+                                            run_converter_with_envvars)
 
 MAX_FILESIZE_ENVVAR = "MAX_FILESIZE"
 
@@ -31,32 +32,16 @@ def website():
     return render_template("index.htm", data=data)
 
 
-def run_file_converter(file_key):
-    """Common method to gather information from environmental variables and call the file converter
-    """
-
-    # Dict of optional keyword arguments we'll pass to the file converter
-    converter_kwargs = {}
-
-    # Get the maximum allowed size from the envvar for it
-    max_file_size = os.environ.get(MAX_FILESIZE_ENVVAR)
-    if max_file_size is not None:
-        converter_kwargs["max_file_size"] = max_file_size
-
-    return FileConverter(files=request.files,
-                         form=request.form,
-                         file_to_convert=file_key,
-                         abort_callback=abort,
-                         **converter_kwargs).run()
-
-
 @app.route('/convert/', methods=['POST'])
 def convert():
     """Convert file to a different format and save to folder 'downloads'. Delete original file. Note that downloading is
     achieved in format.js
     """
     if request.form['token'] == token and token != '':
-        return run_file_converter(FILE_TO_UPLOAD_KEY)
+        return run_converter_with_envvars(files=request.files,
+                                          form=request.form,
+                                          file_to_convert=FILE_TO_UPLOAD_KEY,
+                                          abort_callback=abort)
     else:
         # return http status code 405
         abort(405)
@@ -66,7 +51,10 @@ def convert():
 def conv():
     """Convert file (cURL)
     """
-    return run_file_converter(FILE_KEY)
+    return run_converter_with_envvars(files=request.files,
+                                      form=request.form,
+                                      file_to_convert=FILE_KEY,
+                                      abort_callback=abort)
 
 
 @app.route('/feedback/', methods=['POST'])

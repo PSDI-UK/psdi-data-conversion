@@ -16,6 +16,7 @@ from openbabel import openbabel
 from werkzeug.exceptions import HTTPException
 
 from psdi_data_conversion import log_utility
+from psdi_data_conversion.app import MAX_FILESIZE_ENVVAR
 
 # Maximum output file size in bytes
 MEGABYTE = 1024*1024
@@ -601,3 +602,15 @@ class FileConverter:
             self.quality = self.get_quality(self.from_format, self.to_format)
 
         self._log_success()
+
+
+def run_converter_with_envvars(**converter_kwargs):
+    """Run the file converter, adding values to the keyword arguments based on environmental variables
+    """
+
+    # Get the maximum allowed size from the envvar for it
+    max_file_size = os.environ.get(MAX_FILESIZE_ENVVAR)
+    if max_file_size is not None:
+        converter_kwargs["max_file_size"] = max_file_size
+
+    return FileConverter(**converter_kwargs).run()
