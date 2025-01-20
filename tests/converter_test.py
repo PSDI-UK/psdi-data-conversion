@@ -212,7 +212,7 @@ class TestConverter:
         self.get_input_info(filename="1NE6.mmcif")
 
         self.run_converter(expect_code=STATUS_CODE_SIZE,
-                           max_file_size=0)
+                           max_file_size=0.0001)
 
         # Check that the input and output files have properly been deleted
         self.check_file_status(input_exist=False, output_exist=False)
