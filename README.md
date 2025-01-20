@@ -81,9 +81,17 @@ If you've cloned this repository, you can use the `run_local.sh` bash script to 
 ```bash
 #!/bin/bash
 
-# Set the maximum allowed filesize in MB - 0 indicates no maximum
+# The envvar MAX_FILESIZE can be used to set the maximum allowed filesize in MB - 0 indicates no maximum
 if [ -z $MAX_FILESIZE ]; then
-  MAX_FILESIZE=0
+  export MAX_FILESIZE=0
+fi
+
+# The envvar LOGGING can be used to set how logs are stored. Allowed values are:
+# Full - multi-file logging, only recommended when running as a public web app
+# Simple - logs saved to one file
+# None - output only to stdout/stderr
+if [ -z $LOGGING ]; then
+  export LOGGING=Simple
 fi
 
 # Uncomment the following line to enable debug mode
@@ -93,7 +101,7 @@ fi
 
 PACKAGE_PATH=`python -c "import psdi_data_conversion; print(psdi_data_conversion.__path__[0])"`
 cd $PACKAGE_PATH/..
-MAX_FILESIZE=$MAX_FILESIZE python -m flask --app psdi_data_conversion/app.py run
+python -m flask --app psdi_data_conversion/app.py run
 ```
 
 If desired, you can modify the environmental variables set in this script to modify the operation - see the comments on each for details. Running this script will start the server. You can then access the website by going to <http://127.0.0.1:5000> in a browser (this will also be printed in the terminal, and you can CTRL+click it there to open it in your default browser).

@@ -75,7 +75,7 @@ def set_up_data_conversion_logger(name=NAME,
     for (filename, level, raw_output) in ((GLOBAL_LOG_FILENAME, GLOBAL_LOGGER_LEVEL, False),
                                           (local_log_file, local_logger_level, local_logger_raw_output),
                                           *extra_loggers):
-        if suppress_global_handler and filename == GLOBAL_LOG_FILENAME:
+        if level is None or (suppress_global_handler and filename == GLOBAL_LOG_FILENAME):
             continue
         _add_filehandler_to_logger(logger, filename, level, raw_output)
 

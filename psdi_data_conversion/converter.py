@@ -8,6 +8,7 @@ Class and functions to perform file conversion
 import json
 import logging
 import os
+import sys
 import traceback
 from collections.abc import Callable
 import py.io
@@ -39,10 +40,23 @@ DEFAULT_DOWNLOAD_DIR = './psdi_data_conversion/static/downloads'
 if not os.path.exists(DEFAULT_DOWNLOAD_DIR):
     os.makedirs(DEFAULT_DOWNLOAD_DIR, exist_ok=True)
 
+# Constant strings for how to log
+LOG_MODE_ENVVAR = "LOGGING"
+
+LOG_FULL = "full"
+LOG_SIMPLE = "simple"
+LOG_STDOUT = "stdout"
+LOG_NONE = "none"
+
+LOG_DEFAULT = LOG_SIMPLE
+L_ALLOWED_LOGGING_TYPES = (LOG_FULL, LOG_SIMPLE, LOG_STDOUT, LOG_NONE)
+
 # Constant strings for converter types
 CONVERTER_OB = 'Open Babel'
 CONVERTER_ATO = 'Atomsk'
 CONVERTER_C2X = 'c2x'
+
+L_ALLOWED_CONVERTERS = (CONVERTER_OB, CONVERTER_ATO, CONVERTER_C2X)
 
 # Extensions for logs
 LOCAL_LOG_EXT = "log"
@@ -129,7 +143,7 @@ class FileConverter:
                  download_dir=DEFAULT_DOWNLOAD_DIR,
                  max_file_size=DEFAULT_MAX_FILE_SIZE,
                  log_file: str | None = None,
-                 quiet=False,
+                 log_mode=LOG_FULL,
                  delete_input=True,
                  **kwargs):
         """Initialize the object, storing needed data and setting up loggers.
@@ -157,9 +171,12 @@ class FileConverter:
         log_file : str | None
             If provided, all logging will go to a single file or stream. Otherwise, logs will be split up among multiple
             files for server-style logging.
-        quiet : bool
-            If set to True, will suppress any output from normal execution (any errors will still be output and logged),
-            default `False`.
+        log_mode : str
+            How logs should be stores. Allowed values are:
+            - 'full' - Multi-file logging, only recommended when running as a public web app
+            - 'simple' - Logs saved to one file
+            - 'stdout' - Output logs and errors only to stdout
+            - 'none' - Output only errors to stdout
         delete_input : bool
             Whether or not to delete input files after conversion, default True
         **kwargs
@@ -177,7 +194,7 @@ class FileConverter:
         self.download_dir = download_dir
         self.max_file_size = max_file_size*MEGABYTE
         self.log_file = log_file
-        self.quiet = quiet
+        self.log_mode = log_mode
         self.delete_input = delete_input
 
         # Set member variables from dict values in input
@@ -231,20 +248,21 @@ class FileConverter:
         """
 
         # Determine level to log at based on quiet status
-        if self.quiet:
-            self._local_logger_level = logging.ERROR
-        else:
-            self._local_logger_level = log_utility.DEFAULT_LOCAL_LOGGER_LEVEL
-
-        # If a log file is provided, only log errors or higher to stdout
-        if self.log_file:
+        if self.log_mode == LOG_NONE:
+            self._local_logger_level = None
             self._stdout_output_level = logging.ERROR
-        else:
+        elif self.log_mode == LOG_STDOUT:
+            self._local_logger_level = None
             self._stdout_output_level = logging.INFO
+        elif self.log_mode == LOG_SIMPLE or self.log_mode == LOG_FULL:
+            self._local_logger_level = log_utility.DEFAULT_LOCAL_LOGGER_LEVEL
+            self._stdout_output_level = logging.ERROR
+            if self.log_mode == LOG_FULL:
+                return self._setup_server_loggers()
+        else:
+            raise FileConverterException(f"ERROR: Unrecognised logging option: {self.log_mode}. Allowed options "
+                                         f"are: {L_ALLOWED_LOGGING_TYPES}", file=sys.stderr)
 
-        # If no log file was specified, set up server-style logging
-        if self.log_file is None:
-            return self._setup_server_loggers()
         self.output_log = self.log_file
 
         self.logger = log_utility.set_up_data_conversion_logger(local_log_file=self.log_file,
@@ -406,8 +424,7 @@ class FileConverter:
         str
             The beginning of a message for log files, containing generic information about what was trying to be done
         """
-        return ('Date:              ' + log_utility.get_date() + '\n'
-                'Time:              ' + log_utility.get_time() + '\n'
+        return ('\n'
                 'File name:         ' + self.filename_base + '\n'
                 'From:              ' + self.from_format + '\n'
                 'To:                ' + self.to_format + '\n'
@@ -421,7 +438,7 @@ class FileConverter:
                    'Quality:           ' + self.quality + '\n'
                    'Success:           Assuming that the data provided was of the correct format, the conversion\n'
                    '                   was successful (to the best of our knowledge) subject to any warnings below.\n' +
-                   self.out + '\n' + self.err)
+                   self.out + '\n' + self.err).strip() + '\n'
 
         self.output_logger.info(message)
 
@@ -433,9 +450,6 @@ class FileConverter:
         log_name : _type_
             _description_
         """
-
-        if self.quiet:
-            return
 
         data = {
             "datetime": log_utility.get_date_time(),
