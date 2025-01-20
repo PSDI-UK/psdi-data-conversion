@@ -22,7 +22,7 @@ dt = str(datetime.now())
 token = hashlib.md5(dt.encode('utf8')).hexdigest()
 
 # Check the authorisation envvar to see if we're checking auth
-auth_ev = os.environ.get(MAX_FILESIZE_ENVVAR)
+auth_ev = os.environ.get(AUTH_ENVVAR)
 check_auth = (auth_ev is not None) and (auth_ev.lower() == "true")
 
 app = Flask(__name__)
