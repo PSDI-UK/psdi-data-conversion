@@ -107,18 +107,24 @@ class TestConverter:
         self.filename_base = os.path.splitext(filename)[0]
         self.to_format = self.mock_form["to"]
 
+    def get_converter_kwargs(self, **kwargs):
+        """Get the keyword arguments to be passed to a FileConverter for testing
+        """
+        kwargs.update({"files": self.files,
+                       "form": self.mock_form,
+                       "file_to_convert": FILE_TO_UPLOAD_KEY,
+                       "upload_dir": self.tmp_upload_path,
+                       "download_dir": self.tmp_download_path})
+        return kwargs
+
     def run_converter(self, expect_code=None, **kwargs):
-        """_summary_
+        """Runs a test on a file converter and checks that it returns successfully or else fails with an expected error
+        code.
         """
 
-        self.test_converter = FileConverter(files=self.files,
-                                            form=self.mock_form,
-                                            file_to_convert=FILE_TO_UPLOAD_KEY,
-                                            upload_dir=self.tmp_upload_path,
-                                            download_dir=self.tmp_download_path,
-                                            **kwargs)
+        self.test_converter = FileConverter(**self.get_converter_kwargs(**kwargs))
 
-        # Check that the input file now exists where we expect it to
+        # Check that the input file exists where we expect it to
         ex_input_filename = os.path.join(self.tmp_upload_path, self.filename)
         assert os.path.exists(ex_input_filename)
 
