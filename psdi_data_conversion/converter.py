@@ -256,11 +256,11 @@ class FileConverter:
                 self._stdout_output_level = logging.ERROR
             else:
                 self._stdout_output_level = logging.INFO
-        elif self.logging_mode == LOGGING_SIMPLE:
+        elif self.logging_mode == LOGGING_SIMPLE or self.logging_mode == LOGGING_FULL:
             self._local_logger_level = log_utility.DEFAULT_LOCAL_LOGGER_LEVEL
             self._stdout_output_level = logging.ERROR
-        elif self.logging_mode == LOGGING_FULL:
-            return self._setup_server_loggers()
+            if self.logging_mode == LOGGING_FULL:
+                return self._setup_server_loggers()
         else:
             raise FileConverterException(f"ERROR: Unrecognised logging option: {self.logging_mode}. Allowed options "
                                          f"are: {L_ALLOWED_LOGGING_TYPES}", file=sys.stderr)
