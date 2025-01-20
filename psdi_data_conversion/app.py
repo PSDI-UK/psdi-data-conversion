@@ -14,7 +14,7 @@ from flask import Flask, request, render_template, abort, Response
 
 from psdi_data_conversion import log_utility
 from psdi_data_conversion.converter import (DEFAULT_DOWNLOAD_DIR, DEFAULT_MAX_FILE_SIZE, FILE_KEY, FILE_TO_UPLOAD_KEY,
-                                            L_ALLOWED_LOGGING_TYPES, LOGGING_DEFAULT, LOGGING_ENVVAR,
+                                            L_ALLOWED_LOGGING_TYPES, LOG_DEFAULT, LOG_MODE_ENVVAR,
                                             MAX_FILESIZE_ENVVAR, MEGABYTE, run_converter)
 
 AUTH_ENVVAR = "AUTH"
@@ -28,16 +28,16 @@ auth_ev = os.environ.get(AUTH_ENVVAR)
 check_auth = (auth_ev is not None) and (auth_ev.lower() == "true")
 
 # Get the logging style from the envvar for it
-ev_logging = os.environ.get(LOGGING_ENVVAR)
+ev_logging = os.environ.get(LOG_MODE_ENVVAR)
 if ev_logging is not None:
-    logging_mode = LOGGING_DEFAULT
+    log_mode = LOG_DEFAULT
 else:
     ev_logging = ev_logging.lower()
     if ev_logging not in L_ALLOWED_LOGGING_TYPES:
         print(f"ERROR: Unrecognised logging option: {ev_logging}. Allowed options are: {L_ALLOWED_LOGGING_TYPES}",
               file=sys.stderr)
         exit(1)
-    logging_mode = ev_logging
+    log_mode = ev_logging
 
 app = Flask(__name__)
 
@@ -67,7 +67,7 @@ def convert():
         return run_converter(files=request.files,
                              form=request.form,
                              file_to_convert=FILE_TO_UPLOAD_KEY,
-                             logging_mode=logging_mode,
+                             log_mode=log_mode,
                              abort_callback=abort)
     else:
         # return http status code 405
@@ -81,7 +81,7 @@ def conv():
     return run_converter(files=request.files,
                          form=request.form,
                          file_to_convert=FILE_KEY,
-                         logging_mode=logging_mode,
+                         log_mode=log_mode,
                          abort_callback=abort)
 
 

@@ -41,15 +41,15 @@ if not os.path.exists(DEFAULT_DOWNLOAD_DIR):
     os.makedirs(DEFAULT_DOWNLOAD_DIR, exist_ok=True)
 
 # Constant strings for how to log
-LOGGING_ENVVAR = "LOGGING"
+LOG_MODE_ENVVAR = "LOGGING"
 
-LOGGING_FULL = "full"
-LOGGING_SIMPLE = "simple"
-LOGGING_STDOUT = "stdout"
-LOGGING_NONE = "none"
+LOG_FULL = "full"
+LOG_SIMPLE = "simple"
+LOG_STDOUT = "stdout"
+LOG_NONE = "none"
 
-LOGGING_DEFAULT = LOGGING_SIMPLE
-L_ALLOWED_LOGGING_TYPES = (LOGGING_FULL, LOGGING_SIMPLE, LOGGING_STDOUT, LOGGING_NONE)
+LOG_DEFAULT = LOG_SIMPLE
+L_ALLOWED_LOGGING_TYPES = (LOG_FULL, LOG_SIMPLE, LOG_STDOUT, LOG_NONE)
 
 # Constant strings for converter types
 CONVERTER_OB = 'Open Babel'
@@ -144,7 +144,7 @@ class FileConverter:
                  max_file_size=DEFAULT_MAX_FILE_SIZE,
                  log_file: str | None = None,
                  quiet=False,
-                 logging_mode=LOGGING_FULL,
+                 log_mode=LOG_FULL,
                  delete_input=True,
                  **kwargs):
         """Initialize the object, storing needed data and setting up loggers.
@@ -172,7 +172,7 @@ class FileConverter:
         log_file : str | None
             If provided, all logging will go to a single file or stream. Otherwise, logs will be split up among multiple
             files for server-style logging.
-        logging_mode : str
+        log_mode : str
             How logs should be stores. Allowed values are:
             - 'full' - Multi-file logging, only recommended when running as a public web app
             - 'simple' - Logs saved to one file
@@ -195,7 +195,7 @@ class FileConverter:
         self.download_dir = download_dir
         self.max_file_size = max_file_size*MEGABYTE
         self.log_file = log_file
-        self.logging_mode = logging_mode
+        self.log_mode = log_mode
         self.delete_input = delete_input
 
         # Set member variables from dict values in input
@@ -249,19 +249,19 @@ class FileConverter:
         """
 
         # Determine level to log at based on quiet status
-        if self.logging_mode == LOGGING_NONE:
+        if self.log_mode == LOG_NONE:
             self._local_logger_level = None
             self._stdout_output_level = logging.ERROR
-        elif self.logging_mode == LOGGING_STDOUT:
+        elif self.log_mode == LOG_STDOUT:
             self._local_logger_level = None
             self._stdout_output_level = logging.INFO
-        elif self.logging_mode == LOGGING_SIMPLE or self.logging_mode == LOGGING_FULL:
+        elif self.log_mode == LOG_SIMPLE or self.log_mode == LOG_FULL:
             self._local_logger_level = log_utility.DEFAULT_LOCAL_LOGGER_LEVEL
             self._stdout_output_level = logging.ERROR
-            if self.logging_mode == LOGGING_FULL:
+            if self.log_mode == LOG_FULL:
                 return self._setup_server_loggers()
         else:
-            raise FileConverterException(f"ERROR: Unrecognised logging option: {self.logging_mode}. Allowed options "
+            raise FileConverterException(f"ERROR: Unrecognised logging option: {self.log_mode}. Allowed options "
                                          f"are: {L_ALLOWED_LOGGING_TYPES}", file=sys.stderr)
 
         self.output_log = self.log_file

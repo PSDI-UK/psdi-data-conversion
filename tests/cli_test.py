@@ -11,7 +11,7 @@ import shlex
 import sys
 from unittest.mock import patch
 
-from psdi_data_conversion.converter import L_ALLOWED_CONVERTERS, LOGGING_NONE
+from psdi_data_conversion.converter import L_ALLOWED_CONVERTERS, LOG_NONE
 from psdi_data_conversion.main import (DEFAULT_COORD_GEN, DEFAULT_COORD_GEN_QUAL, DEFAULT_LISTING_LOG_FILE,
                                        FileConverterInputException, main, LOG_EXT, parse_args)
 
@@ -54,7 +54,7 @@ def test_input_validity():
     assert args.coord_gen_qual == "best"
     assert args.quiet is True
     assert args.log_file == "text.log"
-    assert args.logging_mode == LOGGING_NONE
+    assert args.log_mode == LOG_NONE
 
     # It should fail with no arguments
     with pytest.raises(FileConverterInputException):
@@ -82,7 +82,7 @@ def test_input_validity():
 
     # It should fail if it doesn't recognise the logging mode
     with pytest.raises(FileConverterInputException):
-        get_parsed_args("file1.mmcif -t pdb --logging-mode max")
+        get_parsed_args("file1.mmcif -t pdb --log-mode max")
 
     # It should work if we just ask for a list
     args = get_parsed_args("--list")

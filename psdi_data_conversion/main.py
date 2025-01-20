@@ -13,7 +13,7 @@ import os
 import sys
 
 from psdi_data_conversion.converter import (FILE_TO_UPLOAD_KEY, L_ALLOWED_CONVERTERS, L_ALLOWED_LOGGING_TYPES,
-                                            LOGGING_NONE, LOGGING_SIMPLE, FileConverter, FileConverterAbortException,
+                                            LOG_NONE, LOG_SIMPLE, FileConverter, FileConverterAbortException,
                                             FileConverterException, get_file_storage)
 
 LOG_EXT = ".log"
@@ -74,15 +74,15 @@ class ConvertArgs:
         self.list: bool = args.list
 
         # Logging/stdout arguments
-        self.logging_mode: bool = args.logging_mode
+        self.log_mode: bool = args.log_mode
         self.quiet = args.quiet
         self._log_file: str | None = args.log_file
         self.log_level: str = args.log_level
 
         # Quiet mode is equivalent to logging mode == LOGGING_NONE, so normalize them if either is set
         if self.quiet:
-            self.logging_mode = LOGGING_NONE
-        elif self.logging_mode == LOGGING_NONE:
+            self.log_mode = LOG_NONE
+        elif self.log_mode == LOG_NONE:
             self.quiet = True
 
         # Check validity of input
@@ -126,8 +126,8 @@ class ConvertArgs:
                                               f"Allowed qualities are: {L_ALLOWED_COORD_GEN_QUALS}")
 
         # Logging mode is valid
-        if self.logging_mode not in L_ALLOWED_LOGGING_TYPES:
-            raise FileConverterInputException(f"ERROR: Unrecognised logging option: {self.logging_mode}. Allowed "
+        if self.log_mode not in L_ALLOWED_LOGGING_TYPES:
+            raise FileConverterInputException(f"ERROR: Unrecognised logging option: {self.log_mode}. Allowed "
                                               f"options are: {L_ALLOWED_LOGGING_TYPES}")
 
     @property
@@ -243,7 +243,7 @@ def get_argument_parser():
     parser.add_argument("-l", "--log-file", type=str, default=None,
                         help="The name of the file to log to. If not provided, the log file will be named after the "
                              "first input file (+'.log') and placed in the current directory.")
-    parser.add_argument("--logging-mode", type=str, default=LOGGING_SIMPLE,
+    parser.add_argument("--log-mode", type=str, default=LOG_SIMPLE,
                         help="How logs should be stores. Allowed values are: \n"
                         "- 'full' - Multi-file logging, only recommended when running as a public web app"
                         "- 'simple' - Logs saved to one file"
@@ -356,7 +356,7 @@ def run_from_args(args: ConvertArgs):
                                   download_dir=args.output_dir,
                                   log_file=args.log_file,
                                   quiet=args.quiet,
-                                  logging_mode=args.logging_mode,
+                                  log_mode=args.log_mode,
                                   delete_input=args.delete_input,
                                   max_file_size=0)
         try:
