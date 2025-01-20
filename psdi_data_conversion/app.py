@@ -15,9 +15,15 @@ from psdi_data_conversion import log_utility
 from psdi_data_conversion.converter import (DEFAULT_DOWNLOAD_DIR, DEFAULT_MAX_FILE_SIZE, FILE_KEY, FILE_TO_UPLOAD_KEY,
                                             MAX_FILESIZE_ENVVAR, MEGABYTE, run_converter)
 
+AUTH_ENVVAR = "AUTH"
+
 # Create a token by hashing the current date and time.
 dt = str(datetime.now())
 token = hashlib.md5(dt.encode('utf8')).hexdigest()
+
+# Check the authorisation envvar to see if we're checking auth
+auth_ev = os.environ.get(AUTH_ENVVAR)
+check_auth = (auth_ev is not None) and (auth_ev.lower() == "true")
 
 app = Flask(__name__)
 
@@ -43,7 +49,7 @@ def convert():
     """Convert file to a different format and save to folder 'downloads'. Delete original file. Note that downloading is
     achieved in format.js
     """
-    if request.form['token'] == token and token != '':
+    if check_auth and request.form['token'] == token and token != '':
         return run_converter(files=request.files,
                              form=request.form,
                              file_to_convert=FILE_TO_UPLOAD_KEY,
@@ -119,7 +125,7 @@ def data():
     str
         Output status - 'okay' if exited successfuly
     """
-    if request.args['token'] == token and token != '':
+    if check_auth and request.args['token'] == token and token != '':
         message = '[' + log_utility.get_date_time() + '] ' + request.args['data'] + '\n'
 
         with open("user_responses", "a") as f:
