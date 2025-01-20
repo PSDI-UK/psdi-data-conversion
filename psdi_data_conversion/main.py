@@ -13,7 +13,7 @@ import os
 import sys
 
 from psdi_data_conversion.converter import (FILE_TO_UPLOAD_KEY, L_ALLOWED_CONVERTERS, L_ALLOWED_LOGGING_TYPES,
-                                            LOG_NONE, LOG_SIMPLE, FileConverter, FileConverterAbortException,
+                                            LOG_NONE, LOG_SIMPLE, LOG_FULL, FileConverter, FileConverterAbortException,
                                             FileConverterException, get_file_storage)
 
 LOG_EXT = ".log"
@@ -355,7 +355,6 @@ def run_from_args(args: ConvertArgs):
                                   upload_dir=args.input_dir,
                                   download_dir=args.output_dir,
                                   log_file=args.log_file,
-                                  quiet=args.quiet,
                                   log_mode=args.log_mode,
                                   delete_input=args.delete_input,
                                   max_file_size=0)
@@ -381,7 +380,8 @@ def main():
 
     args = parse_args()
 
-    logging.basicConfig(filename=args.log_file)
+    if args.log_mode == LOG_SIMPLE or args.log_mode == LOG_FULL:
+        logging.basicConfig(filename=args.log_file)
 
     logger.info("#")
     logger.info("# Beginning execution of script `%s`", __file__)

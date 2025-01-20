@@ -143,7 +143,6 @@ class FileConverter:
                  download_dir=DEFAULT_DOWNLOAD_DIR,
                  max_file_size=DEFAULT_MAX_FILE_SIZE,
                  log_file: str | None = None,
-                 quiet=False,
                  log_mode=LOG_FULL,
                  delete_input=True,
                  **kwargs):
