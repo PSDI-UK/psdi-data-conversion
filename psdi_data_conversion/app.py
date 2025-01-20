@@ -12,8 +12,8 @@ from datetime import datetime
 from flask import Flask, request, render_template, abort, Response
 
 from psdi_data_conversion import log_utility
-from psdi_data_conversion.converter import (DEFAULT_DOWNLOAD_DIR, FILE_KEY, FILE_TO_UPLOAD_KEY,
-                                            run_converter)
+from psdi_data_conversion.converter import (DEFAULT_DOWNLOAD_DIR, DEFAULT_MAX_FILE_SIZE, FILE_KEY, FILE_TO_UPLOAD_KEY,
+                                            MAX_FILESIZE_ENVVAR, MEGABYTE, run_converter)
 
 # Create a token by hashing the current date and time.
 dt = str(datetime.now())
@@ -26,7 +26,15 @@ app = Flask(__name__)
 def website():
     """Return the web page along with the token
     """
-    data = [{'token': token}]
+    # Get the maximum allowed size from the envvar for it
+    ev_max_file_size = os.environ.get(MAX_FILESIZE_ENVVAR)
+    if ev_max_file_size is not None:
+        max_file_size = float(ev_max_file_size)*MEGABYTE
+    else:
+        max_file_size = DEFAULT_MAX_FILE_SIZE
+
+    data = [{'token': token,
+             'max_file_size': max_file_size}]
     return render_template("index.htm", data=data)
 
 
