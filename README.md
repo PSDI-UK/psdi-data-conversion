@@ -62,12 +62,12 @@ pytest
 
 ## Running the Python/Flask app locally
 
-Python and Open Babel must be installed.
+Python, Open Babel, and Flask must be installed.
 
-Install the package and its requirements via:
+Install the package and its requirements, including the optional requirements used to run the GUI locally via:
 
 ```bash
-pip install .
+pip install .[gui]
 ```
 
 To enable debug mode, if required, enter:
