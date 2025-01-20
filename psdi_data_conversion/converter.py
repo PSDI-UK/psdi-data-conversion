@@ -13,7 +13,14 @@ from collections.abc import Callable
 import py.io
 import subprocess
 from openbabel import openbabel
-from werkzeug.exceptions import HTTPException
+
+try:
+    # werkzeug is installed in the optional dependency Flask. It's only used here to recognize an exception type,
+    # and if Flask isn't installed, that exception will never be raised, so we can just replace it with None and later
+    # not try to catch it if werkzeug isn't found
+    from werkzeug.exceptions import HTTPException
+except ImportError:
+    HTTPException = None
 
 from psdi_data_conversion import log_utility
 
@@ -94,6 +101,12 @@ class FileConverterAbortException(FileConverterException):
     def __init__(self, status_code, *args):
         super().__init__(*args)
         self.status_code = status_code
+
+
+if HTTPException is not None:
+    l_abort_exceptions = (HTTPException, FileConverterAbortException)
+else:
+    l_abort_exceptions = (FileConverterAbortException,)
 
 
 def abort_raise(status_code):
@@ -279,7 +292,7 @@ class FileConverter:
                 # Unrecognized converter - abort
                 self._abort(STATUS_CODE_BAD_METHOD, f"ERROR: Unknown converter '{self.converter}' requested")
         except Exception as e:
-            if isinstance(e, (HTTPException, FileConverterAbortException)):
+            if isinstance(e, l_abort_exceptions):
                 # Don't catch a deliberate abort; let it pass through
                 raise
             self._abort(message=f"The application encountered an unexpected error:\n{traceback.format_exc()}")
