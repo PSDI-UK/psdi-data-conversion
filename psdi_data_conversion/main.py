@@ -12,9 +12,9 @@ from argparse import ArgumentParser
 import os
 import sys
 
-from psdi_data_conversion.converter import (FILE_TO_UPLOAD_KEY, L_ALLOWED_CONVERTERS, LOGGING_NONE, LOGGING_SIMPLE,
-                                            FileConverter, FileConverterAbortException, FileConverterException,
-                                            get_file_storage)
+from psdi_data_conversion.converter import (FILE_TO_UPLOAD_KEY, L_ALLOWED_CONVERTERS, L_ALLOWED_LOGGING_TYPES,
+                                            LOGGING_NONE, LOGGING_SIMPLE, FileConverter, FileConverterAbortException,
+                                            FileConverterException, get_file_storage)
 
 LOG_EXT = ".log"
 DEFAULT_LISTING_LOG_FILE = "data-convert-list" + LOG_EXT
@@ -74,13 +74,16 @@ class ConvertArgs:
         self.list: bool = args.list
 
         # Logging/stdout arguments
-        self.quiet: bool = args.quiet
+        self.logging_mode: bool = args.logging_mode
+        self.quiet = args.quiet
         self._log_file: str | None = args.log_file
         self.log_level: str = args.log_level
+
+        # Quiet mode is equivalent to logging mode == LOGGING_NONE, so normalize them if either is set
         if self.quiet:
             self.logging_mode = LOGGING_NONE
-        else:
-            self.logging_mode = LOGGING_SIMPLE
+        elif self.logging_mode == LOGGING_NONE:
+            self.quiet = True
 
         # Check validity of input
 
@@ -121,6 +124,11 @@ class ConvertArgs:
         if self.coord_gen_qual not in L_ALLOWED_COORD_GEN_QUALS:
             raise FileConverterInputException(f"Coordinate generation quality '{self.coord_gen_qual}' not recognised. "
                                               f"Allowed qualities are: {L_ALLOWED_COORD_GEN_QUALS}")
+
+        # Logging mode is valid
+        if self.logging_mode not in L_ALLOWED_LOGGING_TYPES:
+            raise FileConverterInputException(f"ERROR: Unrecognised logging option: {self.logging_mode}. Allowed "
+                                              f"options are: {L_ALLOWED_LOGGING_TYPES}")
 
     @property
     def from_format(self):
@@ -232,12 +240,18 @@ def get_argument_parser():
                              "provided, gives information on the converter and any command-line flags it accepts.")
 
     # Logging/stdout arguments
-    parser.add_argument("-q", "--quiet", action="store_true",
-                        help="If set, all output aside from errors will be suppressed and no log file will be "
-                             "generated.")
     parser.add_argument("-l", "--log-file", type=str, default=None,
                         help="The name of the file to log to. If not provided, the log file will be named after the "
                              "first input file (+'.log') and placed in the current directory.")
+    parser.add_argument("--logging-mode", type=str, default=LOGGING_SIMPLE,
+                        help="How logs should be stores. Allowed values are: \n"
+                        "- 'full' - Multi-file logging, only recommended when running as a public web app"
+                        "- 'simple' - Logs saved to one file"
+                        "- 'stdout' - Output logs and errors only to stdout"
+                        "- 'none' - Output only errors to stdout")
+    parser.add_argument("-q", "--quiet", action="store_true",
+                        help="If set, all output aside from errors will be suppressed and no log file will be "
+                             "generated.")
     parser.add_argument("--log-level", type=str, default="WARNING",
                         help="The desired level to log at. Allowed values are: 'DEBUG', 'INFO', 'WARNING', 'ERROR, "
                              "'CRITICAL'. Default: 'INFO'")
@@ -367,8 +381,7 @@ def main():
 
     args = parse_args()
 
-    logging.basicConfig(filename=args.log_file,
-                        level=args.log_level)
+    logging.basicConfig(filename=args.log_file)
 
     logger.info("#")
     logger.info("# Beginning execution of script `%s`", __file__)

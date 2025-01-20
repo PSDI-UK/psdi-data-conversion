@@ -80,6 +80,10 @@ def test_input_validity():
     with pytest.raises(FileConverterInputException):
         get_parsed_args("file1.mmcif -t pdb --coord-gen Gen3D best quality")
 
+    # It should fail if it doesn't recognise the logging mode
+    with pytest.raises(FileConverterInputException):
+        get_parsed_args("file1.mmcif -t pdb --logging-mode max")
+
     # It should work if we just ask for a list
     args = get_parsed_args("--list")
     assert args.list

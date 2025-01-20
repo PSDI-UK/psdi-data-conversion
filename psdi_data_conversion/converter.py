@@ -45,10 +45,11 @@ LOGGING_ENVVAR = "LOGGING"
 
 LOGGING_FULL = "full"
 LOGGING_SIMPLE = "simple"
+LOGGING_STDOUT = "stdout"
 LOGGING_NONE = "none"
 
 LOGGING_DEFAULT = LOGGING_SIMPLE
-L_ALLOWED_LOGGING_TYPES = (LOGGING_FULL, LOGGING_SIMPLE, LOGGING_NONE)
+L_ALLOWED_LOGGING_TYPES = (LOGGING_FULL, LOGGING_SIMPLE, LOGGING_STDOUT, LOGGING_NONE)
 
 # Constant strings for converter types
 CONVERTER_OB = 'Open Babel'
@@ -171,13 +172,12 @@ class FileConverter:
         log_file : str | None
             If provided, all logging will go to a single file or stream. Otherwise, logs will be split up among multiple
             files for server-style logging.
-        quiet : bool
-            If set to True, only error messages will be output to stdout, default False
         logging_mode : str
             How logs should be stores. Allowed values are:
-            - 'full' - multi-file logging, only recommended when running as a public web app
-            - 'simple' - logs saved to one file
-            - 'none' - output only to stdout/stderr
+            - 'full' - Multi-file logging, only recommended when running as a public web app
+            - 'simple' - Logs saved to one file
+            - 'stdout' - Output logs and errors only to stdout
+            - 'none' - Output only errors to stdout
         delete_input : bool
             Whether or not to delete input files after conversion, default True
         **kwargs
@@ -195,7 +195,6 @@ class FileConverter:
         self.download_dir = download_dir
         self.max_file_size = max_file_size*MEGABYTE
         self.log_file = log_file
-        self.quiet = quiet
         self.logging_mode = logging_mode
         self.delete_input = delete_input
 
@@ -252,10 +251,10 @@ class FileConverter:
         # Determine level to log at based on quiet status
         if self.logging_mode == LOGGING_NONE:
             self._local_logger_level = None
-            if self.quiet:
-                self._stdout_output_level = logging.ERROR
-            else:
-                self._stdout_output_level = logging.INFO
+            self._stdout_output_level = logging.ERROR
+        elif self.logging_mode == LOGGING_STDOUT:
+            self._local_logger_level = None
+            self._stdout_output_level = logging.INFO
         elif self.logging_mode == LOGGING_SIMPLE or self.logging_mode == LOGGING_FULL:
             self._local_logger_level = log_utility.DEFAULT_LOCAL_LOGGER_LEVEL
             self._stdout_output_level = logging.ERROR
@@ -453,9 +452,6 @@ class FileConverter:
         log_name : _type_
             _description_
         """
-
-        if self.quiet:
-            return
 
         data = {
             "datetime": log_utility.get_date_time(),
