@@ -105,17 +105,14 @@ class FileConverter:
     """Class to handle conversion of files from one type to another
     """
 
-    # Class variables - these are normally set to defaults and not modified in operation. They're intended to be
-    # modified after creation of an object in unit testing
-    max_file_size = DEFAULT_MAX_FILE_SIZE
-    upload_dir = DEFAULT_UPLOAD_DIR
-    download_dir = DEFAULT_DOWNLOAD_DIR
-
     def __init__(self,
                  files: dict[str, FileStorage],
                  form: dict[str, str],
                  file_to_convert: str,
                  abort_callback: Callable[[int], None] = abort_raise,
+                 upload_dir=DEFAULT_UPLOAD_DIR,
+                 download_dir=DEFAULT_DOWNLOAD_DIR,
+                 max_file_size=DEFAULT_MAX_FILE_SIZE,
                  log_file: str | None = None,
                  quiet=False,
                  delete_input=True,
@@ -133,6 +130,12 @@ class FileConverter:
         abort_callback : Callable[[int], None]
             Function to be called if the conversion hits an error and must be aborted, default `abort_raise`, which
             raises an appropriate exception
+        upload_dir : str
+            The location of input files relative to the current directory
+        download_dir : str
+            The location of output files relative to the current directory
+        max_file_size : float
+            The maximum allowed file size for input/output files, in MB, default 1 MB. If 0, will be unlimited
         log_file : str | None
             If provided, all logging will go to a single file or stream. Otherwise, logs will be split up among multiple
             files for server-style logging.
@@ -152,6 +155,9 @@ class FileConverter:
         self.form = form
         self.file_to_convert = file_to_convert
         self.abort_callback = abort_callback
+        self.upload_dir = upload_dir
+        self.download_dir = download_dir
+        self.max_file_size = max_file_size*MEGABYTE
         self.log_file = log_file
         self.quiet = quiet
         self.delete_input = delete_input
