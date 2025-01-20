@@ -12,16 +12,14 @@ from argparse import ArgumentParser
 import os
 import sys
 
-from psdi_data_conversion.converter import (CONVERTER_ATO, CONVERTER_C2X, CONVERTER_OB, FILE_TO_UPLOAD_KEY,
-                                            FileConverter, FileConverterAbortException, FileConverterException,
-                                            get_file_storage)
+from psdi_data_conversion.converter import (FILE_TO_UPLOAD_KEY, L_ALLOWED_CONVERTERS, L_ALLOWED_LOGGING_TYPES,
+                                            LOG_NONE, LOG_SIMPLE, LOG_FULL, FileConverter, FileConverterAbortException,
+                                            FileConverterException, get_file_storage)
 
 LOG_EXT = ".log"
 DEFAULT_LISTING_LOG_FILE = "data-convert-list" + LOG_EXT
 
 # Allowed and default options for command-line arguments
-
-L_ALLOWED_CONVERTERS = [CONVERTER_OB, CONVERTER_ATO, CONVERTER_C2X]
 
 L_ALLOWED_COORD_GENS = ["Gen2D", "Gen3D", "neither"]
 DEFAULT_COORD_GEN = "neither"
@@ -76,9 +74,16 @@ class ConvertArgs:
         self.list: bool = args.list
 
         # Logging/stdout arguments
-        self.quiet: bool = args.quiet
+        self.log_mode: bool = args.log_mode
+        self.quiet = args.quiet
         self._log_file: str | None = args.log_file
         self.log_level: str = args.log_level
+
+        # Quiet mode is equivalent to logging mode == LOGGING_NONE, so normalize them if either is set
+        if self.quiet:
+            self.log_mode = LOG_NONE
+        elif self.log_mode == LOG_NONE:
+            self.quiet = True
 
         # Check validity of input
 
@@ -119,6 +124,11 @@ class ConvertArgs:
         if self.coord_gen_qual not in L_ALLOWED_COORD_GEN_QUALS:
             raise FileConverterInputException(f"Coordinate generation quality '{self.coord_gen_qual}' not recognised. "
                                               f"Allowed qualities are: {L_ALLOWED_COORD_GEN_QUALS}")
+
+        # Logging mode is valid
+        if self.log_mode not in L_ALLOWED_LOGGING_TYPES:
+            raise FileConverterInputException(f"ERROR: Unrecognised logging option: {self.log_mode}. Allowed "
+                                              f"options are: {L_ALLOWED_LOGGING_TYPES}")
 
     @property
     def from_format(self):
@@ -230,12 +240,18 @@ def get_argument_parser():
                              "provided, gives information on the converter and any command-line flags it accepts.")
 
     # Logging/stdout arguments
-    parser.add_argument("-q", "--quiet", action="store_true",
-                        help="If set, all output aside from errors will be suppressed and no log file will be "
-                             "generated.")
     parser.add_argument("-l", "--log-file", type=str, default=None,
                         help="The name of the file to log to. If not provided, the log file will be named after the "
                              "first input file (+'.log') and placed in the current directory.")
+    parser.add_argument("--log-mode", type=str, default=LOG_SIMPLE,
+                        help="How logs should be stores. Allowed values are: \n"
+                        "- 'full' - Multi-file logging, only recommended when running as a public web app"
+                        "- 'simple' - Logs saved to one file"
+                        "- 'stdout' - Output logs and errors only to stdout"
+                        "- 'none' - Output only errors to stdout")
+    parser.add_argument("-q", "--quiet", action="store_true",
+                        help="If set, all output aside from errors will be suppressed and no log file will be "
+                             "generated.")
     parser.add_argument("--log-level", type=str, default="WARNING",
                         help="The desired level to log at. Allowed values are: 'DEBUG', 'INFO', 'WARNING', 'ERROR, "
                              "'CRITICAL'. Default: 'INFO'")
@@ -328,7 +344,7 @@ def run_from_args(args: ConvertArgs):
                 continue
 
         if not args.quiet:
-            sys.stdout.write(f"Converting {filename} to {args.to_format}... ")
+            print(f"Converting {filename} to {args.to_format}...")
 
         file_storage = get_file_storage(qualified_filename)
 
@@ -339,15 +355,12 @@ def run_from_args(args: ConvertArgs):
                                   upload_dir=args.input_dir,
                                   download_dir=args.output_dir,
                                   log_file=args.log_file,
-                                  quiet=args.quiet,
+                                  log_mode=args.log_mode,
                                   delete_input=args.delete_input,
                                   max_file_size=0)
         try:
             converter.run()
         except FileConverterAbortException as e:
-            # Close the dangling line before writing an error message
-            if not args.quiet:
-                sys.stdout.write("\n")
             print(f"ERROR: Attempt to convert file {filename} failed with status code {e.status_code} and message: \n" +
                   str(e) + "\n", file=sys.stderr)
             continue
@@ -364,8 +377,8 @@ def main():
 
     args = parse_args()
 
-    logging.basicConfig(filename=args.log_file,
-                        level=args.log_level)
+    if args.log_mode == LOG_SIMPLE or args.log_mode == LOG_FULL:
+        logging.basicConfig(filename=args.log_file)
 
     logger.info("#")
     logger.info("# Beginning execution of script `%s`", __file__)
