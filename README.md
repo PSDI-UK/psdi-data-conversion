@@ -116,7 +116,7 @@ Install the package requirements locally (ideally within a virtual environment) 
 
 ```bash
 source .venv/bin/activate # Create a venv first if necessary with `python -m venv .venv`
-pip install .[test]
+pip install .[gui,test]
 pytest
 ```
 
