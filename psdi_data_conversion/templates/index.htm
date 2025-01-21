@@ -25,11 +25,13 @@
 
   <header class="header" id="psdi-header"></header>
   <script type="module">
-    import { setTitle, setHeaderLinksSource } from "../javascript/psdi-common.js";
+    import { setTitle, setHeaderLinksSource, setHeaderSource, setFooterSource } from "./static/javascript/psdi-common.js";
     setTitle("Data Conversion Service");
     // Due to the index being a template which will exist in a different directory once rendered, we need to set
     // a non-default location of the header links file
     setHeaderLinksSource("{{url_for('static', filename='content/index-header-links.html')}}");
+    setHeaderSource("{{url_for('static', filename='content/psdi-common-header.html')}}");
+    setFooterSource("{{url_for('static', filename='content/psdi-common-footer.html')}}");
   </script>
 
   <div class="hero">
