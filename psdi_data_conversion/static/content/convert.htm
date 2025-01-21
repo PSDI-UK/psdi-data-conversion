@@ -15,7 +15,7 @@
   <link rel="stylesheet" href="../styles/format.css">
   <script src="../javascript/load_accessibility.js"></script>
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.3/jquery.min.js"></script>
-  <script src="https://psdi-uk.github.io/psdi-common-style/js/psdi-common.js" type="module"></script>
+  <script src="../javascript/psdi-common.js" type="module"></script>
 </head>
 
 <body marginwidth="0">
@@ -25,7 +25,7 @@
 
   <header class="header" id="psdi-header"></header>
   <script type="module">
-    import { setTitle, setBrandLinkTarget } from "https://psdi-uk.github.io/psdi-common-style/js/psdi-common.js";
+    import { setTitle, setBrandLinkTarget } from "../javascript/psdi-common.js";
     setTitle("Data Conversion Service");
     setBrandLinkTarget("../../");
   </script>
@@ -45,10 +45,13 @@
         click just underneath the final option. Ticking a check box reveals a text box for entry of required
         information, along with further explanation if available. If 2- or 3-dimensional atomic coordinates need to be
         calculated (using Open Babel), select '2D' or '3D' and a speed/accuracy option ('fastest' is least accurate).
-        Note that this calculation is not appropriate for all file formats, so in these cases selections will be ignored.
-        Click on 'Choose file' and then select an input file of the correct format (and extension). Clicking on 'Convert'
+        Note that this calculation is not appropriate for all file formats, so in these cases selections will be
+        ignored.
+        Click on 'Choose file' and then select an input file of the correct format (and extension). Clicking on
+        'Convert'
         uploads and converts the file. The output file is automatically downloaded, along with a log file. If any issues
-        are encountered (e.g., the output file does not download), please click on 'Provide Feedback' in the navigation bar.
+        are encountered (e.g., the output file does not download), please click on 'Provide Feedback' in the navigation
+        bar.
       </p>
       <h6 id="heading"></h6>
       <div id="flags">
