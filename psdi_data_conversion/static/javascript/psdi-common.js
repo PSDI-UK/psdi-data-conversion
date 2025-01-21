@@ -112,7 +112,7 @@ $(document).ready(function () {
 
   // Load only if the header stub has no children
   if (loadHeader) {
-    $("#psdi-header").load("https://psdi-uk.github.io/psdi-common-style/html/psdi-common-header.html",
+    $("#psdi-header").load("./psdi-common-header.html",
       function (_response, status, _xhr) {
         if (status != "error") {
           $("#psdi-header a.navbar__brand")[0].href = brandLinkTarget;
@@ -128,7 +128,7 @@ $(document).ready(function () {
 
   // Load only if the footer stub has no children
   if (loadFooter) {
-    $("#psdi-footer").load("https://psdi-uk.github.io/psdi-common-style/html/psdi-common-footer.html",
+    $("#psdi-footer").load("./psdi-common-footer.html",
       function (_response, status, _xhr) {
         if (status == "error") {
           $("#psdi-footer")[0].textContent = "ERROR: Could not load page footer";
