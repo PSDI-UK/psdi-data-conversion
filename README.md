@@ -7,34 +7,33 @@ This is the repository for the Pathfinder 2 Chemistry File Format Conversion sou
 ```
 psdi_data_conversion
     bin
-        ...
+        (Precompiled binaries for running file format converters)
     static
         content
-            index-versions
-                ...
-            ...
+            (HTML assets for the web app)
         downloads (created by app.py if not extant)
         img
-            ...
+            (image assets for the web app)
         javascript
-            ...
+            (JavaScript code for the web app)
         styles
-            ...
+            (CSS stylesheets for the web app)
         uploads (created by app.py if not extant)
     templates
-        ...
-    ...
+        (HTML assets rendered by Flask for the web app)
+    __init.py__
+    (Python modules and scripts)
 scripts
-    ...
+    (Scripts used for project maintenance)
 tests
-    ...
-CONTRIBUTING.md
-LICENSE
-pyproject.toml
-README.md
-requirements.txt
-run_local.sh
-startup.sh
+    (Unit tests for the project)
+CONTRIBUTING.md (Guidelines for contributors to the project)
+LICENSE (Apache Licence version 2.0)
+pyproject.toml (Python project metadata and settings)
+README.md (This file)
+requirements.txt (Requirements for the Azure web app deployment of this project)
+run_local.sh (Helper script to run the web app locally)
+startup.sh (Startup script for the Azure web app)
 ```
 
 ## Requirements
