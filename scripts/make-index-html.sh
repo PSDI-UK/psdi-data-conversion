@@ -22,7 +22,7 @@ fi
 INDEX_HTML_DIR=$TARGET_HTML_DIR/index-versions
 export BRAND_LINK="."
 export HEADER_LINKS_SOURCE="$INDEX_HTML_DIR/header-links.html"
-export IMG_LOC="$TARGET_BASE_DIR/img"
+export IMG_LOC="static/img"
 
 # Find the location of the copy_html.sh script
 PACKAGE_FILENAME=$ROOTDIR/psdi-assets.tar.gz
