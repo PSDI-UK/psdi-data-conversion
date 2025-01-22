@@ -1,8 +1,25 @@
-# CHEMISTRY FILE FORMAT CONVERSION DATABASE
+# PSDI Data Conversion
 
 This is the repository for the Pathfinder 2 Chemistry File Format Conversion source code.
 
-## Directory structure of the Python Flask app website:
+## Table of Contents
+
+- [Project Structure](#project-structure)
+- [Requirements](#requirements)
+  - [Python](#python)
+  - [Other Dependencies](#other-dependencies)
+- [Command-Line Interface](#command-line-interface)
+  - [Installation](#installation)
+  - [Execution](#execution)
+    - [Data Conversion](#data-conversion)
+    - [Requesting Information on Possible Conversions](#requesting-information-on-possible-conversions)
+- [Using the Online Conversion Service](#using-the-online-conversion-service)
+- [Running the Python/Flask app locally](#running-the-pythonflask-app-locally)
+  - [Installation and Setup](#installation-and-setup)
+  - [Running the App](#running-the-app)
+- [Testing](#testing)
+
+## Project Structure
 
 ```
 psdi_data_conversion
@@ -95,7 +112,7 @@ Required to run unit tests:
 
 In addition to the dependencies listed above, this project uses the assets made public by PSDI's common style project at https://github.com/PSDI-UK/psdi-common-style. The latest versions of these assets are copied to this project periodically (using the scripts in the `scripts` directory). In case a future release of these assets causes a breaking change in this project, the file `fetch-common-style.conf` can be modified to set a previous fixed version to download and use until this project is updated to work with the latest version of the assets.
 
-## Running the Python command-line interface
+## Command-Line Interface
 
 ### Installation
 
@@ -135,7 +152,7 @@ psdi-data-convert <input file 1> [<input file 2>, <input file 3>, ...] -t/--to <
 
 Call `psdi-data-convert -h` for details on each of these options.
 
-#### Requesting information on possible conversions
+#### Requesting Information on Possible Conversions
 
 The script can also be used to get information on possible conversions by providing the `-l/--list` argument:
 
@@ -150,15 +167,13 @@ Further functionality planned for this script, but yet to be implemented:
 - If the name of a converter is provided as an argument, it should provide information on the converter, such as what flags it will accept
 - If the names of two formats are provided as arguments, it should provide information on the possible converters that can be used for this conversion and the expected quality of the conversion
 
-## Running the Python Flask app hosted on the Microsoft Azure site
+## Using the Online Conversion Service
 
-Enter https://psdidev2.azurewebsites.net in a browser.
-
-Guidance on usage is given on each page of the website.
+Enter https://psdidev2.azurewebsites.net in a browser. Guidance on usage is given on each page of the website.
 
 ## Running the Python/Flask app locally
 
-Python, Open Babel, and Flask must be installed.
+### Installation and Setup
 
 Install the package and its requirements, including the optional requirements used to run the GUI locally, by executing the following command from this project's directory:
 
@@ -200,9 +215,11 @@ cd $PACKAGE_PATH/..
 python -m flask --app psdi_data_conversion/app.py run
 ```
 
-If desired, you can modify the environmental variables set in this script to modify the operation - see the comments on each for details. Running this script will start the server. You can then access the website by going to <http://127.0.0.1:5000> in a browser (this will also be printed in the terminal, and you can CTRL+click it there to open it in your default browser).
+If desired, you can modify the environmental variables set in this script to modify the operation - see the comments on each for details.
 
-The database can only be accessed from the University of Southampton or when using Global Connect. The current IP address must be added to the database's firewall rules on the Azure site.
+### Running the App
+
+Run the `run_local.sh` script to start the server. You can then access the website by going to <http://127.0.0.1:5000> in a browser (this will also be printed in the terminal, and you can CTRL+click it there to open it in your default browser). Guidance for using the app is given on each page of it.
 
 In case of problems when using Chrome, try opening Chrome from the command line:
 open -a "Google Chrome.app" --args --allow-file-access-from-files
