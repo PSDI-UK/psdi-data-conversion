@@ -1,0 +1,26 @@
+<!-- This is the common header which will be added to all pages. Everything in this file will be added within the div
+ that loads it. Header links specific to each site must be added or loaded via JS after this is loaded.-->
+
+<div class="max-width-box navbar">
+  <div class="header-left">
+    <a class="navbar__brand" href=".">
+      <div class="navbar__logo">
+        <img src="./psdi_data_conversion/static/img/psdi-logo-darktext.png" alt="PSDI logo"
+          class="lm-only">
+        <img src="./psdi_data_conversion/static/img/psdi-logo-lighttext.png" alt="PSDI logo"
+          class="dm-only">
+      </div>
+      <h5 class="navbar__title">Data Conversion Service</h5>
+    </a>
+  </div>
+  <div class="navbar__items navbar__items--right">
+    <!-- This file contains the links that will appear in the top-right of the header bar for .html files in the index.htm page. --> <a href="./" class="navbar__item navbar__link">Home</a> <a href="static/content/report.htm" class="navbar__item navbar__link">Report Missing Format/Conversion</a> <a href="static/content/feedback.htm" class="navbar__item navbar__link">Provide Feedback</a> <a href="static/content/documentation.htm" class="navbar__item navbar__link">Documentation</a> <a href="static/content/accessibility.htm" class="navbar__item navbar__link">Accessibility</a> <a href="mailto: psdi@soton.ac.uk" class="navbar__item navbar__link" id="mail">Contact</a>
+    <button class="clean-btn color-mode-toggle" title="Switch between dark and light mode"
+      aria-label="Lightmode/darkmode toggle button">
+      <img src="./psdi_data_conversion/static/img/colormode-toggle-lm.svg" alt="Lightmode toggle icon"
+        class="lm-only">
+      <img src="./psdi_data_conversion/static/img/colormode-toggle-dm.svg" alt="Darkmode toggle icon"
+        class="dm-only">
+    </button>
+  </div>
+</div>
