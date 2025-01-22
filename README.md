@@ -149,7 +149,11 @@ This will convert the file 'filename.ext1' to format 'ext2' using the default co
 The full possible syntax for the script is:
 
 ```
-psdi-data-convert <input file 1> [<input file 2>, <input file 3>, ...] -t/--to <output format> [-f/--from <input file format>] [-i/--in <input file location>] [-a/--at <location for output files>] [-w/--with <converter>] [-d] [--from-flags '<flags to be provided to the converter for reading input>'] [--to-flags '<flags to be provided to the converter for writing output>'] [--coord-gen <coordinate generation options] [-q/--quiet] [-l/--log-file <log file name] [--log-level <level>]
+psdi-data-convert <input file 1> [<input file 2>, <input file 3>, ...] -t/--to <output format> [-f/--from <input file
+format>] [-i/--in <input file location>] [-a/--at <location for output files>] [-w/--with <converter>] [-d]
+[--from-flags '<flags to be provided to the converter for reading input>'] [--to-flags '<flags to be provided to the
+converter for writing output>'] [--coord-gen <coordinate generation options] [-q/--quiet] [-l/--log-file <log file
+name] [--log-level <level>]
 ```
 
 Call `psdi-data-convert -h` for details on each of these options.
