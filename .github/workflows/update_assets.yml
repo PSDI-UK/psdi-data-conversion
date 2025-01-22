@@ -18,8 +18,8 @@ jobs:
 
       - name: Fetch assets
         run: |
-          .scripts/fetch-common-style.sh
-          .scripts/make-index-html.sh
+          ./scripts/fetch-common-style.sh
+          ./scripts/make-index-html.sh
 
       - name: Commit and push updated assets
         run: |
