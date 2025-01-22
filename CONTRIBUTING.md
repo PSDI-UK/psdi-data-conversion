@@ -13,14 +13,14 @@ This project uses a version of [GitLab Flow](https://about.gitlab.com/topics/ver
 
 The following tasks should be completed before merging a release candidate branch to `release`:
 
-[] Open a draft pull request from this release branch to `release`, which indicates the target version number
-[] Ensure that all automated tests and checks pass - these should be run automatically on the PR opened above
-[] Manually test the local web interface
-[] If there have been any changes to the Python backend, run a test that a file can be converted successfully and produces a proper log
-[] If there have been any changes to the web frontend, check the appearance of the site to ensure that it looks as desired. Test the Accessibility page to ensure that changes there work properly, are saved when requested and apply to other pages
-[] Check that the project version is updated to the desired new version in all places it appears:
-[] `CHANGELOG.md` (When added in the future)
-[] `pyproject.toml` (When the version number is added to it)
+- Open a draft pull request from this release branch to `release`, which indicates the target version number
+- Ensure that all automated tests and checks pass - these should be run automatically on the PR opened above
+- Manually test the local web interface
+  - If there have been any changes to the Python backend, run a test that a file can be converted successfully and produces a proper log
+  - If there have been any changes to the web frontend, check the appearance of the site to ensure that it looks as desired. Test the Accessibility page to ensure that changes there work properly, are saved when requested and apply to other pages
+- Check that the project version is updated to the desired new version in all places it appears:
+  - `CHANGELOG.md` (When added in the future)
+  - `pyproject.toml` (When the version number is added to it)
 
 If any of these tasks fail and require changes, make the needed changes and then recheck that all other tasks still pass. E.g. if testing the local web interface reveals a bug in the Python backend that needs to be fixed, ensure that all automated tests still pass after doing so
 
