@@ -235,3 +235,10 @@ source .venv/bin/activate # Create a venv first if necessary with `python -m ven
 pip install .[gui,test]
 pytest
 ```
+
+## Contributors
+
+- Ray Whorley
+- Don Cruickshank
+- Samantha Pearman-Kanza (s.pearman-kanza@soton.ac.uk)
+- Bryan Gillis (7204836+brgillis@users.noreply.github.com)
