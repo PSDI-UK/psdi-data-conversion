@@ -5,6 +5,7 @@ This is the repository for the Pathfinder 2 Chemistry File Format Conversion sou
 ## Directory structure of the Python Flask app website:
 
 ```
+CONTRIBUTING.md
 LICENSE
 psdi_data_conversion
     __init__.py
@@ -16,24 +17,33 @@ psdi_data_conversion
     log_utility.py
     static
         content
+            index-versions
+                header-links.htm
+                psdi-common-footer.html
+                psdi-common-header.html
             accessibility.htm
             convert.htm
             convertato.htm
             documentation.htm
             feedback.htm
             header-links.htm
-            index-header-links.htm
+            psdi-common-footer.html
+            psdi-common-header.html
             report.htm
         downloads (created by app.py if not extant)
+        img
+            (misc. image assets)
         javascript
             convert.js
             convert.py
             convertato.js
             format.js
             load_accessibility.js
+            psdi-common.js
             report.js
         styles
             format.css
+            psdi-common.css
         uploads (created by app.py if not extant)
     templates
         index.htm
@@ -42,6 +52,10 @@ requirements.txt
   (azure-functions, requests, openbabel-wheel:
    installed by yaml workflow file on GitHub)
 startup.sh
+scripts
+    fetch-common-style.conf
+    fetch-common-style.sh
+    make-index-html.sh
 tests
     logging_test.py
 ```
@@ -117,6 +131,4 @@ Guidance on usage is given on each page of the website.
 
 ## Dependencies
 
-In addition to the dependencies listed in the `pyproject.toml` file, this project depends on the assets made public by PSDI's common style project at https://github.com/PSDI-UK/psdi-common-style.. Any changes to these assets will be reflected in this project's web pages, and this project should ideally be tested with any changes before they're made live. An issue with retrieving these assets will appear as the website appearing unstyled and missing its header and footer.
-
-In case these assets become no longer available for some reason, the commit `f1908b3627addfe5072c1e2ad4a648203bd8dee7` can be used as a reference to restore local versions of them.
+In addition to the dependencies listed in the `pyproject.toml` file, this project uses the assets made public by PSDI's common style project at https://github.com/PSDI-UK/psdi-common-style. The latest versions of these assets are copied to this project periodically (using the scripts in the `scripts` directory). In case a future release of these assets causes a breaking change in this project, the file `fetch-common-style.conf` can be modified to set a previous fixed version to download and use until this project is updated to work with the latest version of the assets.
