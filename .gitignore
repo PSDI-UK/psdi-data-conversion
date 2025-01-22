@@ -20,3 +20,11 @@ psdi_data_conversion/static/uploads/*
 
 # Any zone identifiers created by Windows copying
 *:Zone.Identifier
+
+# Scripts created to clean up and purge downloaded assets
+scripts/cleanup-common-style.sh
+scripts/purge-common-style.sh
+
+# Downloaded assets
+psdi-assets.tar.gz
+psdi-common-style-*.*.*
