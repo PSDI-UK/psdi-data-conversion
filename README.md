@@ -39,6 +39,8 @@ startup.sh
 
 ## Requirements
 
+### Python
+
 Any local installation of this project requires Python 3.10 or greater. The best way to do this is dependant on your system, and you are likely to find the best tailored instructions by searching the web for e.g. "install Python 3.10 <your-os-or-distribution>". Some standard options are:
 
 For Windows and MacOS: Download and run the installer for the latest version from the official site: https://www.python.org/downloads/
@@ -73,6 +75,26 @@ sudo apt install python3-pip
 ```
 
 If this doesn't work, or the version installed is too low, an alternative is to install Python via the Anaconda package manager. For this, see the guide here: https://www.askpython.com/python/examples/install-python-with-conda
+
+### Other Dependencies
+
+This project depends on other projects available via pip, which will be installed automatically as required:
+
+Required for all installations:
+
+- `py`
+- `openbabel-wheel`
+
+Required to run the web app locally for a GUI experience:
+
+- `Flask`
+- `requests`
+
+Required to run unit tests:
+
+- `pytest`
+
+In addition to the dependencies listed above, this project uses the assets made public by PSDI's common style project at https://github.com/PSDI-UK/psdi-common-style. The latest versions of these assets are copied to this project periodically (using the scripts in the `scripts` directory). In case a future release of these assets causes a breaking change in this project, the file `fetch-common-style.conf` can be modified to set a previous fixed version to download and use until this project is updated to work with the latest version of the assets.
 
 ## Running the Python command-line interface
 
@@ -133,15 +155,7 @@ Further functionality planned for this script, but yet to be implemented:
 
 Enter https://psdidev2.azurewebsites.net in a browser.
 
-## Testing
-
-Install the package requirements locally (ideally within a virtual environment) and test with pytest by executing the following commands from this project's directory:
-
-```bash
-source .venv/bin/activate # Create a venv first if necessary with `python -m venv .venv`
-pip install .[gui,test]
-pytest
-```
+Guidance on usage is given on each page of the website.
 
 ## Running the Python/Flask app locally
 
@@ -194,10 +208,12 @@ The database can only be accessed from the University of Southampton or when usi
 In case of problems when using Chrome, try opening Chrome from the command line:
 open -a "Google Chrome.app" --args --allow-file-access-from-files
 
-## Using the website
+## Testing
 
-Guidance on usage is given on each page of the website.
+Install the package requirements locally (ideally within a virtual environment) and test with pytest by executing the following commands from this project's directory:
 
-## Dependencies
-
-In addition to the dependencies listed in the `pyproject.toml` file, this project uses the assets made public by PSDI's common style project at https://github.com/PSDI-UK/psdi-common-style. The latest versions of these assets are copied to this project periodically (using the scripts in the `scripts` directory). In case a future release of these assets causes a breaking change in this project, the file `fetch-common-style.conf` can be modified to set a previous fixed version to download and use until this project is updated to work with the latest version of the assets.
+```bash
+source .venv/bin/activate # Create a venv first if necessary with `python -m venv .venv`
+pip install .[gui,test]
+pytest
+```
