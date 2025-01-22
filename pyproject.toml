@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools"]
+requires = ["setuptools>=64", "setuptools-scm>=8"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -47,6 +47,8 @@ where = ["."]
 
 [tool.setuptools.package-data]
 psdi_data_conversion = ["bin/**", "static/**", "templates/**", "scripts/**"]
+
+[tool.setuptools_scm]
 
 [tool.pytest.ini_options]
 pythonpath = ["."]
