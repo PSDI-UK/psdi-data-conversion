@@ -1,6 +1,10 @@
 # PSDI Data Conversion
 
-This is the repository for the Pathfinder 2 Chemistry File Format Conversion source code.
+This is the repository for the PSDI PF2 Chemistry File Format Conversion project. The goal of this project is to provide utilities to assist in converting files between the many different file formats used in chemistry, providing information on what converters are available for a given conversion and the expected quality of it, and providing multiple interfaces to perform these conversions. These interfaces are:
+
+- Online web service, available at https://psdidev2.azurewebsites.net
+- Version of the web app you can download and run locally (e.g. if you need to convert files which exceed the online app's file size limit)
+- Command-line interface, to run conversions from a terminal
 
 ## Table of Contents
 
