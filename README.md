@@ -37,6 +37,43 @@ run_local.sh
 startup.sh
 ```
 
+## Requirements
+
+Any local installation of this project requires Python 3.10 or greater. The best way to do this is dependant on your system, and you are likely to find the best tailored instructions by searching the web for e.g. "install Python 3.10 <your-os-or-distribution>". Some standard options are:
+
+For Windows and MacOS: Download and run the installer for the latest version from the official site: https://www.python.org/downloads/
+
+For Linux systems, Python is most readily installed with your distributions package manager. For Ubuntu/Debian-based systems, this is `apt`, and the following series of commands can be used to install the latest version of Python compatible with your system:
+
+```bash
+sudo apt update # Make sure the package manager has access to the latest versions of all packages
+sudo apt upgrade # Update all installed packages
+sudo apt install python3 # Install the latest possible version of Python
+```
+
+Check the version of Python installed with one of the following:
+
+```bash
+python --version
+python3 --version
+```
+
+Usually `python` will be set up as an alias to python3, but if you already have an older version installed on your system, this might not be the case.
+
+Also check that this installed Python's package manager, `pip`, on your system:
+
+```bash
+pip --version
+```
+
+If it didn't, you can manually install it with:
+
+```bash
+sudo apt install python3-pip
+```
+
+If this doesn't work, or the version installed is too low, an alternative is to install Python via the Anaconda package manager. For this, see the guide here: https://www.askpython.com/python/examples/install-python-with-conda
+
 ## Running the Python command-line interface
 
 ### Installation
