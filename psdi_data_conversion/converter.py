@@ -596,8 +596,8 @@ class FileConverter:
             self._log_success()
 
     def _convert_ato(self):
-        atomsk = subprocess.run(['sh', 'psdi_data_conversion/atomsk.sh', self.in_filename,
-                                 self.out_filename], capture_output=True, text=True)
+        atomsk = subprocess.run(['sh', 'psdi_data_conversion/scripts/atomsk.sh',
+                                 self.in_filename, self.out_filename], capture_output=True, text=True)
 
         self.out = atomsk.stdout
         self.err = atomsk.stderr
@@ -619,8 +619,8 @@ class FileConverter:
         self._log_success()
 
     def _convert_c2x(self):
-        c2x = subprocess.run(['sh', 'c2x.sh', self.in_filename, self.out_filename],
-                             capture_output=True, text=True)
+        c2x = subprocess.run(['sh', 'psdi_data_conversion/scripts/c2x.sh', self.in_filename,
+                              self.out_filename], capture_output=True, text=True)
 
         self.out = c2x.stdout
         self.err = c2x.stderr
