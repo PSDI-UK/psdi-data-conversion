@@ -242,3 +242,6 @@ pytest
 - Don Cruickshank
 - Samantha Pearman-Kanza (s.pearman-kanza@soton.ac.uk)
 - Bryan Gillis (7204836+brgillis@users.noreply.github.com)
+- Tom Underwood
+
+## Funding
