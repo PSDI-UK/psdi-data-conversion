@@ -5,64 +5,36 @@ This is the repository for the Pathfinder 2 Chemistry File Format Conversion sou
 ## Directory structure of the Python Flask app website:
 
 ```
-CONTRIBUTING.md
-LICENSE
 psdi_data_conversion
-    __init__.py
-    app.py
-    atomsk.sh
     bin
-        atomsk
-        c2x
-    converter.py
-    log_utility.py
-    main.py
+        ...
     static
         content
             index-versions
-                header-links.htm
-                psdi-common-footer.html
-                psdi-common-header.html
-            accessibility.htm
-            convert.htm
-            convertato.htm
-            documentation.htm
-            feedback.htm
-            header-links.htm
-            psdi-common-footer.html
-            psdi-common-header.html
-            report.htm
+                ...
+            ...
         downloads (created by app.py if not extant)
         img
-            (misc. image assets)
+            ...
         javascript
-            convert.js
-            convert.py
-            convertato.js
-            format.js
-            load_accessibility.js
-            psdi-common.js
-            report.js
+            ...
         styles
-            format.css
-            psdi-common.css
+            ...
         uploads (created by app.py if not extant)
     templates
-        index.htm
-pyproject.toml
-requirements.txt
-  (azure-functions, requests, openbabel-wheel:
-   installed by yaml workflow file on GitHub)
-startup.sh
+        ...
+    ...
 scripts
-    fetch-common-style.conf
-    fetch-common-style.sh
-    make-index-html.sh
+    ...
 tests
-    cli_test.py
-    conftest.py
-    converter_test.py
-    logging_test.py
+    ...
+CONTRIBUTING.md
+LICENSE
+pyproject.toml
+README.md
+requirements.txt
+run_local.sh
+startup.sh
 ```
 
 ## Running the Python command-line interface
