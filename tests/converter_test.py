@@ -13,7 +13,8 @@ import re
 import pytest
 
 from psdi_data_conversion import constants as const
-from psdi_data_conversion.converter import get_file_storage, FileConverter, FileConverterAbortException, run_converter
+from psdi_data_conversion.converter import run_converter
+from psdi_data_conversion.converters.base import FileConverter, FileConverterAbortException, get_file_storage
 
 
 @pytest.fixture()

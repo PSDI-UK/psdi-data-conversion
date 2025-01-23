@@ -13,8 +13,8 @@ import os
 import sys
 
 from psdi_data_conversion import constants as const
-from psdi_data_conversion.converter import (FileConverter, FileConverterAbortException,
-                                            FileConverterException, get_file_storage)
+from psdi_data_conversion.converters.base import (FileConverter)
+from psdi_data_conversion.converters.base import FileConverterAbortException, FileConverterException, get_file_storage
 
 logger = logging.getLogger(__name__)
 
