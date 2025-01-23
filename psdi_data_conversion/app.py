@@ -63,7 +63,7 @@ def convert():
     """Convert file to a different format and save to folder 'downloads'. Delete original file. Note that downloading is
     achieved in format.js
     """
-    if check_auth and request.form['token'] == token and token != '':
+    if (not check_auth) or (request.form['token'] == token and token != ''):
         return run_converter(files=request.files,
                              form=request.form,
                              file_to_convert=FILE_TO_UPLOAD_KEY,
