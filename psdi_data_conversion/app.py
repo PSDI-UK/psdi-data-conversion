@@ -26,7 +26,7 @@ check_auth = (auth_ev is not None) and (auth_ev.lower() == "true")
 
 # Get the logging style from the envvar for it
 ev_logging = os.environ.get(const.LOG_MODE_ENVVAR)
-if ev_logging is not None:
+if ev_logging is None:
     log_mode = const.LOG_DEFAULT
 else:
     ev_logging = ev_logging.lower()
