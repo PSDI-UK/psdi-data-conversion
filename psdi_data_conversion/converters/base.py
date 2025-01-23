@@ -515,8 +515,15 @@ class ScriptFileConverter(FileConverter):
     script: str | None = None
 
     def _convert(self):
+
+        if not self.from_flags:
+            self.from_flags = ""
+        if not self.to_flags:
+            self.to_flags = ""
+
         process = subprocess.run(['sh', f'psdi_data_conversion/scripts/{self.script}',
-                                 self.in_filename, self.out_filename], capture_output=True, text=True)
+                                 self.in_filename, self.out_filename, self.from_flags, self.to_flags],
+                                 capture_output=True, text=True)
 
         self.out = process.stdout
         self.err = process.stderr
