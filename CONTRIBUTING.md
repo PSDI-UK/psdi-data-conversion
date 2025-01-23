@@ -18,9 +18,10 @@ The following tasks should be completed before merging a release candidate branc
 - Manually test the local web interface
   - If there have been any changes to the Python backend, run a test that a file can be converted successfully and produces a proper log
   - If there have been any changes to the web frontend, check the appearance of the site to ensure that it looks as desired. Test the Accessibility page to ensure that changes there work properly, are saved when requested and apply to other pages
+- Check that `CHANGELOG.md` is up-to-date with all changes in this version. Any subsections for categories with no changes in this version can be removed to keep the file concise
 - Check that the project version is updated to the desired new version in all places it appears:
-  - `CHANGELOG.md` (When added in the future)
-  - `pyproject.toml` (When the version number is added to it)
+  - `CHANGELOG.md` (The top section should reflect the new version)
+  - `pyproject.toml` (if/when the version number is added to it - currently it gets the version automatically from the last tag)
 
 If any of these tasks fail and require changes, make the needed changes and then recheck that all other tasks still pass. E.g. if testing the local web interface reveals a bug in the Python backend that needs to be fixed, ensure that all automated tests still pass after doing so
 
@@ -28,7 +29,7 @@ Then, follow the following steps to make the release:
 
 1. Merge the pull request to `release`. The release candidate branch can be safely deleted
 2. Merge `release` into `main` via PR (obviously don't delete `release` - if it even gives you the option to, something has gone wrong in the project rulesets, so report this)
-3. Create a new release for the project on GitHub from the `release` branch, and tag the latest commit to `release` in the process. The release and tag should both be named `v<version-number>`, e.g. `v0.1.4`.
+3. Create a new release for the project on GitHub from the `release` branch, and tag the latest commit to `release` in the process. The release and tag should both be named `v<version-number>`, e.g. `v0.1.4`. The description can be used to highlight any important changes.
 
 ## Changelog
 
