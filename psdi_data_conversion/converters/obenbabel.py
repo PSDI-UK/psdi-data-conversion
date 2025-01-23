@@ -6,7 +6,6 @@ Open Babel FileConverter
 """
 
 import openbabel
-import os
 import py
 
 from psdi_data_conversion.converters.base import FileConverter
@@ -76,19 +75,3 @@ class OBFileConverter(FileConverter):
 
         self.out, self.err = stdouterr_ob.reset()   # Grab stdout and stderr
         stdouterr_ob.done()
-
-        self.in_size, self.out_size = self._check_file_size()
-
-        if self.file_to_convert != 'file':  # Website only (i.e., not command line option)
-            if self.delete_input:
-                os.remove(self.in_filename)
-            self.from_format = self.form['from_full']
-            self.to_format = self.form['to_full']
-            self.quality = self.form['success']
-        else:
-            self.quality = self.get_quality(self.from_format, self.to_format)
-
-        if self.err.find('Error') > -1:
-            self._abort_from_err()
-        else:
-            self._log_success()
