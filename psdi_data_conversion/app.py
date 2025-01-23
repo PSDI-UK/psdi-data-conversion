@@ -13,28 +13,25 @@ import sys
 from flask import Flask, request, render_template, abort, Response
 
 from psdi_data_conversion import log_utility
-from psdi_data_conversion.converter import (DEFAULT_DOWNLOAD_DIR, DEFAULT_MAX_FILE_SIZE, FILE_KEY, FILE_TO_UPLOAD_KEY,
-                                            L_ALLOWED_LOGGING_TYPES, LOG_DEFAULT, LOG_MODE_ENVVAR,
-                                            MAX_FILESIZE_ENVVAR, MEGABYTE, run_converter)
-
-AUTH_ENVVAR = "AUTH"
+from psdi_data_conversion import constants as const
+from psdi_data_conversion.converter import run_converter
 
 # Create a token by hashing the current date and time.
 dt = str(datetime.now())
 token = hashlib.md5(dt.encode('utf8')).hexdigest()
 
 # Check the authorisation envvar to see if we're checking auth
-auth_ev = os.environ.get(AUTH_ENVVAR)
+auth_ev = os.environ.get(const.AUTH_ENVVAR)
 check_auth = (auth_ev is not None) and (auth_ev.lower() == "true")
 
 # Get the logging style from the envvar for it
-ev_logging = os.environ.get(LOG_MODE_ENVVAR)
+ev_logging = os.environ.get(const.LOG_MODE_ENVVAR)
 if ev_logging is not None:
-    log_mode = LOG_DEFAULT
+    log_mode = const.LOG_DEFAULT
 else:
     ev_logging = ev_logging.lower()
-    if ev_logging not in L_ALLOWED_LOGGING_TYPES:
-        print(f"ERROR: Unrecognised logging option: {ev_logging}. Allowed options are: {L_ALLOWED_LOGGING_TYPES}",
+    if ev_logging not in const.L_ALLOWED_LOG_MODES:
+        print(f"ERROR: Unrecognised logging option: {ev_logging}. Allowed options are: {const.L_ALLOWED_LOG_MODES}",
               file=sys.stderr)
         exit(1)
     log_mode = ev_logging
@@ -47,11 +44,11 @@ def website():
     """Return the web page along with the token
     """
     # Get the maximum allowed size from the envvar for it
-    ev_max_file_size = os.environ.get(MAX_FILESIZE_ENVVAR)
+    ev_max_file_size = os.environ.get(const.MAX_FILESIZE_ENVVAR)
     if ev_max_file_size is not None:
-        max_file_size = float(ev_max_file_size)*MEGABYTE
+        max_file_size = float(ev_max_file_size)*const.MEGABYTE
     else:
-        max_file_size = DEFAULT_MAX_FILE_SIZE
+        max_file_size = const.DEFAULT_MAX_FILE_SIZE
 
     data = [{'token': token,
              'max_file_size': max_file_size}]
@@ -66,7 +63,7 @@ def convert():
     if check_auth and request.form['token'] == token and token != '':
         return run_converter(files=request.files,
                              form=request.form,
-                             file_to_convert=FILE_TO_UPLOAD_KEY,
+                             file_to_convert=const.FILE_TO_UPLOAD_KEY,
                              log_mode=log_mode,
                              abort_callback=abort)
     else:
@@ -80,7 +77,7 @@ def conv():
     """
     return run_converter(files=request.files,
                          form=request.form,
-                         file_to_convert=FILE_KEY,
+                         file_to_convert=const.FILE_KEY,
                          log_mode=log_mode,
                          abort_callback=abort)
 
@@ -115,8 +112,8 @@ def feedback():
 def delete():
     """Delete files in folder 'downloads'
     """
-    os.remove(f"{DEFAULT_DOWNLOAD_DIR}/{request.form['filename']}")
-    os.remove(f"{DEFAULT_DOWNLOAD_DIR}/{request.form['logname']}")
+    os.remove(f"{const.DEFAULT_DOWNLOAD_DIR}/{request.form['filename']}")
+    os.remove(f"{const.DEFAULT_DOWNLOAD_DIR}/{request.form['logname']}")
 
     return 'okay'
 

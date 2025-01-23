@@ -11,6 +11,7 @@ import time
 import logging
 
 from psdi_data_conversion import log_utility
+from psdi_data_conversion import constants as const
 
 
 def test_date_time():
@@ -18,9 +19,9 @@ def test_date_time():
     """
 
     # Use a regex match to test that the date and time are in the right format
-    date_re = re.compile(log_utility.DATE_RE_RAW)
-    time_re = re.compile(log_utility.TIME_RE_RAW)
-    datetime_re = re.compile(log_utility.DATETIME_RE_RAW)
+    date_re = re.compile(const.DATE_RE_RAW)
+    time_re = re.compile(const.TIME_RE_RAW)
+    datetime_re = re.compile(const.DATETIME_RE_RAW)
 
     date_str_1 = log_utility.get_date()
     time_str_1 = log_utility.get_time()
@@ -68,14 +69,17 @@ def test_setup_logger(tmp_path):
     fn_logger = log_utility.set_up_data_conversion_logger("fn-test",
                                                           local_log_file=test_log_filename,
                                                           local_logger_level=test_log_level,
-                                                          extra_loggers=[(test_error_filename, test_error_level, False)])
+                                                          extra_loggers=[(test_error_filename,
+                                                                          test_error_level,
+                                                                          False)])
 
     # Search through the logger's handlers to get all files it logs to and at what levels
     l_files_and_levels = []
     for handler in fn_logger.handlers:
         if isinstance(handler, logging.FileHandler):
             l_files_and_levels.append((handler.baseFilename, handler.level))
-    assert (os.path.abspath(log_utility.GLOBAL_LOG_FILENAME), log_utility.GLOBAL_LOGGER_LEVEL) in l_files_and_levels
+    assert (os.path.abspath(const.GLOBAL_LOG_FILENAME),
+            const.GLOBAL_LOGGER_LEVEL) in l_files_and_levels
     assert (os.path.abspath(test_log_filename), test_log_level) in l_files_and_levels
     assert (os.path.abspath(test_error_filename), test_error_level) in l_files_and_levels
 
@@ -87,8 +91,8 @@ def test_logging(tmp_path):
     test_filename = os.path.join(tmp_path, "log.txt")
 
     # Delete any existing error logs
-    if os.path.isfile(log_utility.GLOBAL_LOG_FILENAME):
-        os.remove(log_utility.GLOBAL_LOG_FILENAME)
+    if os.path.isfile(const.GLOBAL_LOG_FILENAME):
+        os.remove(const.GLOBAL_LOG_FILENAME)
     if os.path.isfile(test_filename):
         os.remove(test_filename)
 
@@ -109,7 +113,7 @@ def test_logging(tmp_path):
     # Open the files and check that only the expected messages are present - by default, the global log will log
     # at ERROR level and above, and the local log will log at INFO level and above
 
-    with open(log_utility.GLOBAL_LOG_FILENAME, "r") as fi:
+    with open(const.GLOBAL_LOG_FILENAME, "r") as fi:
         global_log_content = fi.read()
 
         assert debug_msg not in global_log_content

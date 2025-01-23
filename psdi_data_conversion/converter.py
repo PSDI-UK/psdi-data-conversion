@@ -15,6 +15,8 @@ import py.io
 import subprocess
 from openbabel import openbabel
 
+from psdi_data_conversion import constants as const
+
 try:
     # werkzeug is installed in the optional dependency Flask. It's only used here to recognize an exception type,
     # and if Flask isn't installed, that exception will never be raised, so we can just replace it with None and later
@@ -24,52 +26,6 @@ except ImportError:
     HTTPException = None
 
 from psdi_data_conversion import log_utility
-
-# Maximum output file size in bytes
-MEGABYTE = 1024*1024
-DEFAULT_MAX_FILE_SIZE = 1*MEGABYTE
-MAX_FILESIZE_ENVVAR = "MAX_FILESIZE"
-
-# Create directory 'uploads' if not extant.
-DEFAULT_UPLOAD_DIR = './psdi_data_conversion/static/uploads'
-if not os.path.exists(DEFAULT_UPLOAD_DIR):
-    os.makedirs(DEFAULT_UPLOAD_DIR, exist_ok=True)
-
-# Create directory 'downloads' if not extant.
-DEFAULT_DOWNLOAD_DIR = './psdi_data_conversion/static/downloads'
-if not os.path.exists(DEFAULT_DOWNLOAD_DIR):
-    os.makedirs(DEFAULT_DOWNLOAD_DIR, exist_ok=True)
-
-# Constant strings for how to log
-LOG_MODE_ENVVAR = "LOGGING"
-
-LOG_FULL = "full"
-LOG_SIMPLE = "simple"
-LOG_STDOUT = "stdout"
-LOG_NONE = "none"
-
-LOG_DEFAULT = LOG_SIMPLE
-L_ALLOWED_LOGGING_TYPES = (LOG_FULL, LOG_SIMPLE, LOG_STDOUT, LOG_NONE)
-
-# Constant strings for converter types
-CONVERTER_OB = 'Open Babel'
-CONVERTER_ATO = 'Atomsk'
-CONVERTER_C2X = 'c2x'
-
-L_ALLOWED_CONVERTERS = (CONVERTER_OB, CONVERTER_ATO, CONVERTER_C2X)
-
-# Extensions for logs
-LOCAL_LOG_EXT = "log"
-OUTPUT_LOG_EXT = "log.txt"
-
-# Status codes for various types of errors
-STATUS_CODE_BAD_METHOD = 405
-STATUS_CODE_SIZE = 413
-STATUS_CODE_GENERAL = 422
-
-# Keys used commonly by dicts
-FILE_KEY = 'file'
-FILE_TO_UPLOAD_KEY = 'fileToUpload'
 
 
 class FileStorage:
@@ -97,8 +53,8 @@ def get_file_storage(source_filename):
     """Convenience function for unit test to get a mock `files` dict to pass as an argument to initializing a converter
     """
     mock_file_storage = FileStorage(source_filename)
-    return {FILE_KEY: mock_file_storage,
-            FILE_TO_UPLOAD_KEY: mock_file_storage,
+    return {const.FILE_KEY: mock_file_storage,
+            const.FILE_TO_UPLOAD_KEY: mock_file_storage,
             }
 
 
@@ -139,11 +95,11 @@ class FileConverter:
                  file_to_convert: str,
                  abort_callback: Callable[[int], None] = abort_raise,
                  use_envvars=False,
-                 upload_dir=DEFAULT_UPLOAD_DIR,
-                 download_dir=DEFAULT_DOWNLOAD_DIR,
-                 max_file_size=DEFAULT_MAX_FILE_SIZE,
+                 upload_dir=const.DEFAULT_UPLOAD_DIR,
+                 download_dir=const.DEFAULT_DOWNLOAD_DIR,
+                 max_file_size=const.DEFAULT_MAX_FILE_SIZE,
                  log_file: str | None = None,
-                 log_mode=LOG_FULL,
+                 log_mode=const.LOG_FULL,
                  delete_input=True,
                  **kwargs):
         """Initialize the object, storing needed data and setting up loggers.
@@ -192,7 +148,7 @@ class FileConverter:
         self.abort_callback = abort_callback
         self.upload_dir = upload_dir
         self.download_dir = download_dir
-        self.max_file_size = max_file_size*MEGABYTE
+        self.max_file_size = max_file_size*const.MEGABYTE
         self.log_file = log_file
         self.log_mode = log_mode
         self.delete_input = delete_input
@@ -227,9 +183,17 @@ class FileConverter:
         # Set values from envvars if desired
         if use_envvars:
             # Get the maximum allowed size from the envvar for it
-            ev_max_file_size = os.environ.get(MAX_FILESIZE_ENVVAR)
+            ev_max_file_size = os.environ.get(const.MAX_FILESIZE_ENVVAR)
             if ev_max_file_size is not None:
-                self.max_file_size = float(ev_max_file_size)*MEGABYTE
+                self.max_file_size = float(ev_max_file_size)*const.MEGABYTE
+
+        # Create directory 'uploads' if not extant.
+        if not os.path.exists(self.upload_dir):
+            os.makedirs(self.upload_dir, exist_ok=True)
+
+        # Create directory 'downloads' if not extant.
+        if not os.path.exists(self.download_dir):
+            os.makedirs(self.download_dir, exist_ok=True)
 
         self.f = self.files[self.file_to_convert]
         self.filename_base = self.f.filename.split(".")[0]  # E.g. ethane.mol --> ethane
@@ -248,20 +212,20 @@ class FileConverter:
         """
 
         # Determine level to log at based on quiet status
-        if self.log_mode == LOG_NONE:
+        if self.log_mode == const.LOG_NONE:
             self._local_logger_level = None
             self._stdout_output_level = logging.ERROR
-        elif self.log_mode == LOG_STDOUT:
+        elif self.log_mode == const.LOG_STDOUT:
             self._local_logger_level = None
             self._stdout_output_level = logging.INFO
-        elif self.log_mode == LOG_SIMPLE or self.log_mode == LOG_FULL:
-            self._local_logger_level = log_utility.DEFAULT_LOCAL_LOGGER_LEVEL
+        elif self.log_mode == const.LOG_SIMPLE or self.log_mode == const.LOG_FULL:
+            self._local_logger_level = const.DEFAULT_LOCAL_LOGGER_LEVEL
             self._stdout_output_level = logging.ERROR
-            if self.log_mode == LOG_FULL:
+            if self.log_mode == const.LOG_FULL:
                 return self._setup_server_loggers()
         else:
             raise FileConverterException(f"ERROR: Unrecognised logging option: {self.log_mode}. Allowed options "
-                                         f"are: {L_ALLOWED_LOGGING_TYPES}", file=sys.stderr)
+                                         f"are: {const.L_ALLOWED_LOG_MODES}", file=sys.stderr)
 
         self.output_log = self.log_file
 
@@ -275,8 +239,8 @@ class FileConverter:
         """Run at init to set up loggers for this object in server-style execution
         """
         local_log_base = f"{self.download_dir}/{self.f.filename}-{self.filename_base}.{self.to_format}"
-        local_log = f"{local_log_base}.{LOCAL_LOG_EXT}"
-        self.output_log = f"{self.download_dir}/{self.filename_base}.{OUTPUT_LOG_EXT}"
+        local_log = f"{local_log_base}{const.LOCAL_LOG_EXT}"
+        self.output_log = f"{self.download_dir}/{self.filename_base}{const.OUTPUT_LOG_EXT}"
 
         # If any previous local logs exist, delete them
         if os.path.exists(local_log):
@@ -300,15 +264,15 @@ class FileConverter:
         """
 
         try:
-            if self.converter == CONVERTER_OB:
+            if self.converter == const.CONVERTER_OB:
                 self._convert_ob()
-            elif self.converter == CONVERTER_ATO:
+            elif self.converter == const.CONVERTER_ATO:
                 self._convert_ato()
-            elif self.converter == CONVERTER_C2X:
+            elif self.converter == const.CONVERTER_C2X:
                 self._convert_c2x()
             else:
                 # Unrecognized converter - abort
-                self._abort(STATUS_CODE_BAD_METHOD, f"ERROR: Unknown converter '{self.converter}' requested")
+                self._abort(const.STATUS_CODE_BAD_METHOD, f"ERROR: Unknown converter '{self.converter}' requested")
         except Exception as e:
             if isinstance(e, l_abort_exceptions):
                 # Don't catch a deliberate abort; let it pass through
@@ -320,7 +284,7 @@ class FileConverter:
         return ('\nConverting from ' + self.filename_base + '.' + self.from_format + ' to ' + self.filename_base +
                 '.' + self.to_format + '\n')
 
-    def _abort(self, status_code=STATUS_CODE_GENERAL, message=None):
+    def _abort(self, status_code=const.STATUS_CODE_GENERAL, message=None):
         """Abort the conversion, reporting the desired message to the user at the top of the output
 
         Parameters
@@ -481,12 +445,12 @@ class FileConverter:
         # Check that the output file doesn't exceed the maximum allowed size
         if self.max_file_size > 0 and out_size > self.max_file_size:
 
-            self._abort(STATUS_CODE_SIZE,
+            self._abort(const.STATUS_CODE_SIZE,
                         f"ERROR converting {os.path.basename(self.in_filename)} to " +
                         os.path.basename(self.out_filename) + ": "
                         f"Output file exceeds maximum size.\nInput file size is "
-                        f"{in_size/MEGABYTE:.2f} MB; Output file size is {out_size/MEGABYTE:.2f} "
-                        f"MB; maximum output file size is {self.max_file_size/MEGABYTE:.2f} MB.\n")
+                        f"{in_size/const.MEGABYTE:.2f} MB; Output file size is {out_size/const.MEGABYTE:.2f} "
+                        f"MB; maximum output file size is {self.max_file_size/const.MEGABYTE:.2f} MB.\n")
 
         return in_size, out_size
 
