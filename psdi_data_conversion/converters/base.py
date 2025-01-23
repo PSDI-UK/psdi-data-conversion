@@ -73,6 +73,12 @@ class FileConverterAbortException(FileConverterException):
         self.status_code = status_code
 
 
+class FileConverterInputException(FileConverterException):
+    """Exception class to represent errors encountered with input parameters for the data conversion script.
+    """
+    pass
+
+
 if HTTPException is not None:
     l_abort_exceptions = (HTTPException, FileConverterAbortException)
 else:
@@ -88,6 +94,8 @@ def abort_raise(status_code):
 class FileConverter:
     """Class to handle conversion of files from one type to another
     """
+
+    converter = const.CONVERTER_DEFAULT
 
     def __init__(self,
                  files: dict[str, FileStorage],
@@ -156,7 +164,6 @@ class FileConverter:
         # Set member variables from dict values in input
         self.from_format = self.form['from']
         self.to_format = self.form['to']
-        self.converter = self.form['converter']
 
         # Set placeholders for member variables which will be set when conversion is run
         self.in_size: int | None = None

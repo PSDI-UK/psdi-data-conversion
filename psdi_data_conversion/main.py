@@ -13,16 +13,11 @@ import os
 import sys
 
 from psdi_data_conversion import constants as const
-from psdi_data_conversion.converters.base import (FileConverter)
-from psdi_data_conversion.converters.base import FileConverterAbortException, FileConverterException, get_file_storage
+from psdi_data_conversion.converter import run_converter
+from psdi_data_conversion.converters.base import (FileConverterAbortException, FileConverterInputException,
+                                                  get_file_storage)
 
 logger = logging.getLogger(__name__)
-
-
-class FileConverterInputException(FileConverterException):
-    """Exception class to represent errors encountered with input parameters for the data conversion script.
-    """
-    pass
 
 
 class ConvertArgs:
@@ -299,7 +294,6 @@ def run_from_args(args: ConvertArgs):
         return detail_converters(args.l_args)
 
     form = {'token': '1041c0a661d118d5f28e7c6830375dd0',
-            'converter': args.converter,
             'from': args.from_format,
             'to': args.to_format,
             'from_full': args.from_format,
@@ -337,21 +331,25 @@ def run_from_args(args: ConvertArgs):
 
         file_storage = get_file_storage(qualified_filename)
 
-        converter = FileConverter(files=file_storage,
-                                  form=form,
-                                  file_to_convert=const.FILE_TO_UPLOAD_KEY,
-                                  use_envvars=False,
-                                  upload_dir=args.input_dir,
-                                  download_dir=args.output_dir,
-                                  log_file=args.log_file,
-                                  log_mode=args.log_mode,
-                                  delete_input=args.delete_input,
-                                  max_file_size=0)
         try:
-            converter.run()
+            run_converter(converter=args.converter,
+                          files=file_storage,
+                          form=form,
+                          file_to_convert=const.FILE_TO_UPLOAD_KEY,
+                          use_envvars=False,
+                          upload_dir=args.input_dir,
+                          download_dir=args.output_dir,
+                          log_file=args.log_file,
+                          log_mode=args.log_mode,
+                          delete_input=args.delete_input,
+                          max_file_size=0)
         except FileConverterAbortException as e:
-            print(f"ERROR: Attempt to convert file {filename} failed with status code {e.status_code} and message: \n" +
-                  str(e) + "\n", file=sys.stderr)
+            print(f"ERROR: Attempt to convert file {filename} aborted with status code {e.status_code} and message: " +
+                  f"\n{e}\n", file=sys.stderr)
+            continue
+        except Exception as e:
+            print(f"ERROR: Attempt to convert file {filename} failed with exception type {type(e)} and message: " +
+                  f"\n{e}\n", file=sys.stderr)
             continue
 
         if not args.quiet:

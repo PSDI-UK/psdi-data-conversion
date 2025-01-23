@@ -15,6 +15,7 @@ import pytest
 from psdi_data_conversion import constants as const
 from psdi_data_conversion.converter import run_converter
 from psdi_data_conversion.converters.base import FileConverter, FileConverterAbortException, get_file_storage
+from psdi_data_conversion.main import FileConverterInputException
 
 
 @pytest.fixture()
@@ -22,7 +23,6 @@ def base_mock_form():
     """A fixture providing a default `form` object which can be used to instantiate a converter
     """
     return {'token': '1041c0a661d118d5f28e7c6830375dd0',
-            'converter': const.CONVERTER_OB,
             'from': 'mmcif',
             'to': 'pdb',
             'from_full': 'mmcif: Macromolecular Crystallographic Info',
@@ -116,16 +116,19 @@ class TestConverter:
                        "download_dir": self.tmp_download_path})
         return kwargs
 
-    def run_converter(self, expect_code=None, **kwargs):
+    def run_converter(self, expect_exception=None, expect_code=None, **kwargs):
         """Runs a test on a file converter and checks that it returns successfully or else fails with an expected error
         code.
         """
 
         converter_kwargs = self.get_converter_kwargs(**kwargs)
 
-        if expect_code is None:
+        if expect_exception is None and expect_code is None:
             # If we don't expect an error, just try running the converter
             run_converter(**converter_kwargs)
+        elif expect_exception is not None:
+            with pytest.raises(expect_exception) as esc_info:
+                run_converter(**converter_kwargs)
         else:
             with pytest.raises(FileConverterAbortException) as esc_info:
                 run_converter(**converter_kwargs)
@@ -174,7 +177,11 @@ class TestConverter:
         self.output_log_text: str | None = None
 
         for log_type in ("global", "local", "output"):
-            setattr(self, f"{log_type}_log_text", open(getattr(self, f"{log_type}_log_filename")).read())
+            try:
+                log_text = open(getattr(self, f"{log_type}_log_filename")).read()
+            except FileNotFoundError:
+                log_text = ""
+            setattr(self, f"{log_type}_log_text", log_text)
 
     def test_mmcif_to_pdb(self):
         """Run a test of the converter on a straightforward `.mmcif` to `.pdb` conversion
@@ -238,23 +245,13 @@ class TestConverter:
         """Run a test of the converter to ensure it reports an error properly if an invalid converter is requested
         """
 
-        self.get_input_info(filename="1NE6.mmcif",
-                            converter="INVALID")
+        self.get_input_info(filename="1NE6.mmcif")
 
-        self.run_converter(expect_code=const.STATUS_CODE_BAD_METHOD)
+        self.run_converter(expect_exception=FileConverterInputException,
+                           converter="INVALID")
 
         # Check that the input and output files have properly been deleted
         self.check_file_status(input_exist=False, output_exist=False)
-
-        # Check that the logs are as we expect
-        self.get_logs()
-
-        # Check that all logs contain the expected error
-        for log_type in ("global", "local", "output"):
-            log_text = getattr(self, f"{log_type}_log_text")
-            assert "ERROR: Unknown converter" in log_text, ("Did not find expected error message in "
-                                                            f"{log_type} log at " +
-                                                            getattr(self, f"{log_type}_log_filename"))
 
     def test_xyz_to_inchi(self):
         """Run a test of the converter on a straightforward `.xyz` to `.inchi` conversion
@@ -276,13 +273,12 @@ class TestConverter:
         """
 
         self.get_input_info(filename="hemoglobin.pdb",
-                            to="cif",
-                            converter=const.CONVERTER_ATO)
+                            to="cif")
 
         # "from" is a reserved word so we can't set it as a kwarg in the function call above
         self.mock_form["from"] = "pdb"
 
-        self.run_converter()
+        self.run_converter(converter=const.CONVERTER_ATO)
 
         # Check that the input file has been deleted and the output file exists where we expect it to
         self.check_file_status(input_exist=False, output_exist=True)
