@@ -10,6 +10,7 @@ import json
 import logging
 from collections.abc import Callable
 import os
+import subprocess
 import sys
 import abc
 
@@ -505,3 +506,17 @@ class FileConverter:
         """Run the conversion with the desired converter
         """
         pass
+
+
+class ScriptFileConverter(FileConverter):
+    """File Converter specialized to run a shell script to call the converter
+    """
+
+    script: str | None = None
+
+    def _convert(self):
+        process = subprocess.run(['sh', f'psdi_data_conversion/scripts/{self.script}',
+                                 self.in_filename, self.out_filename], capture_output=True, text=True)
+
+        self.out = process.stdout
+        self.err = process.stderr
