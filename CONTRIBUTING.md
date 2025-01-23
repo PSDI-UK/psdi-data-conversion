@@ -18,9 +18,10 @@ The following tasks should be completed before merging a release candidate branc
 - Manually test the local web interface
   - If there have been any changes to the Python backend, run a test that a file can be converted successfully and produces a proper log
   - If there have been any changes to the web frontend, check the appearance of the site to ensure that it looks as desired. Test the Accessibility page to ensure that changes there work properly, are saved when requested and apply to other pages
+- Check that `CHANGELOG.md` is up-to-date with all changes in this version. Any subsections for categories with no changes in this version can be removed to keep the file concise
 - Check that the project version is updated to the desired new version in all places it appears:
-  - `CHANGELOG.md` (When added in the future)
-  - `pyproject.toml` (When the version number is added to it)
+  - `CHANGELOG.md` (The top section should reflect the new version)
+  - `pyproject.toml` (if/when the version number is added to it - currently it gets the version automatically from the last tag)
 
 If any of these tasks fail and require changes, make the needed changes and then recheck that all other tasks still pass. E.g. if testing the local web interface reveals a bug in the Python backend that needs to be fixed, ensure that all automated tests still pass after doing so
 
@@ -28,7 +29,59 @@ Then, follow the following steps to make the release:
 
 1. Merge the pull request to `release`. The release candidate branch can be safely deleted
 2. Merge `release` into `main` via PR (obviously don't delete `release` - if it even gives you the option to, something has gone wrong in the project rulesets, so report this)
-3. Create a new release for the project on GitHub from the `release` branch, and tag the latest commit to `release` in the process. The release and tag should both be named `v<version-number>`, e.g. `v0.1.4`.
+3. Create a new release for the project on GitHub from the `release` branch, and tag the latest commit to `release` in the process. The release and tag should both be named `v<version-number>`, e.g. `v0.1.4`. The description can be used to highlight any important changes.
+
+## Changelog
+
+Explanation of possible sections in the CHANGELOG:
+
+- **Breaking Changes:** Any changes which would result in previous integration with this project breaking and no longer being compatible with the new version (e.g. a command-line option is removed)
+- **Deprecated Features:** Any features which are planned to be removed or changed in a breaking way in a future release (e.g. a command-line option will be removed soon, and perhaps an alternative way to achieve the same goal already exists)
+- **New and Changed Functionality:** Anything new the project can do for the user
+- **Bugfixes:** Any issues fixed
+- **Testing Changes:** New unit tests or significant changes to existing tests, not including any incidental updates to tests which are necessary for other features already noted. E.g. if a test is implemented to ensure that a bugfix noted in this section works properly, that doesn't need to be noted
+- **Documentation Changes:** Any notable updates to `README.md`, `CONTRIBUTING.md`, docstrings, and comments. This doesn't need to include incidental changes - for instance, if a new command-line option is added, it isn't necessary to make a separate note that documentation for it is added. However, if documentation was previously missing for an option and is now added, that should be noted
+- **Formatting and Refactoring Changes:** Any non-functional changes to the code (e.g. "Changed all python variables to `snake_case`", "Refactored set of separate functions to use the same common code")
+- **Stylistic Changes:** Non-functional changes to the aesthetic appearance of the web app or the formatting of text displayed to the user by the CLI (including logs)
+- **Miscellaneous Changes:** Anything that doesn't fit into one of the above categories, such as project meta changes (e.g. "Implemented new GitHub action to lint JavaScript code")
+
+The below can be used as a template for new sections to be added to `CHANGELOG.md` with each new release. When a release is made, any sections without any entries can be removed to help keep the file concise:
+
+### Breaking Changes
+
+-
+
+### Deprecated Features
+
+-
+
+### New and Changed Functionality
+
+-
+
+### Bugfixes
+
+-
+
+### Testing Changes
+
+-
+
+### Documentation Changes
+
+-
+
+### Formatting and Refactoring Changes
+
+-
+
+### Stylistic Changes
+
+-
+
+### Miscellaneous Changes
+
+-
 
 ## Editing Advice
 
