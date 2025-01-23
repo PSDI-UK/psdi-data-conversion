@@ -9,6 +9,7 @@ authors = [
   { name = "Don Cruickshank" },
   { name = "Samantha Pearman-Kanza", email = "s.pearman-kanza@soton.ac.uk" },
   { name = "Bryan Gillis", email = "7204836+brgillis@users.noreply.github.com" },
+  { name = "Tom Underwood" },
 ]
 description = "Chemistry file format conversion service, provided by PSDI"
 readme = "README.md"
