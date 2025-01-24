@@ -8,12 +8,15 @@ Open Babel FileConverter
 import openbabel
 import py
 
+from psdi_data_conversion.constants import CONVERTER_OB
 from psdi_data_conversion.converters.base import FileConverter
 
 
 class OBFileConverter(FileConverter):
     """File Converter specialized to use Open Babel for conversions
     """
+
+    converter = CONVERTER_OB
 
     def _convert(self):
         stdouterr_ob = py.io.StdCaptureFD(in_=False)
@@ -75,3 +78,6 @@ class OBFileConverter(FileConverter):
 
         self.out, self.err = stdouterr_ob.reset()   # Grab stdout and stderr
         stdouterr_ob.done()
+
+
+converter = OBFileConverter
