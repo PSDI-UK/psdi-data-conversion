@@ -5,14 +5,50 @@ Created 2024-12-10 by Bryan Gillis.
 Class and functions to perform file conversion
 """
 
+import os
+import importlib
+from typing import NamedTuple
 from psdi_data_conversion import constants as const
-from psdi_data_conversion.converters.atomsk import AtoFileConverter
-from psdi_data_conversion.converters.base import FileConverter, FileConverterInputException
-from psdi_data_conversion.converters.c2x import C2xFileConverter
-from psdi_data_conversion.converters.obenbabel import OBFileConverter
+from psdi_data_conversion.converters import base
+
+import glob
+
+# Find all modules for specific converters
+l_converter_modules = glob.glob(os.path.dirname(base.__file__) + "/*.py")
 
 
-def get_converter(converter=const.CONVERTER_DEFAULT, **converter_kwargs) -> FileConverter:
+class NameAndClass(NamedTuple):
+    name: str
+    converter_class: type[base.FileConverter]
+
+
+def get_converter_name_and_class(module_path: str) -> NameAndClass | None:
+
+    module_name = os.path.splitext(os.path.basename(module_path))[0]
+
+    # Skip the base module and the package __init__
+    if module_name in ("base", "__init__"):
+        return None
+
+    module = importlib.import_module(f".{module_name}", package="psdi_data_conversion.converters")
+    converter_class = module.converter
+    name = converter_class.converter
+
+    return NameAndClass(name, converter_class)
+
+
+# Get a list of all converter names and FileConverter subclasses
+l_converter_names_and_classes = [get_converter_name_and_class(module_name) for
+                                 module_name in l_converter_modules]
+# Remove the None entry from the list, which corresponds to the 'base' module
+l_converter_names_and_classes = [x for x in l_converter_names_and_classes if x is not None]
+
+# Make constant dict and list of registered converters
+D_REGISTERED_CONVERTERS = dict(l_converter_names_and_classes)
+L_REGISTERED_CONVERTERS = [x for x in D_REGISTERED_CONVERTERS.keys()]
+
+
+def get_converter(converter=const.CONVERTER_DEFAULT, **converter_kwargs) -> base.FileConverter:
     """Get a FileConverter of the proper subclass for the requested converter type
 
     Parameters
@@ -30,15 +66,10 @@ def get_converter(converter=const.CONVERTER_DEFAULT, **converter_kwargs) -> File
     FileConverterInputException
         If the converter isn't recognized
     """
-    if converter not in const.L_ALLOWED_CONVERTERS:
-        raise FileConverterInputException(f"Converter {converter} not recognized. Allowed converters are: " +
-                                          f"{const.L_ALLOWED_CONVERTERS}")
-    if converter == const.CONVERTER_OB:
-        converter_class = OBFileConverter
-    elif converter == const.CONVERTER_ATO:
-        converter_class = AtoFileConverter
-    elif converter == const.CONVERTER_C2X:
-        converter_class = C2xFileConverter
+    if converter not in L_REGISTERED_CONVERTERS:
+        raise base.FileConverterInputException(f"Converter {converter} not recognized. Allowed converters are: " +
+                                               f"{L_REGISTERED_CONVERTERS}")
+    converter_class = D_REGISTERED_CONVERTERS[converter]
 
     return converter_class(converter=converter, **converter_kwargs)
 
