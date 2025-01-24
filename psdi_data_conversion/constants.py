@@ -69,13 +69,8 @@ DEFAULT_LISTING_LOG_FILE = "data-convert-list" + LOG_EXT
 # ----------
 
 # Constant strings for converter types
-CONVERTER_OB = 'Open Babel'
-CONVERTER_ATO = 'Atomsk'
-CONVERTER_C2X = 'c2x'
 
-CONVERTER_DEFAULT = CONVERTER_OB
-
-L_ALLOWED_CONVERTERS = (CONVERTER_OB, CONVERTER_ATO, CONVERTER_C2X)
+CONVERTER_DEFAULT = 'Open Babel'
 
 # Keys
 # ----

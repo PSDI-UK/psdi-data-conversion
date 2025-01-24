@@ -5,8 +5,9 @@ Created 2025-01-23 by Bryan Gillis.
 Atomsk FileConverter
 """
 
-from psdi_data_conversion.constants import CONVERTER_ATO
 from psdi_data_conversion.converters.base import ScriptFileConverter
+
+CONVERTER_ATO = 'Atomsk'
 
 
 class AtoFileConverter(ScriptFileConverter):

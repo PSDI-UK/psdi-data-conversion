@@ -13,7 +13,7 @@ import os
 import sys
 
 from psdi_data_conversion import constants as const
-from psdi_data_conversion.converter import run_converter
+from psdi_data_conversion.converter import L_REGISTERED_CONVERTERS, run_converter
 from psdi_data_conversion.converters.base import (FileConverterAbortException, FileConverterInputException,
                                                   get_file_storage)
 
@@ -93,7 +93,7 @@ class ConvertArgs:
             os.makedirs(self._output_dir, exist_ok=True)
 
         # Check the converter is recognized
-        if self.converter not in const.L_ALLOWED_CONVERTERS:
+        if self.converter not in L_REGISTERED_CONVERTERS:
             raise FileConverterInputException(f"Converter '{self.converter}' not recognised")
 
         # No more than two arguments supplied to --coord-gen
@@ -269,11 +269,11 @@ def detail_converters(l_args: list[str]):
     """Prints details on available converters for the user.
     """
     converter_name = " ".join(l_args)
-    if converter_name in const.L_ALLOWED_CONVERTERS:
+    if converter_name in L_REGISTERED_CONVERTERS:
         return detail_converter_use(converter_name)
     elif converter_name != "":
         print(f"ERROR: Converter {converter_name} not recognized.", file=sys.stderr)
-    print("Available converters are: \n" + "\n".join(const.L_ALLOWED_CONVERTERS) + "\n" +
+    print("Available converters are: \n" + "\n".join(L_REGISTERED_CONVERTERS) + "\n" +
           "For more details on a converter, call: \n" +
           "psdi-data-convert --list <Converter name>")
 

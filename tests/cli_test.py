@@ -12,6 +12,7 @@ import sys
 from unittest.mock import patch
 
 from psdi_data_conversion import constants as const
+from psdi_data_conversion.converter import L_REGISTERED_CONVERTERS
 from psdi_data_conversion.main import FileConverterInputException, main, parse_args
 
 
@@ -125,7 +126,7 @@ def test_list_converters(capsys):
     run_with_arg_string("--list")
     captured = capsys.readouterr()
     assert "Available converters are:" in captured.out
-    for converter_name in const.L_ALLOWED_CONVERTERS:
+    for converter_name in L_REGISTERED_CONVERTERS:
         assert converter_name in captured.out
 
 
@@ -134,7 +135,7 @@ def test_detail_converter(capsys):
     """
 
     # Test all converters are recognised and don't raise an error
-    for converter_name in const.L_ALLOWED_CONVERTERS:
+    for converter_name in L_REGISTERED_CONVERTERS:
         run_with_arg_string(f"--list {converter_name}")
         captured = capsys.readouterr()
         assert "not recognized" not in captured.err

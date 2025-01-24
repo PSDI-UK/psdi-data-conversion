@@ -8,8 +8,9 @@ Open Babel FileConverter
 import openbabel
 import py
 
-from psdi_data_conversion.constants import CONVERTER_OB
 from psdi_data_conversion.converters.base import FileConverter
+
+CONVERTER_OB = 'Open Babel'
 
 
 class OBFileConverter(FileConverter):
