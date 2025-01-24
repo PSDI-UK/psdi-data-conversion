@@ -13,6 +13,9 @@ from psdi_data_conversion.converters import base
 
 import glob
 
+# TODO: Make this section give more explicit errors if something goes wrong, and be more resilient to errors where
+# possible
+
 # Find all modules for specific converters
 l_converter_modules = glob.glob(os.path.dirname(base.__file__) + "/*.py")
 
