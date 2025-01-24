@@ -249,7 +249,7 @@ class TestConverter:
         self.get_input_info(filename="1NE6.mmcif")
 
         self.run_converter(expect_exception=FileConverterInputException,
-                           converter="INVALID")
+                           name="INVALID")
 
         # Check that the input and output files have properly been deleted
         self.check_file_status(input_exist=False, output_exist=False)
@@ -279,7 +279,7 @@ class TestConverter:
         # "from" is a reserved word so we can't set it as a kwarg in the function call above
         self.mock_form["from"] = "pdb"
 
-        self.run_converter(converter=CONVERTER_ATO)
+        self.run_converter(name=CONVERTER_ATO)
 
         # Check that the input file has been deleted and the output file exists where we expect it to
         self.check_file_status(input_exist=False, output_exist=True)

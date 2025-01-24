@@ -46,7 +46,7 @@ def test_input_validity():
     assert args.input_dir == cwd
     assert args.to_format == "pdb"
     assert args.output_dir == f"{cwd}/.."
-    assert args.converter == "Atomsk"
+    assert args.name == "Atomsk"
     assert args.delete_input is True
     assert args.from_flags == "-ab -c --example"
     assert args.to_flags == "-d"

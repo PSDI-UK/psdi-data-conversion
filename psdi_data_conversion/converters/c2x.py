@@ -14,7 +14,7 @@ class C2xFileConverter(ScriptFileConverter):
     """File Converter specialized to use C2X for conversions
     """
 
-    converter = CONVERTER_C2X
+    name = CONVERTER_C2X
     script = "c2x.sh"
 
 

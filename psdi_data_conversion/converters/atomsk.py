@@ -14,7 +14,7 @@ class AtoFileConverter(ScriptFileConverter):
     """File Converter specialized to use Atomsk for conversions
     """
 
-    converter = CONVERTER_ATO
+    name = CONVERTER_ATO
     script = "atomsk.sh"
 
 

@@ -36,7 +36,7 @@ class ConvertArgs:
         self._input_dir: str | None = getattr(args, "in")
         self.to_format: str | None = args.to
         self._output_dir: str | None = args.at
-        self.converter: str = getattr(args, "with")
+        self.name: str = getattr(args, "with")
         self.delete_input = args.delete_input
         self.from_flags: str = args.from_flags.replace(r"\-", "-")
         self.to_flags: str = args.to_flags.replace(r"\-", "-")
@@ -93,8 +93,8 @@ class ConvertArgs:
             os.makedirs(self._output_dir, exist_ok=True)
 
         # Check the converter is recognized
-        if self.converter not in L_REGISTERED_CONVERTERS:
-            raise FileConverterInputException(f"Converter '{self.converter}' not recognised")
+        if self.name not in L_REGISTERED_CONVERTERS:
+            raise FileConverterInputException(f"Converter '{self.name}' not recognised")
 
         # No more than two arguments supplied to --coord-gen
         if args.coord_gen is not None and len(args.coord_gen) > 2:
@@ -332,7 +332,7 @@ def run_from_args(args: ConvertArgs):
         file_storage = get_file_storage(qualified_filename)
 
         try:
-            run_converter(converter=args.converter,
+            run_converter(name=args.name,
                           files=file_storage,
                           form=form,
                           file_to_convert=const.FILE_TO_UPLOAD_KEY,

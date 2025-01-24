@@ -94,7 +94,7 @@ class FileConverter:
     """Class to handle conversion of files from one type to another
     """
 
-    converter = const.CONVERTER_DEFAULT
+    name: str | None = None
 
     def __init__(self,
                  files: dict[str, FileStorage],
@@ -391,7 +391,7 @@ class FileConverter:
                 'File name:         ' + self.filename_base + '\n'
                 'From:              ' + self.from_format + '\n'
                 'To:                ' + self.to_format + '\n'
-                'Converter:         ' + self.converter + '\n')
+                'Converter:         ' + self.name + '\n')
 
     def _log_success(self):
         """Write conversion information to server-side file, ready for downloading to user
@@ -418,7 +418,7 @@ class FileConverter:
             "datetime": log_utility.get_date_time(),
             "fromFormat": self.from_format,
             "toFormat": self.to_format,
-            "converter": self.converter,
+            "converter": self.name,
             "fname": self.filename_base,
             "inSize": self.in_size,
             "outSize": self.out_size,

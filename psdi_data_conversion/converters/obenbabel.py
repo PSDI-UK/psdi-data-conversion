@@ -17,7 +17,7 @@ class OBFileConverter(FileConverter):
     """File Converter specialized to use Open Babel for conversions
     """
 
-    converter = CONVERTER_OB
+    name = CONVERTER_OB
 
     def _convert(self):
         stdouterr_ob = py.io.StdCaptureFD(in_=False)

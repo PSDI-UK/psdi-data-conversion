@@ -32,7 +32,7 @@ def get_converter_name_and_class(module_path: str) -> NameAndClass | None:
 
     module = importlib.import_module(f".{module_name}", package="psdi_data_conversion.converters")
     converter_class = module.converter
-    name = converter_class.converter
+    name = converter_class.name
 
     return NameAndClass(name, converter_class)
 
@@ -48,12 +48,12 @@ D_REGISTERED_CONVERTERS = dict(l_converter_names_and_classes)
 L_REGISTERED_CONVERTERS = [x for x in D_REGISTERED_CONVERTERS.keys()]
 
 
-def get_converter(converter=const.CONVERTER_DEFAULT, **converter_kwargs) -> base.FileConverter:
+def get_converter(name=const.CONVERTER_DEFAULT, **converter_kwargs) -> base.FileConverter:
     """Get a FileConverter of the proper subclass for the requested converter type
 
     Parameters
     ----------
-    converter : str
+    name : str
         The desired converter type, by default 'Open Babel'
 
     Returns
@@ -66,12 +66,12 @@ def get_converter(converter=const.CONVERTER_DEFAULT, **converter_kwargs) -> base
     FileConverterInputException
         If the converter isn't recognized
     """
-    if converter not in L_REGISTERED_CONVERTERS:
-        raise base.FileConverterInputException(f"Converter {converter} not recognized. Allowed converters are: " +
+    if name not in L_REGISTERED_CONVERTERS:
+        raise base.FileConverterInputException(f"Converter {name} not recognized. Allowed converters are: " +
                                                f"{L_REGISTERED_CONVERTERS}")
-    converter_class = D_REGISTERED_CONVERTERS[converter]
+    converter_class = D_REGISTERED_CONVERTERS[name]
 
-    return converter_class(converter=converter, **converter_kwargs)
+    return converter_class(name=name, **converter_kwargs)
 
 
 def run_converter(**converter_kwargs):
