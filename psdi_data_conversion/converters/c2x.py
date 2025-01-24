@@ -18,4 +18,6 @@ class C2xFileConverter(ScriptFileConverter):
     script = "c2x.sh"
 
 
+# Assign this converter to the `converter` variable - this lets the psdi_data_conversion.converter module detect and
+# register it, making it available for use by the CLI and web app
 converter = C2xFileConverter

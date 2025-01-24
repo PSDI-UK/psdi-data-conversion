@@ -18,4 +18,6 @@ class AtoFileConverter(ScriptFileConverter):
     script = "atomsk.sh"
 
 
+# Assign this converter to the `converter` variable - this lets the psdi_data_conversion.converter module detect and
+# register it, making it available for use by the CLI and web app
 converter = AtoFileConverter
