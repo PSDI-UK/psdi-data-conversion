@@ -9,7 +9,5 @@
 # arg1 is the fully-qualified input file name (e.g., /path/to/nacl.cif)
 # arg2 is the fully-qualified output file name
 
-cd bin
-c2x ../$1 ../$2
-cd ..
+psdi_data_conversion/bin/c2x $1 $2 $3 $4
 
