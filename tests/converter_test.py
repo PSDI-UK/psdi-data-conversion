@@ -16,6 +16,7 @@ from psdi_data_conversion import constants as const
 from psdi_data_conversion.converter import run_converter
 from psdi_data_conversion.converters.atomsk import CONVERTER_ATO
 from psdi_data_conversion.converters.base import FileConverter, FileConverterAbortException, get_file_storage
+from psdi_data_conversion.converters.c2x import CONVERTER_C2X
 from psdi_data_conversion.main import FileConverterInputException
 
 
@@ -280,6 +281,21 @@ class TestConverter:
         self.mock_form["from"] = "pdb"
 
         self.run_converter(name=CONVERTER_ATO)
+
+        # Check that the input file has been deleted and the output file exists where we expect it to
+        self.check_file_status(input_exist=False, output_exist=True)
+
+    def test_c2x(self):
+        """Run a test of the C2X converter on a straightforward `.pdb` to `.cif` conversion
+        """
+
+        self.get_input_info(filename="hemoglobin.pdb",
+                            to="cif")
+
+        # "from" is a reserved word so we can't set it as a kwarg in the function call above
+        self.mock_form["from"] = "pdb"
+
+        self.run_converter(name=CONVERTER_C2X)
 
         # Check that the input file has been deleted and the output file exists where we expect it to
         self.check_file_status(input_exist=False, output_exist=True)
