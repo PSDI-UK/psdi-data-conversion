@@ -68,8 +68,10 @@ DEFAULT_LISTING_LOG_FILE = "data-convert-list" + LOG_EXT
 # Converters
 # ----------
 
-# Constant strings for converter types
+# Converter names are determined based on the modules present in the 'converters' package by the 'converter' module
+# This module contains constant dicts and lists of registered converters
 
+# Default converter
 CONVERTER_DEFAULT = 'Open Babel'
 
 # Keys
