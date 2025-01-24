@@ -12,11 +12,11 @@ import os
 import re
 import pytest
 
-from psdi_data_conversion.log_utility import DATETIME_RE_RAW, GLOBAL_LOG_FILENAME
-from psdi_data_conversion.converter import (CONVERTER_ATO, CONVERTER_OB, MAX_FILESIZE_ENVVAR, MEGABYTE,
-                                            get_file_storage, LOCAL_LOG_EXT, OUTPUT_LOG_EXT, FILE_TO_UPLOAD_KEY,
-                                            STATUS_CODE_BAD_METHOD, STATUS_CODE_GENERAL, STATUS_CODE_SIZE,
-                                            FileConverter, FileConverterAbortException, run_converter)
+from psdi_data_conversion import constants as const
+from psdi_data_conversion.converter import run_converter
+from psdi_data_conversion.converters.atomsk import CONVERTER_ATO
+from psdi_data_conversion.converters.base import FileConverter, FileConverterAbortException, get_file_storage
+from psdi_data_conversion.main import FileConverterInputException
 
 
 @pytest.fixture()
@@ -24,7 +24,6 @@ def base_mock_form():
     """A fixture providing a default `form` object which can be used to instantiate a converter
     """
     return {'token': '1041c0a661d118d5f28e7c6830375dd0',
-            'converter': CONVERTER_OB,
             'from': 'mmcif',
             'to': 'pdb',
             'from_full': 'mmcif: Macromolecular Crystallographic Info',
@@ -69,7 +68,7 @@ class TestConverter:
 
         # Remove the global log file if one exists
         try:
-            os.remove(GLOBAL_LOG_FILENAME)
+            os.remove(const.GLOBAL_LOG_FILENAME)
         except FileNotFoundError:
             pass
 
@@ -104,7 +103,7 @@ class TestConverter:
         # Save some variables from input we'll be using throughout this test
         self.source_filename = os.path.join(self.test_data_loc, filename)
         self.files = get_file_storage(self.source_filename)
-        self.filename = self.files[FILE_TO_UPLOAD_KEY].filename
+        self.filename = self.files[const.FILE_TO_UPLOAD_KEY].filename
         self.filename_base = os.path.splitext(filename)[0]
         self.to_format = self.mock_form["to"]
 
@@ -113,21 +112,24 @@ class TestConverter:
         """
         kwargs.update({"files": self.files,
                        "form": self.mock_form,
-                       "file_to_convert": FILE_TO_UPLOAD_KEY,
+                       "file_to_convert": const.FILE_TO_UPLOAD_KEY,
                        "upload_dir": self.tmp_upload_path,
                        "download_dir": self.tmp_download_path})
         return kwargs
 
-    def run_converter(self, expect_code=None, **kwargs):
+    def run_converter(self, expect_exception=None, expect_code=None, **kwargs):
         """Runs a test on a file converter and checks that it returns successfully or else fails with an expected error
         code.
         """
 
         converter_kwargs = self.get_converter_kwargs(**kwargs)
 
-        if expect_code is None:
+        if expect_exception is None and expect_code is None:
             # If we don't expect an error, just try running the converter
             run_converter(**converter_kwargs)
+        elif expect_exception is not None:
+            with pytest.raises(expect_exception) as esc_info:
+                run_converter(**converter_kwargs)
         else:
             with pytest.raises(FileConverterAbortException) as esc_info:
                 run_converter(**converter_kwargs)
@@ -146,9 +148,9 @@ class TestConverter:
             check either way.
         """
 
-        ex_input_filename = os.path.join(self.tmp_upload_path, self.files[FILE_TO_UPLOAD_KEY].filename)
+        ex_input_filename = os.path.join(self.tmp_upload_path, self.files[const.FILE_TO_UPLOAD_KEY].filename)
 
-        ex_output_filename_base = os.path.splitext(self.files[FILE_TO_UPLOAD_KEY].filename)[0]
+        ex_output_filename_base = os.path.splitext(self.files[const.FILE_TO_UPLOAD_KEY].filename)[0]
         ex_output_filename = os.path.join(self.tmp_download_path, f"{ex_output_filename_base}.{self.to_format}")
 
         for check_condition, filename in ((input_exist, ex_input_filename),
@@ -164,18 +166,23 @@ class TestConverter:
         """Get the log filenames and text content after the converter has run, for each of the three log types
         """
 
-        self.global_log_filename = GLOBAL_LOG_FILENAME
+        self.global_log_filename = const.GLOBAL_LOG_FILENAME
         self.local_log_filename = os.path.join(self.tmp_download_path,
-                                               f"{self.filename}-{self.filename_base}.{self.to_format}.{LOCAL_LOG_EXT}")
+                                               f"{self.filename}-{self.filename_base}.{self.to_format}" +
+                                               const.LOCAL_LOG_EXT)
         self.output_log_filename = os.path.join(self.tmp_download_path,
-                                                f"{self.filename_base}.{OUTPUT_LOG_EXT}")
+                                                f"{self.filename_base}{const.OUTPUT_LOG_EXT}")
 
         self.global_log_text: str | None = None
         self.local_log_text: str | None = None
         self.output_log_text: str | None = None
 
         for log_type in ("global", "local", "output"):
-            setattr(self, f"{log_type}_log_text", open(getattr(self, f"{log_type}_log_filename")).read())
+            try:
+                log_text = open(getattr(self, f"{log_type}_log_filename")).read()
+            except FileNotFoundError:
+                log_text = ""
+            setattr(self, f"{log_type}_log_text", log_text)
 
     def test_mmcif_to_pdb(self):
         """Run a test of the converter on a straightforward `.mmcif` to `.pdb` conversion
@@ -202,7 +209,7 @@ class TestConverter:
             assert "Failed to kekulize aromatic bonds" in log_text
 
             # Check that we only have the timestamp in the local log, not the output log
-            timestamp_re = re.compile(DATETIME_RE_RAW)
+            timestamp_re = re.compile(const.DATETIME_RE_RAW)
             if log_text is self.local_log_text:
                 assert timestamp_re.search(log_text)
             else:
@@ -214,7 +221,7 @@ class TestConverter:
 
         self.get_input_info(filename="1NE6.mmcif")
 
-        self.run_converter(expect_code=STATUS_CODE_SIZE,
+        self.run_converter(expect_code=const.STATUS_CODE_SIZE,
                            max_file_size=0.0001)
 
         # Check that the input and output files have properly been deleted
@@ -239,23 +246,13 @@ class TestConverter:
         """Run a test of the converter to ensure it reports an error properly if an invalid converter is requested
         """
 
-        self.get_input_info(filename="1NE6.mmcif",
-                            converter="INVALID")
+        self.get_input_info(filename="1NE6.mmcif")
 
-        self.run_converter(expect_code=STATUS_CODE_BAD_METHOD)
+        self.run_converter(expect_exception=FileConverterInputException,
+                           name="INVALID")
 
         # Check that the input and output files have properly been deleted
         self.check_file_status(input_exist=False, output_exist=False)
-
-        # Check that the logs are as we expect
-        self.get_logs()
-
-        # Check that all logs contain the expected error
-        for log_type in ("global", "local", "output"):
-            log_text = getattr(self, f"{log_type}_log_text")
-            assert "ERROR: Unknown converter" in log_text, ("Did not find expected error message in "
-                                                            f"{log_type} log at " +
-                                                            getattr(self, f"{log_type}_log_filename"))
 
     def test_xyz_to_inchi(self):
         """Run a test of the converter on a straightforward `.xyz` to `.inchi` conversion
@@ -277,13 +274,12 @@ class TestConverter:
         """
 
         self.get_input_info(filename="hemoglobin.pdb",
-                            to="cif",
-                            converter=CONVERTER_ATO)
+                            to="cif")
 
         # "from" is a reserved word so we can't set it as a kwarg in the function call above
         self.mock_form["from"] = "pdb"
 
-        self.run_converter()
+        self.run_converter(name=CONVERTER_ATO)
 
         # Check that the input file has been deleted and the output file exists where we expect it to
         self.check_file_status(input_exist=False, output_exist=True)
@@ -298,7 +294,7 @@ class TestConverter:
         # "from" is a reserved word so we can't set it as a kwarg in the function call above
         self.mock_form["from"] = "xyz"
 
-        self.run_converter(expect_code=STATUS_CODE_GENERAL)
+        self.run_converter(expect_code=const.STATUS_CODE_GENERAL)
 
         # Check that the input and output files have properly been deleted
         self.check_file_status(input_exist=False, output_exist=False)
@@ -308,14 +304,14 @@ class TestConverter:
         """
 
         test_file_size = 1234
-        os.environ[MAX_FILESIZE_ENVVAR] = str(test_file_size)
+        os.environ[const.MAX_FILESIZE_ENVVAR] = str(test_file_size)
 
         self.get_input_info(filename="1NE6.mmcif")
         converter = FileConverter(use_envvars=True,
                                   **self.get_converter_kwargs())
-        assert math.isclose(converter.max_file_size, test_file_size*MEGABYTE)
+        assert math.isclose(converter.max_file_size, test_file_size*const.MEGABYTE)
 
         # And also check it isn't applied if we don't ask it to use envvars
         converter_no_ev = FileConverter(use_envvars=False,
                                         **self.get_converter_kwargs())
-        assert not math.isclose(converter_no_ev.max_file_size, test_file_size*MEGABYTE)
+        assert not math.isclose(converter_no_ev.max_file_size, test_file_size*const.MEGABYTE)

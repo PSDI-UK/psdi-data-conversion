@@ -11,9 +11,9 @@ import shlex
 import sys
 from unittest.mock import patch
 
-from psdi_data_conversion.converter import L_ALLOWED_CONVERTERS, LOG_NONE
-from psdi_data_conversion.main import (DEFAULT_COORD_GEN, DEFAULT_COORD_GEN_QUAL, DEFAULT_LISTING_LOG_FILE,
-                                       FileConverterInputException, main, LOG_EXT, parse_args)
+from psdi_data_conversion import constants as const
+from psdi_data_conversion.converter import L_REGISTERED_CONVERTERS
+from psdi_data_conversion.main import FileConverterInputException, main, parse_args
 
 
 def get_parsed_args(s):
@@ -46,7 +46,7 @@ def test_input_validity():
     assert args.input_dir == cwd
     assert args.to_format == "pdb"
     assert args.output_dir == f"{cwd}/.."
-    assert args.converter == "Atomsk"
+    assert args.name == "Atomsk"
     assert args.delete_input is True
     assert args.from_flags == "-ab -c --example"
     assert args.to_flags == "-d"
@@ -54,7 +54,7 @@ def test_input_validity():
     assert args.coord_gen_qual == "best"
     assert args.quiet is True
     assert args.log_file == "text.log"
-    assert args.log_mode == LOG_NONE
+    assert args.log_mode == const.LOG_NONE
 
     # It should fail with no arguments
     with pytest.raises(FileConverterInputException):
@@ -107,17 +107,17 @@ def test_input_processing():
     assert output_check_args.output_dir == f"{cwd}/.."
 
     # Check that we get the default coordinate generation options
-    assert args.coord_gen == DEFAULT_COORD_GEN
-    assert args.coord_gen_qual == DEFAULT_COORD_GEN_QUAL
-    assert get_parsed_args("file1.mmcif -t pdb --coord-gen Gen3D").coord_gen_qual == DEFAULT_COORD_GEN_QUAL
+    assert args.coord_gen == const.DEFAULT_COORD_GEN
+    assert args.coord_gen_qual == const.DEFAULT_COORD_GEN_QUAL
+    assert get_parsed_args("file1.mmcif -t pdb --coord-gen Gen3D").coord_gen_qual == const.DEFAULT_COORD_GEN_QUAL
 
     # Check that trying to get the log file raises an exception due to the test file not existing
     with pytest.raises(FileConverterInputException):
-        assert args.log_file == "file1" + LOG_EXT
+        assert args.log_file == "file1" + const.LOG_EXT
 
     # Check that the log file uses the expected default value in list mode
     list_check_args = get_parsed_args("--list")
-    assert list_check_args.log_file == DEFAULT_LISTING_LOG_FILE
+    assert list_check_args.log_file == const.DEFAULT_LISTING_LOG_FILE
 
 
 def test_list_converters(capsys):
@@ -126,7 +126,7 @@ def test_list_converters(capsys):
     run_with_arg_string("--list")
     captured = capsys.readouterr()
     assert "Available converters are:" in captured.out
-    for converter_name in L_ALLOWED_CONVERTERS:
+    for converter_name in L_REGISTERED_CONVERTERS:
         assert converter_name in captured.out
 
 
@@ -135,7 +135,7 @@ def test_detail_converter(capsys):
     """
 
     # Test all converters are recognised and don't raise an error
-    for converter_name in L_ALLOWED_CONVERTERS:
+    for converter_name in L_REGISTERED_CONVERTERS:
         run_with_arg_string(f"--list {converter_name}")
         captured = capsys.readouterr()
         assert "not recognized" not in captured.err

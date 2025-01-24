@@ -12,28 +12,12 @@ from argparse import ArgumentParser
 import os
 import sys
 
-from psdi_data_conversion.converter import (FILE_TO_UPLOAD_KEY, L_ALLOWED_CONVERTERS, L_ALLOWED_LOGGING_TYPES,
-                                            LOG_NONE, LOG_SIMPLE, LOG_FULL, FileConverter, FileConverterAbortException,
-                                            FileConverterException, get_file_storage)
-
-LOG_EXT = ".log"
-DEFAULT_LISTING_LOG_FILE = "data-convert-list" + LOG_EXT
-
-# Allowed and default options for command-line arguments
-
-L_ALLOWED_COORD_GENS = ["Gen2D", "Gen3D", "neither"]
-DEFAULT_COORD_GEN = "neither"
-
-L_ALLOWED_COORD_GEN_QUALS = ["fastest", "fast", "medium", "better", "best"]
-DEFAULT_COORD_GEN_QUAL = "medium"
+from psdi_data_conversion import constants as const
+from psdi_data_conversion.converter import L_REGISTERED_CONVERTERS, run_converter
+from psdi_data_conversion.converters.base import (FileConverterAbortException, FileConverterInputException,
+                                                  get_file_storage)
 
 logger = logging.getLogger(__name__)
-
-
-class FileConverterInputException(FileConverterException):
-    """Exception class to represent errors encountered with input parameters for the data conversion script.
-    """
-    pass
 
 
 class ConvertArgs:
@@ -52,7 +36,7 @@ class ConvertArgs:
         self._input_dir: str | None = getattr(args, "in")
         self.to_format: str | None = args.to
         self._output_dir: str | None = args.at
-        self.converter: str = getattr(args, "with")
+        self.name: str = getattr(args, "with")
         self.delete_input = args.delete_input
         self.from_flags: str = args.from_flags.replace(r"\-", "-")
         self.to_flags: str = args.to_flags.replace(r"\-", "-")
@@ -60,13 +44,13 @@ class ConvertArgs:
         # Keyword arguments specific to OpenBabel conversion
         self.coord_gen: str
         if args.coord_gen is None:
-            self.coord_gen = DEFAULT_COORD_GEN
+            self.coord_gen = const.DEFAULT_COORD_GEN
         else:
             self.coord_gen = args.coord_gen[0]
 
         self.coord_gen_qual: str
         if args.coord_gen is None or len(args.coord_gen) == 1:
-            self.coord_gen_qual = DEFAULT_COORD_GEN_QUAL
+            self.coord_gen_qual = const.DEFAULT_COORD_GEN_QUAL
         else:
             self.coord_gen_qual = args.coord_gen[1]
 
@@ -81,8 +65,8 @@ class ConvertArgs:
 
         # Quiet mode is equivalent to logging mode == LOGGING_NONE, so normalize them if either is set
         if self.quiet:
-            self.log_mode = LOG_NONE
-        elif self.log_mode == LOG_NONE:
+            self.log_mode = const.LOG_NONE
+        elif self.log_mode == const.LOG_NONE:
             self.quiet = True
 
         # Check validity of input
@@ -109,8 +93,8 @@ class ConvertArgs:
             os.makedirs(self._output_dir, exist_ok=True)
 
         # Check the converter is recognized
-        if self.converter not in L_ALLOWED_CONVERTERS:
-            raise FileConverterInputException(f"Converter '{self.converter}' not recognised")
+        if self.name not in L_REGISTERED_CONVERTERS:
+            raise FileConverterInputException(f"Converter '{self.name}' not recognised")
 
         # No more than two arguments supplied to --coord-gen
         if args.coord_gen is not None and len(args.coord_gen) > 2:
@@ -118,17 +102,17 @@ class ConvertArgs:
                                               "quality, e.g. '--coord-gen Gen3D best'")
 
         # Coordinate generation options are valid
-        if self.coord_gen not in L_ALLOWED_COORD_GENS:
+        if self.coord_gen not in const.L_ALLOWED_COORD_GENS:
             raise FileConverterInputException(f"Coordinate generation type '{self.coord_gen}' not recognised. Allowed "
-                                              f"types are: {L_ALLOWED_COORD_GENS}")
-        if self.coord_gen_qual not in L_ALLOWED_COORD_GEN_QUALS:
+                                              f"types are: {const.L_ALLOWED_COORD_GENS}")
+        if self.coord_gen_qual not in const.L_ALLOWED_COORD_GEN_QUALS:
             raise FileConverterInputException(f"Coordinate generation quality '{self.coord_gen_qual}' not recognised. "
-                                              f"Allowed qualities are: {L_ALLOWED_COORD_GEN_QUALS}")
+                                              f"Allowed qualities are: {const.L_ALLOWED_COORD_GEN_QUALS}")
 
         # Logging mode is valid
-        if self.log_mode not in L_ALLOWED_LOGGING_TYPES:
+        if self.log_mode not in const.L_ALLOWED_LOG_MODES:
             raise FileConverterInputException(f"ERROR: Unrecognised logging option: {self.log_mode}. Allowed "
-                                              f"options are: {L_ALLOWED_LOGGING_TYPES}")
+                                              f"options are: {const.L_ALLOWED_LOG_MODES}")
 
     @property
     def from_format(self):
@@ -166,7 +150,7 @@ class ConvertArgs:
         """
         if self._log_file is None:
             if self.list:
-                self._log_file = DEFAULT_LISTING_LOG_FILE
+                self._log_file = const.DEFAULT_LISTING_LOG_FILE
             else:
                 first_filename = os.path.join(self.input_dir, self.l_args[0])
 
@@ -180,7 +164,7 @@ class ConvertArgs:
                                                           f"checked for {test_filename}.")
 
                 base = os.path.splitext(first_filename)[0]
-                self._log_file = base + LOG_EXT
+                self._log_file = base + const.LOG_EXT
         return self._log_file
 
 
@@ -243,7 +227,7 @@ def get_argument_parser():
     parser.add_argument("-l", "--log-file", type=str, default=None,
                         help="The name of the file to log to. If not provided, the log file will be named after the "
                              "first input file (+'.log') and placed in the current directory.")
-    parser.add_argument("--log-mode", type=str, default=LOG_SIMPLE,
+    parser.add_argument("--log-mode", type=str, default=const.LOG_SIMPLE,
                         help="How logs should be stores. Allowed values are: \n"
                         "- 'full' - Multi-file logging, only recommended when running as a public web app"
                         "- 'simple' - Logs saved to one file"
@@ -285,11 +269,11 @@ def detail_converters(l_args: list[str]):
     """Prints details on available converters for the user.
     """
     converter_name = " ".join(l_args)
-    if converter_name in L_ALLOWED_CONVERTERS:
+    if converter_name in L_REGISTERED_CONVERTERS:
         return detail_converter_use(converter_name)
     elif converter_name != "":
         print(f"ERROR: Converter {converter_name} not recognized.", file=sys.stderr)
-    print("Available converters are: \n" + "\n".join(L_ALLOWED_CONVERTERS) + "\n" +
+    print("Available converters are: \n" + "\n".join(L_REGISTERED_CONVERTERS) + "\n" +
           "For more details on a converter, call: \n" +
           "psdi-data-convert --list <Converter name>")
 
@@ -310,7 +294,6 @@ def run_from_args(args: ConvertArgs):
         return detail_converters(args.l_args)
 
     form = {'token': '1041c0a661d118d5f28e7c6830375dd0',
-            'converter': args.converter,
             'from': args.from_format,
             'to': args.to_format,
             'from_full': args.from_format,
@@ -348,21 +331,25 @@ def run_from_args(args: ConvertArgs):
 
         file_storage = get_file_storage(qualified_filename)
 
-        converter = FileConverter(files=file_storage,
-                                  form=form,
-                                  file_to_convert=FILE_TO_UPLOAD_KEY,
-                                  use_envvars=False,
-                                  upload_dir=args.input_dir,
-                                  download_dir=args.output_dir,
-                                  log_file=args.log_file,
-                                  log_mode=args.log_mode,
-                                  delete_input=args.delete_input,
-                                  max_file_size=0)
         try:
-            converter.run()
+            run_converter(name=args.name,
+                          files=file_storage,
+                          form=form,
+                          file_to_convert=const.FILE_TO_UPLOAD_KEY,
+                          use_envvars=False,
+                          upload_dir=args.input_dir,
+                          download_dir=args.output_dir,
+                          log_file=args.log_file,
+                          log_mode=args.log_mode,
+                          delete_input=args.delete_input,
+                          max_file_size=0)
         except FileConverterAbortException as e:
-            print(f"ERROR: Attempt to convert file {filename} failed with status code {e.status_code} and message: \n" +
-                  str(e) + "\n", file=sys.stderr)
+            print(f"ERROR: Attempt to convert file {filename} aborted with status code {e.status_code} and message: " +
+                  f"\n{e}\n", file=sys.stderr)
+            continue
+        except Exception as e:
+            print(f"ERROR: Attempt to convert file {filename} failed with exception type {type(e)} and message: " +
+                  f"\n{e}\n", file=sys.stderr)
             continue
 
         if not args.quiet:
@@ -377,7 +364,7 @@ def main():
 
     args = parse_args()
 
-    if args.log_mode == LOG_SIMPLE or args.log_mode == LOG_FULL:
+    if args.log_mode == const.LOG_SIMPLE or args.log_mode == const.LOG_FULL:
         logging.basicConfig(filename=args.log_file)
 
     logger.info("#")

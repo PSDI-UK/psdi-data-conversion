@@ -85,6 +85,91 @@ The below can be used as a template for new sections to be added to `CHANGELOG.m
 
 ## Editing Advice
 
+### Adding File Format Converters
+
+If you wish to make a converter accessible by the CLI, you only need to follow the steps in the Python Integration section below. If you also wish to make it available in the web app, you will additionally have to follow this instructions in the Web App Integration section.
+
+#### Python Integration
+
+In the Python layer of the code, each file format converter is defined in its own module in the `psdi_data_conversion.converters` package, as a subclass of the `FileConverter` class defined in `psdi_data_conversion.converters.base`. A new converter can be integrated with the Python layer of the code by:
+
+1. Create a new module in the `psdi_data_conversion.converters` for the converter
+2. Define a new class for this converter, as a subclass of `FileConverter`
+3. Set the class variable `name` for the converter to be the name you want to use for this converter. This will be what needs to be specified in the command-line to request this converter
+4. Implement the `_convert(self)` method of the class with a call to the converter. This method must create the converted file at the location specified by the variable `self.out_filename` (which is provided fully qualified) and set the variables `self.out` and `self.err` with normal output and error output respectively (at minimum they must be set to empty strings)
+5. After defining the converter's class, set the module-level variable `converter` to the class
+
+This will look something like:
+
+```python
+from psdi_data_conversion.converters.base import FileConverter
+
+CONVERTER_MY = 'My Converter'
+
+class MyFileConverter(FileConverter):
+    """File Converter specialized to use my method for conversions
+    """
+
+    name = CONVERTER_MY
+
+    def _convert(self):
+
+        # Run whatever steps are necessary to perform the conversion
+        create_my_converted_file_at(self.out_filename)
+
+        self.out = "Standard output goes here"
+        self.err = "Errors go here"
+
+# Assign this converter to the `converter` variable - this lets the psdi_data_conversion.converter module detect and
+# register it, making it available for use by the CLI and web app
+converter = MyFileConverter
+```
+
+That's all you need to do! The `psdi_data_conversion.converter` module parses all modules in the `converters` package to find converters, so if you've done everything correctly, it will find the new converter and register it for you. You can test that it is properly registered by using the CLI to run:
+
+```bash
+psdi-data-convert -l
+```
+
+Your new converter should appear, or else you will probably see an error message which will detail an exception raised when trying to register it.
+
+For file converters which can be run with a call to a script, this can be streamlined even further by taking advantage of the `ScriptFileConverter` subclass. With this, the converter's subclass can be defined even more succinctly:
+
+```python
+from psdi_data_conversion.converters.base import ScriptFileConverter
+
+CONVERTER_MY_SCRIPT = 'My Script Converter'
+
+class MyScriptFileConverter(ScriptFileConverter):
+    """File Converter specialized to use my script for conversions
+    """
+
+    name = CONVERTER_MY_SCRIPT
+    script = "my_script.sh"
+
+converter = MyScriptFileConverter
+```
+
+When a converter is defined this way, the `_convert(self)` method will be defined to execute a subprocess call to run the script defined in the class's `script` class variable, searching for it in the `psdi_data_conversion/scripts` directory. It will pass to it the fully-qualified input filename (`self.in_filename`) as the first argument, the fully-qualified output filename (`self.out_filename`) as the second argument, and then any flags defined in `self.to_flags` and `self.from_flags`.
+
+Finally, it's good practice to add a unit test of the converter. You can do this by following the example of tests in `tests/converter_test.py`. If necessary, add a (small) file it can convert to the `test_data` folder, and implement a test that it can convert it to another format.
+
+#### Web App Integration
+
+TODO: Write guide for adding converter to the web app.
+
+List of necessary steps:
+
+- Update 'converters' table in database.
+- Update 'formats' table in database.
+- Update 'converts_to' table in database.
+- Find/compile suitable Linux binary and upload it
+- Write script to call binary
+- New HTML file for conversion page.
+- New associated JS file.
+
+### Debugging
+
 For debugging python issues, it's recommended to install the package in editable mode via pip. This sets it up so that the python source files are used in-place rather than copied to a separate install directory, meaning that changes to them will be reflected in runs without need for a new installation. This can be done through the following command (which also installs all optional packages):
 
 ```bash
