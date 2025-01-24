@@ -92,7 +92,14 @@ If it didn't, you can manually install it with:
 sudo apt install python3-pip
 ```
 
-If this doesn't work, or the version installed is too low, an alternative is to install Python via the Anaconda package manager. For this, see the guide here: https://www.askpython.com/python/examples/install-python-with-conda
+If this doesn't work, or the version installed is too low, an alternative is to install Python via the Anaconda package manager. For this, see the guide here: https://www.askpython.com/python/examples/install-python-with-conda. If you already have an earlier version of Python installed with Anaconda, you can install and activate a newer version with a command such as:
+
+```bash
+conda create --name converter python=3.10 anaconda # Where 'converter' is a possible conda environment name
+conda activate converter
+```
+
+You can also install a new version of Python if you wish by substituting "3.10" in the above with e.g. "3.12".
 
 ### Other Dependencies
 
