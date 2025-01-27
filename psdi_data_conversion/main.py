@@ -234,7 +234,7 @@ def get_argument_parser():
                         "- 'stdout' - Output logs and errors only to stdout"
                         "- 'none' - Output only errors to stdout")
     parser.add_argument("-q", "--quiet", action="store_true",
-                        help="If set, all output aside from errors will be suppressed and no log file will be "
+                        help="If set, all terminal output aside from errors will be suppressed and no log file will be "
                              "generated.")
     parser.add_argument("--log-level", type=str, default="WARNING",
                         help="The desired level to log at. Allowed values are: 'DEBUG', 'INFO', 'WARNING', 'ERROR, "
