@@ -15,3 +15,6 @@ write $2
 clear
 quit
 EOD
+
+# Cleanup intermediate files that might have been created
+rm -f quit
