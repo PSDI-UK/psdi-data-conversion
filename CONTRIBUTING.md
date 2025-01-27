@@ -152,7 +152,50 @@ converter = MyScriptFileConverter
 
 When a converter is defined this way, the `_convert(self)` method will be defined to execute a subprocess call to run the script defined in the class's `script` class variable, searching for it in the `psdi_data_conversion/scripts` directory. It will pass to it the fully-qualified input filename (`self.in_filename`) as the first argument, the fully-qualified output filename (`self.out_filename`) as the second argument, and then any flags defined in `self.to_flags` and `self.from_flags`.
 
-Finally, it's good practice to add a unit test of the converter. You can do this by following the example of tests in `tests/converter_test.py`. If necessary, add a (small) file it can convert to the `test_data` folder, and implement a test that it can convert it to another format.
+Finally, it's good practice to add a unit test of the converter. You can do this by following the example of tests in `tests/converter_test.py`. If necessary, add a (small) file it can convert to the `test_data` folder, and implement a test that it can convert it to another format by adding a new method to the `TestConverter` class in this file. At its simplest, this method should look something like:
+
+```python
+    def test_c2x(self):
+        """Run a test of the C2X converter on a straightforward `.pdb` to `.cif` conversion
+        """
+
+        self.get_input_info(filename="hemoglobin.pdb",
+                            to="cif")
+
+        # "from" is a reserved word so we can't set it as a kwarg in the function call above
+        self.mock_form["from"] = "pdb"
+
+        self.run_converter(name=CONVERTER_C2X)
+
+        # Check that the input file has been deleted and the output file exists where we expect it to
+        self.check_file_status(input_exist=False, output_exist=True)
+```
+
+The basic check here that the output file exists can be extended to check that the details of it are as expected.
+
+It may also be useful to add a test that the converter fails when you expect it to. This can be done e.g. with a test method that looks like:
+
+```python
+    def test_xyz_to_inchi_err(self):
+        """Run a test of the converter on an `.xyz` to `.inchi` conversion we expect to fail
+        """
+
+        self.get_input_info(filename="quartz_err.xyz",
+                            to="inchi")
+
+        # "from" is a reserved word so we can't set it as a kwarg in the function call above
+        self.mock_form["from"] = "xyz"
+
+        # Pass the `expect_code` argument to the call to run the converter. This causes it to check that when it runs,
+        # the conversion process aborts with the provided error code
+        self.run_converter(name=CONVERTER_OB,
+                           expect_code=const.STATUS_CODE_GENERAL)
+
+        # Check that the input and output files have properly been deleted
+        self.check_file_status(input_exist=False, output_exist=False)
+```
+
+If the test is more complicated that this, you can implement a modified version of `self.run_converter` within the test method to perform the desired test. You can also check that output logs include the desired information by either opening the log filenames or using PyTest's `capsys` feature, which captures output to logs, stdout, and stderr.
 
 #### Web App Integration
 
