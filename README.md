@@ -231,6 +231,16 @@ Run the `run_local.sh` script to start the server. You can then access the websi
 In case of problems when using Chrome, try opening Chrome from the command line:
 open -a "Google Chrome.app" --args --allow-file-access-from-files
 
+## Extending Functionality
+
+The Python library and CLI are written to make it easy to extend the functionality of this package to use other file format converters. This can by downloading or cloning the project's source from it's GitHub Repository (https://github.com/PSDI-UK/psdi-data-conversion), editing the code to add your converter following the guidance in the "[Adding File Format Converters](https://github.com/PSDI-UK/psdi-data-conversion/blob/main/CONTRIBUTING.md#adding-file-format-converters)" section of CONTRIBUTING.md to integrate it with the Python code, and installing the modified package on your system via:
+
+```bash
+pip install --editable .[test]
+```
+
+(This command uses the `--editable` option and optional `test` dependencies to ease the process of testing and debugging your changes.)
+
 ## Testing
 
 Install the package requirements locally (ideally within a virtual environment) and test with pytest by executing the following commands from this project's directory:
