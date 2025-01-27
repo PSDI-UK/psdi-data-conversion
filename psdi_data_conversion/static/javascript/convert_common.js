@@ -112,7 +112,7 @@ export function convertFile(form_data, download_fname, fname) {
                     }
                 })
                 .then(function (text) {
-                    if (text != "")
+                    if (text != "" && text != null)
                         alert(text);
                 })
 
