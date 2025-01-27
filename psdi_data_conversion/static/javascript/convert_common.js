@@ -3,6 +3,9 @@
   Version 1.0, 17th December 2024
 */
 
+const SECOND = 1000; // 
+const CONVERT_TIMEOUT = 60 * SECOND;
+
 var token = "",
     max_file_size = 0,
     in_ext = "",
@@ -42,6 +45,7 @@ export function convertFile(form_data, download_fname, fname) {
         data: form_data,
         processData: false,
         contentType: false,
+        timeout: CONVERT_TIMEOUT,
         success: async function () {
             const delay = ms => new Promise(response => setTimeout(response, ms));
 
@@ -69,8 +73,14 @@ export function convertFile(form_data, download_fname, fname) {
                     console.log(e.responseText);
                 })
         },
-        error: function (data) {
-            //alert("ajax error, FormData: " + data);
+        error: function (xmlhttprequest, textstatus, message) {
+            if (textstatus === "timeout") {
+                alert("ERROR: Conversion attempt timed out. This may be because the conversion is too complicated, " +
+                    "or because the server is currently busy.");
+            } else {
+                alert("ERROR: Backend converter could not be accessed. Request returned status '" + textstatus +
+                    "' and message:\n" + message);
+            }
         }
     })
         .done(response => {
