@@ -80,8 +80,8 @@ class OBFileConverter(FileConverter):
         self.out, self.err = stdouterr_ob.reset()   # Grab stdout and stderr
         stdouterr_ob.done()
 
-        if self.err != "":
-            self._report_convert_err()
+        if "Open Babel Error" in self.err:
+            self._abort_from_err()
 
 
 # Assign this converter to the `converter` variable - this lets the psdi_data_conversion.converter module detect and
