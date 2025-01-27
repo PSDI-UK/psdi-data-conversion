@@ -501,6 +501,17 @@ class FileConverter:
 
         self._log_success()
 
+    def _report_convert_err(self, return_code=None) -> os.NoReturn:
+        """Reports that something went wrong with the conversion process
+        """
+        if return_code:
+            err = f"File conversion failed with return code {return_code}.\n\n"
+        else:
+            err = "File conversion failed.\n\n"
+        raise FileConverterAbortException(err +
+                                          f"stdout :\n {self.out}\n"
+                                          f"stderr :\n {self.err}\n")
+
     @abc.abstractmethod
     def _convert(self):
         """Run the conversion with the desired converter
@@ -527,3 +538,6 @@ class ScriptFileConverter(FileConverter):
 
         self.out = process.stdout
         self.err = process.stderr
+
+        if process.returncode != 0:
+            self._report_convert_err(process.returncode)

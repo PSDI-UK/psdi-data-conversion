@@ -80,6 +80,9 @@ class OBFileConverter(FileConverter):
         self.out, self.err = stdouterr_ob.reset()   # Grab stdout and stderr
         stdouterr_ob.done()
 
+        if self.err != "":
+            self._report_convert_err()
+
 
 # Assign this converter to the `converter` variable - this lets the psdi_data_conversion.converter module detect and
 # register it, making it available for use by the CLI and web app
