@@ -197,7 +197,7 @@ def get_argument_parser():
                         help="The directory where output files should be created, default same as input directory.")
     parser.add_argument("-w", "--with", type=str, default="Open Babel",
                         help="The converter to be used (default 'Open Babel').")
-    parser.add_argument("-d", "--delete-input", action="store_true",
+    parser.add_argument("--delete-input", action="store_true",
                         help="If set, input files will be deleted after conversion, default they will be kept")
     parser.add_argument("--from-flags", type=str, default="",
                         help="Any command-line flags to be provided to the converter for reading in the input file(s). "

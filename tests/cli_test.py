@@ -38,8 +38,8 @@ def test_input_validity():
 
     # Test that we get what we put in for a standard execution
     cwd = os.getcwd()
-    args = get_parsed_args(f"file1 file2 -f mmcif -i {cwd} -t pdb -a {cwd}/.. -w 'Atomsk' -d " +
-                           r"--from-flags '\-ab \-c \--example' --to-flags '\-d' " +
+    args = get_parsed_args(f"file1 file2 -f mmcif -i {cwd} -t pdb -a {cwd}/.. -w 'Atomsk' " +
+                           r"--delete-input --from-flags '\-ab \-c \--example' --to-flags '\-d' " +
                            "--coord-gen Gen3D best -q --log-file text.log")
     assert args.l_args[0] == "file1"
     assert args.l_args[1] == "file2"
