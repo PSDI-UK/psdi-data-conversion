@@ -36,7 +36,11 @@ class ConvertArgs:
         self._input_dir: str | None = getattr(args, "in")
         self.to_format: str | None = args.to
         self._output_dir: str | None = args.at
-        self.name: str = getattr(args, "with")
+        converter_name = getattr(args, "with")
+        if isinstance(converter_name, str):
+            self.name = converter_name
+        else:
+            self.name: str = " ".join(converter_name)
         self.delete_input = args.delete_input
         self.from_flags: str = args.from_flags.replace(r"\-", "-")
         self.to_flags: str = args.to_flags.replace(r"\-", "-")
@@ -195,7 +199,7 @@ def get_argument_parser():
                         help="The output (convert to) file extension (e.g., cmi).")
     parser.add_argument("-a", "--at", type=str, default=None,
                         help="The directory where output files should be created, default same as input directory.")
-    parser.add_argument("-w", "--with", type=str, default="Open Babel",
+    parser.add_argument("-w", "--with", type=str, nargs="+", default="Open Babel",
                         help="The converter to be used (default 'Open Babel').")
     parser.add_argument("--delete-input", action="store_true",
                         help="If set, input files will be deleted after conversion, default they will be kept")
