@@ -94,6 +94,13 @@ def test_input_processing():
     weren't provided
     """
 
+    # Check that different ways of specifying converter are all processed correctly
+    converter_name = "Open Babel"
+    args = get_parsed_args(f"file1.mmcif -t pdb -w {converter_name}")
+    assert args.name == converter_name
+    args = get_parsed_args(f"file1.mmcif -t pdb -w '{converter_name}'")
+    assert args.name == converter_name
+
     # Check that input format is determined from the first file in a list
     args = get_parsed_args("file1.mmcif file2.pdb -t pdb")
     assert args.from_format == "mmcif"
