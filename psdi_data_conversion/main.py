@@ -225,8 +225,10 @@ def get_argument_parser():
 
     # Logging/stdout arguments
     parser.add_argument("-l", "--log-file", type=str, default=None,
-                        help="The name of the file to log to. If not provided, the log file will be named after the "
-                             "first input file (+'.log') and placed in the current directory.")
+                        help="The name of the file to log to. This can be provided relative to the current directory "
+                        "(e.g. '-l ../logs/log-file.txt') or fully qualified (e.g. /path/to/log-file.txt). "
+                        "If not provided, the log file will be named after the =first input file (+'.log') and placed "
+                        "in the current directory.")
     parser.add_argument("--log-mode", type=str, default=const.LOG_SIMPLE,
                         help="How logs should be stores. Allowed values are: \n"
                         "- 'full' - Multi-file logging, only recommended when running as a public web app"
@@ -234,7 +236,7 @@ def get_argument_parser():
                         "- 'stdout' - Output logs and errors only to stdout"
                         "- 'none' - Output only errors to stdout")
     parser.add_argument("-q", "--quiet", action="store_true",
-                        help="If set, all output aside from errors will be suppressed and no log file will be "
+                        help="If set, all terminal output aside from errors will be suppressed and no log file will be "
                              "generated.")
     parser.add_argument("--log-level", type=str, default="WARNING",
                         help="The desired level to log at. Allowed values are: 'DEBUG', 'INFO', 'WARNING', 'ERROR, "
