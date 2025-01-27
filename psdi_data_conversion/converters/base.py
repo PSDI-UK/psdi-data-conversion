@@ -142,10 +142,6 @@ class FileConverter:
             - 'none' - Output only errors to stdout
         delete_input : bool
             Whether or not to delete input files after conversion, default True
-        **kwargs
-            Any additional arguments provided to this class's initializer which correspond to class or instance
-            variables will be set at init, before any derived variables are determined - this is useful primarily for
-            testing.
         """
 
         # Set member variables directly from input
@@ -178,13 +174,6 @@ class FileConverter:
         self.write_flags_args: list[str] | None = None
         self.calc_type: str | None = None
         self.option: str | None = None
-
-        # If any kwargs are provided, use them to override matching class/instance variables defined to this point
-        for key, value in kwargs.items():
-            if hasattr(self, key):
-                setattr(self, key, value)
-            else:
-                raise ValueError(f"Unrecognized class/instance variable name: {key}")
 
         # Set values from envvars if desired
         if use_envvars:
@@ -230,8 +219,8 @@ class FileConverter:
             if self.log_mode == const.LOG_FULL:
                 return self._setup_server_loggers()
         else:
-            raise FileConverterException(f"ERROR: Unrecognised logging option: {self.log_mode}. Allowed options "
-                                         f"are: {const.L_ALLOWED_LOG_MODES}", file=sys.stderr)
+            raise FileConverterInputException(f"ERROR: Unrecognised logging option: {self.log_mode}. Allowed options "
+                                              f"are: {const.L_ALLOWED_LOG_MODES}", file=sys.stderr)
 
         self.output_log = self.log_file
 

@@ -5,6 +5,7 @@ This is the repository for the PSDI PF2 Chemistry File Format Conversion project
 - Online web service, available at https://psdidev2.azurewebsites.net
 - Version of the web app you can download and run locally (e.g. if you need to convert files which exceed the online app's file size limit)
 - Command-line interface, to run conversions from a terminal
+- Python library
 
 ## Table of Contents
 
@@ -17,6 +18,12 @@ This is the repository for the PSDI PF2 Chemistry File Format Conversion project
   - [Execution](#execution)
     - [Data Conversion](#data-conversion)
     - [Requesting Information on Possible Conversions](#requesting-information-on-possible-conversions)
+- [Python Library](#python-library)
+  - [Installation](#installation-1)
+  - [Use](#use)
+    - [`run_converter](#run_converter)
+    - [`get_converter](#get_converter)
+    - [`constants](#constants)
 - [Using the Online Conversion Service](#using-the-online-conversion-service)
 - [Running the Python/Flask app locally](#running-the-pythonflask-app-locally)
   - [Installation and Setup](#installation-and-setup)
@@ -125,7 +132,7 @@ In addition to the dependencies listed above, this project uses the assets made 
 
 ### Installation
 
-This package is not yet available on PyPI, and so must be installed locally. This can be done most easily with:
+The CLI and Python library are installed together. This package is not yet available on PyPI, and so must be installed locally. This can be done most easily with:
 
 ```bash
 pip install .
@@ -179,6 +186,67 @@ Further functionality planned for this script, but yet to be implemented:
 
 - If the name of a converter is provided as an argument, it should provide information on the converter, such as what flags it will accept
 - If the names of two formats are provided as arguments, it should provide information on the possible converters that can be used for this conversion and the expected quality of the conversion
+
+## Python Library
+
+### Installation
+
+The CLI and Python library are installed together. This package is not yet available on PyPI, and so must be installed locally. This can be done most easily with:
+
+```bash
+pip install .
+```
+
+executed from this project's directory. You can also replace the '.' in this command with the path to this project's directory to install it from elsewhere.
+
+### Use
+
+Once installed, this project's library can be imported through the following within Python:
+
+```python
+import psdi_data_conversion
+```
+
+The most useful modules and functions within this package to know about are:
+
+- `psdi_data_conversion`
+  - `converter`
+    - `run_converter`
+    - `get_converter`
+  - `constants`
+
+#### `run_converter`
+
+This is the standard method to run a file conversion. This method may be imported via:
+
+```python
+from psdi_data_conversion.converter import run_converter
+```
+
+See the method's documentation via `help(run_converter)` after importing it for further details on usage.
+
+#### `get_converter`
+
+This method provides the class which will perform a file conversion, ready to do so when you call its `run` method. This method may be imported via:
+
+```python
+from psdi_data_conversion.converter import get_converter
+```
+
+See the method's documentation via `help(get_converter)` after importing it for further details on usage.
+
+#### `constants`
+
+This package defines most constants used in the package. It may be imported via:
+
+```python
+from psdi_data_conversion import constants
+```
+
+Of the constants not defined in this package, the most notable are the names of available converters. Each converter has its own name defined in its module within the `psdi_data_conversion.converters` package (e.g. `psdi_data_conversion.converters.atomsk.CONVERTER_ATO`), and these are compiled within the `psdi_data_conversion.converter` module into:
+
+- `D_REGISTERED_CONVERTERS` - A dict which relates the names of converters to their classes
+- `L_REGISTERED_CONVERTERS` - A list of the names of converters
 
 ## Using the Online Conversion Service
 
