@@ -171,7 +171,7 @@ Finally, it's good practice to add a unit test of the converter. You can do this
         self.check_file_status(input_exist=False, output_exist=True)
 ```
 
-The basic check here that the output file exists can be extended to check that the details of it are as expected.
+Ensure that the method you add starts with `test_` so that it will be detected by `pytest`. The basic check here that the output file exists can be extended to check that the details of it are as expected.
 
 It may also be useful to add a test that the converter fails when you expect it to. This can be done e.g. with a test method that looks like:
 
@@ -196,6 +196,16 @@ It may also be useful to add a test that the converter fails when you expect it 
 ```
 
 If the test is more complicated that this, you can implement a modified version of `self.run_converter` within the test method to perform the desired test. You can also check that output logs include the desired information by either opening the log filenames or using PyTest's `capsys` feature, which captures output to logs, stdout, and stderr.
+
+You can then run the any tests you added, plus the existing test suite through running the following commands from the project's root directory:
+
+```bash
+source .venv/bin/activate # Create a venv first if necessary with `python -m venv .venv`
+pip install --editable .[test]
+pytest
+```
+
+This installs the project in a virtual environment in 'editable' mode (which means the source files will be used from where they are rather than being copied, so any changes to them will be directly reflected in tests and uses of the CLI) and then calls `pytest` to run the unit tests in the project. `pytest` will automatically pick up any extra tests you add and run them as well.
 
 #### Web App Integration
 
