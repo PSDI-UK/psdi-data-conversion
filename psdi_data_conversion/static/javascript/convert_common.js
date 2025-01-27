@@ -3,6 +3,9 @@
   Version 1.0, 17th December 2024
 */
 
+const SECOND = 1000; // Milliseconds
+const CONVERT_TIMEOUT = 60 * SECOND;
+
 var token = "",
     max_file_size = 0,
     in_ext = "",
@@ -36,19 +39,25 @@ export function commonConvertReady(converter) {
 
 // Converts user-supplied file to another format and downloads the resulting file
 export function convertFile(form_data, download_fname, fname) {
+
+    let convertTimedOut = false;
+
     var jqXHR = $.ajax({
         url: `/convert/`,
         type: "POST",
         data: form_data,
         processData: false,
         contentType: false,
+        timeout: CONVERT_TIMEOUT,
         success: async function () {
-            const delay = ms => new Promise(response => setTimeout(response, ms));
+            if (!convertTimedOut) {
+                const delay = ms => new Promise(response => setTimeout(response, ms));
 
-            downloadFile(`../downloads/${fname}.log.txt`, fname + '.log.txt')
-            await delay(300);
-            downloadFile(`../downloads/${download_fname}`, download_fname)
-            await delay(300);
+                downloadFile(`../downloads/${fname}.log.txt`, fname + '.log.txt')
+                await delay(300);
+                downloadFile(`../downloads/${download_fname}`, download_fname)
+                await delay(300);
+            }
 
             var fdata = new FormData();
 
@@ -69,13 +78,25 @@ export function convertFile(form_data, download_fname, fname) {
                     console.log(e.responseText);
                 })
         },
-        error: function (data) {
-            //alert("ajax error, FormData: " + data);
+        error: function (xmlhttprequest, textstatus, message) {
+            if (textstatus === "timeout") {
+                convertTimedOut = true;
+                alert("ERROR: Conversion attempt timed out. This may be because the conversion is too complicated, " +
+                    "or because the server is currently busy.");
+                console.log("ERROR: Conversion timed out")
+            } else {
+                alert("ERROR: Backend converter could not be accessed. Request returned status '" + textstatus +
+                    "' and message:\n" + message);
+                console.log("ERROR: AJAX request failed for reason other than timeout")
+            }
         }
     })
         .done(response => {
-            alert("To the best of our knowledge, this conversion has worked. Your output file should download automatically " +
-                "when you close this alert. Please report any problems by clicking on 'Contact' in the navigation bar.");
+            if (!convertTimedOut) {
+                alert("To the best of our knowledge, this conversion has worked. Your output file should download " +
+                    "automatically when you close this alert. Please report any problems by clicking on 'Contact' in " +
+                    "the navigation bar.");
+            }
         })
         .fail(function (e) {
             let errLog = `/static/downloads/${fname}.log.txt`;
@@ -85,12 +106,13 @@ export function convertFile(form_data, download_fname, fname) {
                     if (response.status == 404) {
                         return "An unknown error occurred, which produced no error log. Please provide feedback on " +
                             "the conversion that you were attempting by clicking on 'Contact' in the navigation bar.";
-                    } else {
+                    }
+                    else if (!convertTimedOut) {
                         return response.text();
                     }
                 })
                 .then(function (text) {
-                    if (text != "")
+                    if (text != "" && text != null)
                         alert(text);
                 })
 
