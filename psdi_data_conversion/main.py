@@ -224,9 +224,9 @@ def get_argument_parser():
                              "provided, gives information on the converter and any command-line flags it accepts.")
 
     # Logging/stdout arguments
-    parser.add_argument("-l", "--log-file", type=str, default=None,
+    parser.add_argument("-o", "--log-file", type=str, default=None,
                         help="The name of the file to log to. This can be provided relative to the current directory "
-                        "(e.g. '-l ../logs/log-file.txt') or fully qualified (e.g. /path/to/log-file.txt). "
+                        "(e.g. '-o ../logs/log-file.txt') or fully qualified (e.g. /path/to/log-file.txt). "
                         "If not provided, the log file will be named after the =first input file (+'.log') and placed "
                         "in the current directory.")
     parser.add_argument("--log-mode", type=str, default=const.LOG_SIMPLE,
