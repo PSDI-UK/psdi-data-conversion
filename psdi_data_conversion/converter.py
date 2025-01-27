@@ -69,6 +69,35 @@ def get_converter(name=const.CONVERTER_DEFAULT, **converter_kwargs) -> base.File
     ----------
     name : str
         The desired converter type, by default 'Open Babel'
+    files : dict[str, FileStorage]
+        The file dict provided by Flask at `request.files`
+    form : dict[str, str]
+        The form dict provided by Flask at `request.form`
+    file_to_convert : str
+        The key for the file in the `files` dict to convert
+    abort_callback : Callable[[int], None]
+        Function to be called if the conversion hits an error and must be aborted, default `abort_raise`, which
+        raises an appropriate exception
+    use_envvars : bool
+        If set to True, environment variables will be checked for any that set options for this class and used,
+        default False
+    upload_dir : str
+        The location of input files relative to the current directory
+    download_dir : str
+        The location of output files relative to the current directory
+    max_file_size : float
+        The maximum allowed file size for input/output files, in MB, default 1 MB. If 0, will be unlimited
+    log_file : str | None
+        If provided, all logging will go to a single file or stream. Otherwise, logs will be split up among multiple
+        files for server-style logging.
+    log_mode : str
+        How logs should be stores. Allowed values are:
+        - 'full' - Multi-file logging, only recommended when running as a public web app
+        - 'simple' - Logs saved to one file
+        - 'stdout' - Output logs and errors only to stdout
+        - 'none' - Output only errors to stdout
+    delete_input : bool
+        Whether or not to delete input files after conversion, default True
 
     Returns
     -------
@@ -85,11 +114,55 @@ def get_converter(name=const.CONVERTER_DEFAULT, **converter_kwargs) -> base.File
                                                f"{L_REGISTERED_CONVERTERS}")
     converter_class = D_REGISTERED_CONVERTERS[name]
 
-    return converter_class(name=name, **converter_kwargs)
+    return converter_class(**converter_kwargs)
 
 
-def run_converter(**converter_kwargs):
+def run_converter(**converter_kwargs) -> str:
     """Shortcut to create and run a FileConverter in one step
+
+    Parameters
+    ----------
+    name : str
+        The desired converter type, by default 'Open Babel'
+    files : dict[str, FileStorage]
+        The file dict provided by Flask at `request.files`
+    form : dict[str, str]
+        The form dict provided by Flask at `request.form`
+    file_to_convert : str
+        The key for the file in the `files` dict to convert
+    abort_callback : Callable[[int], None]
+        Function to be called if the conversion hits an error and must be aborted, default `abort_raise`, which
+        raises an appropriate exception
+    use_envvars : bool
+        If set to True, environment variables will be checked for any that set options for this class and used,
+        default False
+    upload_dir : str
+        The location of input files relative to the current directory
+    download_dir : str
+        The location of output files relative to the current directory
+    max_file_size : float
+        The maximum allowed file size for input/output files, in MB, default 1 MB. If 0, will be unlimited
+    log_file : str | None
+        If provided, all logging will go to a single file or stream. Otherwise, logs will be split up among multiple
+        files for server-style logging.
+    log_mode : str
+        How logs should be stores. Allowed values are:
+        - 'full' - Multi-file logging, only recommended when running as a public web app
+        - 'simple' - Logs saved to one file
+        - 'stdout' - Output logs and errors only to stdout
+        - 'none' - Output only errors to stdout
+    delete_input : bool
+        Whether or not to delete input files after conversion, default True
+
+    Returns
+    -------
+    str
+        A message briefly stating the conversion being performed
+
+    Raises
+    ------
+    FileConverterInputException
+    FileConverterAbortException
     """
 
     return get_converter(**converter_kwargs).run()
