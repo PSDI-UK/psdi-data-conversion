@@ -428,7 +428,7 @@ class FileConverter:
         if (os.environ.get('ENABLE_DCS_LOG') is not None):
             print(json.dumps(data))
 
-    def _check_file_size(self):
+    def _check_file_size_and_status(self):
         """Get file sizes, checking that output file isn't too large
 
         Returns
@@ -439,7 +439,12 @@ class FileConverter:
             Size of output file in bytes
         """
         in_size = os.path.getsize(os.path.realpath(self.in_filename))
-        out_size = os.path.getsize(os.path.realpath(self.out_filename))
+        try:
+            out_size = os.path.getsize(os.path.realpath(self.out_filename))
+        except FileNotFoundError:
+            # Something went wrong and the output file doesn't exist
+            self.err += f"ERROR: Expected output file {self.out_filename} does not exist.\n"
+            self._abort_from_err()
 
         # Check that the output file doesn't exceed the maximum allowed size
         if self.max_file_size > 0 and out_size > self.max_file_size:
@@ -485,10 +490,7 @@ class FileConverter:
         """Run final common steps to clean up a conversion and log success or abort due to an error
         """
 
-        if self.err.find('Error') > -1:
-            self._abort_from_err()
-
-        self.in_size, self.out_size = self._check_file_size()
+        self.in_size, self.out_size = self._check_file_size_and_status()
 
         if self.file_to_convert != 'file':  # Website only (i.e., not command line option)
             if self.delete_input:
@@ -527,3 +529,6 @@ class ScriptFileConverter(FileConverter):
 
         self.out = process.stdout
         self.err = process.stderr
+
+        if process.returncode != 0:
+            self._abort_from_err()
