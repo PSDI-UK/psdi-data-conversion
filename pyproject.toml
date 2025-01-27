@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools"]
+requires = ["setuptools>=64", "setuptools-scm>=8"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -9,6 +9,7 @@ authors = [
   { name = "Don Cruickshank" },
   { name = "Samantha Pearman-Kanza", email = "s.pearman-kanza@soton.ac.uk" },
   { name = "Bryan Gillis", email = "7204836+brgillis@users.noreply.github.com" },
+  { name = "Tom Underwood" },
 ]
 description = "Chemistry file format conversion service, provided by PSDI"
 readme = "README.md"
@@ -26,21 +27,16 @@ classifiers = [
   "Topic :: File Formats",
   "Topic :: Scientific/Engineering :: Chemistry",
 ]
-dependencies = [
-  "azure-functions",
-  "Flask",
-  "openbabel-wheel",
-  "py",
-  "pytest",
-  "requests",
-]
+dependencies = ["openbabel-wheel", "py"]
 requires-python = ">= 3.10"
 dynamic = ["version"]
 
 [project.optional-dependencies]
-test = [
-    "pytest",
-]
+test = ["pytest"]
+gui = ["Flask", "requests"]
+
+[project.scripts]
+psdi-data-convert = "psdi_data_conversion.main:main"
 
 [project.urls]
 Homepage = "https://psdidev2.azurewebsites.net/"
@@ -51,7 +47,9 @@ Issues = "https://github.com/PSDI-UK/psdi-data-conversion/issues"
 where = ["."]
 
 [tool.setuptools.package-data]
-psdi_data_conversion = ["bin/**", "static/**", "templates/**", "**.sh"]
+psdi_data_conversion = ["bin/**", "static/**", "templates/**", "scripts/**"]
+
+[tool.setuptools_scm]
 
 [tool.pytest.ini_options]
 pythonpath = ["."]

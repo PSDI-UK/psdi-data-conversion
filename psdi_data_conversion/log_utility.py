@@ -10,31 +10,20 @@ import logging
 import os
 import sys
 
-LOG_FORMAT = r'[%(asctime)s] %(levelname)s [%(name)s.%(funcName)s:%(lineno)d] %(message)s'
-TIMESTAMP_FORMAT = r"%Y-%m-%d %H:%M:%S"
-DATE_RE_RAW = r"\d{4}-[0-1]\d-[0-3]\d"
-TIME_RE_RAW = r"[0-2]\d:[0-5]\d:[0-5]\d"
-DATETIME_RE_RAW = f"{DATE_RE_RAW} {TIME_RE_RAW}"
-
-# Settings for global logger
-GLOBAL_LOG_FILENAME = "./error_log.txt"
-GLOBAL_LOGGER_LEVEL = logging.ERROR
-
-# Settings for local logger
-NAME = "data-conversion"
-DEFAULT_LOCAL_LOGGER_LEVEL = logging.INFO
+from psdi_data_conversion import constants as const
 
 # Set up the global logger when this module is first imported
-global_handler = logging.FileHandler(GLOBAL_LOG_FILENAME)
-global_handler.setLevel(GLOBAL_LOGGER_LEVEL)
+global_handler = logging.FileHandler(const.GLOBAL_LOG_FILENAME)
+global_handler.setLevel(const.GLOBAL_LOGGER_LEVEL)
 
 
-def setUpDataConversionLogger(name=NAME,
-                              local_log_file=None,
-                              local_logger_level=DEFAULT_LOCAL_LOGGER_LEVEL,
-                              local_logger_raw_output=False,
-                              extra_loggers=None,
-                              stdout_output_level=None):
+def set_up_data_conversion_logger(name=const.LOCAL_LOGGER_NAME,
+                                  local_log_file=None,
+                                  local_logger_level=const.DEFAULT_LOCAL_LOGGER_LEVEL,
+                                  local_logger_raw_output=False,
+                                  extra_loggers=None,
+                                  suppress_global_handler=False,
+                                  stdout_output_level=None):
     """Registers a logger with the provided name and sets it up with the desired options
 
     Parameters
@@ -53,6 +42,8 @@ def setUpDataConversionLogger(name=NAME,
     extra_loggers : Iterable[Tuple[str, int, bool]]
         A list of one or more tuples of the format (`filename`, `level`, `raw_output`) specifying these options
         (defined the same as for the local logger) for one or more additional logging channels.
+    suppress_global_handler : bool
+        If set to True, will not add the handler which sends all logs to the global log file, default False
     stdout_output_level : int | None
         The logging level (using one of the levels defined in the base Python `logging` module) at and above which to
         log output to stdout. If None (default), nothing will be sent to stdout
@@ -69,9 +60,11 @@ def setUpDataConversionLogger(name=NAME,
         extra_loggers = []
 
     # Set up filehandlers for the global and local logging
-    for (filename, level, raw_output) in ((GLOBAL_LOG_FILENAME, GLOBAL_LOGGER_LEVEL, False),
+    for (filename, level, raw_output) in ((const.GLOBAL_LOG_FILENAME, const.GLOBAL_LOGGER_LEVEL, False),
                                           (local_log_file, local_logger_level, local_logger_raw_output),
                                           *extra_loggers):
+        if level is None or (suppress_global_handler and filename == const.GLOBAL_LOG_FILENAME):
+            continue
         _add_filehandler_to_logger(logger, filename, level, raw_output)
 
     # Set up stdout output if desired
@@ -94,7 +87,7 @@ def setUpDataConversionLogger(name=NAME,
         if stdout_output_level < logger.level or logger.level == logging.NOTSET:
             logger.setLevel(stdout_output_level)
 
-        stream_handler.setFormatter(logging.Formatter(LOG_FORMAT, datefmt=TIMESTAMP_FORMAT))
+        stream_handler.setFormatter(logging.Formatter(const.LOG_FORMAT, datefmt=const.TIMESTAMP_FORMAT))
 
     return logger
 
@@ -121,7 +114,9 @@ def _add_filehandler_to_logger(logger, filename, level, raw_output):
     # Add a FileHandler for the file if it's not already present, make sure the path to the log file exists,
     # and set the logging level
     if not handler_already_present:
-        os.makedirs(os.path.split(filename)[0], exist_ok=True)
+        filename_loc = os.path.split(filename)[0]
+        if filename_loc != "":
+            os.makedirs(filename_loc, exist_ok=True)
 
         file_handler = logging.FileHandler(filename)
 
@@ -133,7 +128,7 @@ def _add_filehandler_to_logger(logger, filename, level, raw_output):
         if level < logger.level or logger.level == logging.NOTSET:
             logger.setLevel(level)
     if not raw_output:
-        file_handler.setFormatter(logging.Formatter(LOG_FORMAT, datefmt=TIMESTAMP_FORMAT))
+        file_handler.setFormatter(logging.Formatter(const.LOG_FORMAT, datefmt=const.TIMESTAMP_FORMAT))
 
     return
 

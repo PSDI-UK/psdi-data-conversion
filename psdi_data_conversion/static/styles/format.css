@@ -3,7 +3,7 @@
   Version 1.0, 11th October 2024
 */
 
-@import url("https://psdi-uk.github.io/psdi-common-style/css/psdi-common.css");
+@import url("./psdi-common.css");
 
 /* Forms inherit style from normal content, and make sure content is well away from the edges */
 form {
@@ -38,6 +38,7 @@ form {
   .large-width {
     width: 100%
   }
+
   input.large-width {
     width: calc(100% - 0.5rem)
   }
@@ -73,7 +74,7 @@ input.button.init-disabled {
 .access-options {
   display              : grid;
   grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
-  column-gap: 2rem;
+  column-gap           : 2rem;
 }
 
 .access-option-container {

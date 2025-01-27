@@ -1,5 +1,12 @@
 #!/bin/bash
 
+# The envvar MAX_FILESIZE can be used to set the maximum allowed filesize in MB - 0 indicates no maximum
+if [ -z $MAX_FILESIZE ]; then
+  export MAX_FILESIZE=0
+fi
+
+export LOGGING=Full
+
 # Uncomment the following line to enable debug mode
 # export FLASK_ENV=development
 

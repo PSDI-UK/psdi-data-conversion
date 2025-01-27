@@ -1,6 +1,6 @@
 /*
   convert.js
-  Version 1.0, 12th December 2024
+  Version 1.0, 24th January 2025
 
   This is the JavaScript which makes the convert.htm gui work.
 */
@@ -10,22 +10,30 @@ import { getInputFlags, getOutputFlags, getInputArgFlags, getOutputArgFlags } fr
 import { commonConvertReady, convertFile } from "./convert_common.js"
 
 var token = "",
+    max_file_size = 0,
     in_ext = "",
     out_ext = "",
     in_str = "",
     out_str = "";
 
 $(document).ready(function () {
-    [token, in_str, in_ext, out_str, out_ext] = commonConvertReady("Open Babel");
+    [token, max_file_size, in_str, in_ext, out_str, out_ext] = commonConvertReady("Open Babel");
 
     $('input[name="coordinates"]').change(coordOptionAvailability);
     $("#uploadButton").click(submitFile);
+    $("#inFlags").click(blurBox);
+    $("#outFlags").click(blurBox);
 
     getFlags("in", in_str);
     getFlags("out", out_str);
     getFlags("in_arg", in_str);
     getFlags("out_arg", out_str);
 });
+
+// On clicking on an option flag, the select box loses focus so that the light font and dark background (Chrome) appears immediately.
+function blurBox(event) {
+    this.blur();
+}
 
 // On ticking a checkbox, a text box for entry of an option flag argument appears next to it. On unticking, the text box disappears.
 function enterArgument(event) {
