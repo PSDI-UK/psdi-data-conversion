@@ -79,19 +79,6 @@ def convert():
         abort(405)
 
 
-@app.route('/conv/', methods=['POST'])
-def conv():
-    """Convert file (cURL)
-    """
-    filename = filename = request.files[const.FILE_KEY].filename
-    qualified_filename = os.path.realpath(filename)
-    return run_converter(name=request.form['converter'],
-                         filename=qualified_filename,
-                         form=request.form,
-                         log_mode=log_mode,
-                         abort_callback=abort)
-
-
 @app.route('/feedback/', methods=['POST'])
 def feedback():
     """Take feedback data from the web app and log it
