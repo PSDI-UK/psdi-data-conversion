@@ -306,11 +306,11 @@ class FileConverter:
         str
             The beginning of a message for log files, containing generic information about what was trying to be done
         """
-        return ('\n'
-                'File name:         ' + self.filename_base + '\n'
-                'From:              ' + self.from_format + '\n'
-                'To:                ' + self.to_format + '\n'
-                'Converter:         ' + self.name + '\n')
+        return ("\n"
+                f"File name:         {self.filename_base}\n"
+                f"From:              {self.from_format}\n"
+                f"To:                {self.to_format}\n"
+                f"Converter:         {self.name}\n")
 
     def _log_success(self):
         """Write conversion information to server-side file, ready for downloading to user
