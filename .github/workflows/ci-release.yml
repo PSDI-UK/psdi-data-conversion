@@ -1,14 +1,13 @@
-name: ci-main
-run-name: ci-main
+# Pipeline to run on release branch only
+
+name: ci-release
+run-name: ci-release
 on:
   workflow_dispatch:
   push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
+    branches: [ "release" ]
     
 jobs:
-  # Runs on all of the 'on' conditions above, including pull request events
   test-package:
     uses: ./.github/workflows/test_package.yml
 
@@ -17,14 +16,15 @@ jobs:
   # for that plan code scanning is not supported for private repos - and
   # this is a private repo. There may be a work-around.
   #
-  ## Run this only on the main branch
+  # NOTE: If you uncomment this job to use it you may wish to change the
+  # 'needs' in the below 'tag-container-push' job from 'test-package'
+  # to 'anchore-scan' if you want to make a release dependent on a successful
+  # scan.
+  #
   #anchore-scan:
   #  uses: ./.github/workflows/anchore-scan.yml
   #  needs: [test-package]
-  #  if: github.ref == 'refs/heads/main'
     
-  # Run this only on the main branch
   tag-container-push:
     uses: ./.github/workflows/tag-container-push.yml
     needs: [test-package]
-    if: github.ref == 'refs/heads/main'

@@ -1,0 +1,14 @@
+# Pipeline to run on main branch and PRs to the main branch only
+
+name: ci-main-and-pr
+run-name: ci-main-and-pr
+on:
+  workflow_dispatch:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+    
+jobs:
+  test-package:
+    uses: ./.github/workflows/test_package.yml
