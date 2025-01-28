@@ -303,43 +303,23 @@ class FileConverter:
         if coord_option:
             message += 'Coord. option:     ' + coord_option + '\n'
 
-        if "from_flags" not in self.data:
-            message += 'Read options:      none\n'
-        else:
-            message += 'Read options:      ' + self.data["from_flags"] + '\n'
+        from_flags = self.data.get("coordOption", "")
+        if from_flags:
+            message += 'Read options:      ' + from_flags + '\n'
 
-        if "to_flags" not in self.data:
-            message += 'Write options:     none\n'
-        else:
-            message += 'Write options:     ' + self.data["to_flags"] + '\n'
+        to_flags = self.data.get("to_flags", "")
+        if to_flags:
+            message += 'Write options:     ' + to_flags + '\n'
 
-        if "read_flags_args" not in self.data:
-            pass
-        elif len(self.data["read_flags_args"]) == 0:
-            message += 'Read opts + args:  none\n'
-        else:
-            heading_added = False
+        read_flags_args = self.data.get("read_flags_args", "")
+        if read_flags_args:
+            for pair in read_flags_args:
+                message += 'Read opts + args:  ' + pair + '\n'
 
-            for pair in self.data["read_flags_args"]:
-                if not heading_added:
-                    message += 'Read opts + args:  ' + pair + '\n'
-                    heading_added = True
-                else:
-                    message += '                   ' + pair + '\n'
-
-        if "write_flags_args" not in self.data:
-            pass
-        elif len(self.data["write_flags_args"]) == 0:
-            message += 'Write opts + args: none\n'
-        else:
-            heading_added = False
-
-            for pair in self.data["write_flags_args"]:
-                if not heading_added:
-                    message += 'Write opts + args: ' + pair + '\n'
-                    heading_added = True
-                else:
-                    message += '                   ' + pair + '\n'
+        write_flags_args = self.data.get("write_flags_args", "")
+        if write_flags_args:
+            for pair in write_flags_args:
+                message += 'Write opts + args: ' + pair + '\n'
 
         return self._create_message_start() + message
 
