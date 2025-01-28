@@ -4,19 +4,7 @@
 name: Python application
 
 on:
-  push:
-    branches: ["main", "release"]
-  pull_request:
-    branches: ["main", "release"]
-    paths:
-      [
-        "**.py",
-        "pyproject.toml",
-        "c2x.sh",
-        "**/atomsk.sh",
-        "**/bin/**",
-        "test_data/**",
-      ]
+  workflow_call:
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 

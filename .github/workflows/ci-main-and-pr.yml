@@ -1,0 +1,25 @@
+# Pipeline to run tests on:
+# - pushes to the main branch
+# - pushes PRs to the main branch upon changes to certain files (see the 'paths:' list)
+
+name: ci-main-and-pr
+run-name: ci-main-and-pr
+on:
+  workflow_dispatch:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+    paths:
+      [
+        "**.py",
+        "pyproject.toml",
+        "c2x.sh",
+        "**/atomsk.sh",
+        "**/bin/**",
+        "test_data/**",
+      ]
+      
+jobs:
+  test-package:
+    uses: ./.github/workflows/test_package.yml
