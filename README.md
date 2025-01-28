@@ -223,17 +223,33 @@ This is the standard method to run a file conversion. This method may be importe
 from psdi_data_conversion.converter import run_converter
 ```
 
+For a simple conversion, this can be used via:
+
+```python
+run_converter(filename, to_format, name=name, data=data, max_file_size=0)
+```
+
+Where `filename` is the name of the file to convert (either fully-qualified or relative to the current directory), `to_format` is the desired format to convert to (e.g. `"pdb"`), `name` is the name of the converter to use (default "Open Babel"), and `data` is a dict of any extra information required by the specific converter being used (default empty dict).
+
 See the method's documentation via `help(run_converter)` after importing it for further details on usage.
 
 #### `get_converter`
 
-This method provides the class which will perform a file conversion, ready to do so when you call its `run` method. This method may be imported via:
+This method provides the class which will perform a file conversion. This method may be imported via:
 
 ```python
 from psdi_data_conversion.converter import get_converter
 ```
 
-See the method's documentation via `help(get_converter)` after importing it for further details on usage.
+This can be used to create and run a converter via e.g.:
+
+```python
+converter = get_converter(filename, to_format, name=name, data=data, max_file_size=0)
+...
+converter.run()
+```
+
+`get_converter` takes all the same arguments as `run_converter`. See the method's documentation via `help(get_converter)` after importing it for further details on usage.
 
 #### `constants`
 
