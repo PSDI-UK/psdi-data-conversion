@@ -14,8 +14,7 @@ import sys
 
 from psdi_data_conversion import constants as const
 from psdi_data_conversion.converter import L_REGISTERED_CONVERTERS, run_converter
-from psdi_data_conversion.converters.base import (FileConverterAbortException, FileConverterInputException,
-                                                  get_file_storage)
+from psdi_data_conversion.converters.base import FileConverterAbortException, FileConverterInputException
 
 logger = logging.getLogger(__name__)
 
@@ -299,12 +298,7 @@ def run_from_args(args: ConvertArgs):
     if args.list:
         return detail_converters(args.l_args)
 
-    form = {'token': '1041c0a661d118d5f28e7c6830375dd0',
-            'from': args.from_format,
-            'to': args.to_format,
-            'from_full': args.from_format,
-            'to_full': args.to_format,
-            'success': 'unknown',
+    data = {'success': 'unknown',
             'from_flags': args.from_flags,
             'to_flags': args.to_flags,
             'from_arg_flags': '',
@@ -335,20 +329,18 @@ def run_from_args(args: ConvertArgs):
         if not args.quiet:
             print(f"Converting {filename} to {args.to_format}...")
 
-        file_storage = get_file_storage(qualified_filename)
-
         try:
-            run_converter(name=args.name,
-                          files=file_storage,
-                          form=form,
-                          file_to_convert=const.FILE_TO_UPLOAD_KEY,
+            run_converter(filename=qualified_filename,
+                          to_format=args.to_format,
+                          from_format=args.from_format,
+                          name=args.name,
+                          data=data,
                           use_envvars=False,
                           upload_dir=args.input_dir,
                           download_dir=args.output_dir,
                           log_file=args.log_file,
                           log_mode=args.log_mode,
-                          delete_input=args.delete_input,
-                          max_file_size=0)
+                          delete_input=args.delete_input)
         except FileConverterAbortException as e:
             print(f"ERROR: Attempt to convert file {filename} aborted with status code {e.status_code} and message: " +
                   f"\n{e}\n", file=sys.stderr)

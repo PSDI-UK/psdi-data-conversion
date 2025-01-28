@@ -6,6 +6,7 @@ Base class and information for file format converters
 """
 
 
+from copy import deepcopy
 import json
 import logging
 from collections.abc import Callable
@@ -15,6 +16,7 @@ import sys
 import abc
 
 import traceback
+from typing import Any
 
 from psdi_data_conversion import constants as const, log_utility
 
@@ -25,36 +27,6 @@ try:
     from werkzeug.exceptions import HTTPException
 except ImportError:
     HTTPException = None
-
-
-class FileStorage(abc.ABC):
-    """Local version of the `FileStorage` class which provides the needed functionality for the converter.
-    """
-    filename: str | None = None
-    source_filename: str | None = None
-
-    def __init__(self, source_filename):
-        self.source_filename = source_filename
-        self.filename = os.path.split(self.source_filename)[1]
-
-    def save(self, dest_filename):
-        """To speed things up, symlink the file instead of creating a copy
-        """
-
-        # Silently make sure the destination directory exists
-        os.makedirs(os.path.split(dest_filename)[0], exist_ok=True)
-
-        if not os.path.realpath(self.source_filename) == os.path.realpath(dest_filename):
-            os.symlink(self.source_filename, dest_filename)
-
-
-def get_file_storage(source_filename):
-    """Convenience function for unit test to get a mock `files` dict to pass as an argument to initializing a converter
-    """
-    mock_file_storage = FileStorage(source_filename)
-    return {const.FILE_KEY: mock_file_storage,
-            const.FILE_TO_UPLOAD_KEY: mock_file_storage,
-            }
 
 
 class FileConverterException(RuntimeError):
@@ -97,9 +69,10 @@ class FileConverter:
     name: str | None = None
 
     def __init__(self,
-                 files: dict[str, FileStorage],
-                 form: dict[str, str],
-                 file_to_convert: str,
+                 filename: str,
+                 to_format: str,
+                 from_format: str | None = None,
+                 data: dict[str, Any] | None = None,
                  abort_callback: Callable[[int], None] = abort_raise,
                  use_envvars=False,
                  upload_dir=const.DEFAULT_UPLOAD_DIR,
@@ -107,18 +80,20 @@ class FileConverter:
                  max_file_size=const.DEFAULT_MAX_FILE_SIZE,
                  log_file: str | None = None,
                  log_mode=const.LOG_FULL,
-                 delete_input=True,
-                 **kwargs):
+                 delete_input=False):
         """Initialize the object, storing needed data and setting up loggers.
 
         Parameters
         ----------
-        files : ImmutableMultiDict[str, FileStorage]
-            The file dict provided by Flask at `request.files`
-        form : ImmutableMultiDict[str, str]
-            The form dict provided by Flask at `request.form`
-        file_to_convert : str
-            The key for the file in the `files` dict to convert
+        filename : str
+            The filename of the input file to be converted, either relative to current directory or fully-qualified
+        to_format : str
+            The desired format to convert to, as the file extension (e.g. "cif")
+        from_format : str | None
+            The format to convert from, as the file extension (e.g. "pdb"). If None is provided (default), will be
+            determined from the extension of `filename`
+        data : dict[str | Any] | None
+            A dict of any other data needed by a converter or for extra logging information, default empty dict
         abort_callback : Callable[[int], None]
             Function to be called if the conversion hits an error and must be aborted, default `abort_raise`, which
             raises an appropriate exception
@@ -130,7 +105,7 @@ class FileConverter:
         download_dir : str
             The location of output files relative to the current directory
         max_file_size : float
-            The maximum allowed file size for input/output files, in MB, default 1 MB. If 0, will be unlimited
+            The maximum allowed file size for input/output files, in MB. If 0, will be unlimited. Default 0 (unlimited)
         log_file : str | None
             If provided, all logging will go to a single file or stream. Otherwise, logs will be split up among multiple
             files for server-style logging.
@@ -141,13 +116,12 @@ class FileConverter:
             - 'stdout' - Output logs and errors only to stdout
             - 'none' - Output only errors to stdout
         delete_input : bool
-            Whether or not to delete input files after conversion, default True
+            Whether or not to delete input files after conversion, default False
         """
 
         # Set member variables directly from input
-        self.files = files
-        self.form = form
-        self.file_to_convert = file_to_convert
+        self.in_filename = filename
+        self.to_format = to_format
         self.abort_callback = abort_callback
         self.upload_dir = upload_dir
         self.download_dir = download_dir
@@ -156,9 +130,23 @@ class FileConverter:
         self.log_mode = log_mode
         self.delete_input = delete_input
 
-        # Set member variables from dict values in input
-        self.from_format = self.form['from']
-        self.to_format = self.form['to']
+        # Use an empty dict for data if None was provided
+        if data is None:
+            self.data = {}
+        else:
+            self.data = deepcopy(data)
+
+        # Get from_format from the input file extension if not supplied
+        if from_format is None:
+            self.from_format = os.path.splitext(self.in_filename)[1]
+        else:
+            self.from_format = from_format
+
+        # Remove any leading periods from to/from_format
+        if self.to_format.startswith("."):
+            self.to_format = self.to_format[1:]
+        if self.from_format.startswith("."):
+            self.from_format = self.from_format[1:]
 
         # Set placeholders for member variables which will be set when conversion is run
         self.in_size: int | None = None
@@ -166,14 +154,6 @@ class FileConverter:
         self.out: str | None = None
         self.err: str | None = None
         self.quality: str | None = None
-
-        # Set placeholders for member variables used only by OB conversion
-        self.from_flags: str | None = None
-        self.to_flags: str | None = None
-        self.read_flags_args: list[str] | None = None
-        self.write_flags_args: list[str] | None = None
-        self.calc_type: str | None = None
-        self.option: str | None = None
 
         # Set values from envvars if desired
         if use_envvars:
@@ -190,13 +170,8 @@ class FileConverter:
         if not os.path.exists(self.download_dir):
             os.makedirs(self.download_dir, exist_ok=True)
 
-        self.f = self.files[self.file_to_convert]
-        self.filename_base = self.f.filename.split(".")[0]  # E.g. ethane.mol --> ethane
-
-        self.in_filename = f"{self.upload_dir}/{self.f.filename}"
-
-        self.f.save(self.in_filename)
-
+        self.local_filename = os.path.split(self.in_filename)[1]
+        self.filename_base = os.path.splitext(self.local_filename)[0]
         self.out_filename = f"{self.download_dir}/{self.filename_base}.{self.to_format}"
 
         # Set up files to log to
@@ -233,7 +208,7 @@ class FileConverter:
     def _setup_server_loggers(self):
         """Run at init to set up loggers for this object in server-style execution
         """
-        local_log_base = f"{self.download_dir}/{self.f.filename}-{self.filename_base}.{self.to_format}"
+        local_log_base = f"{self.download_dir}/{self.local_filename}-{self.filename_base}.{self.to_format}"
         local_log = f"{local_log_base}{const.LOCAL_LOG_EXT}"
         self.output_log = f"{self.download_dir}/{self.filename_base}{const.OUTPUT_LOG_EXT}"
 
@@ -316,59 +291,14 @@ class FileConverter:
         self.output_logger.info(self._create_message())
         self._abort(message=self.err)
 
-    def _create_message(self):
+    def _create_message(self) -> str:
+        """Create a log of options passed to the converter - this method should be overloaded to log any information
+        unique to a specific converter.
+        """
 
-        message = ''
+        return self._create_message_start()
 
-        if self.calc_type == 'neither':
-            message = 'Coord. gen.:       none\n'
-        elif self.calc_type:
-            message += 'Coord. gen.:       ' + self.calc_type + '\n'
-
-        if self.option:
-            message += 'Coord. option:     ' + self.option + '\n'
-
-        if self.from_flags == '':
-            message += 'Read options:      none\n'
-        elif self.from_flags:
-            message += 'Read options:      ' + self.from_flags + '\n'
-
-        if self.to_flags == '':
-            message += 'Write options:     none\n'
-        elif self.to_flags:
-            message += 'Write options:     ' + self.to_flags + '\n'
-
-        if self.read_flags_args is None:
-            pass
-        elif len(self.read_flags_args) == 0:
-            message += 'Read opts + args:  none\n'
-        else:
-            heading_added = False
-
-            for pair in self.read_flags_args:
-                if not heading_added:
-                    message += 'Read opts + args:  ' + pair + '\n'
-                    heading_added = True
-                else:
-                    message += '                   ' + pair + '\n'
-
-        if self.write_flags_args is None:
-            pass
-        elif len(self.write_flags_args) == 0:
-            message += 'Write opts + args: none\n'
-        else:
-            heading_added = False
-
-            for pair in self.write_flags_args:
-                if not heading_added:
-                    message += 'Write opts + args: ' + pair + '\n'
-                    heading_added = True
-                else:
-                    message += '                   ' + pair + '\n'
-
-        return self._create_message_start() + message
-
-    def _create_message_start(self):
+    def _create_message_start(self) -> str:
         """Create beginning of message for log files
 
         Returns
@@ -376,11 +306,11 @@ class FileConverter:
         str
             The beginning of a message for log files, containing generic information about what was trying to be done
         """
-        return ('\n'
-                'File name:         ' + self.filename_base + '\n'
-                'From:              ' + self.from_format + '\n'
-                'To:                ' + self.to_format + '\n'
-                'Converter:         ' + self.name + '\n')
+        return ("\n"
+                f"File name:         {self.filename_base}\n"
+                f"From:              {self.from_format}\n"
+                f"To:                {self.to_format}\n"
+                f"Converter:         {self.name}\n")
 
     def _log_success(self):
         """Write conversion information to server-side file, ready for downloading to user
@@ -447,7 +377,7 @@ class FileConverter:
 
         return in_size, out_size
 
-    @staticmethod
+    @ staticmethod
     def get_quality(from_ext, to_ext):
         """Query the JSON file to obtain conversion quality
         """
@@ -481,18 +411,20 @@ class FileConverter:
 
         self.in_size, self.out_size = self._check_file_size_and_status()
 
-        if self.file_to_convert != 'file':  # Website only (i.e., not command line option)
-            if self.delete_input:
-                os.remove(self.in_filename)
-            self.from_format = self.form['from_full']
-            self.to_format = self.form['to_full']
-            self.quality = self.form['success']
+        if self.delete_input:
+            os.remove(self.in_filename)
+        if "from_full" in self.data:
+            self.from_format = self.data["from_full"]
+        if "to_full" in self.data:
+            self.to_format = self.data["from_full"]
+        if "success" in self.data:
+            self.quality = self.data["success"]
         else:
             self.quality = self.get_quality(self.from_format, self.to_format)
 
         self._log_success()
 
-    @abc.abstractmethod
+    @ abc.abstractmethod
     def _convert(self):
         """Run the conversion with the desired converter
         """
@@ -507,13 +439,13 @@ class ScriptFileConverter(FileConverter):
 
     def _convert(self):
 
-        if not self.from_flags:
-            self.from_flags = ""
-        if not self.to_flags:
-            self.to_flags = ""
+        if "from_flags" not in self.data:
+            self.data["from_flags"] = ""
+        if "to_flags" not in self.data:
+            self.data["to_flags"] = ""
 
         process = subprocess.run(['sh', f'psdi_data_conversion/scripts/{self.script}',
-                                 self.in_filename, self.out_filename, self.from_flags, self.to_flags],
+                                  self.in_filename, self.out_filename, self.data["from_flags"], self.data["to_flags"]],
                                  capture_output=True, text=True)
 
         self.out = process.stdout

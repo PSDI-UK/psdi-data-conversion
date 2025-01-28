@@ -49,7 +49,7 @@ This is the repository for the PSDI PF2 Chemistry File Format Conversion project
   - `templates`
     - (HTML assets rendered by Flask for the web app)
   - `__init.py__`
-  - (Python modules and scripts)
+  - (Python packages, modules, and scripts)
 - `scripts`
   - (Scripts used for project maintenance)
 - `tests`
@@ -167,7 +167,7 @@ psdi-data-convert <input file 1> [<input file 2> <input file 3> ...] -t/--to <ou
 format>] [-i/--in <input file location>] [-a/--at <location for output files>] [-w/--with <converter>] [--delete-input]
 [--from-flags '<flags to be provided to the converter for reading input>'] [--to-flags '<flags to be provided to the
 converter for writing output>'] [--coord-gen <coordinate generation options] [-q/--quiet] [-o/--log-file <log file
-name] [--log-level <level>]
+name] [--log-mode <mode>] [--log-level <level>]
 ```
 
 Call `psdi-data-convert -h` for details on each of these options.
@@ -223,17 +223,33 @@ This is the standard method to run a file conversion. This method may be importe
 from psdi_data_conversion.converter import run_converter
 ```
 
+For a simple conversion, this can be used via:
+
+```python
+run_converter(filename, to_format, name=name, data=data)
+```
+
+Where `filename` is the name of the file to convert (either fully-qualified or relative to the current directory), `to_format` is the desired format to convert to (e.g. `"pdb"`), `name` is the name of the converter to use (default "Open Babel"), and `data` is a dict of any extra information required by the specific converter being used (default empty dict).
+
 See the method's documentation via `help(run_converter)` after importing it for further details on usage.
 
 #### `get_converter`
 
-This method provides the class which will perform a file conversion, ready to do so when you call its `run` method. This method may be imported via:
+This method provides the class which will perform a file conversion. This method may be imported via:
 
 ```python
 from psdi_data_conversion.converter import get_converter
 ```
 
-See the method's documentation via `help(get_converter)` after importing it for further details on usage.
+This can be used to create and run a converter via e.g.:
+
+```python
+converter = get_converter(filename, to_format, name=name, data=data)
+...
+converter.run()
+```
+
+`get_converter` takes all the same arguments as `run_converter`. See the method's documentation via `help(get_converter)` after importing it for further details on usage.
 
 #### `constants`
 
@@ -328,3 +344,5 @@ pytest
 - Tom Underwood
 
 ## Funding
+
+TODO: Note funding here

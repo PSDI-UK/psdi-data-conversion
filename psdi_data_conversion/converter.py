@@ -62,19 +62,22 @@ except Exception:
     L_REGISTERED_CONVERTERS = []
 
 
-def get_converter(name=const.CONVERTER_DEFAULT, **converter_kwargs) -> base.FileConverter:
+def get_converter(*args, name=const.CONVERTER_DEFAULT, **converter_kwargs) -> base.FileConverter:
     """Get a FileConverter of the proper subclass for the requested converter type
 
     Parameters
     ----------
+    filename : str
+        The filename of the input file to be converted, either relative to current directory or fully-qualified
+    to_format : str
+        The desired format to convert to, as the file extension (e.g. "cif")
+    from_format : str | None
+        The format to convert from, as the file extension (e.g. "pdb"). If None is provided (default), will be
+        determined from the extension of `filename`
     name : str
         The desired converter type, by default 'Open Babel'
-    files : dict[str, FileStorage]
-        The file dict provided by Flask at `request.files`
-    form : dict[str, str]
-        The form dict provided by Flask at `request.form`
-    file_to_convert : str
-        The key for the file in the `files` dict to convert
+    data : dict[str | Any] | None
+        A dict of any other data needed by a converter or for extra logging information, default empty dict
     abort_callback : Callable[[int], None]
         Function to be called if the conversion hits an error and must be aborted, default `abort_raise`, which
         raises an appropriate exception
@@ -97,7 +100,7 @@ def get_converter(name=const.CONVERTER_DEFAULT, **converter_kwargs) -> base.File
         - 'stdout' - Output logs and errors only to stdout
         - 'none' - Output only errors to stdout
     delete_input : bool
-        Whether or not to delete input files after conversion, default True
+        Whether or not to delete input files after conversion, default False
 
     Returns
     -------
@@ -107,29 +110,32 @@ def get_converter(name=const.CONVERTER_DEFAULT, **converter_kwargs) -> base.File
     Raises
     ------
     FileConverterInputException
-        If the converter isn't recognized
+        If the converter isn't recognized or there's some other issue with the input
     """
     if name not in L_REGISTERED_CONVERTERS:
         raise base.FileConverterInputException(f"Converter {name} not recognized. Allowed converters are: " +
                                                f"{L_REGISTERED_CONVERTERS}")
     converter_class = D_REGISTERED_CONVERTERS[name]
 
-    return converter_class(**converter_kwargs)
+    return converter_class(*args, **converter_kwargs)
 
 
-def run_converter(**converter_kwargs) -> str:
+def run_converter(*args, **converter_kwargs) -> str:
     """Shortcut to create and run a FileConverter in one step
 
     Parameters
     ----------
+    filename : str
+        The filename of the input file to be converted, either relative to current directory or fully-qualified
+    to_format : str
+        The desired format to convert to, as the file extension (e.g. "cif")
+    from_format : str | None
+        The format to convert from, as the file extension (e.g. "pdb"). If None is provided (default), will be
+        determined from the extension of `filename`
     name : str
         The desired converter type, by default 'Open Babel'
-    files : dict[str, FileStorage]
-        The file dict provided by Flask at `request.files`
-    form : dict[str, str]
-        The form dict provided by Flask at `request.form`
-    file_to_convert : str
-        The key for the file in the `files` dict to convert
+    data : dict[str | Any] | None
+        A dict of any other data needed by a converter or for extra logging information, default empty dict
     abort_callback : Callable[[int], None]
         Function to be called if the conversion hits an error and must be aborted, default `abort_raise`, which
         raises an appropriate exception
@@ -152,7 +158,7 @@ def run_converter(**converter_kwargs) -> str:
         - 'stdout' - Output logs and errors only to stdout
         - 'none' - Output only errors to stdout
     delete_input : bool
-        Whether or not to delete input files after conversion, default True
+        Whether or not to delete input files after conversion, default False
 
     Returns
     -------
@@ -162,7 +168,9 @@ def run_converter(**converter_kwargs) -> str:
     Raises
     ------
     FileConverterInputException
+        If the converter isn't recognized or there's some other issue with the input
     FileConverterAbortException
+        If something goes wrong during the conversion process
     """
 
-    return get_converter(**converter_kwargs).run()
+    return get_converter(*args, **converter_kwargs).run()
