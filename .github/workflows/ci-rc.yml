@@ -1,5 +1,7 @@
 # Pipeline to run on release candidate branches and their PRs only
 
+# NOTE: It is assumed that all release candidate branches match the pattern 'rc-*'
+
 name: ci-rc
 run-name: ci-rc
 on:
