@@ -1,15 +1,15 @@
-# Pipeline to run on release candidate branches and their PRs only
+# Pipeline to run on pushes to release candidate branches PRs to such branches
 
-# NOTE: It is assumed that all release candidate branches match the pattern 'rc-*'
+# NOTE: It is assumed that all release candidate branches match the pattern 'rc-**'
 
 name: ci-rc
 run-name: ci-rc
 on:
   workflow_dispatch:
   push:
-    branches: [ "rc-*" ]
+    branches: [ "rc-**" ]
   pull_request:
-    branches: [ "rc-*" ]
+    branches: [ "rc-**" ]
     
 jobs:
   # Runs on all of the 'on' conditions above, including pull request events
