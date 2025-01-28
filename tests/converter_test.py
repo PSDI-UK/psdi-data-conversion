@@ -15,7 +15,7 @@ import pytest
 from psdi_data_conversion import constants as const
 from psdi_data_conversion.converter import run_converter
 from psdi_data_conversion.converters.atomsk import CONVERTER_ATO
-from psdi_data_conversion.converters.base import FileConverter, FileConverterAbortException, get_file_storage
+from psdi_data_conversion.converters.base import FileConverter, FileConverterAbortException
 from psdi_data_conversion.converters.c2x import CONVERTER_C2X
 from psdi_data_conversion.main import FileConverterInputException
 
@@ -102,16 +102,15 @@ class TestConverter:
                 raise RuntimeError(f"Invalid key {key} provided for form")
 
         # Save some variables from input we'll be using throughout this test
+        self.local_filename = filename
         self.source_filename = os.path.join(self.test_data_loc, filename)
-        self.files = get_file_storage(self.source_filename)
-        self.filename = self.files[const.FILE_TO_UPLOAD_KEY].filename
         self.filename_base = os.path.splitext(filename)[0]
         self.to_format = self.mock_form["to"]
 
     def get_converter_kwargs(self, **kwargs):
         """Get the keyword arguments to be passed to a FileConverter for testing
         """
-        kwargs.update({"files": self.files,
+        kwargs.update({"filename": self.source_filename,
                        "form": self.mock_form,
                        "file_to_convert": const.FILE_TO_UPLOAD_KEY,
                        "upload_dir": self.tmp_upload_path,
@@ -149,12 +148,10 @@ class TestConverter:
             check either way.
         """
 
-        ex_input_filename = os.path.join(self.tmp_upload_path, self.files[const.FILE_TO_UPLOAD_KEY].filename)
-
-        ex_output_filename_base = os.path.splitext(self.files[const.FILE_TO_UPLOAD_KEY].filename)[0]
+        ex_output_filename_base = os.path.splitext(self.filename_base)[0]
         ex_output_filename = os.path.join(self.tmp_download_path, f"{ex_output_filename_base}.{self.to_format}")
 
-        for check_condition, filename in ((input_exist, ex_input_filename),
+        for check_condition, filename in ((input_exist, self.source_filename),
                                           (output_exist, ex_output_filename)):
             if check_condition is None:
                 continue
@@ -169,7 +166,7 @@ class TestConverter:
 
         self.global_log_filename = const.GLOBAL_LOG_FILENAME
         self.local_log_filename = os.path.join(self.tmp_download_path,
-                                               f"{self.filename}-{self.filename_base}.{self.to_format}" +
+                                               f"{self.local_filename}-{self.filename_base}.{self.to_format}" +
                                                const.LOCAL_LOG_EXT)
         self.output_log_filename = os.path.join(self.tmp_download_path,
                                                 f"{self.filename_base}{const.OUTPUT_LOG_EXT}")
@@ -194,7 +191,7 @@ class TestConverter:
         self.run_converter()
 
         # Check that the input file has been deleted and the output file exists where we expect it to
-        self.check_file_status(input_exist=False, output_exist=True)
+        self.check_file_status(input_exist=True, output_exist=True)
 
         # Check that the logs are as we expect
         self.get_logs()
@@ -226,7 +223,7 @@ class TestConverter:
                            max_file_size=0.0001)
 
         # Check that the input and output files have properly been deleted
-        self.check_file_status(input_exist=False, output_exist=False)
+        self.check_file_status(input_exist=True, output_exist=False)
 
         # Check that the logs are as we expect
         self.get_logs()
@@ -241,7 +238,7 @@ class TestConverter:
         # Now check that 0 properly works to indicate unlimited size
         self.get_input_info(filename="1NE6.mmcif")
         self.run_converter(max_file_size=0)
-        self.check_file_status(input_exist=False, output_exist=True)
+        self.check_file_status(input_exist=True, output_exist=True)
 
     def test_invalid_converter(self):
         """Run a test of the converter to ensure it reports an error properly if an invalid converter is requested
@@ -253,7 +250,7 @@ class TestConverter:
                            name="INVALID")
 
         # Check that the input and output files have properly been deleted
-        self.check_file_status(input_exist=False, output_exist=False)
+        self.check_file_status(input_exist=True, output_exist=False)
 
     def test_xyz_to_inchi(self):
         """Run a test of the converter on a straightforward `.xyz` to `.inchi` conversion
@@ -268,7 +265,7 @@ class TestConverter:
         self.run_converter()
 
         # Check that the input file has been deleted and the output file exists where we expect it to
-        self.check_file_status(input_exist=False, output_exist=True)
+        self.check_file_status(input_exist=True, output_exist=True)
 
     def test_atomsk(self):
         """Run a test of the Atomsk converter on a straightforward `.pdb` to `.cif` conversion
@@ -283,7 +280,7 @@ class TestConverter:
         self.run_converter(name=CONVERTER_ATO)
 
         # Check that the input file has been deleted and the output file exists where we expect it to
-        self.check_file_status(input_exist=False, output_exist=True)
+        self.check_file_status(input_exist=True, output_exist=True)
 
     def test_c2x(self):
         """Run a test of the C2X converter on a straightforward `.pdb` to `.cif` conversion
@@ -298,7 +295,7 @@ class TestConverter:
         self.run_converter(name=CONVERTER_C2X)
 
         # Check that the input file has been deleted and the output file exists where we expect it to
-        self.check_file_status(input_exist=False, output_exist=True)
+        self.check_file_status(input_exist=True, output_exist=True)
 
     def test_xyz_to_inchi_err(self):
         """Run a test of the converter on an `.xyz` to `.inchi` conversion we expect to fail
@@ -313,7 +310,7 @@ class TestConverter:
         self.run_converter(expect_code=const.STATUS_CODE_GENERAL)
 
         # Check that the input and output files have properly been deleted
-        self.check_file_status(input_exist=False, output_exist=False)
+        self.check_file_status(input_exist=True, output_exist=False)
 
     def test_envvars(self):
         """Test that setting appropriate envvars will set them for a file converter

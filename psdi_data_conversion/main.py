@@ -14,8 +14,7 @@ import sys
 
 from psdi_data_conversion import constants as const
 from psdi_data_conversion.converter import L_REGISTERED_CONVERTERS, run_converter
-from psdi_data_conversion.converters.base import (FileConverterAbortException, FileConverterInputException,
-                                                  get_file_storage)
+from psdi_data_conversion.converters.base import FileConverterAbortException, FileConverterInputException
 
 logger = logging.getLogger(__name__)
 
@@ -335,11 +334,9 @@ def run_from_args(args: ConvertArgs):
         if not args.quiet:
             print(f"Converting {filename} to {args.to_format}...")
 
-        file_storage = get_file_storage(qualified_filename)
-
         try:
             run_converter(name=args.name,
-                          files=file_storage,
+                          filename=qualified_filename,
                           form=form,
                           file_to_convert=const.FILE_TO_UPLOAD_KEY,
                           use_envvars=False,

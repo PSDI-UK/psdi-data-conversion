@@ -62,9 +62,8 @@ def convert():
     """
     if (not check_auth) or (request.form['token'] == token and token != ''):
         return run_converter(name=request.form['converter'],
-                             files=request.files,
+                             filename=request.files[const.FILE_TO_UPLOAD_KEY].filename,
                              form=request.form,
-                             file_to_convert=const.FILE_TO_UPLOAD_KEY,
                              log_mode=log_mode,
                              abort_callback=abort)
     else:
@@ -77,9 +76,8 @@ def conv():
     """Convert file (cURL)
     """
     return run_converter(name=request.form['converter'],
-                         files=request.files,
+                         files=request.files[const.FILE_KEY].filename,
                          form=request.form,
-                         file_to_convert=const.FILE_KEY,
                          log_mode=log_mode,
                          abort_callback=abort)
 

@@ -97,9 +97,8 @@ class FileConverter:
     name: str | None = None
 
     def __init__(self,
-                 files: dict[str, FileStorage],
+                 filename: str,
                  form: dict[str, str],
-                 file_to_convert: str,
                  abort_callback: Callable[[int], None] = abort_raise,
                  use_envvars=False,
                  upload_dir=const.DEFAULT_UPLOAD_DIR,
@@ -107,18 +106,16 @@ class FileConverter:
                  max_file_size=const.DEFAULT_MAX_FILE_SIZE,
                  log_file: str | None = None,
                  log_mode=const.LOG_FULL,
-                 delete_input=True,
+                 delete_input=False,
                  **kwargs):
         """Initialize the object, storing needed data and setting up loggers.
 
         Parameters
         ----------
-        files : ImmutableMultiDict[str, FileStorage]
-            The file dict provided by Flask at `request.files`
+        filename : str
+            The filename of the input file to be converted, either relative to current directory or fully-qualified
         form : ImmutableMultiDict[str, str]
             The form dict provided by Flask at `request.form`
-        file_to_convert : str
-            The key for the file in the `files` dict to convert
         abort_callback : Callable[[int], None]
             Function to be called if the conversion hits an error and must be aborted, default `abort_raise`, which
             raises an appropriate exception
@@ -145,9 +142,8 @@ class FileConverter:
         """
 
         # Set member variables directly from input
-        self.files = files
+        self.in_filename = filename
         self.form = form
-        self.file_to_convert = file_to_convert
         self.abort_callback = abort_callback
         self.upload_dir = upload_dir
         self.download_dir = download_dir
@@ -190,13 +186,8 @@ class FileConverter:
         if not os.path.exists(self.download_dir):
             os.makedirs(self.download_dir, exist_ok=True)
 
-        self.f = self.files[self.file_to_convert]
-        self.filename_base = self.f.filename.split(".")[0]  # E.g. ethane.mol --> ethane
-
-        self.in_filename = f"{self.upload_dir}/{self.f.filename}"
-
-        self.f.save(self.in_filename)
-
+        self.local_filename = os.path.split(self.in_filename)[1]
+        self.filename_base = os.path.splitext(self.local_filename)[0]
         self.out_filename = f"{self.download_dir}/{self.filename_base}.{self.to_format}"
 
         # Set up files to log to
@@ -233,7 +224,7 @@ class FileConverter:
     def _setup_server_loggers(self):
         """Run at init to set up loggers for this object in server-style execution
         """
-        local_log_base = f"{self.download_dir}/{self.f.filename}-{self.filename_base}.{self.to_format}"
+        local_log_base = f"{self.download_dir}/{self.local_filename}-{self.filename_base}.{self.to_format}"
         local_log = f"{local_log_base}{const.LOCAL_LOG_EXT}"
         self.output_log = f"{self.download_dir}/{self.filename_base}{const.OUTPUT_LOG_EXT}"
 
@@ -481,12 +472,14 @@ class FileConverter:
 
         self.in_size, self.out_size = self._check_file_size_and_status()
 
-        if self.file_to_convert != 'file':  # Website only (i.e., not command line option)
-            if self.delete_input:
-                os.remove(self.in_filename)
-            self.from_format = self.form['from_full']
-            self.to_format = self.form['to_full']
-            self.quality = self.form['success']
+        if self.delete_input:
+            os.remove(self.in_filename)
+        if "from_full" in self.form:
+            self.from_format = self.form["from_full"]
+        if "to_full" in self.form:
+            self.to_format = self.form["from_full"]
+        if "success" in self.form:
+            self.quality = self.form["success"]
         else:
             self.quality = self.get_quality(self.from_format, self.to_format)
 
