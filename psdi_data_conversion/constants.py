@@ -26,7 +26,7 @@ DEFAULT_COORD_GEN_QUAL = "medium"
 
 # Maximum output file size in bytes
 MEGABYTE = 1024*1024
-DEFAULT_MAX_FILE_SIZE = 1*MEGABYTE
+DEFAULT_MAX_FILE_SIZE = 0*MEGABYTE
 
 DEFAULT_UPLOAD_DIR = './psdi_data_conversion/static/uploads'
 DEFAULT_DOWNLOAD_DIR = './psdi_data_conversion/static/downloads'

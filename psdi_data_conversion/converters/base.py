@@ -105,7 +105,7 @@ class FileConverter:
         download_dir : str
             The location of output files relative to the current directory
         max_file_size : float
-            The maximum allowed file size for input/output files, in MB, default 1 MB. If 0, will be unlimited
+            The maximum allowed file size for input/output files, in MB. If 0, will be unlimited. Default 0 (unlimited)
         log_file : str | None
             If provided, all logging will go to a single file or stream. Otherwise, logs will be split up among multiple
             files for server-style logging.
