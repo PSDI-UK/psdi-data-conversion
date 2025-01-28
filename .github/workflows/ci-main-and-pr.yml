@@ -5,7 +5,7 @@ run-name: ci-main-and-pr
 on:
   workflow_dispatch:
   push:
-    branches: [ "main" ]
+    branches: [ "main", "tu_cd" ]
   pull_request:
     branches: [ "main" ]
     
