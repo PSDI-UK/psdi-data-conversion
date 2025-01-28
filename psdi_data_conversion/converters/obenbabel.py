@@ -5,7 +5,7 @@ Created 2025-01-23 by Bryan Gillis.
 Open Babel FileConverter
 """
 
-import openbabel
+from openbabel import openbabel
 import py
 
 from psdi_data_conversion.converters.base import FileConverter
