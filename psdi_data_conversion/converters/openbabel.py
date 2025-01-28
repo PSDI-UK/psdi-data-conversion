@@ -86,6 +86,8 @@ class OBFileConverter(FileConverter):
 
         message = super()._create_message()
 
+        label_length = 19
+
         for (label, key, multi) in (("Coord. gen.:", "coordinates", False),
                                     ("Coord. option:", "coord_option", False),
                                     ("Read options:", "from_flags", False),
@@ -95,7 +97,7 @@ class OBFileConverter(FileConverter):
             val = self.data.get(key)
 
             if not val:
-                message += f"{label:<20}none\n"
+                message += f"{label:<{label_length}}none\n"
                 continue
 
             if multi:
@@ -108,7 +110,7 @@ class OBFileConverter(FileConverter):
                     line_label = label
                 else:
                     line_label = ""
-                message += f"{line_label:<20}{item}\n"
+                message += f"{line_label:<{label_length}}{item}\n"
 
         return message
 
