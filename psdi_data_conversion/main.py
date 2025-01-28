@@ -330,11 +330,11 @@ def run_from_args(args: ConvertArgs):
             print(f"Converting {filename} to {args.to_format}...")
 
         try:
-            run_converter(name=args.name,
-                          filename=qualified_filename,
-                          data=data,
+            run_converter(filename=qualified_filename,
                           to_format=args.to_format,
                           from_format=args.from_format,
+                          name=args.name,
+                          data=data,
                           use_envvars=False,
                           upload_dir=args.input_dir,
                           download_dir=args.output_dir,
