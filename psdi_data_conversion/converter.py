@@ -95,7 +95,7 @@ def get_converter(name=const.CONVERTER_DEFAULT, **converter_kwargs) -> base.File
         - 'stdout' - Output logs and errors only to stdout
         - 'none' - Output only errors to stdout
     delete_input : bool
-        Whether or not to delete input files after conversion, default True
+        Whether or not to delete input files after conversion, default False
 
     Returns
     -------
@@ -148,7 +148,7 @@ def run_converter(**converter_kwargs) -> str:
         - 'stdout' - Output logs and errors only to stdout
         - 'none' - Output only errors to stdout
     delete_input : bool
-        Whether or not to delete input files after conversion, default True
+        Whether or not to delete input files after conversion, default False
 
     Returns
     -------

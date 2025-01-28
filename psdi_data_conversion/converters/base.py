@@ -137,7 +137,7 @@ class FileConverter:
             - 'stdout' - Output logs and errors only to stdout
             - 'none' - Output only errors to stdout
         delete_input : bool
-            Whether or not to delete input files after conversion, default True
+            Whether or not to delete input files after conversion, default False
         """
 
         # Set member variables directly from input

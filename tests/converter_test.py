@@ -10,6 +10,7 @@ import logging
 import math
 import os
 import re
+import shutil
 import pytest
 
 from psdi_data_conversion import constants as const
@@ -110,11 +111,12 @@ class TestConverter:
     def get_converter_kwargs(self, **kwargs):
         """Get the keyword arguments to be passed to a FileConverter for testing
         """
-        kwargs.update({"filename": self.source_filename,
-                       "form": self.mock_form,
-                       "upload_dir": self.tmp_upload_path,
-                       "download_dir": self.tmp_download_path})
-        return kwargs
+        standard_kwargs = {"filename": self.source_filename,
+                           "form": self.mock_form,
+                           "upload_dir": self.tmp_upload_path,
+                           "download_dir": self.tmp_download_path}
+        standard_kwargs.update(kwargs)
+        return standard_kwargs
 
     def run_converter(self, expect_exception=None, expect_code=None, **kwargs):
         """Runs a test on a file converter and checks that it returns successfully or else fails with an expected error
@@ -189,7 +191,7 @@ class TestConverter:
 
         self.run_converter()
 
-        # Check that the input file has been deleted and the output file exists where we expect it to
+        # Check that the input file has not been deleted and the output file exists where we expect it to
         self.check_file_status(input_exist=True, output_exist=True)
 
         # Check that the logs are as we expect
@@ -221,7 +223,7 @@ class TestConverter:
         self.run_converter(expect_code=const.STATUS_CODE_SIZE,
                            max_file_size=0.0001)
 
-        # Check that the input and output files have properly been deleted
+        # Check that the input file remains but no output file has been created
         self.check_file_status(input_exist=True, output_exist=False)
 
         # Check that the logs are as we expect
@@ -248,7 +250,7 @@ class TestConverter:
         self.run_converter(expect_exception=FileConverterInputException,
                            name="INVALID")
 
-        # Check that the input and output files have properly been deleted
+        # Check that the input file remains but no output file has been created
         self.check_file_status(input_exist=True, output_exist=False)
 
     def test_xyz_to_inchi(self):
@@ -263,8 +265,31 @@ class TestConverter:
 
         self.run_converter()
 
-        # Check that the input file has been deleted and the output file exists where we expect it to
+        # Check that the input file has not been deleted and the output file exists where we expect it to
         self.check_file_status(input_exist=True, output_exist=True)
+
+    def test_cleanup(self):
+        """Test that input files are deleted if requested
+        """
+
+        self.get_input_info(filename="hemoglobin.pdb",
+                            to="cif")
+
+        # Make a copy of the source file in the uploads directory, and point the self.source_filename variable to it
+        # so it'll be properly checked to be deleted later
+        upload_filename = os.path.join(self.tmp_upload_path, self.local_filename)
+        shutil.copyfile(self.source_filename, upload_filename)
+        self.source_filename = upload_filename
+
+        # "from" is a reserved word so we can't set it as a kwarg in the function call above
+        self.mock_form["from"] = "pdb"
+
+        self.run_converter(name=CONVERTER_ATO,
+                           filename=upload_filename,
+                           delete_input=True)
+
+        # Check that the input file has been deleted and the output file exists where we expect it to
+        self.check_file_status(input_exist=False, output_exist=True)
 
     def test_atomsk(self):
         """Run a test of the Atomsk converter on a straightforward `.pdb` to `.cif` conversion
@@ -278,7 +303,7 @@ class TestConverter:
 
         self.run_converter(name=CONVERTER_ATO)
 
-        # Check that the input file has been deleted and the output file exists where we expect it to
+        # Check that the input file has not been deleted and the output file exists where we expect it to
         self.check_file_status(input_exist=True, output_exist=True)
 
     def test_c2x(self):
@@ -293,7 +318,7 @@ class TestConverter:
 
         self.run_converter(name=CONVERTER_C2X)
 
-        # Check that the input file has been deleted and the output file exists where we expect it to
+        # Check that the input file has not been deleted and the output file exists where we expect it to
         self.check_file_status(input_exist=True, output_exist=True)
 
     def test_xyz_to_inchi_err(self):
