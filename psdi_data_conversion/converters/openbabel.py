@@ -86,31 +86,29 @@ class OBFileConverter(FileConverter):
 
         message = super()._create_message()
 
-        coordinates = self.data.get("coordinates", "none")
-        if coordinates and coordinates != "neither":
-            message += f"Coord. gen.:       {coordinates}\n"
+        for (label, key, multi) in (("Coord. gen.:", "coordinates", False),
+                                    ("Coord. option:", "coord_option", False),
+                                    ("Read options:", "from_flags", False),
+                                    ("Write options:", "to_flags", False),
+                                    ("Read opts + args:", "read_flags_args", True),
+                                    ("Write opts + args:", "write_flags_args", True)):
+            val = self.data.get(key)
 
-        coord_option = self.data.get("coordOption", "")
-        if coord_option:
-            message += f"Coord. option:     {coord_option}\n"
+            if not val:
+                message += f"{label:<20}none\n"
+                continue
 
-        from_flags = self.data.get("coordOption", "")
-        if from_flags:
-            message += f"Read options:      {from_flags}\n"
+            if multi:
+                l_items = val
+            else:
+                l_items = (val,)
 
-        to_flags = self.data.get("to_flags", "")
-        if to_flags:
-            message += f"Write options:     {to_flags}\n"
-
-        read_flags_args = self.data.get("read_flags_args", "")
-        if read_flags_args:
-            for pair in read_flags_args:
-                message += f"Read opts + args:  {pair}\n"
-
-        write_flags_args = self.data.get("write_flags_args", "")
-        if write_flags_args:
-            for pair in write_flags_args:
-                message += f"Write opts + args: {pair}\n"
+            for i, item in enumerate(l_items):
+                if i == 0:
+                    line_label = label
+                else:
+                    line_label = ""
+                message += f"{line_label:<20}{item}\n"
 
         return message
 
