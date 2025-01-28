@@ -112,7 +112,6 @@ class TestConverter:
         """
         kwargs.update({"filename": self.source_filename,
                        "form": self.mock_form,
-                       "file_to_convert": const.FILE_TO_UPLOAD_KEY,
                        "upload_dir": self.tmp_upload_path,
                        "download_dir": self.tmp_download_path})
         return kwargs

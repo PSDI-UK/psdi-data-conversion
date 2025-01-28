@@ -338,7 +338,6 @@ def run_from_args(args: ConvertArgs):
             run_converter(name=args.name,
                           filename=qualified_filename,
                           form=form,
-                          file_to_convert=const.FILE_TO_UPLOAD_KEY,
                           use_envvars=False,
                           upload_dir=args.input_dir,
                           download_dir=args.output_dir,

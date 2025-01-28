@@ -69,12 +69,10 @@ def get_converter(name=const.CONVERTER_DEFAULT, **converter_kwargs) -> base.File
     ----------
     name : str
         The desired converter type, by default 'Open Babel'
-    files : dict[str, FileStorage]
-        The file dict provided by Flask at `request.files`
+    filename : str
+        The filename of the input file to be converted, either relative to current directory or fully-qualified
     form : dict[str, str]
         The form dict provided by Flask at `request.form`
-    file_to_convert : str
-        The key for the file in the `files` dict to convert
     abort_callback : Callable[[int], None]
         Function to be called if the conversion hits an error and must be aborted, default `abort_raise`, which
         raises an appropriate exception
@@ -107,7 +105,7 @@ def get_converter(name=const.CONVERTER_DEFAULT, **converter_kwargs) -> base.File
     Raises
     ------
     FileConverterInputException
-        If the converter isn't recognized
+        If the converter isn't recognized or there's some other issue with the input
     """
     if name not in L_REGISTERED_CONVERTERS:
         raise base.FileConverterInputException(f"Converter {name} not recognized. Allowed converters are: " +
@@ -124,12 +122,10 @@ def run_converter(**converter_kwargs) -> str:
     ----------
     name : str
         The desired converter type, by default 'Open Babel'
-    files : dict[str, FileStorage]
-        The file dict provided by Flask at `request.files`
+    filename : str
+        The filename of the input file to be converted, either relative to current directory or fully-qualified
     form : dict[str, str]
         The form dict provided by Flask at `request.form`
-    file_to_convert : str
-        The key for the file in the `files` dict to convert
     abort_callback : Callable[[int], None]
         Function to be called if the conversion hits an error and must be aborted, default `abort_raise`, which
         raises an appropriate exception
@@ -162,7 +158,9 @@ def run_converter(**converter_kwargs) -> str:
     Raises
     ------
     FileConverterInputException
+        If the converter isn't recognized or there's some other issue with the input
     FileConverterAbortException
+        If something goes wrong during the conversion process
     """
 
     return get_converter(**converter_kwargs).run()

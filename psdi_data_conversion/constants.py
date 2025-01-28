@@ -78,7 +78,6 @@ CONVERTER_DEFAULT = 'Open Babel'
 # ----
 
 # Keys used commonly by dicts
-FILE_KEY = 'file'
 FILE_TO_UPLOAD_KEY = 'fileToUpload'
 
 # Errors
