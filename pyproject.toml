@@ -1,0 +1,55 @@
+[build-system]
+requires = ["setuptools>=64", "setuptools-scm>=8"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "psdi_data_conversion"
+authors = [
+  { name = "Ray Whorley" },
+  { name = "Don Cruickshank" },
+  { name = "Samantha Pearman-Kanza", email = "s.pearman-kanza@soton.ac.uk" },
+  { name = "Bryan Gillis", email = "7204836+brgillis@users.noreply.github.com" },
+  { name = "Tom Underwood" },
+]
+description = "Chemistry file format conversion service, provided by PSDI"
+readme = "README.md"
+keywords = ["chemistry", "conversion", "openbabel", "atomsk", "flask"]
+license = { file = "LICENSE" }
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Framework :: Flask",
+  "Intended Audience :: Science/Research",
+  "License :: OSI Approved :: Apache Software License",
+  "Natural Language :: English",
+  "Operating System :: POSIX :: Linux",
+  "Programming Language :: JavaScript",
+  "Programming Language :: Python :: 3",
+  "Topic :: File Formats",
+  "Topic :: Scientific/Engineering :: Chemistry",
+]
+dependencies = ["openbabel-wheel", "py"]
+requires-python = ">= 3.10"
+dynamic = ["version"]
+
+[project.optional-dependencies]
+test = ["pytest"]
+gui = ["Flask", "requests"]
+
+[project.scripts]
+psdi-data-convert = "psdi_data_conversion.main:main"
+
+[project.urls]
+Homepage = "https://psdidev2.azurewebsites.net/"
+Repository = "https://github.com/PSDI-UK/psdi-data-conversion"
+Issues = "https://github.com/PSDI-UK/psdi-data-conversion/issues"
+
+[tool.setuptools.packages.find]
+where = ["."]
+
+[tool.setuptools.package-data]
+psdi_data_conversion = ["bin/**", "static/**", "templates/**", "scripts/**"]
+
+[tool.setuptools_scm]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]

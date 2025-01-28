@@ -1,0 +1,170 @@
+/*
+  convert_common.js
+  Version 1.0, 17th December 2024
+*/
+
+const SECOND = 1000; // Milliseconds
+const CONVERT_TIMEOUT = 60 * SECOND;
+
+var token = "",
+    max_file_size = 0,
+    in_ext = "",
+    out_ext = "",
+    in_str = "",
+    out_str = "";
+
+export function commonConvertReady(converter) {
+    token = sessionStorage.getItem("token");
+    max_file_size = sessionStorage.getItem("max_file_size");
+
+    in_str = sessionStorage.getItem("in_str");
+    out_str = sessionStorage.getItem("out_str");
+
+    // $$$$$ FUNCTION FOR THIS? $$$$$
+    const in_str_array = in_str.split(": ");
+    in_ext = in_str_array[0];                // e.g. "ins"
+    const in_note = in_str_array[1];         // e.g. "ShelX"
+
+    const out_str_array = out_str.split(": ");
+    out_ext = out_str_array[0];
+    const out_note = out_str_array[1];
+
+    $("#heading").html("Convert from \'" + in_ext + "\' (" + in_note + ") to \'" + out_ext + "\' (" + out_note +
+        ") using " + converter);
+
+    $("#fileToUpload").change(checkFile);
+
+    return [token, max_file_size, in_str, in_ext, out_str, out_ext];
+}
+
+// Converts user-supplied file to another format and downloads the resulting file
+export function convertFile(form_data, download_fname, fname) {
+
+    let convertTimedOut = false;
+
+    var jqXHR = $.ajax({
+        url: `/convert/`,
+        type: "POST",
+        data: form_data,
+        processData: false,
+        contentType: false,
+        timeout: CONVERT_TIMEOUT,
+        success: async function () {
+            if (!convertTimedOut) {
+                const delay = ms => new Promise(response => setTimeout(response, ms));
+
+                downloadFile(`../downloads/${fname}.log.txt`, fname + '.log.txt')
+                await delay(300);
+                downloadFile(`../downloads/${download_fname}`, download_fname)
+                await delay(300);
+            }
+
+            var fdata = new FormData();
+
+            fdata.append("filename", download_fname);
+            fdata.append("logname", fname + '.log.txt');
+
+            $.ajax({
+                url: `/delete/`,
+                type: "POST",
+                data: fdata,
+                processData: false,
+                contentType: false
+            })
+                .fail(function (e) {
+                    // For debugging
+                    console.log("Error deleting remote files after download");
+                    console.log(e.status);
+                    console.log(e.responseText);
+                })
+        },
+        error: function (xmlhttprequest, textstatus, message) {
+            if (textstatus === "timeout") {
+                convertTimedOut = true;
+                alert("ERROR: Conversion attempt timed out. This may be because the conversion is too complicated, " +
+                    "or because the server is currently busy.");
+                console.log("ERROR: Conversion timed out")
+            } else {
+                alert("ERROR: Backend converter could not be accessed. Request returned status '" + textstatus +
+                    "' and message:\n" + message);
+                console.log("ERROR: AJAX request failed for reason other than timeout")
+            }
+        }
+    })
+        .done(response => {
+            if (!convertTimedOut) {
+                alert("To the best of our knowledge, this conversion has worked. Your output file should download " +
+                    "automatically when you close this alert. Please report any problems by clicking on 'Contact' in " +
+                    "the navigation bar.");
+            }
+        })
+        .fail(function (e) {
+            let errLog = `/static/downloads/${fname}.log.txt`;
+
+            fetch(errLog, { cache: "no-store" })
+                .then(function (response) {
+                    if (response.status == 404) {
+                        return "An unknown error occurred, which produced no error log. Please provide feedback on " +
+                            "the conversion that you were attempting by clicking on 'Contact' in the navigation bar.";
+                    }
+                    else if (!convertTimedOut) {
+                        return response.text();
+                    }
+                })
+                .then(function (text) {
+                    if (text != "" && text != null)
+                        alert(text);
+                })
+
+            // For debugging
+            console.log("Error converting file");
+            console.log(e.status);
+            console.log(e.responseText);
+        })
+}
+
+// Check that the file meets requirements for upload
+function checkFile(event) {
+
+    let allGood = true;
+    let file = this.files[0];
+    let message = "";
+
+    // Check file has the proper extension
+    const file_name = file.name;
+    const file_name_array = file_name.split(".");
+    const extension = file_name_array[1];
+    if (extension != in_ext) {
+        message += "The file extension is not " + in_ext +
+            ": please select another file or change the 'from' format on the 'Home' page.";
+        allGood = false;
+    }
+
+    // Check file does not exceed maximum size
+    if (max_file_size > 0 && file.size > max_file_size) {
+        if (message !== "")
+            message += "\n\n";
+        message += "The file exceeds the maximum size limit of " + (max_file_size / MEGABYTE).toFixed(2) +
+            " MB; its size is " + (file.size / MEGABYTE).toFixed(2) + " MB.";
+        allGood = false;
+    }
+
+    if (allGood) {
+        $("#uploadButton").css({ "background-color": "var(--ifm-color-primary)", "color": "var(--ifm-hero-text-color)" });
+        $("#uploadButton").prop({ disabled: false });
+    } else {
+        $("#uploadButton").css({ "background-color": "var(--psdi-bg-color-secondary)", "color": "gray" });
+        $("#uploadButton").prop({ disabled: true });
+        alert(message);
+    }
+}
+
+// A link is created, clicked and removed, resulting in the download of a file
+function downloadFile(path, filename) {
+    const a = $("<a>")
+        .attr("href", path)
+        .attr("download", filename)
+        .appendTo("body");
+    a[0].click();
+    a.remove();
+}

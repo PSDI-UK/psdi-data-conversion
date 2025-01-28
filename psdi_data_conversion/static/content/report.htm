@@ -1,0 +1,91 @@
+<!--
+  report.htm
+  Version 1.0, 19th June 2024
+-->
+
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PSDI Data Conversion Service</title>
+  <link rel="icon" type="image/x-icon" href="../img/psdi-icon-dark.svg">
+  <link href="https://fonts.googleapis.com/css?family=Lato:400" rel="stylesheet" type="text/css">
+  <link href="https://fonts.googleapis.com/css?family=Open+Sans+Condensed:700" rel="stylesheet" type="text/css">
+  <link rel="stylesheet" href="../styles/format.css">
+  <script src="../javascript/load_accessibility.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.3/jquery.min.js"></script>
+  <script src="../javascript/psdi-common.js" type="module"></script>
+</head>
+
+<body marginwidth="0">
+
+  <!-- Cover to hide element loading and make page transitions seem smoother -->
+  <div id="cover"></div>
+
+  <header class="header" id="psdi-header"></header>
+
+  <div class="hero">
+    <div class="max-width-box">
+      <h1 class="hero__title marginless_header">Report Missing Format/Conversion</h1>
+    </div>
+  </div>
+
+  <form name="gui">
+    <div class="max-width-box">
+      <p>Select the type of report (missing file format or conversion) and then follow the instructions that appear.
+      <p><b>Finally:</b> click on 'Report.'</p><br>
+      <select id="reason" class="med-width">
+        <option value="placeholder">-- select type of report --</option>
+        <option value="format">Missing file format</option>
+        <option value="conversion">Missing conversion</option>
+      </select>
+      <div class="medGap"></div>
+      <div id="formats" class="init-hidden">
+        <p>
+          <label for="formatList" id="formatLabel">Check that the format is not present in the list. If it is, consider
+            reporting a missing conversion.</label><br>
+          <input type="text" placeholder="-- type here to filter options --" id="searchFormats" class="large-width"><br>
+          <select size="4" id="formatList" class="large-width"></select>
+        </p>
+        <input type="button" class="button" value=" Reset " name="resetButton" id="resetButton">
+      </div>
+      <div id="missing" class="init-hidden"><br>
+        <br>Enter the name of the missing file format including the file extension(s) [max 100 characters].
+        <br><input type="text" placeholder="-- type here --" id="missingFormat" class="large-width">
+      </div>
+      <div id="in_out_formats" class="init-hidden">
+        <br>Select the required 'to' and 'from' formats below.
+        <p>
+          <label for="searchFrom" id="fromLabel">Convert from:</label><br>
+          <input type="text" placeholder="-- type here to filter options --" id="searchFrom" class="large-width"><br>
+          <select size="4" id="fromList" class="large-width"></select>
+        </p>
+        <div class="smallGap"></div>
+        <p>
+          <label for="searchTo" id="toLabel">Convert to:</label><br>
+          <input type="text" placeholder="-- type here to filter options --" id="searchTo" class="large-width"><br>
+          <select size="4" id="toList" class="large-width"></select>
+        </p>
+        <input type="button" class="button" value=" Reset " name="resetButton2" id="resetButton2">
+      </div>
+      <select id="success" class="large-width"></select> <!-- Not for display. For convenience only. -->
+      <p id="userInput" class="init-hidden">
+        <span id="message"></span>
+        <br><span id="message1"></span>
+        <br><input type="text" placeholder="-- type here --" id="in" class="large-width">
+        <br><input type="button" class="button" value=" Report " id="reportButton">
+      </p>
+      <div class="medGap"></div>
+    </div>
+  </form>
+
+  <script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4="
+    crossorigin="anonymous"></script>
+  <script src="../javascript/report.js" type="module" language="JavaScript"></script>
+
+  <footer class="footer" id="psdi-footer"></footer>
+
+</body>
+
+</html>

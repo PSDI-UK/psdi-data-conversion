@@ -1,0 +1,127 @@
+/*
+  format.css
+  Version 1.0, 11th October 2024
+*/
+
+@import url("./psdi-common.css");
+
+/* Forms inherit style from normal content, and make sure content is well away from the edges */
+form {
+  width      : 95%;
+  min-width  : 320px;
+  padding-top: 1rem;
+  align-self : center;
+}
+
+/* Padding for link to converter website. */
+#visit {
+  padding-left: 0.125rem;
+}
+
+/* Width management for select boxes and forms */
+
+.med-width {
+  width: 25rem;
+}
+
+@media (max-width: 25rem) {
+  .med-width {
+    width: 100%
+  }
+}
+
+.large-width {
+  width: 50rem;
+}
+
+@media (max-width: 50rem) {
+  .large-width {
+    width: 100%
+  }
+
+  input.large-width {
+    width: calc(100% - 0.5rem)
+  }
+}
+
+/* Converter details, user input and file conversion initially not displayed. */
+.init-hidden {
+  display: none
+}
+
+/* Buttons that are initially disabled */
+input.button.init-disabled {
+  background-color: var(--psdi-bg-color-secondary);
+  color           : gray
+}
+
+/* Small vertical space. */
+.smallGap {
+  padding: 0.125rem;
+}
+
+/* Medium vertical space. */
+.medGap {
+  padding: 1rem;
+}
+
+/* Large vertical space. */
+.largeGap {
+  padding: 8rem;
+}
+
+/* Grid for textarea label/elements. */
+.access-options {
+  display              : grid;
+  grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+  column-gap           : 2rem;
+}
+
+.access-option-container {
+  padding-left   : 0 1rem 0 1rem;
+  display        : flex;
+  flex-direction : column;
+  justify-content: flex-end;
+}
+
+[data-theme="dark"] .access-option-container.lm-only {
+  display: none;
+}
+
+/* Select boxes for accessibility options */
+.access-option-container select {
+  min-width: 5rem;
+  width    : 100%;
+}
+
+select#light-colour,
+select#dark-background {
+  background-color: var(--ifm-color-primary);
+  color           : var(--psdi-light-text-color-body);
+}
+
+select#size option {
+  font-family: var(--psdi-default-font);
+}
+
+select#font option {
+  font-size: var(--psdi-default-font-size);
+}
+
+select#dark-colour option {
+  color: var(--psdi-default-dark-text-color-body);
+}
+
+select#light-colour option {
+  background-color: var(--ifm-color-primary);
+  color           : var(--psdi-default-light-text-color-body);
+}
+
+select#light-background option {
+  background-color: var(--psdi-default-background-color);
+}
+
+select#dark-background option {
+  background-color: var(--psdi-default-color-primary);
+  color           : var(--psdi-light-text-color-body);
+}

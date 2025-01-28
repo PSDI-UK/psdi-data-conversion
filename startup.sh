@@ -3,4 +3,8 @@
 apt update
 apt-get install -y libxrender1 libxext6
 
-gunicorn app:app
+export AUTH=true
+export LOGGING=full
+export MAX_FILESIZE=1 # Megabyte
+
+gunicorn psdi_data_conversion.app:app

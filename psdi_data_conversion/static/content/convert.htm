@@ -1,0 +1,114 @@
+<!--
+  convert.htm
+  Version 1.0, 11th November 2024
+-->
+
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PSDI Data Conversion Service</title>
+  <link rel="icon" type="image/x-icon" href="../img/psdi-icon-dark.svg">
+  <link href="https://fonts.googleapis.com/css?family=Lato:400" rel="stylesheet" type="text/css">
+  <link href="https://fonts.googleapis.com/css?family=Open+Sans+Condensed:700" rel="stylesheet" type="text/css">
+  <link rel="stylesheet" href="../styles/format.css">
+  <script src="../javascript/load_accessibility.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.3/jquery.min.js"></script>
+  <script src="../javascript/psdi-common.js" type="module"></script>
+</head>
+
+<body marginwidth="0">
+
+  <!-- Cover to hide element loading and make page transitions seem smoother -->
+  <div id="cover"></div>
+
+  <header class="header" id="psdi-header"></header>
+
+  <div class="hero">
+    <div class="max-width-box">
+      <h1 class="hero__title marginless_header">Conversion</h1>
+    </div>
+  </div>
+
+  <form name="gui">
+    <div class="max-width-box">
+      <p>Zero to two option flag select boxes and zero to two sets of option flag check boxes may be displayed,
+        depending on the conversion and the degree of completion of the database. Further information may be displayed
+        underneath the select boxes if available. One or more input or output flags may be selected if required (command
+        click [Mac] or control click [Windows] for multiple select box selections). To undo all selections in a box,
+        click just underneath the final option. Ticking a check box reveals a text box for entry of required
+        information, along with further explanation if available. If 2- or 3-dimensional atomic coordinates need to be
+        calculated (using Open Babel), select '2D' or '3D' and a speed/accuracy option ('fastest' is least accurate).
+        Note that this calculation is not appropriate for all file formats, so in these cases selections will be
+        ignored.
+        Click on 'Choose file' and then select an input file of the correct format (and extension). Clicking on
+        'Convert'
+        uploads and converts the file. The output file is automatically downloaded, along with a log file. If any issues
+        are encountered (e.g., the output file does not download), please click on 'Provide Feedback' in the navigation
+        bar.
+      </p>
+      <h6 id="heading"></h6>
+      <div id="flags">
+        <div id="inFlagList">
+          <p>
+            <label for="inFlags" id="in_label">Read (input) option flags
+              (select all required):</label>
+          <div id="in_flag_break"></div>
+          <select id="inFlags" class="large-width" size="4" multiple="multiple"></select>
+          <div id=inFlagInfo></div>
+          </p>
+        </div>
+        <div id="outFlagList">
+          <p>
+            <label for="outFlags" id="out_label">Write (output) option flags
+              (select all required):</label>
+          <div id="out_flag_break"></div>
+          <select id="outFlags" class="large-width" size="4" multiple="multiple"></select>
+          <div id=outFlagInfo></div>
+          </p>
+        </div>
+      </div>
+      <span id="in_argLabel">Read (input) option flags requiring further information (select all required):</span>
+      <table id="in_argFlags"></table>
+      <div id="flag_break"><br /></div>
+      <span id="out_argLabel">Write (output) option flags requiring further information (select all required):</span>
+      <table id="out_argFlags"></table>
+      <p>
+        <label for="coordinates">Select '2D' or '3D' if an Open Babel calculation of 2- or 3-dimensional atomic
+          coordinates is required. Ensure that this calculation is suitable for your purpose.<br>For more information,
+          visit <a href="https://openbabel.org/docs/3DStructureGen/SingleConformer.html#gen3d" target="_blank">this
+            website.</a></label><br>
+        <input type="radio" name="coordinates" id="coordinates" value="Gen2D"> 2D
+        <input type="radio" name="coordinates" id="coordinates" value="Gen3D"> 3D
+        <input type="radio" name="coordinates" id="coordinates" value="neither" checked="checked">
+        neither
+      </p>
+      <p>
+        <label for="coordOptions"> Calculation options range from 'fastest'
+          (least accurate) to 'best' (slowest).</label><br>
+        <input type="radio" name="coordOptions" id="coordOptions" value="fastest" disabled=true> fastest
+        <input type="radio" name="coordOptions" id="coordOptions" value="fast" disabled=true> fast
+        <input type="radio" name="coordOptions" id="coordOptions" value="medium" checked="checked" disabled=true> medium
+        <input type="radio" name="coordOptions" id="coordOptions" value="better" disabled=true> better
+        <input type="radio" name="coordOptions" id="coordOptions" value="best" disabled=true> best
+      </p>
+      <p id="convertFile">
+        Select file to convert:
+        <br><input type="file" name="fileToUpload" id="fileToUpload"><br>
+        <input type="button" class="button init-disabled" value=" Convert " name="uploadButton" id="uploadButton"
+          disabled=true>
+      </p>
+      <div class="medGap"></div>
+    </div>
+  </form>
+
+  <script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4="
+    crossorigin="anonymous"></script>
+  <script src="../javascript/convert.js" type="module" language="JavaScript"></script>
+
+  <footer class="footer" id="psdi-footer"></footer>
+
+</body>
+
+</html>

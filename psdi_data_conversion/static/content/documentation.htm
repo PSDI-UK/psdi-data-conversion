@@ -1,0 +1,92 @@
+<!--
+  documentation.htm
+  Version 1.0, 11th November 2024
+-->
+
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PSDI Data Conversion Service</title>
+  <link rel="icon" type="image/x-icon" href="../img/psdi-icon-dark.svg">
+  <link href="https://fonts.googleapis.com/css?family=Lato:400" rel="stylesheet" type="text/css">
+  <link href="https://fonts.googleapis.com/css?family=Open+Sans+Condensed:700" rel="stylesheet" type="text/css">
+  <link rel="stylesheet" href="../styles/format.css">
+  <script src="../javascript/load_accessibility.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.3/jquery.min.js"></script>
+  <script src="../javascript/psdi-common.js" type="module"></script>
+</head>
+
+<body marginwidth="0">
+
+  <!-- Cover to hide element loading and make page transitions seem smoother -->
+  <div id="cover"></div>
+
+  <header class="header" id="psdi-header"></header>
+
+  <div class="hero">
+    <div class="max-width-box">
+      <h1 class="hero__title marginless_header">Documentation</h1>
+    </div>
+  </div>
+
+  <form name="gui">
+    <div class="max-width-box">
+      <h3>Format and Converter Selection</h3>
+      <p>Select 'from' and 'to' file formats in the 'Convert from/to' boxes, in either order. Typing where indicated
+        filters the options (case insensitive); for example, typing 'can' or 'NON' reduces the number of options to one:
+        'can: Canonical SMILES.' If you change your mind about a conversion, it is advisable to click on the 'Reset'
+        button. When both formats have been selected, converters able to carry out this conversion appear in the
+        'Conversion options' box along with an indication of conversion success (many conversions have not yet been
+        tested) and whether or not the converter is supported on this site. Selecting a converter displays information
+        about it, along with a link to a relevant website. Irrespective of the selected converter, an Open Babel
+        conversion is offered if it can be carried out. Clicking on the 'Yes' button takes us to the 'Conversion' page.
+        If a file format has not been found, or if there are no converters supporting a required conversion, please
+        click on 'Report Missing Format/Conversion' in the navigation bar.</p><br>
+      <h3>Conversion</h3>
+      <h4>Open Babel</h4>
+      <p>Zero to two option flag select boxes and zero to two sets of option flag check boxes may be displayed,
+        depending on the conversion and the degree of completion of the database. Further information may be displayed
+        underneath the select boxes if available. One or more input or output flags may be selected if required (command
+        click [Mac] or control click [Windows] for multiple select box selections). To undo all selections in a box,
+        click just underneath the final option. Ticking a check box reveals a text box for entry of required
+        information, along with further explanation if available. If 2- or 3-dimensional atomic coordinates need to be
+        calculated (using Open Babel), select '2D' or '3D' and a speed/accuracy option ('fastest' is least accurate).
+        Note that this calculation is not appropriate for all file formats, so in these cases selections will be
+        ignored. Click on 'Choose file' and then select an input file of the correct format (and extension). Clicking
+        on 'Convert' uploads and converts the file. The output file is automatically downloaded, along with a log file.
+        if any issues are encountered (e.g., the output file does not download), please click on 'Provide Feedback' in
+        the navigation bar.</p>
+      <h4>Atomsk</h4>
+      <p>Click on 'Choose file' and then select an input file of the correct format (and extension). Clicking on
+        'Convert'
+        uploads and converts the file. The output file is automatically downloaded, along with a log file. If any issues
+        are
+        encountered (e.g., the output file does not download), please click on 'Provide Feedback' in the navigation bar.
+      </p><br>
+      <h3>Report Missing Format/Conversion</h3>
+      <p>Select the type of report (missing file format or conversion) and then follow the instructions that appear.
+        Finally, click on 'Report.'</p><br>
+      <h3>Provide feedback</h3>
+      <p>To report issues other than missing formats or conversions, please click on the 'Feedback form' link. The form
+        will open in a new tab.</p><br>
+      <h3>Accessibility</h3>
+      <p>Select accessibility settings below as required, in any order. Each new setting immediately comes into effect
+        on this page only, in the first instance. Once the appearance of the page is satisfactory, clicking on the
+        'Apply' button applies the settings to the entire website. Leaving the page without clicking on 'Apply' results
+        in the changes being lost. Note that page appearance may vary slightly according to the browser used.</p>
+      <p>The colour options here are not compatible with the dark-mode toggle in the header bar. If a custom dark scheme
+        is desired, the appropriate colours can be selected in light-mode.</p>
+      <div class="medGap"></div>
+    </div>
+  </form>
+
+  <script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4="
+    crossorigin="anonymous"></script>
+
+  <footer class="footer" id="psdi-footer"></footer>
+
+</body>
+
+</html>
