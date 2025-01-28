@@ -298,7 +298,7 @@ def run_from_args(args: ConvertArgs):
     if args.list:
         return detail_converters(args.l_args)
 
-    form = {'success': 'unknown',
+    data = {'success': 'unknown',
             'from_flags': args.from_flags,
             'to_flags': args.to_flags,
             'from_arg_flags': '',
@@ -332,7 +332,7 @@ def run_from_args(args: ConvertArgs):
         try:
             run_converter(name=args.name,
                           filename=qualified_filename,
-                          form=form,
+                          data=data,
                           to_format=args.to_format,
                           from_format=args.from_format,
                           use_envvars=False,

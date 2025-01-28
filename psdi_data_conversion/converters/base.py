@@ -6,6 +6,7 @@ Base class and information for file format converters
 """
 
 
+from copy import deepcopy
 import json
 import logging
 from collections.abc import Callable
@@ -15,6 +16,7 @@ import sys
 import abc
 
 import traceback
+from typing import Any
 
 from psdi_data_conversion import constants as const, log_utility
 
@@ -68,9 +70,9 @@ class FileConverter:
 
     def __init__(self,
                  filename: str,
-                 form: dict[str, str],
                  to_format: str,
                  from_format: str | None = None,
+                 data: dict[str, Any] | None = None,
                  abort_callback: Callable[[int], None] = abort_raise,
                  use_envvars=False,
                  upload_dir=const.DEFAULT_UPLOAD_DIR,
@@ -85,13 +87,13 @@ class FileConverter:
         ----------
         filename : str
             The filename of the input file to be converted, either relative to current directory or fully-qualified
-        form : ImmutableMultiDict[str, str]
-            The form dict provided by Flask at `request.form`
         to_format : str
             The desired format to convert to, as the file extension (e.g. "cif")
         from_format : str | None
             The format to convert from, as the file extension (e.g. "pdb"). If None is provided (default), will be
             determined from the extension of `filename`
+        data : dict[str | Any] | None
+            A dict of any other data needed by a converter or for extra logging information, default empty dict
         abort_callback : Callable[[int], None]
             Function to be called if the conversion hits an error and must be aborted, default `abort_raise`, which
             raises an appropriate exception
@@ -119,7 +121,6 @@ class FileConverter:
 
         # Set member variables directly from input
         self.in_filename = filename
-        self.form = form
         self.to_format = to_format
         self.abort_callback = abort_callback
         self.upload_dir = upload_dir
@@ -128,6 +129,12 @@ class FileConverter:
         self.log_file = log_file
         self.log_mode = log_mode
         self.delete_input = delete_input
+
+        # Use an empty dict for data if None was provided
+        if data is None:
+            self.data = {}
+        else:
+            self.data = deepcopy(data)
 
         # Get from_format from the input file extension if not supplied
         if from_format is None:
@@ -147,14 +154,6 @@ class FileConverter:
         self.out: str | None = None
         self.err: str | None = None
         self.quality: str | None = None
-
-        # Set placeholders for member variables used only by OB conversion
-        self.from_flags: str | None = None
-        self.to_flags: str | None = None
-        self.read_flags_args: list[str] | None = None
-        self.write_flags_args: list[str] | None = None
-        self.calc_type: str | None = None
-        self.option: str | None = None
 
         # Set values from envvars if desired
         if use_envvars:
@@ -296,46 +295,46 @@ class FileConverter:
 
         message = ''
 
-        if self.calc_type == 'neither':
-            message = 'Coord. gen.:       none\n'
-        elif self.calc_type:
-            message += 'Coord. gen.:       ' + self.calc_type + '\n'
+        coordinates = self.data.get("coordinates", "none")
+        if coordinates and coordinates != "neither":
+            message += 'Coord. gen.:       ' + coordinates + '\n'
 
-        if self.option:
-            message += 'Coord. option:     ' + self.option + '\n'
+        coord_option = self.data.get("coordOption", "")
+        if coord_option:
+            message += 'Coord. option:     ' + coord_option + '\n'
 
-        if self.from_flags == '':
+        if "from_flags" not in self.data:
             message += 'Read options:      none\n'
-        elif self.from_flags:
-            message += 'Read options:      ' + self.from_flags + '\n'
+        else:
+            message += 'Read options:      ' + self.data["from_flags"] + '\n'
 
-        if self.to_flags == '':
+        if "to_flags" not in self.data:
             message += 'Write options:     none\n'
-        elif self.to_flags:
-            message += 'Write options:     ' + self.to_flags + '\n'
+        else:
+            message += 'Write options:     ' + self.data["to_flags"] + '\n'
 
-        if self.read_flags_args is None:
+        if "read_flags_args" not in self.data:
             pass
-        elif len(self.read_flags_args) == 0:
+        elif len(self.data["read_flags_args"]) == 0:
             message += 'Read opts + args:  none\n'
         else:
             heading_added = False
 
-            for pair in self.read_flags_args:
+            for pair in self.data["read_flags_args"]:
                 if not heading_added:
                     message += 'Read opts + args:  ' + pair + '\n'
                     heading_added = True
                 else:
                     message += '                   ' + pair + '\n'
 
-        if self.write_flags_args is None:
+        if "write_flags_args" not in self.data:
             pass
-        elif len(self.write_flags_args) == 0:
+        elif len(self.data["write_flags_args"]) == 0:
             message += 'Write opts + args: none\n'
         else:
             heading_added = False
 
-            for pair in self.write_flags_args:
+            for pair in self.data["write_flags_args"]:
                 if not heading_added:
                     message += 'Write opts + args: ' + pair + '\n'
                     heading_added = True
@@ -423,7 +422,7 @@ class FileConverter:
 
         return in_size, out_size
 
-    @staticmethod
+    @ staticmethod
     def get_quality(from_ext, to_ext):
         """Query the JSON file to obtain conversion quality
         """
@@ -459,18 +458,18 @@ class FileConverter:
 
         if self.delete_input:
             os.remove(self.in_filename)
-        if "from_full" in self.form:
-            self.from_format = self.form["from_full"]
-        if "to_full" in self.form:
-            self.to_format = self.form["from_full"]
-        if "success" in self.form:
-            self.quality = self.form["success"]
+        if "from_full" in self.data:
+            self.from_format = self.data["from_full"]
+        if "to_full" in self.data:
+            self.to_format = self.data["from_full"]
+        if "success" in self.data:
+            self.quality = self.data["success"]
         else:
             self.quality = self.get_quality(self.from_format, self.to_format)
 
         self._log_success()
 
-    @abc.abstractmethod
+    @ abc.abstractmethod
     def _convert(self):
         """Run the conversion with the desired converter
         """
@@ -485,13 +484,13 @@ class ScriptFileConverter(FileConverter):
 
     def _convert(self):
 
-        if not self.from_flags:
-            self.from_flags = ""
-        if not self.to_flags:
-            self.to_flags = ""
+        if "from_flags" not in self.data:
+            self.data["from_flags"] = ""
+        if "to_flags" not in self.data:
+            self.data["to_flags"] = ""
 
         process = subprocess.run(['sh', f'psdi_data_conversion/scripts/{self.script}',
-                                 self.in_filename, self.out_filename, self.from_flags, self.to_flags],
+                                  self.in_filename, self.out_filename, self.data["from_flags"], self.data["to_flags"]],
                                  capture_output=True, text=True)
 
         self.out = process.stdout

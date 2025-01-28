@@ -26,53 +26,50 @@ class OBFileConverter(FileConverter):
         ob_conversion.SetInAndOutFormats(self.from_format, self.to_format)
 
         # Retrieve 'from' and 'to' option flags and arguments
-        self.from_flags = self.form['from_flags']
-        self.to_flags = self.form['to_flags']
-        from_arg_flags = self.form['from_arg_flags']
-        to_arg_flags = self.form['to_arg_flags']
-        from_args = self.form['from_args']
-        to_args = self.form['to_args']
+        from_flags = self.data.get("from_flags", "")
+        to_flags = self.data.get("to_flags", "")
+        from_arg_flags = self.data.get("from_arg_flags", "")
+        to_arg_flags = self.data.get("to_arg_flags", "")
+        from_args = self.data.get("from_args", "")
+        to_args = self.data.get("to_args", "")
 
         # Add option flags and arguments as appropriate
-        for char in self.from_flags:
+        for char in from_flags:
             ob_conversion.AddOption(char, ob_conversion.INOPTIONS)
 
-        for char in self.to_flags:
+        for char in to_flags:
             ob_conversion.AddOption(char, ob_conversion.OUTOPTIONS)
 
-        self.read_flags_args = []
-        self.write_flags_args = []
+        self.data["read_flags_args"] = []
+        self.data["write_flags_args"] = []
 
         for char in from_arg_flags:
             index = from_args.find('£')
             arg = from_args[0:index]
             from_args = from_args[index + 1:len(from_args)]
-            self.read_flags_args.append(char + "  " + arg)
+            self.data["read_flags_args"].append(char + "  " + arg)
             ob_conversion.AddOption(char, ob_conversion.INOPTIONS, arg)
 
         for char in to_arg_flags:
             index = to_args.find('£')
             arg = to_args[0:index]
             to_args = to_args[index + 1:len(to_args)]
-            self.write_flags_args.append(char + "  " + arg)
+            self.data["write_flags_args"].append(char + "  " + arg)
             ob_conversion.AddOption(char, ob_conversion.OUTOPTIONS, arg)
 
         # Read the file to be converted
         mol = openbabel.OBMol()
         ob_conversion.ReadFile(mol, self.in_filename)
 
-        # Retrieve coordinate calculation type (Gen2D, Gen3D, neither)
-        self.calc_type = self.form['coordinates']
-
-        self.option = 'N/A'
-
         # Calculate atomic coordinates
-        if self.calc_type != 'neither':
+        if self.data["coordinates"] == 'neither':
+            self.data['coordOption'] = 'N/A'
+        else:
             # Retrieve coordinate calculation option (fastest, fast, medium, better, best)
-            self.option = self.form['coordOption']
+            self.option = self.data['coordOption']
 
-            gen = openbabel.OBOp.FindType(self.calc_type)
-            gen.Do(mol, self.option)
+            gen = openbabel.OBOp.FindType(self.data["coordinates"])
+            gen.Do(mol, self.data['coordOption'])
 
         # Write the converted file
         ob_conversion.WriteFile(mol, self.out_filename)

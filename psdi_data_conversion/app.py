@@ -70,7 +70,7 @@ def convert():
     if (not check_auth) or (request.form['token'] == token and token != ''):
         return run_converter(name=request.form['converter'],
                              filename=qualified_filename,
-                             form=request.form,
+                             data=request.form,
                              to_format=request.form['to'],
                              from_format=request.form['from'],
                              log_mode=log_mode,

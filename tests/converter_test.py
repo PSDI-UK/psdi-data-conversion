@@ -22,8 +22,8 @@ from psdi_data_conversion.main import FileConverterInputException
 
 
 @pytest.fixture()
-def base_mock_form():
-    """A fixture providing a default `form` object which can be used to instantiate a converter
+def base_mock_data():
+    """A fixture providing a default `data` object which can be used to instantiate a converter
     """
     return {'token': '1041c0a661d118d5f28e7c6830375dd0',
             'from_full': 'mmcif: Macromolecular Crystallographic Info',
@@ -42,7 +42,7 @@ def base_mock_form():
 
 @pytest.fixture()
 def base_input():
-    """A fixture providing a dict of default input values for the converter which aren't provided in the `form`
+    """A fixture providing a dict of default input values for the converter which aren't provided in the `data`
     """
     return {'from_format': None,
             'to_format': 'pdb'}
@@ -69,7 +69,7 @@ def tmp_download_path(tmp_path):
 class TestConverter:
 
     @pytest.fixture(autouse=True)
-    def setup_test(self, base_mock_form, base_input, tmp_upload_path, tmp_download_path, test_data_loc):
+    def setup_test(self, base_mock_data, base_input, tmp_upload_path, tmp_download_path, test_data_loc):
         """Reset global aspects before a test, so that different tests won't interfere with each other,
         and save references to fixtures.
         """
@@ -87,13 +87,13 @@ class TestConverter:
         self.test_data_loc = test_data_loc
 
         # Save fixtures
-        self.base_mock_form = base_mock_form
+        self.base_mock_data = base_mock_data
         self.base_input = base_input
         self.tmp_upload_path = tmp_upload_path
         self.tmp_download_path = tmp_download_path
 
     def get_input_info(self, filename: str, **kwargs,):
-        """Sets up a mock form for input and gets various variables we'll want to use for checks on output
+        """Sets up a mock `data` for input and gets various variables we'll want to use for checks on output
 
         Parameters
         ----------
@@ -101,31 +101,31 @@ class TestConverter:
             The name of the file to use as input for the test
         """
 
-        self.mock_form = deepcopy(self.base_mock_form)
-        self.d_input = deepcopy(self.base_input)
+        self.mock_data = deepcopy(self.base_mock_data)
+        self.input = deepcopy(self.base_input)
 
         for key, value in kwargs.items():
-            if key in self.mock_form:
-                self.mock_form[key] = value
-            elif key in self.d_input:
-                self.d_input[key] = value
+            if key in self.mock_data:
+                self.mock_data[key] = value
+            elif key in self.input:
+                self.input[key] = value
             else:
-                raise RuntimeError(f"Invalid key {key} provided for form")
+                raise RuntimeError(f"Invalid key {key} provided for data or input")
 
         # Save some variables from input we'll be using throughout this test
         self.local_filename = filename
         self.source_filename = os.path.join(self.test_data_loc, filename)
         self.filename_base = os.path.splitext(filename)[0]
-        self.to_format = self.d_input["to_format"]
+        self.to_format = self.input["to_format"]
 
     def get_converter_kwargs(self, **kwargs):
         """Get the keyword arguments to be passed to a FileConverter for testing
         """
         standard_kwargs = {"filename": self.source_filename,
-                           "form": self.mock_form,
+                           "data": self.mock_data,
                            "upload_dir": self.tmp_upload_path,
                            "download_dir": self.tmp_download_path}
-        standard_kwargs.update(self.d_input)
+        standard_kwargs.update(self.input)
         standard_kwargs.update(kwargs)
         return standard_kwargs
 
