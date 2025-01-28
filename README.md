@@ -167,7 +167,7 @@ psdi-data-convert <input file 1> [<input file 2> <input file 3> ...] -t/--to <ou
 format>] [-i/--in <input file location>] [-a/--at <location for output files>] [-w/--with <converter>] [--delete-input]
 [--from-flags '<flags to be provided to the converter for reading input>'] [--to-flags '<flags to be provided to the
 converter for writing output>'] [--coord-gen <coordinate generation options] [-q/--quiet] [-o/--log-file <log file
-name] [--log-level <level>]
+name] [--log-mode <mode>] [--log-level <level>]
 ```
 
 Call `psdi-data-convert -h` for details on each of these options.
