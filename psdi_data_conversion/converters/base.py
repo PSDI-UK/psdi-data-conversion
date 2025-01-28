@@ -106,8 +106,7 @@ class FileConverter:
                  max_file_size=const.DEFAULT_MAX_FILE_SIZE,
                  log_file: str | None = None,
                  log_mode=const.LOG_FULL,
-                 delete_input=False,
-                 **kwargs):
+                 delete_input=False):
         """Initialize the object, storing needed data and setting up loggers.
 
         Parameters
