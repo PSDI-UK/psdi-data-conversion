@@ -73,6 +73,11 @@ def get_converter(name=const.CONVERTER_DEFAULT, **converter_kwargs) -> base.File
         The filename of the input file to be converted, either relative to current directory or fully-qualified
     form : dict[str, str]
         The form dict provided by Flask at `request.form`
+    to_format : str
+        The desired format to convert to, as the file extension (e.g. "cif")
+    from_format : str | None
+        The format to convert from, as the file extension (e.g. "pdb"). If None is provided (default), will be
+        determined from the extension of `filename`
     abort_callback : Callable[[int], None]
         Function to be called if the conversion hits an error and must be aborted, default `abort_raise`, which
         raises an appropriate exception
@@ -126,6 +131,11 @@ def run_converter(**converter_kwargs) -> str:
         The filename of the input file to be converted, either relative to current directory or fully-qualified
     form : dict[str, str]
         The form dict provided by Flask at `request.form`
+    to_format : str
+        The desired format to convert to, as the file extension (e.g. "cif")
+    from_format : str | None
+        The format to convert from, as the file extension (e.g. "pdb"). If None is provided (default), will be
+        determined from the extension of `filename`
     abort_callback : Callable[[int], None]
         Function to be called if the conversion hits an error and must be aborted, default `abort_raise`, which
         raises an appropriate exception

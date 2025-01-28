@@ -26,8 +26,6 @@ def base_mock_form():
     """A fixture providing a default `form` object which can be used to instantiate a converter
     """
     return {'token': '1041c0a661d118d5f28e7c6830375dd0',
-            'from': 'mmcif',
-            'to': 'pdb',
             'from_full': 'mmcif: Macromolecular Crystallographic Info',
             'to_full': 'pdb: Protein Data Bank',
             'success': 'good',
@@ -40,6 +38,14 @@ def base_mock_form():
             'coordinates': 'neither',
             'coordOption': 'medium',
             'upload_file': 'true'}
+
+
+@pytest.fixture()
+def base_input():
+    """A fixture providing a dict of default input values for the converter which aren't provided in the `form`
+    """
+    return {'from_format': None,
+            'to_format': 'pdb'}
 
 
 @pytest.fixture()
@@ -63,7 +69,7 @@ def tmp_download_path(tmp_path):
 class TestConverter:
 
     @pytest.fixture(autouse=True)
-    def setup_test(self, base_mock_form, tmp_upload_path, tmp_download_path, test_data_loc):
+    def setup_test(self, base_mock_form, base_input, tmp_upload_path, tmp_download_path, test_data_loc):
         """Reset global aspects before a test, so that different tests won't interfere with each other,
         and save references to fixtures.
         """
@@ -80,8 +86,9 @@ class TestConverter:
         # Save test data location
         self.test_data_loc = test_data_loc
 
-        # Save tmp directories
+        # Save fixtures
         self.base_mock_form = base_mock_form
+        self.base_input = base_input
         self.tmp_upload_path = tmp_upload_path
         self.tmp_download_path = tmp_download_path
 
@@ -95,10 +102,13 @@ class TestConverter:
         """
 
         self.mock_form = deepcopy(self.base_mock_form)
+        self.d_input = deepcopy(self.base_input)
 
         for key, value in kwargs.items():
             if key in self.mock_form:
                 self.mock_form[key] = value
+            elif key in self.d_input:
+                self.d_input[key] = value
             else:
                 raise RuntimeError(f"Invalid key {key} provided for form")
 
@@ -106,7 +116,7 @@ class TestConverter:
         self.local_filename = filename
         self.source_filename = os.path.join(self.test_data_loc, filename)
         self.filename_base = os.path.splitext(filename)[0]
-        self.to_format = self.mock_form["to"]
+        self.to_format = self.d_input["to_format"]
 
     def get_converter_kwargs(self, **kwargs):
         """Get the keyword arguments to be passed to a FileConverter for testing
@@ -115,6 +125,7 @@ class TestConverter:
                            "form": self.mock_form,
                            "upload_dir": self.tmp_upload_path,
                            "download_dir": self.tmp_download_path}
+        standard_kwargs.update(self.d_input)
         standard_kwargs.update(kwargs)
         return standard_kwargs
 
@@ -258,10 +269,7 @@ class TestConverter:
         """
 
         self.get_input_info(filename="quartz.xyz",
-                            to="inchi")
-
-        # "from" is a reserved word so we can't set it as a kwarg in the function call above
-        self.mock_form["from"] = "xyz"
+                            to_format="inchi")
 
         self.run_converter()
 
@@ -273,16 +281,13 @@ class TestConverter:
         """
 
         self.get_input_info(filename="hemoglobin.pdb",
-                            to="cif")
+                            to_format="cif")
 
         # Make a copy of the source file in the uploads directory, and point the self.source_filename variable to it
         # so it'll be properly checked to be deleted later
         upload_filename = os.path.join(self.tmp_upload_path, self.local_filename)
         shutil.copyfile(self.source_filename, upload_filename)
         self.source_filename = upload_filename
-
-        # "from" is a reserved word so we can't set it as a kwarg in the function call above
-        self.mock_form["from"] = "pdb"
 
         self.run_converter(name=CONVERTER_ATO,
                            filename=upload_filename,
@@ -296,10 +301,7 @@ class TestConverter:
         """
 
         self.get_input_info(filename="hemoglobin.pdb",
-                            to="cif")
-
-        # "from" is a reserved word so we can't set it as a kwarg in the function call above
-        self.mock_form["from"] = "pdb"
+                            to_format="cif")
 
         self.run_converter(name=CONVERTER_ATO)
 
@@ -311,10 +313,7 @@ class TestConverter:
         """
 
         self.get_input_info(filename="hemoglobin.pdb",
-                            to="cif")
-
-        # "from" is a reserved word so we can't set it as a kwarg in the function call above
-        self.mock_form["from"] = "pdb"
+                            to_format="cif")
 
         self.run_converter(name=CONVERTER_C2X)
 
@@ -326,10 +325,7 @@ class TestConverter:
         """
 
         self.get_input_info(filename="quartz_err.xyz",
-                            to="inchi")
-
-        # "from" is a reserved word so we can't set it as a kwarg in the function call above
-        self.mock_form["from"] = "xyz"
+                            to_format="inchi")
 
         self.run_converter(expect_code=const.STATUS_CODE_GENERAL)
 

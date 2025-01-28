@@ -298,12 +298,7 @@ def run_from_args(args: ConvertArgs):
     if args.list:
         return detail_converters(args.l_args)
 
-    form = {'token': '1041c0a661d118d5f28e7c6830375dd0',
-            'from': args.from_format,
-            'to': args.to_format,
-            'from_full': args.from_format,
-            'to_full': args.to_format,
-            'success': 'unknown',
+    form = {'success': 'unknown',
             'from_flags': args.from_flags,
             'to_flags': args.to_flags,
             'from_arg_flags': '',
@@ -338,6 +333,8 @@ def run_from_args(args: ConvertArgs):
             run_converter(name=args.name,
                           filename=qualified_filename,
                           form=form,
+                          to_format=args.to_format,
+                          from_format=args.from_format,
                           use_envvars=False,
                           upload_dir=args.input_dir,
                           download_dir=args.output_dir,

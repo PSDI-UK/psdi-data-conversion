@@ -69,6 +69,8 @@ class FileConverter:
     def __init__(self,
                  filename: str,
                  form: dict[str, str],
+                 to_format: str,
+                 from_format: str | None = None,
                  abort_callback: Callable[[int], None] = abort_raise,
                  use_envvars=False,
                  upload_dir=const.DEFAULT_UPLOAD_DIR,
@@ -85,6 +87,11 @@ class FileConverter:
             The filename of the input file to be converted, either relative to current directory or fully-qualified
         form : ImmutableMultiDict[str, str]
             The form dict provided by Flask at `request.form`
+        to_format : str
+            The desired format to convert to, as the file extension (e.g. "cif")
+        from_format : str | None
+            The format to convert from, as the file extension (e.g. "pdb"). If None is provided (default), will be
+            determined from the extension of `filename`
         abort_callback : Callable[[int], None]
             Function to be called if the conversion hits an error and must be aborted, default `abort_raise`, which
             raises an appropriate exception
@@ -113,6 +120,7 @@ class FileConverter:
         # Set member variables directly from input
         self.in_filename = filename
         self.form = form
+        self.to_format = to_format
         self.abort_callback = abort_callback
         self.upload_dir = upload_dir
         self.download_dir = download_dir
@@ -121,9 +129,17 @@ class FileConverter:
         self.log_mode = log_mode
         self.delete_input = delete_input
 
-        # Set member variables from dict values in input
-        self.from_format = self.form['from']
-        self.to_format = self.form['to']
+        # Get from_format from the input file extension if not supplied
+        if from_format is None:
+            self.from_format = os.path.splitext(self.in_filename)[1]
+        else:
+            self.from_format = from_format
+
+        # Remove any leading periods from to/from_format
+        if self.to_format.startswith("."):
+            self.to_format = self.to_format[1:]
+        if self.from_format.startswith("."):
+            self.from_format = self.from_format[1:]
 
         # Set placeholders for member variables which will be set when conversion is run
         self.in_size: int | None = None

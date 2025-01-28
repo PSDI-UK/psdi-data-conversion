@@ -71,6 +71,8 @@ def convert():
         return run_converter(name=request.form['converter'],
                              filename=qualified_filename,
                              form=request.form,
+                             to_format=request.form['to'],
+                             from_format=request.form['from'],
                              log_mode=log_mode,
                              delete_input=True,
                              abort_callback=abort)
