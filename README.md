@@ -344,3 +344,5 @@ pytest
 - Tom Underwood
 
 ## Funding
+
+TODO: Note funding here
