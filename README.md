@@ -49,7 +49,7 @@ This is the repository for the PSDI PF2 Chemistry File Format Conversion project
   - `templates`
     - (HTML assets rendered by Flask for the web app)
   - `__init.py__`
-  - (Python modules and scripts)
+  - (Python packages, modules, and scripts)
 - `scripts`
   - (Scripts used for project maintenance)
 - `tests`
