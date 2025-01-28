@@ -226,7 +226,7 @@ from psdi_data_conversion.converter import run_converter
 For a simple conversion, this can be used via:
 
 ```python
-run_converter(filename, to_format, name=name, data=data, max_file_size=0)
+run_converter(filename, to_format, name=name, data=data)
 ```
 
 Where `filename` is the name of the file to convert (either fully-qualified or relative to the current directory), `to_format` is the desired format to convert to (e.g. `"pdb"`), `name` is the name of the converter to use (default "Open Babel"), and `data` is a dict of any extra information required by the specific converter being used (default empty dict).
@@ -244,7 +244,7 @@ from psdi_data_conversion.converter import get_converter
 This can be used to create and run a converter via e.g.:
 
 ```python
-converter = get_converter(filename, to_format, name=name, data=data, max_file_size=0)
+converter = get_converter(filename, to_format, name=name, data=data)
 ...
 converter.run()
 ```
