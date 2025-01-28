@@ -80,6 +80,40 @@ class OBFileConverter(FileConverter):
         if "Open Babel Error" in self.err:
             self._abort_from_err()
 
+    def _create_message(self) -> str:
+        """Overload method to create a log of options passed to the converter
+        """
+
+        message = super()._create_message()
+
+        coordinates = self.data.get("coordinates", "none")
+        if coordinates and coordinates != "neither":
+            message += 'Coord. gen.:       ' + coordinates + '\n'
+
+        coord_option = self.data.get("coordOption", "")
+        if coord_option:
+            message += 'Coord. option:     ' + coord_option + '\n'
+
+        from_flags = self.data.get("coordOption", "")
+        if from_flags:
+            message += 'Read options:      ' + from_flags + '\n'
+
+        to_flags = self.data.get("to_flags", "")
+        if to_flags:
+            message += 'Write options:     ' + to_flags + '\n'
+
+        read_flags_args = self.data.get("read_flags_args", "")
+        if read_flags_args:
+            for pair in read_flags_args:
+                message += 'Read opts + args:  ' + pair + '\n'
+
+        write_flags_args = self.data.get("write_flags_args", "")
+        if write_flags_args:
+            for pair in write_flags_args:
+                message += 'Write opts + args: ' + pair + '\n'
+
+        return message
+
 
 # Assign this converter to the `converter` variable - this lets the psdi_data_conversion.converter module detect and
 # register it, making it available for use by the CLI and web app

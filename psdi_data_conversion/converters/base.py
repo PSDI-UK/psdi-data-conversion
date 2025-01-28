@@ -291,39 +291,14 @@ class FileConverter:
         self.output_logger.info(self._create_message())
         self._abort(message=self.err)
 
-    def _create_message(self):
+    def _create_message(self) -> str:
+        """Create a log of options passed to the converter - this method should be overloaded to log any information
+        unique to a specific converter.
+        """
 
-        message = ''
+        return self._create_message_start()
 
-        coordinates = self.data.get("coordinates", "none")
-        if coordinates and coordinates != "neither":
-            message += 'Coord. gen.:       ' + coordinates + '\n'
-
-        coord_option = self.data.get("coordOption", "")
-        if coord_option:
-            message += 'Coord. option:     ' + coord_option + '\n'
-
-        from_flags = self.data.get("coordOption", "")
-        if from_flags:
-            message += 'Read options:      ' + from_flags + '\n'
-
-        to_flags = self.data.get("to_flags", "")
-        if to_flags:
-            message += 'Write options:     ' + to_flags + '\n'
-
-        read_flags_args = self.data.get("read_flags_args", "")
-        if read_flags_args:
-            for pair in read_flags_args:
-                message += 'Read opts + args:  ' + pair + '\n'
-
-        write_flags_args = self.data.get("write_flags_args", "")
-        if write_flags_args:
-            for pair in write_flags_args:
-                message += 'Write opts + args: ' + pair + '\n'
-
-        return self._create_message_start() + message
-
-    def _create_message_start(self):
+    def _create_message_start(self) -> str:
         """Create beginning of message for log files
 
         Returns
