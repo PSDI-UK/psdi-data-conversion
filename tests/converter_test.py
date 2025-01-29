@@ -177,17 +177,13 @@ class TestConverter:
         """
 
         self.global_log_filename = const.GLOBAL_LOG_FILENAME
-        self.local_log_filename = os.path.join(self.tmp_download_path,
-                                               f"{self.local_filename}-{self.filename_base}.{self.to_format}" +
-                                               const.LOG_EXT)
         self.output_log_filename = os.path.join(self.tmp_download_path,
                                                 f"{self.filename_base}{const.OUTPUT_LOG_EXT}")
 
         self.global_log_text: str | None = None
-        self.local_log_text: str | None = None
         self.output_log_text: str | None = None
 
-        for log_type in ("global", "local", "output"):
+        for log_type in ("global", "output"):
             try:
                 log_text = open(getattr(self, f"{log_type}_log_filename")).read()
             except FileNotFoundError:
@@ -211,19 +207,13 @@ class TestConverter:
         # Check that the global log file is empty
         assert len(self.global_log_text) == 0
 
-        # Check that the local log and output logs contain expected information
+        # Check that the output log contains expected information
+        assert re.compile(r"File name:\s+"+self.filename_base).search(self.output_log_text)
+        assert "Open Babel Warning" in self.output_log_text
+        assert "Failed to kekulize aromatic bonds" in self.output_log_text
 
-        for log_text in (self.local_log_text, self.output_log_text):
-            assert re.compile(r"File name:\s+"+self.filename_base).search(log_text)
-            assert "Open Babel Warning" in log_text
-            assert "Failed to kekulize aromatic bonds" in log_text
-
-            # Check that we only have the timestamp in the local log, not the output log
-            timestamp_re = re.compile(const.DATETIME_RE_RAW)
-            if log_text is self.local_log_text:
-                assert timestamp_re.search(log_text)
-            else:
-                assert not timestamp_re.search(log_text)
+        timestamp_re = re.compile(const.DATETIME_RE_RAW)
+        assert timestamp_re.search(self.output_log_text)
 
     def test_exceed_output_file_size(self):
         """Run a test of the converter to ensure it reports an error properly if the output file size is too large
@@ -241,7 +231,7 @@ class TestConverter:
         self.get_logs()
 
         # Check that all logs contain the expected error
-        for log_type in ("global", "local", "output"):
+        for log_type in ("global", "output"):
             log_text = getattr(self, f"{log_type}_log_text")
             assert "Output file exceeds maximum size" in log_text, ("Did not find expected error message in "
                                                                     f"{log_type} log at " +
