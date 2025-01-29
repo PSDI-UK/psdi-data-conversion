@@ -366,7 +366,7 @@ def main():
 
     args = parse_args()
 
-    if args.log_mode == const.LOG_SIMPLE and args.log_file:
+    if (args.log_mode == const.LOG_SIMPLE or args.log_mode == const.LOG_FULL) and args.log_file:
         logging.basicConfig(filename=args.log_file)
 
     logger.info("#")
