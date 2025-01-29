@@ -12,7 +12,6 @@ import logging
 from collections.abc import Callable
 import os
 import subprocess
-import sys
 import abc
 
 import traceback
@@ -195,22 +194,24 @@ class FileConverter:
                 return self._setup_server_loggers()
         else:
             raise FileConverterInputException(f"ERROR: Unrecognised logging option: {self.log_mode}. Allowed options "
-                                              f"are: {const.L_ALLOWED_LOG_MODES}", file=sys.stderr)
+                                              f"are: {const.L_ALLOWED_LOG_MODES}")
 
         self.output_log = self.log_file
 
         self.logger = log_utility.set_up_data_conversion_logger(local_log_file=self.log_file,
                                                                 local_logger_level=self._local_logger_level,
                                                                 stdout_output_level=self._stdout_output_level,
-                                                                suppress_global_handler=True)
+                                                                suppress_global_handler=True,
+                                                                mode="w")
         self.output_logger = self.logger
 
     def _setup_server_loggers(self):
         """Run at init to set up loggers for this object in server-style execution
         """
-        local_log_base = f"{self.download_dir}/{self.local_filename}-{self.filename_base}.{self.to_format}"
+        local_log_base = os.path.join(self.download_dir,
+                                      f"{self.local_filename}-{self.filename_base}.{self.to_format}")
         local_log = f"{local_log_base}{const.LOCAL_LOG_EXT}"
-        self.output_log = f"{self.download_dir}/{self.filename_base}{const.OUTPUT_LOG_EXT}"
+        self.output_log = os.path.join(self.download_dir, f"{self.filename_base}{const.OUTPUT_LOG_EXT}")
 
         # If any previous local logs exist, delete them
         if os.path.exists(local_log):
@@ -288,7 +289,7 @@ class FileConverter:
     def _abort_from_err(self):
         """Write conversion error information to server-side log file and abort the conversion
         """
-        self.output_logger.info(self._create_message())
+        self.output_logger.info(self._create_message_start()+self._create_message())
         self._abort(message=self.err)
 
     def _create_message(self) -> str:
@@ -296,7 +297,7 @@ class FileConverter:
         unique to a specific converter.
         """
 
-        return self._create_message_start()
+        return ""
 
     def _create_message_start(self) -> str:
         """Create beginning of message for log files
@@ -306,7 +307,9 @@ class FileConverter:
         str
             The beginning of a message for log files, containing generic information about what was trying to be done
         """
-        return ("\n"
+        # We want the entries to all line up, so we need a dummy line at the top to force a newline break - anything
+        # empty or whitespace will be stripped by the logger, so we use a lone colon, which looks least obtrusive
+        return (":\n"
                 f"File name:         {self.filename_base}\n"
                 f"From:              {self.from_format}\n"
                 f"To:                {self.to_format}\n"
@@ -316,7 +319,7 @@ class FileConverter:
         """Write conversion information to server-side file, ready for downloading to user
         """
 
-        message = (self._create_message() +
+        message = (self._create_message_start()+self._create_message() +
                    'Quality:           ' + self.quality + '\n'
                    'Success:           Assuming that the data provided was of the correct format, the conversion\n'
                    '                   was successful (to the best of our knowledge) subject to any warnings below.\n' +
