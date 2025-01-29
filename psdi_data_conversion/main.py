@@ -235,10 +235,14 @@ def get_argument_parser():
                         help="The name of the file to log to. This can be provided relative to the current directory "
                         "(e.g. '-o ../logs/log-file.txt') or fully qualified (e.g. /path/to/log-file.txt). "
                         "If not provided, the log file will be named after the =first input file (+'.log') and placed "
-                        "in the current directory.")
+                        "in the current directory.\n"
+                        "In 'full' logging mode (not recommended with this interface), this will apply only to logs "
+                        "from the outermost level of the script if explicitly specified. If not explicitly specified, "
+                        "those logs will be sent to stderr.")
     parser.add_argument("--log-mode", type=str, default=const.LOG_SIMPLE,
                         help="How logs should be stored. Allowed values are: \n"
-                        "- 'full' - Multi-file logging, only recommended when running as a public web app"
+                        "- 'full' - Multi-file logging, not recommended for the CLI, but allowed for a compatible "
+                        "interface with the public web app"
                         "- 'simple' - Logs saved to one file"
                         "- 'stdout' - Output logs and errors only to stdout"
                         "- 'none' - Output only errors to stdout")
