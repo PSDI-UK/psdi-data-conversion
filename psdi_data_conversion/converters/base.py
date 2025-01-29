@@ -133,7 +133,7 @@ class FileConverter:
         if data is None:
             self.data = {}
         else:
-            self.data = deepcopy(data)
+            self.data = dict(deepcopy(data))
 
         # Get from_format from the input file extension if not supplied
         if from_format is None:
@@ -203,32 +203,19 @@ class FileConverter:
                                                                 stdout_output_level=self._stdout_output_level,
                                                                 suppress_global_handler=True,
                                                                 mode="w")
-        self.output_logger = self.logger
 
     def _setup_server_loggers(self):
         """Run at init to set up loggers for this object in server-style execution
         """
-        local_log_base = os.path.join(self.download_dir,
-                                      f"{self.local_filename}-{self.filename_base}.{self.to_format}")
-        local_log = f"{local_log_base}{const.LOCAL_LOG_EXT}"
         self.output_log = os.path.join(self.download_dir, f"{self.filename_base}{const.OUTPUT_LOG_EXT}")
 
-        # If any previous local logs exist, delete them
-        if os.path.exists(local_log):
-            os.remove(local_log)
+        # If any previous log exists, delete it
         if os.path.exists(self.output_log):
             os.remove(self.output_log)
 
         # Set up loggers - one for general-purpose log_utility, and one just for what we want to output to the user
-        self.logger = log_utility.set_up_data_conversion_logger(local_log_file=local_log,
-                                                                local_logger_level=self._local_logger_level,
-                                                                stdout_output_level=self._stdout_output_level)
-        self.output_logger = log_utility.set_up_data_conversion_logger(name="output",
-                                                                       local_log_file=self.output_log,
-                                                                       local_logger_raw_output=True,
-                                                                       extra_loggers=[(local_log,
-                                                                                       self._local_logger_level,
-                                                                                       False)])
+        self.logger = log_utility.set_up_data_conversion_logger(local_log_file=self.output_log,
+                                                                local_logger_raw_output=False)
 
     def run(self):
         """Run the file conversion
@@ -289,7 +276,7 @@ class FileConverter:
     def _abort_from_err(self):
         """Write conversion error information to server-side log file and abort the conversion
         """
-        self.output_logger.info(self._create_message_start()+self._create_message())
+        self.logger.info(self._create_message_start()+self._create_message())
         self._abort(message=self.err)
 
     def _create_message(self) -> str:
@@ -325,7 +312,7 @@ class FileConverter:
                    '                   was successful (to the best of our knowledge) subject to any warnings below.\n' +
                    self.out + '\n' + self.err).strip() + '\n'
 
-        self.output_logger.info(message)
+        self.logger.info(message)
 
     def _append_to_log_file(self, log_name):
         """Append data to a log file
