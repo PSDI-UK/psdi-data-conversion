@@ -167,7 +167,11 @@ class ConvertArgs:
                                                           f"checked for {test_filename}.")
 
                 base = os.path.splitext(first_filename)[0]
-                self._log_file = base + const.LOG_EXT
+                if self.log_mode == const.LOG_FULL:
+                    # For server-style logging, other files will be created and used for logs
+                    self._log_file = None
+                else:
+                    self._log_file = base + const.LOCAL_LOG_EXT
         return self._log_file
 
 
@@ -362,7 +366,7 @@ def main():
 
     args = parse_args()
 
-    if args.log_mode == const.LOG_SIMPLE or args.log_mode == const.LOG_FULL:
+    if args.log_mode == const.LOG_SIMPLE and args.log_file:
         logging.basicConfig(filename=args.log_file)
 
     logger.info("#")
