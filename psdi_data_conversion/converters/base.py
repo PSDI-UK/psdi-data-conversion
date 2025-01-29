@@ -12,7 +12,6 @@ import logging
 from collections.abc import Callable
 import os
 import subprocess
-import sys
 import abc
 
 import traceback
@@ -195,7 +194,7 @@ class FileConverter:
                 return self._setup_server_loggers()
         else:
             raise FileConverterInputException(f"ERROR: Unrecognised logging option: {self.log_mode}. Allowed options "
-                                              f"are: {const.L_ALLOWED_LOG_MODES}", file=sys.stderr)
+                                              f"are: {const.L_ALLOWED_LOG_MODES}")
 
         self.output_log = self.log_file
 
