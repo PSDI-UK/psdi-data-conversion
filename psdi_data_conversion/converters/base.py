@@ -79,6 +79,7 @@ class FileConverter:
                  max_file_size=const.DEFAULT_MAX_FILE_SIZE,
                  log_file: str | None = None,
                  log_mode=const.LOG_FULL,
+                 log_level: int | None = None,
                  delete_input=False):
         """Initialize the object, storing needed data and setting up loggers.
 
@@ -114,6 +115,11 @@ class FileConverter:
             - 'simple' - Logs saved to one file
             - 'stdout' - Output logs and errors only to stdout
             - 'none' - Output only errors to stdout
+        log_level : int | None
+            The level to log output at. If None (default), the level will depend on the chosen `log_mode`:
+            - 'full' or 'simple': INFO
+            - 'stdout' - INFO to stdout, no logging to file
+            - 'none' - ERROR to stdout, no logging to file
         delete_input : bool
             Whether or not to delete input files after conversion, default False
         """
@@ -127,6 +133,7 @@ class FileConverter:
         self.max_file_size = max_file_size*const.MEGABYTE
         self.log_file = log_file
         self.log_mode = log_mode
+        self.log_level = log_level
         self.delete_input = delete_input
 
         # Use an empty dict for data if None was provided
@@ -181,20 +188,24 @@ class FileConverter:
         """
 
         # Determine level to log at based on quiet status
-        if self.log_mode == const.LOG_NONE:
-            self._local_logger_level = None
-            self._stdout_output_level = logging.ERROR
-        elif self.log_mode == const.LOG_STDOUT:
-            self._local_logger_level = None
-            self._stdout_output_level = logging.INFO
-        elif self.log_mode == const.LOG_SIMPLE or self.log_mode == const.LOG_FULL:
-            self._local_logger_level = const.DEFAULT_LOCAL_LOGGER_LEVEL
-            self._stdout_output_level = logging.ERROR
-            if self.log_mode == const.LOG_FULL:
-                return self._setup_server_loggers()
+        if self.log_level:
+            self._local_logger_level = self.log_level
+            self._stdout_output_level = self.log_level
         else:
-            raise FileConverterInputException(f"ERROR: Unrecognised logging option: {self.log_mode}. Allowed options "
-                                              f"are: {const.L_ALLOWED_LOG_MODES}")
+            if self.log_mode == const.LOG_NONE:
+                self._local_logger_level = None
+                self._stdout_output_level = logging.ERROR
+            elif self.log_mode == const.LOG_STDOUT:
+                self._local_logger_level = None
+                self._stdout_output_level = logging.INFO
+            elif self.log_mode == const.LOG_SIMPLE or self.log_mode == const.LOG_FULL:
+                self._local_logger_level = const.DEFAULT_LOCAL_LOGGER_LEVEL
+                self._stdout_output_level = logging.ERROR
+            else:
+                raise FileConverterInputException(f"ERROR: Unrecognised logging option: {self.log_mode}. Allowed "
+                                                  f"options are: {const.L_ALLOWED_LOG_MODES}")
+        if self.log_mode == const.LOG_FULL:
+            return self._setup_server_loggers()
 
         self.output_log = self.log_file
 

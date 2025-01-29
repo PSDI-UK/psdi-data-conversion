@@ -372,6 +372,7 @@ def main():
 
     if (args.log_mode == const.LOG_SIMPLE or args.log_mode == const.LOG_FULL) and args.log_file:
         logging.basicConfig(filename=args.log_file)
+    logging.basicConfig(level=args.log_level)
 
     logger.info("#")
     logger.info("# Beginning execution of script `%s`", __file__)
