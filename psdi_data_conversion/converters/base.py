@@ -215,6 +215,13 @@ class FileConverter:
                                                                 suppress_global_handler=True,
                                                                 mode="w")
 
+        self.logger.debug(f"Set up logging in log mode '{self.log_mode}'")
+        if self.log_level:
+            self.logger.debug(f"Logging level set to {self.log_level}")
+        else:
+            self.logger.debug(f"Logging level left to defaults. Using {self._local_logger_level} for local logger "
+                              f"and {self._stdout_output_level} for stdout output")
+
     def _setup_server_loggers(self):
         """Run at init to set up loggers for this object in server-style execution
         """
@@ -226,7 +233,10 @@ class FileConverter:
 
         # Set up loggers - one for general-purpose log_utility, and one just for what we want to output to the user
         self.logger = log_utility.set_up_data_conversion_logger(local_log_file=self.output_log,
+                                                                local_logger_level=self._local_logger_level,
                                                                 local_logger_raw_output=False)
+
+        self.logger.debug(f"Set up server-style logging, with user logging at level {self._local_logger_level}")
 
     def run(self):
         """Run the file conversion
