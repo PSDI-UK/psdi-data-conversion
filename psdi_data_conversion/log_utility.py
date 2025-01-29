@@ -64,9 +64,6 @@ def set_up_data_conversion_logger(name=const.LOCAL_LOGGER_NAME,
                                           *extra_loggers):
         if level is None or (suppress_global_handler and filename == const.GLOBAL_LOG_FILENAME):
             continue
-        print(filename)
-        import pdb
-        pdb.set_trace()
         _add_filehandler_to_logger(logger, filename, level, raw_output, mode)
 
     # Set up stdout output if desired
