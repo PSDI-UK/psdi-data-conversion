@@ -233,7 +233,7 @@ def get_argument_parser():
                         "If not provided, the log file will be named after the =first input file (+'.log') and placed "
                         "in the current directory.")
     parser.add_argument("--log-mode", type=str, default=const.LOG_SIMPLE,
-                        help="How logs should be stores. Allowed values are: \n"
+                        help="How logs should be stored. Allowed values are: \n"
                         "- 'full' - Multi-file logging, only recommended when running as a public web app"
                         "- 'simple' - Logs saved to one file"
                         "- 'stdout' - Output logs and errors only to stdout"
