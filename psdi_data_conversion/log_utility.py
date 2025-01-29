@@ -12,10 +12,6 @@ import sys
 
 from psdi_data_conversion import constants as const
 
-# Set up the global logger when this module is first imported
-global_handler = logging.FileHandler(const.GLOBAL_LOG_FILENAME)
-global_handler.setLevel(const.GLOBAL_LOGGER_LEVEL)
-
 
 def set_up_data_conversion_logger(name=const.LOCAL_LOGGER_NAME,
                                   local_log_file=None,
@@ -68,6 +64,9 @@ def set_up_data_conversion_logger(name=const.LOCAL_LOGGER_NAME,
                                           *extra_loggers):
         if level is None or (suppress_global_handler and filename == const.GLOBAL_LOG_FILENAME):
             continue
+        print(filename)
+        import pdb
+        pdb.set_trace()
         _add_filehandler_to_logger(logger, filename, level, raw_output, mode)
 
     # Set up stdout output if desired
