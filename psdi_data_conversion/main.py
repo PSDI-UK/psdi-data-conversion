@@ -171,7 +171,7 @@ class ConvertArgs:
                     # For server-style logging, other files will be created and used for logs
                     self._log_file = None
                 else:
-                    self._log_file = base + const.LOCAL_LOG_EXT
+                    self._log_file = base + const.LOG_EXT
         return self._log_file
 
 

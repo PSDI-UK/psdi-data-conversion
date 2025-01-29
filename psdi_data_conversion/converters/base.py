@@ -208,10 +208,10 @@ class FileConverter:
     def _setup_server_loggers(self):
         """Run at init to set up loggers for this object in server-style execution
         """
+        self.output_log = os.path.join(self.download_dir, f"{self.filename_base}{const.OUTPUT_LOG_EXT}")
         local_log_base = os.path.join(self.download_dir,
                                       f"{self.local_filename}-{self.filename_base}.{self.to_format}")
-        local_log = f"{local_log_base}{const.LOCAL_LOG_EXT}"
-        self.output_log = os.path.join(self.download_dir, f"{self.filename_base}{const.OUTPUT_LOG_EXT}")
+        local_log = f"{local_log_base}{const.LOG_EXT}"
 
         # If any previous local logs exist, delete them
         if os.path.exists(local_log):

@@ -179,7 +179,7 @@ class TestConverter:
         self.global_log_filename = const.GLOBAL_LOG_FILENAME
         self.local_log_filename = os.path.join(self.tmp_download_path,
                                                f"{self.local_filename}-{self.filename_base}.{self.to_format}" +
-                                               const.LOCAL_LOG_EXT)
+                                               const.LOG_EXT)
         self.output_log_filename = os.path.join(self.tmp_download_path,
                                                 f"{self.filename_base}{const.OUTPUT_LOG_EXT}")
 
