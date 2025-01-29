@@ -133,7 +133,7 @@ class FileConverter:
         if data is None:
             self.data = {}
         else:
-            self.data = deepcopy(data)
+            self.data = dict(deepcopy(data))
 
         # Get from_format from the input file extension if not supplied
         if from_format is None:
