@@ -201,7 +201,9 @@ def get_argument_parser():
     parser.add_argument("-t", "--to", type=str, default=None,
                         help="The output (convert to) file extension (e.g., cmi).")
     parser.add_argument("-a", "--at", type=str, default=None,
-                        help="The directory where output files should be created, default same as input directory.")
+                        help="The directory where output files should be created. If not provided, output files will "
+                        "be created in -i/--in directory if that was provided, or else in the directory containing the "
+                        "first input file.")
     parser.add_argument("-w", "--with", type=str, nargs="+", default="Open Babel",
                         help="The converter to be used (default 'Open Babel').")
     parser.add_argument("--delete-input", action="store_true",
