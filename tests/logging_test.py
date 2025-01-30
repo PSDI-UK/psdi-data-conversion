@@ -71,7 +71,7 @@ def test_setup_logger(tmp_path):
                                                           local_logger_level=test_log_level,
                                                           extra_loggers=[(test_error_filename,
                                                                           test_error_level,
-                                                                          False)])
+                                                                          False, "a")])
 
     # Search through the logger's handlers to get all files it logs to and at what levels
     l_files_and_levels = []
