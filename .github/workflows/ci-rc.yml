@@ -15,6 +15,10 @@ jobs:
   # Runs on all of the 'on' conditions above, including pull request events
   test-package:
     uses: ./.github/workflows/test_package.yml
+  open-pull-request:
+    uses: ./.github/workflows/open-pull-request.yml
+    with:
+      target: release
 
   # The commented out code below runs a code vulnerability scan on the
   # containerised app. This will not work on the free GitHub plan, since

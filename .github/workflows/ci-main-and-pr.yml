@@ -23,3 +23,9 @@ on:
 jobs:
   test-package:
     uses: ./.github/workflows/test_package.yml
+  open-pull-request:
+    # Open a PR if the branch isn't main itself
+    if: ${{ github.head_ref || github.ref_name }} != 'main'
+    uses: ./.github/workflows/open-pull-request.yml
+    with:
+      target: main
