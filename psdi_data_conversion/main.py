@@ -16,8 +16,6 @@ from psdi_data_conversion import constants as const
 from psdi_data_conversion.converter import L_REGISTERED_CONVERTERS, run_converter
 from psdi_data_conversion.converters.base import FileConverterAbortException, FileConverterInputException
 
-logger = logging.getLogger(__name__)
-
 
 class ConvertArgs:
     """Class storing arguments for data conversion, processed and determined from the input arguments.
@@ -64,7 +62,19 @@ class ConvertArgs:
         self.log_mode: bool = args.log_mode
         self.quiet = args.quiet
         self._log_file: str | None = args.log_file
-        self.log_level: str = args.log_level
+
+        if args.log_level.lower() == "debug":
+            self.log_level = logging.DEBUG
+        elif args.log_level.lower() == "info":
+            self.log_level = logging.INFO
+        elif args.log_level.startswith("warn"):
+            self.log_level = logging.WARNING
+        elif args.log_level.lower() == "error":
+            self.log_level = logging.ERROR
+        elif args.log_level.lower() == "critical":
+            self.log_level = logging.CRITICAL
+        elif args.log_level:
+            raise FileConverterInputException(f"Unrecognised logging level: {args.log_level}")
 
         # Quiet mode is equivalent to logging mode == LOGGING_NONE, so normalize them if either is set
         if self.quiet:
@@ -302,7 +312,7 @@ def run_from_args(args: ConvertArgs):
         The parsed arguments for this script.
     """
 
-    logger.debug("# Entering function `run_from_args`")
+    logging.debug("# Entering function `run_from_args`")
 
     # Check if we've been asked to list options
     if args.list:
@@ -363,7 +373,7 @@ def run_from_args(args: ConvertArgs):
         if not args.quiet:
             sys.stdout.write("Success!\n")
 
-    logger.debug("# Exiting function `run_from_args`")
+    logging.debug("# Exiting function `run_from_args`")
 
 
 def main():
@@ -373,18 +383,19 @@ def main():
     args = parse_args()
 
     if (args.log_mode == const.LOG_SIMPLE or args.log_mode == const.LOG_FULL) and args.log_file:
-        logging.basicConfig(filename=args.log_file)
-    logging.basicConfig(level=args.log_level)
+        logging.basicConfig(filename=args.log_file, level=args.log_level)
+    else:
+        logging.basicConfig(level=args.log_level)
 
-    logger.info("#")
-    logger.info("# Beginning execution of script `%s`", __file__)
-    logger.info("#")
+    logging.info("#")
+    logging.info("# Beginning execution of script `%s`", __file__)
+    logging.info("#")
 
     run_from_args(args)
 
-    logger.info("#")
-    logger.info("# Finished execution of script `%s`", __file__)
-    logger.info("#")
+    logging.info("#")
+    logging.info("# Finished execution of script `%s`", __file__)
+    logging.info("#")
 
 
 if __name__ == "__main__":
