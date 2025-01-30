@@ -80,6 +80,7 @@ class FileConverter:
                  log_file: str | None = None,
                  log_mode=const.LOG_FULL,
                  log_level: int | None = None,
+                 refresh_local_log: bool = True,
                  delete_input=False):
         """Initialize the object, storing needed data and setting up loggers.
 
@@ -120,6 +121,9 @@ class FileConverter:
             - 'full' or 'simple': INFO
             - 'stdout' - INFO to stdout, no logging to file
             - 'none' - ERROR to stdout, no logging to file
+        refresh_local_log : bool
+            If True, the local log generated from this run will be overwritten. If False it will be appended to. Default
+            True
         delete_input : bool
             Whether or not to delete input files after conversion, default False
         """
@@ -134,6 +138,7 @@ class FileConverter:
         self.log_file = log_file
         self.log_mode = log_mode
         self.log_level = log_level
+        self.refresh_local_log = refresh_local_log
         self.delete_input = delete_input
 
         # Use an empty dict for data if None was provided
@@ -211,11 +216,12 @@ class FileConverter:
 
         self.output_log = self.log_file
 
+        write_mode = "w" if self.refresh_local_log else "a"
         self.logger = log_utility.set_up_data_conversion_logger(local_log_file=self.log_file,
                                                                 local_logger_level=self._local_logger_level,
                                                                 stdout_output_level=self._stdout_output_level,
                                                                 suppress_global_handler=True,
-                                                                mode="w")
+                                                                mode=write_mode)
 
         self.logger.debug(f"Set up logging in log mode '{self.log_mode}'")
         if self.log_level:
@@ -233,10 +239,12 @@ class FileConverter:
         if os.path.exists(self.output_log):
             os.remove(self.output_log)
 
+        write_mode = "w" if self.refresh_local_log else "a"
         # Set up loggers - one for general-purpose log_utility, and one just for what we want to output to the user
         self.logger = log_utility.set_up_data_conversion_logger(local_log_file=self.output_log,
                                                                 local_logger_level=self._local_logger_level,
-                                                                local_logger_raw_output=False)
+                                                                local_logger_raw_output=False,
+                                                                mode=write_mode)
 
         self.logger.debug(f"Set up server-style logging, with user logging at level {self._local_logger_level}")
 

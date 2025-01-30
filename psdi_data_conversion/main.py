@@ -67,7 +67,7 @@ class ConvertArgs:
             self.log_level = logging.DEBUG
         elif args.log_level.lower() == "info":
             self.log_level = logging.INFO
-        elif args.log_level.startswith("warn"):
+        elif args.log_level.lower().startswith("warn"):
             self.log_level = logging.WARNING
         elif args.log_level.lower() == "error":
             self.log_level = logging.ERROR
@@ -312,8 +312,6 @@ def run_from_args(args: ConvertArgs):
         The parsed arguments for this script.
     """
 
-    logging.debug("# Entering function `run_from_args`")
-
     # Check if we've been asked to list options
     if args.list:
         return detail_converters(args.l_args)
@@ -361,7 +359,8 @@ def run_from_args(args: ConvertArgs):
                           log_file=args.log_file,
                           log_mode=args.log_mode,
                           log_level=args.log_level,
-                          delete_input=args.delete_input)
+                          delete_input=args.delete_input,
+                          refresh_local_log=False)
         except FileConverterAbortException as e:
             print(f"ERROR: Attempt to convert file {filename} aborted with status code {e.status_code} and message: " +
                   f"\n{e}\n", file=sys.stderr)
@@ -374,8 +373,6 @@ def run_from_args(args: ConvertArgs):
         if not args.quiet:
             sys.stdout.write("Success!\n")
 
-    logging.debug("# Exiting function `run_from_args`")
-
 
 def main():
     """Standard entry-point function for this script.
@@ -384,9 +381,15 @@ def main():
     args = parse_args()
 
     if (args.log_mode == const.LOG_SIMPLE or args.log_mode == const.LOG_FULL) and args.log_file:
-        logging.basicConfig(filename=args.log_file, level=args.log_level)
+        # Delete any previous local log if it exists
+        try:
+            os.remove(args.log_file)
+        except FileNotFoundError:
+            pass
+        logging.basicConfig(filename=args.log_file, level=args.log_level,
+                            format=const.LOG_FORMAT, datefmt=const.TIMESTAMP_FORMAT)
     else:
-        logging.basicConfig(level=args.log_level)
+        logging.basicConfig(level=args.log_level, format=const.LOG_FORMAT)
 
     logging.debug("#")
     logging.debug("# Beginning execution of script `%s`", __file__)

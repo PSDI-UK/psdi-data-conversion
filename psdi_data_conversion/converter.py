@@ -104,6 +104,9 @@ def get_converter(*args, name=const.CONVERTER_DEFAULT, **converter_kwargs) -> ba
         - 'full' or 'simple': INFO
         - 'stdout' - INFO to stdout, no logging to file
         - 'none' - ERROR to stdout, no logging to file
+    refresh_local_log : bool
+        If True, the local log generated from this run will be overwritten. If False it will be appended to. Default
+        True
     delete_input : bool
         Whether or not to delete input files after conversion, default False
 
@@ -167,6 +170,9 @@ def run_converter(*args, **converter_kwargs) -> str:
         - 'full' or 'simple': INFO
         - 'stdout' - INFO to stdout, no logging to file
         - 'none' - ERROR to stdout, no logging to file
+    refresh_local_log : bool
+        If True, the local log generated from this run will be overwritten. If False it will be appended to. Default
+        True
     delete_input : bool
         Whether or not to delete input files after conversion, default False
 
