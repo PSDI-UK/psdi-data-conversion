@@ -309,10 +309,10 @@ class FileConverter:
         """Call an abort after a call to the converter has completed, but it's returned an error. Create a message for
         the logger including this error and other relevant information.
         """
-        self.logger.info(self._create_message_start() +
-                         self._create_message() +
-                         self.out + '\n' +
-                         self.err)
+        self.logger.error(self._create_message_start() +
+                          self._create_message() +
+                          self.out + '\n' +
+                          self.err)
         self._abort(message=self.err)
 
     def _create_message(self) -> str:
