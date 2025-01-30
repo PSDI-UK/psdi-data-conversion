@@ -360,6 +360,7 @@ def run_from_args(args: ConvertArgs):
                           download_dir=args.output_dir,
                           log_file=args.log_file,
                           log_mode=args.log_mode,
+                          log_level=args.log_level,
                           delete_input=args.delete_input)
         except FileConverterAbortException as e:
             print(f"ERROR: Attempt to convert file {filename} aborted with status code {e.status_code} and message: " +
