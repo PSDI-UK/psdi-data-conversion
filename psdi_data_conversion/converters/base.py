@@ -183,6 +183,8 @@ class FileConverter:
         # Set up files to log to
         self._setup_loggers()
 
+        self.logger.debug("Finished FileConverter initialisation")
+
     def _setup_loggers(self):
         """Run at init to set up loggers for this object.
         """
@@ -243,15 +245,19 @@ class FileConverter:
         """
 
         try:
+            self.logger.debug("Starting file conversion")
             self._convert()
+
+            self.logger.debug("Finished file conversion; performing cleanup tasks")
             self._finish_convert()
         except Exception as e:
             if isinstance(e, l_abort_exceptions):
                 # Don't catch a deliberate abort; let it pass through
+                self.logger.error(f"Unexpected exception raised of type '{type(e)}' with message: {str(e)}")
                 raise
-            self._abort(message=f"The application encountered an unexpected error:\n{traceback.format_exc()}")
-
-        self._append_to_log_file("conversions")
+            self.logger.error(f"Exception triggering an abort was raised. Exception was type '{type(e)}', with "
+                              f"message: {str(e)}")
+            self._abort(message=f"The application encountered an error:\n{traceback.format_exc()}")
 
         return ('\nConverting from ' + self.filename_base + '.' + self.from_format + ' to ' + self.filename_base +
                 '.' + self.to_format + '\n')
@@ -270,6 +276,7 @@ class FileConverter:
 
         # Remove the input and output files if they exist
         if self.delete_input:
+            self.logger.debug(f"Cleaning up input file {self.in_filename}")
             try:
                 os.remove(self.in_filename)
             except FileNotFoundError:
@@ -277,12 +284,16 @@ class FileConverter:
         try:
             os.remove(self.out_filename)
         except FileNotFoundError:
-            pass
+            self.logger.debug("Application aborting; no output file found to clean up")
+        else:
+            self.logger.debug(f"Application aborting, so cleaning up output file {self.out_filename}")
 
         if message:
             # If we're adding a message in server mode, read in any prior logs, clear the log, write the message, then
             # write the prior logs
             if self.log_file is None:
+                self.logger.debug("Adding abort message to the top of the output log so it will be the first thing "
+                                  "read by the user")
                 prior_output_log = open(self.output_log, "r").read()
                 os.remove(self.output_log)
                 with open(self.output_log, "w") as fo:
@@ -295,15 +306,22 @@ class FileConverter:
         self.abort_callback(status_code)
 
     def _abort_from_err(self):
-        """Write conversion error information to server-side log file and abort the conversion
+        """Call an abort after a call to the converter has completed, but it's returned an error. Create a message for
+        the logger including this error and other relevant information.
         """
-        self.logger.info(self._create_message_start()+self._create_message())
+        self.logger.info(self._create_message_start() +
+                         self._create_message() +
+                         self.out + '\n' +
+                         self.err)
         self._abort(message=self.err)
 
     def _create_message(self) -> str:
         """Create a log of options passed to the converter - this method should be overloaded to log any information
         unique to a specific converter.
         """
+
+        self.debug("Default _create_message method called - not outputting any additional information specific to this "
+                   "converter")
 
         return ""
 
@@ -335,29 +353,6 @@ class FileConverter:
 
         self.logger.info(message)
 
-    def _append_to_log_file(self, log_name):
-        """Append data to a log file
-
-        Parameters
-        ----------
-        log_name : _type_
-            _description_
-        """
-
-        data = {
-            "datetime": log_utility.get_date_time(),
-            "fromFormat": self.from_format,
-            "toFormat": self.to_format,
-            "converter": self.name,
-            "fname": self.filename_base,
-            "inSize": self.in_size,
-            "outSize": self.out_size,
-            "quality": self.quality,
-        }
-
-        if (os.environ.get('ENABLE_DCS_LOG') is not None):
-            print(json.dumps(data))
-
     def _check_file_size_and_status(self):
         """Get file sizes, checking that output file isn't too large
 
@@ -373,7 +368,9 @@ class FileConverter:
             out_size = os.path.getsize(os.path.realpath(self.out_filename))
         except FileNotFoundError:
             # Something went wrong and the output file doesn't exist
-            self.err += f"ERROR: Expected output file {self.out_filename} does not exist.\n"
+            err_message = f"Expected output file {self.out_filename} does not exist."
+            self.logger.error(err_message)
+            self.err += f"ERROR: {err_message}\n"
             self._abort_from_err()
 
         # Check that the output file doesn't exceed the maximum allowed size
@@ -385,11 +382,11 @@ class FileConverter:
                         f"Output file exceeds maximum size.\nInput file size is "
                         f"{in_size/const.MEGABYTE:.2f} MB; Output file size is {out_size/const.MEGABYTE:.2f} "
                         f"MB; maximum output file size is {self.max_file_size/const.MEGABYTE:.2f} MB.\n")
+        self.logger.debug(f"Output file found to have size {out_size/const.MEGABYTE:.2f} MB")
 
         return in_size, out_size
 
-    @ staticmethod
-    def get_quality(from_ext, to_ext):
+    def get_quality(self):
         """Query the JSON file to obtain conversion quality
         """
 
@@ -399,8 +396,8 @@ class FileConverter:
             with open("static/data/data.json") as datafile:
                 data = json.load(datafile)
 
-            from_format = [d for d in data["formats"] if d["extension"] == from_ext]
-            to_format = [d for d in data["formats"] if d["extension"] == to_ext]
+            from_format = [d for d in data["formats"] if d["extension"] == self.from_format]
+            to_format = [d for d in data["formats"] if d["extension"] == self.to_format]
             open_babel = [d for d in data["converters"] if d["name"] == "Open Babel"]
 
             open_babel_id = open_babel[0]["id"]
@@ -412,7 +409,10 @@ class FileConverter:
 
             return converts_to[0]["degree_of_success"]
 
-        except Exception:
+        except Exception as e:
+
+            self.logger.warning(f"Unable to determine conversion quality from {self.from_format} to {self.to_format}. "
+                                f"Received exception of type '{type(e)}' and message: {str(e)}")
 
             return "unknown"
 
@@ -431,7 +431,7 @@ class FileConverter:
         if "success" in self.data:
             self.quality = self.data["success"]
         else:
-            self.quality = self.get_quality(self.from_format, self.to_format)
+            self.quality = self.get_quality()
 
         self._log_success()
 
@@ -450,6 +450,8 @@ class ScriptFileConverter(FileConverter):
 
     def _convert(self):
 
+        self.logger.debug(f"Performing conversion with ScriptFileConverter using script '{self.script}'")
+
         if "from_flags" not in self.data:
             self.data["from_flags"] = ""
         if "to_flags" not in self.data:
@@ -463,4 +465,7 @@ class ScriptFileConverter(FileConverter):
         self.err = process.stderr
 
         if process.returncode != 0:
+            self.logger.error(f"Conversion process completed with non-zero returncode {process.returncode}; aborting")
             self._abort_from_err()
+        else:
+            self.logger.debug("Conversion process completed successfully")
