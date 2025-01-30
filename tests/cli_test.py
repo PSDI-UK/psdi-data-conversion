@@ -38,7 +38,7 @@ def test_input_validity():
 
     # Test that we get what we put in for a standard execution
     cwd = os.getcwd()
-    args = get_parsed_args(f"file1 file2 -f mmcif -i {cwd} -t pdb -a {cwd}/.. -w 'Atomsk' " +
+    args = get_parsed_args(f"file1 file2 -f mmcif -i {cwd} -t pdb -o {cwd}/.. -w 'Atomsk' " +
                            r"--delete-input --from-flags '\-ab \-c \--example' --to-flags '\-d' " +
                            "--coord-gen Gen3D best -q --log-file text.log")
     assert args.l_args[0] == "file1"
@@ -173,7 +173,7 @@ def test_convert(tmp_path_factory, capsys, test_data_loc):
                os.path.join(input_dir, input_filename))
 
     # Run a basic conversion
-    basic_arg_string = f"{input_filename} -t {to_format} -i {input_dir} -a {output_dir}"
+    basic_arg_string = f"{input_filename} -t {to_format} -i {input_dir} -o {output_dir}"
     run_with_arg_string(basic_arg_string)
 
     # Check that the expected output file has been created
@@ -198,7 +198,7 @@ def test_convert(tmp_path_factory, capsys, test_data_loc):
     assert "ERROR" in captured.err
 
     # Check that we can specify a file with its format instead of extension
-    run_with_arg_string(f"{test_filename_base} -f {from_format} -t {to_format} -i {input_dir} -a {output_dir}")
+    run_with_arg_string(f"{test_filename_base} -f {from_format} -t {to_format} -i {input_dir} -o {output_dir}")
     captured = capsys.readouterr()
     assert "Success!" in captured.out
     assert "ERROR" not in captured.err

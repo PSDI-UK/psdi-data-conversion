@@ -32,7 +32,7 @@ class ConvertArgs:
         self._from_format: str | None = getattr(args, "from")
         self._input_dir: str | None = getattr(args, "in")
         self.to_format: str | None = args.to
-        self._output_dir: str | None = args.at
+        self._output_dir: str | None = args.out
         converter_name = getattr(args, "with")
         if isinstance(converter_name, str):
             self.name = converter_name
@@ -210,7 +210,7 @@ def get_argument_parser():
                         help="The directory containing the input file(s), default current directory.")
     parser.add_argument("-t", "--to", type=str, default=None,
                         help="The output (convert to) file extension (e.g., cmi).")
-    parser.add_argument("-a", "--at", type=str, default=None,
+    parser.add_argument("-o", "--out", type=str, default=None,
                         help="The directory where output files should be created. If not provided, output files will "
                         "be created in -i/--in directory if that was provided, or else in the directory containing the "
                         "first input file.")
@@ -243,11 +243,11 @@ def get_argument_parser():
                              "provided, gives information on the converter and any command-line flags it accepts.")
 
     # Logging/stdout arguments
-    parser.add_argument("-o", "--log-file", type=str, default=None,
+    parser.add_argument("-g", "--log-file", type=str, default=None,
                         help="The name of the file to log to. This can be provided relative to the current directory "
-                        "(e.g. '-o ../logs/log-file.txt') or fully qualified (e.g. /path/to/log-file.txt). "
+                        "(e.g. '-g ../logs/log-file.txt') or fully qualified (e.g. /path/to/log-file.txt). "
                         "If not provided, the log file will be named after the =first input file (+'.log') and placed "
-                        "in the output directory (specified with -a/--at).\n"
+                        "in the output directory (specified with -o/--out).\n"
                         "In 'full' logging mode (not recommended with this interface), this will apply only to logs "
                         "from the outermost level of the script if explicitly specified. If not explicitly specified, "
                         "those logs will be sent to stderr.")
