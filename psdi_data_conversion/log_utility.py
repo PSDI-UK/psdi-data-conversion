@@ -36,9 +36,9 @@ def set_up_data_conversion_logger(name=const.LOCAL_LOGGER_NAME,
     local_logger_raw_output : bool
         If set to True, output to the local logger will be logged with no formatting, exactly as input. Otherwise
         (default) it will include a timestamp and indicate the logging level
-    extra_loggers : Iterable[Tuple[str, int, bool]]
-        A list of one or more tuples of the format (`filename`, `level`, `raw_output`) specifying these options
-        (defined the same as for the local logger) for one or more additional logging channels.
+    extra_loggers : Iterable[Tuple[str, int, bool, str]]
+        A list of one or more tuples of the format (`filename`, `level`, `raw_output`, `mode`) specifying these
+        options (defined the same as for the local logger) for one or more additional logging channels.
     suppress_global_handler : bool
         If set to True, will not add the handler which sends all logs to the global log file, default False
     stdout_output_level : int | None
@@ -59,12 +59,13 @@ def set_up_data_conversion_logger(name=const.LOCAL_LOGGER_NAME,
         extra_loggers = []
 
     # Set up filehandlers for the global and local logging
-    for (filename, level, raw_output) in ((const.GLOBAL_LOG_FILENAME, const.GLOBAL_LOGGER_LEVEL, False),
-                                          (local_log_file, local_logger_level, local_logger_raw_output),
-                                          *extra_loggers):
+    for (filename, level,
+         raw_output, write_mode) in ((const.GLOBAL_LOG_FILENAME, const.GLOBAL_LOGGER_LEVEL, False, "a"),
+                                     (local_log_file, local_logger_level, local_logger_raw_output, mode),
+                                     *extra_loggers):
         if level is None or (suppress_global_handler and filename == const.GLOBAL_LOG_FILENAME):
             continue
-        _add_filehandler_to_logger(logger, filename, level, raw_output, mode)
+        _add_filehandler_to_logger(logger, filename, level, raw_output, write_mode)
 
     # Set up stdout output if desired
     if stdout_output_level is not None:

@@ -16,8 +16,6 @@ from psdi_data_conversion import constants as const
 from psdi_data_conversion.converter import L_REGISTERED_CONVERTERS, run_converter
 from psdi_data_conversion.converters.base import FileConverterAbortException, FileConverterInputException
 
-logger = logging.getLogger(__name__)
-
 
 class ConvertArgs:
     """Class storing arguments for data conversion, processed and determined from the input arguments.
@@ -64,7 +62,19 @@ class ConvertArgs:
         self.log_mode: bool = args.log_mode
         self.quiet = args.quiet
         self._log_file: str | None = args.log_file
-        self.log_level: str = args.log_level
+
+        if args.log_level.lower() == "debug":
+            self.log_level = logging.DEBUG
+        elif args.log_level.lower() == "info":
+            self.log_level = logging.INFO
+        elif args.log_level.lower().startswith("warn"):
+            self.log_level = logging.WARNING
+        elif args.log_level.lower() == "error":
+            self.log_level = logging.ERROR
+        elif args.log_level.lower() == "critical":
+            self.log_level = logging.CRITICAL
+        elif args.log_level:
+            raise FileConverterInputException(f"Unrecognised logging level: {args.log_level}")
 
         # Quiet mode is equivalent to logging mode == LOGGING_NONE, so normalize them if either is set
         if self.quiet:
@@ -201,7 +211,9 @@ def get_argument_parser():
     parser.add_argument("-t", "--to", type=str, default=None,
                         help="The output (convert to) file extension (e.g., cmi).")
     parser.add_argument("-a", "--at", type=str, default=None,
-                        help="The directory where output files should be created, default same as input directory.")
+                        help="The directory where output files should be created. If not provided, output files will "
+                        "be created in -i/--in directory if that was provided, or else in the directory containing the "
+                        "first input file.")
     parser.add_argument("-w", "--with", type=str, nargs="+", default="Open Babel",
                         help="The converter to be used (default 'Open Babel').")
     parser.add_argument("--delete-input", action="store_true",
@@ -300,8 +312,6 @@ def run_from_args(args: ConvertArgs):
         The parsed arguments for this script.
     """
 
-    logger.debug("# Entering function `run_from_args`")
-
     # Check if we've been asked to list options
     if args.list:
         return detail_converters(args.l_args)
@@ -348,7 +358,9 @@ def run_from_args(args: ConvertArgs):
                           download_dir=args.output_dir,
                           log_file=args.log_file,
                           log_mode=args.log_mode,
-                          delete_input=args.delete_input)
+                          log_level=args.log_level,
+                          delete_input=args.delete_input,
+                          refresh_local_log=False)
         except FileConverterAbortException as e:
             print(f"ERROR: Attempt to convert file {filename} aborted with status code {e.status_code} and message: " +
                   f"\n{e}\n", file=sys.stderr)
@@ -361,8 +373,6 @@ def run_from_args(args: ConvertArgs):
         if not args.quiet:
             sys.stdout.write("Success!\n")
 
-    logger.debug("# Exiting function `run_from_args`")
-
 
 def main():
     """Standard entry-point function for this script.
@@ -371,17 +381,25 @@ def main():
     args = parse_args()
 
     if (args.log_mode == const.LOG_SIMPLE or args.log_mode == const.LOG_FULL) and args.log_file:
-        logging.basicConfig(filename=args.log_file)
+        # Delete any previous local log if it exists
+        try:
+            os.remove(args.log_file)
+        except FileNotFoundError:
+            pass
+        logging.basicConfig(filename=args.log_file, level=args.log_level,
+                            format=const.LOG_FORMAT, datefmt=const.TIMESTAMP_FORMAT)
+    else:
+        logging.basicConfig(level=args.log_level, format=const.LOG_FORMAT)
 
-    logger.info("#")
-    logger.info("# Beginning execution of script `%s`", __file__)
-    logger.info("#")
+    logging.debug("#")
+    logging.debug("# Beginning execution of script `%s`", __file__)
+    logging.debug("#")
 
     run_from_args(args)
 
-    logger.info("#")
-    logger.info("# Finished execution of script `%s`", __file__)
-    logger.info("#")
+    logging.debug("#")
+    logging.debug("# Finished execution of script `%s`", __file__)
+    logging.debug("#")
 
 
 if __name__ == "__main__":

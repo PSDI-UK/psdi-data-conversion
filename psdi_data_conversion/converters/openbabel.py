@@ -20,6 +20,9 @@ class OBFileConverter(FileConverter):
     name = CONVERTER_OB
 
     def _convert(self):
+
+        self.logger.debug("Using OpenBabel's Python library to perform file conversion")
+
         stdouterr_ob = py.io.StdCaptureFD(in_=False)
 
         ob_conversion = openbabel.OBConversion()
@@ -50,12 +53,16 @@ class OBFileConverter(FileConverter):
             self.data["read_flags_args"].append(char + "  " + arg)
             ob_conversion.AddOption(char, ob_conversion.INOPTIONS, arg)
 
+        self.logger.debug(f"Set Open Babel read flags arguments to: {self.data['read_flags_args']}")
+
         for char in to_arg_flags:
             index = to_args.find('£')
             arg = to_args[0:index]
             to_args = to_args[index + 1:len(to_args)]
             self.data["write_flags_args"].append(char + "  " + arg)
             ob_conversion.AddOption(char, ob_conversion.OUTOPTIONS, arg)
+
+        self.logger.debug(f"Set Open Babel write flags arguments to: {self.data['read_flags_args']}")
 
         # Read the file to be converted
         mol = openbabel.OBMol()
@@ -69,6 +76,8 @@ class OBFileConverter(FileConverter):
             self.option = self.data['coordOption']
 
             gen = openbabel.OBOp.FindType(self.data["coordinates"])
+            self.logger.debug(f"Performing Open Babel {self.data['coordinates']} coordinate conversion with option "
+                              f"'{self.option}'")
             gen.Do(mol, self.data['coordOption'])
 
         # Write the converted file
@@ -84,7 +93,7 @@ class OBFileConverter(FileConverter):
         """Overload method to create a log of options passed to the converter
         """
 
-        message = super()._create_message()
+        message = ""
 
         label_length = 19
 
