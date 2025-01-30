@@ -275,7 +275,7 @@ Enter https://psdidev2.azurewebsites.net in a browser. Guidance on usage is give
 Install the package and its requirements, including the optional requirements used to run the GUI locally, by executing the following command from this project's directory:
 
 ```bash
-pip install .[gui]
+pip install .'[gui]'
 ```
 
 To enable debug mode, if required, enter:
@@ -320,7 +320,7 @@ open -a "Google Chrome.app" --args --allow-file-access-from-files
 The Python library and CLI are written to make it easy to extend the functionality of this package to use other file format converters. This can by downloading or cloning the project's source from it's GitHub Repository (https://github.com/PSDI-UK/psdi-data-conversion), editing the code to add your converter following the guidance in the "[Adding File Format Converters](https://github.com/PSDI-UK/psdi-data-conversion/blob/main/CONTRIBUTING.md#adding-file-format-converters)" section of CONTRIBUTING.md to integrate it with the Python code, and installing the modified package on your system via:
 
 ```bash
-pip install --editable .[test]
+pip install --editable .'[test]'
 ```
 
 (This command uses the `--editable` option and optional `test` dependencies to ease the process of testing and debugging your changes.)
@@ -331,7 +331,7 @@ Install the package requirements locally (ideally within a virtual environment) 
 
 ```bash
 source .venv/bin/activate # Create a venv first if necessary with `python -m venv .venv`
-pip install .[gui,test]
+pip install .'[gui,test]'
 pytest
 ```
 

@@ -201,7 +201,7 @@ You can then run the any tests you added, plus the existing test suite through r
 
 ```bash
 source .venv/bin/activate # Create a venv first if necessary with `python -m venv .venv`
-pip install --editable .[test]
+pip install --editable .'[test]'
 pytest
 ```
 
@@ -226,5 +226,5 @@ List of necessary steps:
 For debugging python issues, it's recommended to install the package in editable mode via pip. This sets it up so that the python source files are used in-place rather than copied to a separate install directory, meaning that changes to them will be reflected in runs without need for a new installation. This can be done through the following command (which also installs all optional packages):
 
 ```bash
-pip install --editable .[gui,test]
+pip install --editable .'[gui,test]'
 ```
