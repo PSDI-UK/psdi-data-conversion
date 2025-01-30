@@ -320,8 +320,8 @@ class FileConverter:
         unique to a specific converter.
         """
 
-        self.debug("Default _create_message method called - not outputting any additional information specific to this "
-                   "converter")
+        self.logger.debug("Default _create_message method called - not outputting any additional information specific "
+                          "to this converter")
 
         return ""
 

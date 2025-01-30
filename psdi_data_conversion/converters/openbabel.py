@@ -84,7 +84,7 @@ class OBFileConverter(FileConverter):
         """Overload method to create a log of options passed to the converter
         """
 
-        message = super()._create_message()
+        message = ""
 
         label_length = 19
 
