@@ -65,7 +65,20 @@ class FileConverter:
     """Class to handle conversion of files from one type to another
     """
 
+    # Name of the converter - must be overridden in each subclass to name each converter uniquely
     name: str | None = None
+
+    # General info about the converter - should be overridden in each subclass to describe the converter
+    info: str | None = None
+
+    # List of flags allowed for the converter (flags are arguments that are set by being present, and don't require a
+    # value specified - e.g. "-v" to enable verbose mode) - should be overridden with a tuple of tuples containing the
+    # flag names and help texts for them
+    allowed_flags: tuple[tuple[str, str], ...] | None = None
+
+    # List of options allowed for the converter (options are arguments that take one or more values, e.g. "-o out.txt")
+    # - should be overridden with a tuple of tuples containing the option names and help texts for them
+    allowed_options: tuple[tuple[str, str], ...] | None = None
 
     def __init__(self,
                  filename: str,
