@@ -12,7 +12,7 @@ import sys
 from unittest.mock import patch
 
 from psdi_data_conversion import constants as const
-from psdi_data_conversion.converter import L_REGISTERED_CONVERTERS
+from psdi_data_conversion.converter import D_REGISTERED_CONVERTERS, L_REGISTERED_CONVERTERS
 from psdi_data_conversion.main import FileConverterInputException, main, parse_args
 
 
@@ -84,9 +84,18 @@ def test_input_validity():
     with pytest.raises(FileConverterInputException):
         get_parsed_args("file1.mmcif -t pdb --log-mode max")
 
-    # It should work if we just ask for a list
+    # It should work if we just ask for a list, and set log mode to stdout
     args = get_parsed_args("--list")
     assert args.list
+    assert args.log_mode == const.LOG_STDOUT
+
+    # We should also be able to ask for info on a specific converter
+    args = get_parsed_args("-l Open Babel")
+    assert args.name == "Open Babel"
+    args = get_parsed_args("--list 'Open Babel'")
+    assert args.name == "Open Babel"
+    args = get_parsed_args("-l Atomsk")
+    assert args.name == "Atomsk"
 
 
 def test_input_processing():
@@ -141,12 +150,18 @@ def test_detail_converter(capsys):
     """Test the option to provide detail on a converter
     """
 
-    # Test all converters are recognised and don't raise an error
-    for converter_name in L_REGISTERED_CONVERTERS:
+    # Test all converters are recognised, don't raise an error, and we get info on them
+    for converter_name, converter_class in D_REGISTERED_CONVERTERS.items():
         run_with_arg_string(f"--list {converter_name}")
         captured = capsys.readouterr()
         assert "not recognized" not in captured.err
-        assert "Converter use detailing is still TBD" in captured.out
+        assert f"Converter: {converter_name}" in captured.out
+
+        if converter_class.info is None:
+            assert "provided about this converter" in captured.out
+        else:
+            # Info text will be wrapped, so just test the first 50 chars appear
+            assert converter_class.info[0:50] in captured.out
 
     # Test we do get an error for a bad converter name
     run_with_arg_string("--list bad_converter")

@@ -77,6 +77,18 @@ class ConvertArgs:
         elif args.log_level:
             raise FileConverterInputException(f"Unrecognised logging level: {args.log_level}")
 
+        # Special handling for listing converters
+        if self.list:
+            # Force log mode to stdout and turn off quiet
+            self.log_mode = const.LOG_STDOUT
+            self.quiet = False
+
+            # Get the converter name from the arguments
+            self.name = " ".join(self.l_args)
+
+            # For this operation, any other arguments can be ignored
+            return
+
         # Quiet mode is equivalent to logging mode == LOGGING_NONE, so normalize them if either is set
         if self.quiet:
             self.log_mode = const.LOG_NONE
@@ -84,10 +96,6 @@ class ConvertArgs:
             self.quiet = True
 
         # Check validity of input
-
-        if self.list:
-            # If requesting to list converters, any other arguments can be ignored
-            return
 
         if len(self.l_args) == 0:
             raise FileConverterInputException("One or more names of files to convert must be provided")
@@ -239,7 +247,7 @@ def get_argument_parser():
                              "'--coord-gen Gen2D' (quality defaults to 'medium'), '--coord-gen Gen3D best'")
 
     # Keyword arguments for alternative functionality
-    parser.add_argument("--list", action="store_true",
+    parser.add_argument("-l", "--list", action="store_true",
                         help="If provided alone, lists all available converters. If the name of a converter is "
                              "provided, gives information on the converter and any command-line flags it accepts.")
 
@@ -285,15 +293,15 @@ def parse_args():
     return args
 
 
-def detail_converter_use(converter_name: str):
+def detail_converter_use(args: str):
     """Prints output providing information on a specific converter, including the flags and options it allows
     """
-    converter_class = D_REGISTERED_CONVERTERS[converter_name]
+    converter_class = D_REGISTERED_CONVERTERS[args.name]
 
     print(f"Converter: {converter_class.name}\n")
 
     if converter_class.info:
-        print(f"{converter_class.info}\n")
+        print(textwrap.fill(f"{converter_class.info}\n"))
     else:
         print("Information has not been provided about this converter.\n")
 
@@ -318,14 +326,13 @@ def detail_converter_use(converter_name: str):
             print(textwrap.fill(help, initial_indent=" "*4, subsequent_indent=" "*4))
 
 
-def detail_converters(l_args: list[str]):
+def detail_converters(args: ConvertArgs):
     """Prints details on available converters for the user.
     """
-    converter_name = " ".join(l_args)
-    if converter_name in L_REGISTERED_CONVERTERS:
-        return detail_converter_use(converter_name)
-    elif converter_name != "":
-        print(f"ERROR: Converter {converter_name} not recognized.", file=sys.stderr)
+    if args.name in L_REGISTERED_CONVERTERS:
+        return detail_converter_use(args)
+    elif args.name != "":
+        print(f"ERROR: Converter '{args.name}' not recognized.", file=sys.stderr)
     print("Available converters are: \n" + "\n".join(L_REGISTERED_CONVERTERS) + "\n" +
           "For more details on a converter, call: \n" +
           "psdi-data-convert --list <Converter name>")
@@ -342,7 +349,7 @@ def run_from_args(args: ConvertArgs):
 
     # Check if we've been asked to list options
     if args.list:
-        return detail_converters(args.l_args)
+        return detail_converters(args)
 
     data = {'success': 'unknown',
             'from_flags': args.from_flags,
