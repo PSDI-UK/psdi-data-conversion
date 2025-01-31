@@ -333,9 +333,8 @@ def detail_converters(args: ConvertArgs):
         return detail_converter_use(args)
     elif args.name != "":
         print(f"ERROR: Converter '{args.name}' not recognized.", file=sys.stderr)
-    print("Available converters are: \n" + "\n".join(L_REGISTERED_CONVERTERS) + "\n" +
-          "For more details on a converter, call: \n" +
-          "psdi-data-convert --list <Converter name>")
+    print("Available converters are: \n- " + "\n- ".join(L_REGISTERED_CONVERTERS) + "\n\n" +
+          "For more details on a converter, call: psdi-data-convert -l <Converter name>")
 
 
 def run_from_args(args: ConvertArgs):
