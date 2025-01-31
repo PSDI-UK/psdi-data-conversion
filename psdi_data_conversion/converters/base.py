@@ -65,6 +65,9 @@ class FileConverter:
     """Class to handle conversion of files from one type to another
     """
 
+    # Class variables and methods which must/can be overridden by subclasses
+    # ----------------------------------------------------------------------
+
     # Name of the converter - must be overridden in each subclass to name each converter uniquely
     name: str | None = None
 
@@ -81,6 +84,49 @@ class FileConverter:
     # - should be overridden with a tuple of tuples containing the option names and help texts for them. As with flags,
     # an empty tuple should be provided if the converter does not accept any options
     allowed_options: tuple[tuple[str, str], ...] | None = None
+
+    @abc.abstractmethod
+    def _convert(self):
+        """Run the conversion with the desired converter. This must be implemented for each converter class.
+        """
+        pass
+
+    # If the converter supports flags specific to the input file format, set the below to True for the subclass so help
+    # text will be properly displayed notifying the user that they can request this by providing an input format (and
+    # similar for the other similar class variables below)
+    has_in_format_flags_or_options = False
+    has_out_format_flags_or_options = False
+
+    @staticmethod
+    def get_in_format_flags(in_format: str) -> tuple[tuple[str, str], ...]:
+        """Gets flags which are applicable for a specific input file format, returned as a tuple of (flag, description).
+        This should be overridden for each converter class if it uses any format-specific input flags.
+        """
+        return ()
+
+    @staticmethod
+    def get_out_format_flags(in_format: str) -> tuple[tuple[str, str], ...]:
+        """Gets flags which are applicable for a specific output file format, returned as a tuple of (flag,
+        description). This should be overridden for each converter class if it uses any format-specific output flags.
+        """
+        return ()
+
+    @staticmethod
+    def get_in_format_options(in_format: str) -> tuple[tuple[str, str], ...]:
+        """Gets options which are applicable for a specific input file format, returned as a tuple of (option,
+        description). This should be overridden for each converter class if it uses any format-specific input options.
+        """
+        return ()
+
+    @staticmethod
+    def get_out_format_options(in_format: str) -> tuple[tuple[str, str], ...]:
+        """Gets options which are applicable for a specific output file format, returned as a tuple of (option,
+        description). This should be overridden for each converter class if it uses any format-specific output options.
+        """
+        return ()
+
+    # Base class functionality
+    # ------------------------
 
     def __init__(self,
                  filename: str,
@@ -457,12 +503,6 @@ class FileConverter:
             self.quality = self.get_quality()
 
         self._log_success()
-
-    @ abc.abstractmethod
-    def _convert(self):
-        """Run the conversion with the desired converter
-        """
-        pass
 
 
 class ScriptFileConverter(FileConverter):
