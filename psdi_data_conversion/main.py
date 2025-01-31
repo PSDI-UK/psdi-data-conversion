@@ -10,10 +10,12 @@ Entry-point file for the command-line interface for data conversion.
 import logging
 from argparse import ArgumentParser
 import os
+import shutil
 import sys
+import textwrap
 
 from psdi_data_conversion import constants as const
-from psdi_data_conversion.converter import L_REGISTERED_CONVERTERS, run_converter
+from psdi_data_conversion.converter import D_REGISTERED_CONVERTERS, L_REGISTERED_CONVERTERS, run_converter
 from psdi_data_conversion.converters.base import FileConverterAbortException, FileConverterInputException
 
 
@@ -76,6 +78,18 @@ class ConvertArgs:
         elif args.log_level:
             raise FileConverterInputException(f"Unrecognised logging level: {args.log_level}")
 
+        # Special handling for listing converters
+        if self.list:
+            # Force log mode to stdout and turn off quiet
+            self.log_mode = const.LOG_STDOUT
+            self.quiet = False
+
+            # Get the converter name from the arguments
+            self.name = " ".join(self.l_args)
+
+            # For this operation, any other arguments can be ignored
+            return
+
         # Quiet mode is equivalent to logging mode == LOGGING_NONE, so normalize them if either is set
         if self.quiet:
             self.log_mode = const.LOG_NONE
@@ -83,10 +97,6 @@ class ConvertArgs:
             self.quiet = True
 
         # Check validity of input
-
-        if self.list:
-            # If requesting to list converters, any other arguments can be ignored
-            return
 
         if len(self.l_args) == 0:
             raise FileConverterInputException("One or more names of files to convert must be provided")
@@ -132,6 +142,9 @@ class ConvertArgs:
         """If the input file format isn't provided, determine it from the first file in the list.
         """
         if self._from_format is None:
+            if self.list:
+                # from_format isn't required in list mode, so don't raise an exception
+                return None
             first_filename = self.l_args[0]
             ext = os.path.splitext(first_filename)[1]
             if len(ext) == 0:
@@ -238,7 +251,7 @@ def get_argument_parser():
                              "'--coord-gen Gen2D' (quality defaults to 'medium'), '--coord-gen Gen3D best'")
 
     # Keyword arguments for alternative functionality
-    parser.add_argument("--list", action="store_true",
+    parser.add_argument("-l", "--list", action="store_true",
                         help="If provided alone, lists all available converters. If the name of a converter is "
                              "provided, gives information on the converter and any command-line flags it accepts.")
 
@@ -284,23 +297,112 @@ def parse_args():
     return args
 
 
-def detail_converter_use(converter_name: str):
-    """TODO
+def detail_converter_use(args: ConvertArgs):
+    """Prints output providing information on a specific converter, including the flags and options it allows
     """
-    print("Converter use detailing is still TBD")
+    converter_class = D_REGISTERED_CONVERTERS[args.name]
+
+    # Get the terminal width so we can prettily print help text
+    width, _ = shutil.get_terminal_size((80, 20))
+
+    print(f"Converter: {converter_class.name}\n")
+
+    if converter_class.info:
+        print(textwrap.fill(f"{converter_class.info}", width=width) + "\n")
+    else:
+        print("Information has not been provided about this converter.\n")
+
+    if converter_class.allowed_flags is None:
+        print("Information has not been provided about general flags accepted by this converter.\n")
+    elif len(converter_class.allowed_flags) == 0:
+        print("This converter does not accept any general flags.\n")
+    else:
+        print("Allowed general flags:")
+        for flag, help in converter_class.allowed_flags:
+            print(f"  {flag}")
+            print(textwrap.fill(help, width=width, initial_indent=" "*4, subsequent_indent=" "*4))
+
+    # If input/output-format specific flags or options are available for the converter but a format isn't available,
+    # we'll want to take note of that and mention that at the end of the output
+    mention_input_format = False
+    mention_output_format = False
+
+    if args.from_format is not None:
+        in_flags = converter_class.get_in_format_flags(args.from_format)
+        from_format = args.from_format
+    else:
+        in_flags = ()
+        from_format = "N/A"
+        if converter_class.has_in_format_flags_or_options:
+            mention_input_format = True
+
+    if args.to_format is not None:
+        out_flags = converter_class.get_out_format_flags(args.to_format)
+        to_format = args.to_format
+    else:
+        out_flags = ()
+        to_format = "N/A"
+        if converter_class.has_out_format_flags_or_options:
+            mention_output_format = True
+
+    for flags, flag_type, format_name in ((in_flags, "input", from_format),
+                                          (out_flags, "output", to_format)):
+        if len(flags) == 0:
+            continue
+        print(f"Allowed {flag_type} flags for format '{format_name}':")
+        for flag, help in flags:
+            print(f"  {flag}")
+            print(textwrap.fill(help, width=width, initial_indent=" "*4, subsequent_indent=" "*4))
+
+    if converter_class.allowed_options is None:
+        print("Information has not been provided about general options accepted by this converter.")
+    elif len(converter_class.allowed_options) == 0:
+        print("This converter does not accept any general options.")
+    else:
+        print("Allowed general options:")
+        for option, help in converter_class.allowed_options:
+            print(f"  {option} <val>")
+            print(textwrap.fill(help, initial_indent=" "*4, subsequent_indent=" "*4))
+
+    try:
+        in_options = converter_class.get_in_format_options(args.from_format)
+    except FileConverterInputException:
+        in_options = ()
+    try:
+        out_options = converter_class.get_out_format_options(args.to_format)
+    except FileConverterInputException:
+        out_options = ()
+
+    for options, option_type, format_name in ((in_options, "input", from_format),
+                                              (out_options, "output", to_format)):
+        if len(options) == 0:
+            continue
+        print(f"Allowed {option_type} options for format '{format_name}':")
+        for option, help in options:
+            print(f"  {option} <val>")
+            print(textwrap.fill(help, width=width, initial_indent=" "*4, subsequent_indent=" "*4))
+
+    # Now at the end, bring up input/output-format-specific flags and options
+    if mention_input_format and mention_output_format:
+        print("\nTo see details on input/output flags and options allowed for specific formats, call:\n"
+              f"psdi-data-convert -l {args.name} -f <input_format> -t <output_format>")
+    elif mention_input_format:
+        print("\nTo see details on input flags and options allowed for a specific format, call:\n"
+              f"psdi-data-convert -l {args.name} -f <input_format> [-t <output_format>]")
+    elif mention_output_format:
+        print("\nTo see details on output flags and options allowed for a specific format, call:\n"
+              f"psdi-data-convert -l {args.name} -t <output_format> [-f <input_format>]")
 
 
-def detail_converters(l_args: list[str]):
+def detail_converters(args: ConvertArgs):
     """Prints details on available converters for the user.
     """
-    converter_name = " ".join(l_args)
-    if converter_name in L_REGISTERED_CONVERTERS:
-        return detail_converter_use(converter_name)
-    elif converter_name != "":
-        print(f"ERROR: Converter {converter_name} not recognized.", file=sys.stderr)
-    print("Available converters are: \n" + "\n".join(L_REGISTERED_CONVERTERS) + "\n" +
-          "For more details on a converter, call: \n" +
-          "psdi-data-convert --list <Converter name>")
+    if args.name in L_REGISTERED_CONVERTERS:
+        return detail_converter_use(args)
+    elif args.name != "":
+        print(f"ERROR: Converter '{args.name}' not recognized.", file=sys.stderr)
+    print("Available converters are: \n- " + "\n- ".join(L_REGISTERED_CONVERTERS) + "\n\n" +
+          "For more details on a converter, call: psdi-data-convert -l <Converter name>")
 
 
 def run_from_args(args: ConvertArgs):
@@ -314,7 +416,7 @@ def run_from_args(args: ConvertArgs):
 
     # Check if we've been asked to list options
     if args.list:
-        return detail_converters(args.l_args)
+        return detail_converters(args)
 
     data = {'success': 'unknown',
             'from_flags': args.from_flags,
