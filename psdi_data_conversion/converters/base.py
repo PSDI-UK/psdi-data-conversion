@@ -73,11 +73,13 @@ class FileConverter:
 
     # List of flags allowed for the converter (flags are arguments that are set by being present, and don't require a
     # value specified - e.g. "-v" to enable verbose mode) - should be overridden with a tuple of tuples containing the
-    # flag names and help texts for them
+    # flag names and help texts for them. If the converter does not accept any flags, an empty tuple should be supplied
+    # (e.g `allowed_flags = (,)`), as `None` will be interpreted as this value not having been overridden
     allowed_flags: tuple[tuple[str, str], ...] | None = None
 
     # List of options allowed for the converter (options are arguments that take one or more values, e.g. "-o out.txt")
-    # - should be overridden with a tuple of tuples containing the option names and help texts for them
+    # - should be overridden with a tuple of tuples containing the option names and help texts for them. As with flags,
+    # an empty tuple should be provided if the converter does not accept any options
     allowed_options: tuple[tuple[str, str], ...] | None = None
 
     def __init__(self,
