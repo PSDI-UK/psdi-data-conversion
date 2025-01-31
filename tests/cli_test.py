@@ -160,8 +160,8 @@ def test_detail_converter(capsys):
         if converter_class.info is None:
             assert "provided about this converter" in captured.out
         else:
-            # Info text will be wrapped, so just test the first 50 chars appear
-            assert converter_class.info[0:50] in captured.out
+            # Info text will be wrapped so replace all newlines with spaces in our comparison here
+            assert converter_class.info.replace("\n", " ") in captured.out.replace("\n", " ")
 
     # Test we do get an error for a bad converter name
     run_with_arg_string("--list bad_converter")

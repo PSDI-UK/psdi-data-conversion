@@ -10,6 +10,7 @@ Entry-point file for the command-line interface for data conversion.
 import logging
 from argparse import ArgumentParser
 import os
+import shutil
 import sys
 import textwrap
 
@@ -298,10 +299,13 @@ def detail_converter_use(args: str):
     """
     converter_class = D_REGISTERED_CONVERTERS[args.name]
 
+    # Get the terminal width so we can prettily print help text
+    width, _ = shutil.get_terminal_size((80, 20))
+
     print(f"Converter: {converter_class.name}\n")
 
     if converter_class.info:
-        print(textwrap.fill(f"{converter_class.info}\n"))
+        print(textwrap.fill(f"{converter_class.info}", width=width) + "\n")
     else:
         print("Information has not been provided about this converter.\n")
 
@@ -313,7 +317,7 @@ def detail_converter_use(args: str):
         print("Allowed flags:")
         for flag, help in converter_class.allowed_flags:
             print(f"  {flag}")
-            print(textwrap.fill(help, initial_indent=" "*4, subsequent_indent=" "*4))
+            print(textwrap.fill(help, width=width, initial_indent=" "*4, subsequent_indent=" "*4))
 
     if converter_class.allowed_options is None:
         print("Information has not been provided about options accepted by this converter.")

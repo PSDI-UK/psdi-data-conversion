@@ -18,6 +18,7 @@ class OBFileConverter(FileConverter):
     """
 
     name = CONVERTER_OB
+    info = "See documentation for Open Babel at https://openbabel.org/docs/Introduction/intro.html"
 
     def _convert(self):
 
