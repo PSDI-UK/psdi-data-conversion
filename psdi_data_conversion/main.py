@@ -11,9 +11,10 @@ import logging
 from argparse import ArgumentParser
 import os
 import sys
+import textwrap
 
 from psdi_data_conversion import constants as const
-from psdi_data_conversion.converter import L_REGISTERED_CONVERTERS, run_converter
+from psdi_data_conversion.converter import D_REGISTERED_CONVERTERS, L_REGISTERED_CONVERTERS, run_converter
 from psdi_data_conversion.converters.base import FileConverterAbortException, FileConverterInputException
 
 
@@ -285,9 +286,36 @@ def parse_args():
 
 
 def detail_converter_use(converter_name: str):
-    """TODO
+    """Prints output providing information on a specific converter, including the flags and options it allows
     """
-    print("Converter use detailing is still TBD")
+    converter_class = D_REGISTERED_CONVERTERS[converter_name]
+
+    print(f"Converter: {converter_class.name}\n")
+
+    if converter_class.info:
+        print(f"{converter_class.info}\n")
+    else:
+        print("Information has not been provided about this converter.\n")
+
+    if converter_class.allowed_flags is None:
+        print("Information has not been provided about flags accepted by this converter.\n")
+    elif len(converter_class.allowed_flags) == 0:
+        print("This converter does not accept any flags.\n")
+    else:
+        print("Allowed flags:")
+        for flag, help in converter_class.allowed_flags:
+            print(f"  {flag}")
+            print(textwrap.fill(help, initial_indent=" "*4, subsequent_indent=" "*4))
+
+    if converter_class.allowed_options is None:
+        print("Information has not been provided about options accepted by this converter.")
+    elif len(converter_class.allowed_options) == 0:
+        print("This converter does not accept any options.")
+    else:
+        print("Allowed options:")
+        for option, help in converter_class.allowed_options:
+            print(f"  {option} <val>")
+            print(textwrap.fill(help, initial_indent=" "*4, subsequent_indent=" "*4))
 
 
 def detail_converters(l_args: list[str]):
