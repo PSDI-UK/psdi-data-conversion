@@ -5,23 +5,108 @@ Created 2025-02-03 by Bryan Gillis.
 Python module provide utilities for accessing the converter database
 """
 
+from __future__ import annotations
+
 import json
 import os
+from typing import Any
 
 from psdi_data_conversion import constants as const
 from psdi_data_conversion.converter import D_REGISTERED_CONVERTERS
+from psdi_data_conversion.converters.base import FileConverter, FileConverterException
+
+
+class FileConverterDatabaseException(FileConverterException):
+    """Class for any exceptions which arise from issues with the database
+    """
+    pass
+
+
+class ConverterInfo:
+    """Class providing information on a converter stored in the database
+    """
+
+    def __init__(self,
+                 converter_class: type[FileConverter],
+                 parent: DataConversionDatabase,
+                 d_data: dict[str, Any]):
+        """Set up the class - this will be initialised within a `DataConversionDatabase`, which we set as the parent
+
+        Parameters
+        ----------
+        converter_class : type[FileConverter]
+            The class for running conversions with this converter
+        parent : DataConversionDatabase
+            The database which this belongs to
+        d_data : dict[str, Any]
+            The loaded database dict
+        """
+
+        self.parent = parent
+
+        # Get info about the converter from the class
+        self.name = converter_class.name
+
+        # Placeholders for attributes which will be determined as needed
+        self._id: int | None = None
+        self._description: str | None = None
+        self._url: str | None = None
+
+        key_prefix = converter_class.database_key_prefix
+
+        self._arg_info = {}
+
+        # If the converter class has no defined key prefix, don't add any extra info for it
+        if key_prefix is None:
+            return
+        for key_base in (const.DB_FROM_FLAGS_IN_KEY_BASE,
+                         const.DB_FROM_FLAGS_OUT_KEY_BASE,
+                         const.DB_FROM_ARGFLAGS_IN_KEY_BASE,
+                         const.DB_FROM_ARGFLAGS_OUT_KEY_BASE,
+                         const.DB_TO_FLAGS_IN_KEY_BASE,
+                         const.DB_TO_FLAGS_OUT_KEY_BASE,
+                         const.DB_TO_ARGFLAGS_IN_KEY_BASE,
+                         const.DB_TO_ARGFLAGS_OUT_KEY_BASE):
+            self._arg_info[key_base] = d_data.get(key_prefix + key_base)
+
+    @property
+    def id(self) -> int:
+        """Get the converter's ID in the database, determining it first if needed.
+        """
+        if self._id is None:
+            self._get_converter_general()
+        return self._id
+
+    def _get_converter_general(self):
+        """Finds the converter's general info in the database and stores it in this class's member variables
+        """
+        # Search through the list of converters to find the one which has the name of this one
+        l_matching_converters = [x for x in self.parent.converters if x['name'] == self.name]
+
+        # Check we find exactly one
+        if len(l_matching_converters) == 0:
+            raise FileConverterDatabaseException(f"Converter {self.name} not found in database's list of converters")
+        elif len(l_matching_converters) > 1:
+            raise FileConverterDatabaseException(f"Converter {self.name} appears multiple times in database. Found "
+                                                 "entries are: \n" + "\n".join(str(l_matching_converters)))
+
+        d_converter_info = l_matching_converters[0]
+
+        self._id = d_converter_info['id']
+        self._description = d_converter_info['description']
+        self._url = d_converter_info['url']
 
 
 class DataConversionDatabase:
     """Class providing interface for information contained in the PSDI Data Conversion Database
     """
 
-    def __init__(self, d_data: dict):
+    def __init__(self, d_data: dict[str, Any]):
         """Initialise the DataConversionDatabase object
 
         Parameters
         ----------
-        d_data : dict
+        d_data : dict[str, Any]
             The dict of the database, as loaded in from the JSON file
         """
 
@@ -29,34 +114,15 @@ class DataConversionDatabase:
         self._d_data = d_data
 
         # Store top-level items not tied to a specific converter
-        self.formats: dict = d_data[const.DB_FORMATS_KEY]
-        self.converters: dict = d_data[const.DB_CONVERTERS_KEY]
-        self.converts_to: dict = d_data[const.DB_CONVERTS_TO_KEY]
+        self.formats: list[dict[str, int | str | None]] = d_data[const.DB_FORMATS_KEY]
+        self.converters: list[dict[str, int | str | None]] = d_data[const.DB_CONVERTERS_KEY]
+        self.converts_to: list[dict[str, int | str | None]] = d_data[const.DB_CONVERTS_TO_KEY]
 
-        # Dict to store info specific to converters
+        # Store information on each converter in a dict for it
         self.converter_info = {}
 
         for converter_class in D_REGISTERED_CONVERTERS.values():
-
-            key_prefix = converter_class.database_key_prefix
-
-            # If the converter class has no defined key prefix, don't add any info for it
-            if key_prefix is None:
-                continue
-
-            new_converter_info = {}
-
-            for key_base in (const.DB_FROM_FLAGS_IN_KEY_BASE,
-                             const.DB_FROM_FLAGS_OUT_KEY_BASE,
-                             const.DB_FROM_ARGFLAGS_IN_KEY_BASE,
-                             const.DB_FROM_ARGFLAGS_OUT_KEY_BASE,
-                             const.DB_TO_FLAGS_IN_KEY_BASE,
-                             const.DB_TO_FLAGS_OUT_KEY_BASE,
-                             const.DB_TO_ARGFLAGS_IN_KEY_BASE,
-                             const.DB_TO_ARGFLAGS_OUT_KEY_BASE):
-                new_converter_info[key_base] = d_data.get(key_prefix + key_base)
-
-            self.converter_info[converter_class.name] = new_converter_info
+            self.converter_info[converter_class.name] = ConverterInfo(converter_class, self, d_data)
 
 
 # The database will be loaded on demand when `get_database()` is called
@@ -98,3 +164,6 @@ def get_database() -> DataConversionDatabase:
         # Create the database object and store it globally
         _database = load_database()
     return _database
+
+
+data = get_database()
