@@ -97,7 +97,7 @@ class ConverterInfo:
         """Finds the converter's general info in the database and stores it in this class's member variables
         """
         # Search through the list of converters to find the one which has the name of this one
-        l_matching_converters = [x for x in self.parent.converters if x['name'] == self.name]
+        l_matching_converters = [x for x in self.parent.converters if x[const.DB_NAME_KEY] == self.name]
 
         # Check we find exactly one
         if len(l_matching_converters) == 0:
@@ -108,9 +108,9 @@ class ConverterInfo:
 
         d_converter_info = l_matching_converters[0]
 
-        self._id = d_converter_info.get("id", -1)
-        self._description = d_converter_info.get("description", "")
-        self._url = d_converter_info.get("url", "")
+        self._id = d_converter_info.get(const.DB_ID_KEY, -1)
+        self._description = d_converter_info.get(const.DB_DESC_KEY, "")
+        self._url = d_converter_info.get(const.DB_URL_KEY, "")
 
 
 class DataConversionDatabase:
