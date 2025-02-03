@@ -13,46 +13,49 @@ from typing import Any
 
 from psdi_data_conversion import constants as const
 from psdi_data_conversion.converter import D_REGISTERED_CONVERTERS
-from psdi_data_conversion.converters.base import FileConverter, FileConverterException
+from psdi_data_conversion.converters.base import FileConverterException
 
 
 class FileConverterDatabaseException(FileConverterException):
-    """Class for any exceptions which arise from issues with the database
+    """Class for any exceptions which arise from issues with the database classes and methods
     """
     pass
 
 
 class ConverterInfo:
-    """Class providing information on a converter stored in the database
+    """Class providing information on a converter stored in the PSDI Data Conversion database
     """
 
     def __init__(self,
-                 converter_class: type[FileConverter],
+                 name: str,
                  parent: DataConversionDatabase,
+                 d_single_converter_info: dict[str, int | str],
                  d_data: dict[str, Any]):
         """Set up the class - this will be initialised within a `DataConversionDatabase`, which we set as the parent
 
         Parameters
         ----------
-        converter_class : type[FileConverter]
-            The class for running conversions with this converter
+        name : str
+            The name of the converter
         parent : DataConversionDatabase
             The database which this belongs to
         d_data : dict[str, Any]
             The loaded database dict
         """
 
+        self.name = name
         self.parent = parent
 
-        # Get info about the converter from the class
-        self.name = converter_class.name
+        # Get info about the converter from the database
+        self.id = d_single_converter_info.get(const.DB_ID_KEY, -1)
+        self.description = d_single_converter_info.get(const.DB_DESC_KEY, "")
+        self.url = d_single_converter_info.get(const.DB_URL_KEY, "")
 
-        # Placeholders for attributes which will be determined as needed
-        self._id: int | None = None
-        self._description: str | None = None
-        self._url: str | None = None
-
-        key_prefix = converter_class.database_key_prefix
+        # Get necessary info about the converter from the class
+        try:
+            key_prefix = D_REGISTERED_CONVERTERS[name].database_key_prefix
+        except KeyError:
+            key_prefix = None
 
         self._arg_info = {}
 
@@ -69,52 +72,31 @@ class ConverterInfo:
                          const.DB_TO_ARGFLAGS_OUT_KEY_BASE):
             self._arg_info[key_base] = d_data.get(key_prefix + key_base)
 
-    @property
-    def id(self) -> int:
-        """Get the converter's ID in the database, determining it first if needed.
-        """
-        if self._id is None:
-            self._get_converter_general()
-        return self._id
 
-    @property
-    def description(self) -> int:
-        """Get the converter's ID in the database, determining it first if needed.
-        """
-        if self._description is None:
-            self._get_converter_general()
-        return self._description
+class FormatInfo:
+    """Class providing information on a file format from the PSDI Data Conversion database
+    """
 
-    @property
-    def url(self) -> int:
-        """Get the converter's ID in the database, determining it first if needed.
-        """
-        if self._url is None:
-            self._get_converter_general()
-        return self._url
+    def __init__(self,
+                 name: str,
+                 parent: DataConversionDatabase,
+                 d_single_format_info: dict[str, bool | int | str | None]):
 
-    def _get_converter_general(self):
-        """Finds the converter's general info in the database and stores it in this class's member variables
-        """
-        # Search through the list of converters to find the one which has the name of this one
-        l_matching_converters = [x for x in self.parent.converters if x[const.DB_NAME_KEY] == self.name]
+        # Load attributes from input
+        self.name = name
+        self.parent = parent
 
-        # Check we find exactly one
-        if len(l_matching_converters) == 0:
-            raise FileConverterDatabaseException(f"Converter {self.name} not found in database's list of converters")
-        elif len(l_matching_converters) > 1:
-            raise FileConverterDatabaseException(f"Converter {self.name} appears multiple times in database. Found "
-                                                 "entries are: \n" + "\n".join(str(l_matching_converters)))
-
-        d_converter_info = l_matching_converters[0]
-
-        self._id = d_converter_info.get(const.DB_ID_KEY, -1)
-        self._description = d_converter_info.get(const.DB_DESC_KEY, "")
-        self._url = d_converter_info.get(const.DB_URL_KEY, "")
+        # Load attributes from the database
+        self.id: int = d_single_format_info.get(const.DB_ID_KEY, -1)
+        self.note: str = d_single_format_info.get(const.DB_FORMAT_NOTE_KEY, "")
+        self.composition = bool(d_single_format_info.get(const.DB_FORMAT_COMP_KEY, False))
+        self.connections = bool(d_single_format_info.get(const.DB_FORMAT_CONN_KEY, False))
+        self.two_dim = bool(d_single_format_info.get(const.DB_FORMAT_2D_KEY, False))
+        self.three_dim = bool(d_single_format_info.get(const.DB_FORMAT_3D_KEY, False))
 
 
 class DataConversionDatabase:
-    """Class providing interface for information contained in the PSDI Data Conversion Database
+    """Class providing interface for information contained in the PSDI Data Conversion database
     """
 
     def __init__(self, d_data: dict[str, Any]):
@@ -130,15 +112,23 @@ class DataConversionDatabase:
         self._d_data = d_data
 
         # Store top-level items not tied to a specific converter
-        self.formats: list[dict[str, int | str | None]] = d_data[const.DB_FORMATS_KEY]
-        self.converters: list[dict[str, int | str | None]] = d_data[const.DB_CONVERTERS_KEY]
-        self.converts_to: list[dict[str, int | str | None]] = d_data[const.DB_CONVERTS_TO_KEY]
+        self.formats: list[dict[str, bool | int | str | None]] = d_data[const.DB_FORMATS_KEY]
+        self.converters: list[dict[str, bool | int | str | None]] = d_data[const.DB_CONVERTERS_KEY]
+        self.converts_to: list[dict[str, bool | int | str | None]] = d_data[const.DB_CONVERTS_TO_KEY]
 
         # Store information on each converter in a dict for it
-        self.converter_info: dict[str, ConverterInfo] = {}
+        self.d_converter_info: dict[str, ConverterInfo] = {}
 
-        for converter_class in D_REGISTERED_CONVERTERS.values():
-            self.converter_info[converter_class.name] = ConverterInfo(converter_class, self, d_data)
+        for d_single_converter_info in self.converters:
+            name: str = d_single_converter_info[const.DB_NAME_KEY]
+            self.d_converter_info[name] = ConverterInfo(name, self, d_single_converter_info, d_data)
+
+        # Store information on each format in a dict for it
+        self.d_format_info: dict[str, ConverterInfo] = {}
+
+        for d_single_format_info in self.formats:
+            name: str = d_single_format_info[const.DB_FORMAT_EXT_KEY]
+            self.d_format_info[name] = FormatInfo(name, self, d_single_format_info)
 
 
 # The database will be loaded on demand when `get_database()` is called
@@ -180,6 +170,23 @@ def get_database() -> DataConversionDatabase:
         # Create the database object and store it globally
         _database = load_database()
     return _database
+
+
+def get_converter_info(name: str) -> ConverterInfo:
+    """Gets the information on a given converter stored in the database
+
+    Parameters
+    ----------
+    name : str
+        The name of the converter
+
+    Returns
+    -------
+    ConverterInfo
+        _description_
+    """
+
+    return get_database().d_converter_info[name]
 
 
 data = get_database()

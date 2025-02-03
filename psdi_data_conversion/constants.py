@@ -93,6 +93,14 @@ DB_NAME_KEY = "name"
 DB_DESC_KEY = "description"
 DB_URL_KEY = "url"
 
+# Keys for format general info in the database
+DB_FORMAT_EXT_KEY = "extension"
+DB_FORMAT_NOTE_KEY = "note"
+DB_FORMAT_COMP_KEY = "composition"
+DB_FORMAT_CONN_KEY = "connections"
+DB_FORMAT_2D_KEY = "two_dim"
+DB_FORMAT_3D_KEY = "three_dim"
+
 # Key bases for converter-specific items in the database
 DB_FROM_FLAGS_IN_KEY_BASE = "flags_in"
 DB_FROM_FLAGS_OUT_KEY_BASE = "flags_out"

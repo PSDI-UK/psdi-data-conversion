@@ -153,7 +153,7 @@ def test_detail_converter(capsys):
 
     # Test all converters are recognised, don't raise an error, and we get info on them
     for converter_name, converter_class in D_REGISTERED_CONVERTERS.items():
-        converter_info = get_database().converter_info[converter_name]
+        converter_info = get_database().d_converter_info[converter_name]
         run_with_arg_string(f"--list {converter_name}")
         captured = capsys.readouterr()
         assert "not recognized" not in captured.err
