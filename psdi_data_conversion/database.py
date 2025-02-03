@@ -141,7 +141,7 @@ class DataConversionDatabase:
             for d_single_format_info in self.formats:
                 name: str = d_single_format_info[const.DB_FORMAT_EXT_KEY]
                 self._d_format_info[name] = FormatInfo(name, self, d_single_format_info)
-        return self._d_converter_info
+        return self._d_format_info
 
 
 # The database will be loaded on demand when `get_database()` is called
@@ -196,10 +196,25 @@ def get_converter_info(name: str) -> ConverterInfo:
     Returns
     -------
     ConverterInfo
-        _description_
     """
 
     return get_database().d_converter_info[name]
+
+
+def get_format_info(name: str) -> FormatInfo:
+    """Gets the information on a given file format stored in the database
+
+    Parameters
+    ----------
+    name : str
+        The name (extension) of the form
+
+    Returns
+    -------
+    FormatInfo
+    """
+
+    return get_database().d_format_info[name]
 
 
 data = get_database()
