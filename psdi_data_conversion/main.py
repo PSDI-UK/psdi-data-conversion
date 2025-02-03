@@ -17,7 +17,7 @@ import textwrap
 from psdi_data_conversion import constants as const
 from psdi_data_conversion.converter import D_REGISTERED_CONVERTERS, L_REGISTERED_CONVERTERS, run_converter
 from psdi_data_conversion.converters.base import FileConverterAbortException, FileConverterInputException
-from psdi_data_conversion.database import get_database
+from psdi_data_conversion.database import get_converter_info
 
 
 class ConvertArgs:
@@ -301,7 +301,7 @@ def parse_args():
 def detail_converter_use(args: ConvertArgs):
     """Prints output providing information on a specific converter, including the flags and options it allows
     """
-    converter_info = get_database().converter_info[args.name]
+    converter_info = get_converter_info(args.name)
     converter_class = D_REGISTERED_CONVERTERS[args.name]
 
     # Get the terminal width so we can prettily print help text

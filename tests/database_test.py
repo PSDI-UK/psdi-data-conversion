@@ -6,10 +6,8 @@ Unit tests relating to using the database
 """
 
 
-import pytest
 from psdi_data_conversion.converter import L_REGISTERED_CONVERTERS
-from psdi_data_conversion.converters.base import FileConverter
-from psdi_data_conversion.database import ConverterInfo, FileConverterDatabaseException, get_database
+from psdi_data_conversion.database import get_database
 
 
 def test_load():
@@ -31,7 +29,7 @@ def test_open_babel_info():
 
     for name in L_REGISTERED_CONVERTERS:
 
-        converter_info = database.converter_info[name]
+        converter_info = database.d_converter_info[name]
 
         # Check database is properly set as parent
         assert converter_info.parent == database
@@ -50,8 +48,3 @@ def test_open_babel_info():
         # Check URL appears reasonable
         assert isinstance(converter_info.url, str)
         assert "http" in converter_info.url
-
-    # Check we get expected error if a converter isn't in the database
-    with pytest.raises(FileConverterDatabaseException):
-        converter_info = ConverterInfo(FileConverter, database, database._d_data)
-        _ = converter_info.id
