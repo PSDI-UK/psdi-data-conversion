@@ -119,7 +119,7 @@ class DataConversionDatabase:
         self.converts_to: list[dict[str, int | str | None]] = d_data[const.DB_CONVERTS_TO_KEY]
 
         # Store information on each converter in a dict for it
-        self.converter_info = {}
+        self.converter_info: dict[str, ConverterInfo] = {}
 
         for converter_class in D_REGISTERED_CONVERTERS.values():
             self.converter_info[converter_class.name] = ConverterInfo(converter_class, self, d_data)
