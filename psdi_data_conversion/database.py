@@ -116,19 +116,32 @@ class DataConversionDatabase:
         self.converters: list[dict[str, bool | int | str | None]] = d_data[const.DB_CONVERTERS_KEY]
         self.converts_to: list[dict[str, bool | int | str | None]] = d_data[const.DB_CONVERTS_TO_KEY]
 
-        # Store information on each converter in a dict for it
-        self.d_converter_info: dict[str, ConverterInfo] = {}
+        # Placeholders for properties that are generated when needed
+        self._d_converter_info: dict[str, ConverterInfo] | None = None
+        self._d_format_info: dict[str, FormatInfo] | None = None
 
-        for d_single_converter_info in self.converters:
-            name: str = d_single_converter_info[const.DB_NAME_KEY]
-            self.d_converter_info[name] = ConverterInfo(name, self, d_single_converter_info, d_data)
+    @property
+    def d_converter_info(self):
+        """Generate the converter info dict when needed
+        """
+        if self._d_converter_info is None:
+            self._d_converter_info: dict[str, ConverterInfo] = {}
+            for d_single_converter_info in self.converters:
+                name: str = d_single_converter_info[const.DB_NAME_KEY]
+                self._d_converter_info[name] = ConverterInfo(name, self, d_single_converter_info, self._d_data)
+        return self._d_converter_info
 
-        # Store information on each format in a dict for it
-        self.d_format_info: dict[str, ConverterInfo] = {}
+    @property
+    def d_format_info(self):
+        """Generate the format info dict when needed
+        """
+        if self._d_format_info is None:
+            self._d_format_info: dict[str, FormatInfo] = {}
 
-        for d_single_format_info in self.formats:
-            name: str = d_single_format_info[const.DB_FORMAT_EXT_KEY]
-            self.d_format_info[name] = FormatInfo(name, self, d_single_format_info)
+            for d_single_format_info in self.formats:
+                name: str = d_single_format_info[const.DB_FORMAT_EXT_KEY]
+                self._d_format_info[name] = FormatInfo(name, self, d_single_format_info)
+        return self._d_converter_info
 
 
 # The database will be loaded on demand when `get_database()` is called
