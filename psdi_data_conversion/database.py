@@ -108,9 +108,9 @@ class ConverterInfo:
 
         d_converter_info = l_matching_converters[0]
 
-        self._id = d_converter_info['id']
-        self._description = d_converter_info['description']
-        self._url = d_converter_info['url']
+        self._id = d_converter_info.get("id", -1)
+        self._description = d_converter_info.get("description", "")
+        self._url = d_converter_info.get("url", "")
 
 
 class DataConversionDatabase:
