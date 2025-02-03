@@ -85,6 +85,9 @@ class FileConverter:
     # an empty tuple should be provided if the converter does not accept any options
     allowed_options: tuple[tuple[str, str], ...] | None = None
 
+    # The prefix used in the database for keys related to this converter
+    database_key_prefix: str | None = None
+
     @abc.abstractmethod
     def _convert(self):
         """Run the conversion with the desired converter. This must be implemented for each converter class.

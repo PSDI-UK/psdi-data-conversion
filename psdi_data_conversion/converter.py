@@ -53,13 +53,13 @@ try:
     l_converter_names_and_classes = [x for x in l_converter_names_and_classes if x is not None]
 
     # Make constant dict and list of registered converters
-    D_REGISTERED_CONVERTERS = dict(l_converter_names_and_classes)
-    L_REGISTERED_CONVERTERS = [x for x in D_REGISTERED_CONVERTERS.keys()]
+    D_REGISTERED_CONVERTERS: dict[str, type[base.FileConverter]] = dict(l_converter_names_and_classes)
+    L_REGISTERED_CONVERTERS: list[str] = [name for name in D_REGISTERED_CONVERTERS.keys()]
 
 except Exception:
     print(f"ERROR: Failed to register converters. Exception was: \n{traceback.format_exc()}", file=sys.stderr)
-    D_REGISTERED_CONVERTERS = {}
-    L_REGISTERED_CONVERTERS = []
+    D_REGISTERED_CONVERTERS: dict[str, type[base.FileConverter]] = {}
+    L_REGISTERED_CONVERTERS: list[str] = []
 
 
 def get_converter(*args, name=const.CONVERTER_DEFAULT, **converter_kwargs) -> base.FileConverter:
