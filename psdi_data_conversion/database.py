@@ -8,12 +8,13 @@ Python module provide utilities for accessing the converter database
 import json
 import os
 
-import psdi_data_conversion
 from psdi_data_conversion import constants as const
 
 
-class DataConversionDatabase(dict):
-    pass
+class DataConversionDatabase:
+    def __init__(self, d_data: dict | None = None):
+        if d_data is None:
+            d_data = {}
 
 
 # The database will be loaded on demand when `get_database()` is called
@@ -31,8 +32,12 @@ def load_database() -> DataConversionDatabase:
     """
 
     # Find and load the database JSON file
-    qualified_data_base_filename = os.path.join(psdi_data_conversion.__path__, const.DATABASE_FILENAME)
-    d_data = json.load(open(qualified_data_base_filename, "r"))
+
+    # For an interactive shell, __file__ won't be defined for this module, so use the constants module instead
+    reference_file = os.path.realpath(const.__file__)
+
+    qualified_database_filename = os.path.join(os.path.dirname(reference_file), const.DATABASE_FILENAME)
+    d_data: dict = json.load(open(qualified_database_filename, "r"))
 
     return DataConversionDatabase(d_data)
 
@@ -46,8 +51,8 @@ def get_database() -> DataConversionDatabase:
     DataConversionDatabase
         The global database object
     """
+    global _database
     if _database is None:
         # Create the database object and store it globally
-        global _database
         _database = load_database()
     return _database
