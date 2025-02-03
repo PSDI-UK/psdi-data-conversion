@@ -77,6 +77,22 @@ class ConverterInfo:
             self._get_converter_general()
         return self._id
 
+    @property
+    def description(self) -> int:
+        """Get the converter's ID in the database, determining it first if needed.
+        """
+        if self._description is None:
+            self._get_converter_general()
+        return self._description
+
+    @property
+    def url(self) -> int:
+        """Get the converter's ID in the database, determining it first if needed.
+        """
+        if self._url is None:
+            self._get_converter_general()
+        return self._url
+
     def _get_converter_general(self):
         """Finds the converter's general info in the database and stores it in this class's member variables
         """
