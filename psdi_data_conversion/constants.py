@@ -82,10 +82,16 @@ CONVERTER_DEFAULT = 'Open Babel'
 # Key for the label given to the file uploaded in the web interface
 FILE_TO_UPLOAD_KEY = 'fileToUpload'
 
-# Keys for top-level items in the database
+# Keys for top-level and general items in the database
 DB_FORMATS_KEY = "formats"
 DB_CONVERTERS_KEY = "converters"
 DB_CONVERTS_TO_KEY = "converts_to"
+DB_ID_KEY = "id"
+DB_NAME_KEY = "name"
+
+# Keys for converter general info in the database
+DB_DESC_KEY = "description"
+DB_URL_KEY = "url"
 
 # Key bases for converter-specific items in the database
 DB_FROM_FLAGS_IN_KEY_BASE = "flags_in"
