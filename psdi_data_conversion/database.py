@@ -9,12 +9,54 @@ import json
 import os
 
 from psdi_data_conversion import constants as const
+from psdi_data_conversion.converter import D_REGISTERED_CONVERTERS
 
 
 class DataConversionDatabase:
-    def __init__(self, d_data: dict | None = None):
-        if d_data is None:
-            d_data = {}
+    """Class providing interface for information contained in the PSDI Data Conversion Database
+    """
+
+    def __init__(self, d_data: dict):
+        """Initialise the DataConversionDatabase object
+
+        Parameters
+        ----------
+        d_data : dict
+            The dict of the database, as loaded in from the JSON file
+        """
+
+        # Store the database dict internally for debugging purposes
+        self._d_data = d_data
+
+        # Store top-level items not tied to a specific converter
+        self.formats: dict = d_data[const.DB_FORMATS_KEY]
+        self.converters: dict = d_data[const.DB_CONVERTERS_KEY]
+        self.converts_to: dict = d_data[const.DB_CONVERTS_TO_KEY]
+
+        # Dict to store info specific to converters
+        self.converter_info = {}
+
+        for converter_class in D_REGISTERED_CONVERTERS.values():
+
+            key_prefix = converter_class.database_key_prefix
+
+            # If the converter class has no defined key prefix, don't add any info for it
+            if key_prefix is None:
+                continue
+
+            new_converter_info = {}
+
+            for key_base in (const.DB_FROM_FLAGS_IN_KEY_BASE,
+                             const.DB_FROM_FLAGS_OUT_KEY_BASE,
+                             const.DB_FROM_ARGFLAGS_IN_KEY_BASE,
+                             const.DB_FROM_ARGFLAGS_OUT_KEY_BASE,
+                             const.DB_TO_FLAGS_IN_KEY_BASE,
+                             const.DB_TO_FLAGS_OUT_KEY_BASE,
+                             const.DB_TO_ARGFLAGS_IN_KEY_BASE,
+                             const.DB_TO_ARGFLAGS_OUT_KEY_BASE):
+                new_converter_info[key_base] = d_data.get(key_prefix + key_base)
+
+            self.converter_info[converter_class.name] = new_converter_info
 
 
 # The database will be loaded on demand when `get_database()` is called

@@ -79,8 +79,23 @@ CONVERTER_DEFAULT = 'Open Babel'
 # Keys
 # ----
 
-# Keys used commonly by dicts
+# Key for the label given to the file uploaded in the web interface
 FILE_TO_UPLOAD_KEY = 'fileToUpload'
+
+# Keys for top-level items in the database
+DB_FORMATS_KEY = "formats"
+DB_CONVERTERS_KEY = "converters"
+DB_CONVERTS_TO_KEY = "converts_to"
+
+# Key bases for converter-specific items in the database
+DB_FROM_FLAGS_IN_KEY_BASE = "flags_in"
+DB_FROM_FLAGS_OUT_KEY_BASE = "flags_out"
+DB_FROM_ARGFLAGS_IN_KEY_BASE = "argflags_in"
+DB_FROM_ARGFLAGS_OUT_KEY_BASE = "argflags_out"
+DB_TO_FLAGS_IN_KEY_BASE = "format_to_flags_in"
+DB_TO_FLAGS_OUT_KEY_BASE = "format_to_flags_out"
+DB_TO_ARGFLAGS_IN_KEY_BASE = "format_to_argflags_in"
+DB_TO_ARGFLAGS_OUT_KEY_BASE = "format_to_argflags_out"
 
 # Errors
 # ------
