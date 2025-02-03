@@ -7,7 +7,7 @@ Unit tests relating to using the database
 
 
 from psdi_data_conversion.converter import L_REGISTERED_CONVERTERS
-from psdi_data_conversion.database import get_database
+from psdi_data_conversion.database import get_converter_info, get_database, get_format_info
 
 
 def test_load():
@@ -21,7 +21,7 @@ def test_load():
     assert db2 is db1
 
 
-def test_open_babel_info():
+def test_converter_info():
     """Test that we can get the expected information on each converter
     """
 
@@ -29,7 +29,7 @@ def test_open_babel_info():
 
     for name in L_REGISTERED_CONVERTERS:
 
-        converter_info = database.d_converter_info[name]
+        converter_info = get_converter_info(name)
 
         # Check database is properly set as parent
         assert converter_info.parent == database
@@ -48,3 +48,42 @@ def test_open_babel_info():
         # Check URL appears reasonable
         assert isinstance(converter_info.url, str)
         assert "http" in converter_info.url
+
+
+def test_format_info():
+    """Test that we can get the expected information on a few test formats
+    """
+
+    database = get_database()
+
+    for name in ("pdb", "cif", "mmcif", "inchi", "molreport"):
+
+        format_info = get_format_info(name)
+
+        # Check database is properly set as parent
+        assert format_info.parent == database
+
+        # Check name matches
+        assert format_info.name == name
+
+        # Check properties are as expected
+
+        if name in ("mmcif", "inchi", "molreport"):
+            assert format_info.composition, name
+        else:
+            assert not format_info.composition, name
+
+        if name in ("inchi", "molreport"):
+            assert format_info.connections, name
+        else:
+            assert not format_info.connections, name
+
+        if name in ("mmcif", "molreport"):
+            assert format_info.two_dim, name
+        else:
+            assert not format_info.two_dim, name
+
+        if name == "mmcif":
+            assert format_info.three_dim, name
+        else:
+            assert not format_info.three_dim, name
