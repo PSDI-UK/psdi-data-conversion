@@ -13,6 +13,7 @@ from unittest.mock import patch
 
 from psdi_data_conversion import constants as const
 from psdi_data_conversion.converter import D_REGISTERED_CONVERTERS, L_REGISTERED_CONVERTERS
+from psdi_data_conversion.database import get_database
 from psdi_data_conversion.main import FileConverterInputException, main, parse_args
 
 
@@ -152,16 +153,17 @@ def test_detail_converter(capsys):
 
     # Test all converters are recognised, don't raise an error, and we get info on them
     for converter_name, converter_class in D_REGISTERED_CONVERTERS.items():
+        converter_info = get_database().converter_info[converter_name]
         run_with_arg_string(f"--list {converter_name}")
         captured = capsys.readouterr()
         assert "not recognized" not in captured.err
         assert f"Converter: {converter_name}" in captured.out
 
-        if converter_class.info is None:
-            assert "provided about this converter" in captured.out
+        if not converter_info.description:
+            assert "available for this converter" in captured.out
         else:
             # Info text will be wrapped so replace all newlines with spaces in our comparison here
-            assert converter_class.info.replace("\n", " ") in captured.out.replace("\n", " ")
+            assert converter_info.description.replace("\n", " ") in captured.out.replace("\n", " ")
 
     # Test we do get an error for a bad converter name
     run_with_arg_string("--list bad_converter")

@@ -17,6 +17,7 @@ import textwrap
 from psdi_data_conversion import constants as const
 from psdi_data_conversion.converter import D_REGISTERED_CONVERTERS, L_REGISTERED_CONVERTERS, run_converter
 from psdi_data_conversion.converters.base import FileConverterAbortException, FileConverterInputException
+from psdi_data_conversion.database import get_database
 
 
 class ConvertArgs:
@@ -300,17 +301,21 @@ def parse_args():
 def detail_converter_use(args: ConvertArgs):
     """Prints output providing information on a specific converter, including the flags and options it allows
     """
+    converter_info = get_database().converter_info[args.name]
     converter_class = D_REGISTERED_CONVERTERS[args.name]
 
     # Get the terminal width so we can prettily print help text
     width, _ = shutil.get_terminal_size((80, 20))
 
-    print(f"Converter: {converter_class.name}\n")
+    print(f"Converter: {converter_info.name}\n")
 
-    if converter_class.info:
-        print(textwrap.fill(f"{converter_class.info}", width=width) + "\n")
+    if converter_info.description:
+        print(textwrap.fill(f"{converter_info.description}", width=width) + "\n")
     else:
-        print("Information has not been provided about this converter.\n")
+        print("Description is not available for this converter.\n")
+
+    if converter_info.url:
+        print(f"URL: {converter_info.url}\n")
 
     if converter_class.allowed_flags is None:
         print("Information has not been provided about general flags accepted by this converter.\n")
