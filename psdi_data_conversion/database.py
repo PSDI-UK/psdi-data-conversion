@@ -150,9 +150,13 @@ class ConversionsTable:
 
         for possible_conversion in l_converts_to:
 
-            conv_id: int = possible_conversion[const.DB_CONV_ID_KEY]
-            in_id: int = possible_conversion[const.DB_IN_ID_KEY]
-            out_id: int = possible_conversion[const.DB_OUT_ID_KEY]
+            try:
+                conv_id: int = possible_conversion[const.DB_CONV_ID_KEY]
+                in_id: int = possible_conversion[const.DB_IN_ID_KEY]
+                out_id: int = possible_conversion[const.DB_OUT_ID_KEY]
+            except KeyError:
+                raise FileConverterDatabaseException(
+                    f"Malformed 'converts_to' entry in database: {possible_conversion}")
 
             self._table[conv_id][in_id][out_id] = self._d_dos[possible_conversion[const.DB_SUCCESS_KEY]]
 
@@ -211,11 +215,11 @@ class ConversionsTable:
 
         # Filter for possible conversions (dos_index > 0) and get the converter name and degree-of-success string
         # for each possible conversion
-        l_possible_converters = [(self.parent.get_converter_info(converter_id).name,
-                                  self._l_dos[dos_index]) for converter_id, dos_index in enumerate(l_converter_success)
-                                 if dos_index > 0]
+        l_possible_converters_and_dos = [(self.parent.get_converter_info(converter_id).name,
+                                          self._l_dos[dos_index]) for converter_id, dos_index
+                                         in enumerate(l_converter_success) if dos_index > 0]
 
-        return l_possible_converters
+        return l_possible_converters_and_dos
 
     def get_possible_formats(self, converter_name: str) -> tuple[list[str], list[str]]:
         """Get a list of input and output formats that a given converter supports
