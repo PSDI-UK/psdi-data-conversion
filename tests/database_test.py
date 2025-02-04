@@ -8,7 +8,7 @@ Unit tests relating to using the database
 
 from psdi_data_conversion.converter import L_REGISTERED_CONVERTERS
 from psdi_data_conversion.converters.openbabel import CONVERTER_OB
-from psdi_data_conversion.database import get_converter_info, get_database, get_format_info
+from psdi_data_conversion.database import get_converter_info, get_database, get_degree_of_success, get_format_info
 
 
 def test_load():
@@ -98,6 +98,8 @@ def test_conversion_table():
 
     conversions_table = database.conversions_table
 
-    dos = conversions_table.get_degree_of_success(CONVERTER_OB, "pdb", "cif")
+    assert conversions_table.parent is database
+
+    dos = get_degree_of_success(CONVERTER_OB, "pdb", "cif")
 
     assert dos == 'output file does not open in VESTA, but opens in Jmol'
