@@ -24,6 +24,7 @@ This is the repository for the PSDI PF2 Chemistry File Format Conversion project
     - [`run_converter](#run_converter)
     - [`get_converter](#get_converter)
     - [`constants](#constants)
+    - [`database](#database)
 - [Using the Online Conversion Service](#using-the-online-conversion-service)
 - [Running the Python/Flask app locally](#running-the-pythonflask-app-locally)
   - [Installation and Setup](#installation-and-setup)
@@ -214,6 +215,7 @@ The most useful modules and functions within this package to know about are:
     - `run_converter`
     - `get_converter`
   - `constants`
+  - `database`
 
 #### `run_converter`
 
@@ -263,6 +265,14 @@ Of the constants not defined in this package, the most notable are the names of 
 
 - `D_REGISTERED_CONVERTERS` - A dict which relates the names of converters to their classes
 - `L_REGISTERED_CONVERTERS` - A list of the names of converters
+
+#### `database`
+
+The `database` module provides classes and methods to interface with the database of converters, file formats, and known possible conversions. This database is distributed with the project at `psdi_data_conversion/static/data/data.json`, but isn't user-friendly to read. The methods provided in this module provide a more user-friendly way to make common queries from the database:
+
+- `get_degree_of_success` - This method takes the name of a converter, the name of an input file format (its extension), and the name of an output file format, and provides the degree of success for this conversion (`None` if not possible, otherwise a string describing it).
+- `get_possible_converters` - This method takes the names of an input and output file format, and returns a list of converters which can perform the desired conversion and their degree of success.
+- `get_possible_formats` - This method takes the name of a converter and returns a list of input formats it can accept and a list of output formats it can produce. While it's usually a safe bet that a converter can handle any combination between these lists, it's best to make sure that it can with the `get_degree_of_success` method
 
 ## Using the Online Conversion Service
 
