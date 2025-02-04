@@ -21,6 +21,7 @@ class OBFileConverter(FileConverter):
     info = "See documentation for Open Babel at https://openbabel.org/docs/Introduction/intro.html"
     has_in_format_flags_or_options = True
     has_out_format_flags_or_options = True
+    database_key_prefix = "ob"
 
     def _convert(self):
 

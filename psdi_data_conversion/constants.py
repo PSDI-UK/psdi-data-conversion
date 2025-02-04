@@ -31,6 +31,9 @@ DEFAULT_MAX_FILE_SIZE = 0*MEGABYTE
 DEFAULT_UPLOAD_DIR = './psdi_data_conversion/static/uploads'
 DEFAULT_DOWNLOAD_DIR = './psdi_data_conversion/static/downloads'
 
+# Filename of the database, relative to the base of the python package
+DATABASE_FILENAME = "static/data/data.json"
+
 # Logging
 # -------
 
@@ -76,8 +79,43 @@ CONVERTER_DEFAULT = 'Open Babel'
 # Keys
 # ----
 
-# Keys used commonly by dicts
+# Key for the label given to the file uploaded in the web interface
 FILE_TO_UPLOAD_KEY = 'fileToUpload'
+
+# Keys for top-level and general items in the database
+DB_FORMATS_KEY = "formats"
+DB_CONVERTERS_KEY = "converters"
+DB_CONVERTS_TO_KEY = "converts_to"
+DB_ID_KEY = "id"
+DB_NAME_KEY = "name"
+
+# Keys for converter general info in the database
+DB_DESC_KEY = "description"
+DB_URL_KEY = "url"
+
+# Keys for format general info in the database
+DB_FORMAT_EXT_KEY = "extension"
+DB_FORMAT_NOTE_KEY = "note"
+DB_FORMAT_COMP_KEY = "composition"
+DB_FORMAT_CONN_KEY = "connections"
+DB_FORMAT_2D_KEY = "two_dim"
+DB_FORMAT_3D_KEY = "three_dim"
+
+# Keys for converts_to info in the database
+DB_CONV_ID_KEY = "converters_id"
+DB_IN_ID_KEY = "in_id"
+DB_OUT_ID_KEY = "out_id"
+DB_SUCCESS_KEY = "degree_of_success"
+
+# Key bases for converter-specific items in the database
+DB_FROM_FLAGS_IN_KEY_BASE = "flags_in"
+DB_FROM_FLAGS_OUT_KEY_BASE = "flags_out"
+DB_FROM_ARGFLAGS_IN_KEY_BASE = "argflags_in"
+DB_FROM_ARGFLAGS_OUT_KEY_BASE = "argflags_out"
+DB_TO_FLAGS_IN_KEY_BASE = "format_to_flags_in"
+DB_TO_FLAGS_OUT_KEY_BASE = "format_to_flags_out"
+DB_TO_ARGFLAGS_IN_KEY_BASE = "format_to_argflags_in"
+DB_TO_ARGFLAGS_OUT_KEY_BASE = "format_to_argflags_out"
 
 # Errors
 # ------
