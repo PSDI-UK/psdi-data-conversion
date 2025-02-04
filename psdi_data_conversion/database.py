@@ -95,6 +95,69 @@ class FormatInfo:
         self.three_dim = bool(d_single_format_info.get(const.DB_FORMAT_3D_KEY, False))
 
 
+class ConvertsToTable:
+    """Class providing information on available file format conversions.
+
+    Information on internal data handling of this class:
+
+    The idea here is that we need to be able to get information on whether a converter can handle a conversion from one
+    file format to another. This results in 3D data storage, with dimensions: Converter, Input Format, Output Format.
+    The most important operations are (in roughly descending order of importance):
+
+    - For a given Converter, Input Format, and Output Format, get whether or not the conversion is possible, and the
+    degree of success if it is possible.
+    - For a given Input Format and Output Format, list available Converters and their degrees of success
+    - For a given Converter, list available Input Formats and Output Formats
+    - For a given Input Format, list available Output Formats and Converters, and the degree of success of each
+
+    At date of implementation, the data comprises 9 Converters and 280 Input/Output Formats, for 705,600 possibilities,
+    increasing linearly with the number of converters and quadratically with the number of formats. (Self-to-self format
+    conversions don't need to be stored, but this may not be a useful optimisation.)
+
+    Conversion data is available for 23,013 Converter, Input, Output values, or ~3% of the total possible conversions.
+    While this could currently work as a sparse array, it will likely be filled to become denser over time, so a dense
+    representation makes the most sense.
+
+    The present implementation uses a list-of-lists-of-lists approach, to avoid adding NumPy as a dependency
+    until/unless efficiency concerns motivate it in the future.
+    """
+
+    def __init__(self,
+                 l_converts_to: list[dict[str, bool | int | str | None]],
+                 parent: DataConversionDatabase,
+                 d_converter_info: dict[str, ConverterInfo],
+                 d_format_info: dict[str, FormatInfo]):
+
+        self.parent = parent
+
+        # Store references to needed data
+        self._l_converts_to = l_converts_to
+        self._d_converter_info = d_converter_info
+        self._d_format_info = d_format_info
+
+        # To save data, we store the degree of success in the table as an integer indexed to possible strings
+        # `self._l_dos` maps from integer index value to degree of success string, and `self._d_dos` maps from degree of
+        # success string to index value
+        self._l_dos: list[str | None] = [None] + list(set([x[const.DB_SUCCESS_KEY] for x in l_converts_to]))
+        self._d_dos = {dos: index for index, dos in enumerate(self._l_dos)}
+
+        # Build the conversion table, indexed Converter, Input Format, Output Format - note that each of these is
+        # 1-indexed, so we add 1 to each of the lengths here
+        num_converters = len(parent.converters)
+        num_formats = len(parent.formats)
+
+        self._table = [[[0 for k in range(num_formats+1)] for j in range(num_formats+1)]
+                       for i in range(num_converters+1)]
+
+        for possible_conversion in l_converts_to:
+
+            conv_id: int = possible_conversion[const.DB_CONV_ID_KEY]
+            in_id: int = possible_conversion[const.DB_IN_ID_KEY]
+            out_id: int = possible_conversion[const.DB_OUT_ID_KEY]
+
+            self._table[conv_id][in_id][out_id] = self._d_dos[possible_conversion[const.DB_SUCCESS_KEY]]
+
+
 class DataConversionDatabase:
     """Class providing interface for information contained in the PSDI Data Conversion database
     """
