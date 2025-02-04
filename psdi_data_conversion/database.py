@@ -84,6 +84,17 @@ class FormatInfo:
                  name: str,
                  parent: DataConversionDatabase,
                  d_single_format_info: dict[str, bool | int | str | None]):
+        """Set up the class - this will be initialised within a `DataConversionDatabase`, which we set as the parent
+
+        Parameters
+        ----------
+        name : str
+            The name (extension) of the file format
+        parent : DataConversionDatabase
+            The database which this belongs to
+        d_single_format_info : dict[str, bool  |  int  |  str  |  None]
+            The dict of info on the format stored in the database
+        """
 
         # Load attributes from input
         self.name = name
@@ -128,6 +139,20 @@ class ConversionsTable:
     def __init__(self,
                  l_converts_to: list[dict[str, bool | int | str | None]],
                  parent: DataConversionDatabase):
+        """Set up the class - this will be initialised within a `DataConversionDatabase`, which we set as the parent
+
+        Parameters
+        ----------
+        l_converts_to : list[dict[str, bool  |  int  |  str  |  None]]
+            The list of dicts in the database providing information on possible conversions
+        parent : DataConversionDatabase
+            The database which this belongs to
+
+        Raises
+        ------
+        FileConverterDatabaseException
+            _description_
+        """
 
         self.parent = parent
 
