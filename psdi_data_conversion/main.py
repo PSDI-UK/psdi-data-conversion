@@ -17,7 +17,7 @@ import textwrap
 from psdi_data_conversion import constants as const
 from psdi_data_conversion.converter import D_REGISTERED_CONVERTERS, L_REGISTERED_CONVERTERS, run_converter
 from psdi_data_conversion.converters.base import FileConverterAbortException, FileConverterInputException
-from psdi_data_conversion.database import get_converter_info
+from psdi_data_conversion.database import get_converter_info, get_degree_of_success, get_possible_formats
 
 
 class ConvertArgs:
@@ -316,6 +316,31 @@ def detail_converter_use(args: ConvertArgs):
 
     if converter_info.url:
         print(f"URL: {converter_info.url}\n")
+
+    # If both an input and output format are specified, provide the degree of success for this conversion. Otherwise
+    # list possible input output formats
+    if args.from_format is not None and args.to_format is not None:
+        dos = get_degree_of_success(args.name, args.from_format, args.to_format)
+        if dos is None:
+            print(f"Conversion from '{args.from_format}' to '{args.to_format}' with {args.name} is not supported.\n")
+        else:
+            print(f"Conversion from '{args.from_format}' to '{args.to_format}' with {args.name} is possible with the "
+                  f"following note on degree of success: {dos} \n")
+    else:
+        l_input_formats, l_output_formats = get_possible_formats(args.name)
+
+        # If one format was supplied, check if it's supported
+        for (format_name, l_formats, to_or_from) in ((args.from_format, l_input_formats, "from"),
+                                                     (args.to_format, l_output_formats, "to")):
+            if format_name is None:
+                continue
+            if format_name in l_formats:
+                optional_not: str = ""
+            else:
+                optional_not: str = " not"
+            print(f"Conversion {to_or_from} {format_name} is {optional_not}supported by {args.name}.\n")
+
+        # TODO: List possible input and output formats
 
     if converter_class.allowed_flags is None:
         print("Information has not been provided about general flags accepted by this converter.\n")
