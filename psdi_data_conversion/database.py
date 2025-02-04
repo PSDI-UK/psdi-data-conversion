@@ -339,4 +339,30 @@ def get_format_info(name: str) -> FormatInfo:
     return get_database().d_format_info[name]
 
 
+def get_degree_of_success(converter_name: str,
+                          in_format: str,
+                          out_format: str) -> str | None:
+    """Get the degree of success for a desired conversion, represented as a string (or else None if not possible)
+
+    Parameters
+    ----------
+    converter_name : str
+        The name of the converter to use
+    in_format : str
+        The extension of the input file format
+    out_format : str
+        The extension of the output file format
+
+    Returns
+    -------
+    str | None
+        If the conversion is possible, returns a string describing the degree of success. If the conversion is not
+        possible, returns None
+    """
+
+    return get_database().conversions_table.get_degree_of_success(converter_name=converter_name,
+                                                                  in_format=in_format,
+                                                                  out_format=out_format)
+
+
 data = get_database()
