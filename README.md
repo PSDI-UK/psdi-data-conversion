@@ -270,6 +270,8 @@ Of the constants not defined in this package, the most notable are the names of 
 
 The `database` module provides classes and methods to interface with the database of converters, file formats, and known possible conversions. This database is distributed with the project at `psdi_data_conversion/static/data/data.json`, but isn't user-friendly to read. The methods provided in this module provide a more user-friendly way to make common queries from the database:
 
+- `get_converter_info` - This method takes the name of a converter and returns an object containing the general information about it stored in the database (note that this doesn't include file formats it can handle - use the `get_possible_formats` method for that)
+- `get_format_info` - This method takes the name of a file format (its extension) and returns an object containing the general information about it stored in the database
 - `get_degree_of_success` - This method takes the name of a converter, the name of an input file format (its extension), and the name of an output file format, and provides the degree of success for this conversion (`None` if not possible, otherwise a string describing it).
 - `get_possible_converters` - This method takes the names of an input and output file format, and returns a list of converters which can perform the desired conversion and their degree of success.
 - `get_possible_formats` - This method takes the name of a converter and returns a list of input formats it can accept and a list of output formats it can produce. While it's usually a safe bet that a converter can handle any combination between these lists, it's best to make sure that it can with the `get_degree_of_success` method
