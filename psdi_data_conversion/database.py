@@ -50,9 +50,9 @@ class ConverterInfo:
         self.parent = parent
 
         # Get info about the converter from the database
-        self.id = d_single_converter_info.get(const.DB_ID_KEY, -1)
-        self.description = d_single_converter_info.get(const.DB_DESC_KEY, "")
-        self.url = d_single_converter_info.get(const.DB_URL_KEY, "")
+        self.id: int = d_single_converter_info.get(const.DB_ID_KEY, -1)
+        self.description: str = d_single_converter_info.get(const.DB_DESC_KEY, "")
+        self.url: str = d_single_converter_info.get(const.DB_URL_KEY, "")
 
         # Get necessary info about the converter from the class
         try:
@@ -127,16 +127,12 @@ class ConversionsTable:
 
     def __init__(self,
                  l_converts_to: list[dict[str, bool | int | str | None]],
-                 parent: DataConversionDatabase,
-                 d_converter_info: dict[str, ConverterInfo],
-                 d_format_info: dict[str, FormatInfo]):
+                 parent: DataConversionDatabase):
 
         self.parent = parent
 
         # Store references to needed data
         self._l_converts_to = l_converts_to
-        self._d_converter_info = d_converter_info
-        self._d_format_info = d_format_info
 
         # To save data, we store the degree of success in the table as an integer indexed to possible strings
         # `self._l_dos` maps from integer index value to degree of success string, and `self._d_dos` maps from degree of
@@ -182,11 +178,44 @@ class ConversionsTable:
             possible, returns None
         """
 
-        conv_id: int = self._d_converter_info[converter_name].id
-        in_id: int = self._d_format_info[in_format].id
-        out_id: int = self._d_format_info[out_format].id
+        conv_id: int = self.parent.get_converter_info(converter_name).id
+        in_id: int = self.parent.get_format_info(in_format).id
+        out_id: int = self.parent.get_format_info(out_format).id
 
         return self._l_dos[self._table[conv_id][in_id][out_id]]
+
+    def get_possible_converters(self,
+                                in_format: str,
+                                out_format: str) -> list[tuple[str, str]]:
+        """Get a list of converters which can perform a conversion from one format to another and the degree of success
+        with each of these converters
+
+        Parameters
+        ----------
+        in_format : str
+            The extension of the input file format
+        out_format : str
+            The extension of the output file format
+
+        Returns
+        -------
+        list[tuple[str, str]]
+            A list of tuples, where each tuple's first item is the name of a converter which can perform this
+            conversion, and the second item is the degree of success for the conversion
+        """
+        in_id: int = self.parent.get_format_info(in_format).id
+        out_id: int = self.parent.get_format_info(out_format).id
+
+        # Slice the table to get a list of the success for this conversion for each converter
+        l_converter_success = [x[in_id][out_id] for x in self._table]
+
+        # Filter for possible conversions (dos_index > 0) and get the converter name and degree-of-success string
+        # for each possible conversion
+        l_possible_converters = [(self.parent.get_converter_info(converter_id).name,
+                                  self._l_dos[dos_index]) for converter_id, dos_index in enumerate(l_converter_success)
+                                 if dos_index > 0]
+
+        return l_possible_converters
 
 
 class DataConversionDatabase:
@@ -212,12 +241,14 @@ class DataConversionDatabase:
 
         # Placeholders for properties that are generated when needed
         self._d_converter_info: dict[str, ConverterInfo] | None = None
+        self._l_converter_info: list[ConverterInfo] | None = None
         self._d_format_info: dict[str, FormatInfo] | None = None
+        self._l_format_info: list[FormatInfo] | None = None
         self._conversions_table: ConversionsTable | None = None
 
     @property
     def d_converter_info(self) -> dict[str, ConverterInfo]:
-        """Generate the converter info dict when needed
+        """Generate the converter info dict (indexed by name) when needed
         """
         if self._d_converter_info is None:
             self._d_converter_info: dict[str, ConverterInfo] = {}
@@ -233,6 +264,21 @@ class DataConversionDatabase:
                                                              d_single_converter_info=d_single_converter_info,
                                                              d_data=self._d_data)
         return self._d_converter_info
+
+    @property
+    def l_converter_info(self) -> list[ConverterInfo]:
+        """Generate the converter info list (indexed by ID) when needed
+        """
+        if self._l_converter_info is None:
+            # Pre-size a list based on the maximum ID plus 1 (since IDs are 1-indexed)
+            max_id: int = max([x[const.DB_ID_KEY] for x in self.converters])
+            self._l_converter_info: list[ConverterInfo | None] = [None] * (max_id+1)
+
+            # Fill the list with all converters in the dict
+            for single_converter_info in self.d_converter_info.values():
+                self._l_converter_info[single_converter_info.id] = single_converter_info
+
+        return self._l_converter_info
 
     @property
     def d_format_info(self) -> dict[str, FormatInfo]:
@@ -255,15 +301,44 @@ class DataConversionDatabase:
         return self._d_format_info
 
     @property
+    def l_format_info(self) -> list[FormatInfo]:
+        """Generate the format info list (indexed by ID) when needed
+        """
+        if self._l_format_info is None:
+            # Pre-size a list based on the maximum ID plus 1 (since IDs are 1-indexed)
+            max_id: int = max([x[const.DB_ID_KEY] for x in self.formats])
+            self._l_format_info: list[FormatInfo | None] = [None] * (max_id+1)
+
+            # Fill the list with all formats in the dict
+            for single_format_info in self.d_format_info.values():
+                self._l_format_info[single_format_info.id] = single_format_info
+
+        return self._l_format_info
+
+    @property
     def conversions_table(self) -> ConversionsTable:
         """Generates the conversions table when needed
         """
         if self._conversions_table is None:
             self._conversions_table = ConversionsTable(l_converts_to=self.converts_to,
-                                                       parent=self,
-                                                       d_converter_info=self.d_converter_info,
-                                                       d_format_info=self.d_format_info)
+                                                       parent=self)
         return self._conversions_table
+
+    def get_converter_info(self, converter_name_or_id: str | int) -> ConverterInfo:
+        """Get a converter's info from either its name or ID
+        """
+        if isinstance(converter_name_or_id, str):
+            return self.d_converter_info[converter_name_or_id]
+        elif isinstance(converter_name_or_id, int):
+            return self.l_converter_info[converter_name_or_id]
+
+    def get_format_info(self, format_name_or_id: str | int) -> FormatInfo:
+        """Get a format's ID info from either its name or ID
+        """
+        if isinstance(format_name_or_id, str):
+            return self.d_format_info[format_name_or_id]
+        elif isinstance(format_name_or_id, int):
+            return self.l_format_info[format_name_or_id]
 
 
 # The database will be loaded on demand when `get_database()` is called
@@ -363,6 +438,29 @@ def get_degree_of_success(converter_name: str,
     return get_database().conversions_table.get_degree_of_success(converter_name=converter_name,
                                                                   in_format=in_format,
                                                                   out_format=out_format)
+
+
+def get_possible_converters(in_format: str,
+                            out_format: str) -> list[tuple[str, str]]:
+    """Get a list of converters which can perform a conversion from one format to another and the degree of success
+    with each of these converters
+
+    Parameters
+    ----------
+    in_format : str
+        The extension of the input file format
+    out_format : str
+        The extension of the output file format
+
+    Returns
+    -------
+    list[tuple[str, str]]
+        A list of tuples, where each tuple's first item is the name of a converter which can perform this
+        conversion, and the second item is the degree of success for the conversion
+    """
+
+    return get_database().conversions_table.get_possible_converters(in_format=in_format,
+                                                                    out_format=out_format)
 
 
 data = get_database()
