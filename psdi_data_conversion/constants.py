@@ -101,6 +101,12 @@ DB_FORMAT_CONN_KEY = "connections"
 DB_FORMAT_2D_KEY = "two_dim"
 DB_FORMAT_3D_KEY = "three_dim"
 
+# Keys for converts_to info in the database
+DB_CONV_ID_KEY = "converters_id"
+DB_IN_ID_KEY = "in_id"
+DB_OUT_ID_KEY = "out_id"
+DB_SUCCESS_KEY = "degree_of_success"
+
 # Key bases for converter-specific items in the database
 DB_FROM_FLAGS_IN_KEY_BASE = "flags_in"
 DB_FROM_FLAGS_OUT_KEY_BASE = "flags_out"

@@ -8,12 +8,15 @@ Python module provide utilities for accessing the converter database
 from __future__ import annotations
 
 import json
+from logging import getLogger
 import os
 from typing import Any
 
 from psdi_data_conversion import constants as const
 from psdi_data_conversion.converter import D_REGISTERED_CONVERTERS
 from psdi_data_conversion.converters.base import FileConverterException
+
+logger = getLogger(__name__)
 
 
 class FileConverterDatabaseException(FileConverterException):
@@ -220,6 +223,11 @@ class DataConversionDatabase:
             self._d_converter_info: dict[str, ConverterInfo] = {}
             for d_single_converter_info in self.converters:
                 name: str = d_single_converter_info[const.DB_NAME_KEY]
+                if name in self._d_converter_info:
+                    logger.warning(f"Converter '{name}' appears more than once in the database. Only the first instance"
+                                   " will be used.")
+                    continue
+
                 self._d_converter_info[name] = ConverterInfo(name=name,
                                                              parent=self,
                                                              d_single_converter_info=d_single_converter_info,
@@ -235,6 +243,12 @@ class DataConversionDatabase:
 
             for d_single_format_info in self.formats:
                 name: str = d_single_format_info[const.DB_FORMAT_EXT_KEY]
+
+                if name in self._d_format_info:
+                    logger.debug(f"File extension '{name}' appears more than once in the database. Only the first "
+                                 "instance will be used.")
+                    continue
+
                 self._d_format_info[name] = FormatInfo(name=name,
                                                        parent=self,
                                                        d_single_format_info=d_single_format_info)

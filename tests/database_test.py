@@ -7,6 +7,7 @@ Unit tests relating to using the database
 
 
 from psdi_data_conversion.converter import L_REGISTERED_CONVERTERS
+from psdi_data_conversion.converters.openbabel import CONVERTER_OB
 from psdi_data_conversion.database import get_converter_info, get_database, get_format_info
 
 
@@ -68,12 +69,12 @@ def test_format_info():
 
         # Check properties are as expected
 
-        if name in ("mmcif", "inchi", "molreport"):
+        if name in ("pdb", "mmcif", "inchi", "molreport"):
             assert format_info.composition, name
         else:
             assert not format_info.composition, name
 
-        if name in ("inchi", "molreport"):
+        if name in ("pdb", "inchi", "molreport"):
             assert format_info.connections, name
         else:
             assert not format_info.connections, name
@@ -83,7 +84,20 @@ def test_format_info():
         else:
             assert not format_info.two_dim, name
 
-        if name == "mmcif":
+        if name in ("pdb", "mmcif"):
             assert format_info.three_dim, name
         else:
             assert not format_info.three_dim, name
+
+
+def test_conversion_table():
+    """Test that we can access data from the conversions table properly
+    """
+
+    database = get_database()
+
+    conversions_table = database.conversions_table
+
+    dos = conversions_table.get_degree_of_success(CONVERTER_OB, "pdb", "cif")
+
+    assert dos == 'output file does not open in VESTA, but opens in Jmol'
