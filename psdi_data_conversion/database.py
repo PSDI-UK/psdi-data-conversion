@@ -376,17 +376,31 @@ class DataConversionDatabase:
         """Get a converter's info from either its name or ID
         """
         if isinstance(converter_name_or_id, str):
-            return self.d_converter_info[converter_name_or_id]
+            try:
+                return self.d_converter_info[converter_name_or_id]
+            except KeyError:
+                raise FileConverterDatabaseException(f"Converter name '{converter_name_or_id}' not recognised")
         elif isinstance(converter_name_or_id, int):
             return self.l_converter_info[converter_name_or_id]
+        else:
+            raise FileConverterDatabaseException(f"Invalid key passed to `get_converter_info`: '{converter_name_or_id}'"
+                                                 f" of type '{type(converter_name_or_id)}'. Type must be `str` or "
+                                                 "`int`")
 
     def get_format_info(self, format_name_or_id: str | int) -> FormatInfo:
         """Get a format's ID info from either its name or ID
         """
         if isinstance(format_name_or_id, str):
-            return self.d_format_info[format_name_or_id]
+            try:
+                return self.d_format_info[format_name_or_id]
+            except KeyError:
+                raise FileConverterDatabaseException(f"Format name '{format_name_or_id}' not recognised")
         elif isinstance(format_name_or_id, int):
             return self.l_format_info[format_name_or_id]
+        else:
+            raise FileConverterDatabaseException(f"Invalid key passed to `get_format_info`: '{format_name_or_id}'"
+                                                 f" of type '{type(format_name_or_id)}'. Type must be `str` or "
+                                                 "`int`")
 
 
 # The database will be loaded on demand when `get_database()` is called
@@ -525,6 +539,3 @@ def get_possible_formats(converter_name: str) -> tuple[list[str], list[str]]:
         A tuple of a list of the supported input formats and a list of the supported output formats
     """
     return get_database().conversions_table.get_possible_formats(converter_name=converter_name)
-
-
-data = get_database()
