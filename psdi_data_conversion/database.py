@@ -95,7 +95,7 @@ class FormatInfo:
         self.three_dim = bool(d_single_format_info.get(const.DB_FORMAT_3D_KEY, False))
 
 
-class ConvertsToTable:
+class ConversionsTable:
     """Class providing information on available file format conversions.
 
     Information on internal data handling of this class:
@@ -210,20 +210,24 @@ class DataConversionDatabase:
         # Placeholders for properties that are generated when needed
         self._d_converter_info: dict[str, ConverterInfo] | None = None
         self._d_format_info: dict[str, FormatInfo] | None = None
+        self._conversions_table: ConversionsTable | None = None
 
     @property
-    def d_converter_info(self):
+    def d_converter_info(self) -> dict[str, ConverterInfo]:
         """Generate the converter info dict when needed
         """
         if self._d_converter_info is None:
             self._d_converter_info: dict[str, ConverterInfo] = {}
             for d_single_converter_info in self.converters:
                 name: str = d_single_converter_info[const.DB_NAME_KEY]
-                self._d_converter_info[name] = ConverterInfo(name, self, d_single_converter_info, self._d_data)
+                self._d_converter_info[name] = ConverterInfo(name=name,
+                                                             parent=self,
+                                                             d_single_converter_info=d_single_converter_info,
+                                                             d_data=self._d_data)
         return self._d_converter_info
 
     @property
-    def d_format_info(self):
+    def d_format_info(self) -> dict[str, FormatInfo]:
         """Generate the format info dict when needed
         """
         if self._d_format_info is None:
@@ -231,8 +235,21 @@ class DataConversionDatabase:
 
             for d_single_format_info in self.formats:
                 name: str = d_single_format_info[const.DB_FORMAT_EXT_KEY]
-                self._d_format_info[name] = FormatInfo(name, self, d_single_format_info)
+                self._d_format_info[name] = FormatInfo(name=name,
+                                                       parent=self,
+                                                       d_single_format_info=d_single_format_info)
         return self._d_format_info
+
+    @property
+    def conversions_table(self) -> ConversionsTable:
+        """Generates the conversions table when needed
+        """
+        if self._conversions_table is None:
+            self._conversions_table = ConversionsTable(l_converts_to=self.converts_to,
+                                                       parent=self,
+                                                       d_converter_info=self.d_converter_info,
+                                                       d_format_info=self.d_format_info)
+        return self._conversions_table
 
 
 # The database will be loaded on demand when `get_database()` is called
