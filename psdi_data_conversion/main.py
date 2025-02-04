@@ -344,7 +344,7 @@ def detail_converter_use(args: ConvertArgs):
         s_all_formats: set[str] = set(l_input_formats)
         s_all_formats.update(l_output_formats)
         l_all_formats: list[str] = list(s_all_formats)
-        l_all_formats.sort()
+        l_all_formats.sort(key=lambda s: s.lower())
 
         print(f"File formats supported by {args.name}:")
         max_format_length = max([len(x) for x in l_all_formats])
