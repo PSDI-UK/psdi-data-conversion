@@ -217,6 +217,37 @@ class ConversionsTable:
 
         return l_possible_converters
 
+    def get_possible_formats(self, converter_name: str) -> tuple[list[str], list[str]]:
+        """Get a list of input and output formats that a given converter supports
+
+        Parameters
+        ----------
+        converter_name : str
+            The name of the converter
+
+        Returns
+        -------
+        tuple[list[str], list[str]]
+            A tuple of a list of the supported input formats and a list of the supported output formats
+        """
+        conv_id: int = self.parent.get_converter_info(converter_name).id
+        ll_in_out_format_dos = self._table[conv_id]
+
+        # Filter for possible input formats by checking if at least one output format for each has a degree of success
+        # index greater than 0, and stored the filtered lists where the input format is possible so we only need to
+        # check them for possible output formats
+        (l_possible_in_format_ids,
+         ll_filtered_in_out_format_dos) = zip([(i, l_out_format_dos) for i, l_out_format_dos
+                                               in enumerate(ll_in_out_format_dos) if sum(l_out_format_dos) > 0])
+
+        # As with input IDs, filter for output IDs where at least one input format has a degree of success index greater
+        # than 0. A bit more complicated for the second index, forcing us to do list comprehension to fetch a list
+        # across the table before summing
+        l_possible_out_format_ids = [j for j, _ in enumerate(ll_filtered_in_out_format_dos[0]) if
+                                     sum([x[j] for x in ll_filtered_in_out_format_dos]) > 0]
+
+        return l_possible_in_format_ids, l_possible_out_format_ids
+
 
 class DataConversionDatabase:
     """Class providing interface for information contained in the PSDI Data Conversion database
