@@ -157,6 +157,34 @@ class ConvertsToTable:
 
             self._table[conv_id][in_id][out_id] = self._d_dos[possible_conversion[const.DB_SUCCESS_KEY]]
 
+    def get_degree_of_success(self,
+                              converter_name: str,
+                              in_format: str,
+                              out_format: str) -> str | None:
+        """Get the degree of success for a desired conversion, represented as a string (or else None if not possible)
+
+        Parameters
+        ----------
+        converter_name : str
+            The name of the converter to use
+        in_format : str
+            The extension of the input file format
+        out_format : str
+            The extension of the output file format
+
+        Returns
+        -------
+        str | None
+            If the conversion is possible, returns a string describing the degree of success. If the conversion is not
+            possible, returns None
+        """
+
+        conv_id: int = self._d_converter_info[converter_name].id
+        in_id: int = self._d_format_info[in_format].id
+        out_id: int = self._d_format_info[out_format].id
+
+        return self._l_dos[self._table[conv_id][in_id][out_id]]
+
 
 class DataConversionDatabase:
     """Class providing interface for information contained in the PSDI Data Conversion database
