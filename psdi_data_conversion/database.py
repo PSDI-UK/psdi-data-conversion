@@ -359,16 +359,19 @@ class DataConversionDatabase:
                 if name in self._d_format_info:
                     logger.debug(f"File extension '{name}' appears more than once in the database. Duplicates will use "
                                  "a key appended with an index")
+                    loop_concluded = False
                     for i in range(97):
                         test_name = f"{name}-{i+2}"
                         if test_name in self._d_format_info:
                             continue
                         else:
                             self._d_format_info[test_name] = format_info
+                            loop_concluded = True
                             break
-                    logger.warning("Loop counter exceeded when searching for valid new name for file extension "
-                                   f"'{name}'. New entry will not be added to the database to avoid possibility of an"
-                                   "infinite loop")
+                    if not loop_concluded:
+                        logger.warning("Loop counter exceeded when searching for valid new name for file extension "
+                                       f"'{name}'. New entry will not be added to the database to avoid possibility of "
+                                       "an infinite loop")
                 else:
                     self._d_format_info[name] = format_info
         return self._d_format_info
