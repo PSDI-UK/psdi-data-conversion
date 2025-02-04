@@ -237,8 +237,8 @@ class ConversionsTable:
         # index greater than 0, and stored the filtered lists where the input format is possible so we only need to
         # check them for possible output formats
         (l_possible_in_format_ids,
-         ll_filtered_in_out_format_dos) = zip([(i, l_out_format_dos) for i, l_out_format_dos
-                                               in enumerate(ll_in_out_format_dos) if sum(l_out_format_dos) > 0])
+         ll_filtered_in_out_format_dos) = zip(*[(i, l_out_format_dos) for i, l_out_format_dos
+                                                in enumerate(ll_in_out_format_dos) if sum(l_out_format_dos) > 0])
 
         # As with input IDs, filter for output IDs where at least one input format has a degree of success index greater
         # than 0. A bit more complicated for the second index, forcing us to do list comprehension to fetch a list
@@ -246,7 +246,9 @@ class ConversionsTable:
         l_possible_out_format_ids = [j for j, _ in enumerate(ll_filtered_in_out_format_dos[0]) if
                                      sum([x[j] for x in ll_filtered_in_out_format_dos]) > 0]
 
-        return l_possible_in_format_ids, l_possible_out_format_ids
+        # Get the name for each format ID, and return lists of the names
+        return ([self.parent.get_format_info(x).name for x in l_possible_in_format_ids],
+                [self.parent.get_format_info(x).name for x in l_possible_out_format_ids])
 
 
 class DataConversionDatabase:
@@ -492,6 +494,22 @@ def get_possible_converters(in_format: str,
 
     return get_database().conversions_table.get_possible_converters(in_format=in_format,
                                                                     out_format=out_format)
+
+
+def get_possible_formats(converter_name: str) -> tuple[list[str], list[str]]:
+    """Get a list of input and output formats that a given converter supports
+
+    Parameters
+    ----------
+    converter_name : str
+        The name of the converter
+
+    Returns
+    -------
+    tuple[list[str], list[str]]
+        A tuple of a list of the supported input formats and a list of the supported output formats
+    """
+    return get_database().conversions_table.get_possible_formats(converter_name=converter_name)
 
 
 data = get_database()

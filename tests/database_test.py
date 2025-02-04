@@ -9,7 +9,7 @@ Unit tests relating to using the database
 from psdi_data_conversion.converter import L_REGISTERED_CONVERTERS
 from psdi_data_conversion.converters.openbabel import CONVERTER_OB
 from psdi_data_conversion.database import (get_converter_info, get_database, get_degree_of_success, get_format_info,
-                                           get_possible_converters)
+                                           get_possible_converters, get_possible_formats)
 
 
 def test_load():
@@ -108,3 +108,8 @@ def test_conversion_table():
     # Check we can get a list of possible converters for a given conversion
     l_possible_converters = get_possible_converters("pdb", "cif")
     assert CONVERTER_OB in [name for name, dos in l_possible_converters]
+
+    # Check that we can get a list of possible input/outpat formats for a given converter
+    l_in_formats, l_out_formats = get_possible_formats(CONVERTER_OB)
+    assert "pdb" in l_in_formats
+    assert "cif" in l_out_formats
