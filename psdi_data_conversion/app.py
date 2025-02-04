@@ -61,9 +61,13 @@ def convert():
     achieved in format.js
     """
 
+    # Make sure the upload directory exists
+    os.makedirs(const.DEFAULT_UPLOAD_DIR, exist_ok=True)
+
     # Save the file in the upload directory
     file = request.files[const.FILE_TO_UPLOAD_KEY]
     filename = filename = file.filename
+
     qualified_filename = os.path.join(const.DEFAULT_UPLOAD_DIR, filename)
     file.save(qualified_filename)
 
