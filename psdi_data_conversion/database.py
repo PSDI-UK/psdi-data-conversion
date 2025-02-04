@@ -323,14 +323,25 @@ class DataConversionDatabase:
             for d_single_format_info in self.formats:
                 name: str = d_single_format_info[const.DB_FORMAT_EXT_KEY]
 
-                if name in self._d_format_info:
-                    logger.debug(f"File extension '{name}' appears more than once in the database. Only the first "
-                                 "instance will be used.")
-                    continue
+                format_info = FormatInfo(name=name,
+                                         parent=self,
+                                         d_single_format_info=d_single_format_info)
 
-                self._d_format_info[name] = FormatInfo(name=name,
-                                                       parent=self,
-                                                       d_single_format_info=d_single_format_info)
+                if name in self._d_format_info:
+                    logger.debug(f"File extension '{name}' appears more than once in the database. Duplicates will use "
+                                 "a key appended with an index")
+                    for i in range(97):
+                        test_name = f"{name}-{i+2}"
+                        if test_name in self._d_format_info:
+                            continue
+                        else:
+                            self._d_format_info[test_name] = format_info
+                            break
+                    logger.warning("Loop counter exceeded when searching for valid new name for file extension "
+                                   f"'{name}'. New entry will not be added to the database to avoid possibility of an"
+                                   "infinite loop")
+                else:
+                    self._d_format_info[name] = format_info
         return self._d_format_info
 
     @property
