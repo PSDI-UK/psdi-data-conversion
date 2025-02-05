@@ -9,7 +9,8 @@ Unit tests relating to using the database
 from psdi_data_conversion.converter import L_REGISTERED_CONVERTERS
 from psdi_data_conversion.converters.openbabel import CONVERTER_OB
 from psdi_data_conversion.database import (get_converter_info, get_database, get_degree_of_success, get_format_info,
-                                           get_in_format_args, get_possible_converters, get_possible_formats)
+                                           get_in_format_args, get_out_format_args, get_possible_converters,
+                                           get_possible_formats)
 
 
 def test_load():
@@ -55,8 +56,11 @@ def test_converter_info():
 def test_format_args():
     """Test that we can get the flags and options allowed for specific formats for a given converter
     """
-    s_in_flags, s_in_options = get_in_format_args(CONVERTER_OB, "pdb")
-    s_out_flags, s_out_options = get_in_format_args(CONVERTER_OB, "pdb")
+    l_in_flags, s_in_options = get_in_format_args(CONVERTER_OB, "pdb")
+    l_out_flags, s_out_options = get_out_format_args(CONVERTER_OB, "pdb")
+
+    assert l_in_flags
+    assert l_out_flags
 
 
 def test_format_info():
