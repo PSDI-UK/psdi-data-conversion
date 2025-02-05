@@ -7,6 +7,8 @@ Python module provide utilities for accessing the converter database
 
 from __future__ import annotations
 
+from copy import copy
+from dataclasses import dataclass
 import json
 from logging import getLogger
 import os
@@ -23,6 +25,32 @@ class FileConverterDatabaseException(FileConverterException):
     """Class for any exceptions which arise from issues with the database classes and methods
     """
     pass
+
+
+@dataclass
+class ArgInfo:
+    """Class providing information on an argument accepted by a converter (whether it accepts a value or not)
+    """
+
+    parent: ConverterInfo
+    id: int
+    flag: str
+    description: str
+    info: str
+
+
+@dataclass
+class FlagInfo(ArgInfo):
+    """Class providing information on a flag accepted by a converter (an argument which doesn't accept a value)
+    """
+    pass
+
+
+@dataclass
+class OptionInfo(ArgInfo):
+    """Class providing information on an option accepted by a converter (an argument accepts a value)
+    """
+    brief: str
 
 
 class ConverterInfo:
@@ -56,16 +84,23 @@ class ConverterInfo:
 
         # Get necessary info about the converter from the class
         try:
-            key_prefix = D_REGISTERED_CONVERTERS[name].database_key_prefix
+            self._key_prefix = D_REGISTERED_CONVERTERS[name].database_key_prefix
         except KeyError:
             # We'll get a KeyError for converters in the database that don't yet have their own class, which we can
             # safely ignore
-            key_prefix = None
+            self._key_prefix = None
 
-        self._arg_info = {}
+        self._arg_info: dict[str, list[dict[str, int | str]]] = {}
+
+        # Placeholders for members that are generated when needed
+        self._l_flag_info: list[FlagInfo | None] | None = None
+        self._d_flag_info: dict[str, FlagInfo] | None = None
+        self._l_option_info: list[OptionInfo | None] | None = None
+        self._d_option_info: dict[str, OptionInfo] | None = None
+        self._d_arg_info: dict[str, ArgInfo] | None = None
 
         # If the converter class has no defined key prefix, don't add any extra info for it
-        if key_prefix is None:
+        if self._key_prefix is None:
             return
         for key_base in (const.DB_IN_FLAGS_KEY_BASE,
                          const.DB_OUT_FLAGS_KEY_BASE,
@@ -75,7 +110,87 @@ class ConverterInfo:
                          const.DB_OUT_FLAGS_FORMATS_KEY_BASE,
                          const.DB_IN_OPTIONS_FORMATS_KEY_BASE,
                          const.DB_OUT_OPTIONS_FORMATS_KEY_BASE):
-            self._arg_info[key_base] = d_data.get(key_prefix + key_base)
+            self._arg_info[key_base] = d_data.get(self._key_prefix + key_base)
+
+    @property
+    def d_flag_info(self) -> dict[str, FlagInfo] | None:
+        """Generate the flag info dict (index by flag) when needed. Returns None if the converter has no flag info in
+        the database
+        """
+        if self._d_flag_info is None and self._key_prefix is not None:
+            # Load from the database
+            self._d_flag_info = {}
+            for d_single_flag_info in self._arg_info[const.DB_IN_FLAGS_KEY_BASE]:
+                flag: str = d_single_flag_info[const.DB_FLAG_KEY]
+                self._d_flag_info[flag] = FlagInfo(parent=self,
+                                                   id=d_single_flag_info[const.DB_ID_KEY],
+                                                   flag=flag,
+                                                   description=d_single_flag_info[const.DB_DESC_KEY],
+                                                   info=d_single_flag_info[const.DB_INFO_KEY])
+
+        return self._d_flag_info
+
+    @property
+    def l_flag_info(self) -> list[FlagInfo | None]:
+        """Generate the flag info list (indexed by ID) when needed. Returns None if the converter has no flag info in
+        the database
+        """
+        if self._l_flag_info is None and self._key_prefix is not None:
+            # Pre-size a list based on the maximum ID plus 1 (since IDs are 1-indexed)
+            max_id: int = max([x.id for x in self.d_flag_info.values()])
+            self._l_flag_info: list[FlagInfo | None] = [None] * (max_id+1)
+
+            # Fill the list with all flags in the dict
+            for single_flag_info in self.d_flag_info.values():
+                self._l_flag_info[single_flag_info.id] = single_flag_info
+
+        return self._l_flag_info
+
+    @property
+    def d_option_info(self) -> dict[str, OptionInfo] | None:
+        """Generate the option info dict (index by flag) when needed. Returns None if the converter has no option info
+        in the database
+        """
+        if self._d_option_info is None and self._key_prefix is not None:
+            # Load from the database
+            self._d_option_info = {}
+            for d_single_option_info in self._arg_info[const.DB_IN_optionS_KEY_BASE]:
+                flag: str = d_single_option_info[const.DB_FLAG_KEY]
+                self._d_option_info[flag] = OptionInfo(parent=self,
+                                                       id=d_single_option_info[const.DB_ID_KEY],
+                                                       flag=flag,
+                                                       brief=d_single_option_info[const.DB_BRIEF_KEY],
+                                                       description=d_single_option_info[const.DB_DESC_KEY],
+                                                       info=d_single_option_info[const.DB_INFO_KEY])
+
+        return self._d_option_info
+
+    @property
+    def l_option_info(self) -> list[OptionInfo | None]:
+        """Generate the option info list (indexed by ID) when needed. Returns None if the converter has no option info
+        in the database
+        """
+        if self._l_option_info is None and self._key_prefix is not None:
+            # Pre-size a list based on the maximum ID plus 1 (since IDs are 1-indexed)
+            max_id: int = max([x.id for x in self.d_option_info.values()])
+            self._l_option_info: list[OptionInfo | None] = [None] * (max_id+1)
+
+            # Fill the list with all options in the dict
+            for single_option_info in self.d_option_info.values():
+                self._l_option_info[single_option_info.id] = single_option_info
+
+        return self._l_option_info
+
+    @property
+    def d_arg_info(self) -> dict[str, ArgInfo] | None:
+        """Generate the arg info dict (index by flag) when needed, which is a combination of the dicts for flags and
+        options. Returns None if the converter has no flag or option info in the database
+        """
+        if self._d_arg_info is None and self._key_prefix is not None:
+            # Make the arg info dict by combining the flag and option info dicts
+            self._d_arg_info = copy(self.d_flag_info)
+            self._d_arg_info.update(self.d_option_info)
+        return self._d_arg_info
 
 
 class FormatInfo:
@@ -330,7 +445,7 @@ class DataConversionDatabase:
         return self._d_converter_info
 
     @property
-    def l_converter_info(self) -> list[ConverterInfo]:
+    def l_converter_info(self) -> list[ConverterInfo | None]:
         """Generate the converter info list (indexed by ID) when needed
         """
         if self._l_converter_info is None:
@@ -379,7 +494,7 @@ class DataConversionDatabase:
         return self._d_format_info
 
     @property
-    def l_format_info(self) -> list[FormatInfo]:
+    def l_format_info(self) -> list[FormatInfo | None]:
         """Generate the format info list (indexed by ID) when needed
         """
         if self._l_format_info is None:

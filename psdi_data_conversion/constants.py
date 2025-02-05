@@ -91,6 +91,7 @@ DB_NAME_KEY = "name"
 
 # Keys for converter general info in the database
 DB_DESC_KEY = "description"
+DB_INFO_KEY = "further_info"
 DB_URL_KEY = "url"
 
 # Keys for format general info in the database
@@ -116,6 +117,10 @@ DB_IN_FLAGS_FORMATS_KEY_BASE = "format_to_flags_in"
 DB_OUT_FLAGS_FORMATS_KEY_BASE = "format_to_flags_out"
 DB_IN_OPTIONS_FORMATS_KEY_BASE = "format_to_argflags_in"
 DB_OUT_OPTIONS_FORMATS_KEY_BASE = "format_to_argflags_out"
+
+# Keys for argument info in the database
+DB_FLAG_KEY = "flag"
+DB_BRIEF_KEY = "brief"
 
 # Errors
 # ------
