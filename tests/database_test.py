@@ -9,7 +9,8 @@ Unit tests relating to using the database
 from psdi_data_conversion.converter import L_REGISTERED_CONVERTERS
 from psdi_data_conversion.converters.openbabel import CONVERTER_OB
 from psdi_data_conversion.database import (get_converter_info, get_database, get_degree_of_success, get_format_info,
-                                           get_possible_converters, get_possible_formats)
+                                           get_in_format_args, get_out_format_args, get_possible_converters,
+                                           get_possible_formats)
 
 
 def test_load():
@@ -50,6 +51,22 @@ def test_converter_info():
         # Check URL appears reasonable
         assert isinstance(converter_info.url, str)
         assert "http" in converter_info.url
+
+
+def test_format_args():
+    """Test that we can get the flags and options allowed for specific formats for a given converter
+    """
+    l_in_flags, _ = get_in_format_args(CONVERTER_OB, "pdb")
+    l_out_flags, _ = get_out_format_args(CONVERTER_OB, "cif")
+
+    l_in_flag_names = [x.flag for x in l_in_flags]
+    l_out_flag_names = [x.flag for x in l_out_flags]
+
+    assert "b" in l_in_flag_names
+    assert "c" in l_in_flag_names
+    assert "s" in l_in_flag_names
+
+    assert "g" in l_out_flag_names
 
 
 def test_format_info():

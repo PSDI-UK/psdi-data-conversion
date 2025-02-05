@@ -181,12 +181,31 @@ The script can also be used to get information on possible conversions by provid
 psdi-data-convert -l
 ```
 
-Without any further arguments, the script will list converters available for use.
+Without any further arguments, the script will list converters available for use. More detailed information about a specific converter or conversion can be obtained through providing more information about the desired conversion.
 
-Further functionality planned for this script, but yet to be implemented:
+To get more information about a converter, call:
 
-- If the name of a converter is provided as an argument, it should provide information on the converter, such as what flags it will accept
-- If the names of two formats are provided as arguments, it should provide information on the possible converters that can be used for this conversion and the expected quality of the conversion
+```
+psdi-data-convert -l <converter name>
+```
+
+This will print general information on this converter, including what flags and options it accepts for all conversions, plus a table of what file formats it can handle for input and output.
+
+To get information about which converters can handle a given conversion, call:
+
+```
+psdi-data-convert -l -f <input format> -t <output format>
+```
+
+This will provide a list of converters which can handle this conversion, and notes on the degree of success for each.
+
+To get information on input/output flags and options a converter supports for given input/output file formats, call:
+
+```
+psdi-data-convert -l <converter name> [-f <input format>] [-t <output format>]
+```
+
+If an input format is provided, information on input flags and options accepted by the converter for this format will be provided, and similar for if an output format is provided.
 
 ## Python Library
 
@@ -275,6 +294,7 @@ The `database` module provides classes and methods to interface with the databas
 - `get_degree_of_success` - This method takes the name of a converter, the name of an input file format (its extension), and the name of an output file format, and provides the degree of success for this conversion (`None` if not possible, otherwise a string describing it).
 - `get_possible_converters` - This method takes the names of an input and output file format, and returns a list of converters which can perform the desired conversion and their degree of success.
 - `get_possible_formats` - This method takes the name of a converter and returns a list of input formats it can accept and a list of output formats it can produce. While it's usually a safe bet that a converter can handle any combination between these lists, it's best to make sure that it can with the `get_degree_of_success` method
+- `get_in_format_args` and `get_out_format_args` - These methods take the name of a converter and the name of an input/output file format, and return a list of info on flags accepted by the converter when using this format for input/output
 
 ## Using the Online Conversion Service
 

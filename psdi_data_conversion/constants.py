@@ -91,6 +91,7 @@ DB_NAME_KEY = "name"
 
 # Keys for converter general info in the database
 DB_DESC_KEY = "description"
+DB_INFO_KEY = "further_info"
 DB_URL_KEY = "url"
 
 # Keys for format general info in the database
@@ -108,14 +109,23 @@ DB_OUT_ID_KEY = "out_id"
 DB_SUCCESS_KEY = "degree_of_success"
 
 # Key bases for converter-specific items in the database
-DB_FROM_FLAGS_IN_KEY_BASE = "flags_in"
-DB_FROM_FLAGS_OUT_KEY_BASE = "flags_out"
-DB_FROM_ARGFLAGS_IN_KEY_BASE = "argflags_in"
-DB_FROM_ARGFLAGS_OUT_KEY_BASE = "argflags_out"
-DB_TO_FLAGS_IN_KEY_BASE = "format_to_flags_in"
-DB_TO_FLAGS_OUT_KEY_BASE = "format_to_flags_out"
-DB_TO_ARGFLAGS_IN_KEY_BASE = "format_to_argflags_in"
-DB_TO_ARGFLAGS_OUT_KEY_BASE = "format_to_argflags_out"
+DB_IN_FLAGS_KEY_BASE = "flags_in"
+DB_OUT_FLAGS_KEY_BASE = "flags_out"
+DB_IN_OPTIONS_KEY_BASE = "argflags_in"
+DB_OUT_OPTIONS_KEY_BASE = "argflags_out"
+DB_IN_FLAGS_FORMATS_KEY_BASE = "format_to_flags_in"
+DB_OUT_FLAGS_FORMATS_KEY_BASE = "format_to_flags_out"
+DB_IN_OPTIONS_FORMATS_KEY_BASE = "format_to_argflags_in"
+DB_OUT_OPTIONS_FORMATS_KEY_BASE = "format_to_argflags_out"
+
+# Keys for argument info in the database
+DB_FLAG_KEY = "flag"
+DB_BRIEF_KEY = "brief"
+DB_FORMAT_ID_KEY = "formats_id"
+DB_IN_FLAGS_ID_KEY_BASE = "flags_in_id"
+DB_OUT_FLAGS_ID_KEY_BASE = "flags_out_id"
+DB_IN_OPTIONS_ID_KEY_BASE = "argflags_in_id"
+DB_OUT_OPTIONS_ID_KEY_BASE = "argflags_out_id"
 
 # Errors
 # ------

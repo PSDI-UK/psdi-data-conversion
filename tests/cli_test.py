@@ -142,9 +142,9 @@ def test_list_converters(capsys):
     """
     run_with_arg_string("--list")
     captured = capsys.readouterr()
-    assert "Available converters are:" in captured.out
+    assert "Available converters:" in captured.out
     for converter_name in L_REGISTERED_CONVERTERS:
-        assert converter_name in captured.out
+        assert converter_name in captured.out, converter_name
 
     # Check that no errors were produced
     assert not captured.err
@@ -160,7 +160,7 @@ def test_detail_converter(capsys):
         run_with_arg_string(f"--list {converter_name}")
         captured = capsys.readouterr()
         assert "not recognized" not in captured.err
-        assert f"Converter: {converter_name}" in captured.out
+        assert f"{converter_name}" in captured.out
 
         if not converter_info.description:
             assert "available for this converter" in captured.out
