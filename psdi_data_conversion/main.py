@@ -17,7 +17,10 @@ import textwrap
 from psdi_data_conversion import constants as const
 from psdi_data_conversion.converter import D_REGISTERED_CONVERTERS, L_REGISTERED_CONVERTERS, run_converter
 from psdi_data_conversion.converters.base import FileConverterAbortException, FileConverterInputException
-from psdi_data_conversion.database import get_converter_info, get_degree_of_success, get_possible_formats
+from psdi_data_conversion.database import (get_converter_info, get_degree_of_success, get_in_format_args,
+                                           get_out_format_args, get_possible_formats)
+
+ARG_LEN = 24
 
 
 class ConvertArgs:
@@ -371,31 +374,42 @@ def detail_converter_use(args: ConvertArgs):
     mention_output_format = False
 
     if args.from_format is not None:
-        in_flags = converter_class.get_in_format_flags(args.from_format)
         from_format = args.from_format
+        in_flags, in_options = get_in_format_args(args.name, from_format)
     else:
-        in_flags = ()
+        in_flags, in_options = [], []
         from_format = "N/A"
         if converter_class.has_in_format_flags_or_options:
             mention_input_format = True
 
     if args.to_format is not None:
-        out_flags = converter_class.get_out_format_flags(args.to_format)
         to_format = args.to_format
+        out_flags, out_options = get_out_format_args(args.name, to_format)
     else:
-        out_flags = ()
+        out_flags, out_options = [], []
         to_format = "N/A"
         if converter_class.has_out_format_flags_or_options:
             mention_output_format = True
 
-    for flags, flag_type, format_name in ((in_flags, "input", from_format),
-                                          (out_flags, "output", to_format)):
-        if len(flags) == 0:
+    for l_args, flag_or_option, input_or_output, format_name in ((in_flags, "flag", "input", from_format),
+                                                                 (in_options, "option", "input", from_format),
+                                                                 (out_flags, "flag", "output", to_format),
+                                                                 (out_options, "option", "output", to_format)):
+        if len(l_args) == 0:
             continue
-        print(f"Allowed {flag_type} flags for format '{format_name}':")
-        for flag, help in flags:
-            print(f"  {flag}")
-            print(textwrap.fill(help, width=width, initial_indent=" "*4, subsequent_indent=" "*4))
+        print(f"Allowed {input_or_output} {flag_or_option}s for format '{format_name}':")
+        for arg_info in l_args:
+            if flag_or_option == "flag":
+                optional_brief = ""
+            else:
+                optional_brief = f" <{arg_info.brief}>"
+            print(f"{arg_info.flag+optional_brief:>{ARG_LEN}}  {arg_info.description}")
+            if arg_info.info and arg_info.info != "N/A":
+                print(textwrap.fill(arg_info.info,
+                                    width=width,
+                                    initial_indent=" "*ARG_LEN,
+                                    subsequent_indent=" "*ARG_LEN))
+        print("")
 
     if converter_class.allowed_options is None:
         print("Information has not been provided about general options accepted by this converter.")
