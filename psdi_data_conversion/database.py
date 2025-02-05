@@ -99,11 +99,15 @@ class ConverterInfo:
         # Placeholders for members that are generated when needed
         self._l_flag_info: list[FlagInfo | None] | None = None
         self._d_flag_info: dict[str, FlagInfo] | None = None
-        self._l_option_info: list[OptionInfo | None] | None = None
         self._d_option_info: dict[str, OptionInfo] | None = None
+        self._l_option_info: list[OptionInfo | None] | None = None
+
         self._d_arg_info: dict[str, ArgInfo] | None = None
-        self._d_in_format_args: dict[str | int, set[ArgInfo]] | None = None
-        self._d_out_format_args: dict[str | int, set[ArgInfo]] | None = None
+
+        self._d_in_format_flags: dict[str | int, set[FlagInfo]] | None = None
+        self._d_out_format_flags: dict[str | int, set[FlagInfo]] | None = None
+        self._d_in_format_options: dict[str | int, set[OptionInfo]] | None = None
+        self._d_out_format_options: dict[str | int, set[OptionInfo]] | None = None
 
         # If the converter class has no defined key prefix, don't add any extra info for it
         if self._key_prefix is None:
@@ -182,7 +186,7 @@ class ConverterInfo:
         elif issubclass(subclass, OptionInfo):
             d_arg_info = self.d_option_info
         else:
-            raise FileConverterDatabaseException(f"Unrecognised subclass passed to `_create_d_arg_info`: {subclass}")
+            raise FileConverterDatabaseException(f"Unrecognised subclass passed to `_create_l_arg_info`: {subclass}")
 
         # Pre-size a list based on the maximum ID plus 1 (since IDs are 1-indexed)
         max_id: int = max([x.id for x in d_arg_info.values()])
@@ -232,59 +236,118 @@ class ConverterInfo:
             self._d_arg_info.update(self.d_option_info)
         return self._d_arg_info
 
+    def _create_d_format_args(self,
+                              subclass: type[ArgInfo],
+                              in_or_out: str):
+        """Creates either the flag or option format args dict
+        """
+
+        # Set values based on whether we're working with flags or options
+        if issubclass(subclass, FlagInfo):
+            d_arg_info = self.d_flag_info
+        elif issubclass(subclass, OptionInfo):
+            d_arg_info = self.d_option_info
+        else:
+            raise FileConverterDatabaseException(
+                f"Unrecognised subclass passed to `_create_d_format_args`: {subclass}")
+
+        if in_or_out not in ("in", "out"):
+            raise FileConverterDatabaseException(
+                f"Unrecognised `in_or_out` value passed to `_create_d_format_args`: {in_or_out}")
+
+        d_format_args: dict[str | int, set[ArgInfo]] = {}
+        l_parent_format_info = self.parent.l_format_info
+
+        for arg_info in d_arg_info.values():
+
+            if in_or_out == "in":
+                s_formats = arg_info.s_in_formats
+            else:
+                s_formats = arg_info.s_out_formats
+            l_format_info = [l_parent_format_info[format_id] for format_id in s_formats]
+            for format_info in l_format_info:
+                format_name = format_info.name
+                format_id = format_info.id
+
+                # Add an empty set for this format to the dict if it isn't yet there, otherwise add to the set
+                if format_name not in d_format_args:
+                    d_format_args[format_name] = set()
+                    # Keying by ID will point to the same set as keying by name
+                    d_format_args[format_id] = d_format_args[format_name]
+
+                d_format_args[format_name].add(arg_info)
+
+        return d_format_args
+
     @property
-    def d_in_format_args(self) -> dict[str | int, set[ArgInfo]]:
-        """Generate the dict of arguments for an input format (keyed by format name/extension or format ID) when needed.
+    def d_in_format_flags(self) -> dict[str | int, set[FlagInfo]]:
+        """Generate the dict of flags for an input format (keyed by format name/extension or format ID) when needed.
         The format will not be in the dict if no flags are accepted
         """
-        if self._d_in_format_args is None:
-
-            self._d_in_format_args = {}
-            l_format_info = self.parent.l_format_info
-
-            for arg_info in self.d_arg_info.values():
-
-                l_in_format_info = [l_format_info[format_id] for format_id in arg_info.s_in_formats]
-                for in_format_info in l_in_format_info:
-                    format_name = in_format_info.name
-                    format_id = in_format_info.id
-
-                    # Add an empty set for this format to the dict if it isn't yet there, otherwise add to the set
-                    if format_name not in self._d_in_format_args:
-                        self._d_in_format_args[format_name] = set()
-                        # Keying by ID will point to the same set as keying by name
-                        self._d_in_format_args[format_id] = self._d_in_format_args[format_name]
-
-                    self._d_in_format_args[format_name].add(arg_info)
-
-        return self._d_in_format_args
+        if self._d_in_format_flags is None:
+            self._d_in_format_flags = self._create_d_format_args(FlagInfo, "in")
+        return self._d_in_format_flags
 
     @property
-    def d_out_format_args(self) -> dict[str | int, set[ArgInfo]]:
-        """Generate the dict of arguments for an output format (keyed by format name/extension or format ID) when
-        needed. The format will not be in the dict if no flags are accepted
+    def d_out_format_flags(self) -> dict[str | int, set[FlagInfo]]:
+        """Generate the dict of flags for an output format (keyed by format name/extension or format ID) when needed.
+        The format will not be in the dict if no options are accepted
         """
-        if self._d_out_format_args is None:
+        if self._d_out_format_flags is None:
+            self._d_out_format_flags = self._create_d_format_args(FlagInfo, "out")
+        return self._d_out_format_flags
 
-            self._d_out_format_args = {}
-            l_format_info = self.parent.l_format_info
+    @property
+    def d_in_format_options(self) -> dict[str | int, set[OptionInfo]]:
+        """Generate the dict of options for an input format (keyed by format name/extension or format ID) when needed.
+        The format will not be in the dict if no options are accepted
+        """
+        if self._d_in_format_options is None:
+            self._d_in_format_options = self._create_d_format_args(OptionInfo, "in")
+        return self._d_in_format_options
 
-            for arg_info in self.d_arg_info.values():
+    @property
+    def d_out_format_options(self) -> dict[str | int, set[OptionInfo]]:
+        """Generate the dict of options for an output format (keyed by format name/extension or format ID) when needed.
+        The format will not be in the dict if no options are accepted
+        """
+        if self._d_out_format_options is None:
+            self._d_out_format_options = self._create_d_format_args(OptionInfo, "out")
+        return self._d_out_format_options
 
-                l_out_format_info = [l_format_info[format_id] for format_id in arg_info.s_out_formats]
-                for in_format_info in l_out_format_info:
-                    format_name = in_format_info.name
-                    format_id = in_format_info.id
+    def get_in_format_args(self, name: str) -> tuple[set[FlagInfo], set[OptionInfo]]:
+        """Get the input flags and options supported for a given format (provided as its extension)
 
-                    # Add an empty set for this format to the dict if it isn't yet there
-                    if format_name not in self._d_out_format_args:
-                        self._d_out_format_args[format_name] = set()
-                        # Keying by ID will point to the same set as keying by name
-                        self._d_out_format_args[format_id] = self._d_out_format_args[format_name]
+        Parameters
+        ----------
+        name : str
+            The file format name (extension)
 
-                    self._d_out_format_args[format_name].add(arg_info)
+        Returns
+        -------
+        tuple[set[FlagInfo], set[OptionInfo]]
+            A set of info for the allowed flags, and a set of info for the allowed options
+        """
+        s_flag_info = self.d_in_format_flags.get(name, set())
+        s_option_info = self.d_in_format_options.get(name, set())
+        return s_flag_info, s_option_info
 
-        return self._d_out_format_args
+    def get_out_format_args(self, name: str) -> tuple[set[FlagInfo], set[OptionInfo]]:
+        """Get the output flags and options supported for a given format (provided as its extension)
+
+        Parameters
+        ----------
+        name : str
+            The file format name (extension)
+
+        Returns
+        -------
+        tuple[set[FlagInfo], set[OptionInfo]]
+            A set of info for the allowed flags, and a set of info for the allowed options
+        """
+        s_flag_info = self.d_out_format_flags.get(name, set())
+        s_option_info = self.d_out_format_options.get(name, set())
+        return s_flag_info, s_option_info
 
 
 class FormatInfo:
@@ -778,6 +841,50 @@ def get_possible_formats(converter_name: str) -> tuple[list[str], list[str]]:
         A tuple of a list of the supported input formats and a list of the supported output formats
     """
     return get_database().conversions_table.get_possible_formats(converter_name=converter_name)
+
+
+def get_in_format_args(self,
+                       converter_name: str,
+                       format_name: str) -> tuple[set[FlagInfo], set[OptionInfo]]:
+    """Get the input flags and options supported by a given converter for a given format (provided as its extension)
+
+    Parameters
+    ----------
+    converter_name : str
+        The converter name
+    format_name : str
+        The file format name (extension)
+
+    Returns
+    -------
+    tuple[set[FlagInfo], set[OptionInfo]]
+        A set of info for the allowed flags, and a set of info for the allowed options
+    """
+
+    converter_info = get_converter_info(converter_name)
+    return converter_info.get_in_format_args(format_name)
+
+
+def get_out_format_args(self,
+                        converter_name: str,
+                        format_name: str) -> tuple[set[FlagInfo], set[OptionInfo]]:
+    """Get the output flags and options supported by a given converter for a given format (provided as its extension)
+
+    Parameters
+    ----------
+    converter_name : str
+        The converter name
+    format_name : str
+        The file format name (extension)
+
+    Returns
+    -------
+    tuple[set[FlagInfo], set[OptionInfo]]
+        A set of info for the allowed flags, and a set of info for the allowed options
+    """
+
+    converter_info = get_converter_info(converter_name)
+    return converter_info.get_out_format_args(format_name)
 
 
 data = get_database()
