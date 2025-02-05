@@ -20,7 +20,21 @@ from psdi_data_conversion.converters.base import FileConverterAbortException, Fi
 from psdi_data_conversion.database import (get_converter_info, get_degree_of_success, get_in_format_args,
                                            get_out_format_args, get_possible_formats)
 
-ARG_LEN = 24
+# Formatting constants
+
+# Number of character spaces allocated for flags/options
+ARG_LEN = 20
+
+# Get the terminal width so we can prettily print help text
+width, _ = shutil.get_terminal_size((80, 20))
+
+
+def print_wrap(s, newline=False, **kwargs):
+    """Print a string wrapped to the terminal width
+    """
+    print(textwrap.fill(s, width=width, **kwargs))
+    if newline:
+        print("")
 
 
 class ConvertArgs:
@@ -307,28 +321,19 @@ def detail_converter_use(args: ConvertArgs):
     converter_info = get_converter_info(args.name)
     converter_class = D_REGISTERED_CONVERTERS[args.name]
 
-    # Get the terminal width so we can prettily print help text
-    width, _ = shutil.get_terminal_size((80, 20))
-
-    print(f"Converter: {converter_info.name}\n")
-
-    if converter_info.description:
-        print(textwrap.fill(f"{converter_info.description}", width=width) + "\n")
-    else:
-        print("Description is not available for this converter.\n")
-
-    if converter_info.url:
-        print(f"URL: {converter_info.url}\n")
+    print_wrap(f"{converter_info.name}: {converter_info.description} ({converter_info.url})", break_long_words=False,
+               break_on_hyphens=False, newline=True)
 
     # If both an input and output format are specified, provide the degree of success for this conversion. Otherwise
     # list possible input output formats
     if args.from_format is not None and args.to_format is not None:
         dos = get_degree_of_success(args.name, args.from_format, args.to_format)
         if dos is None:
-            print(f"Conversion from '{args.from_format}' to '{args.to_format}' with {args.name} is not supported.\n")
+            print_wrap(f"Conversion from '{args.from_format}' to '{
+                       args.to_format}' with {args.name} is not supported.\n")
         else:
-            print(f"Conversion from '{args.from_format}' to '{args.to_format}' with {args.name} is possible with the "
-                  f"following note on degree of success: {dos} \n")
+            print_wrap(f"Conversion from '{args.from_format}' to '{args.to_format}' with {args.name} is "
+                       f"possible with the following note on degree of success: {dos}", newline=True)
     else:
         l_input_formats, l_output_formats = get_possible_formats(args.name)
 
@@ -341,7 +346,7 @@ def detail_converter_use(args: ConvertArgs):
                 optional_not: str = ""
             else:
                 optional_not: str = " not"
-            print(f"Conversion {to_or_from} {format_name} is {optional_not}supported by {args.name}.\n")
+            print_wrap(f"Conversion {to_or_from} {format_name} is {optional_not}supported by {args.name}.\n")
 
         # List all possible formats, and which can be used for input and which for output
         s_all_formats: set[str] = set(l_input_formats)
@@ -349,7 +354,7 @@ def detail_converter_use(args: ConvertArgs):
         l_all_formats: list[str] = list(s_all_formats)
         l_all_formats.sort(key=lambda s: s.lower())
 
-        print(f"File formats supported by {args.name}:\n")
+        print_wrap(f"File formats supported by {args.name}:", newline=True)
         max_format_length = max([len(x) for x in l_all_formats])
         print(" "*(max_format_length+5) + "   INPUT  OUTPUT")
         for file_format in l_all_formats:
@@ -359,14 +364,26 @@ def detail_converter_use(args: ConvertArgs):
         print("")
 
     if converter_class.allowed_flags is None:
-        print("Information has not been provided about general flags accepted by this converter.\n")
+        print_wrap("Information has not been provided about general flags accepted by this converter.", newline=True)
     elif len(converter_class.allowed_flags) == 0:
-        print("This converter does not accept any general flags.\n")
+        print_wrap("This converter does not accept any general flags.", newline=True)
     else:
-        print("Allowed general flags:")
+        print_wrap("Allowed general flags:")
         for flag, help in converter_class.allowed_flags:
             print(f"  {flag}")
-            print(textwrap.fill(help, width=width, initial_indent=" "*4, subsequent_indent=" "*4))
+            print_wrap(help, width=width, initial_indent=" "*4, subsequent_indent=" "*4)
+        print("")
+
+    if converter_class.allowed_options is None:
+        print_wrap("Information has not been provided about general options accepted by this converter.", newline=True)
+    elif len(converter_class.allowed_options) == 0:
+        print_wrap("This converter does not accept any general options.", newline=True)
+    else:
+        print_wrap("Allowed general options:")
+        for option, help in converter_class.allowed_options:
+            print(f"  {option} <val>")
+            print(textwrap.fill(help, initial_indent=" "*4, subsequent_indent=" "*4))
+        print("")
 
     # If input/output-format specific flags or options are available for the converter but a format isn't available,
     # we'll want to take note of that and mention that at the end of the output
@@ -397,58 +414,31 @@ def detail_converter_use(args: ConvertArgs):
                                                                  (out_options, "option", "output", to_format)):
         if len(l_args) == 0:
             continue
-        print(f"Allowed {input_or_output} {flag_or_option}s for format '{format_name}':")
+        print_wrap(f"Allowed {input_or_output} {flag_or_option}s for format '{format_name}':")
         for arg_info in l_args:
             if flag_or_option == "flag":
                 optional_brief = ""
             else:
                 optional_brief = f" <{arg_info.brief}>"
-            print(f"{arg_info.flag+optional_brief:>{ARG_LEN}}  {arg_info.description}")
+            print_wrap(f"{arg_info.flag+optional_brief:>{ARG_LEN}}  {arg_info.description}",
+                       subsequent_indent=" "*(ARG_LEN+2))
             if arg_info.info and arg_info.info != "N/A":
-                print(textwrap.fill(arg_info.info,
-                                    width=width,
-                                    initial_indent=" "*ARG_LEN,
-                                    subsequent_indent=" "*ARG_LEN))
+                print_wrap(arg_info.info,
+                           width=width,
+                           initial_indent=" "*(ARG_LEN+2),
+                           subsequent_indent=" "*(ARG_LEN+2))
         print("")
-
-    if converter_class.allowed_options is None:
-        print("Information has not been provided about general options accepted by this converter.")
-    elif len(converter_class.allowed_options) == 0:
-        print("This converter does not accept any general options.")
-    else:
-        print("Allowed general options:")
-        for option, help in converter_class.allowed_options:
-            print(f"  {option} <val>")
-            print(textwrap.fill(help, initial_indent=" "*4, subsequent_indent=" "*4))
-
-    try:
-        in_options = converter_class.get_in_format_options(args.from_format)
-    except FileConverterInputException:
-        in_options = ()
-    try:
-        out_options = converter_class.get_out_format_options(args.to_format)
-    except FileConverterInputException:
-        out_options = ()
-
-    for options, option_type, format_name in ((in_options, "input", from_format),
-                                              (out_options, "output", to_format)):
-        if len(options) == 0:
-            continue
-        print(f"Allowed {option_type} options for format '{format_name}':")
-        for option, help in options:
-            print(f"  {option} <val>")
-            print(textwrap.fill(help, width=width, initial_indent=" "*4, subsequent_indent=" "*4))
 
     # Now at the end, bring up input/output-format-specific flags and options
     if mention_input_format and mention_output_format:
-        print("\nTo see details on input/output flags and options allowed for specific formats, call:\n"
-              f"psdi-data-convert -l {args.name} -f <input_format> -t <output_format>")
+        print_wrap("To see details on input/output flags and options allowed for specific formats, call:\n"
+                   f"psdi-data-convert -l {args.name} -f <input_format> -t <output_format>")
     elif mention_input_format:
-        print("\nTo see details on input flags and options allowed for a specific format, call:\n"
-              f"psdi-data-convert -l {args.name} -f <input_format> [-t <output_format>]")
+        print_wrap("To see details on input flags and options allowed for a specific format, call:\n"
+                   f"psdi-data-convert -l {args.name} -f <input_format> [-t <output_format>]")
     elif mention_output_format:
-        print("\nTo see details on output flags and options allowed for a specific format, call:\n"
-              f"psdi-data-convert -l {args.name} -t <output_format> [-f <input_format>]")
+        print_wrap("To see details on output flags and options allowed for a specific format, call:\n"
+                   f"psdi-data-convert -l {args.name} -t <output_format> [-f <input_format>]")
 
 
 def detail_converters(args: ConvertArgs):
