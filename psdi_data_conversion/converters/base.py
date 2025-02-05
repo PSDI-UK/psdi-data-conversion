@@ -499,7 +499,7 @@ class FileConverter:
         if "from_full" in self.data:
             self.from_format = self.data["from_full"]
         if "to_full" in self.data:
-            self.to_format = self.data["from_full"]
+            self.to_format = self.data["to_full"]
         if "success" in self.data:
             self.quality = self.data["success"]
         else:
@@ -522,8 +522,8 @@ class ScriptFileConverter(FileConverter):
             self.data["from_flags"] = ""
         if "to_flags" not in self.data:
             self.data["to_flags"] = ""
-
-        process = subprocess.run(['sh', f'psdi_data_conversion/scripts/{self.script}',
+        print(self.to_format)
+        process = subprocess.run(['sh', f'psdi_data_conversion/scripts/{self.script}', '--' + self.to_format,
                                   self.in_filename, self.out_filename, self.data["from_flags"], self.data["to_flags"]],
                                  capture_output=True, text=True)
 
