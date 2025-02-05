@@ -329,8 +329,8 @@ def detail_converter_use(args: ConvertArgs):
     if args.from_format is not None and args.to_format is not None:
         dos = get_degree_of_success(args.name, args.from_format, args.to_format)
         if dos is None:
-            print_wrap(f"Conversion from '{args.from_format}' to '{
-                       args.to_format}' with {args.name} is not supported.\n")
+            print_wrap(f"Conversion from '{args.from_format}' to '{args.to_format}' with {args.name} is not "
+                       "supported.", newline=True)
         else:
             print_wrap(f"Conversion from '{args.from_format}' to '{args.to_format}' with {args.name} is "
                        f"possible with the following note on degree of success: {dos}", newline=True)
