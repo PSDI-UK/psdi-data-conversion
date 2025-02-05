@@ -879,7 +879,3 @@ def get_out_format_args(converter_name: str,
 
     converter_info = get_converter_info(converter_name)
     return converter_info.get_out_format_args(format_name)
-
-
-data = get_database()
-ob = get_converter_info('Open Babel')
