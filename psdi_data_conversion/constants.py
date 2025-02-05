@@ -121,6 +121,11 @@ DB_OUT_OPTIONS_FORMATS_KEY_BASE = "format_to_argflags_out"
 # Keys for argument info in the database
 DB_FLAG_KEY = "flag"
 DB_BRIEF_KEY = "brief"
+DB_FORMAT_ID_KEY = "formats_id"
+DB_IN_FLAGS_ID_KEY_BASE = "flags_in_id"
+DB_OUT_FLAGS_ID_KEY_BASE = "flags_out_id"
+DB_IN_OPTIONS_ID_KEY_BASE = "argflags_in_id"
+DB_OUT_OPTIONS_ID_KEY_BASE = "argflags_out_id"
 
 # Errors
 # ------

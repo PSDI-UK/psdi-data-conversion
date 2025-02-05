@@ -8,7 +8,7 @@ Python module provide utilities for accessing the converter database
 from __future__ import annotations
 
 from copy import copy
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 import json
 from logging import getLogger
 import os
@@ -37,6 +37,9 @@ class ArgInfo:
     flag: str
     description: str
     info: str
+
+    s_in_formats: set[int] = field(default_factory=set)
+    s_out_formats: set[int] = field(default_factory=set)
 
 
 @dataclass
@@ -122,11 +125,23 @@ class ConverterInfo:
             self._d_flag_info = {}
             for d_single_flag_info in self._arg_info[const.DB_IN_FLAGS_KEY_BASE]:
                 flag: str = d_single_flag_info[const.DB_FLAG_KEY]
-                self._d_flag_info[flag] = FlagInfo(parent=self,
-                                                   id=d_single_flag_info[const.DB_ID_KEY],
-                                                   flag=flag,
-                                                   description=d_single_flag_info[const.DB_DESC_KEY],
-                                                   info=d_single_flag_info[const.DB_INFO_KEY])
+                flag_id: int = d_single_flag_info[const.DB_ID_KEY]
+                flag_info = FlagInfo(parent=self,
+                                     id=flag_id,
+                                     flag=flag,
+                                     description=d_single_flag_info[const.DB_DESC_KEY],
+                                     info=d_single_flag_info[const.DB_INFO_KEY])
+                self._d_flag_info[flag] = flag_info
+
+                # Get a list of all in and formats applicable to this flag, and add them to the flag info's sets
+                l_in_formats = [x[const.DB_FORMAT_ID_KEY]
+                                for x in self._arg_info[const.DB_IN_FLAGS_FORMATS_KEY_BASE]
+                                if [self._key_prefix + const.DB_IN_FLAGS_ID_KEY_BASE] == flag_id]
+                l_out_formats = [x[const.DB_FORMAT_ID_KEY]
+                                 for x in self._arg_info[const.DB_OUT_FLAGS_FORMATS_KEY_BASE]
+                                 if [self._key_prefix + const.DB_OUT_FLAGS_ID_KEY_BASE] == flag_id]
+                flag_info.s_in_formats.update(l_in_formats)
+                flag_info.s_out_formats.update(l_out_formats)
 
         return self._d_flag_info
 
@@ -156,12 +171,24 @@ class ConverterInfo:
             self._d_option_info = {}
             for d_single_option_info in self._arg_info[const.DB_IN_OPTIONS_KEY_BASE]:
                 flag: str = d_single_option_info[const.DB_FLAG_KEY]
-                self._d_option_info[flag] = OptionInfo(parent=self,
-                                                       id=d_single_option_info[const.DB_ID_KEY],
-                                                       flag=flag,
-                                                       brief=d_single_option_info[const.DB_BRIEF_KEY],
-                                                       description=d_single_option_info[const.DB_DESC_KEY],
-                                                       info=d_single_option_info[const.DB_INFO_KEY])
+                option_id = d_single_option_info[const.DB_ID_KEY]
+                option_info = OptionInfo(parent=self,
+                                         id=option_id,
+                                         flag=flag,
+                                         brief=d_single_option_info[const.DB_BRIEF_KEY],
+                                         description=d_single_option_info[const.DB_DESC_KEY],
+                                         info=d_single_option_info[const.DB_INFO_KEY])
+                self._d_option_info[flag] = option_info
+
+                # Get a list of all in and formats applicable to this flag, and add them to the flag info's sets
+                l_in_formats = [x[const.DB_FORMAT_ID_KEY]
+                                for x in self._arg_info[const.DB_IN_OPTIONS_FORMATS_KEY_BASE]
+                                if [self._key_prefix + const.DB_IN_OPTIONS_ID_KEY_BASE] == option_id]
+                l_out_formats = [x[const.DB_FORMAT_ID_KEY]
+                                 for x in self._arg_info[const.DB_OUT_OPTIONS_FORMATS_KEY_BASE]
+                                 if [self._key_prefix + const.DB_OUT_OPTIONS_ID_KEY_BASE] == option_id]
+                option_info.s_in_formats.update(l_in_formats)
+                option_info.s_out_formats.update(l_out_formats)
 
         return self._d_option_info
 
