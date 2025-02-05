@@ -58,6 +58,8 @@ class ConverterInfo:
         try:
             key_prefix = D_REGISTERED_CONVERTERS[name].database_key_prefix
         except KeyError:
+            # We'll get a KeyError for converters in the database that don't yet have their own class, which we can
+            # safely ignore
             key_prefix = None
 
         self._arg_info = {}
@@ -65,14 +67,14 @@ class ConverterInfo:
         # If the converter class has no defined key prefix, don't add any extra info for it
         if key_prefix is None:
             return
-        for key_base in (const.DB_FROM_FLAGS_IN_KEY_BASE,
-                         const.DB_FROM_FLAGS_OUT_KEY_BASE,
-                         const.DB_FROM_ARGFLAGS_IN_KEY_BASE,
-                         const.DB_FROM_ARGFLAGS_OUT_KEY_BASE,
-                         const.DB_TO_FLAGS_IN_KEY_BASE,
-                         const.DB_TO_FLAGS_OUT_KEY_BASE,
-                         const.DB_TO_ARGFLAGS_IN_KEY_BASE,
-                         const.DB_TO_ARGFLAGS_OUT_KEY_BASE):
+        for key_base in (const.DB_IN_FLAGS_KEY_BASE,
+                         const.DB_OUT_FLAGS_KEY_BASE,
+                         const.DB_IN_OPTIONS_KEY_BASE,
+                         const.DB_OUT_OPTIONS_KEY_BASE,
+                         const.DB_IN_FLAGS_FORMATS_KEY_BASE,
+                         const.DB_OUT_FLAGS_FORMATS_KEY_BASE,
+                         const.DB_IN_OPTIONS_FORMATS_KEY_BASE,
+                         const.DB_OUT_OPTIONS_FORMATS_KEY_BASE):
             self._arg_info[key_base] = d_data.get(key_prefix + key_base)
 
 
@@ -567,3 +569,7 @@ def get_possible_formats(converter_name: str) -> tuple[list[str], list[str]]:
         A tuple of a list of the supported input formats and a list of the supported output formats
     """
     return get_database().conversions_table.get_possible_formats(converter_name=converter_name)
+
+
+data = get_database()
+ob = get_converter_info('Open Babel')
