@@ -154,7 +154,7 @@ class ConverterInfo:
         if self._d_option_info is None and self._key_prefix is not None:
             # Load from the database
             self._d_option_info = {}
-            for d_single_option_info in self._arg_info[const.DB_IN_optionS_KEY_BASE]:
+            for d_single_option_info in self._arg_info[const.DB_IN_OPTIONS_KEY_BASE]:
                 flag: str = d_single_option_info[const.DB_FLAG_KEY]
                 self._d_option_info[flag] = OptionInfo(parent=self,
                                                        id=d_single_option_info[const.DB_ID_KEY],
