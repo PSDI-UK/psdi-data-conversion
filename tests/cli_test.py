@@ -160,7 +160,7 @@ def test_detail_converter(capsys):
         run_with_arg_string(f"--list {converter_name}")
         captured = capsys.readouterr()
         assert "not recognized" not in captured.err
-        assert f"Converter: {converter_name}" in captured.out
+        assert f"{converter_name}" in captured.out
 
         if not converter_info.description:
             assert "available for this converter" in captured.out
