@@ -22,10 +22,16 @@ name: tag-container-push
 run-name: tag-container-push
 
 on:
-    workflow_call:
+  workflow_call:
+    outputs:
+      container_tag:
+        description: "Container Tag"
+        value: ${{ jobs.tag-container-push.outputs.container_tag }}
     
 jobs:
   tag-container-push:
+    outputs:
+      container_tag: ${{ steps.tag_version.outputs.new_tag }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
