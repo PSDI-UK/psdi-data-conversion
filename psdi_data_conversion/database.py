@@ -167,6 +167,8 @@ class ConverterInfo:
                              if [self._key_prefix + out_args_id_key_base] == arg_id]
             arg_info.s_out_formats.update(l_out_formats)
 
+        return d_arg_info
+
     @property
     def d_flag_info(self) -> dict[str, FlagInfo] | None:
         """Generate the flag info dict (index by flag) when needed. Returns None if the converter has no flag info in
@@ -213,7 +215,7 @@ class ConverterInfo:
         in the database
         """
         if self._d_option_info is None and self._key_prefix is not None:
-            self._d_flag_info = self._create_d_arg_info(FlagInfo)
+            self._d_option_info = self._create_d_arg_info(FlagInfo)
         return self._d_option_info
 
     @property
@@ -843,8 +845,7 @@ def get_possible_formats(converter_name: str) -> tuple[list[str], list[str]]:
     return get_database().conversions_table.get_possible_formats(converter_name=converter_name)
 
 
-def get_in_format_args(self,
-                       converter_name: str,
+def get_in_format_args(converter_name: str,
                        format_name: str) -> tuple[set[FlagInfo], set[OptionInfo]]:
     """Get the input flags and options supported by a given converter for a given format (provided as its extension)
 
@@ -865,8 +866,7 @@ def get_in_format_args(self,
     return converter_info.get_in_format_args(format_name)
 
 
-def get_out_format_args(self,
-                        converter_name: str,
+def get_out_format_args(converter_name: str,
                         format_name: str) -> tuple[set[FlagInfo], set[OptionInfo]]:
     """Get the output flags and options supported by a given converter for a given format (provided as its extension)
 
