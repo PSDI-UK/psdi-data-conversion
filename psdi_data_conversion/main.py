@@ -18,7 +18,7 @@ from psdi_data_conversion import constants as const
 from psdi_data_conversion.converter import D_REGISTERED_CONVERTERS, L_REGISTERED_CONVERTERS, run_converter
 from psdi_data_conversion.converters.base import FileConverterAbortException, FileConverterInputException
 from psdi_data_conversion.database import (get_converter_info, get_degree_of_success, get_in_format_args,
-                                           get_out_format_args, get_possible_formats)
+                                           get_out_format_args, get_possible_converters, get_possible_formats)
 
 # Formatting constants
 
@@ -356,11 +356,12 @@ def detail_converter_use(args: ConvertArgs):
 
         print_wrap(f"File formats supported by {args.name}:", newline=True)
         max_format_length = max([len(x) for x in l_all_formats])
-        print(" "*(max_format_length+5) + "   INPUT  OUTPUT")
+        print(" "*(max_format_length+4) + "   INPUT  OUTPUT")
+        print(" "*(max_format_length+4) + "   -----  ------")
         for file_format in l_all_formats:
             in_yes_or_no = "yes" if file_format in l_input_formats else "no"
             out_yes_or_no = "yes" if file_format in l_output_formats else "no"
-            print(f"    {file_format:>{max_format_length}}:{in_yes_or_no:>8}{out_yes_or_no:>8}")
+            print(f"    {file_format:>{max_format_length}}{in_yes_or_no:>8}{out_yes_or_no:>8}")
         print("")
 
     if converter_class.allowed_flags is None:
@@ -441,6 +442,28 @@ def detail_converter_use(args: ConvertArgs):
                    f"psdi-data-convert -l {args.name} -t <output_format> [-f <input_format>]")
 
 
+def detail_possible_converters(from_format: str, to_format: str):
+    """Prints details on converters that can perform a conversion from one format to another
+    """
+    l_possible_converters = get_possible_converters(from_format, to_format)
+
+    if len(l_possible_converters) == 0:
+        print_wrap(f"No converters are available which can perform a conversion from {from_format} to {to_format}")
+        return
+
+    print_wrap(f"The following converters can convert from {from_format} to {to_format}:", newline=True)
+
+    max_converter_len = max([len(name) for name, dos in l_possible_converters])
+    print(f"{'    CONVERTER':<{max_converter_len+4}}  DEGREE OF SUCCESS")
+    print(f"{'    ---------':<{max_converter_len+4}}  -----------------")
+    for name, dos in l_possible_converters:
+        print_wrap(f"    {name:<{max_converter_len}}  {dos}", subsequent_indent=" "*(max_converter_len+6))
+    print("")
+
+    print_wrap("To see details on input/output flags and options allowed by a converter for this conversion, call:")
+    print(f"psdi-data-convert -l <converter name> -f {from_format} -t {to_format}")
+
+
 def detail_converters(args: ConvertArgs):
     """Prints details on available converters for the user.
     """
@@ -448,8 +471,10 @@ def detail_converters(args: ConvertArgs):
         return detail_converter_use(args)
     elif args.name != "":
         print(f"ERROR: Converter '{args.name}' not recognized.", file=sys.stderr)
-    print("Available converters are: \n- " + "\n- ".join(L_REGISTERED_CONVERTERS) + "\n\n" +
-          "For more details on a converter, call: psdi-data-convert -l <Converter name>")
+    elif args.from_format and args.to_format:
+        return detail_possible_converters(args.from_format, args.to_format)
+    print_wrap("Available converters are: \n- " + "\n- ".join(L_REGISTERED_CONVERTERS) + "\n\n" +
+               "For more details on a converter, call: psdi-data-convert -l <Converter name>")
 
 
 def run_from_args(args: ConvertArgs):
