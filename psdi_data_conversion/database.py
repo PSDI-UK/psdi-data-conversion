@@ -101,6 +101,8 @@ class ConverterInfo:
         self._l_option_info: list[OptionInfo | None] | None = None
         self._d_option_info: dict[str, OptionInfo] | None = None
         self._d_arg_info: dict[str, ArgInfo] | None = None
+        self._d_in_format_args: dict[str | int, set[ArgInfo]] | None = None
+        self._d_out_format_args: dict[str | int, set[ArgInfo]] | None = None
 
         # If the converter class has no defined key prefix, don't add any extra info for it
         if self._key_prefix is None:
@@ -218,6 +220,58 @@ class ConverterInfo:
             self._d_arg_info = copy(self.d_flag_info)
             self._d_arg_info.update(self.d_option_info)
         return self._d_arg_info
+
+    def d_in_format_args(self) -> dict[str | int, set[ArgInfo]]:
+        """Generate the dict of arguments for an input format (keyed by format name/extension or format ID) when needed.
+        The format will not be in the dict if no flags are accepted
+        """
+        if self._d_in_format_args is None:
+
+            self._d_in_format_args = {}
+            l_format_info = self.parent.l_format_info
+
+            for arg_info in self.d_arg_info.values():
+
+                l_in_format_info = [l_format_info[format_id] for format_id in arg_info.s_in_formats]
+                for in_format_info in l_in_format_info:
+                    format_name = in_format_info.name
+                    format_id = in_format_info.id
+
+                    # Add an empty set for this format to the dict if it isn't yet there, otherwise add to the set
+                    if format_name not in self._d_in_format_args:
+                        self._d_in_format_args[format_name] = set()
+                        # Keying by ID will point to the same set as keying by name
+                        self._d_in_format_args[format_id] = self._d_in_format_args[format_name]
+
+                    self._d_in_format_args[format_name].add(arg_info)
+
+        return self._d_in_format_args
+
+    def d_out_format_args(self) -> dict[str | int, set[ArgInfo]]:
+        """Generate the dict of arguments for an output format (keyed by format name/extension or format ID) when
+        needed. The format will not be in the dict if no flags are accepted
+        """
+        if self._d_out_format_args is None:
+
+            self._d_out_format_args = {}
+            l_format_info = self.parent.l_format_info
+
+            for arg_info in self.d_arg_info.values():
+
+                l_out_format_info = [l_format_info[format_id] for format_id in arg_info.s_out_formats]
+                for in_format_info in l_out_format_info:
+                    format_name = in_format_info.name
+                    format_id = in_format_info.id
+
+                    # Add an empty set for this format to the dict if it isn't yet there
+                    if format_name not in self._d_out_format_args:
+                        self._d_out_format_args[format_name] = set()
+                        # Keying by ID will point to the same set as keying by name
+                        self._d_out_format_args[format_id] = self._d_out_format_args[format_name]
+
+                    self._d_out_format_args[format_name].add(arg_info)
+
+        return self._d_out_format_args
 
 
 class FormatInfo:
