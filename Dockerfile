@@ -26,7 +26,8 @@
 
 FROM python:3.12-slim-bookworm
 WORKDIR /app
-COPY . .
+COPY requirements.txt byte.js /app
+COPY psdi_data_conversion /app/psdi_data_conversion
 
 # Install Python packages (including openbabel-wheel)
 RUN pip install --upgrade pip
@@ -37,11 +38,24 @@ RUN pip install gunicorn
 RUN apt update
 RUN apt-get -y install libxrender1 libxext6
 
-ENV FLASK_APP=psdi_data_conversion/app.py
-ENV FLASK_RUN_HOST=0.0.0.0
+ARG UID=1000
+ARG GID=1000
+ARG USERNAME=flask
+
+RUN groupadd -g $GID $USERNAME && \
+    useradd -m -u $UID -g $GID -s /bin/bash $USERNAME
+
+RUN chown -R $UID:$GID /app
+
 ENV PYTHONPATH="."
+ENV LOGGING=stdout
+ENV FLASK_RUN_HOST=0.0.0.0
 
 EXPOSE 5000
 
-CMD ["/bin/bash", "-c", "gunicorn app:app & python -m flask run"]
+USER $UID
 
+RUN mkdir /app/psdi_data_conversion/static/uploads
+RUN mkdir /app/psdi_data_conversion/static/downloads
+
+CMD ["/bin/bash", "-c", "python -m flask --app psdi_data_conversion/app.py run"]
