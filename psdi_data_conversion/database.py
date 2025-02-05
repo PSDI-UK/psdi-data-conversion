@@ -104,10 +104,10 @@ class ConverterInfo:
 
         self._d_arg_info: dict[str, ArgInfo] | None = None
 
-        self._d_in_format_flags: dict[str | int, set[FlagInfo]] | None = None
-        self._d_out_format_flags: dict[str | int, set[FlagInfo]] | None = None
-        self._d_in_format_options: dict[str | int, set[OptionInfo]] | None = None
-        self._d_out_format_options: dict[str | int, set[OptionInfo]] | None = None
+        self._d_in_format_flags: dict[str | int, set[str]] | None = None
+        self._d_out_format_flags: dict[str | int, set[str]] | None = None
+        self._d_in_format_options: dict[str | int, set[str]] | None = None
+        self._d_out_format_options: dict[str | int, set[str]] | None = None
 
         # If the converter class has no defined key prefix, don't add any extra info for it
         if self._key_prefix is None:
@@ -159,12 +159,12 @@ class ConverterInfo:
             # Get a list of all in and formats applicable to this flag, and add them to the flag info's sets
             l_in_formats = [x[const.DB_FORMAT_ID_KEY]
                             for x in self._arg_info[in_formats_key_base]
-                            if [self._key_prefix + in_args_id_key_base] == arg_id]
+                            if x[self._key_prefix + in_args_id_key_base] == arg_id]
             arg_info.s_in_formats.update(l_in_formats)
 
             l_out_formats = [x[const.DB_FORMAT_ID_KEY]
                              for x in self._arg_info[out_formats_key_base]
-                             if [self._key_prefix + out_args_id_key_base] == arg_id]
+                             if x[self._key_prefix + out_args_id_key_base] == arg_id]
             arg_info.s_out_formats.update(l_out_formats)
 
         return d_arg_info
@@ -240,7 +240,7 @@ class ConverterInfo:
 
     def _create_d_format_args(self,
                               subclass: type[ArgInfo],
-                              in_or_out: str):
+                              in_or_out: str) -> dict[str | int, set[str]]:
         """Creates either the flag or option format args dict
         """
 
@@ -277,12 +277,12 @@ class ConverterInfo:
                     # Keying by ID will point to the same set as keying by name
                     d_format_args[format_id] = d_format_args[format_name]
 
-                d_format_args[format_name].add(arg_info)
+                d_format_args[format_name].add(arg_info.flag)
 
         return d_format_args
 
     @property
-    def d_in_format_flags(self) -> dict[str | int, set[FlagInfo]]:
+    def d_in_format_flags(self) -> dict[str | int, set[str]]:
         """Generate the dict of flags for an input format (keyed by format name/extension or format ID) when needed.
         The format will not be in the dict if no flags are accepted
         """
@@ -291,7 +291,7 @@ class ConverterInfo:
         return self._d_in_format_flags
 
     @property
-    def d_out_format_flags(self) -> dict[str | int, set[FlagInfo]]:
+    def d_out_format_flags(self) -> dict[str | int, set[str]]:
         """Generate the dict of flags for an output format (keyed by format name/extension or format ID) when needed.
         The format will not be in the dict if no options are accepted
         """
@@ -300,7 +300,7 @@ class ConverterInfo:
         return self._d_out_format_flags
 
     @property
-    def d_in_format_options(self) -> dict[str | int, set[OptionInfo]]:
+    def d_in_format_options(self) -> dict[str | int, set[str]]:
         """Generate the dict of options for an input format (keyed by format name/extension or format ID) when needed.
         The format will not be in the dict if no options are accepted
         """
@@ -309,7 +309,7 @@ class ConverterInfo:
         return self._d_in_format_options
 
     @property
-    def d_out_format_options(self) -> dict[str | int, set[OptionInfo]]:
+    def d_out_format_options(self) -> dict[str | int, set[str]]:
         """Generate the dict of options for an output format (keyed by format name/extension or format ID) when needed.
         The format will not be in the dict if no options are accepted
         """
@@ -317,7 +317,7 @@ class ConverterInfo:
             self._d_out_format_options = self._create_d_format_args(OptionInfo, "out")
         return self._d_out_format_options
 
-    def get_in_format_args(self, name: str) -> tuple[set[FlagInfo], set[OptionInfo]]:
+    def get_in_format_args(self, name: str) -> tuple[list[FlagInfo], list[OptionInfo]]:
         """Get the input flags and options supported for a given format (provided as its extension)
 
         Parameters
@@ -330,11 +330,17 @@ class ConverterInfo:
         tuple[set[FlagInfo], set[OptionInfo]]
             A set of info for the allowed flags, and a set of info for the allowed options
         """
-        s_flag_info = self.d_in_format_flags.get(name, set())
-        s_option_info = self.d_in_format_options.get(name, set())
-        return s_flag_info, s_option_info
+        l_flag_names = list(self.d_in_format_flags.get(name, set()))
+        l_flag_names.sort(key=lambda s: s.lower())
+        l_flag_info = [self.d_flag_info[x] for x in l_flag_names]
 
-    def get_out_format_args(self, name: str) -> tuple[set[FlagInfo], set[OptionInfo]]:
+        l_option_names = list(self.d_in_format_options.get(name, set()))
+        l_option_names.sort(key=lambda s: s.lower())
+        l_option_info = [self.d_option_info[x] for x in l_option_names]
+
+        return l_flag_info, l_option_info
+
+    def get_out_format_args(self, name: str) -> tuple[list[FlagInfo], list[OptionInfo]]:
         """Get the output flags and options supported for a given format (provided as its extension)
 
         Parameters
@@ -347,9 +353,15 @@ class ConverterInfo:
         tuple[set[FlagInfo], set[OptionInfo]]
             A set of info for the allowed flags, and a set of info for the allowed options
         """
-        s_flag_info = self.d_out_format_flags.get(name, set())
-        s_option_info = self.d_out_format_options.get(name, set())
-        return s_flag_info, s_option_info
+        l_flag_names = list(self.d_out_format_flags.get(name, set()))
+        l_flag_names.sort(key=lambda s: s.lower())
+        l_flag_info = [self.d_flag_info[x] for x in l_flag_names]
+
+        l_option_names = list(self.d_out_format_options.get(name, set()))
+        l_option_names.sort(key=lambda s: s.lower())
+        l_option_info = [self.d_option_info[x] for x in l_option_names]
+
+        return l_flag_info, l_option_info
 
 
 class FormatInfo:
@@ -846,7 +858,7 @@ def get_possible_formats(converter_name: str) -> tuple[list[str], list[str]]:
 
 
 def get_in_format_args(converter_name: str,
-                       format_name: str) -> tuple[set[FlagInfo], set[OptionInfo]]:
+                       format_name: str) -> tuple[list[FlagInfo], list[OptionInfo]]:
     """Get the input flags and options supported by a given converter for a given format (provided as its extension)
 
     Parameters
@@ -859,7 +871,7 @@ def get_in_format_args(converter_name: str,
     Returns
     -------
     tuple[set[FlagInfo], set[OptionInfo]]
-        A set of info for the allowed flags, and a set of info for the allowed options
+        A list of info for the allowed flags, and a set of info for the allowed options
     """
 
     converter_info = get_converter_info(converter_name)
@@ -867,7 +879,7 @@ def get_in_format_args(converter_name: str,
 
 
 def get_out_format_args(converter_name: str,
-                        format_name: str) -> tuple[set[FlagInfo], set[OptionInfo]]:
+                        format_name: str) -> tuple[list[FlagInfo], list[OptionInfo]]:
     """Get the output flags and options supported by a given converter for a given format (provided as its extension)
 
     Parameters
@@ -880,7 +892,7 @@ def get_out_format_args(converter_name: str,
     Returns
     -------
     tuple[set[FlagInfo], set[OptionInfo]]
-        A set of info for the allowed flags, and a set of info for the allowed options
+        A list of info for the allowed flags, and a set of info for the allowed options
     """
 
     converter_info = get_converter_info(converter_name)
