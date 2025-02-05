@@ -7,5 +7,5 @@ resources:
 - flask-ingress.yaml
 images:
 - name: flask
-  newName: ghcr.io/psdi-uk/psdi-data-conversion/psdi-data-conversion
+  newName: ghcr.io/psdi-uk/psdi-data-conversion/data-conversion
   newTag: 0.0.1
