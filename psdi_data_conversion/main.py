@@ -432,20 +432,21 @@ def detail_converter_use(args: ConvertArgs):
 
     # Now at the end, bring up input/output-format-specific flags and options
     if mention_input_format and mention_output_format:
-        print_wrap("To see details on input/output flags and options allowed for specific formats, call:\n"
+        print_wrap("For details on input/output flags and options allowed for specific formats, call:\n"
                    f"psdi-data-convert -l {args.name} -f <input_format> -t <output_format>")
     elif mention_input_format:
-        print_wrap("To see details on input flags and options allowed for a specific format, call:\n"
+        print_wrap("For details on input flags and options allowed for a specific format, call:\n"
                    f"psdi-data-convert -l {args.name} -f <input_format> [-t <output_format>]")
     elif mention_output_format:
-        print_wrap("To see details on output flags and options allowed for a specific format, call:\n"
+        print_wrap("For details on output flags and options allowed for a specific format, call:\n"
                    f"psdi-data-convert -l {args.name} -t <output_format> [-f <input_format>]")
 
 
 def detail_possible_converters(from_format: str, to_format: str):
     """Prints details on converters that can perform a conversion from one format to another
     """
-    l_possible_converters = get_possible_converters(from_format, to_format)
+    l_possible_converters = [x for x in get_possible_converters(from_format, to_format)
+                             if x[0] in L_REGISTERED_CONVERTERS]
 
     if len(l_possible_converters) == 0:
         print_wrap(f"No converters are available which can perform a conversion from {from_format} to {to_format}")
@@ -460,7 +461,7 @@ def detail_possible_converters(from_format: str, to_format: str):
         print_wrap(f"    {name:<{max_converter_len}}  {dos}", subsequent_indent=" "*(max_converter_len+6))
     print("")
 
-    print_wrap("To see details on input/output flags and options allowed by a converter for this conversion, call:")
+    print_wrap("For details on input/output flags and options allowed by a converter for this conversion, call:")
     print(f"psdi-data-convert -l <converter name> -f {from_format} -t {to_format}")
 
 
@@ -473,8 +474,16 @@ def detail_converters(args: ConvertArgs):
         print(f"ERROR: Converter '{args.name}' not recognized.", file=sys.stderr)
     elif args.from_format and args.to_format:
         return detail_possible_converters(args.from_format, args.to_format)
-    print_wrap("Available converters are: \n- " + "\n- ".join(L_REGISTERED_CONVERTERS) + "\n\n" +
-               "For more details on a converter, call: psdi-data-convert -l <Converter name>")
+    print("Available converters: \n\n    " + "\n    ".join(L_REGISTERED_CONVERTERS) + "\n")
+
+    print_wrap("For more details on a converter, call:")
+    print("psdi-data-convert -l <converter name>\n")
+
+    print_wrap("For a list of converters that can perform a desired conversion, call:")
+    print("psdi-data-convert -l -f <input format> -t <output format>\n")
+
+    print_wrap("For a list of options provided by a converter for a desired conversion, call:")
+    print("psdi-data-convert -l <converter name> -f <input format> -t <output format>")
 
 
 def run_from_args(args: ConvertArgs):
