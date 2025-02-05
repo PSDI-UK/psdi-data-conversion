@@ -53,7 +53,8 @@ class FlagInfo(ArgInfo):
 class OptionInfo(ArgInfo):
     """Class providing information on an option accepted by a converter (an argument accepts a value)
     """
-    brief: str
+    # We need to provide a default argument here, since it will come after the sets with default arguments in ArgInfo
+    brief: str = ""
 
 
 class ConverterInfo:
