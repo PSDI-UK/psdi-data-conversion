@@ -118,35 +118,81 @@ class ConverterInfo:
                          const.DB_OUT_OPTIONS_FORMATS_KEY_BASE):
             self._arg_info[key_base] = d_data.get(self._key_prefix + key_base)
 
+    def _create_d_arg_info(self, subclass: type[ArgInfo]) -> dict[str, ArgInfo]:
+        """Creates either the flag or option info dict
+        """
+
+        # Set values based on whether we're working with flags or options
+        if issubclass(subclass, FlagInfo):
+            key_base = const.DB_IN_FLAGS_KEY_BASE
+            in_formats_key_base = const.DB_IN_FLAGS_FORMATS_KEY_BASE
+            in_args_id_key_base = const.DB_IN_FLAGS_ID_KEY_BASE
+            out_formats_key_base = const.DB_OUT_FLAGS_FORMATS_KEY_BASE
+            out_args_id_key_base = const.DB_OUT_FLAGS_ID_KEY_BASE
+        elif issubclass(subclass, OptionInfo):
+            key_base = const.DB_IN_OPTIONS_KEY_BASE
+            in_formats_key_base = const.DB_IN_OPTIONS_FORMATS_KEY_BASE
+            out_formats_key_base = const.DB_OUT_OPTIONS_FORMATS_KEY_BASE
+        else:
+            raise FileConverterDatabaseException(f"Unrecognised subclass passed to `_create_d_arg_info`: {subclass}")
+
+        d_arg_info: dict[str, ArgInfo] = {}
+        for d_single_arg_info in self._arg_info[key_base]:
+            name: str = d_single_arg_info[const.DB_FLAG_KEY]
+            arg_id: int = d_single_arg_info[const.DB_ID_KEY]
+            brief = d_single_arg_info.get(const.DB_BRIEF_KEY)
+            optional_arg_info_kwargs = {}
+            if brief is not None:
+                optional_arg_info_kwargs["brief"] = brief
+            arg_info = subclass(parent=self,
+                                id=arg_id,
+                                flag=name,
+                                description=d_single_arg_info[const.DB_DESC_KEY],
+                                info=d_single_arg_info[const.DB_INFO_KEY],
+                                **optional_arg_info_kwargs)
+            d_arg_info[name] = arg_info
+
+            # Get a list of all in and formats applicable to this flag, and add them to the flag info's sets
+            l_in_formats = [x[const.DB_FORMAT_ID_KEY]
+                            for x in self._arg_info[in_formats_key_base]
+                            if [self._key_prefix + in_args_id_key_base] == arg_id]
+            arg_info.s_in_formats.update(l_in_formats)
+
+            l_out_formats = [x[const.DB_FORMAT_ID_KEY]
+                             for x in self._arg_info[out_formats_key_base]
+                             if [self._key_prefix + out_args_id_key_base] == arg_id]
+            arg_info.s_out_formats.update(l_out_formats)
+
     @property
     def d_flag_info(self) -> dict[str, FlagInfo] | None:
         """Generate the flag info dict (index by flag) when needed. Returns None if the converter has no flag info in
         the database
         """
         if self._d_flag_info is None and self._key_prefix is not None:
-            # Load from the database
-            self._d_flag_info = {}
-            for d_single_flag_info in self._arg_info[const.DB_IN_FLAGS_KEY_BASE]:
-                flag: str = d_single_flag_info[const.DB_FLAG_KEY]
-                flag_id: int = d_single_flag_info[const.DB_ID_KEY]
-                flag_info = FlagInfo(parent=self,
-                                     id=flag_id,
-                                     flag=flag,
-                                     description=d_single_flag_info[const.DB_DESC_KEY],
-                                     info=d_single_flag_info[const.DB_INFO_KEY])
-                self._d_flag_info[flag] = flag_info
-
-                # Get a list of all in and formats applicable to this flag, and add them to the flag info's sets
-                l_in_formats = [x[const.DB_FORMAT_ID_KEY]
-                                for x in self._arg_info[const.DB_IN_FLAGS_FORMATS_KEY_BASE]
-                                if [self._key_prefix + const.DB_IN_FLAGS_ID_KEY_BASE] == flag_id]
-                l_out_formats = [x[const.DB_FORMAT_ID_KEY]
-                                 for x in self._arg_info[const.DB_OUT_FLAGS_FORMATS_KEY_BASE]
-                                 if [self._key_prefix + const.DB_OUT_FLAGS_ID_KEY_BASE] == flag_id]
-                flag_info.s_in_formats.update(l_in_formats)
-                flag_info.s_out_formats.update(l_out_formats)
-
+            self._d_flag_info = self._create_d_arg_info(FlagInfo)
         return self._d_flag_info
+
+    def _create_l_arg_info(self, subclass: type[ArgInfo]) -> dict[str, ArgInfo]:
+        """Creates either the flag or option info list
+        """
+
+        # Set values based on whether we're working with flags or options
+        if issubclass(subclass, FlagInfo):
+            d_arg_info = self.d_flag_info
+        elif issubclass(subclass, OptionInfo):
+            d_arg_info = self.d_option_info
+        else:
+            raise FileConverterDatabaseException(f"Unrecognised subclass passed to `_create_d_arg_info`: {subclass}")
+
+        # Pre-size a list based on the maximum ID plus 1 (since IDs are 1-indexed)
+        max_id: int = max([x.id for x in d_arg_info.values()])
+        l_arg_info: list[ArgInfo | None] = [None] * (max_id+1)
+
+        # Fill the list with all flags in the dict
+        for single_arg_info in d_arg_info.values():
+            l_arg_info[single_arg_info.id] = single_arg_info
+
+        return l_arg_info
 
     @property
     def l_flag_info(self) -> list[FlagInfo | None]:
@@ -154,14 +200,7 @@ class ConverterInfo:
         the database
         """
         if self._l_flag_info is None and self._key_prefix is not None:
-            # Pre-size a list based on the maximum ID plus 1 (since IDs are 1-indexed)
-            max_id: int = max([x.id for x in self.d_flag_info.values()])
-            self._l_flag_info: list[FlagInfo | None] = [None] * (max_id+1)
-
-            # Fill the list with all flags in the dict
-            for single_flag_info in self.d_flag_info.values():
-                self._l_flag_info[single_flag_info.id] = single_flag_info
-
+            self._l_flag_info = self._create_l_arg_info(FlagInfo)
         return self._l_flag_info
 
     @property
@@ -170,29 +209,7 @@ class ConverterInfo:
         in the database
         """
         if self._d_option_info is None and self._key_prefix is not None:
-            # Load from the database
-            self._d_option_info = {}
-            for d_single_option_info in self._arg_info[const.DB_IN_OPTIONS_KEY_BASE]:
-                flag: str = d_single_option_info[const.DB_FLAG_KEY]
-                option_id = d_single_option_info[const.DB_ID_KEY]
-                option_info = OptionInfo(parent=self,
-                                         id=option_id,
-                                         flag=flag,
-                                         brief=d_single_option_info[const.DB_BRIEF_KEY],
-                                         description=d_single_option_info[const.DB_DESC_KEY],
-                                         info=d_single_option_info[const.DB_INFO_KEY])
-                self._d_option_info[flag] = option_info
-
-                # Get a list of all in and formats applicable to this flag, and add them to the flag info's sets
-                l_in_formats = [x[const.DB_FORMAT_ID_KEY]
-                                for x in self._arg_info[const.DB_IN_OPTIONS_FORMATS_KEY_BASE]
-                                if [self._key_prefix + const.DB_IN_OPTIONS_ID_KEY_BASE] == option_id]
-                l_out_formats = [x[const.DB_FORMAT_ID_KEY]
-                                 for x in self._arg_info[const.DB_OUT_OPTIONS_FORMATS_KEY_BASE]
-                                 if [self._key_prefix + const.DB_OUT_OPTIONS_ID_KEY_BASE] == option_id]
-                option_info.s_in_formats.update(l_in_formats)
-                option_info.s_out_formats.update(l_out_formats)
-
+            self._d_flag_info = self._create_d_arg_info(FlagInfo)
         return self._d_option_info
 
     @property
@@ -201,14 +218,7 @@ class ConverterInfo:
         in the database
         """
         if self._l_option_info is None and self._key_prefix is not None:
-            # Pre-size a list based on the maximum ID plus 1 (since IDs are 1-indexed)
-            max_id: int = max([x.id for x in self.d_option_info.values()])
-            self._l_option_info: list[OptionInfo | None] = [None] * (max_id+1)
-
-            # Fill the list with all options in the dict
-            for single_option_info in self.d_option_info.values():
-                self._l_option_info[single_option_info.id] = single_option_info
-
+            self._l_flag_info = self._create_l_arg_info(OptionInfo)
         return self._l_option_info
 
     @property
@@ -222,6 +232,7 @@ class ConverterInfo:
             self._d_arg_info.update(self.d_option_info)
         return self._d_arg_info
 
+    @property
     def d_in_format_args(self) -> dict[str | int, set[ArgInfo]]:
         """Generate the dict of arguments for an input format (keyed by format name/extension or format ID) when needed.
         The format will not be in the dict if no flags are accepted
@@ -248,6 +259,7 @@ class ConverterInfo:
 
         return self._d_in_format_args
 
+    @property
     def d_out_format_args(self) -> dict[str | int, set[ArgInfo]]:
         """Generate the dict of arguments for an output format (keyed by format name/extension or format ID) when
         needed. The format will not be in the dict if no flags are accepted
