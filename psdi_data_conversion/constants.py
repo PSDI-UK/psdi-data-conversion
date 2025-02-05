@@ -108,14 +108,14 @@ DB_OUT_ID_KEY = "out_id"
 DB_SUCCESS_KEY = "degree_of_success"
 
 # Key bases for converter-specific items in the database
-DB_FROM_FLAGS_IN_KEY_BASE = "flags_in"
-DB_FROM_FLAGS_OUT_KEY_BASE = "flags_out"
-DB_FROM_ARGFLAGS_IN_KEY_BASE = "argflags_in"
-DB_FROM_ARGFLAGS_OUT_KEY_BASE = "argflags_out"
-DB_TO_FLAGS_IN_KEY_BASE = "format_to_flags_in"
-DB_TO_FLAGS_OUT_KEY_BASE = "format_to_flags_out"
-DB_TO_ARGFLAGS_IN_KEY_BASE = "format_to_argflags_in"
-DB_TO_ARGFLAGS_OUT_KEY_BASE = "format_to_argflags_out"
+DB_IN_FLAGS_KEY_BASE = "flags_in"
+DB_OUT_FLAGS_KEY_BASE = "flags_out"
+DB_IN_OPTIONS_KEY_BASE = "argflags_in"
+DB_OUT_OPTIONS_KEY_BASE = "argflags_out"
+DB_IN_FLAGS_FORMATS_KEY_BASE = "format_to_flags_in"
+DB_OUT_FLAGS_FORMATS_KEY_BASE = "format_to_flags_out"
+DB_IN_OPTIONS_FORMATS_KEY_BASE = "format_to_argflags_in"
+DB_OUT_OPTIONS_FORMATS_KEY_BASE = "format_to_argflags_out"
 
 # Errors
 # ------
