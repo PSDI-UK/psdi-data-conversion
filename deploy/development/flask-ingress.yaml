@@ -1,0 +1,23 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: flask-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /$1
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: data-conversion-dev.psdi.ac.uk
+    http:
+      paths:
+      - backend:
+          service:
+            name: flask
+            port:
+              number: 5000
+        path: /?(.*)
+        pathType: ImplementationSpecific
+  tls:
+  - hosts:
+    - data-conversion-dev.psdi.ac.uk
+    secretName: psdi-ac-uk-tls
