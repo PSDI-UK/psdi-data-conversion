@@ -446,6 +446,30 @@ def detail_converter_use(args: ConvertArgs):
                    f"{CLI_SCRIPT_NAME} -l {args.name} -t <output_format> [-f <input_format>]")
 
 
+def list_supported_formats(err=False):
+    """Prints a list of all formats recognised by at least one registered converter
+    """
+    # Make a list of all formats recognised by at least one converter
+    s_all_formats: set[str] = set()
+    for converter_name in L_REGISTERED_CONVERTERS:
+        l_in_formats, l_out_formats = get_possible_formats(converter_name)
+        s_all_formats.update(l_in_formats)
+        s_all_formats.update(l_out_formats)
+
+    # Convert the set to a list and alphabetise it
+    l_all_formats = list(s_all_formats)
+    l_all_formats.sort(key=lambda s: s.lower())
+
+    # Pad the format strings to all be the same length. To keep columns aligned, all padding is done with non-
+    # breaking spaces (\xa0), and each format is followed by a single normal space
+    longest_format_len = max([len(x) for x in l_all_formats])
+    l_padded_formats = [f"{x:\xa0<{longest_format_len}} " for x in l_all_formats]
+
+    print_wrap("Supported formats are: ", err=err, newline=True)
+    print_wrap("".join(l_padded_formats), err=err, initial_indent="  ", subsequent_indent="  ", newline=True)
+    print_wrap("Note that not all formats are supported with all converters, or both as input and as output.")
+
+
 def detail_possible_converters(from_format: str, to_format: str):
     """Prints details on converters that can perform a conversion from one format to another
     """
@@ -466,25 +490,8 @@ def detail_possible_converters(from_format: str, to_format: str):
         print_wrap(f"ERROR: Output format '{from_format}' not recognised", newline=True, err=True)
 
     if either_format_failed:
-        # Make a list of all formats recognised by at least one converter
-        s_all_formats: set[str] = set()
-        for converter_name in L_REGISTERED_CONVERTERS:
-            l_in_formats, l_out_formats = get_possible_formats(converter_name)
-            s_all_formats.update(l_in_formats)
-            s_all_formats.update(l_out_formats)
-
-        # Convert the set to a list and alphabetise it
-        l_all_formats = list(s_all_formats)
-        l_all_formats.sort(key=lambda s: s.lower())
-
-        # Pad the format strings to all be the same length. To keep columns aligned, all padding is done with non-
-        # breaking spaces (\xa0), and each format is followed by a single normal space
-        longest_format_len = max([len(x) for x in l_all_formats])
-        l_padded_formats = [f"{x:\xa0<{longest_format_len}} " for x in l_all_formats]
-
-        print_wrap("Possible formats are: ", err=True)
-        print_wrap("".join(l_padded_formats), err=True, initial_indent="  ", subsequent_indent="  ")
-
+        # Let the user know about formats which are allowed
+        list_supported_formats(err=True)
         exit(1)
 
     l_possible_converters = [x for x in get_possible_converters(from_format, to_format)
@@ -507,8 +514,8 @@ def detail_possible_converters(from_format: str, to_format: str):
     print(f"{CLI_SCRIPT_NAME} -l <converter name> -f {from_format} -t {to_format}")
 
 
-def detail_converters(args: ConvertArgs):
-    """Prints details on available converters for the user.
+def detail_converters_and_formats(args: ConvertArgs):
+    """Prints details on available converters and formats for the user.
     """
     if args.name in L_REGISTERED_CONVERTERS:
         return detail_converter_use(args)
@@ -516,7 +523,11 @@ def detail_converters(args: ConvertArgs):
         print_wrap(f"ERROR: Converter '{args.name}' not recognized.", err=True)
     elif args.from_format and args.to_format:
         return detail_possible_converters(args.from_format, args.to_format)
+
     print("Available converters: \n\n    " + "\n    ".join(L_REGISTERED_CONVERTERS) + "\n")
+
+    list_supported_formats(err=False)
+    print("")
 
     print_wrap("For more details on a converter, call:")
     print(f"{CLI_SCRIPT_NAME} -l <converter name>\n")
@@ -539,7 +550,7 @@ def run_from_args(args: ConvertArgs):
 
     # Check if we've been asked to list options
     if args.list:
-        return detail_converters(args)
+        return detail_converters_and_formats(args)
 
     data = {'success': 'unknown',
             'from_flags': args.from_flags,
