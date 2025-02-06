@@ -50,6 +50,7 @@ jobs:
           body: ${{ steps.tag_version.outputs.changelog }}
       - name: Setup docker auth
         run: |
+          mkdir ~/.docker
           cat <<EOF > ~/.docker/config.json
           {
             "auths": {
@@ -68,4 +69,3 @@ jobs:
         run: |
           docker build -t $IMAGE_NAME .
           docker push $IMAGE_NAME
-
