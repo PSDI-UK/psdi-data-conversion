@@ -26,7 +26,17 @@ class FileConverterHelpException(FileConverterInputException):
     """An exception class which indicates an error where we will likely want to help the user figure out how to
     correctly use the CLI instead of simply printing a traceback
     """
-    pass
+
+    def __init__(self, *args, msg_preformatted=False):
+        """Init the exception, noting if the message should be treated as preformatted or not
+
+        Parameters
+        ----------
+        msg_preformatted : bool, optional
+            If True, indicates that the message of the exception has already been formatted. Default False
+        """
+        super().__init__(*args)
+        self.msg_preformatted = msg_preformatted
 
 
 def print_wrap(s, newline=False, err=False, **kwargs):
@@ -128,18 +138,23 @@ class ConvertArgs:
                                              "directory")
 
         if self.to_format is None:
-            raise FileConverterHelpException("Output format (-t or --to) must be provided")
+            msg = textwrap.fill("ERROR Output format (-t or --to) must be provided. For information on supported "
+                                "formats and converters, call:\n")
+            msg += f"{CLI_SCRIPT_NAME} -l"
+            raise FileConverterHelpException(msg, msg_preformatted=True)
 
         # If the output directory doesn't exist, silently create it
         if self._output_dir is not None and not os.path.isdir(self._output_dir):
             if os.path.exists(self._output_dir):
-                raise FileConverterHelpException(
-                    f"Output directory '{self._output_dir}' exists but is not a directory")
+                raise FileConverterHelpException(f"Output directory '{self._output_dir}' exists but is not a "
+                                                 "directory")
             os.makedirs(self._output_dir, exist_ok=True)
 
         # Check the converter is recognized
         if self.name not in L_REGISTERED_CONVERTERS:
-            raise FileConverterHelpException(f"Converter '{self.name}' not recognised")
+            msg = textwrap.fill(f"ERROR: Converter '{self.name}' not recognised", width=TERM_WIDTH)
+            msg += f"\n\n{get_supported_converters()}"
+            raise FileConverterHelpException(msg, msg_preformatted=True)
 
         # No more than two arguments supplied to --coord-gen
         if args.coord_gen is not None and len(args.coord_gen) > 2:
@@ -514,19 +529,37 @@ def detail_possible_converters(from_format: str, to_format: str):
     print(f"{CLI_SCRIPT_NAME} -l <converter name> -f {from_format} -t {to_format}")
 
 
+def get_supported_converters():
+    """Gets a string containing a list of supported converters
+    """
+    return "Available converters: \n\n    " + "\n    ".join(L_REGISTERED_CONVERTERS)
+
+
+def list_supported_converters(err=False):
+    """Prints a list of supported converters for the user
+    """
+    if err:
+        file = sys.stderr
+    else:
+        file = sys.stdout
+    print(get_supported_converters() + "\n", file=file)
+
+
 def detail_converters_and_formats(args: ConvertArgs):
     """Prints details on available converters and formats for the user.
     """
     if args.name in L_REGISTERED_CONVERTERS:
         return detail_converter_use(args)
     elif args.name != "":
-        print_wrap(f"ERROR: Converter '{args.name}' not recognized.", err=True)
+        print_wrap(f"ERROR: Converter '{args.name}' not recognized.", err=True, newline=True)
+        list_supported_converters(err=True)
+        exit(1)
     elif args.from_format and args.to_format:
         return detail_possible_converters(args.from_format, args.to_format)
 
-    print("Available converters: \n\n    " + "\n    ".join(L_REGISTERED_CONVERTERS) + "\n")
+    list_supported_converters()
+    list_supported_formats()
 
-    list_supported_formats(err=False)
     print("")
 
     print_wrap("For more details on a converter, call:")
@@ -551,6 +584,14 @@ def run_from_args(args: ConvertArgs):
     # Check if we've been asked to list options
     if args.list:
         return detail_converters_and_formats(args)
+
+    # Check that the requested conversion is valid
+    dos = get_degree_of_success(args.name, args.from_format, args.to_format)
+    if not dos:
+        print_wrap(f"ERROR: Conversion from {args.from_format} to {args.to_format} with {args.name} is not supported.",
+                   err=True, newline=True)
+        detail_possible_converters(args.from_format, args.to_format)
+        exit(1)
 
     data = {'success': 'unknown',
             'from_flags': args.from_flags,
@@ -626,7 +667,10 @@ def main():
     except FileConverterHelpException as e:
         # If we get a Help exception, it's likely due to user error, so don't bother them with a traceback and simply
         # print the message to stderr
-        print_wrap(f"ERROR: {e}", err=True)
+        if e.msg_preformatted:
+            print(e, file=sys.stderr)
+        else:
+            print_wrap(f"ERROR: {e}", err=True)
         exit(1)
 
     if (args.log_mode == const.LOG_SIMPLE or args.log_mode == const.LOG_FULL) and args.log_file:
