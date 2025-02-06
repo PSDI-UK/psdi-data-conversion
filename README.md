@@ -167,8 +167,8 @@ The full possible syntax for the script is:
 psdi-data-convert <input file 1> [<input file 2> <input file 3> ...] -t/--to <output format> [-f/--from <input file
 format>] [-i/--in <input file location>] [-o/--out <location for output files>] [-w/--with <converter>] [--delete-input]
 [--from-flags '<flags to be provided to the converter for reading input>'] [--to-flags '<flags to be provided to the
-converter for writing output>'] [--coord-gen <coordinate generation options] [-q/--quiet] [-g/--log-file <log file
-name] [--log-mode <mode>] [--log-level <level>]
+converter for writing output>'] [--coord-gen <coordinate generation options] [--nc/--no-check] [-q/--quiet]
+[-g/--log-file <log file name] [--log-mode <mode>] [--log-level <level>]
 ```
 
 Call `psdi-data-convert -h` for details on each of these options.

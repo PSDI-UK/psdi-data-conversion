@@ -75,6 +75,7 @@ class ConvertArgs:
         self.delete_input = args.delete_input
         self.from_flags: str = args.from_flags.replace(r"\-", "-")
         self.to_flags: str = args.to_flags.replace(r"\-", "-")
+        self.no_check = args.nc
 
         # Keyword arguments specific to OpenBabel conversion
         self.coord_gen: str
@@ -278,6 +279,11 @@ def get_argument_parser():
                              "For information on the flags accepted by a converter, call this script with '-l "
                              "<converter name>'. The first preceding hyphen for each flag must be backslash-escaped, "
                              "e.g. '--to-flags \"\\-a \\-bc \\--example\"'")
+    parser.add_argument("--nc", "--no-check", action="store_true",
+                        help="If set, will not perform a pre-check in the database on the validity of a conversion. "
+                        "Setting this will result in a less human-friendly error message (or may even falsely indicate "
+                        "success) if the conversion is not supported, but will save some execution time. Recommended "
+                        "only for automated execution after the user has confirmed a conversion is supported")
 
     # Keyword arguments specific to OpenBabel conversion
     parser.add_argument("--coord-gen", type=str, default=None, nargs="+",
@@ -585,13 +591,14 @@ def run_from_args(args: ConvertArgs):
     if args.list:
         return detail_converters_and_formats(args)
 
-    # Check that the requested conversion is valid
-    dos = get_degree_of_success(args.name, args.from_format, args.to_format)
-    if not dos:
-        print_wrap(f"ERROR: Conversion from {args.from_format} to {args.to_format} with {args.name} is not supported.",
-                   err=True, newline=True)
-        detail_possible_converters(args.from_format, args.to_format)
-        exit(1)
+    # Check that the requested conversion is valid unless suppressed
+    if not args.no_check:
+        dos = get_degree_of_success(args.name, args.from_format, args.to_format)
+        if not dos:
+            print_wrap(f"ERROR: Conversion from {args.from_format} to {args.to_format} with {args.name} is not "
+                       "supported.", err=True, newline=True)
+            detail_possible_converters(args.from_format, args.to_format)
+            exit(1)
 
     data = {'success': 'unknown',
             'from_flags': args.from_flags,
