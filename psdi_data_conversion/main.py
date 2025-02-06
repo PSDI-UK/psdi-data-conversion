@@ -425,7 +425,6 @@ def detail_converter_use(args: ConvertArgs):
                        subsequent_indent=" "*(ARG_LEN+2))
             if arg_info.info and arg_info.info != "N/A":
                 print_wrap(arg_info.info,
-                           width=width,
                            initial_indent=" "*(ARG_LEN+2),
                            subsequent_indent=" "*(ARG_LEN+2))
         print("")
