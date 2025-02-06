@@ -14,7 +14,8 @@ from unittest.mock import patch
 from psdi_data_conversion import constants as const
 from psdi_data_conversion.converter import L_REGISTERED_CONVERTERS
 from psdi_data_conversion.converters.openbabel import CONVERTER_OB
-from psdi_data_conversion.database import get_database, get_degree_of_success, get_in_format_args, get_out_format_args
+from psdi_data_conversion.database import (get_database, get_degree_of_success, get_in_format_args, get_out_format_args,
+                                           get_possible_converters)
 from psdi_data_conversion.main import FileConverterInputException, main, parse_args
 
 
@@ -182,6 +183,30 @@ def test_detail_converter(capsys):
     run_with_arg_string("--list bad_converter")
     captured = capsys.readouterr()
     assert "not recognized" in captured.err
+
+
+def test_get_converters(capsys):
+    """Test the option to get information on converters which can perform a desired conversion
+    """
+    in_format = "xyz"
+    out_format = "inchi"
+    l_converters_and_dos = get_possible_converters(in_format, out_format)
+
+    run_with_arg_string(f"-l -f {in_format} -t {out_format}")
+    captured = capsys.readouterr()
+    compressed_out: str = captured.out.replace("\n", "").replace(" ", "")
+
+    def string_is_present_in_out(s: str) -> bool:
+        return s.replace("\n", " ").replace(" ", "") in compressed_out
+
+    assert not captured.err
+
+    assert bool(l_converters_and_dos) == string_is_present_in_out("The following converters can convert from "
+                                                                  f"{in_format} to {out_format}:")
+
+    for converter_name, dos in l_converters_and_dos:
+        if converter_name in L_REGISTERED_CONVERTERS:
+            assert string_is_present_in_out(f"{converter_name}{dos}")
 
 
 def test_conversion_info(capsys):
