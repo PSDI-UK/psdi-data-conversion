@@ -28,10 +28,14 @@ class FileConverterHelpException(FileConverterInputException):
     pass
 
 
-def print_wrap(s, newline=False, **kwargs):
+def print_wrap(s, newline=False, err=False, **kwargs):
     """Print a string wrapped to the terminal width
     """
-    print(textwrap.fill(s, width=TERM_WIDTH, **kwargs))
+    if err:
+        file = sys.stderr
+    else:
+        file = sys.stdout
+    print(textwrap.fill(s, width=TERM_WIDTH, **kwargs), file=file)
     if newline:
         print("")
 
@@ -469,7 +473,7 @@ def detail_converters(args: ConvertArgs):
     if args.name in L_REGISTERED_CONVERTERS:
         return detail_converter_use(args)
     elif args.name != "":
-        print(f"ERROR: Converter '{args.name}' not recognized.", file=sys.stderr)
+        print_wrap(f"ERROR: Converter '{args.name}' not recognized.", err=True)
     elif args.from_format and args.to_format:
         return detail_possible_converters(args.from_format, args.to_format)
     print("Available converters: \n\n    " + "\n    ".join(L_REGISTERED_CONVERTERS) + "\n")
@@ -518,11 +522,11 @@ def run_from_args(args: ConvertArgs):
             if not qualified_filename.endswith(ex_extension):
                 qualified_filename += ex_extension
                 if not os.path.isfile(qualified_filename):
-                    print(f"ERROR: Cannot find file {filename+ex_extension} in directory {args.input_dir}",
-                          file=sys.stderr)
+                    print_wrap(f"ERROR: Cannot find file {filename+ex_extension} in directory {args.input_dir}",
+                               err=True)
                     continue
             else:
-                print(f"ERROR: Cannot find file {filename} in directory {args.input_dir}", file=sys.stderr)
+                print_wrap(f"ERROR: Cannot find file {filename} in directory {args.input_dir}", err=True)
                 continue
 
         if not args.quiet:
@@ -543,12 +547,12 @@ def run_from_args(args: ConvertArgs):
                           delete_input=args.delete_input,
                           refresh_local_log=False)
         except FileConverterAbortException as e:
-            print(f"ERROR: Attempt to convert file {filename} aborted with status code {e.status_code} and message: " +
-                  f"\n{e}\n", file=sys.stderr)
+            print_wrap(f"ERROR: Attempt to convert file {filename} aborted with status code {e.status_code} and "
+                       f"message:\n{e}\n", err=True)
             continue
         except Exception as e:
-            print(f"ERROR: Attempt to convert file {filename} failed with exception type {type(e)} and message: " +
-                  f"\n{e}\n", file=sys.stderr)
+            print_wrap(f"ERROR: Attempt to convert file {filename} failed with exception type {type(e)} and message: " +
+                       f"\n{e}\n", err=True)
             continue
 
         if not args.quiet:
@@ -571,7 +575,7 @@ def main():
     except FileConverterHelpException as e:
         # If we get a Help exception, it's likely due to user error, so don't bother them with a traceback and simply
         # print the message to stderr
-        print(f"ERROR: {e}", file=sys.stderr)
+        print_wrap(f"ERROR: {e}", err=True)
         exit(1)
 
     if (args.log_mode == const.LOG_SIMPLE or args.log_mode == const.LOG_FULL) and args.log_file:
