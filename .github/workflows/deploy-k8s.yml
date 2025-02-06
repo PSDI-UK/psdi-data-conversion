@@ -60,4 +60,4 @@ jobs:
           # return to root of repository
           cd -
           # Apply env specific kustomizations
-          kubectl apply -k deploy/environments/$DEPLOY_ENV
+          kubectl apply -k deploy/$DEPLOY_ENV
