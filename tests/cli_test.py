@@ -13,7 +13,8 @@ from unittest.mock import patch
 
 from psdi_data_conversion import constants as const
 from psdi_data_conversion.converter import L_REGISTERED_CONVERTERS
-from psdi_data_conversion.database import get_database
+from psdi_data_conversion.converters.openbabel import CONVERTER_OB
+from psdi_data_conversion.database import get_database, get_degree_of_success, get_in_format_args, get_out_format_args
 from psdi_data_conversion.main import FileConverterInputException, main, parse_args
 
 
@@ -181,6 +182,47 @@ def test_detail_converter(capsys):
     run_with_arg_string("--list bad_converter")
     captured = capsys.readouterr()
     assert "not recognized" in captured.err
+
+
+def test_conversion_info(capsys):
+    """Test the option to provide detail on degree of success and arguments a converter allows for a given conversion
+    """
+
+    converter_name = CONVERTER_OB
+    in_format = "xyz"
+    out_format = "inchi"
+    dos = get_degree_of_success(converter_name, in_format, out_format)
+
+    # Test a basic listing of arguments
+    run_with_arg_string(f"-l {converter_name} -f {in_format} -t {out_format}")
+    captured = capsys.readouterr()
+    compressed_out = captured.out.replace("\n", "").replace(" ", "")
+
+    def string_is_present_in_out(s: str) -> bool:
+        return s.replace("\n", " ").replace(" ", "") in compressed_out
+
+    assert not captured.err
+
+    # Check that degree of success is printed as expected
+    assert string_is_present_in_out(f"Conversion from '{in_format}' to '{out_format}' with {converter_name} is "
+                                    f"possible with the following note on degree of success: {dos}")
+
+    l_in_flags, l_in_options = get_in_format_args(converter_name, in_format)
+    l_out_flags, l_out_options = get_out_format_args(converter_name, out_format)
+
+    # Check headings for input/output flags/options are present if and only if some of those flags/options exist
+    assert bool(l_in_flags) == string_is_present_in_out(f"Allowed input flags for format '{in_format}':")
+    assert bool(l_out_flags) == string_is_present_in_out(f"Allowed output flags for format '{out_format}':")
+    assert bool(l_in_options) == string_is_present_in_out(f"Allowed input options for format '{in_format}':")
+    assert bool(l_out_options) == string_is_present_in_out(f"Allowed output options for format '{out_format}':")
+
+    # Check that info for each flag and option is printed as expected
+    for flag_info in l_in_flags + l_out_flags:
+        info = flag_info.info if flag_info.info and flag_info.info != "N/A" else ""
+        assert string_is_present_in_out(f"{flag_info.flag}{flag_info.description}{info}")
+    for option_info in l_in_options + l_out_options:
+        info = option_info.info if option_info.info and option_info.info != "N/A" else ""
+        assert string_is_present_in_out(f"{option_info.flag}<{option_info.brief}>{option_info.description}{info}")
 
 
 def test_convert(tmp_path_factory, capsys, test_data_loc):
