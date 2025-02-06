@@ -6,6 +6,7 @@ Miscellaneous constant values used within this project
 """
 
 import logging
+import shutil
 
 # Interface
 # ---------
@@ -34,8 +35,14 @@ DEFAULT_DOWNLOAD_DIR = './psdi_data_conversion/static/downloads'
 # Filename of the database, relative to the base of the python package
 DATABASE_FILENAME = "static/data/data.json"
 
-# Logging
-# -------
+# Logging and Formatting
+# ----------------------
+
+# Number of character spaces allocated for flags/options
+ARG_LEN = 20
+
+# Get the terminal width so we can prettily print help text
+TERM_WIDTH, _ = shutil.get_terminal_size((80, 20))
 
 # Log formatting
 LOG_FORMAT = r'[%(asctime)s] %(levelname)s [%(name)s.%(funcName)s:%(lineno)d] %(message)s'
