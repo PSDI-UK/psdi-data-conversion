@@ -14,8 +14,8 @@ from unittest.mock import patch
 from psdi_data_conversion import constants as const
 from psdi_data_conversion.converter import L_REGISTERED_CONVERTERS
 from psdi_data_conversion.converters.openbabel import CONVERTER_OB
-from psdi_data_conversion.database import (get_database, get_degree_of_success, get_in_format_args, get_out_format_args,
-                                           get_possible_converters)
+from psdi_data_conversion.database import (get_converter_info, get_degree_of_success, get_in_format_args,
+                                           get_out_format_args, get_possible_converters, get_possible_formats)
 from psdi_data_conversion.main import FileConverterInputException, main, parse_args
 
 
@@ -158,23 +158,36 @@ def test_detail_converter(capsys):
 
     # Test all converters are recognised, don't raise an error, and we get info on them
     for converter_name in L_REGISTERED_CONVERTERS:
-        converter_info = get_database().d_converter_info[converter_name]
+
+        converter_info = get_converter_info(converter_name)
+
         run_with_arg_string(f"--list {converter_name}")
         captured = capsys.readouterr()
-        assert "not recognized" not in captured.err
-        assert f"{converter_name}" in captured.out
+        compressed_out: str = captured.out.replace("\n", "").replace(" ", "")
+
+        def string_is_present_in_out(s: str) -> bool:
+            return s.replace("\n", " ").replace(" ", "") in compressed_out
+
+        assert string_is_present_in_out(converter_name)
 
         if not converter_info.description:
             assert "available for this converter" in captured.out
         else:
-            # Info text will be wrapped so replace all newlines with spaces in our comparison here
-            assert converter_info.description.replace("\n", " ") in captured.out.replace("\n", " ")
+            assert string_is_present_in_out(converter_info.description)
 
         # Check for URL
         assert converter_info.url in captured.out
 
         # Check for list of allowed input/output formats
         assert "   INPUT  OUTPUT" in captured.out
+
+        l_allowed_in_formats, l_allowed_out_formats = get_possible_formats(converter_name)
+        for in_format in l_allowed_in_formats:
+            output_allowed = "yes" if in_format in l_allowed_out_formats else "no"
+            assert string_is_present_in_out(f"{in_format}yes{output_allowed}")
+        for out_format in l_allowed_out_formats:
+            input_allowed = "yes" if out_format in l_allowed_in_formats else "no"
+            assert string_is_present_in_out(f"{out_format}{input_allowed}yes")
 
         # Check that no errors were produced
         assert not captured.err
