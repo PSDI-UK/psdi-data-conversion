@@ -50,7 +50,7 @@ jobs:
           body: ${{ steps.tag_version.outputs.changelog }}
       - name: Setup docker auth
         run: |
-          mkdir ~/.docker
+          mkdir -p ~/.docker
           cat <<EOF > ~/.docker/config.json
           {
             "auths": {
