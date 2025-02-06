@@ -11,6 +11,9 @@ import shutil
 # Interface
 # ---------
 
+# The name of the CLI script
+CLI_SCRIPT_NAME = "psdi-data-convert"
+
 # Environmental variables
 AUTH_ENVVAR = "AUTH"
 LOG_MODE_ENVVAR = "LOGGING"
