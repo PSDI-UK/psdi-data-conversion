@@ -10,11 +10,11 @@ Entry-point file for the command-line interface for data conversion.
 import logging
 from argparse import ArgumentParser
 import os
-import shutil
 import sys
 import textwrap
 
 from psdi_data_conversion import constants as const
+from psdi_data_conversion.constants import ARG_LEN, TERM_WIDTH
 from psdi_data_conversion.converter import D_REGISTERED_CONVERTERS, L_REGISTERED_CONVERTERS, run_converter
 from psdi_data_conversion.converters.base import FileConverterAbortException, FileConverterInputException
 from psdi_data_conversion.database import (get_converter_info, get_degree_of_success, get_in_format_args,
@@ -28,19 +28,10 @@ class FileConverterHelpException(FileConverterInputException):
     pass
 
 
-# Formatting constants
-
-# Number of character spaces allocated for flags/options
-ARG_LEN = 20
-
-# Get the terminal width so we can prettily print help text
-width, _ = shutil.get_terminal_size((80, 20))
-
-
 def print_wrap(s, newline=False, **kwargs):
     """Print a string wrapped to the terminal width
     """
-    print(textwrap.fill(s, width=width, **kwargs))
+    print(textwrap.fill(s, width=TERM_WIDTH, **kwargs))
     if newline:
         print("")
 
@@ -380,7 +371,7 @@ def detail_converter_use(args: ConvertArgs):
         print_wrap("Allowed general flags:")
         for flag, help in converter_class.allowed_flags:
             print(f"  {flag}")
-            print_wrap(help, width=width, initial_indent=" "*4, subsequent_indent=" "*4)
+            print_wrap(help, width=TERM_WIDTH, initial_indent=" "*4, subsequent_indent=" "*4)
         print("")
 
     if converter_class.allowed_options is None:
