@@ -17,8 +17,9 @@ from psdi_data_conversion import constants as const
 from psdi_data_conversion.constants import ARG_LEN, CLI_SCRIPT_NAME, TERM_WIDTH
 from psdi_data_conversion.converter import D_REGISTERED_CONVERTERS, L_REGISTERED_CONVERTERS, run_converter
 from psdi_data_conversion.converters.base import FileConverterAbortException, FileConverterInputException
-from psdi_data_conversion.database import (get_converter_info, get_degree_of_success, get_in_format_args,
-                                           get_out_format_args, get_possible_converters, get_possible_formats)
+from psdi_data_conversion.database import (get_converter_info, get_degree_of_success, get_format_info,
+                                           get_in_format_args, get_out_format_args, get_possible_converters,
+                                           get_possible_formats)
 
 
 class FileConverterHelpException(FileConverterInputException):
@@ -321,6 +322,7 @@ def parse_args():
 def detail_converter_use(args: ConvertArgs):
     """Prints output providing information on a specific converter, including the flags and options it allows
     """
+
     converter_info = get_converter_info(args.name)
     converter_class = D_REGISTERED_CONVERTERS[args.name]
 
@@ -447,6 +449,44 @@ def detail_converter_use(args: ConvertArgs):
 def detail_possible_converters(from_format: str, to_format: str):
     """Prints details on converters that can perform a conversion from one format to another
     """
+
+    # Check that both formats are valid, and print an error if not
+    either_format_failed = False
+
+    try:
+        get_format_info(from_format)
+    except KeyError:
+        either_format_failed = True
+        print_wrap(f"ERROR: Input format '{from_format}' not recognised", newline=True, err=True)
+
+    try:
+        get_format_info(to_format)
+    except KeyError:
+        either_format_failed = True
+        print_wrap(f"ERROR: Output format '{from_format}' not recognised", newline=True, err=True)
+
+    if either_format_failed:
+        # Make a list of all formats recognised by at least one converter
+        s_all_formats: set[str] = set()
+        for converter_name in L_REGISTERED_CONVERTERS:
+            l_in_formats, l_out_formats = get_possible_formats(converter_name)
+            s_all_formats.update(l_in_formats)
+            s_all_formats.update(l_out_formats)
+
+        # Convert the set to a list and alphabetise it
+        l_all_formats = list(s_all_formats)
+        l_all_formats.sort(key=lambda s: s.lower())
+
+        # Pad the format strings to all be the same length. To keep columns aligned, all padding is done with non-
+        # breaking spaces (\xa0), and each format is followed by a single normal space
+        longest_format_len = max([len(x) for x in l_all_formats])
+        l_padded_formats = [f"{x:\xa0<{longest_format_len}} " for x in l_all_formats]
+
+        print_wrap("Possible formats are: ", err=True)
+        print_wrap("".join(l_padded_formats), err=True, initial_indent="  ", subsequent_indent="  ")
+
+        exit(1)
+
     l_possible_converters = [x for x in get_possible_converters(from_format, to_format)
                              if x[0] in L_REGISTERED_CONVERTERS]
 
