@@ -196,7 +196,7 @@ def test_conversion_info(capsys):
     # Test a basic listing of arguments
     run_with_arg_string(f"-l {converter_name} -f {in_format} -t {out_format}")
     captured = capsys.readouterr()
-    compressed_out = captured.out.replace("\n", "").replace(" ", "")
+    compressed_out: str = captured.out.replace("\n", "").replace(" ", "")
 
     def string_is_present_in_out(s: str) -> bool:
         return s.replace("\n", " ").replace(" ", "") in compressed_out

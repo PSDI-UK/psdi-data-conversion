@@ -20,6 +20,14 @@ from psdi_data_conversion.converters.base import FileConverterAbortException, Fi
 from psdi_data_conversion.database import (get_converter_info, get_degree_of_success, get_in_format_args,
                                            get_out_format_args, get_possible_converters, get_possible_formats)
 
+
+class FileConverterHelpException(FileConverterInputException):
+    """An exception class which indicates an error where we will likely want to help the user figure out how to
+    correctly use the CLI instead of simply printing a traceback
+    """
+    pass
+
+
 # Formatting constants
 
 # Number of character spaces allocated for flags/options
@@ -94,7 +102,7 @@ class ConvertArgs:
         elif args.log_level.lower() == "critical":
             self.log_level = logging.CRITICAL
         elif args.log_level:
-            raise FileConverterInputException(f"Unrecognised logging level: {args.log_level}")
+            raise FileConverterHelpException(f"Unrecognised logging level: {args.log_level}")
 
         # Special handling for listing converters
         if self.list:
@@ -117,43 +125,43 @@ class ConvertArgs:
         # Check validity of input
 
         if len(self.l_args) == 0:
-            raise FileConverterInputException("One or more names of files to convert must be provided")
+            raise FileConverterHelpException("One or more names of files to convert must be provided")
 
         if self._input_dir is not None and not os.path.isdir(self._input_dir):
-            raise FileConverterInputException(f"The provided input directory '{self._input_dir}' does not exist as a "
-                                              "directory")
+            raise FileConverterHelpException(f"The provided input directory '{self._input_dir}' does not exist as a "
+                                             "directory")
 
         if self.to_format is None:
-            raise FileConverterInputException("Output format (-t or --to) must be provided")
+            raise FileConverterHelpException("Output format (-t or --to) must be provided")
 
         # If the output directory doesn't exist, silently create it
         if self._output_dir is not None and not os.path.isdir(self._output_dir):
             if os.path.exists(self._output_dir):
-                raise FileConverterInputException(
+                raise FileConverterHelpException(
                     f"Output directory '{self._output_dir}' exists but is not a directory")
             os.makedirs(self._output_dir, exist_ok=True)
 
         # Check the converter is recognized
         if self.name not in L_REGISTERED_CONVERTERS:
-            raise FileConverterInputException(f"Converter '{self.name}' not recognised")
+            raise FileConverterHelpException(f"Converter '{self.name}' not recognised")
 
         # No more than two arguments supplied to --coord-gen
         if args.coord_gen is not None and len(args.coord_gen) > 2:
-            raise FileConverterInputException("At most two arguments may be provided to --coord-gen, the mode and "
-                                              "quality, e.g. '--coord-gen Gen3D best'")
+            raise FileConverterHelpException("At most two arguments may be provided to --coord-gen, the mode and "
+                                             "quality, e.g. '--coord-gen Gen3D best'")
 
         # Coordinate generation options are valid
         if self.coord_gen not in const.L_ALLOWED_COORD_GENS:
-            raise FileConverterInputException(f"Coordinate generation type '{self.coord_gen}' not recognised. Allowed "
-                                              f"types are: {const.L_ALLOWED_COORD_GENS}")
+            raise FileConverterHelpException(f"Coordinate generation type '{self.coord_gen}' not recognised. Allowed "
+                                             f"types are: {const.L_ALLOWED_COORD_GENS}")
         if self.coord_gen_qual not in const.L_ALLOWED_COORD_GEN_QUALS:
-            raise FileConverterInputException(f"Coordinate generation quality '{self.coord_gen_qual}' not recognised. "
-                                              f"Allowed qualities are: {const.L_ALLOWED_COORD_GEN_QUALS}")
+            raise FileConverterHelpException(f"Coordinate generation quality '{self.coord_gen_qual}' not recognised. "
+                                             f"Allowed qualities are: {const.L_ALLOWED_COORD_GEN_QUALS}")
 
         # Logging mode is valid
         if self.log_mode not in const.L_ALLOWED_LOG_MODES:
-            raise FileConverterInputException(f"ERROR: Unrecognised logging option: {self.log_mode}. Allowed "
-                                              f"options are: {const.L_ALLOWED_LOG_MODES}")
+            raise FileConverterHelpException(f"Unrecognised logging mode: {self.log_mode}. Allowed "
+                                             f"modes are: {const.L_ALLOWED_LOG_MODES}")
 
     @property
     def from_format(self):
@@ -166,8 +174,8 @@ class ConvertArgs:
             first_filename = self.l_args[0]
             ext = os.path.splitext(first_filename)[1]
             if len(ext) == 0:
-                raise FileConverterInputException("Input file format (-f or --from) was not provided, and cannot "
-                                                  f"determine it automatically from filename '{first_filename}'")
+                raise FileConverterHelpException("Input file format (-f or --from) was not provided, and cannot "
+                                                 f"determine it automatically from filename '{first_filename}'")
             # Format will be the extension, minus the leading period
             self._from_format = ext[1:]
         return self._from_format
@@ -204,8 +212,8 @@ class ConvertArgs:
                     if os.path.isfile(test_filename):
                         first_filename = test_filename
                     else:
-                        raise FileConverterInputException(f"ERROR: Input file {first_filename} cannot be found. Also "
-                                                          f"checked for {test_filename}.")
+                        raise FileConverterHelpException(f"Input file {first_filename} cannot be found. Also "
+                                                         f"checked for {test_filename}.")
 
                 filename_base = os.path.split(os.path.splitext(first_filename)[0])[1]
                 if self.log_mode == const.LOG_FULL:
@@ -560,7 +568,20 @@ def main():
     """Standard entry-point function for this script.
     """
 
-    args = parse_args()
+    # If no inputs were provided, print a message about usage
+    if len(sys.argv) == 1:
+        print_wrap("See the README.md file for information on using this utility and examples of basic usage, or for "
+                   "detailed explanation of arguments call:")
+        print("psdi-data-convert -h")
+        exit(1)
+
+    try:
+        args = parse_args()
+    except FileConverterHelpException as e:
+        # If we get a Help exception, it's likely due to user error, so don't bother them with a traceback and simply
+        # print the message to stderr
+        print(f"ERROR: {e}", file=sys.stderr)
+        exit(1)
 
     if (args.log_mode == const.LOG_SIMPLE or args.log_mode == const.LOG_FULL) and args.log_file:
         # Delete any previous local log if it exists
