@@ -5,10 +5,11 @@ Created 2025-02-03 by Bryan Gillis.
 Unit tests relating to using the database
 """
 
-
+from psdi_data_conversion import constants as const
 from psdi_data_conversion.converter import L_REGISTERED_CONVERTERS
+from psdi_data_conversion.converters.atomsk import CONVERTER_ATO
 from psdi_data_conversion.converters.openbabel import CONVERTER_OB
-from psdi_data_conversion.database import (get_converter_info, get_database, get_degree_of_success, get_format_info,
+from psdi_data_conversion.database import (get_conversion_quality, get_converter_info, get_database, get_format_info,
                                            get_in_format_args, get_out_format_args, get_possible_converters,
                                            get_possible_formats)
 
@@ -128,13 +129,14 @@ def test_conversion_table():
     conversions_table = database.conversions_table
     assert conversions_table.parent is database
 
-    # Check we can get the correct degree of success
-    dos = get_degree_of_success(CONVERTER_OB, "pdb", "cif")
-    assert dos == 'output file does not open in VESTA, but opens in Jmol'
+    # Check we can get the correct conversion quality
+    assert get_conversion_quality(CONVERTER_OB, "pdb", "cif") == const.QUAL_UNKNOWN
+    assert get_conversion_quality(CONVERTER_OB, "xyz", "inchi") == const.QUAL_POOR
+    assert get_conversion_quality(CONVERTER_ATO, "xyz", "inchi") is None
 
     # Check we can get a list of possible converters for a given conversion
     l_possible_converters = get_possible_converters("pdb", "cif")
-    assert CONVERTER_OB in [name for name, dos in l_possible_converters]
+    assert CONVERTER_OB in [name for name in l_possible_converters]
 
     # Check that we can get a list of possible input/outpat formats for a given converter
     l_in_formats, l_out_formats = get_possible_formats(CONVERTER_OB)

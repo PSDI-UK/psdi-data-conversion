@@ -86,6 +86,14 @@ DEFAULT_LISTING_LOG_FILE = "data-convert-list" + LOG_EXT
 # Default converter
 CONVERTER_DEFAULT = 'Open Babel'
 
+# Conversion quality strings
+QUAL_UNKNOWN = 'unknown'
+QUAL_VERYGOOD = 'very good'
+QUAL_GOOD = 'good'
+QUAL_OKAY = 'okay'
+QUAL_POOR = 'poor'
+QUAL_VERYPOOR = 'very poor'
+
 # Keys
 # ----
 

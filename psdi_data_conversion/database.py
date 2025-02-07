@@ -373,10 +373,10 @@ class FormatInfo:
         # Load attributes from the database
         self.id: int = d_single_format_info.get(const.DB_ID_KEY, -1)
         self.note: str = d_single_format_info.get(const.DB_FORMAT_NOTE_KEY, "")
-        self.composition = bool(d_single_format_info.get(const.DB_FORMAT_COMP_KEY, False))
-        self.connections = bool(d_single_format_info.get(const.DB_FORMAT_CONN_KEY, False))
-        self.two_dim = bool(d_single_format_info.get(const.DB_FORMAT_2D_KEY, False))
-        self.three_dim = bool(d_single_format_info.get(const.DB_FORMAT_3D_KEY, False))
+        self.composition = d_single_format_info.get(const.DB_FORMAT_COMP_KEY)
+        self.connections = d_single_format_info.get(const.DB_FORMAT_CONN_KEY)
+        self.two_dim = d_single_format_info.get(const.DB_FORMAT_2D_KEY)
+        self.three_dim = d_single_format_info.get(const.DB_FORMAT_3D_KEY)
 
 
 class ConversionsTable:
@@ -429,12 +429,6 @@ class ConversionsTable:
         # Store references to needed data
         self._l_converts_to = l_converts_to
 
-        # To save data, we store the degree of success in the table as an integer indexed to possible strings
-        # `self._l_dos` maps from integer index value to degree of success string, and `self._d_dos` maps from degree of
-        # success string to index value
-        self._l_dos: list[str | None] = [None] + list(set([x[const.DB_SUCCESS_KEY] for x in l_converts_to]))
-        self._d_dos = {dos: index for index, dos in enumerate(self._l_dos)}
-
         # Build the conversion table, indexed Converter, Input Format, Output Format - note that each of these is
         # 1-indexed, so we add 1 to each of the lengths here
         num_converters = len(parent.converters)
@@ -453,18 +447,18 @@ class ConversionsTable:
                 raise FileConverterDatabaseException(
                     f"Malformed 'converts_to' entry in database: {possible_conversion}")
 
-            self._table[conv_id][in_id][out_id] = self._d_dos[possible_conversion[const.DB_SUCCESS_KEY]]
+            self._table[conv_id][in_id][out_id] = 1
 
-    def get_degree_of_success(self,
-                              converter_name: str,
-                              in_format: str,
-                              out_format: str) -> str | None:
-        """Get the degree of success for a desired conversion, represented as a string (or else None if not possible)
+    def get_conversion_quality(self,
+                               converter_name: str,
+                               in_format: str,
+                               out_format: str) -> str | None:
+        """Get an indication of the quality of a conversion from one format to another, or if it's not possible
 
         Parameters
         ----------
         converter_name : str
-            The name of the converter to use
+            The name of the converter
         in_format : str
             The extension of the input file format
         out_format : str
@@ -473,19 +467,56 @@ class ConversionsTable:
         Returns
         -------
         str | None
-            If the conversion is possible, returns a string describing the degree of success. If the conversion is not
-            possible, returns None
+            If the conversion is possible, returns a string literal giving an indication of the conversion quality. If
+            the conversion is not possible, returns None
         """
 
         conv_id: int = self.parent.get_converter_info(converter_name).id
-        in_id: int = self.parent.get_format_info(in_format).id
-        out_id: int = self.parent.get_format_info(out_format).id
+        in_info = self.parent.get_format_info(in_format)
+        out_info: int = self.parent.get_format_info(out_format)
 
-        return self._l_dos[self._table[conv_id][in_id][out_id]]
+        # First check if the conversion is possible
+        success_flag = self._table[conv_id][in_info.id][out_info.id]
+        if not success_flag:
+            return None
+
+        # The conversion is possible. Now determine how many properties of the input format are retained in the
+        # output format
+        num_in_props = 0
+        num_props_retained = 0
+        any_unknown = False
+        for prop in ("composition", "connections", "two_dim", "three_dim"):
+            in_prop: bool | None = getattr(in_info, prop)
+            out_prop: bool | None = getattr(out_info, prop)
+
+            # Check for None, indicating we don't have full information on both formats
+            if in_prop is None or out_prop is None:
+                any_unknown = True
+                break
+            if in_prop:
+                num_in_props += 1
+                if out_prop:
+                    num_props_retained += 1
+
+        if any_unknown:
+            return const.QUAL_UNKNOWN
+
+        qual_ratio = num_props_retained/num_in_props
+
+        if qual_ratio >= 0.8:
+            return const.QUAL_VERYGOOD
+        elif qual_ratio >= 0.6:
+            return const.QUAL_GOOD
+        elif qual_ratio >= 0.4:
+            return const.QUAL_OKAY
+        elif qual_ratio >= 0.2:
+            return const.QUAL_POOR
+        else:
+            return const.QUAL_VERYPOOR
 
     def get_possible_converters(self,
                                 in_format: str,
-                                out_format: str) -> list[tuple[str, str]]:
+                                out_format: str) -> list[str]:
         """Get a list of converters which can perform a conversion from one format to another and the degree of success
         with each of these converters
 
@@ -508,13 +539,13 @@ class ConversionsTable:
         # Slice the table to get a list of the success for this conversion for each converter
         l_converter_success = [x[in_id][out_id] for x in self._table]
 
-        # Filter for possible conversions (dos_index > 0) and get the converter name and degree-of-success string
+        # Filter for possible conversions and get the converter name and degree-of-success string
         # for each possible conversion
-        l_possible_converters_and_dos = [(self.parent.get_converter_info(converter_id).name,
-                                          self._l_dos[dos_index]) for converter_id, dos_index
-                                         in enumerate(l_converter_success) if dos_index > 0]
+        l_possible_converters = [self.parent.get_converter_info(converter_id).name
+                                 for converter_id, possible_flag
+                                 in enumerate(l_converter_success) if possible_flag > 0]
 
-        return l_possible_converters_and_dos
+        return l_possible_converters
 
     def get_possible_formats(self, converter_name: str) -> tuple[list[str], list[str]]:
         """Get a list of input and output formats that a given converter supports
@@ -530,20 +561,21 @@ class ConversionsTable:
             A tuple of a list of the supported input formats and a list of the supported output formats
         """
         conv_id: int = self.parent.get_converter_info(converter_name).id
-        ll_in_out_format_dos = self._table[conv_id]
+        ll_in_out_format_success = self._table[conv_id]
 
         # Filter for possible input formats by checking if at least one output format for each has a degree of success
         # index greater than 0, and stored the filtered lists where the input format is possible so we only need to
         # check them for possible output formats
         (l_possible_in_format_ids,
-         ll_filtered_in_out_format_dos) = zip(*[(i, l_out_format_dos) for i, l_out_format_dos
-                                                in enumerate(ll_in_out_format_dos) if sum(l_out_format_dos) > 0])
+         ll_filtered_in_out_format_success) = zip(*[(i, l_out_format_success) for i, l_out_format_success
+                                                    in enumerate(ll_in_out_format_success)
+                                                    if sum(l_out_format_success) > 0])
 
         # As with input IDs, filter for output IDs where at least one input format has a degree of success index greater
         # than 0. A bit more complicated for the second index, forcing us to do list comprehension to fetch a list
         # across the table before summing
-        l_possible_out_format_ids = [j for j, _ in enumerate(ll_filtered_in_out_format_dos[0]) if
-                                     sum([x[j] for x in ll_filtered_in_out_format_dos]) > 0]
+        l_possible_out_format_ids = [j for j, _ in enumerate(ll_filtered_in_out_format_success[0]) if
+                                     sum([x[j] for x in ll_filtered_in_out_format_success]) > 0]
 
         # Get the name for each format ID, and return lists of the names
         return ([self.parent.get_format_info(x).name for x in l_possible_in_format_ids],
@@ -774,15 +806,15 @@ def get_format_info(name: str) -> FormatInfo:
     return get_database().d_format_info[name]
 
 
-def get_degree_of_success(converter_name: str,
-                          in_format: str,
-                          out_format: str) -> str | None:
-    """Get the degree of success for a desired conversion, represented as a string (or else None if not possible)
+def get_conversion_quality(converter_name: str,
+                           in_format: str,
+                           out_format: str) -> str | None:
+    """Get an indication of the quality of a conversion from one format to another, or if it's not possible
 
     Parameters
     ----------
     converter_name : str
-        The name of the converter to use
+        The name of the converter
     in_format : str
         The extension of the input file format
     out_format : str
@@ -791,17 +823,17 @@ def get_degree_of_success(converter_name: str,
     Returns
     -------
     str | None
-        If the conversion is possible, returns a string describing the degree of success. If the conversion is not
-        possible, returns None
+        If the conversion is possible, returns a string literal giving an indication of the conversion quality. If
+        the conversion is not possible, returns None
     """
 
-    return get_database().conversions_table.get_degree_of_success(converter_name=converter_name,
-                                                                  in_format=in_format,
-                                                                  out_format=out_format)
+    return get_database().conversions_table.get_conversion_quality(converter_name=converter_name,
+                                                                   in_format=in_format,
+                                                                   out_format=out_format)
 
 
 def get_possible_converters(in_format: str,
-                            out_format: str) -> list[tuple[str, str]]:
+                            out_format: str) -> list[str]:
     """Get a list of converters which can perform a conversion from one format to another and the degree of success
     with each of these converters
 
