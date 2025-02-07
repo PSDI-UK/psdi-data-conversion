@@ -527,14 +527,14 @@ def detail_possible_converters(from_format: str, to_format: str):
         exit(1)
 
     l_possible_converters = [x for x in get_possible_converters(from_format, to_format)
-                             if x[0] in L_REGISTERED_CONVERTERS]
+                             if x in L_REGISTERED_CONVERTERS]
 
     if len(l_possible_converters) == 0:
         print_wrap(f"No converters are available which can perform a conversion from {from_format} to {to_format}")
         return
 
     print_wrap(f"The following converters can convert from {from_format} to {to_format}:", newline=True)
-    print("\n    ".join(L_REGISTERED_CONVERTERS))
+    print("\n    ".join(l_possible_converters))
 
     print_wrap("For details on input/output flags and options allowed by a converter for this conversion, call:")
     print(f"{CLI_SCRIPT_NAME} -l <converter name> -f {from_format} -t {to_format}")

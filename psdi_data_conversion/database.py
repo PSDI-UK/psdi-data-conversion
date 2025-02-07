@@ -373,10 +373,10 @@ class FormatInfo:
         # Load attributes from the database
         self.id: int = d_single_format_info.get(const.DB_ID_KEY, -1)
         self.note: str = d_single_format_info.get(const.DB_FORMAT_NOTE_KEY, "")
-        self.composition = bool(d_single_format_info.get(const.DB_FORMAT_COMP_KEY, False))
-        self.connections = bool(d_single_format_info.get(const.DB_FORMAT_CONN_KEY, False))
-        self.two_dim = bool(d_single_format_info.get(const.DB_FORMAT_2D_KEY, False))
-        self.three_dim = bool(d_single_format_info.get(const.DB_FORMAT_3D_KEY, False))
+        self.composition = d_single_format_info.get(const.DB_FORMAT_COMP_KEY)
+        self.connections = d_single_format_info.get(const.DB_FORMAT_CONN_KEY)
+        self.two_dim = d_single_format_info.get(const.DB_FORMAT_2D_KEY)
+        self.three_dim = d_single_format_info.get(const.DB_FORMAT_3D_KEY)
 
 
 class ConversionsTable:
