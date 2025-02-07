@@ -229,6 +229,9 @@ def test_get_converters(capsys):
     for converter_name in l_converters:
         if converter_name in L_REGISTERED_CONVERTERS:
             assert string_is_present_in_out(converter_name)
+    for converter_name in L_REGISTERED_CONVERTERS:
+        if converter_name not in l_converters:
+            assert not string_is_present_in_out(converter_name)
 
 
 def test_conversion_info(capsys):
