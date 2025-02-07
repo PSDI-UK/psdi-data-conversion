@@ -98,7 +98,9 @@ class ConvertArgs:
         self.quiet = args.quiet
         self._log_file: str | None = args.log_file
 
-        if args.log_level.lower() == "debug":
+        if not args.log_level:
+            self.log_level = None
+        elif args.log_level.lower() == "debug":
             self.log_level = logging.DEBUG
         elif args.log_level.lower() == "info":
             self.log_level = logging.INFO
@@ -317,9 +319,9 @@ def get_argument_parser():
     parser.add_argument("-q", "--quiet", action="store_true",
                         help="If set, all terminal output aside from errors will be suppressed and no log file will be "
                              "generated.")
-    parser.add_argument("--log-level", type=str, default="WARNING",
+    parser.add_argument("--log-level", type=str, default=None,
                         help="The desired level to log at. Allowed values are: 'DEBUG', 'INFO', 'WARNING', 'ERROR, "
-                             "'CRITICAL'. Default: 'INFO'")
+                             "'CRITICAL'. Default: 'INFO' for logging to file, 'WARNING' for logging to stdout")
 
     return parser
 
@@ -454,6 +456,8 @@ def detail_converter_use(args: ConvertArgs):
                            initial_indent=" "*(ARG_LEN+2),
                            subsequent_indent=" "*(ARG_LEN+2))
         print("")
+
+    print("NOTE: Support for format-specific flags and options in the CLI is yet to be implemented")
 
     # Now at the end, bring up input/output-format-specific flags and options
     if mention_input_format and mention_output_format:
