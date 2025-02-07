@@ -455,6 +455,8 @@ def detail_converter_use(args: ConvertArgs):
                            subsequent_indent=" "*(ARG_LEN+2))
         print("")
 
+    print("NOTE: Support for format-specific flags and options in the CLI is yet to be implemented")
+
     # Now at the end, bring up input/output-format-specific flags and options
     if mention_input_format and mention_output_format:
         print_wrap("For details on input/output flags and options allowed for specific formats, call:\n"
