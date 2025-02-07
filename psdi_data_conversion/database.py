@@ -499,20 +499,20 @@ class ConversionsTable:
                     num_props_retained += 1
 
         if any_unknown:
-            return "unknown"
+            return const.QUAL_UNKNOWN
 
         qual_ratio = num_props_retained/num_in_props
 
         if qual_ratio >= 0.8:
-            return 'very good'
+            return const.QUAL_VERYGOOD
         elif qual_ratio >= 0.6:
-            return 'good'
+            return const.QUAL_GOOD
         elif qual_ratio >= 0.4:
-            return 'okay'
+            return const.QUAL_OKAY
         elif qual_ratio >= 0.2:
-            return 'poor'
+            return const.QUAL_POOR
         else:
-            return 'very poor'
+            return const.QUAL_VERYPOOR
 
     def get_possible_converters(self,
                                 in_format: str,
