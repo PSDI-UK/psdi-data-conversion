@@ -15,7 +15,7 @@ from psdi_data_conversion import constants as const
 from psdi_data_conversion.converter import L_REGISTERED_CONVERTERS
 from psdi_data_conversion.converters.atomsk import CONVERTER_ATO
 from psdi_data_conversion.converters.openbabel import CONVERTER_OB
-from psdi_data_conversion.database import (get_converter_info, get_degree_of_success, get_in_format_args,
+from psdi_data_conversion.database import (get_conversion_quality, get_converter_info, get_in_format_args,
                                            get_out_format_args, get_possible_converters, get_possible_formats)
 from psdi_data_conversion.main import FileConverterInputException, main, parse_args
 
