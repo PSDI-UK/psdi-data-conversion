@@ -449,6 +449,71 @@ class ConversionsTable:
 
             self._table[conv_id][in_id][out_id] = 1
 
+    def get_conversion_quality(self,
+                               converter_name: str,
+                               in_format: str,
+                               out_format: str) -> str | None:
+        """Get an indication of the quality of a conversion from one format to another, or if it's not possible
+
+        Parameters
+        ----------
+        converter_name : str
+            The name of the converter
+        in_format : str
+            The extension of the input file format
+        out_format : str
+            The extension of the output file format
+
+        Returns
+        -------
+        str | None
+            If the conversion is possible, returns a string literal giving an indication of the conversion quality. If
+            the conversion is not possible, returns None
+        """
+
+        conv_id: int = self.parent.get_converter_info(converter_name).id
+        in_info = self.parent.get_format_info(in_format)
+        out_info: int = self.parent.get_format_info(out_format)
+
+        # First check if the conversion is possible
+        success_flag = self._table[conv_id][in_info.id][out_info.id]
+        if not success_flag:
+            return None
+
+        # The conversion is possible. Now determine how many properties of the input format are retained in the
+        # output format
+        num_in_props = 0
+        num_props_retained = 0
+        any_unknown = False
+        for prop in ("composition", "connections", "two_dim", "three_dim"):
+            in_prop: bool | None = getattr(in_info, prop)
+            out_prop: bool | None = getattr(out_info, prop)
+
+            # Check for None, indicating we don't have full information on both formats
+            if in_prop is None or out_prop is None:
+                any_unknown = True
+                break
+            if in_prop:
+                num_in_props += 1
+                if out_prop:
+                    num_props_retained += 1
+
+        if any_unknown:
+            return "unknown"
+
+        qual_ratio = num_props_retained/num_in_props
+
+        if qual_ratio >= 0.8:
+            return 'very good'
+        elif qual_ratio >= 0.6:
+            return 'good'
+        elif qual_ratio >= 0.4:
+            return 'okay'
+        elif qual_ratio >= 0.2:
+            return 'poor'
+        else:
+            return 'very poor'
+
     def get_possible_converters(self,
                                 in_format: str,
                                 out_format: str) -> list[str]:
@@ -741,15 +806,15 @@ def get_format_info(name: str) -> FormatInfo:
     return get_database().d_format_info[name]
 
 
-def get_degree_of_success(converter_name: str,
-                          in_format: str,
-                          out_format: str) -> str | None:
-    """Get the degree of success for a desired conversion, represented as a string (or else None if not possible)
+def get_conversion_quality(converter_name: str,
+                           in_format: str,
+                           out_format: str) -> str | None:
+    """Get an indication of the quality of a conversion from one format to another, or if it's not possible
 
     Parameters
     ----------
     converter_name : str
-        The name of the converter to use
+        The name of the converter
     in_format : str
         The extension of the input file format
     out_format : str
@@ -758,13 +823,13 @@ def get_degree_of_success(converter_name: str,
     Returns
     -------
     str | None
-        If the conversion is possible, returns a string describing the degree of success. If the conversion is not
-        possible, returns None
+        If the conversion is possible, returns a string literal giving an indication of the conversion quality. If
+        the conversion is not possible, returns None
     """
 
-    return get_database().conversions_table.get_degree_of_success(converter_name=converter_name,
-                                                                  in_format=in_format,
-                                                                  out_format=out_format)
+    return get_database().conversions_table.get_conversion_quality(converter_name=converter_name,
+                                                                   in_format=in_format,
+                                                                   out_format=out_format)
 
 
 def get_possible_converters(in_format: str,

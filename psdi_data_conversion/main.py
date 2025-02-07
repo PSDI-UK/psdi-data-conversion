@@ -17,7 +17,7 @@ from psdi_data_conversion import constants as const
 from psdi_data_conversion.constants import ARG_LEN, CLI_SCRIPT_NAME, CONVERTER_DEFAULT, TERM_WIDTH
 from psdi_data_conversion.converter import D_REGISTERED_CONVERTERS, L_REGISTERED_CONVERTERS, run_converter
 from psdi_data_conversion.converters.base import FileConverterAbortException, FileConverterInputException
-from psdi_data_conversion.database import (get_converter_info, get_degree_of_success, get_format_info,
+from psdi_data_conversion.database import (get_conversion_quality, get_converter_info, get_format_info,
                                            get_in_format_args, get_out_format_args, get_possible_converters,
                                            get_possible_formats)
 
