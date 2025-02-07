@@ -839,9 +839,24 @@ def get_possible_formats(converter_name: str) -> tuple[list[str], list[str]]:
     return get_database().conversions_table.get_possible_formats(converter_name=converter_name)
 
 
+def _find_arg(tl_args: tuple[list[FlagInfo], list[OptionInfo]],
+              arg: str) -> ArgInfo:
+    """Find a specific flag or option in the lists
+    """
+    for l_args in tl_args:
+        l_found = [x for x in l_args if x.flag == arg]
+        if len(l_found) > 0:
+            return l_found[0]
+    # If we get here, it wasn't found in either list
+    raise FileConverterDatabaseException(f"Argument {arg} was not found in the list of allowed arguments for this "
+                                         "conversion")
+
+
 def get_in_format_args(converter_name: str,
-                       format_name: str) -> tuple[list[FlagInfo], list[OptionInfo]]:
-    """Get the input flags and options supported by a given converter for a given format (provided as its extension)
+                       format_name: str,
+                       arg: str | None = None) -> tuple[list[FlagInfo], list[OptionInfo]] | ArgInfo:
+    """Get the input flags and options supported by a given converter for a given format (provided as its extension).
+    Optionally will provide information on just a single flag or option if its value is provided as an optional argument
 
     Parameters
     ----------
@@ -849,6 +864,8 @@ def get_in_format_args(converter_name: str,
         The converter name
     format_name : str
         The file format name (extension)
+    arg : str | None
+        If provided, only information on this flag or option will be provided
 
     Returns
     -------
@@ -857,12 +874,17 @@ def get_in_format_args(converter_name: str,
     """
 
     converter_info = get_converter_info(converter_name)
-    return converter_info.get_in_format_args(format_name)
+    tl_args = converter_info.get_in_format_args(format_name)
+    if not arg:
+        return tl_args
+    return _find_arg(tl_args, arg)
 
 
 def get_out_format_args(converter_name: str,
-                        format_name: str) -> tuple[list[FlagInfo], list[OptionInfo]]:
-    """Get the output flags and options supported by a given converter for a given format (provided as its extension)
+                        format_name: str,
+                        arg: str | None = None) -> tuple[list[FlagInfo], list[OptionInfo]]:
+    """Get the output flags and options supported by a given converter for a given format (provided as its extension).
+    Optionally will provide information on just a single flag or option if its value is provided as an optional argument
 
     Parameters
     ----------
@@ -870,6 +892,8 @@ def get_out_format_args(converter_name: str,
         The converter name
     format_name : str
         The file format name (extension)
+    arg : str | None
+        If provided, only information on this flag or option will be provided
 
     Returns
     -------
@@ -878,4 +902,7 @@ def get_out_format_args(converter_name: str,
     """
 
     converter_info = get_converter_info(converter_name)
-    return converter_info.get_out_format_args(format_name)
+    tl_args = converter_info.get_out_format_args(format_name)
+    if not arg:
+        return tl_args
+    return _find_arg(tl_args, arg)

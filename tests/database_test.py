@@ -56,8 +56,12 @@ def test_converter_info():
 def test_format_args():
     """Test that we can get the flags and options allowed for specific formats for a given converter
     """
-    l_in_flags, _ = get_in_format_args(CONVERTER_OB, "pdb")
-    l_out_flags, _ = get_out_format_args(CONVERTER_OB, "cif")
+    converter_name = CONVERTER_OB
+    in_format = "pdb"
+    out_format = "cif"
+
+    l_in_flags, _ = get_in_format_args(converter_name, in_format)
+    l_out_flags, _ = get_out_format_args(converter_name, out_format)
 
     l_in_flag_names = [x.flag for x in l_in_flags]
     l_out_flag_names = [x.flag for x in l_out_flags]
@@ -67,6 +71,12 @@ def test_format_args():
     assert "s" in l_in_flag_names
 
     assert "g" in l_out_flag_names
+
+    # Check that we can find a specific argument
+    in_flag_info_0 = l_in_flags[0]
+    assert get_in_format_args(converter_name, in_format, in_flag_info_0.flag) is in_flag_info_0
+    out_flag_info_0 = l_out_flags[0]
+    assert get_out_format_args(converter_name, out_format, out_flag_info_0.flag) is out_flag_info_0
 
 
 def test_format_info():
