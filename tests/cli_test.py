@@ -212,7 +212,7 @@ def test_get_converters(capsys):
     """
     in_format = "xyz"
     out_format = "inchi"
-    l_converters_and_dos = get_possible_converters(in_format, out_format)
+    l_converters = get_possible_converters(in_format, out_format)
 
     run_with_arg_string(f"-l -f {in_format} -t {out_format}")
     captured = capsys.readouterr()
@@ -223,12 +223,12 @@ def test_get_converters(capsys):
 
     assert not captured.err
 
-    assert bool(l_converters_and_dos) == string_is_present_in_out("The following converters can convert from "
-                                                                  f"{in_format} to {out_format}:")
+    assert bool(l_converters) == string_is_present_in_out("The following converters can convert from "
+                                                          f"{in_format} to {out_format}:")
 
-    for converter_name, dos in l_converters_and_dos:
+    for converter_name in l_converters:
         if converter_name in L_REGISTERED_CONVERTERS:
-            assert string_is_present_in_out(f"{converter_name}{dos}")
+            assert string_is_present_in_out(converter_name)
 
 
 def test_conversion_info(capsys):
@@ -238,7 +238,7 @@ def test_conversion_info(capsys):
     converter_name = CONVERTER_OB
     in_format = "xyz"
     out_format = "inchi"
-    dos = get_degree_of_success(converter_name, in_format, out_format)
+    qual = get_conversion_quality(converter_name, in_format, out_format)
 
     # Test a basic listing of arguments
     run_with_arg_string(f"-l {converter_name} -f {in_format} -t {out_format}")
@@ -252,7 +252,7 @@ def test_conversion_info(capsys):
 
     # Check that degree of success is printed as expected
     assert string_is_present_in_out(f"Conversion from '{in_format}' to '{out_format}' with {converter_name} is "
-                                    f"possible with the following note on degree of success: {dos}")
+                                    f"possible with {qual} conversion quality")
 
     l_in_flags, l_in_options = get_in_format_args(converter_name, in_format)
     l_out_flags, l_out_options = get_out_format_args(converter_name, out_format)
