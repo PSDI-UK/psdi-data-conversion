@@ -855,7 +855,8 @@ def _find_arg(tl_args: tuple[list[FlagInfo], list[OptionInfo]],
 def get_in_format_args(converter_name: str,
                        format_name: str,
                        arg: str | None = None) -> tuple[list[FlagInfo], list[OptionInfo]] | ArgInfo:
-    """Get the input flags and options supported by a given converter for a given format (provided as its extension)
+    """Get the input flags and options supported by a given converter for a given format (provided as its extension).
+    Optionally will provide information on just a single flag or option if its value is provided as an optional argument
 
     Parameters
     ----------
@@ -882,7 +883,8 @@ def get_in_format_args(converter_name: str,
 def get_out_format_args(converter_name: str,
                         format_name: str,
                         arg: str | None = None) -> tuple[list[FlagInfo], list[OptionInfo]]:
-    """Get the output flags and options supported by a given converter for a given format (provided as its extension)
+    """Get the output flags and options supported by a given converter for a given format (provided as its extension).
+    Optionally will provide information on just a single flag or option if its value is provided as an optional argument
 
     Parameters
     ----------
