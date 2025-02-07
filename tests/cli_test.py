@@ -13,6 +13,7 @@ from unittest.mock import patch
 
 from psdi_data_conversion import constants as const
 from psdi_data_conversion.converter import L_REGISTERED_CONVERTERS
+from psdi_data_conversion.converters.atomsk import CONVERTER_ATO
 from psdi_data_conversion.converters.openbabel import CONVERTER_OB
 from psdi_data_conversion.database import (get_converter_info, get_degree_of_success, get_in_format_args,
                                            get_out_format_args, get_possible_converters, get_possible_formats)
@@ -197,6 +198,13 @@ def test_detail_converter(capsys):
         run_with_arg_string("--list bad_converter")
     captured = capsys.readouterr()
     assert "not recognized" in captured.err
+
+    # Test that we can also provide the converter name with -w/--with
+    run_with_arg_string(f"-l -w {CONVERTER_ATO}")
+    captured = capsys.readouterr()
+    assert not captured.err
+    assert CONVERTER_ATO in captured.out
+    assert const.CONVERTER_DEFAULT not in captured.out
 
 
 def test_get_converters(capsys):

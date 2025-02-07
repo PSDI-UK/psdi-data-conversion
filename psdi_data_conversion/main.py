@@ -14,7 +14,7 @@ import sys
 import textwrap
 
 from psdi_data_conversion import constants as const
-from psdi_data_conversion.constants import ARG_LEN, CLI_SCRIPT_NAME, TERM_WIDTH
+from psdi_data_conversion.constants import ARG_LEN, CLI_SCRIPT_NAME, CONVERTER_DEFAULT, TERM_WIDTH
 from psdi_data_conversion.converter import D_REGISTERED_CONVERTERS, L_REGISTERED_CONVERTERS, run_converter
 from psdi_data_conversion.converters.base import FileConverterAbortException, FileConverterInputException
 from psdi_data_conversion.database import (get_converter_info, get_degree_of_success, get_format_info,
@@ -70,8 +70,10 @@ class ConvertArgs:
         converter_name = getattr(args, "with")
         if isinstance(converter_name, str):
             self.name = converter_name
-        else:
+        elif converter_name:
             self.name: str = " ".join(converter_name)
+        else:
+            self.name = None
         self.delete_input = args.delete_input
         self.from_flags: str = args.from_flags.replace(r"\-", "-")
         self.to_flags: str = args.to_flags.replace(r"\-", "-")
@@ -119,11 +121,16 @@ class ConvertArgs:
             self.log_mode = const.LOG_STDOUT
             self.quiet = False
 
-            # Get the converter name from the arguments
-            self.name = " ".join(self.l_args)
+            # Get the converter name from the arguments if it wasn't provided by -w/--with
+            if not self.name:
+                self.name = " ".join(self.l_args)
 
             # For this operation, any other arguments can be ignored
             return
+
+        # If not listing and a converter name wasn't supplied, use the default converter
+        if not self.name:
+            self.name = CONVERTER_DEFAULT
 
         # Quiet mode is equivalent to logging mode == LOGGING_NONE, so normalize them if either is set
         if self.quiet:
@@ -267,7 +274,7 @@ def get_argument_parser():
                         help="The directory where output files should be created. If not provided, output files will "
                         "be created in -i/--in directory if that was provided, or else in the directory containing the "
                         "first input file.")
-    parser.add_argument("-w", "--with", type=str, nargs="+", default="Open Babel",
+    parser.add_argument("-w", "--with", type=str, nargs="+",
                         help="The converter to be used (default 'Open Babel').")
     parser.add_argument("--delete-input", action="store_true",
                         help="If set, input files will be deleted after conversion, default they will be kept")
