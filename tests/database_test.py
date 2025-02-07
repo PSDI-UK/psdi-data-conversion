@@ -7,6 +7,7 @@ Unit tests relating to using the database
 
 from psdi_data_conversion import constants as const
 from psdi_data_conversion.converter import L_REGISTERED_CONVERTERS
+from psdi_data_conversion.converters.atomsk import CONVERTER_ATO
 from psdi_data_conversion.converters.openbabel import CONVERTER_OB
 from psdi_data_conversion.database import (get_conversion_quality, get_converter_info, get_database, get_format_info,
                                            get_in_format_args, get_out_format_args, get_possible_converters,
@@ -128,8 +129,10 @@ def test_conversion_table():
     conversions_table = database.conversions_table
     assert conversions_table.parent is database
 
-    # Check we can get the correct degree of success
+    # Check we can get the correct conversion quality
     assert get_conversion_quality(CONVERTER_OB, "pdb", "cif") == const.QUAL_UNKNOWN
+    assert get_conversion_quality(CONVERTER_OB, "xyz", "inchi") == const.QUAL_POOR
+    assert get_conversion_quality(CONVERTER_ATO, "xyz", "inchi") is None
 
     # Check we can get a list of possible converters for a given conversion
     l_possible_converters = get_possible_converters("pdb", "cif")
