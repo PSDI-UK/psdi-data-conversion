@@ -362,13 +362,13 @@ def detail_converter_use(args: ConvertArgs):
     # If both an input and output format are specified, provide the degree of success for this conversion. Otherwise
     # list possible input output formats
     if args.from_format is not None and args.to_format is not None:
-        dos = get_degree_of_success(args.name, args.from_format, args.to_format)
-        if dos is None:
+        qual = get_conversion_quality(args.name, args.from_format, args.to_format)
+        if qual is None:
             print_wrap(f"Conversion from '{args.from_format}' to '{args.to_format}' with {args.name} is not "
                        "supported.", newline=True)
         else:
             print_wrap(f"Conversion from '{args.from_format}' to '{args.to_format}' with {args.name} is "
-                       f"possible with the following note on degree of success: {dos}", newline=True)
+                       f"possible with {qual} conversion quality", newline=True)
     else:
         l_input_formats, l_output_formats = get_possible_formats(args.name)
 
@@ -534,13 +534,7 @@ def detail_possible_converters(from_format: str, to_format: str):
         return
 
     print_wrap(f"The following converters can convert from {from_format} to {to_format}:", newline=True)
-
-    max_converter_len = max([len(name) for name, dos in l_possible_converters])
-    print(f"{'    CONVERTER':<{max_converter_len+4}}  DEGREE OF SUCCESS")
-    print(f"{'    ---------':<{max_converter_len+4}}  -----------------")
-    for name, dos in l_possible_converters:
-        print_wrap(f"    {name:<{max_converter_len}}  {dos}", subsequent_indent=" "*(max_converter_len+6))
-    print("")
+    print("\n    ".join(L_REGISTERED_CONVERTERS))
 
     print_wrap("For details on input/output flags and options allowed by a converter for this conversion, call:")
     print(f"{CLI_SCRIPT_NAME} -l <converter name> -f {from_format} -t {to_format}")
@@ -604,8 +598,8 @@ def run_from_args(args: ConvertArgs):
 
     # Check that the requested conversion is valid unless suppressed
     if not args.no_check:
-        dos = get_degree_of_success(args.name, args.from_format, args.to_format)
-        if not dos:
+        qual = get_conversion_quality(args.name, args.from_format, args.to_format)
+        if not qual:
             print_wrap(f"ERROR: Conversion from {args.from_format} to {args.to_format} with {args.name} is not "
                        "supported.", err=True, newline=True)
             detail_possible_converters(args.from_format, args.to_format)

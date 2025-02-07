@@ -129,12 +129,12 @@ def test_conversion_table():
     assert conversions_table.parent is database
 
     # Check we can get the correct degree of success
-    dos = get_degree_of_success(CONVERTER_OB, "pdb", "cif")
-    assert dos == 'output file does not open in VESTA, but opens in Jmol'
+    qual = get_conversion_quality(CONVERTER_OB, "pdb", "cif")
+    assert qual == 'unknown'
 
     # Check we can get a list of possible converters for a given conversion
     l_possible_converters = get_possible_converters("pdb", "cif")
-    assert CONVERTER_OB in [name for name, dos in l_possible_converters]
+    assert CONVERTER_OB in [name for name in l_possible_converters]
 
     # Check that we can get a list of possible input/outpat formats for a given converter
     l_in_formats, l_out_formats = get_possible_formats(CONVERTER_OB)
