@@ -38,6 +38,13 @@ DEFAULT_DOWNLOAD_DIR = './psdi_data_conversion/static/downloads'
 # Filename of the database, relative to the base of the python package
 DATABASE_FILENAME = "static/data/data.json"
 
+# Archive extensions
+L_ZIP_EXTENSIONS = [".zip"]
+L_TAR_EXTENSIONS = [".tar", ".tar.gz", ".tar.bz", ".tar.xz"]
+L_SUPPORTED_ARCHIVE_EXTENSIONS = [*L_ZIP_EXTENSIONS, *L_TAR_EXTENSIONS]
+L_UNSUPPORTED_ARCHIVE_EXTENSIONS = [".rar", ".7z"]
+L_FINAL_ARCHIVE_EXTENSIONS = [".zip", ".tar", ".gz", ".bz", ".xz", ".rar", ".7z"]
+
 # Logging and Formatting
 # ----------------------
 
