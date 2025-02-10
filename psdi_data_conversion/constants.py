@@ -105,8 +105,8 @@ D_QUAL_LABELS = {QUAL_COMP_KEY: QUAL_COMP_LABEL,
 QUAL_NOTE_IN_UNKNOWN = "The output format supports the %s property, but its support by the input format is unknown"
 QUAL_NOTE_OUT_UNKNOWN = "The input format supports the %s property, but its support by the output format is unknown"
 QUAL_NOTE_BOTH_UNKNOWN = "The support for the %s property is unknown by both the input and output formats"
-QUAL_NOTE_IN_MISSING = "The %s property is supported by the input format but not the output format"
-QUAL_NOTE_OUT_MISSING = "The %s property is supported by the output format but not the input format"
+QUAL_NOTE_IN_MISSING = "The %s property is supported by the output format but not the input format"
+QUAL_NOTE_OUT_MISSING = "The %s property is supported by the input format but not the output format"
 
 # Conversion quality strings
 QUAL_UNKNOWN = 'unknown'
