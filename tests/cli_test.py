@@ -253,9 +253,13 @@ def test_conversion_info(capsys):
 
     assert not captured.err
 
-    # Check that degree of success is printed as expected
+    # Check that conversion quality details are in the output as expected
     assert string_is_present_in_out(f"Conversion from '{in_format}' to '{out_format}' with {converter_name} is "
                                     f"possible with {qual_str} conversion quality")
+    assert string_is_present_in_out("Notes on this conversion:")
+    assert string_is_present_in_out(const.QUAL_NOTE_OUT_MISSING % const.QUAL_2D_LABEL)
+    assert string_is_present_in_out(const.QUAL_NOTE_OUT_MISSING % const.QUAL_3D_LABEL)
+    assert string_is_present_in_out(const.QUAL_NOTE_IN_MISSING % const.QUAL_CONN_LABEL)
 
     l_in_flags, l_in_options = get_in_format_args(converter_name, in_format)
     l_out_flags, l_out_options = get_out_format_args(converter_name, out_format)
