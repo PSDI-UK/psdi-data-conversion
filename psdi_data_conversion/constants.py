@@ -6,9 +6,13 @@ Miscellaneous constant values used within this project
 """
 
 import logging
+import shutil
 
 # Interface
 # ---------
+
+# The name of the CLI script
+CLI_SCRIPT_NAME = "psdi-data-convert"
 
 # Environmental variables
 AUTH_ENVVAR = "AUTH"
@@ -26,13 +30,22 @@ DEFAULT_COORD_GEN_QUAL = "medium"
 
 # Maximum output file size in bytes
 MEGABYTE = 1024*1024
-DEFAULT_MAX_FILE_SIZE = 1*MEGABYTE
+DEFAULT_MAX_FILE_SIZE = 0*MEGABYTE
 
 DEFAULT_UPLOAD_DIR = './psdi_data_conversion/static/uploads'
 DEFAULT_DOWNLOAD_DIR = './psdi_data_conversion/static/downloads'
 
-# Logging
-# -------
+# Filename of the database, relative to the base of the python package
+DATABASE_FILENAME = "static/data/data.json"
+
+# Logging and Formatting
+# ----------------------
+
+# Number of character spaces allocated for flags/options
+ARG_LEN = 20
+
+# Get the terminal width so we can prettily print help text
+TERM_WIDTH, _ = shutil.get_terminal_size((80, 20))
 
 # Log formatting
 LOG_FORMAT = r'[%(asctime)s] %(levelname)s [%(name)s.%(funcName)s:%(lineno)d] %(message)s'
@@ -57,7 +70,6 @@ LOG_DEFAULT = LOG_SIMPLE
 L_ALLOWED_LOG_MODES = (LOG_FULL, LOG_SIMPLE, LOG_STDOUT, LOG_NONE)
 
 LOG_EXT = ".log"
-LOCAL_LOG_EXT = LOG_EXT
 OUTPUT_LOG_EXT = f"{LOG_EXT}.txt"
 
 # Settings for local logger
@@ -74,12 +86,64 @@ DEFAULT_LISTING_LOG_FILE = "data-convert-list" + LOG_EXT
 # Default converter
 CONVERTER_DEFAULT = 'Open Babel'
 
+# Conversion quality strings
+QUAL_UNKNOWN = 'unknown'
+QUAL_VERYGOOD = 'very good'
+QUAL_GOOD = 'good'
+QUAL_OKAY = 'okay'
+QUAL_POOR = 'poor'
+QUAL_VERYPOOR = 'very poor'
+
 # Keys
 # ----
 
-# Keys used commonly by dicts
-FILE_KEY = 'file'
+# Key for the label given to the file uploaded in the web interface
 FILE_TO_UPLOAD_KEY = 'fileToUpload'
+
+# Keys for top-level and general items in the database
+DB_FORMATS_KEY = "formats"
+DB_CONVERTERS_KEY = "converters"
+DB_CONVERTS_TO_KEY = "converts_to"
+DB_ID_KEY = "id"
+DB_NAME_KEY = "name"
+
+# Keys for converter general info in the database
+DB_DESC_KEY = "description"
+DB_INFO_KEY = "further_info"
+DB_URL_KEY = "url"
+
+# Keys for format general info in the database
+DB_FORMAT_EXT_KEY = "extension"
+DB_FORMAT_NOTE_KEY = "note"
+DB_FORMAT_COMP_KEY = "composition"
+DB_FORMAT_CONN_KEY = "connections"
+DB_FORMAT_2D_KEY = "two_dim"
+DB_FORMAT_3D_KEY = "three_dim"
+
+# Keys for converts_to info in the database
+DB_CONV_ID_KEY = "converters_id"
+DB_IN_ID_KEY = "in_id"
+DB_OUT_ID_KEY = "out_id"
+DB_SUCCESS_KEY = "degree_of_success"
+
+# Key bases for converter-specific items in the database
+DB_IN_FLAGS_KEY_BASE = "flags_in"
+DB_OUT_FLAGS_KEY_BASE = "flags_out"
+DB_IN_OPTIONS_KEY_BASE = "argflags_in"
+DB_OUT_OPTIONS_KEY_BASE = "argflags_out"
+DB_IN_FLAGS_FORMATS_KEY_BASE = "format_to_flags_in"
+DB_OUT_FLAGS_FORMATS_KEY_BASE = "format_to_flags_out"
+DB_IN_OPTIONS_FORMATS_KEY_BASE = "format_to_argflags_in"
+DB_OUT_OPTIONS_FORMATS_KEY_BASE = "format_to_argflags_out"
+
+# Keys for argument info in the database
+DB_FLAG_KEY = "flag"
+DB_BRIEF_KEY = "brief"
+DB_FORMAT_ID_KEY = "formats_id"
+DB_IN_FLAGS_ID_KEY_BASE = "flags_in_id"
+DB_OUT_FLAGS_ID_KEY_BASE = "flags_out_id"
+DB_IN_OPTIONS_ID_KEY_BASE = "argflags_in_id"
+DB_OUT_OPTIONS_ID_KEY_BASE = "argflags_out_id"
 
 # Errors
 # ------

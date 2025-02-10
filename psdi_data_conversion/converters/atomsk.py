@@ -16,6 +16,7 @@ class AtoFileConverter(ScriptFileConverter):
 
     name = CONVERTER_ATO
     script = "atomsk.sh"
+    info = "See documentation for Atomsk at https://atomsk.univ-lille.fr/"
 
 
 # Assign this converter to the `converter` variable - this lets the psdi_data_conversion.converter module detect and

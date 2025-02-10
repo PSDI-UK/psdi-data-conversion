@@ -11,13 +11,44 @@ import logging
 from argparse import ArgumentParser
 import os
 import sys
+import textwrap
 
 from psdi_data_conversion import constants as const
-from psdi_data_conversion.converter import L_REGISTERED_CONVERTERS, run_converter
-from psdi_data_conversion.converters.base import (FileConverterAbortException, FileConverterInputException,
-                                                  get_file_storage)
+from psdi_data_conversion.constants import ARG_LEN, CLI_SCRIPT_NAME, CONVERTER_DEFAULT, TERM_WIDTH
+from psdi_data_conversion.converter import D_REGISTERED_CONVERTERS, L_REGISTERED_CONVERTERS, run_converter
+from psdi_data_conversion.converters.base import FileConverterAbortException, FileConverterInputException
+from psdi_data_conversion.database import (get_conversion_quality, get_converter_info, get_format_info,
+                                           get_in_format_args, get_out_format_args, get_possible_converters,
+                                           get_possible_formats)
 
-logger = logging.getLogger(__name__)
+
+class FileConverterHelpException(FileConverterInputException):
+    """An exception class which indicates an error where we will likely want to help the user figure out how to
+    correctly use the CLI instead of simply printing a traceback
+    """
+
+    def __init__(self, *args, msg_preformatted=False):
+        """Init the exception, noting if the message should be treated as preformatted or not
+
+        Parameters
+        ----------
+        msg_preformatted : bool, optional
+            If True, indicates that the message of the exception has already been formatted. Default False
+        """
+        super().__init__(*args)
+        self.msg_preformatted = msg_preformatted
+
+
+def print_wrap(s, newline=False, err=False, **kwargs):
+    """Print a string wrapped to the terminal width
+    """
+    if err:
+        file = sys.stderr
+    else:
+        file = sys.stdout
+    print(textwrap.fill(s, width=TERM_WIDTH, **kwargs), file=file)
+    if newline:
+        print("")
 
 
 class ConvertArgs:
@@ -35,15 +66,18 @@ class ConvertArgs:
         self._from_format: str | None = getattr(args, "from")
         self._input_dir: str | None = getattr(args, "in")
         self.to_format: str | None = args.to
-        self._output_dir: str | None = args.at
+        self._output_dir: str | None = args.out
         converter_name = getattr(args, "with")
         if isinstance(converter_name, str):
             self.name = converter_name
-        else:
+        elif converter_name:
             self.name: str = " ".join(converter_name)
+        else:
+            self.name = None
         self.delete_input = args.delete_input
         self.from_flags: str = args.from_flags.replace(r"\-", "-")
         self.to_flags: str = args.to_flags.replace(r"\-", "-")
+        self.no_check = args.nc
 
         # Keyword arguments specific to OpenBabel conversion
         self.coord_gen: str
@@ -65,7 +99,38 @@ class ConvertArgs:
         self.log_mode: bool = args.log_mode
         self.quiet = args.quiet
         self._log_file: str | None = args.log_file
-        self.log_level: str = args.log_level
+
+        if not args.log_level:
+            self.log_level = None
+        elif args.log_level.lower() == "debug":
+            self.log_level = logging.DEBUG
+        elif args.log_level.lower() == "info":
+            self.log_level = logging.INFO
+        elif args.log_level.lower().startswith("warn"):
+            self.log_level = logging.WARNING
+        elif args.log_level.lower() == "error":
+            self.log_level = logging.ERROR
+        elif args.log_level.lower() == "critical":
+            self.log_level = logging.CRITICAL
+        elif args.log_level:
+            raise FileConverterHelpException(f"Unrecognised logging level: {args.log_level}")
+
+        # Special handling for listing converters
+        if self.list:
+            # Force log mode to stdout and turn off quiet
+            self.log_mode = const.LOG_STDOUT
+            self.quiet = False
+
+            # Get the converter name from the arguments if it wasn't provided by -w/--with
+            if not self.name:
+                self.name = " ".join(self.l_args)
+
+            # For this operation, any other arguments can be ignored
+            return
+
+        # If not listing and a converter name wasn't supplied, use the default converter
+        if not self.name:
+            self.name = CONVERTER_DEFAULT
 
         # Quiet mode is equivalent to logging mode == LOGGING_NONE, so normalize them if either is set
         if self.quiet:
@@ -75,59 +140,63 @@ class ConvertArgs:
 
         # Check validity of input
 
-        if self.list:
-            # If requesting to list converters, any other arguments can be ignored
-            return
-
         if len(self.l_args) == 0:
-            raise FileConverterInputException("One or more names of files to convert must be provided")
+            raise FileConverterHelpException("One or more names of files to convert must be provided")
 
         if self._input_dir is not None and not os.path.isdir(self._input_dir):
-            raise FileConverterInputException(f"The provided input directory '{self._input_dir}' does not exist as a "
-                                              "directory")
+            raise FileConverterHelpException(f"The provided input directory '{self._input_dir}' does not exist as a "
+                                             "directory")
 
         if self.to_format is None:
-            raise FileConverterInputException("Output format (-t or --to) must be provided")
+            msg = textwrap.fill("ERROR Output format (-t or --to) must be provided. For information on supported "
+                                "formats and converters, call:\n")
+            msg += f"{CLI_SCRIPT_NAME} -l"
+            raise FileConverterHelpException(msg, msg_preformatted=True)
 
         # If the output directory doesn't exist, silently create it
         if self._output_dir is not None and not os.path.isdir(self._output_dir):
             if os.path.exists(self._output_dir):
-                raise FileConverterInputException(
-                    f"Output directory '{self._output_dir}' exists but is not a directory")
+                raise FileConverterHelpException(f"Output directory '{self._output_dir}' exists but is not a "
+                                                 "directory")
             os.makedirs(self._output_dir, exist_ok=True)
 
         # Check the converter is recognized
         if self.name not in L_REGISTERED_CONVERTERS:
-            raise FileConverterInputException(f"Converter '{self.name}' not recognised")
+            msg = textwrap.fill(f"ERROR: Converter '{self.name}' not recognised", width=TERM_WIDTH)
+            msg += f"\n\n{get_supported_converters()}"
+            raise FileConverterHelpException(msg, msg_preformatted=True)
 
         # No more than two arguments supplied to --coord-gen
         if args.coord_gen is not None and len(args.coord_gen) > 2:
-            raise FileConverterInputException("At most two arguments may be provided to --coord-gen, the mode and "
-                                              "quality, e.g. '--coord-gen Gen3D best'")
+            raise FileConverterHelpException("At most two arguments may be provided to --coord-gen, the mode and "
+                                             "quality, e.g. '--coord-gen Gen3D best'")
 
         # Coordinate generation options are valid
         if self.coord_gen not in const.L_ALLOWED_COORD_GENS:
-            raise FileConverterInputException(f"Coordinate generation type '{self.coord_gen}' not recognised. Allowed "
-                                              f"types are: {const.L_ALLOWED_COORD_GENS}")
+            raise FileConverterHelpException(f"Coordinate generation type '{self.coord_gen}' not recognised. Allowed "
+                                             f"types are: {const.L_ALLOWED_COORD_GENS}")
         if self.coord_gen_qual not in const.L_ALLOWED_COORD_GEN_QUALS:
-            raise FileConverterInputException(f"Coordinate generation quality '{self.coord_gen_qual}' not recognised. "
-                                              f"Allowed qualities are: {const.L_ALLOWED_COORD_GEN_QUALS}")
+            raise FileConverterHelpException(f"Coordinate generation quality '{self.coord_gen_qual}' not recognised. "
+                                             f"Allowed qualities are: {const.L_ALLOWED_COORD_GEN_QUALS}")
 
         # Logging mode is valid
         if self.log_mode not in const.L_ALLOWED_LOG_MODES:
-            raise FileConverterInputException(f"ERROR: Unrecognised logging option: {self.log_mode}. Allowed "
-                                              f"options are: {const.L_ALLOWED_LOG_MODES}")
+            raise FileConverterHelpException(f"Unrecognised logging mode: {self.log_mode}. Allowed "
+                                             f"modes are: {const.L_ALLOWED_LOG_MODES}")
 
     @property
     def from_format(self):
         """If the input file format isn't provided, determine it from the first file in the list.
         """
         if self._from_format is None:
+            if self.list:
+                # from_format isn't required in list mode, so don't raise an exception
+                return None
             first_filename = self.l_args[0]
             ext = os.path.splitext(first_filename)[1]
             if len(ext) == 0:
-                raise FileConverterInputException("Input file format (-f or --from) was not provided, and cannot "
-                                                  f"determine it automatically from filename '{first_filename}'")
+                raise FileConverterHelpException("Input file format (-f or --from) was not provided, and cannot "
+                                                 f"determine it automatically from filename '{first_filename}'")
             # Format will be the extension, minus the leading period
             self._from_format = ext[1:]
         return self._from_format
@@ -164,11 +233,15 @@ class ConvertArgs:
                     if os.path.isfile(test_filename):
                         first_filename = test_filename
                     else:
-                        raise FileConverterInputException(f"ERROR: Input file {first_filename} cannot be found. Also "
-                                                          f"checked for {test_filename}.")
+                        raise FileConverterHelpException(f"Input file {first_filename} cannot be found. Also "
+                                                         f"checked for {test_filename}.")
 
-                base = os.path.splitext(first_filename)[0]
-                self._log_file = base + const.LOG_EXT
+                filename_base = os.path.split(os.path.splitext(first_filename)[0])[1]
+                if self.log_mode == const.LOG_FULL:
+                    # For server-style logging, other files will be created and used for logs
+                    self._log_file = None
+                else:
+                    self._log_file = os.path.join(self.output_dir, filename_base + const.LOG_EXT)
         return self._log_file
 
 
@@ -197,9 +270,11 @@ def get_argument_parser():
                         help="The directory containing the input file(s), default current directory.")
     parser.add_argument("-t", "--to", type=str, default=None,
                         help="The output (convert to) file extension (e.g., cmi).")
-    parser.add_argument("-a", "--at", type=str, default=None,
-                        help="The directory where output files should be created, default same as input directory.")
-    parser.add_argument("-w", "--with", type=str, nargs="+", default="Open Babel",
+    parser.add_argument("-o", "--out", type=str, default=None,
+                        help="The directory where output files should be created. If not provided, output files will "
+                        "be created in -i/--in directory if that was provided, or else in the directory containing the "
+                        "first input file.")
+    parser.add_argument("-w", "--with", type=str, nargs="+",
                         help="The converter to be used (default 'Open Babel').")
     parser.add_argument("--delete-input", action="store_true",
                         help="If set, input files will be deleted after conversion, default they will be kept")
@@ -213,6 +288,11 @@ def get_argument_parser():
                              "For information on the flags accepted by a converter, call this script with '-l "
                              "<converter name>'. The first preceding hyphen for each flag must be backslash-escaped, "
                              "e.g. '--to-flags \"\\-a \\-bc \\--example\"'")
+    parser.add_argument("--nc", "--no-check", action="store_true",
+                        help="If set, will not perform a pre-check in the database on the validity of a conversion. "
+                        "Setting this will result in a less human-friendly error message (or may even falsely indicate "
+                        "success) if the conversion is not supported, but will save some execution time. Recommended "
+                        "only for automated execution after the user has confirmed a conversion is supported")
 
     # Keyword arguments specific to OpenBabel conversion
     parser.add_argument("--coord-gen", type=str, default=None, nargs="+",
@@ -223,28 +303,32 @@ def get_argument_parser():
                              "'--coord-gen Gen2D' (quality defaults to 'medium'), '--coord-gen Gen3D best'")
 
     # Keyword arguments for alternative functionality
-    parser.add_argument("--list", action="store_true",
+    parser.add_argument("-l", "--list", action="store_true",
                         help="If provided alone, lists all available converters. If the name of a converter is "
                              "provided, gives information on the converter and any command-line flags it accepts.")
 
     # Logging/stdout arguments
-    parser.add_argument("-o", "--log-file", type=str, default=None,
+    parser.add_argument("-g", "--log-file", type=str, default=None,
                         help="The name of the file to log to. This can be provided relative to the current directory "
-                        "(e.g. '-o ../logs/log-file.txt') or fully qualified (e.g. /path/to/log-file.txt). "
+                        "(e.g. '-g ../logs/log-file.txt') or fully qualified (e.g. /path/to/log-file.txt). "
                         "If not provided, the log file will be named after the =first input file (+'.log') and placed "
-                        "in the current directory.")
+                        "in the output directory (specified with -o/--out).\n"
+                        "In 'full' logging mode (not recommended with this interface), this will apply only to logs "
+                        "from the outermost level of the script if explicitly specified. If not explicitly specified, "
+                        "those logs will be sent to stderr.")
     parser.add_argument("--log-mode", type=str, default=const.LOG_SIMPLE,
-                        help="How logs should be stores. Allowed values are: \n"
-                        "- 'full' - Multi-file logging, only recommended when running as a public web app"
+                        help="How logs should be stored. Allowed values are: \n"
+                        "- 'full' - Multi-file logging, not recommended for the CLI, but allowed for a compatible "
+                        "interface with the public web app"
                         "- 'simple' - Logs saved to one file"
                         "- 'stdout' - Output logs and errors only to stdout"
                         "- 'none' - Output only errors to stdout")
     parser.add_argument("-q", "--quiet", action="store_true",
                         help="If set, all terminal output aside from errors will be suppressed and no log file will be "
                              "generated.")
-    parser.add_argument("--log-level", type=str, default="WARNING",
+    parser.add_argument("--log-level", type=str, default=None,
                         help="The desired level to log at. Allowed values are: 'DEBUG', 'INFO', 'WARNING', 'ERROR, "
-                             "'CRITICAL'. Default: 'INFO'")
+                             "'CRITICAL'. Default: 'INFO' for logging to file, 'WARNING' for logging to stdout")
 
     return parser
 
@@ -265,23 +349,238 @@ def parse_args():
     return args
 
 
-def detail_converter_use(converter_name: str):
-    """TODO
+def detail_converter_use(args: ConvertArgs):
+    """Prints output providing information on a specific converter, including the flags and options it allows
     """
-    print("Converter use detailing is still TBD")
+
+    converter_info = get_converter_info(args.name)
+    converter_class = D_REGISTERED_CONVERTERS[args.name]
+
+    print_wrap(f"{converter_info.name}: {converter_info.description} ({converter_info.url})", break_long_words=False,
+               break_on_hyphens=False, newline=True)
+
+    # If both an input and output format are specified, provide the degree of success for this conversion. Otherwise
+    # list possible input output formats
+    if args.from_format is not None and args.to_format is not None:
+        qual = get_conversion_quality(args.name, args.from_format, args.to_format)
+        if qual is None:
+            print_wrap(f"Conversion from '{args.from_format}' to '{args.to_format}' with {args.name} is not "
+                       "supported.", newline=True)
+        else:
+            print_wrap(f"Conversion from '{args.from_format}' to '{args.to_format}' with {args.name} is "
+                       f"possible with {qual} conversion quality", newline=True)
+    else:
+        l_input_formats, l_output_formats = get_possible_formats(args.name)
+
+        # If one format was supplied, check if it's supported
+        for (format_name, l_formats, to_or_from) in ((args.from_format, l_input_formats, "from"),
+                                                     (args.to_format, l_output_formats, "to")):
+            if format_name is None:
+                continue
+            if format_name in l_formats:
+                optional_not: str = ""
+            else:
+                optional_not: str = " not"
+            print_wrap(f"Conversion {to_or_from} {format_name} is {optional_not}supported by {args.name}.\n")
+
+        # List all possible formats, and which can be used for input and which for output
+        s_all_formats: set[str] = set(l_input_formats)
+        s_all_formats.update(l_output_formats)
+        l_all_formats: list[str] = list(s_all_formats)
+        l_all_formats.sort(key=lambda s: s.lower())
+
+        print_wrap(f"File formats supported by {args.name}:", newline=True)
+        max_format_length = max([len(x) for x in l_all_formats])
+        print(" "*(max_format_length+4) + "   INPUT  OUTPUT")
+        print(" "*(max_format_length+4) + "   -----  ------")
+        for file_format in l_all_formats:
+            in_yes_or_no = "yes" if file_format in l_input_formats else "no"
+            out_yes_or_no = "yes" if file_format in l_output_formats else "no"
+            print(f"    {file_format:>{max_format_length}}{in_yes_or_no:>8}{out_yes_or_no:>8}")
+        print("")
+
+    if converter_class.allowed_flags is None:
+        print_wrap("Information has not been provided about general flags accepted by this converter.", newline=True)
+    elif len(converter_class.allowed_flags) == 0:
+        print_wrap("This converter does not accept any general flags.", newline=True)
+    else:
+        print_wrap("Allowed general flags:")
+        for flag, help in converter_class.allowed_flags:
+            print(f"  {flag}")
+            print_wrap(help, width=TERM_WIDTH, initial_indent=" "*4, subsequent_indent=" "*4)
+        print("")
+
+    if converter_class.allowed_options is None:
+        print_wrap("Information has not been provided about general options accepted by this converter.", newline=True)
+    elif len(converter_class.allowed_options) == 0:
+        print_wrap("This converter does not accept any general options.", newline=True)
+    else:
+        print_wrap("Allowed general options:")
+        for option, help in converter_class.allowed_options:
+            print(f"  {option} <val>")
+            print(textwrap.fill(help, initial_indent=" "*4, subsequent_indent=" "*4))
+        print("")
+
+    # If input/output-format specific flags or options are available for the converter but a format isn't available,
+    # we'll want to take note of that and mention that at the end of the output
+    mention_input_format = False
+    mention_output_format = False
+
+    if args.from_format is not None:
+        from_format = args.from_format
+        in_flags, in_options = get_in_format_args(args.name, from_format)
+    else:
+        in_flags, in_options = [], []
+        from_format = "N/A"
+        if converter_class.has_in_format_flags_or_options:
+            mention_input_format = True
+
+    if args.to_format is not None:
+        to_format = args.to_format
+        out_flags, out_options = get_out_format_args(args.name, to_format)
+    else:
+        out_flags, out_options = [], []
+        to_format = "N/A"
+        if converter_class.has_out_format_flags_or_options:
+            mention_output_format = True
+
+    for l_args, flag_or_option, input_or_output, format_name in ((in_flags, "flag", "input", from_format),
+                                                                 (in_options, "option", "input", from_format),
+                                                                 (out_flags, "flag", "output", to_format),
+                                                                 (out_options, "option", "output", to_format)):
+        if len(l_args) == 0:
+            continue
+        print_wrap(f"Allowed {input_or_output} {flag_or_option}s for format '{format_name}':")
+        for arg_info in l_args:
+            if flag_or_option == "flag":
+                optional_brief = ""
+            else:
+                optional_brief = f" <{arg_info.brief}>"
+            print_wrap(f"{arg_info.flag+optional_brief:>{ARG_LEN}}  {arg_info.description}",
+                       subsequent_indent=" "*(ARG_LEN+2))
+            if arg_info.info and arg_info.info != "N/A":
+                print_wrap(arg_info.info,
+                           initial_indent=" "*(ARG_LEN+2),
+                           subsequent_indent=" "*(ARG_LEN+2))
+        print("")
+
+    print("NOTE: Support for format-specific flags and options in the CLI is yet to be implemented")
+
+    # Now at the end, bring up input/output-format-specific flags and options
+    if mention_input_format and mention_output_format:
+        print_wrap("For details on input/output flags and options allowed for specific formats, call:\n"
+                   f"{CLI_SCRIPT_NAME} -l {args.name} -f <input_format> -t <output_format>")
+    elif mention_input_format:
+        print_wrap("For details on input flags and options allowed for a specific format, call:\n"
+                   f"{CLI_SCRIPT_NAME} -l {args.name} -f <input_format> [-t <output_format>]")
+    elif mention_output_format:
+        print_wrap("For details on output flags and options allowed for a specific format, call:\n"
+                   f"{CLI_SCRIPT_NAME} -l {args.name} -t <output_format> [-f <input_format>]")
 
 
-def detail_converters(l_args: list[str]):
-    """Prints details on available converters for the user.
+def list_supported_formats(err=False):
+    """Prints a list of all formats recognised by at least one registered converter
     """
-    converter_name = " ".join(l_args)
-    if converter_name in L_REGISTERED_CONVERTERS:
-        return detail_converter_use(converter_name)
-    elif converter_name != "":
-        print(f"ERROR: Converter {converter_name} not recognized.", file=sys.stderr)
-    print("Available converters are: \n" + "\n".join(L_REGISTERED_CONVERTERS) + "\n" +
-          "For more details on a converter, call: \n" +
-          "psdi-data-convert --list <Converter name>")
+    # Make a list of all formats recognised by at least one converter
+    s_all_formats: set[str] = set()
+    for converter_name in L_REGISTERED_CONVERTERS:
+        l_in_formats, l_out_formats = get_possible_formats(converter_name)
+        s_all_formats.update(l_in_formats)
+        s_all_formats.update(l_out_formats)
+
+    # Convert the set to a list and alphabetise it
+    l_all_formats = list(s_all_formats)
+    l_all_formats.sort(key=lambda s: s.lower())
+
+    # Pad the format strings to all be the same length. To keep columns aligned, all padding is done with non-
+    # breaking spaces (\xa0), and each format is followed by a single normal space
+    longest_format_len = max([len(x) for x in l_all_formats])
+    l_padded_formats = [f"{x:\xa0<{longest_format_len}} " for x in l_all_formats]
+
+    print_wrap("Supported formats are: ", err=err, newline=True)
+    print_wrap("".join(l_padded_formats), err=err, initial_indent="  ", subsequent_indent="  ", newline=True)
+    print_wrap("Note that not all formats are supported with all converters, or both as input and as output.")
+
+
+def detail_possible_converters(from_format: str, to_format: str):
+    """Prints details on converters that can perform a conversion from one format to another
+    """
+
+    # Check that both formats are valid, and print an error if not
+    either_format_failed = False
+
+    try:
+        get_format_info(from_format)
+    except KeyError:
+        either_format_failed = True
+        print_wrap(f"ERROR: Input format '{from_format}' not recognised", newline=True, err=True)
+
+    try:
+        get_format_info(to_format)
+    except KeyError:
+        either_format_failed = True
+        print_wrap(f"ERROR: Output format '{from_format}' not recognised", newline=True, err=True)
+
+    if either_format_failed:
+        # Let the user know about formats which are allowed
+        list_supported_formats(err=True)
+        exit(1)
+
+    l_possible_converters = [x for x in get_possible_converters(from_format, to_format)
+                             if x in L_REGISTERED_CONVERTERS]
+
+    if len(l_possible_converters) == 0:
+        print_wrap(f"No converters are available which can perform a conversion from {from_format} to {to_format}")
+        return
+
+    print_wrap(f"The following converters can convert from {from_format} to {to_format}:", newline=True)
+    print("\n    ".join(l_possible_converters))
+
+    print_wrap("For details on input/output flags and options allowed by a converter for this conversion, call:")
+    print(f"{CLI_SCRIPT_NAME} -l <converter name> -f {from_format} -t {to_format}")
+
+
+def get_supported_converters():
+    """Gets a string containing a list of supported converters
+    """
+    return "Available converters: \n\n    " + "\n    ".join(L_REGISTERED_CONVERTERS)
+
+
+def list_supported_converters(err=False):
+    """Prints a list of supported converters for the user
+    """
+    if err:
+        file = sys.stderr
+    else:
+        file = sys.stdout
+    print(get_supported_converters() + "\n", file=file)
+
+
+def detail_converters_and_formats(args: ConvertArgs):
+    """Prints details on available converters and formats for the user.
+    """
+    if args.name in L_REGISTERED_CONVERTERS:
+        return detail_converter_use(args)
+    elif args.name != "":
+        print_wrap(f"ERROR: Converter '{args.name}' not recognized.", err=True, newline=True)
+        list_supported_converters(err=True)
+        exit(1)
+    elif args.from_format and args.to_format:
+        return detail_possible_converters(args.from_format, args.to_format)
+
+    list_supported_converters()
+    list_supported_formats()
+
+    print("")
+
+    print_wrap("For more details on a converter, call:")
+    print(f"{CLI_SCRIPT_NAME} -l <converter name>\n")
+
+    print_wrap("For a list of converters that can perform a desired conversion, call:")
+    print(f"{CLI_SCRIPT_NAME} -l -f <input format> -t <output format>\n")
+
+    print_wrap("For a list of options provided by a converter for a desired conversion, call:")
+    print(f"{CLI_SCRIPT_NAME} -l <converter name> -f <input format> -t <output format>")
 
 
 def run_from_args(args: ConvertArgs):
@@ -293,18 +592,20 @@ def run_from_args(args: ConvertArgs):
         The parsed arguments for this script.
     """
 
-    logger.debug("# Entering function `run_from_args`")
-
     # Check if we've been asked to list options
     if args.list:
-        return detail_converters(args.l_args)
+        return detail_converters_and_formats(args)
 
-    form = {'token': '1041c0a661d118d5f28e7c6830375dd0',
-            'from': args.from_format,
-            'to': args.to_format,
-            'from_full': args.from_format,
-            'to_full': args.to_format,
-            'success': 'unknown',
+    # Check that the requested conversion is valid unless suppressed
+    if not args.no_check:
+        qual = get_conversion_quality(args.name, args.from_format, args.to_format)
+        if not qual:
+            print_wrap(f"ERROR: Conversion from {args.from_format} to {args.to_format} with {args.name} is not "
+                       "supported.", err=True, newline=True)
+            detail_possible_converters(args.from_format, args.to_format)
+            exit(1)
+
+    data = {'success': 'unknown',
             'from_flags': args.from_flags,
             'to_flags': args.to_flags,
             'from_arg_flags': '',
@@ -325,63 +626,85 @@ def run_from_args(args: ConvertArgs):
             if not qualified_filename.endswith(ex_extension):
                 qualified_filename += ex_extension
                 if not os.path.isfile(qualified_filename):
-                    print(f"ERROR: Cannot find file {filename+ex_extension} in directory {args.input_dir}",
-                          file=sys.stderr)
+                    print_wrap(f"ERROR: Cannot find file {filename+ex_extension} in directory {args.input_dir}",
+                               err=True)
                     continue
             else:
-                print(f"ERROR: Cannot find file {filename} in directory {args.input_dir}", file=sys.stderr)
+                print_wrap(f"ERROR: Cannot find file {filename} in directory {args.input_dir}", err=True)
                 continue
 
         if not args.quiet:
             print(f"Converting {filename} to {args.to_format}...")
 
-        file_storage = get_file_storage(qualified_filename)
-
         try:
-            run_converter(name=args.name,
-                          files=file_storage,
-                          form=form,
-                          file_to_convert=const.FILE_TO_UPLOAD_KEY,
+            run_converter(filename=qualified_filename,
+                          to_format=args.to_format,
+                          from_format=args.from_format,
+                          name=args.name,
+                          data=data,
                           use_envvars=False,
                           upload_dir=args.input_dir,
                           download_dir=args.output_dir,
                           log_file=args.log_file,
                           log_mode=args.log_mode,
+                          log_level=args.log_level,
                           delete_input=args.delete_input,
-                          max_file_size=0)
+                          refresh_local_log=False)
         except FileConverterAbortException as e:
-            print(f"ERROR: Attempt to convert file {filename} aborted with status code {e.status_code} and message: " +
-                  f"\n{e}\n", file=sys.stderr)
+            print_wrap(f"ERROR: Attempt to convert file {filename} aborted with status code {e.status_code} and "
+                       f"message:\n{e}\n", err=True)
             continue
         except Exception as e:
-            print(f"ERROR: Attempt to convert file {filename} failed with exception type {type(e)} and message: " +
-                  f"\n{e}\n", file=sys.stderr)
+            print_wrap(f"ERROR: Attempt to convert file {filename} failed with exception type {type(e)} and message: " +
+                       f"\n{e}\n", err=True)
             continue
 
         if not args.quiet:
             sys.stdout.write("Success!\n")
-
-    logger.debug("# Exiting function `run_from_args`")
 
 
 def main():
     """Standard entry-point function for this script.
     """
 
-    args = parse_args()
+    # If no inputs were provided, print a message about usage
+    if len(sys.argv) == 1:
+        print_wrap("See the README.md file for information on using this utility and examples of basic usage, or for "
+                   "detailed explanation of arguments call:")
+        print(f"{CLI_SCRIPT_NAME} -h")
+        exit(1)
 
-    if args.log_mode == const.LOG_SIMPLE or args.log_mode == const.LOG_FULL:
-        logging.basicConfig(filename=args.log_file)
+    try:
+        args = parse_args()
+    except FileConverterHelpException as e:
+        # If we get a Help exception, it's likely due to user error, so don't bother them with a traceback and simply
+        # print the message to stderr
+        if e.msg_preformatted:
+            print(e, file=sys.stderr)
+        else:
+            print_wrap(f"ERROR: {e}", err=True)
+        exit(1)
 
-    logger.info("#")
-    logger.info("# Beginning execution of script `%s`", __file__)
-    logger.info("#")
+    if (args.log_mode == const.LOG_SIMPLE or args.log_mode == const.LOG_FULL) and args.log_file:
+        # Delete any previous local log if it exists
+        try:
+            os.remove(args.log_file)
+        except FileNotFoundError:
+            pass
+        logging.basicConfig(filename=args.log_file, level=args.log_level,
+                            format=const.LOG_FORMAT, datefmt=const.TIMESTAMP_FORMAT)
+    else:
+        logging.basicConfig(level=args.log_level, format=const.LOG_FORMAT)
+
+    logging.debug("#")
+    logging.debug("# Beginning execution of script `%s`", __file__)
+    logging.debug("#")
 
     run_from_args(args)
 
-    logger.info("#")
-    logger.info("# Finished execution of script `%s`", __file__)
-    logger.info("#")
+    logging.debug("#")
+    logging.debug("# Finished execution of script `%s`", __file__)
+    logging.debug("#")
 
 
 if __name__ == "__main__":

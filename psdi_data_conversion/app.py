@@ -60,28 +60,29 @@ def convert():
     """Convert file to a different format and save to folder 'downloads'. Delete original file. Note that downloading is
     achieved in format.js
     """
+
+    # Make sure the upload directory exists
+    os.makedirs(const.DEFAULT_UPLOAD_DIR, exist_ok=True)
+
+    # Save the file in the upload directory
+    file = request.files[const.FILE_TO_UPLOAD_KEY]
+    filename = filename = file.filename
+
+    qualified_filename = os.path.join(const.DEFAULT_UPLOAD_DIR, filename)
+    file.save(qualified_filename)
+
     if (not check_auth) or (request.form['token'] == token and token != ''):
         return run_converter(name=request.form['converter'],
-                             files=request.files,
-                             form=request.form,
-                             file_to_convert=const.FILE_TO_UPLOAD_KEY,
+                             filename=qualified_filename,
+                             data=request.form,
+                             to_format=request.form['to'],
+                             from_format=request.form['from'],
                              log_mode=log_mode,
+                             delete_input=True,
                              abort_callback=abort)
     else:
         # return http status code 405
         abort(405)
-
-
-@app.route('/conv/', methods=['POST'])
-def conv():
-    """Convert file (cURL)
-    """
-    return run_converter(name=request.form['converter'],
-                         files=request.files,
-                         form=request.form,
-                         file_to_convert=const.FILE_KEY,
-                         log_mode=log_mode,
-                         abort_callback=abort)
 
 
 @app.route('/feedback/', methods=['POST'])

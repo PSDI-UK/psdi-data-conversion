@@ -1,0 +1,30 @@
+# Pipeline to run on release branch only
+
+name: ci-release
+run-name: ci-release
+on:
+  workflow_dispatch:
+  push:
+    branches: [ "release" ]
+    
+jobs:
+  test-package:
+    uses: ./.github/workflows/test_package.yml
+
+  # The commented out code below runs a code vulnerability scan on the
+  # containerised app. This will not work on the free GitHub plan, since
+  # for that plan code scanning is not supported for private repos - and
+  # this is a private repo. There may be a work-around.
+  #
+  # NOTE: If you uncomment this job to use it you may wish to change the
+  # 'needs' in the below 'tag-container-push' job from 'test-package'
+  # to 'anchore-scan' if you want to make a release dependent on a successful
+  # scan.
+  #
+  #anchore-scan:
+  #  uses: ./.github/workflows/anchore-scan.yml
+  #  needs: [test-package]
+    
+  tag-container-push:
+    uses: ./.github/workflows/tag-container-push.yml
+    needs: [test-package]

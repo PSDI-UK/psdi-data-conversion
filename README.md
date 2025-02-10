@@ -1,10 +1,13 @@
 # PSDI Data Conversion
 
+Version: Pre-release 2024-02-10
+
 This is the repository for the PSDI PF2 Chemistry File Format Conversion project. The goal of this project is to provide utilities to assist in converting files between the many different file formats used in chemistry, providing information on what converters are available for a given conversion and the expected quality of it, and providing multiple interfaces to perform these conversions. These interfaces are:
 
 - Online web service, available at https://psdidev2.azurewebsites.net
 - Version of the web app you can download and run locally (e.g. if you need to convert files which exceed the online app's file size limit)
 - Command-line interface, to run conversions from a terminal
+- Python library
 
 ## Table of Contents
 
@@ -17,6 +20,13 @@ This is the repository for the PSDI PF2 Chemistry File Format Conversion project
   - [Execution](#execution)
     - [Data Conversion](#data-conversion)
     - [Requesting Information on Possible Conversions](#requesting-information-on-possible-conversions)
+- [Python Library](#python-library)
+  - [Installation](#installation-1)
+  - [Use](#use)
+    - [`run_converter](#run_converter)
+    - [`get_converter](#get_converter)
+    - [`constants](#constants)
+    - [`database](#database)
 - [Using the Online Conversion Service](#using-the-online-conversion-service)
 - [Running the Python/Flask app locally](#running-the-pythonflask-app-locally)
   - [Installation and Setup](#installation-and-setup)
@@ -42,7 +52,7 @@ This is the repository for the PSDI PF2 Chemistry File Format Conversion project
   - `templates`
     - (HTML assets rendered by Flask for the web app)
   - `__init.py__`
-  - (Python modules and scripts)
+  - (Python packages, modules, and scripts)
 - `scripts`
   - (Scripts used for project maintenance)
 - `tests`
@@ -125,7 +135,7 @@ In addition to the dependencies listed above, this project uses the assets made 
 
 ### Installation
 
-This package is not yet available on PyPI, and so must be installed locally. This can be done most easily with:
+The CLI and Python library are installed together. This package is not yet available on PyPI, and so must be installed locally. This can be done most easily with:
 
 ```bash
 pip install .
@@ -157,10 +167,10 @@ The full possible syntax for the script is:
 
 ```
 psdi-data-convert <input file 1> [<input file 2> <input file 3> ...] -t/--to <output format> [-f/--from <input file
-format>] [-i/--in <input file location>] [-a/--at <location for output files>] [-w/--with <converter>] [--delete-input]
+format>] [-i/--in <input file location>] [-o/--out <location for output files>] [-w/--with <converter>] [--delete-input]
 [--from-flags '<flags to be provided to the converter for reading input>'] [--to-flags '<flags to be provided to the
-converter for writing output>'] [--coord-gen <coordinate generation options] [-q/--quiet] [-o/--log-file <log file
-name] [--log-level <level>]
+converter for writing output>'] [--coord-gen <coordinate generation options] [--nc/--no-check] [-q/--quiet]
+[-g/--log-file <log file name] [--log-mode <mode>] [--log-level <level>]
 ```
 
 Call `psdi-data-convert -h` for details on each of these options.
@@ -173,12 +183,120 @@ The script can also be used to get information on possible conversions by provid
 psdi-data-convert -l
 ```
 
-Without any further arguments, the script will list converters available for use.
+Without any further arguments, the script will list converters available for use. More detailed information about a specific converter or conversion can be obtained through providing more information about the desired conversion.
 
-Further functionality planned for this script, but yet to be implemented:
+To get more information about a converter, call:
 
-- If the name of a converter is provided as an argument, it should provide information on the converter, such as what flags it will accept
-- If the names of two formats are provided as arguments, it should provide information on the possible converters that can be used for this conversion and the expected quality of the conversion
+```
+psdi-data-convert -l <converter name>
+```
+
+This will print general information on this converter, including what flags and options it accepts for all conversions, plus a table of what file formats it can handle for input and output.
+
+To get information about which converters can handle a given conversion, call:
+
+```
+psdi-data-convert -l -f <input format> -t <output format>
+```
+
+This will provide a list of converters which can handle this conversion, and notes on the degree of success for each.
+
+To get information on input/output flags and options a converter supports for given input/output file formats, call:
+
+```
+psdi-data-convert -l <converter name> [-f <input format>] [-t <output format>]
+```
+
+If an input format is provided, information on input flags and options accepted by the converter for this format will be provided, and similar for if an output format is provided.
+
+## Python Library
+
+### Installation
+
+The CLI and Python library are installed together. This package is not yet available on PyPI, and so must be installed locally. This can be done most easily with:
+
+```bash
+pip install .
+```
+
+executed from this project's directory. You can also replace the '.' in this command with the path to this project's directory to install it from elsewhere.
+
+### Use
+
+Once installed, this project's library can be imported through the following within Python:
+
+```python
+import psdi_data_conversion
+```
+
+The most useful modules and functions within this package to know about are:
+
+- `psdi_data_conversion`
+  - `converter`
+    - `run_converter`
+    - `get_converter`
+  - `constants`
+  - `database`
+
+#### `run_converter`
+
+This is the standard method to run a file conversion. This method may be imported via:
+
+```python
+from psdi_data_conversion.converter import run_converter
+```
+
+For a simple conversion, this can be used via:
+
+```python
+run_converter(filename, to_format, name=name, data=data)
+```
+
+Where `filename` is the name of the file to convert (either fully-qualified or relative to the current directory), `to_format` is the desired format to convert to (e.g. `"pdb"`), `name` is the name of the converter to use (default "Open Babel"), and `data` is a dict of any extra information required by the specific converter being used (default empty dict).
+
+See the method's documentation via `help(run_converter)` after importing it for further details on usage.
+
+#### `get_converter`
+
+This method provides the class which will perform a file conversion. This method may be imported via:
+
+```python
+from psdi_data_conversion.converter import get_converter
+```
+
+This can be used to create and run a converter via e.g.:
+
+```python
+converter = get_converter(filename, to_format, name=name, data=data)
+...
+converter.run()
+```
+
+`get_converter` takes all the same arguments as `run_converter`. See the method's documentation via `help(get_converter)` after importing it for further details on usage.
+
+#### `constants`
+
+This package defines most constants used in the package. It may be imported via:
+
+```python
+from psdi_data_conversion import constants
+```
+
+Of the constants not defined in this package, the most notable are the names of available converters. Each converter has its own name defined in its module within the `psdi_data_conversion.converters` package (e.g. `psdi_data_conversion.converters.atomsk.CONVERTER_ATO`), and these are compiled within the `psdi_data_conversion.converter` module into:
+
+- `D_REGISTERED_CONVERTERS` - A dict which relates the names of converters to their classes
+- `L_REGISTERED_CONVERTERS` - A list of the names of converters
+
+#### `database`
+
+The `database` module provides classes and methods to interface with the database of converters, file formats, and known possible conversions. This database is distributed with the project at `psdi_data_conversion/static/data/data.json`, but isn't user-friendly to read. The methods provided in this module provide a more user-friendly way to make common queries from the database:
+
+- `get_converter_info` - This method takes the name of a converter and returns an object containing the general information about it stored in the database (note that this doesn't include file formats it can handle - use the `get_possible_formats` method for that)
+- `get_format_info` - This method takes the name of a file format (its extension) and returns an object containing the general information about it stored in the database
+- `get_degree_of_success` - This method takes the name of a converter, the name of an input file format (its extension), and the name of an output file format, and provides the degree of success for this conversion (`None` if not possible, otherwise a string describing it).
+- `get_possible_converters` - This method takes the names of an input and output file format, and returns a list of converters which can perform the desired conversion and their degree of success.
+- `get_possible_formats` - This method takes the name of a converter and returns a list of input formats it can accept and a list of output formats it can produce. While it's usually a safe bet that a converter can handle any combination between these lists, it's best to make sure that it can with the `get_degree_of_success` method
+- `get_in_format_args` and `get_out_format_args` - These methods take the name of a converter and the name of an input/output file format, and return a list of info on flags accepted by the converter when using this format for input/output
 
 ## Using the Online Conversion Service
 
@@ -191,7 +309,7 @@ Enter https://psdidev2.azurewebsites.net in a browser. Guidance on usage is give
 Install the package and its requirements, including the optional requirements used to run the GUI locally, by executing the following command from this project's directory:
 
 ```bash
-pip install .[gui]
+pip install .'[gui]'
 ```
 
 To enable debug mode, if required, enter:
@@ -236,7 +354,7 @@ open -a "Google Chrome.app" --args --allow-file-access-from-files
 The Python library and CLI are written to make it easy to extend the functionality of this package to use other file format converters. This can by downloading or cloning the project's source from it's GitHub Repository (https://github.com/PSDI-UK/psdi-data-conversion), editing the code to add your converter following the guidance in the "[Adding File Format Converters](https://github.com/PSDI-UK/psdi-data-conversion/blob/main/CONTRIBUTING.md#adding-file-format-converters)" section of CONTRIBUTING.md to integrate it with the Python code, and installing the modified package on your system via:
 
 ```bash
-pip install --editable .[test]
+pip install --editable .'[test]'
 ```
 
 (This command uses the `--editable` option and optional `test` dependencies to ease the process of testing and debugging your changes.)
@@ -247,7 +365,7 @@ Install the package requirements locally (ideally within a virtual environment) 
 
 ```bash
 source .venv/bin/activate # Create a venv first if necessary with `python -m venv .venv`
-pip install .[gui,test]
+pip install .'[gui,test]'
 pytest
 ```
 
@@ -260,3 +378,5 @@ pytest
 - Tom Underwood
 
 ## Funding
+
+TODO: Note funding here

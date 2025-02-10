@@ -6,8 +6,9 @@
 #   This shell script allows a c2x conversion to be carried out from the Python Flask app.
 
 # Required positional arguments:
-# arg1 is the fully-qualified input file name (e.g., /path/to/nacl.cif)
-# arg2 is the fully-qualified output file name
+# arg1 is the output format preceded by two dashes (e.g., --cml)
+# arg2 is the fully-qualified input file name (e.g., /path/to/nacl.cif)
+# arg3 is the fully-qualified output file name
 
-psdi_data_conversion/bin/c2x $1 $2 $3 $4
+psdi_data_conversion/bin/c2x $1 $2 $3 $4 $5
 

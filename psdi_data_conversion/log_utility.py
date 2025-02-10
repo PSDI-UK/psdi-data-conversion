@@ -12,10 +12,6 @@ import sys
 
 from psdi_data_conversion import constants as const
 
-# Set up the global logger when this module is first imported
-global_handler = logging.FileHandler(const.GLOBAL_LOG_FILENAME)
-global_handler.setLevel(const.GLOBAL_LOGGER_LEVEL)
-
 
 def set_up_data_conversion_logger(name=const.LOCAL_LOGGER_NAME,
                                   local_log_file=None,
@@ -23,7 +19,8 @@ def set_up_data_conversion_logger(name=const.LOCAL_LOGGER_NAME,
                                   local_logger_raw_output=False,
                                   extra_loggers=None,
                                   suppress_global_handler=False,
-                                  stdout_output_level=None):
+                                  stdout_output_level=None,
+                                  mode="a"):
     """Registers a logger with the provided name and sets it up with the desired options
 
     Parameters
@@ -39,14 +36,16 @@ def set_up_data_conversion_logger(name=const.LOCAL_LOGGER_NAME,
     local_logger_raw_output : bool
         If set to True, output to the local logger will be logged with no formatting, exactly as input. Otherwise
         (default) it will include a timestamp and indicate the logging level
-    extra_loggers : Iterable[Tuple[str, int, bool]]
-        A list of one or more tuples of the format (`filename`, `level`, `raw_output`) specifying these options
-        (defined the same as for the local logger) for one or more additional logging channels.
+    extra_loggers : Iterable[Tuple[str, int, bool, str]]
+        A list of one or more tuples of the format (`filename`, `level`, `raw_output`, `mode`) specifying these
+        options (defined the same as for the local logger) for one or more additional logging channels.
     suppress_global_handler : bool
         If set to True, will not add the handler which sends all logs to the global log file, default False
     stdout_output_level : int | None
         The logging level (using one of the levels defined in the base Python `logging` module) at and above which to
         log output to stdout. If None (default), nothing will be sent to stdout
+    mode : str
+        Either "a" for append to existing log or "w" to overwrite existing log, default "a"
 
     Returns
     -------
@@ -60,12 +59,13 @@ def set_up_data_conversion_logger(name=const.LOCAL_LOGGER_NAME,
         extra_loggers = []
 
     # Set up filehandlers for the global and local logging
-    for (filename, level, raw_output) in ((const.GLOBAL_LOG_FILENAME, const.GLOBAL_LOGGER_LEVEL, False),
-                                          (local_log_file, local_logger_level, local_logger_raw_output),
-                                          *extra_loggers):
+    for (filename, level,
+         raw_output, write_mode) in ((const.GLOBAL_LOG_FILENAME, const.GLOBAL_LOGGER_LEVEL, False, "a"),
+                                     (local_log_file, local_logger_level, local_logger_raw_output, mode),
+                                     *extra_loggers):
         if level is None or (suppress_global_handler and filename == const.GLOBAL_LOG_FILENAME):
             continue
-        _add_filehandler_to_logger(logger, filename, level, raw_output)
+        _add_filehandler_to_logger(logger, filename, level, raw_output, write_mode)
 
     # Set up stdout output if desired
     if stdout_output_level is not None:
@@ -92,7 +92,7 @@ def set_up_data_conversion_logger(name=const.LOCAL_LOGGER_NAME,
     return logger
 
 
-def _add_filehandler_to_logger(logger, filename, level, raw_output):
+def _add_filehandler_to_logger(logger, filename, level, raw_output, mode):
     """Private function to add a file handler to a logger only if the logger doesn't already have a handler for that
     file, and set the logging level for the handler
     """
@@ -100,7 +100,7 @@ def _add_filehandler_to_logger(logger, filename, level, raw_output):
     if filename is None:
         return
 
-    file_handler = logging.FileHandler(filename)
+    file_handler = logging.FileHandler(filename, mode)
 
     # Check if the file to log to is already in the logger's filehandlers
     handler_already_present = False

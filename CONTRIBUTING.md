@@ -150,7 +150,7 @@ class MyScriptFileConverter(ScriptFileConverter):
 converter = MyScriptFileConverter
 ```
 
-When a converter is defined this way, the `_convert(self)` method will be defined to execute a subprocess call to run the script defined in the class's `script` class variable, searching for it in the `psdi_data_conversion/scripts` directory. Typically this will be a wrapper to call a binary to perform the conversion, which should be placed in the `psdi_data_conversion/bin` directory. It will pass to it the fully-qualified input filename (`self.in_filename`) as the first argument, the fully-qualified output filename (`self.out_filename`) as the second argument, and then any flags defined in `self.to_flags` and `self.from_flags`.
+When a converter is defined this way, the `_convert(self)` method will be defined to execute a subprocess call to run the script defined in the class's `script` class variable, searching for it in the `psdi_data_conversion/scripts` directory. Typically this will be a wrapper to call a binary to perform the conversion, which should be placed in the `psdi_data_conversion/bin` directory. It will pass to it the fully-qualified input filename (`self.in_filename`) as the first argument, the fully-qualified output filename (`self.out_filename`) as the second argument, and then any flags defined in `self.data["to_flags"]` and `self.data["from_flags"]`.
 
 Finally, it's good practice to add a unit test of the converter. You can do this by following the example of tests in `tests/converter_test.py`. If necessary, add a (small) file it can convert to the `test_data` folder, and implement a test that it can convert it to another format by adding a new method to the `TestConverter` class in this file. At its simplest, this method should look something like:
 
@@ -201,7 +201,7 @@ You can then run the any tests you added, plus the existing test suite through r
 
 ```bash
 source .venv/bin/activate # Create a venv first if necessary with `python -m venv .venv`
-pip install --editable .[test]
+pip install --editable .'[test]'
 pytest
 ```
 
@@ -226,5 +226,5 @@ List of necessary steps:
 For debugging python issues, it's recommended to install the package in editable mode via pip. This sets it up so that the python source files are used in-place rather than copied to a separate install directory, meaning that changes to them will be reflected in runs without need for a new installation. This can be done through the following command (which also installs all optional packages):
 
 ```bash
-pip install --editable .[gui,test]
+pip install --editable .'[gui,test]'
 ```
