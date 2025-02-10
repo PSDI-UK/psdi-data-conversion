@@ -5,15 +5,17 @@
   This is the JavaScript which makes the Format and Converter Selection gui work.
 */
 
-import { getInputFormats, getOutputFormats, getOutputFormatsForInputFormat,
-    getInputFormatsForOutputFormat, getConverters, getConverterByName, getLevelChemInfo } from "./data.js";
+import {
+    getInputFormats, getOutputFormats, getOutputFormatsForInputFormat,
+    getInputFormatsForOutputFormat, getConverters, getConverterByName, getLevelChemInfo
+} from "./data.js";
 
 var fromList = new Array(),
     toList = new Array(),
     qualityCriteriaCount = 0,
     qualityMeasureSum = 0;
 
-$(document).ready(function() {
+$(document).ready(function () {
 
     // Populates the "Convert from" selection list
     getInputFormats().then((formats) => {
@@ -56,7 +58,7 @@ function populateConversionSuccess(event) {
     }
 
     const from_text = $("#searchFrom").val(),
-          to_text = $("#searchTo").val();
+        to_text = $("#searchTo").val();
 
     sessionStorage.setItem("in_str", from_text);
     sessionStorage.setItem("out_str", to_text);
@@ -71,14 +73,14 @@ function populateConversionSuccess(event) {
 
     try {
         const in_str = $("#searchFrom").val(), // e.g. "ins: ShelX"
-              in_str_array = in_str.split(": "),
-              in_ext = in_str_array[0],           // e.g. "ins"
-              in_note = in_str_array[1];          // e.g. "ShelX"
+            in_str_array = in_str.split(": "),
+            in_ext = in_str_array[0],           // e.g. "ins"
+            in_note = in_str_array[1];          // e.g. "ShelX"
 
         const out_str = $("#searchTo").val(),
-              out_str_array = out_str.split(": "),
-              out_ext = out_str_array[0],
-              out_note = out_str_array[1];
+            out_str_array = out_str.split(": "),
+            out_ext = out_str_array[0],
+            out_note = out_str_array[1];
 
         if (this.id == "fromList") {
             toList = [];
@@ -104,14 +106,14 @@ function populateConversionSuccess(event) {
 // Shows how the conversion quality was determined for the selected conversion/converter combination
 function showQualityDetails(event) {
     const in_str = sessionStorage.getItem("in_str"), // e.g. "ins: ShelX"
-          in_str_array = in_str.split(": "),
-          in_ext = in_str_array[0],                  // e.g. "ins"
-          in_note = in_str_array[1];                 // e.g. "ShelX"
+        in_str_array = in_str.split(": "),
+        in_ext = in_str_array[0],                  // e.g. "ins"
+        in_note = in_str_array[1];                 // e.g. "ShelX"
 
     const out_str = sessionStorage.getItem("out_str"),
-          out_str_array = out_str.split(": "),
-          out_ext = out_str_array[0],
-          out_note = out_str_array[1];
+        out_str_array = out_str.split(": "),
+        out_ext = out_str_array[0],
+        out_note = out_str_array[1];
 
     const converter = sessionStorage.getItem("success").split(": ")[0]
 
@@ -133,9 +135,9 @@ function displayLevelChemInfo(entries, sel) {
     qualityMeasureSum = 0;
 
     var quality = qualityDetail(composition_in, composition_out, 'Composition') +
-                  qualityDetail(connections_in, connections_out, 'Connections') +
-                  qualityDetail(two_dim_in, two_dim_out, '2D coordinates') +
-                  qualityDetail(three_dim_in, three_dim_out, '3D coordinates');
+        qualityDetail(connections_in, connections_out, 'Connections') +
+        qualityDetail(two_dim_in, two_dim_out, '2D coordinates') +
+        qualityDetail(three_dim_in, three_dim_out, '3D coordinates');
 
     if (qualityCriteriaCount == 0) {
         quality = 'Conversion quality details not available for this converter/conversion combination.';
@@ -160,9 +162,9 @@ function displayLevelChemInfo(entries, sel) {
         }
 
         quality += '-----------------------------\n' +
-                   'Total score: ' + percent + '%\n' +
-                   'Conversion quality: ' + qualityText + '\n' +
-                   '-----------------------------\n';
+            'Total score: ' + percent + '%\n' +
+            'Conversion quality: ' + qualityText + '\n' +
+            '-----------------------------\n';
     }
 
     alert(quality);
@@ -184,9 +186,9 @@ function getQuality(entries, rows) {
     qualityMeasureSum = 0;
 
     qualityDetail(composition_in, composition_out, 'Composition') +
-    qualityDetail(connections_in, connections_out, 'Connections') +
-    qualityDetail(two_dim_in, two_dim_out, '2D coordinates') +
-    qualityDetail(three_dim_in, three_dim_out, '3D coordinates');
+        qualityDetail(connections_in, connections_out, 'Connections') +
+        qualityDetail(two_dim_in, two_dim_out, '2D coordinates') +
+        qualityDetail(three_dim_in, three_dim_out, '3D coordinates');
 
     if (qualityCriteriaCount == 0) {
         qualityText = ' not tested';
@@ -210,14 +212,14 @@ function getQuality(entries, rows) {
         }
     }
 
-    rows.sort(function(a, b) {
+    rows.sort(function (a, b) {
         return a.toLowerCase().localeCompare(b.toLowerCase());
     });
 
     for (var i = 0; i < rows.length; i++) {
         const support = rows[i].substring(0, 10) == "Open Babel" ||
-                        rows[i].substring(0, 6) == "Atomsk" ||
-                        rows[i].substring(0, 3) == "c2x" ? " (supported)" : " (unsupported)";
+            rows[i].substring(0, 6) == "Atomsk" ||
+            rows[i].substring(0, 3) == "c2x" ? " (supported)" : " (unsupported)";
 
         $("#success").append($('<option>', { text: rows[i] + qualityText + support }));
     }
@@ -227,7 +229,7 @@ function getQuality(entries, rows) {
 function isOption(str, boxId) {
     var isOption = false;
 
-    $("#" + boxId + " > option").each(function() {
+    $("#" + boxId + " > option").each(function () {
         if (str == this.text) {
             isOption = true;
         }
@@ -240,8 +242,8 @@ function isOption(str, boxId) {
 // $$$$$$$$$$ Can delete this PROVIDED the mobile 'phone select box issue can be solved without it? BUT NEED TO DO IT ANOTHER WAY!! $$$$$$$$$$
 function getSelectedText(el) {
     const text = el.value,
-          before = text.substring(0, el.selectionStart),
-          after = text.substring(el.selectionEnd, text.length);
+        before = text.substring(0, el.selectionStart),
+        after = text.substring(el.selectionEnd, text.length);
 
     el.selectionStart = before.lastIndexOf("\n") >= 0 ? before.lastIndexOf("\n") + 1 : 0;
     el.selectionEnd = after.indexOf("\n") >= 0 ? el.selectionEnd + after.indexOf("\n") : text.length;
@@ -251,38 +253,38 @@ function getSelectedText(el) {
 
 // Hides converter details
 function hideConverterDetails() {
-    $("#converter").css({display: "none"});
-    $("h3").css({display: "none"});
+    $("#converter").css({ display: "none" });
+    $("h3").css({ display: "none" });
 }
 
 // Show Open Babel conversion offer
 function showOffer() {
     const from_format = getFormat($("#searchFrom").val()),
-          to_format = getFormat($("#searchTo").val()),
-          quest = " like to convert a file from '" + from_format + "' to '" + to_format + "' on this site";
+        to_format = getFormat($("#searchTo").val()),
+        quest = " like to convert a file from '" + from_format + "' to '" + to_format + "' on this site";
 
     if ($("#name").html() == "Open Babel" || $("#name").html() == "Atomsk" || $("#name").html() == "c2x") {
         $("#info").html("");
         $("#visit").html("visit website");
         $("#question").html("Would you" + quest + " using " + $("#name").html() + "?");
-        $("#yesButton").css({display: "inline"});
+        $("#yesButton").css({ display: "inline" });
     }
     else {
         $("#info").html("This converter is not supported on our website; however, you can find out how to use it at");
         $("#visit").html("this website.");
         $("#question").html("As an alternative, if you would" + quest + ", please select a supported converter above (if available).");
-        $("#yesButton").css({display: "none"});
+        $("#yesButton").css({ display: "none" });
     }
 
-    $("#question").css({display: "inline"});
-    $("#offer").css({display: "inline"});
+    $("#question").css({ display: "inline" });
+    $("#offer").css({ display: "inline" });
 }
 
 // Hide Open Babel conversion offer
 function hideOffer() {
-    $("#converter").css({display: "none"});
-    $("#question").css({display: "none"});
-    $("#offer").css({display: "none"});
+    $("#converter").css({ display: "none" });
+    $("#question").css({ display: "none" });
+    $("#offer").css({ display: "none" });
 }
 
 // Displays converter details given its name
@@ -293,7 +295,7 @@ function showConverterDetails(event) {
         sessionStorage.setItem("success", selectedText);
 
         const str_array = selectedText.split(": ", 1),
-              conv_name = str_array[0];                                     // e.g. "Open Babel"
+            conv_name = str_array[0];                                     // e.g. "Open Babel"
 
         getConverterByName(conv_name).then((converter) => {
             if (converter) {
@@ -301,31 +303,31 @@ function showConverterDetails(event) {
                 $("#description").html(converter.description);
                 $("#url").html(converter.url);
                 $("#visit").attr("href", converter.url);
-                $("#converter").css({display: "block"});
-                $("h3").css({display: "block"});
+                $("#converter").css({ display: "block" });
+                $("h3").css({ display: "block" });
             }
 
-        const el = this;
+            const el = this;
 
-        // Search textarea for "Open Babel"     $$$$$ textarea? $$$$$
-        const text = el.value;
+            // Search textarea for "Open Babel"     $$$$$ textarea? $$$$$
+            const text = el.value;
 
-        el.selectionStart = 0;
-        el.selectionEnd = 0;
+            el.selectionStart = 0;
+            el.selectionEnd = 0;
 
-        while (el.selectionStart < text.length) {
-            const selectedText = getSelectedText(el),
-                  name = selectedText.split(": ")[0];
+            while (el.selectionStart < text.length) {
+                const selectedText = getSelectedText(el),
+                    name = selectedText.split(": ")[0];
 
-            showOffer();
+                showOffer();
 
-            el.selectionEnd += 1;
-            el.selectionStart = el.selectionEnd;
-        }
+                el.selectionEnd += 1;
+                el.selectionStart = el.selectionEnd;
+            }
 
-        el.selectionStart = -1;
-        el.selectionEnd = -1;
-        el.blur();
+            el.selectionStart = -1;
+            el.selectionEnd = -1;
+            el.blur();
         });
     }
 }
@@ -341,6 +343,8 @@ function qualityDetail(input, output, type) {
         return type + ': WARNING: Not represented in the output format.\n';
     }
     else if (input == false && output == true) {
+        // We penalize the quality if the output format contains information that the input doesn't, as this might
+        // result in info being extrapolated
         qualityCriteriaCount += 1;
         return type + ': 0 WARNING: Not represented in the input format, but the output format has the ability to do so.\n';
     }
@@ -460,8 +464,8 @@ function goToConversionPage(event) {
     }
 
     const a = $("<a>")
-          .attr("href", path)
-          .appendTo("body");
+        .attr("href", path)
+        .appendTo("body");
 
     a[0].click();
     a.remove();
@@ -470,14 +474,14 @@ function goToConversionPage(event) {
 // Populates a selection list
 function populateList(entries, sel) {
     const in_str = $("#searchFrom").val(), // e.g. "ins: ShelX"
-          in_str_array = in_str.split(": "),
-          in_ext = in_str_array[0],           // e.g. "ins"
-          in_note = in_str_array[1];          // e.g. "ShelX"
+        in_str_array = in_str.split(": "),
+        in_ext = in_str_array[0],           // e.g. "ins"
+        in_note = in_str_array[1];          // e.g. "ShelX"
 
     const out_str = $("#searchTo").val(),
-          out_str_array = out_str.split(": "),
-          out_ext = out_str_array[0],
-          out_note = out_str_array[1];
+        out_str_array = out_str.split(": "),
+        out_ext = out_str_array[0],
+        out_note = out_str_array[1];
 
     let rows;
 
@@ -495,7 +499,7 @@ function populateList(entries, sel) {
     }
 
     if (sel !== "success") {
-        rows.sort(function(a, b) {
+        rows.sort(function (a, b) {
             return a.toLowerCase().localeCompare(b.toLowerCase());
         });
 

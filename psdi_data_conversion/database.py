@@ -480,10 +480,10 @@ class ConversionsTable:
         if not success_flag:
             return None
 
-        # The conversion is possible. Now determine how many properties of the input format are retained in the
-        # output format
-        num_in_props = 0
-        num_props_retained = 0
+        # The conversion is possible. Now determine how many properties of the output format are not in the input
+        # format and might end up being extrapolated
+        num_out_props = 0
+        num_new_props = 0
         any_unknown = False
         for prop in ("composition", "connections", "two_dim", "three_dim"):
             in_prop: bool | None = getattr(in_info, prop)
@@ -493,15 +493,15 @@ class ConversionsTable:
             if in_prop is None or out_prop is None:
                 any_unknown = True
                 break
-            if in_prop:
-                num_in_props += 1
-                if out_prop:
-                    num_props_retained += 1
+            if out_prop:
+                num_out_props += 1
+                if not in_prop:
+                    num_new_props += 1
 
         if any_unknown:
             return const.QUAL_UNKNOWN
 
-        qual_ratio = num_props_retained/num_in_props
+        qual_ratio = 1 - num_new_props/num_out_props
 
         if qual_ratio >= 0.8:
             return const.QUAL_VERYGOOD
