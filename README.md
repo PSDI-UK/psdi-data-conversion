@@ -23,10 +23,10 @@ This is the repository for the PSDI PF2 Chemistry File Format Conversion project
 - [Python Library](#python-library)
   - [Installation](#installation-1)
   - [Use](#use)
-    - [`run_converter](#run_converter)
-    - [`get_converter](#get_converter)
-    - [`constants](#constants)
-    - [`database](#database)
+    - [`run_converter`](#run_converter)
+    - [`get_converter`](#get_converter)
+    - [`constants`](#constants)
+    - [`database`](#database)
 - [Using the Online Conversion Service](#using-the-online-conversion-service)
 - [Running the Python/Flask app locally](#running-the-pythonflask-app-locally)
   - [Installation and Setup](#installation-and-setup)
@@ -297,6 +297,7 @@ The `database` module provides classes and methods to interface with the databas
 - `get_possible_converters` - This method takes the names of an input and output file format, and returns a list of converters which can perform the desired conversion and their degree of success.
 - `get_possible_formats` - This method takes the name of a converter and returns a list of input formats it can accept and a list of output formats it can produce. While it's usually a safe bet that a converter can handle any combination between these lists, it's best to make sure that it can with the `get_degree_of_success` method
 - `get_in_format_args` and `get_out_format_args` - These methods take the name of a converter and the name of an input/output file format, and return a list of info on flags accepted by the converter when using this format for input/output
+- `get_conversion_quality` - Provides information on the quality of a conversion from one format to another with a given converter. If conversion isn't possible, returns `None`. Otherwise returns a short string describing the quality of the conversion and a dict providing details on property support between the input and output formats
 
 ## Using the Online Conversion Service
 
