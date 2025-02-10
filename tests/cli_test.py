@@ -241,7 +241,7 @@ def test_conversion_info(capsys):
     converter_name = CONVERTER_OB
     in_format = "xyz"
     out_format = "inchi"
-    qual_str, d_prop_conv_info = get_conversion_quality(converter_name, in_format, out_format)
+    qual_str, details, d_prop_conv_info = get_conversion_quality(converter_name, in_format, out_format)
 
     # Test a basic listing of arguments
     run_with_arg_string(f"-l {converter_name} -f {in_format} -t {out_format}")

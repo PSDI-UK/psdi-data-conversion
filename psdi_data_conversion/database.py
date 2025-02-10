@@ -482,7 +482,7 @@ class ConversionsTable:
     def get_conversion_quality(self,
                                converter_name: str,
                                in_format: str,
-                               out_format: str) -> tuple[str, dict[str, PropertyConversionInfo]] | None:
+                               out_format: str) -> tuple[str, str, dict[str, PropertyConversionInfo]] | None:
         """Get an indication of the quality of a conversion from one format to another, or if it's not possible
 
         Parameters
@@ -498,7 +498,8 @@ class ConversionsTable:
         -------
         tuple[str, dict[str, PropertyConversionInfo]] | None
             If the conversion is not possible, returns None. If the conversion is possible, returns a tuple of:
-            - A string literal describing the quality of the conversion
+            - A string describing the quality of the conversion
+            - A string providing details on any possible issues with the conversion
             - A dict of PropertyConversionInfo objects, which provide information on each property's support in the
               input and output file formats and a note on the implications
         """
@@ -517,7 +518,7 @@ class ConversionsTable:
         num_out_props = 0
         num_new_props = 0
         any_unknown = False
-        d_prop_conversion_info = {}
+        d_prop_conversion_info: dict[str, PropertyConversionInfo] = {}
         for prop in const.D_QUAL_LABELS:
             in_prop: bool | None = getattr(in_info, prop)
             out_prop: bool | None = getattr(out_info, prop)
@@ -532,6 +533,7 @@ class ConversionsTable:
                 if not in_prop:
                     num_new_props += 1
 
+        # Determine the conversion quality
         if num_out_props > 0:
             qual_ratio = 1 - num_new_props/num_out_props
         else:
@@ -550,7 +552,15 @@ class ConversionsTable:
         else:
             qual_str = const.QUAL_VERYPOOR
 
-        return qual_str, d_prop_conversion_info
+        # Construct the details string for info on possible issues with the conversion
+
+        # Sort the keys by label alphabetically
+        l_props: list[str] = list(d_prop_conversion_info.keys())
+        l_props.sort(key=lambda x: d_prop_conversion_info[x].label)
+
+        details = "\n".join([d_prop_conversion_info[x].note for x in l_props])
+
+        return qual_str, details, d_prop_conversion_info
 
     def get_possible_converters(self,
                                 in_format: str,
@@ -846,7 +856,7 @@ def get_format_info(name: str) -> FormatInfo:
 
 def get_conversion_quality(converter_name: str,
                            in_format: str,
-                           out_format: str) -> tuple[str, dict[str, PropertyConversionInfo]] | None:
+                           out_format: str) -> tuple[str, str, dict[str, PropertyConversionInfo]] | None:
     """Get an indication of the quality of a conversion from one format to another, or if it's not possible
 
     Parameters
@@ -862,7 +872,8 @@ def get_conversion_quality(converter_name: str,
     -------
     tuple[str, dict[str, PropertyConversionInfo]] | None
         If the conversion is not possible, returns None. If the conversion is possible, returns a tuple of:
-        - A string literal describing the quality of the conversion
+        - A string describing the quality of the conversion
+        - A string providing details on any possible issues with the conversion
         - A dict of PropertyConversionInfo objects, which provide information on each property's support in the
             input and output file formats and a note on the implications
     """
