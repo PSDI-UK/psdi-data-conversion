@@ -14,6 +14,7 @@ import os
 import subprocess
 import abc
 
+import sys
 import traceback
 from typing import Any
 
@@ -192,67 +193,93 @@ class FileConverter:
             Whether or not to delete input files after conversion, default False
         """
 
-        # Set member variables directly from input
-        self.in_filename = filename
-        self.to_format = to_format
+        # Wrap the initialisation in a try block, calling the abort_callback function if anything goes wrong
         self.abort_callback = abort_callback
-        self.upload_dir = upload_dir
-        self.download_dir = download_dir
-        self.max_file_size = max_file_size*const.MEGABYTE
-        self.log_file = log_file
-        self.log_mode = log_mode
-        self.log_level = log_level
-        self.refresh_local_log = refresh_local_log
-        self.delete_input = delete_input
 
-        # Use an empty dict for data if None was provided
-        if data is None:
-            self.data = {}
-        else:
-            self.data = dict(deepcopy(data))
+        try:
 
-        # Get from_format from the input file extension if not supplied
-        if from_format is None:
-            self.from_format = os.path.splitext(self.in_filename)[1]
-        else:
-            self.from_format = from_format
+            # Set member variables directly from input
+            self.in_filename = filename
+            self.to_format = to_format
+            self.upload_dir = upload_dir
+            self.download_dir = download_dir
+            self.max_file_size = max_file_size*const.MEGABYTE
+            self.log_file = log_file
+            self.log_mode = log_mode
+            self.log_level = log_level
+            self.refresh_local_log = refresh_local_log
+            self.delete_input = delete_input
 
-        # Remove any leading periods from to/from_format
-        if self.to_format.startswith("."):
-            self.to_format = self.to_format[1:]
-        if self.from_format.startswith("."):
-            self.from_format = self.from_format[1:]
+            # Use an empty dict for data if None was provided
+            if data is None:
+                self.data = {}
+            else:
+                self.data = dict(deepcopy(data))
 
-        # Set placeholders for member variables which will be set when conversion is run
-        self.in_size: int | None = None
-        self.out_size: int | None = None
-        self.out: str | None = None
-        self.err: str | None = None
-        self.quality: str | None = None
+            # Get from_format from the input file extension if not supplied
+            if from_format is None:
+                self.from_format = os.path.splitext(self.in_filename)[1]
+            else:
+                self.from_format = from_format
 
-        # Set values from envvars if desired
-        if use_envvars:
-            # Get the maximum allowed size from the envvar for it
-            ev_max_file_size = os.environ.get(const.MAX_FILESIZE_ENVVAR)
-            if ev_max_file_size is not None:
-                self.max_file_size = float(ev_max_file_size)*const.MEGABYTE
+            # Remove any leading periods from to/from_format
+            if self.to_format.startswith("."):
+                self.to_format = self.to_format[1:]
+            if self.from_format.startswith("."):
+                self.from_format = self.from_format[1:]
 
-        # Create directory 'uploads' if not extant.
-        if not os.path.exists(self.upload_dir):
-            os.makedirs(self.upload_dir, exist_ok=True)
+            # Set placeholders for member variables which will be set when conversion is run
+            self.in_size: int | None = None
+            self.out_size: int | None = None
+            self.out: str | None = None
+            self.err: str | None = None
+            self.quality: str | None = None
 
-        # Create directory 'downloads' if not extant.
-        if not os.path.exists(self.download_dir):
-            os.makedirs(self.download_dir, exist_ok=True)
+            # Set values from envvars if desired
+            if use_envvars:
+                # Get the maximum allowed size from the envvar for it
+                ev_max_file_size = os.environ.get(const.MAX_FILESIZE_ENVVAR)
+                if ev_max_file_size is not None:
+                    self.max_file_size = float(ev_max_file_size)*const.MEGABYTE
 
-        self.local_filename = os.path.split(self.in_filename)[1]
-        self.filename_base = os.path.splitext(self.local_filename)[0]
-        self.out_filename = f"{self.download_dir}/{self.filename_base}.{self.to_format}"
+            # Create directory 'uploads' if not extant.
+            if not os.path.exists(self.upload_dir):
+                os.makedirs(self.upload_dir, exist_ok=True)
 
-        # Set up files to log to
-        self._setup_loggers()
+            # Create directory 'downloads' if not extant.
+            if not os.path.exists(self.download_dir):
+                os.makedirs(self.download_dir, exist_ok=True)
 
-        self.logger.debug("Finished FileConverter initialisation")
+            self.local_filename = os.path.split(self.in_filename)[1]
+            self.filename_base = os.path.splitext(self.local_filename)[0]
+            self.out_filename = f"{self.download_dir}/{self.filename_base}.{self.to_format}"
+
+            # Set up files to log to
+            self._setup_loggers()
+
+            self.logger.debug("Finished FileConverter initialisation")
+
+        except Exception as e:
+            if isinstance(e, l_abort_exceptions):
+                # Don't catch a deliberate abort; let it pass through
+                self.logger.error(f"Unexpected exception raised while initializing the converter, of type '{type(e)}' "
+                                  f"with message: {str(e)}")
+                raise
+            self.logger.error(f"Exception triggering an abort was raised while initializing the converter. Exception "
+                              f"was type '{type(e)}', with message: {str(e)}")
+            # Try to run the standard abort method. There's a good chance this will fail though depending on what went
+            # wrong when during init, so we fallback to printing the exception to stderr
+            try:
+                self._abort(message="The application encountered an error while initializing the converter:\n" +
+                            traceback.format_exc())
+            except Exception as ee:
+                if isinstance(ee, l_abort_exceptions):
+                    # Don't catch a deliberate abort; let it pass through
+                    raise
+                print("ERROR: The application encounted an error during initialization of the converter and could " +
+                      "not cleanly log the error due to incomplete init: " +
+                      traceback.format_exc(), file=sys.stderr)
+                abort_callback(const.STATUS_CODE_GENERAL)
 
     def _setup_loggers(self):
         """Run at init to set up loggers for this object.
@@ -325,11 +352,13 @@ class FileConverter:
         except Exception as e:
             if isinstance(e, l_abort_exceptions):
                 # Don't catch a deliberate abort; let it pass through
-                self.logger.error(f"Unexpected exception raised of type '{type(e)}' with message: {str(e)}")
+                self.logger.error(f"Unexpected exception raised while running the converter, of type '{type(e)}' with "
+                                  f"message: {str(e)}")
                 raise
-            self.logger.error(f"Exception triggering an abort was raised. Exception was type '{type(e)}', with "
-                              f"message: {str(e)}")
-            self._abort(message=f"The application encountered an error:\n{traceback.format_exc()}")
+            self.logger.error(f"Exception triggering an abort was raised while running the converter. Exception was "
+                              f"type '{type(e)}', with message: {str(e)}")
+            self._abort(message="The application encountered an error while running the converter:\n" +
+                        traceback.format_exc())
 
         return ('\nConverting from ' + self.filename_base + '.' + self.from_format + ' to ' + self.filename_base +
                 '.' + self.to_format + '\n')
