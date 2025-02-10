@@ -397,9 +397,9 @@ class PropertyConversionInfo:
 
         if self.input_supported is None and self.output_supported is None:
             self.note = const.QUAL_NOTE_BOTH_UNKNOWN % self.label
-        if self.input_supported is None and self.output_supported is not None:
+        elif self.input_supported is None and self.output_supported is not None:
             self.note = const.QUAL_NOTE_IN_UNKNOWN % self.label
-        if self.input_supported is not None and self.output_supported is None:
+        elif self.input_supported is not None and self.output_supported is None:
             self.note = const.QUAL_NOTE_OUT_UNKNOWN % self.label
         elif self.input_supported == self.output_supported:
             self.note = ""
