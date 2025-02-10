@@ -558,7 +558,7 @@ class ConversionsTable:
         l_props: list[str] = list(d_prop_conversion_info.keys())
         l_props.sort(key=lambda x: d_prop_conversion_info[x].label)
 
-        details = "\n".join([d_prop_conversion_info[x].note for x in l_props])
+        details = "\n".join([d_prop_conversion_info[x].note for x in l_props if d_prop_conversion_info[x].note])
 
         return qual_str, details, d_prop_conversion_info
 
