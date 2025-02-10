@@ -130,8 +130,8 @@ def test_conversion_table():
     assert conversions_table.parent is database
 
     # Check we can get the correct conversion quality
-    assert get_conversion_quality(CONVERTER_OB, "pdb", "cif") == const.QUAL_UNKNOWN
-    assert get_conversion_quality(CONVERTER_OB, "xyz", "inchi") == const.QUAL_OKAY
+    assert get_conversion_quality(CONVERTER_OB, "pdb", "cif")[0] == const.QUAL_UNKNOWN
+    assert get_conversion_quality(CONVERTER_OB, "xyz", "inchi")[0] == const.QUAL_OKAY
     assert get_conversion_quality(CONVERTER_ATO, "xyz", "inchi") is None
 
     # Check we can get a list of possible converters for a given conversion

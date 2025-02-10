@@ -379,6 +379,36 @@ class FormatInfo:
         self.three_dim = d_single_format_info.get(const.DB_FORMAT_3D_KEY)
 
 
+@dataclass
+class PropertyConversionInfo:
+    """Class representing whether a given property is present in the input and/out output file formats, and a note on
+    what its presence or absence means
+    """
+    key: str
+    input_supported: bool | None
+    output_supported: bool | None
+    label: str = field(init=False)
+    note: str = field(init=False)
+
+    def __post_init__(self):
+        """Set the label and note based on input/output status
+        """
+        self.label = const.D_QUAL_LABELS[self.key]
+
+        if self.input_supported is None and self.output_supported is None:
+            self.note = const.QUAL_NOTE_BOTH_UNKNOWN % self.label
+        if self.input_supported is None and self.output_supported is not None:
+            self.note = const.QUAL_NOTE_IN_UNKNOWN % self.label
+        if self.input_supported is not None and self.output_supported is None:
+            self.note = const.QUAL_NOTE_OUT_UNKNOWN % self.label
+        elif self.input_supported == self.output_supported:
+            self.note = ""
+        elif self.input_supported:
+            self.note = const.QUAL_NOTE_OUT_MISSING % self.label
+        else:
+            self.note = const.QUAL_NOTE_IN_MISSING % self.label
+
+
 class ConversionsTable:
     """Class providing information on available file format conversions.
 
@@ -452,7 +482,7 @@ class ConversionsTable:
     def get_conversion_quality(self,
                                converter_name: str,
                                in_format: str,
-                               out_format: str) -> str | None:
+                               out_format: str) -> tuple[str, dict[str, PropertyConversionInfo]] | None:
         """Get an indication of the quality of a conversion from one format to another, or if it's not possible
 
         Parameters
@@ -466,9 +496,11 @@ class ConversionsTable:
 
         Returns
         -------
-        str | None
-            If the conversion is possible, returns a string literal giving an indication of the conversion quality. If
-            the conversion is not possible, returns None
+        tuple[str, dict[str, PropertyConversionInfo]] | None
+            If the conversion is not possible, returns None. If the conversion is possible, returns a tuple of:
+            - A string literal describing the quality of the conversion
+            - A dict of PropertyConversionInfo objects, which provide information on each property's support in the
+              input and output file formats and a note on the implications
         """
 
         conv_id: int = self.parent.get_converter_info(converter_name).id
@@ -485,34 +517,40 @@ class ConversionsTable:
         num_out_props = 0
         num_new_props = 0
         any_unknown = False
-        for prop in ("composition", "connections", "two_dim", "three_dim"):
+        d_prop_conversion_info = {}
+        for prop in const.D_QUAL_LABELS:
             in_prop: bool | None = getattr(in_info, prop)
             out_prop: bool | None = getattr(out_info, prop)
+
+            d_prop_conversion_info[prop] = PropertyConversionInfo(prop, in_prop, out_prop)
 
             # Check for None, indicating we don't have full information on both formats
             if in_prop is None or out_prop is None:
                 any_unknown = True
-                break
-            if out_prop:
+            elif out_prop:
                 num_out_props += 1
                 if not in_prop:
                     num_new_props += 1
 
-        if any_unknown:
-            return const.QUAL_UNKNOWN
-
-        qual_ratio = 1 - num_new_props/num_out_props
-
-        if qual_ratio >= 0.8:
-            return const.QUAL_VERYGOOD
-        elif qual_ratio >= 0.6:
-            return const.QUAL_GOOD
-        elif qual_ratio >= 0.4:
-            return const.QUAL_OKAY
-        elif qual_ratio >= 0.2:
-            return const.QUAL_POOR
+        if num_out_props > 0:
+            qual_ratio = 1 - num_new_props/num_out_props
         else:
-            return const.QUAL_VERYPOOR
+            qual_ratio = 1
+
+        if any_unknown:
+            qual_str = const.QUAL_UNKNOWN
+        elif num_out_props == 0 or qual_ratio >= 0.8:
+            qual_str = const.QUAL_VERYGOOD
+        elif qual_ratio >= 0.6:
+            qual_str = const.QUAL_GOOD
+        elif qual_ratio >= 0.4:
+            qual_str = const.QUAL_OKAY
+        elif qual_ratio >= 0.2:
+            qual_str = const.QUAL_POOR
+        else:
+            qual_str = const.QUAL_VERYPOOR
+
+        return qual_str, d_prop_conversion_info
 
     def get_possible_converters(self,
                                 in_format: str,
@@ -808,7 +846,7 @@ def get_format_info(name: str) -> FormatInfo:
 
 def get_conversion_quality(converter_name: str,
                            in_format: str,
-                           out_format: str) -> str | None:
+                           out_format: str) -> tuple[str, dict[str, PropertyConversionInfo]] | None:
     """Get an indication of the quality of a conversion from one format to another, or if it's not possible
 
     Parameters
@@ -822,9 +860,11 @@ def get_conversion_quality(converter_name: str,
 
     Returns
     -------
-    str | None
-        If the conversion is possible, returns a string literal giving an indication of the conversion quality. If
-        the conversion is not possible, returns None
+    tuple[str, dict[str, PropertyConversionInfo]] | None
+        If the conversion is not possible, returns None. If the conversion is possible, returns a tuple of:
+        - A string literal describing the quality of the conversion
+        - A dict of PropertyConversionInfo objects, which provide information on each property's support in the
+            input and output file formats and a note on the implications
     """
 
     return get_database().conversions_table.get_conversion_quality(converter_name=converter_name,

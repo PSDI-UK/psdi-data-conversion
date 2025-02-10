@@ -368,7 +368,7 @@ def detail_converter_use(args: ConvertArgs):
                        "supported.", newline=True)
         else:
             print_wrap(f"Conversion from '{args.from_format}' to '{args.to_format}' with {args.name} is "
-                       f"possible with {qual} conversion quality", newline=True)
+                       f"possible with {qual[0]} conversion quality", newline=True)
     else:
         l_input_formats, l_output_formats = get_possible_formats(args.name)
 
