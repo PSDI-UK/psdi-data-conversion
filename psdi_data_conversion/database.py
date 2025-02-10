@@ -480,8 +480,8 @@ class ConversionsTable:
         if not success_flag:
             return None
 
-        # The conversion is possible. Now determine how many properties of the input format are retained in the
-        # output format
+        # The conversion is possible. Now determine how many properties of the output format are not in the input
+        # format and might end up being extrapolated
         num_out_props = 0
         num_new_props = 0
         any_unknown = False
