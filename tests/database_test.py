@@ -130,9 +130,31 @@ def test_conversion_table():
     assert conversions_table.parent is database
 
     # Check we can get the correct conversion quality
-    assert get_conversion_quality(CONVERTER_OB, "pdb", "cif") == const.QUAL_UNKNOWN
-    assert get_conversion_quality(CONVERTER_OB, "xyz", "inchi") == const.QUAL_OKAY
+    assert get_conversion_quality(CONVERTER_OB, "pdb", "cif")[0] == const.QUAL_UNKNOWN
     assert get_conversion_quality(CONVERTER_ATO, "xyz", "inchi") is None
+
+    # Do some detailed checks on one conversion
+    qual_str, details, d_prop_conv_info = get_conversion_quality(CONVERTER_OB, "xyz", "inchi")
+
+    assert qual_str == const.QUAL_OKAY
+
+    # Check the details are as expected
+    assert const.QUAL_NOTE_OUT_MISSING % const.QUAL_2D_LABEL in details
+    assert const.QUAL_NOTE_OUT_MISSING % const.QUAL_3D_LABEL in details
+    assert const.QUAL_NOTE_IN_MISSING % const.QUAL_CONN_LABEL in details
+    assert const.QUAL_COMP_LABEL not in details
+
+    # Check we don't have any extra lines in the details
+    assert "\n\n" not in details
+    assert not details.startswith("\n")
+    assert not details.endswith("\n")
+
+    # Check the property info dict is as expected (mostly covered by details check, so just a couple checks here)
+    comp_prop_info = d_prop_conv_info[const.QUAL_COMP_KEY]
+    assert comp_prop_info.input_supported is True
+    assert comp_prop_info.output_supported is True
+    assert comp_prop_info.label == const.QUAL_COMP_LABEL
+    assert comp_prop_info.note == ""
 
     # Check we can get a list of possible converters for a given conversion
     l_possible_converters = get_possible_converters("pdb", "cif")

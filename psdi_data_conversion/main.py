@@ -367,8 +367,15 @@ def detail_converter_use(args: ConvertArgs):
             print_wrap(f"Conversion from '{args.from_format}' to '{args.to_format}' with {args.name} is not "
                        "supported.", newline=True)
         else:
+            qual_str, details, _ = qual
             print_wrap(f"Conversion from '{args.from_format}' to '{args.to_format}' with {args.name} is "
-                       f"possible with {qual} conversion quality", newline=True)
+                       f"possible with {qual_str} conversion quality", newline=True)
+            # If there are any potential issues with the conversion, print them out
+            if details:
+                print_wrap("Notes on this conversion:")
+                for detail_line in details.split("\n"):
+                    print_wrap(f"- {detail_line}")
+                print("")
     else:
         l_input_formats, l_output_formats = get_possible_formats(args.name)
 
