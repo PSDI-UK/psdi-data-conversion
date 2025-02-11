@@ -323,3 +323,38 @@ def test_convert(tmp_path_factory, capsys, test_data_loc):
     captured = capsys.readouterr()
     assert "Success!" in captured.out
     assert "ERROR" not in captured.err
+
+
+def test_archive_convert(tmp_path_factory, capsys, test_data_loc):
+    """Test running conversion on archives of files
+    """
+
+    test_filename_base = "caffeine-smi"
+    l_archive_formats = ["zip", "tar", "tar.gz"]
+
+    l_ex_filename_bases = ["caffeine-no-flags",
+                           "caffeine-ia",
+                           "caffeine-ia-ox",
+                           "caffeine-ia-okx",
+                           "caffeine-ia-okx-oof4",
+                           "caffeine-ia-okx-oof4l5",]
+    to_format = "inchi"
+
+    for archive_format in l_archive_formats:
+        input_filename = f"{test_filename_base}.{archive_format}"
+
+        input_dir = tmp_path_factory.mktemp("input")
+        output_dir = tmp_path_factory.mktemp("output")
+
+        # Symlink the input file from the test_data directory to the input directory
+        os.symlink(os.path.join(test_data_loc, input_filename),
+                   os.path.join(input_dir, input_filename))
+
+        # Run the conversion
+        basic_arg_string = f"{input_filename} -t {to_format} -i {input_dir} -o {output_dir}"
+        run_with_arg_string(basic_arg_string)
+
+        # Check that all expected output files exist
+        for ex_filename_base in l_ex_filename_bases:
+            ex_output_filename = os.path.join(output_dir, f"{ex_filename_base}.{to_format}")
+            assert os.path.isfile(ex_output_filename)
