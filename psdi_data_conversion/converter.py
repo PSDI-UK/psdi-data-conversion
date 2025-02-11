@@ -5,6 +5,7 @@ Created 2024-12-10 by Bryan Gillis.
 Class and functions to perform file conversion
 """
 
+from dataclasses import dataclass, field
 import os
 import importlib
 import sys
@@ -131,11 +132,34 @@ def get_converter(*args, name=const.CONVERTER_DEFAULT, **converter_kwargs) -> ba
     return converter_class(*args, **converter_kwargs)
 
 
+@dataclass
+class FileConversionRunResult:
+    """An object of this class will be output by the `run_converter` function on success to provide key info on
+    the files created
+    """
+    l_output_filenames: list[str] = field(default_factory=list)
+    l_log_filenames: list[str] = field(default_factory=list)
+    output_filename: str | None = field(init=False)
+    log_filename: str | None = field(init=False)
+
+    def __post_init__(self):
+        """If only one file is generated, set the `output_filename` and `log_filename` to point to the appropriate files
+        """
+        if len(self.l_output_filenames) == 1:
+            self.output_filename = self.l_output_filenames[0]
+        else:
+            self.output_filename = None
+        if len(self.l_log_filenames) == 1:
+            self.log_filename = self.l_log_filenames[0]
+        else:
+            self.log_filename = None
+
+
 def run_converter(filename,
                   *args,
                   from_format: str | None = None,
                   archive_output=True,
-                  **converter_kwargs) -> str:
+                  **converter_kwargs) -> FileConversionRunResult:
     """Shortcut to create and run a FileConverter in one step
 
     Parameters
@@ -191,8 +215,8 @@ def run_converter(filename,
 
     Returns
     -------
-    str
-        A message briefly stating the conversion being performed
+    FileConversionRunResult
+        An object containing the filenames of output files and logs created
 
     Raises
     ------
@@ -214,10 +238,25 @@ def run_converter(filename,
 
     # If we get here, the filename is of a supported archive type. Make a temporary directory to extract its contents
     # to, then run the converter on each file extracted
-    out_str = ""
+    l_run_output: list[base.FileConversionResult] = []
     with TemporaryDirectory() as extract_dir:
         l_filenames = unpack_zip_or_tar(filename, extract_dir=extract_dir)
         for extracted_filename in l_filenames:
-            out_str += get_converter(*args, filename=extracted_filename,
-                                     from_format=from_format, **converter_kwargs).run()
-    return out_str
+            l_run_output.append(get_converter(*args, filename=extracted_filename,
+                                              from_format=from_format, **converter_kwargs).run())
+
+    l_output_filenames: list[str]
+    l_log_filenames: list[str]
+    l_output_filenames, l_log_filenames = zip(*[(x.output_filename, x.log_filename) for x in l_run_output])
+
+    if not archive_output:
+        # If we aren't archiving output, then create an output product with the filenames combined
+        run_output = FileConversionRunResult(l_output_filenames=l_output_filenames,
+                                             l_log_filenames=l_log_filenames)
+        return run_output
+    else:
+        # TODO - handle archiving here
+        # If we aren't archiving output, then create an output product with the filenames combined
+        run_output = FileConversionRunResult(l_output_filenames=l_output_filenames,
+                                             l_log_filenames=l_log_filenames)
+        return run_output

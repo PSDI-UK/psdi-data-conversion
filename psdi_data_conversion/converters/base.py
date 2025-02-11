@@ -7,6 +7,7 @@ Base class and information for file format converters
 
 
 from copy import deepcopy
+from dataclasses import dataclass
 import json
 import logging
 from collections.abc import Callable
@@ -54,6 +55,15 @@ if HTTPException is not None:
     l_abort_exceptions = (HTTPException, FileConverterAbortException)
 else:
     l_abort_exceptions = (FileConverterAbortException,)
+
+
+@dataclass
+class FileConversionResult:
+    """An object of this class will be output by the file converter's `run` function on success to provide key info on
+    the files created
+    """
+    output_filename: str
+    log_filename: str
 
 
 def abort_raise(status_code):
@@ -372,8 +382,8 @@ class FileConverter:
             self._abort(message="The application encountered an error while running the converter:\n" +
                         traceback.format_exc())
 
-        return ('\nConverting from ' + self.filename_base + '.' + self.from_format + ' to ' + self.filename_base +
-                '.' + self.to_format + '\n')
+        return FileConversionResult(output_filename=self.out_filename,
+                                    log_filename=self.output_log)
 
     def _abort(self, status_code=const.STATUS_CODE_GENERAL, message=None):
         """Abort the conversion, reporting the desired message to the user at the top of the output
