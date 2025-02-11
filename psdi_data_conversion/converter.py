@@ -131,7 +131,11 @@ def get_converter(*args, name=const.CONVERTER_DEFAULT, **converter_kwargs) -> ba
     return converter_class(*args, **converter_kwargs)
 
 
-def run_converter(filename, *args, from_format: str | None = None, **converter_kwargs) -> str:
+def run_converter(filename,
+                  *args,
+                  from_format: str | None = None,
+                  archive_output=True,
+                  **converter_kwargs) -> str:
     """Shortcut to create and run a FileConverter in one step
 
     Parameters
@@ -159,6 +163,10 @@ def run_converter(filename, *args, from_format: str | None = None, **converter_k
         The location of input files relative to the current directory
     download_dir : str
         The location of output files relative to the current directory
+    archive_output : bool
+        If True (default) and the input file is an archive (i.e. zip or tar file), the converted files will be archived
+        into a file of the same format, their logs will be combined into a single log, and the converted files and
+        individual logs will be deleted
     max_file_size : float
         The maximum allowed file size for input/output files, in MB, default 1 MB. If 0, will be unlimited
     log_file : str | None
