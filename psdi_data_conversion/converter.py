@@ -8,12 +8,15 @@ Class and functions to perform file conversion
 import os
 import importlib
 import sys
+from tempfile import TemporaryDirectory
 import traceback
 from typing import NamedTuple
 from psdi_data_conversion import constants as const
 from psdi_data_conversion.converters import base
 
 import glob
+
+from psdi_data_conversion.file_io import is_archive, is_supported_archive, unpack_zip_or_tar
 
 # Find all modules for specific converters
 l_converter_modules = glob.glob(os.path.dirname(base.__file__) + "/*.py")
@@ -128,18 +131,20 @@ def get_converter(*args, name=const.CONVERTER_DEFAULT, **converter_kwargs) -> ba
     return converter_class(*args, **converter_kwargs)
 
 
-def run_converter(*args, **converter_kwargs) -> str:
+def run_converter(filename, *args, from_format: str | None = None, **converter_kwargs) -> str:
     """Shortcut to create and run a FileConverter in one step
 
     Parameters
     ----------
     filename : str
-        The filename of the input file to be converted, either relative to current directory or fully-qualified
+        Either the filename of the input file to be converted or of an archive file containing files to be converted
+        (zip and tar supported), either relative to current directory or fully-qualified
     to_format : str
         The desired format to convert to, as the file extension (e.g. "cif")
     from_format : str | None
         The format to convert from, as the file extension (e.g. "pdb"). If None is provided (default), will be
-        determined from the extension of `filename`
+        determined from the extension of `filename` if it's a simple file, or the contained files if `filename` is an
+        archive file
     name : str
         The desired converter type, by default 'Open Babel'
     data : dict[str | Any] | None
@@ -189,4 +194,22 @@ def run_converter(*args, **converter_kwargs) -> str:
         If something goes wrong during the conversion process
     """
 
-    return get_converter(*args, **converter_kwargs).run()
+    # Check if the filename is for an archive file, and handle appropriately
+
+    if not is_archive(filename):
+        # Not an archive, so just get and run the converter straightforwardly
+        return get_converter(*args, filename=filename, from_format=from_format, **converter_kwargs).run()
+
+    if not is_supported_archive(filename):
+        raise base.FileConverterInputException(f"{filename} is an unsupported archive type. Supported types are: "
+                                               f"{const.L_SUPPORTED_ARCHIVE_EXTENSIONS}")
+
+    # If we get here, the filename is of a supported archive type. Make a temporary directory to extract its contents
+    # to, then run the converter on each file extracted
+    out_str = ""
+    with TemporaryDirectory() as extract_dir:
+        l_filenames = unpack_zip_or_tar(filename, extract_dir=extract_dir)
+        for extracted_filename in l_filenames:
+            out_str += get_converter(*args, filename=extracted_filename,
+                                     from_format=from_format, **converter_kwargs).run()
+    return out_str

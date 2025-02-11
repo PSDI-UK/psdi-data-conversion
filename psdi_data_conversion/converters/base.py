@@ -19,6 +19,7 @@ import traceback
 from typing import Any
 
 from psdi_data_conversion import constants as const, log_utility
+from psdi_data_conversion.database import get_conversion_quality
 
 try:
     # werkzeug is installed in the optional dependency Flask. It's only used here to recognize an exception type,
@@ -142,6 +143,7 @@ class FileConverter:
                  upload_dir=const.DEFAULT_UPLOAD_DIR,
                  download_dir=const.DEFAULT_DOWNLOAD_DIR,
                  max_file_size=const.DEFAULT_MAX_FILE_SIZE,
+                 no_check=False,
                  log_file: str | None = None,
                  log_mode=const.LOG_FULL,
                  log_level: int | None = None,
@@ -172,6 +174,9 @@ class FileConverter:
             The location of output files relative to the current directory
         max_file_size : float
             The maximum allowed file size for input/output files, in MB. If 0, will be unlimited. Default 0 (unlimited)
+        no_check : bool
+            If False (default), will check at setup whether or not a conversion between the desired file formats is
+            supported with the specified converter
         log_file : str | None
             If provided, all logging will go to a single file or stream. Otherwise, logs will be split up among multiple
             files for server-style logging.
@@ -227,6 +232,13 @@ class FileConverter:
                 self.to_format = self.to_format[1:]
             if self.from_format.startswith("."):
                 self.from_format = self.from_format[1:]
+
+            # Check that the requested conversion is valid unless suppressed
+            if not no_check:
+                qual = get_conversion_quality(self.name, self.from_format, self.to_format)
+                if not qual:
+                    raise FileConverterInputException(f"Conversion from {self.from_format} to {self.to_format} "
+                                                      f"with {self.name} is not supported.")
 
             # Set placeholders for member variables which will be set when conversion is run
             self.in_size: int | None = None

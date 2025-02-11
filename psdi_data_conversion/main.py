@@ -63,7 +63,7 @@ class ConvertArgs:
         self.l_args: list[str] = args.l_args
 
         # Keyword arguments for standard conversion
-        self._from_format: str | None = getattr(args, "from")
+        self.from_format: str | None = getattr(args, "from")
         self._input_dir: str | None = getattr(args, "in")
         self.to_format: str | None = args.to
         self._output_dir: str | None = args.out
@@ -185,23 +185,6 @@ class ConvertArgs:
                                              f"modes are: {const.L_ALLOWED_LOG_MODES}")
 
     @property
-    def from_format(self):
-        """If the input file format isn't provided, determine it from the first file in the list.
-        """
-        if self._from_format is None:
-            if self.list:
-                # from_format isn't required in list mode, so don't raise an exception
-                return None
-            first_filename = self.l_args[0]
-            ext = os.path.splitext(first_filename)[1]
-            if len(ext) == 0:
-                raise FileConverterHelpException("Input file format (-f or --from) was not provided, and cannot "
-                                                 f"determine it automatically from filename '{first_filename}'")
-            # Format will be the extension, minus the leading period
-            self._from_format = ext[1:]
-        return self._from_format
-
-    @property
     def input_dir(self):
         """If the input directory isn't provided, use the current directory.
         """
@@ -228,13 +211,15 @@ class ConvertArgs:
                 first_filename = os.path.join(self.input_dir, self.l_args[0])
 
                 # Find the path to this file
-                if not os.path.isfile(first_filename):
+                if not os.path.isfile(first_filename) and self.from_format:
                     test_filename = first_filename + f".{self.from_format}"
                     if os.path.isfile(test_filename):
                         first_filename = test_filename
                     else:
                         raise FileConverterHelpException(f"Input file {first_filename} cannot be found. Also "
                                                          f"checked for {test_filename}.")
+                elif self.from_format:
+                    raise FileConverterHelpException(f"Input file {first_filename} cannot be found.")
 
                 filename_base = os.path.split(os.path.splitext(first_filename)[0])[1]
                 if self.log_mode == const.LOG_FULL:
@@ -603,15 +588,6 @@ def run_from_args(args: ConvertArgs):
     if args.list:
         return detail_converters_and_formats(args)
 
-    # Check that the requested conversion is valid unless suppressed
-    if not args.no_check:
-        qual = get_conversion_quality(args.name, args.from_format, args.to_format)
-        if not qual:
-            print_wrap(f"ERROR: Conversion from {args.from_format} to {args.to_format} with {args.name} is not "
-                       "supported.", err=True, newline=True)
-            detail_possible_converters(args.from_format, args.to_format)
-            exit(1)
-
     data = {'success': 'unknown',
             'from_flags': args.from_flags,
             'to_flags': args.to_flags,
@@ -652,6 +628,7 @@ def run_from_args(args: ConvertArgs):
                           use_envvars=False,
                           upload_dir=args.input_dir,
                           download_dir=args.output_dir,
+                          no_check=args.no_check,
                           log_file=args.log_file,
                           log_mode=args.log_mode,
                           log_level=args.log_level,
@@ -660,6 +637,14 @@ def run_from_args(args: ConvertArgs):
         except FileConverterAbortException as e:
             print_wrap(f"ERROR: Attempt to convert file {filename} aborted with status code {e.status_code} and "
                        f"message:\n{e}\n", err=True)
+            continue
+        except FileConverterInputException as e:
+            if "Conversion from" in str(e) and "is not supported" in str(e):
+                print_wrap(f"ERROR: {e}", err=True, newline=True)
+                detail_possible_converters(args.from_format, args.to_format)
+            else:
+                print_wrap(f"ERROR: Attempt to convert file {filename} failed at converter initialization with "
+                           f"exception type {type(e)} and message: \n{e}\n", err=True)
             continue
         except Exception as e:
             print_wrap(f"ERROR: Attempt to convert file {filename} failed with exception type {type(e)} and message: " +

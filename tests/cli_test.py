@@ -114,10 +114,6 @@ def test_input_processing():
     args = get_parsed_args(f"file1.mmcif -t pdb -w '{converter_name}'")
     assert args.name == converter_name
 
-    # Check that input format is determined from the first file in a list
-    args = get_parsed_args("file1.mmcif file2.pdb -t pdb")
-    assert args.from_format == "mmcif"
-
     # Check that input dir defaults to the current directory
     cwd = os.getcwd()
     assert args.input_dir == cwd

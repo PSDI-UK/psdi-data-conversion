@@ -25,6 +25,9 @@ DEFAULT_COORD_GEN = "neither"
 L_ALLOWED_COORD_GEN_QUALS = ["fastest", "fast", "medium", "better", "best"]
 DEFAULT_COORD_GEN_QUAL = "medium"
 
+# Keywords
+AUTO = "auto"
+
 # Files and Folders
 # -----------------
 
