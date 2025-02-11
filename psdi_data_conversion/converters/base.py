@@ -19,7 +19,6 @@ import traceback
 from typing import Any
 
 from psdi_data_conversion import constants as const, log_utility
-from psdi_data_conversion.database import get_conversion_quality
 
 try:
     # werkzeug is installed in the optional dependency Flask. It's only used here to recognize an exception type,
@@ -235,6 +234,7 @@ class FileConverter:
 
             # Check that the requested conversion is valid unless suppressed
             if not no_check:
+                from psdi_data_conversion.database import get_conversion_quality
                 qual = get_conversion_quality(self.name, self.from_format, self.to_format)
                 if not qual:
                     raise FileConverterInputException(f"Conversion from {self.from_format} to {self.to_format} "
