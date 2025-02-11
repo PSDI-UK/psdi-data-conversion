@@ -7,7 +7,8 @@ Functions and classes related to general filesystem input/output
 
 import glob
 import os
-from shutil import unpack_archive
+from shutil import copyfile, make_archive, unpack_archive
+from tempfile import TemporaryDirectory
 
 from psdi_data_conversion import constants as const
 
@@ -88,3 +89,67 @@ def unpack_zip_or_tar(archive_filename: str,
     l_new_files = [x for l_glob_files in l_new_globs for x in l_glob_files]
 
     return l_new_files
+
+
+def pack_zip_or_tar(archive_filename: str,
+                    l_filenames: list[str],
+                    source_dir: str = ".",
+                    cleanup=False):
+    """_summary_
+
+    Parameters
+    ----------
+    archive_filename : str
+        The desired name of the output archive to create, either fully-qualified or relative to the current directory
+    l_filenames : list[str]
+        List of files to be archived, either fully-qualified or relative to `source_dir`. If provided fully-qualified,
+        they will be placed in the root directory of the archive
+    source_dir : str, optional
+        Path to directory containing the files to be archived (default current directory). If filenames are provided
+        fully-qualified, this is ignored
+    cleanup : bool, optional
+        If True, source files will be deleted after the archive is successfully created
+
+    Raises
+    ------
+    ValueError
+        If `archive_filename` is not of a valid format
+    FileNotFoundError
+        If one of the listed files does not exist
+    """
+
+    if not is_supported_archive(archive_filename):
+        raise ValueError(f"Desired archive filename '{archive_filename}' is not of a supported type. Supported types "
+                         f"are: {const.L_SUPPORTED_ARCHIVE_EXTENSIONS}")
+
+    with TemporaryDirectory() as root_dir:
+
+        # Copy all files from the source dir to the root dir, which is what will be packed
+
+        l_files_to_cleanup: list[str] = []
+
+        for filename in l_filenames:
+
+            # Check if the filename is fully-qualified, and copy it from wherever it's found
+            if os.path.isfile(filename):
+                copyfile(filename, os.path.join(root_dir, os.path.basename(filename)))
+                l_files_to_cleanup.append(filename)
+                continue
+
+            qualified_filename = os.path.join(source_dir, filename)
+            if os.path.isfile(qualified_filename):
+                copyfile(qualified_filename, os.path.join(root_dir, os.path.basename(filename)))
+                l_files_to_cleanup.append(qualified_filename)
+            else:
+                raise FileNotFoundError(f"File '{filename}' could not be found, either fully-qualified or relative to "
+                                        f"{source_dir}")
+
+        make_archive(archive_filename,
+                     root_dir=root_dir)
+
+    if cleanup:
+        for filename in l_files_to_cleanup:
+            try:
+                os.remove(filename)
+            except Exception:
+                pass
