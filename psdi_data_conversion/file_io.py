@@ -12,6 +12,18 @@ from shutil import unpack_archive
 from psdi_data_conversion import constants as const
 
 
+def is_archive(filename: str) -> bool:
+    """Uses a file's extension to check if it's an archive or not
+    """
+    return any([filename.endswith(x) for x in const.L_ALL_ARCHIVE_EXTENSIONS])
+
+
+def is_supported_archive(filename: str) -> bool:
+    """Uses a file's extension to check if it's an archive of a supported type or not
+    """
+    return any([filename.endswith(x) for x in const.L_SUPPORTED_ARCHIVE_EXTENSIONS])
+
+
 def unpack_zip_or_tar(archive_filename: str,
                       extract_dir: str = ".") -> list[str]:
     """Unpack a zip or tar archive into a temporary directory and return a list of the extracted files

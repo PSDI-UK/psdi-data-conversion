@@ -41,7 +41,10 @@ DATABASE_FILENAME = "static/data/data.json"
 # Archive extensions
 L_ZIP_EXTENSIONS = [".zip"]
 L_TAR_EXTENSIONS = [".tar", ".tar.gz", ".tar.bz", ".tar.xz"]
+L_SUPPORTED_ARCHIVE_EXTENSIONS = [*L_ZIP_EXTENSIONS, *L_TAR_EXTENSIONS]
 L_UNSUPPORTED_ARCHIVE_EXTENSIONS = [".rar", ".7z"]
+L_ALL_ARCHIVE_EXTENSIONS = [*L_SUPPORTED_ARCHIVE_EXTENSIONS, *L_UNSUPPORTED_ARCHIVE_EXTENSIONS]
+
 
 # Logging and Formatting
 # ----------------------
