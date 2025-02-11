@@ -66,9 +66,10 @@ def unpack_zip_or_tar(archive_filename: str,
 
     # Get the new files, and in case they're in a directory, use glob to get their contents
     s_new_files = s_dir_after.difference(s_dir_before)
+    l_qual_new_files = [os.path.join(extract_dir, x) for x in s_new_files]
     l_new_globs = [glob.glob(x) if os.path.isfile(x)
                    else glob.glob(os.path.join(x, "**"))
-                   for x in s_new_files]
+                   for x in l_qual_new_files]
 
     # This gives us a list of globs (individual files are set up as globs for consistency), so we unpack to a single
     # list with nested list comprehension
