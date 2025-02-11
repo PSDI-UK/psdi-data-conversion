@@ -19,43 +19,34 @@
 # Running the service
 # -------------------
 #
-# The command ``docker run -p 5000:5000 psdi-data-conversion`` will run the
-# service on port 5000 of localhost, with logs output to stdout. To access the
-# service visit http://localhost:5000 in your browser.
+# The command ``docker run -p 8000:8000 psdi-data-conversion`` will run the
+# service on port 8000 of localhost, with logs output to stdout. To access the
+# service visit http://localhost:8000 in your browser.
 #
 
 FROM python:3.12-slim-bookworm
-WORKDIR /app
-COPY requirements.txt byte.js /app
-COPY psdi_data_conversion /app/psdi_data_conversion
-
-# Install Python packages (including openbabel-wheel)
-RUN pip install --upgrade pip
-RUN pip install -r requirements.txt
-RUN pip install flask
-RUN pip install gunicorn
 
 RUN apt update
 RUN apt-get -y install libxrender1 libxext6
 
-ARG UID=1000
-ARG GID=1000
-ARG USERNAME=flask
+# Install Python packages (including openbabel-wheel)
+RUN pip install --upgrade pip
+RUN pip install gunicorn
+RUN pip install flask
 
-RUN groupadd -g $GID $USERNAME && \
-    useradd -m -u $UID -g $GID -s /bin/bash $USERNAME
+WORKDIR /app
+COPY requirements.txt /app
+COPY psdi_data_conversion /app/psdi_data_conversion
 
-RUN chown -R $UID:$GID /app
+RUN pip install -r requirements.txt
 
 ENV PYTHONPATH="."
 ENV LOGGING=stdout
-ENV FLASK_RUN_HOST=0.0.0.0
+ENV MAX_FILESIZE=1
 
-EXPOSE 5000
-
-USER $UID
+EXPOSE 8000
 
 RUN mkdir /app/psdi_data_conversion/static/uploads
 RUN mkdir /app/psdi_data_conversion/static/downloads
 
-CMD ["/bin/bash", "-c", "python -m flask --app psdi_data_conversion/app.py run"]
+CMD ["gunicorn", "-b", "0.0.0.0:8000", "psdi_data_conversion.app:app"]
