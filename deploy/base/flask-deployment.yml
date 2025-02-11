@@ -31,7 +31,7 @@ spec:
         - mountPath: /tmp
           name: uploads
         ports:
-        - containerPort: 5000
+        - containerPort: 8000
         resources:
           requests:
             memory: "512Mi"
@@ -39,16 +39,8 @@ spec:
           limits:
             memory: "1Gi" # this value may need to increase if application stability declines
             cpu: "1000m"
-        securityContext:
-          allowPrivilegeEscalation: false
-          readOnlyRootFilesystem: false
-          runAsNonRoot: true
       imagePullSecrets:
       - name: github-psdi-registry-credentials
-      securityContext:
-        runAsUser: 1000
-        runAsGroup: 1000
-        fsGroup: 1000
       volumes:
       - name: uploads
         emptyDir:
