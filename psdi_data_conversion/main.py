@@ -211,15 +211,16 @@ class ConvertArgs:
                 first_filename = os.path.join(self.input_dir, self.l_args[0])
 
                 # Find the path to this file
-                if not os.path.isfile(first_filename) and self.from_format:
-                    test_filename = first_filename + f".{self.from_format}"
-                    if os.path.isfile(test_filename):
-                        first_filename = test_filename
+                if not os.path.isfile(first_filename):
+                    if self.from_format:
+                        test_filename = first_filename + f".{self.from_format}"
+                        if os.path.isfile(test_filename):
+                            first_filename = test_filename
+                        else:
+                            raise FileConverterHelpException(f"Input file {first_filename} cannot be found. Also "
+                                                             f"checked for {test_filename}.")
                     else:
-                        raise FileConverterHelpException(f"Input file {first_filename} cannot be found. Also "
-                                                         f"checked for {test_filename}.")
-                elif self.from_format:
-                    raise FileConverterHelpException(f"Input file {first_filename} cannot be found.")
+                        raise FileConverterHelpException(f"Input file {first_filename} cannot be found.")
 
                 filename_base = os.path.split(os.path.splitext(first_filename)[0])[1]
                 if self.log_mode == const.LOG_FULL:

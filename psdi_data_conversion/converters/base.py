@@ -232,14 +232,6 @@ class FileConverter:
             if self.from_format.startswith("."):
                 self.from_format = self.from_format[1:]
 
-            # Check that the requested conversion is valid unless suppressed
-            if not no_check:
-                from psdi_data_conversion.database import get_conversion_quality
-                qual = get_conversion_quality(self.name, self.from_format, self.to_format)
-                if not qual:
-                    raise FileConverterInputException(f"Conversion from {self.from_format} to {self.to_format} "
-                                                      f"with {self.name} is not supported.")
-
             # Set placeholders for member variables which will be set when conversion is run
             self.in_size: int | None = None
             self.out_size: int | None = None
@@ -269,6 +261,14 @@ class FileConverter:
             # Set up files to log to
             self._setup_loggers()
 
+            # Check that the requested conversion is valid unless suppressed
+            if not no_check:
+                from psdi_data_conversion.database import get_conversion_quality
+                qual = get_conversion_quality(self.name, self.from_format, self.to_format)
+                if not qual:
+                    raise FileConverterInputException(f"Conversion from {self.from_format} to {self.to_format} "
+                                                      f"with {self.name} is not supported.")
+
             self.logger.debug("Finished FileConverter initialisation")
 
         except Exception as e:
@@ -277,11 +277,11 @@ class FileConverter:
                 self.logger.error(f"Unexpected exception raised while initializing the converter, of type '{type(e)}' "
                                   f"with message: {str(e)}")
                 raise
-            self.logger.error(f"Exception triggering an abort was raised while initializing the converter. Exception "
-                              f"was type '{type(e)}', with message: {str(e)}")
             # Try to run the standard abort method. There's a good chance this will fail though depending on what went
             # wrong when during init, so we fallback to printing the exception to stderr
             try:
+                self.logger.error(f"Exception triggering an abort was raised while initializing the converter. "
+                                  f"Exception was type '{type(e)}', with message: {str(e)}")
                 self._abort(message="The application encountered an error while initializing the converter:\n" +
                             traceback.format_exc())
             except Exception as ee:

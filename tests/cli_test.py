@@ -313,8 +313,7 @@ def test_convert(tmp_path_factory, capsys, test_data_loc):
     assert "ERROR" not in captured.err
 
     # Test a call we expect to fail due to invalid input type being provided
-    with pytest.raises(SystemExit):
-        run_with_arg_string(basic_arg_string + " -f pdb")
+    run_with_arg_string(basic_arg_string + " -f pdb")
     captured = capsys.readouterr()
     assert "Success!" not in captured.out
     assert "ERROR" in captured.err
