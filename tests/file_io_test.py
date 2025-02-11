@@ -7,6 +7,8 @@ Unit tests of functions in the `file_io` module
 
 import os
 
+import pytest
+
 from psdi_data_conversion.file_io import is_archive, is_supported_archive, unpack_zip_or_tar
 from psdi_data_conversion import constants as const
 
@@ -55,3 +57,9 @@ def test_unpack_archive(test_data_loc, tmp_path_factory):
         assert l_filenames, archive_filename
         for filename in l_filenames:
             assert os.path.isfile(filename), (archive_filename, filename)
+
+    # Check that we get expected exceptions for unsupported archives
+    with pytest.raises(ValueError, match="unsupported"):
+        unpack_zip_or_tar("foo.rar")
+    with pytest.raises(ValueError, match="valid"):
+        unpack_zip_or_tar("foo.txt")
