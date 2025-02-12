@@ -164,6 +164,48 @@ class FileConversionRunResult:
         self.out_size = sum(self.l_out_size)
 
 
+def check_from_format(filename: str,
+                      from_format: str,
+                      strict=False) -> bool:
+    """Check that the filename for an input file ends with the expected extension
+
+    Parameters
+    ----------
+    filename : str
+        The filename
+    from_format : str
+        The expected format (extension)
+    strict : bool, optional
+        If True, will raise an exception on failure. Otherwise will print a warning and return False
+
+    Returns
+    -------
+    bool
+        Whether the file ends with the expected extension or not
+
+    Raises
+    ------
+    base.FileConverterInputException
+        If `strict` is True and the the file does not end with the expected exception
+    """
+
+    # Silently make sure `from_format` starts with a dot
+    if not from_format.startswith("."):
+        from_format = f".{from_format}"
+
+    if filename.endswith(from_format):
+        return True
+
+    msg = f"Input file '{filename}' does not have expected extension"
+
+    if strict:
+        raise base.FileConverterInputException(msg)
+
+    print(f"WARNING: {msg}")
+
+    return False
+
+
 def run_converter(filename: str,
                   to_format: str,
                   *args,
@@ -245,6 +287,8 @@ def run_converter(filename: str,
 
     if not file_is_archive:
         # Not an archive, so just get and run the converter straightforwardly
+        if from_format is not None:
+            check_from_format(filename, from_format, strict=True)
         l_run_output.append(get_converter(filename,
                                           to_format,
                                           *args,
@@ -271,6 +315,8 @@ def run_converter(filename: str,
                 # Make a filename for the log for this particular conversion, putting it in the path that the primary
                 # log will end up being in
                 individual_log_file = os.path.join(log_path, os.path.basename(extracted_filename) + const.LOG_EXT)
+                if from_format is not None:
+                    check_from_format(extracted_filename, from_format, strict=True)
                 l_run_output.append(get_converter(extracted_filename,
                                                   to_format,
                                                   *args,

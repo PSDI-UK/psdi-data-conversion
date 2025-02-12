@@ -371,3 +371,10 @@ def test_archive_convert(tmp_path_factory, capsys, test_data_loc):
         for ex_filename_base in l_ex_filename_bases:
             ex_filename = f"{os.path.join(output_dir, ex_filename_base)}.{to_format}"
             assert os.path.isfile(ex_filename)
+
+        # Test that an error is returned if the archive contains files of the wrong type
+        bad_from_arg_string = f"{basic_arg_string} -f pdb"
+        run_with_arg_string(bad_from_arg_string)
+        captured = capsys.readouterr()
+        assert "ERROR" in captured.err
+        assert "Success!" not in captured.out
