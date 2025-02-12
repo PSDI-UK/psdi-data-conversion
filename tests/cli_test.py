@@ -363,7 +363,7 @@ def test_archive_convert(tmp_path_factory, capsys, test_data_loc):
         assert os.path.isfile(ex_output_filename)
 
         # Check that the expected output log exists
-        ex_output_log = os.path.join(output_dir, f"{test_filename_base}-{to_format}{const.OUTPUT_LOG_EXT}")
+        ex_output_log = os.path.join(output_dir, f"{test_filename_base}{const.LOG_EXT}")
         assert os.path.isfile(ex_output_log)
 
         # Check that the expected files exist within the archive

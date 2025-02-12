@@ -20,6 +20,7 @@ from psdi_data_conversion.converters.base import FileConverterAbortException, Fi
 from psdi_data_conversion.database import (get_conversion_quality, get_converter_info, get_format_info,
                                            get_in_format_args, get_out_format_args, get_possible_converters,
                                            get_possible_formats)
+from psdi_data_conversion.file_io import split_archive_ext
 
 
 class FileConverterHelpException(FileConverterInputException):
@@ -222,7 +223,7 @@ class ConvertArgs:
                     else:
                         raise FileConverterHelpException(f"Input file {first_filename} cannot be found.")
 
-                filename_base = os.path.split(os.path.splitext(first_filename)[0])[1]
+                filename_base = os.path.split(split_archive_ext(first_filename)[0])[1]
                 if self.log_mode == const.LOG_FULL:
                     # For server-style logging, other files will be created and used for logs
                     self._log_file = None
