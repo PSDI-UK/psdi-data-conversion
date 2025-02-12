@@ -278,8 +278,8 @@ def run_converter(filename: str,
 
         # Create new names for the archive file and log file
         filename_base, ext = split_archive_ext(os.path.basename(filename))
-        run_output.output_filename = os.path.join(downloads_dir, f"{filename_base}-{to_format}.{ext}")
-        run_output.log_filename = os.path.join(downloads_dir, f"{filename_base}-{to_format}.{const.OUTPUT_LOG_EXT}")
+        run_output.output_filename = os.path.join(downloads_dir, f"{filename_base}-{to_format}{ext}")
+        run_output.log_filename = os.path.join(downloads_dir, f"{filename_base}-{to_format}{const.OUTPUT_LOG_EXT}")
 
         # Pack the output files into an archive, cleaning them up afterwards
         pack_zip_or_tar(run_output.output_filename,

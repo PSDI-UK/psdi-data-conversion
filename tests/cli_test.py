@@ -17,6 +17,7 @@ from psdi_data_conversion.converters.atomsk import CONVERTER_ATO
 from psdi_data_conversion.converters.openbabel import CONVERTER_OB
 from psdi_data_conversion.database import (get_conversion_quality, get_converter_info, get_in_format_args,
                                            get_out_format_args, get_possible_converters, get_possible_formats)
+from psdi_data_conversion.file_io import unpack_zip_or_tar
 from psdi_data_conversion.main import FileConverterInputException, main, parse_args
 
 
@@ -354,7 +355,12 @@ def test_archive_convert(tmp_path_factory, capsys, test_data_loc):
         basic_arg_string = f"{input_filename} -t {to_format} -i {input_dir} -o {output_dir}"
         run_with_arg_string(basic_arg_string)
 
-        # Check that all expected output files exist
+        # Check that the expected output archive file exists
+        ex_output_filename = os.path.join(output_dir, f"{test_filename_base}-{to_format}.{archive_format}")
+        assert os.path.isfile(ex_output_filename)
+
+        # Check that the expected files exist within the archive
+        unpack_zip_or_tar(ex_output_filename, extract_dir=output_dir)
         for ex_filename_base in l_ex_filename_bases:
-            ex_output_filename = os.path.join(output_dir, f"{ex_filename_base}.{to_format}")
-            assert os.path.isfile(ex_output_filename)
+            ex_filename = f"{os.path.join(output_dir, ex_filename_base)}.{to_format}"
+            assert os.path.isfile(ex_filename)
