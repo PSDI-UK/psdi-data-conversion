@@ -7,6 +7,7 @@ Base class and information for file format converters
 
 
 from copy import deepcopy
+from dataclasses import dataclass
 import json
 import logging
 from collections.abc import Callable
@@ -54,6 +55,17 @@ if HTTPException is not None:
     l_abort_exceptions = (HTTPException, FileConverterAbortException)
 else:
     l_abort_exceptions = (FileConverterAbortException,)
+
+
+@dataclass
+class FileConversionResult:
+    """An object of this class will be output by the file converter's `run` function on success to provide key info on
+    the files created
+    """
+    output_filename: str
+    log_filename: str
+    in_size: int
+    out_size: int
 
 
 def abort_raise(status_code):
@@ -142,6 +154,7 @@ class FileConverter:
                  upload_dir=const.DEFAULT_UPLOAD_DIR,
                  download_dir=const.DEFAULT_DOWNLOAD_DIR,
                  max_file_size=const.DEFAULT_MAX_FILE_SIZE,
+                 no_check=False,
                  log_file: str | None = None,
                  log_mode=const.LOG_FULL,
                  log_level: int | None = None,
@@ -172,6 +185,9 @@ class FileConverter:
             The location of output files relative to the current directory
         max_file_size : float
             The maximum allowed file size for input/output files, in MB. If 0, will be unlimited. Default 0 (unlimited)
+        no_check : bool
+            If False (default), will check at setup whether or not a conversion between the desired file formats is
+            supported with the specified converter
         log_file : str | None
             If provided, all logging will go to a single file or stream. Otherwise, logs will be split up among multiple
             files for server-style logging.
@@ -257,6 +273,14 @@ class FileConverter:
             # Set up files to log to
             self._setup_loggers()
 
+            # Check that the requested conversion is valid unless suppressed
+            if not no_check:
+                from psdi_data_conversion.database import get_conversion_quality
+                qual = get_conversion_quality(self.name, self.from_format, self.to_format)
+                if not qual:
+                    raise FileConverterInputException(f"Conversion from {self.from_format} to {self.to_format} "
+                                                      f"with {self.name} is not supported.")
+
             self.logger.debug("Finished FileConverter initialisation")
 
         except Exception as e:
@@ -265,11 +289,11 @@ class FileConverter:
                 self.logger.error(f"Unexpected exception raised while initializing the converter, of type '{type(e)}' "
                                   f"with message: {str(e)}")
                 raise
-            self.logger.error(f"Exception triggering an abort was raised while initializing the converter. Exception "
-                              f"was type '{type(e)}', with message: {str(e)}")
             # Try to run the standard abort method. There's a good chance this will fail though depending on what went
             # wrong when during init, so we fallback to printing the exception to stderr
             try:
+                self.logger.error(f"Exception triggering an abort was raised while initializing the converter. "
+                                  f"Exception was type '{type(e)}', with message: {str(e)}")
                 self._abort(message="The application encountered an error while initializing the converter:\n" +
                             traceback.format_exc())
             except Exception as ee:
@@ -360,8 +384,10 @@ class FileConverter:
             self._abort(message="The application encountered an error while running the converter:\n" +
                         traceback.format_exc())
 
-        return ('\nConverting from ' + self.filename_base + '.' + self.from_format + ' to ' + self.filename_base +
-                '.' + self.to_format + '\n')
+        return FileConversionResult(output_filename=self.out_filename,
+                                    log_filename=self.output_log,
+                                    in_size=self.in_size,
+                                    out_size=self.out_size)
 
     def _abort(self, status_code=const.STATUS_CODE_GENERAL, message=None):
         """Abort the conversion, reporting the desired message to the user at the top of the output

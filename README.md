@@ -69,7 +69,7 @@ This is the repository for the PSDI PF2 Chemistry File Format Conversion project
 
 ### Python
 
-Any local installation of this project requires Python 3.10 or greater. The best way to do this is dependant on your system, and you are likely to find the best tailored instructions by searching the web for e.g. "install Python 3.10 <your-os-or-distribution>". Some standard options are:
+Any local installation of this project requires Python 3.12 or greater. The best way to do this is dependant on your system, and you are likely to find the best tailored instructions by searching the web for e.g. "install Python 3.12 <your-os-or-distribution>". Some standard options are:
 
 For Windows and MacOS: Download and run the installer for the latest version from the official site: https://www.python.org/downloads/
 
@@ -105,11 +105,11 @@ sudo apt install python3-pip
 If this doesn't work, or the version installed is too low, an alternative is to install Python via the Anaconda package manager. For this, see the guide here: https://www.askpython.com/python/examples/install-python-with-conda. If you already have an earlier version of Python installed with Anaconda, you can install and activate a newer version with a command such as:
 
 ```bash
-conda create --name converter python=3.10 anaconda # Where 'converter' is a possible conda environment name
+conda create --name converter python=3.12 anaconda # Where 'converter' is a possible conda environment name
 conda activate converter
 ```
 
-You can also install a new version of Python if you wish by substituting "3.10" in the above with e.g. "3.12".
+You can also install a newer version of Python if you wish by substituting "3.12" in the above with e.g. "3.13".
 
 ### Other Dependencies
 

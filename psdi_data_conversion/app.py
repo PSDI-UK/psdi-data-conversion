@@ -72,14 +72,15 @@ def convert():
     file.save(qualified_filename)
 
     if (not check_auth) or (request.form['token'] == token and token != ''):
-        return run_converter(name=request.form['converter'],
-                             filename=qualified_filename,
-                             data=request.form,
-                             to_format=request.form['to'],
-                             from_format=request.form['from'],
-                             log_mode=log_mode,
-                             delete_input=True,
-                             abort_callback=abort)
+        conversion_output = run_converter(name=request.form['converter'],
+                                          filename=qualified_filename,
+                                          data=request.form,
+                                          to_format=request.form['to'],
+                                          from_format=request.form['from'],
+                                          log_mode=log_mode,
+                                          delete_input=True,
+                                          abort_callback=abort)
+        return repr(conversion_output)
     else:
         # return http status code 405
         abort(405)

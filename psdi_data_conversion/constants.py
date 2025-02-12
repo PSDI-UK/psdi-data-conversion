@@ -25,6 +25,9 @@ DEFAULT_COORD_GEN = "neither"
 L_ALLOWED_COORD_GEN_QUALS = ["fastest", "fast", "medium", "better", "best"]
 DEFAULT_COORD_GEN_QUAL = "medium"
 
+# Keywords
+AUTO = "auto"
+
 # Files and Folders
 # -----------------
 
@@ -37,6 +40,33 @@ DEFAULT_DOWNLOAD_DIR = './psdi_data_conversion/static/downloads'
 
 # Filename of the database, relative to the base of the python package
 DATABASE_FILENAME = "static/data/data.json"
+
+# Archive extensions
+
+ZIP_EXTENSION = ".zip"
+ZIP_FORMAT = "zip"
+D_ZIP_FORMATS = {ZIP_EXTENSION: ZIP_FORMAT}
+
+TAR_EXTENSION = ".tar"
+TAR_FORMAT = "tar"
+GZTAR_EXTENSION = ".tar.gz"
+GZTAR_FORMAT = "gztar"
+BZTAR_EXTENSION = ".tar.bz"
+BZTAR_FORMAT = "bztar"
+XZTAR_EXTENSION = ".tar.xz"
+XZTAR_FORMAT = "xztar"
+D_TAR_FORMATS = {TAR_EXTENSION: TAR_FORMAT,
+                 GZTAR_EXTENSION: GZTAR_FORMAT,
+                 BZTAR_EXTENSION: BZTAR_FORMAT,
+                 XZTAR_EXTENSION: BZTAR_FORMAT}
+L_COMPOUND_EXTENSIONS = [GZTAR_EXTENSION, BZTAR_EXTENSION, XZTAR_EXTENSION]
+
+D_SUPPORTED_ARCHIVE_FORMATS = {**D_ZIP_FORMATS, **D_TAR_FORMATS}
+
+L_UNSUPPORTED_ARCHIVE_EXTENSIONS = [".rar", ".7z"]
+
+L_ALL_ARCHIVE_EXTENSIONS = [*D_SUPPORTED_ARCHIVE_FORMATS.keys(), *L_UNSUPPORTED_ARCHIVE_EXTENSIONS]
+
 
 # Logging and Formatting
 # ----------------------

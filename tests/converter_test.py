@@ -16,8 +16,9 @@ import pytest
 from psdi_data_conversion import constants as const
 from psdi_data_conversion.converter import run_converter
 from psdi_data_conversion.converters.atomsk import CONVERTER_ATO
-from psdi_data_conversion.converters.base import FileConverter, FileConverterAbortException
+from psdi_data_conversion.converters.base import FileConverterAbortException
 from psdi_data_conversion.converters.c2x import CONVERTER_C2X
+from psdi_data_conversion.converters.openbabel import OBFileConverter
 from psdi_data_conversion.main import FileConverterInputException
 
 
@@ -330,11 +331,11 @@ class TestConverter:
         os.environ[const.MAX_FILESIZE_ENVVAR] = str(test_file_size)
 
         self.get_input_info(filename="1NE6.mmcif")
-        converter = FileConverter(use_envvars=True,
-                                  **self.get_converter_kwargs())
+        converter = OBFileConverter(use_envvars=True,
+                                    **self.get_converter_kwargs())
         assert math.isclose(converter.max_file_size, test_file_size*const.MEGABYTE)
 
         # And also check it isn't applied if we don't ask it to use envvars
-        converter_no_ev = FileConverter(use_envvars=False,
-                                        **self.get_converter_kwargs())
+        converter_no_ev = OBFileConverter(use_envvars=False,
+                                          **self.get_converter_kwargs())
         assert not math.isclose(converter_no_ev.max_file_size, test_file_size*const.MEGABYTE)
