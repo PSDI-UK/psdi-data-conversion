@@ -355,8 +355,8 @@ def test_archive_convert(tmp_path_factory, capsys, test_data_loc):
         basic_arg_string = f"{input_filename} -t {to_format} -i {input_dir} -o {output_dir}"
         run_with_arg_string(basic_arg_string)
         captured = capsys.readouterr()
-        assert "Success!" in captured.out
         assert "ERROR" not in captured.err
+        assert "Success!" in captured.out
 
         # Check that the expected output archive file exists
         ex_output_filename = os.path.join(output_dir, f"{test_filename_base}-{to_format}{archive_ext}")

@@ -168,6 +168,7 @@ def run_converter(filename: str,
                   to_format: str,
                   *args,
                   from_format: str | None = None,
+                  log_file: str | None = None,
                   archive_output=True,
                   **converter_kwargs) -> FileConversionRunResult:
     """Shortcut to create and run a FileConverter in one step
@@ -244,8 +245,12 @@ def run_converter(filename: str,
 
     if not file_is_archive:
         # Not an archive, so just get and run the converter straightforwardly
-        l_run_output.append(get_converter(filename, to_format, *args,
-                            from_format=from_format, **converter_kwargs).run())
+        l_run_output.append(get_converter(filename,
+                                          to_format,
+                                          *args,
+                                          from_format=from_format,
+                                          log_file=log_file,
+                                          **converter_kwargs).run())
 
     elif not is_supported_archive(filename):
         raise base.FileConverterInputException(f"{filename} is an unsupported archive type. Supported types are: "
@@ -254,6 +259,7 @@ def run_converter(filename: str,
     else:
         # The filename is of a supported archive type. Make a temporary directory to extract its contents
         # to, then run the converter on each file extracted
+        log_path = os.path.split(log_file)[0]
         with TemporaryDirectory() as extract_dir:
             l_filenames = unpack_zip_or_tar(filename, extract_dir=extract_dir)
 
@@ -262,8 +268,15 @@ def run_converter(filename: str,
                 raise base.FileConverterInputException("No files to convert were contained in archive")
 
             for extracted_filename in l_filenames:
-                l_run_output.append(get_converter(extracted_filename, to_format, *args,
-                                                  from_format=from_format, **converter_kwargs).run())
+                # Make a filename for the log for this particular conversion, putting it in the path that the primary
+                # log will end up being in
+                individual_log_file = os.path.join(log_path, os.path.basename(extracted_filename) + const.LOG_EXT)
+                l_run_output.append(get_converter(extracted_filename,
+                                                  to_format,
+                                                  *args,
+                                                  from_format=from_format,
+                                                  log_file=individual_log_file,
+                                                  **converter_kwargs).run())
     # Combine the possibly-multiple FileConversionResults objects into a single FileConversionRunResult
     run_output = FileConversionRunResult(*zip(*[(x.output_filename,
                                                  x.log_filename,
@@ -289,6 +302,9 @@ def run_converter(filename: str,
         # Combine the output logs into a single log
         with open(run_output.log_filename, "w") as fo:
             for log_filename in run_output.l_log_filenames:
+                if not os.path.exists(log_filename):
+                    raise base.FileConverterException(f"Expected log file '{log_filename}' cannot be found")
                 fo.write(open(log_filename, "r").read() + "\n")
+                os.remove(log_filename)
 
     return run_output
