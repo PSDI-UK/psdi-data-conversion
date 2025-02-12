@@ -213,6 +213,7 @@ def run_converter(filename: str,
                   log_file: str | None = None,
                   strict=False,
                   archive_output=True,
+                  max_file_size=const.DEFAULT_MAX_FILE_SIZE,
                   **converter_kwargs) -> FileConversionRunResult:
     """Shortcut to create and run a FileConverter in one step
 
@@ -250,7 +251,8 @@ def run_converter(filename: str,
         into a file of the same format, their logs will be combined into a single log, and the converted files and
         individual logs will be deleted
     max_file_size : float
-        The maximum allowed file size for input/output files, in MB, default 1 MB. If 0, will be unlimited
+        The maximum allowed file size for input/output files, in MB, default 1 MB. If 0, will be unlimited. If an
+        archive of files is provided, this will apply to the total of all files contained in it
     log_file : str | None
         If provided, all logging will go to a single file or stream. Otherwise, logs will be split up among multiple
         files for server-style logging.
@@ -298,6 +300,7 @@ def run_converter(filename: str,
                                           to_format,
                                           *args,
                                           from_format=from_format,
+                                          max_file_size=max_file_size,
                                           log_file=log_file,
                                           **converter_kwargs).run())
 
@@ -316,18 +319,30 @@ def run_converter(filename: str,
             if len(l_filenames) == 0:
                 raise base.FileConverterInputException("No files to convert were contained in archive")
 
+            # First check for files of invalid type, to avoid converting if one will cause a failure
+            if from_format is not None:
+                for extracted_filename in l_filenames:
+                    check_from_format(extracted_filename, from_format, strict=strict)
+
+            # Keep track of the file size budget
+            remaining_file_size = max_file_size
+
             for extracted_filename in l_filenames:
                 # Make a filename for the log for this particular conversion, putting it in the path that the primary
                 # log will end up being in
                 individual_log_file = os.path.join(log_path, os.path.basename(extracted_filename) + const.LOG_EXT)
-                if from_format is not None:
-                    check_from_format(extracted_filename, from_format, strict=strict)
-                l_run_output.append(get_converter(extracted_filename,
-                                                  to_format,
-                                                  *args,
-                                                  from_format=from_format,
-                                                  log_file=individual_log_file,
-                                                  **converter_kwargs).run())
+
+                individual_run_output = get_converter(extracted_filename,
+                                                      to_format,
+                                                      *args,
+                                                      from_format=from_format,
+                                                      log_file=individual_log_file,
+                                                      **converter_kwargs).run()
+                l_run_output.append(individual_run_output)
+
+                # Reduce the file size limit by how much was used here
+                remaining_file_size -= max((individual_run_output.in_size, individual_run_output.out_size))
+
     # Combine the possibly-multiple FileConversionResults objects into a single FileConversionRunResult
     run_output = FileConversionRunResult(*zip(*[(x.output_filename,
                                                  x.log_filename,
