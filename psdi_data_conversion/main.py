@@ -458,7 +458,7 @@ def detail_converter_use(args: ConvertArgs):
                            subsequent_indent=" "*(ARG_LEN+2))
         print("")
 
-    print("NOTE: Support for format-specific flags and options in the CLI is yet to be implemented")
+    print_wrap("NOTE: Support for format-specific flags and options in the CLI is yet to be implemented")
 
     # Now at the end, bring up input/output-format-specific flags and options
     if mention_input_format and mention_output_format:
@@ -619,23 +619,23 @@ def run_from_args(args: ConvertArgs):
                 continue
 
         if not args.quiet:
-            print(f"Converting {filename} to {args.to_format}...")
+            print_wrap(f"Converting {filename} to {args.to_format}...", newline=True)
 
         try:
-            run_converter(filename=qualified_filename,
-                          to_format=args.to_format,
-                          from_format=args.from_format,
-                          name=args.name,
-                          data=data,
-                          use_envvars=False,
-                          upload_dir=args.input_dir,
-                          download_dir=args.output_dir,
-                          no_check=args.no_check,
-                          log_file=args.log_file,
-                          log_mode=args.log_mode,
-                          log_level=args.log_level,
-                          delete_input=args.delete_input,
-                          refresh_local_log=False)
+            conversion_result = run_converter(filename=qualified_filename,
+                                              to_format=args.to_format,
+                                              from_format=args.from_format,
+                                              name=args.name,
+                                              data=data,
+                                              use_envvars=False,
+                                              upload_dir=args.input_dir,
+                                              download_dir=args.output_dir,
+                                              no_check=args.no_check,
+                                              log_file=args.log_file,
+                                              log_mode=args.log_mode,
+                                              log_level=args.log_level,
+                                              delete_input=args.delete_input,
+                                              refresh_local_log=False)
         except FileConverterAbortException as e:
             print_wrap(f"ERROR: Attempt to convert file {filename} aborted with status code {e.status_code} and "
                        f"message:\n{e}\n", err=True)
@@ -654,7 +654,10 @@ def run_from_args(args: ConvertArgs):
             continue
 
         if not args.quiet:
-            sys.stdout.write("Success!\n")
+            print_wrap("Success! The converted file can be found at:",)
+            print(f"  {conversion_result.output_filename}")
+            print_wrap("The log can be found at:")
+            print(f"  {conversion_result.log_filename}")
 
 
 def main():
