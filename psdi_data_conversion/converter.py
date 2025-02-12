@@ -17,7 +17,8 @@ from psdi_data_conversion.converters import base
 
 import glob
 
-from psdi_data_conversion.file_io import is_archive, is_supported_archive, unpack_zip_or_tar
+from psdi_data_conversion.file_io import (is_archive, is_supported_archive, pack_zip_or_tar, split_archive_ext,
+                                          unpack_zip_or_tar)
 
 # Find all modules for specific converters
 l_converter_modules = glob.glob(os.path.dirname(base.__file__) + "/*.py")
@@ -137,25 +138,34 @@ class FileConversionRunResult:
     """An object of this class will be output by the `run_converter` function on success to provide key info on
     the files created
     """
+    # Lists of results from each individual conversion
     l_output_filenames: list[str] = field(default_factory=list)
     l_log_filenames: list[str] = field(default_factory=list)
-    output_filename: str | None = field(init=False)
-    log_filename: str | None = field(init=False)
+    l_in_size: list[int] = field(default_factory=list)
+    l_out_size: list[int] = field(default_factory=list)
+
+    # If only one conversion was performed, these variables will hold the results for that conversion. Otherwise they
+    # will point to summary files / hold the combined size
+    output_filename: str | None = None
+    log_filename: str | None = None
+    in_size: int = field(init=False)
+    out_size: int = field(init=False)
 
     def __post_init__(self):
-        """If only one file is generated, set the `output_filename` and `log_filename` to point to the appropriate files
+        """Calculate appropriate values where possible - in_size and out_size are the sum of individual sizes, and if
+        only one run was performed, we can set the output and log filenames to the filenames from that one run
         """
-        if len(self.l_output_filenames) == 1:
+        if self.output_filename is None and len(self.l_output_filenames) == 1:
             self.output_filename = self.l_output_filenames[0]
-        else:
-            self.output_filename = None
-        if len(self.l_log_filenames) == 1:
+        if self.log_filename is None and len(self.l_log_filenames) == 1:
             self.log_filename = self.l_log_filenames[0]
-        else:
-            self.log_filename = None
+
+        self.in_size = sum(self.l_in_size)
+        self.out_size = sum(self.l_out_size)
 
 
-def run_converter(filename,
+def run_converter(filename: str,
+                  to_format: str,
                   *args,
                   from_format: str | None = None,
                   archive_output=True,
@@ -216,7 +226,7 @@ def run_converter(filename,
     Returns
     -------
     FileConversionRunResult
-        An object containing the filenames of output files and logs created
+        An object containing the filenames of output files and logs created, and input/output file sizes
 
     Raises
     ------
@@ -228,35 +238,57 @@ def run_converter(filename,
 
     # Check if the filename is for an archive file, and handle appropriately
 
-    if not is_archive(filename):
-        # Not an archive, so just get and run the converter straightforwardly
-        return get_converter(*args, filename=filename, from_format=from_format, **converter_kwargs).run()
+    l_run_output: list[base.FileConversionResult] = []
 
-    if not is_supported_archive(filename):
+    file_is_archive = is_archive(filename)
+
+    if not file_is_archive:
+        # Not an archive, so just get and run the converter straightforwardly
+        l_run_output.append(get_converter(filename, to_format, *args,
+                            from_format=from_format, **converter_kwargs).run())
+
+    elif not is_supported_archive(filename):
         raise base.FileConverterInputException(f"{filename} is an unsupported archive type. Supported types are: "
                                                f"{const.L_SUPPORTED_ARCHIVE_EXTENSIONS}")
 
-    # If we get here, the filename is of a supported archive type. Make a temporary directory to extract its contents
-    # to, then run the converter on each file extracted
-    l_run_output: list[base.FileConversionResult] = []
-    with TemporaryDirectory() as extract_dir:
-        l_filenames = unpack_zip_or_tar(filename, extract_dir=extract_dir)
-        for extracted_filename in l_filenames:
-            l_run_output.append(get_converter(*args, filename=extracted_filename,
-                                              from_format=from_format, **converter_kwargs).run())
-
-    l_output_filenames: list[str]
-    l_log_filenames: list[str]
-    l_output_filenames, l_log_filenames = zip(*[(x.output_filename, x.log_filename) for x in l_run_output])
-
-    if not archive_output:
-        # If we aren't archiving output, then create an output product with the filenames combined
-        run_output = FileConversionRunResult(l_output_filenames=l_output_filenames,
-                                             l_log_filenames=l_log_filenames)
-        return run_output
     else:
-        # TODO - handle archiving here
-        # If we aren't archiving output, then create an output product with the filenames combined
-        run_output = FileConversionRunResult(l_output_filenames=l_output_filenames,
-                                             l_log_filenames=l_log_filenames)
-        return run_output
+        # The filename is of a supported archive type. Make a temporary directory to extract its contents
+        # to, then run the converter on each file extracted
+        with TemporaryDirectory() as extract_dir:
+            l_filenames = unpack_zip_or_tar(filename, extract_dir=extract_dir)
+
+            # Check for no files in archive
+            if len(l_filenames) == 0:
+                raise base.FileConverterInputException("No files to convert were contained in archive")
+
+            for extracted_filename in l_filenames:
+                l_run_output.append(get_converter(extracted_filename, to_format, *args,
+                                                  from_format=from_format, **converter_kwargs).run())
+    # Combine the possibly-multiple FileConversionResults objects into a single FileConversionRunResult
+    run_output = FileConversionRunResult(*zip(*[(x.output_filename,
+                                                 x.log_filename,
+                                                 x.in_size,
+                                                 x.out_size) for x in l_run_output]))
+
+    if file_is_archive and archive_output:
+        # If we get here, the file is an archive and we want to archive the output
+
+        # Determine the directory for the output from the output filenames
+        downloads_dir = os.path.split(run_output.l_output_filenames[0])[0]
+
+        # Create new names for the archive file and log file
+        filename_base, ext = split_archive_ext(os.path.basename(filename))
+        run_output.output_filename = os.path.join(downloads_dir, f"{filename_base}-{to_format}.{ext}")
+        run_output.log_filename = os.path.join(downloads_dir, f"{filename_base}-{to_format}.{const.OUTPUT_LOG_EXT}")
+
+        # Pack the output files into an archive, cleaning them up afterwards
+        pack_zip_or_tar(run_output.output_filename,
+                        run_output.l_output_filenames,
+                        cleanup=True)
+
+        # Combine the output logs into a single log
+        with open(run_output.log_filename, "w") as fo:
+            for log_filename in run_output.l_log_filenames:
+                fo.write(open(log_filename, "r").read() + "\n")
+
+    return run_output

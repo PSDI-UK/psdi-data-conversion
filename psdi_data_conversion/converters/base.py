@@ -64,6 +64,8 @@ class FileConversionResult:
     """
     output_filename: str
     log_filename: str
+    in_size: int
+    out_size: int
 
 
 def abort_raise(status_code):
@@ -383,7 +385,9 @@ class FileConverter:
                         traceback.format_exc())
 
         return FileConversionResult(output_filename=self.out_filename,
-                                    log_filename=self.output_log)
+                                    log_filename=self.output_log,
+                                    in_size=self.in_size,
+                                    out_size=self.out_size)
 
     def _abort(self, status_code=const.STATUS_CODE_GENERAL, message=None):
         """Abort the conversion, reporting the desired message to the user at the top of the output
