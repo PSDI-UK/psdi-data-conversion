@@ -5,11 +5,13 @@ Created 2025-02-11 by Bryan Gillis.
 Unit tests of functions in the `file_io` module
 """
 
+from itertools import product
 import os
 
 import pytest
 
-from psdi_data_conversion.file_io import is_archive, is_supported_archive, pack_zip_or_tar, unpack_zip_or_tar
+from psdi_data_conversion.file_io import (is_archive, is_supported_archive, pack_zip_or_tar, split_archive_ext,
+                                          unpack_zip_or_tar)
 from psdi_data_conversion import constants as const
 
 # Archive files prepared in the test data directory to be used for testing
@@ -37,6 +39,18 @@ def test_is_archive():
     # Check non-archive type returns as expected
     assert not is_archive("foo.txt")
     assert not is_supported_archive("foo.txt")
+
+
+def test_split_archive_ext():
+    """Test the function to split a filename with a possible archive extension
+    """
+
+    l_bases = ["foo", "foo.txt", "footar", "foo-1.0.3"]
+    l_exts = [".zip", ".tar", ".tar.gz", ".gz"]
+
+    for base, ext in product(l_bases, l_exts):
+        filename = base+ext
+        assert split_archive_ext(filename) == (base, ext)
 
 
 def test_archive(test_data_loc, tmp_path_factory):

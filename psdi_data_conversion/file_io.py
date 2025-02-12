@@ -25,6 +25,16 @@ def is_supported_archive(filename: str) -> bool:
     return any([filename.endswith(x) for x in const.D_SUPPORTED_ARCHIVE_FORMATS])
 
 
+def split_archive_ext(filename: str) -> tuple[str, str]:
+    """Splits a file into a base and an extension, with handling for compound .tar.* extensions
+    """
+    base, ext = os.path.splitext(filename)
+    if base.endswith(const.TAR_EXTENSION):
+        base, pre_ext = os.path.splitext(base)
+        ext = pre_ext+ext
+    return base, ext
+
+
 def unpack_zip_or_tar(archive_filename: str,
                       extract_dir: str = ".") -> list[str]:
     """Unpack a zip or tar archive into a temporary directory and return a list of the extracted files
@@ -134,10 +144,7 @@ def pack_zip_or_tar(archive_filename: str,
         for _ext, _format in const.D_SUPPORTED_ARCHIVE_FORMATS.items():
             if archive_filename.endswith(_ext):
                 archive_format = _format
-                archive_root_filename = os.path.splitext(archive_filename)[0]
-                # For compound extensions, we need to strip off the second extension as well
-                if _ext in const.L_COMPOUND_EXTENSIONS:
-                    archive_root_filename = os.path.splitext(archive_root_filename)[0]
+                archive_root_filename = split_archive_ext(archive_filename)[0]
                 break
         # Check that the format was found
         if archive_format is None:
