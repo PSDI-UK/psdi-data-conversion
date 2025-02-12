@@ -313,11 +313,21 @@ def test_convert(tmp_path_factory, capsys, test_data_loc):
     assert "Success!" not in captured.out
     assert "ERROR" not in captured.err
 
-    # Test a call we expect to fail due to invalid input type being provided
-    run_with_arg_string(basic_arg_string + " -f pdb")
+    # Test a call we expect to fail due to unsupported conversion
+    test_pdb_file = "hemoglobin.pdb"
+    os.symlink(os.path.join(test_data_loc, test_pdb_file),
+               os.path.join(input_dir, test_pdb_file))
+    run_with_arg_string(f"{test_pdb_file} -t pdb -i {input_dir} -o {output_dir}")
     captured = capsys.readouterr()
     assert "Success!" not in captured.out
     assert "ERROR" in captured.err
+
+    # Testa call we expect to fail due to the wrong input type being provided
+    bad_from_arg_string = f"{basic_arg_string} -f pdb"
+    run_with_arg_string(bad_from_arg_string)
+    captured = capsys.readouterr()
+    assert "ERROR" in captured.err
+    assert "Success!" not in captured.out
 
     # Check that we can specify a file with its format instead of extension
     run_with_arg_string(f"{test_filename_base} -f {from_format} -t {to_format} -i {input_dir} -o {output_dir}")
