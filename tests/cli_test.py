@@ -331,7 +331,7 @@ def test_archive_convert(tmp_path_factory, capsys, test_data_loc):
     """
 
     test_filename_base = "caffeine-smi"
-    l_archive_formats = ["zip", "tar", "tar.gz"]
+    l_archive_exts = [".zip", ".tar", ".tar.gz"]
 
     l_ex_filename_bases = ["caffeine-no-flags",
                            "caffeine-ia",
@@ -341,8 +341,8 @@ def test_archive_convert(tmp_path_factory, capsys, test_data_loc):
                            "caffeine-ia-okx-oof4l5",]
     to_format = "inchi"
 
-    for archive_format in l_archive_formats:
-        input_filename = f"{test_filename_base}.{archive_format}"
+    for archive_ext in l_archive_exts:
+        input_filename = f"{test_filename_base}{archive_ext}"
 
         input_dir = tmp_path_factory.mktemp("input")
         output_dir = tmp_path_factory.mktemp("output")
@@ -354,10 +354,17 @@ def test_archive_convert(tmp_path_factory, capsys, test_data_loc):
         # Run the conversion
         basic_arg_string = f"{input_filename} -t {to_format} -i {input_dir} -o {output_dir}"
         run_with_arg_string(basic_arg_string)
+        captured = capsys.readouterr()
+        assert "Success!" in captured.out
+        assert "ERROR" not in captured.err
 
         # Check that the expected output archive file exists
-        ex_output_filename = os.path.join(output_dir, f"{test_filename_base}-{to_format}.{archive_format}")
+        ex_output_filename = os.path.join(output_dir, f"{test_filename_base}-{to_format}{archive_ext}")
         assert os.path.isfile(ex_output_filename)
+
+        # Check that the expected output log exists
+        ex_output_log = os.path.join(output_dir, f"{test_filename_base}-{to_format}{const.OUTPUT_LOG_EXT}")
+        assert os.path.isfile(ex_output_log)
 
         # Check that the expected files exist within the archive
         unpack_zip_or_tar(ex_output_filename, extract_dir=output_dir)
