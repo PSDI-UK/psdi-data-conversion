@@ -28,3 +28,15 @@ jobs:
   tag-container-push:
     uses: ./.github/workflows/tag-container-push.yml
     needs: [test-package]
+
+  # Deploy to Kubernetes Job
+  # Requires an environment, which must reflect the target environment as defined in the
+  # GitHub repository: https://github.com/PSDI-UK/psdi-data-conversion/settings/environments
+  # The downstream deploy job leverages on Environment specific secrets, which also must be defined
+  deploy-stfc-dev-k8s:
+    needs: [tag-container-push]
+    uses: ./.github/workflows/deploy-k8s.yml  # use the callable deploy job
+    secrets: inherit # pass all secrets for the environment
+    with:
+      container_tag: ${{ needs.tag-container-push.outputs.container_tag }}
+      environment: development
