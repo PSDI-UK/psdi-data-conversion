@@ -67,6 +67,23 @@ def test_unpack_archive(test_data_loc, tmp_path_factory):
         pack_zip_or_tar(qual_new_archive_filename, l_filenames=l_qualified_filenames)
         assert os.path.isfile(qual_new_archive_filename)
 
+        # Check that input files were not deleted
+        for filename in l_qualified_filenames:
+            assert os.path.isfile(filename), (archive_filename, filename)
+
+        # Now try using relative filenames, and clean up afterwards
+        l_filenames = [os.path.split(x)[1] for x in l_qualified_filenames]
+        os.remove(qual_new_archive_filename)
+        pack_zip_or_tar(qual_new_archive_filename,
+                        l_filenames=l_filenames,
+                        source_dir=extract_dir,
+                        cleanup=True)
+        assert os.path.isfile(qual_new_archive_filename)
+
+        # Check that input files were deleted
+        for filename in l_qualified_filenames:
+            assert not os.path.exists(filename), (archive_filename, filename)
+
     # Check that we get expected exceptions for unsupported archives
     with pytest.raises(ValueError, match="unsupported"):
         unpack_zip_or_tar("foo.rar")
