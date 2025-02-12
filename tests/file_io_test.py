@@ -23,7 +23,7 @@ def test_is_archive():
     """
 
     # Check supported types return as expected
-    for ext in const.L_SUPPORTED_ARCHIVE_EXTENSIONS:
+    for ext in const.D_SUPPORTED_ARCHIVE_FORMATS:
         filename = f"file{ext}"
         assert is_archive(filename), ext
         assert is_supported_archive(filename), ext
@@ -39,7 +39,7 @@ def test_is_archive():
     assert not is_supported_archive("foo.txt")
 
 
-def test_unpack_archive(test_data_loc, tmp_path_factory):
+def test_archive(test_data_loc, tmp_path_factory):
     """Test that archives can successfully be unpacked
     """
 
@@ -64,19 +64,27 @@ def test_unpack_archive(test_data_loc, tmp_path_factory):
         qual_new_archive_filename = os.path.join(pack_dir, new_archive_filename)
 
         # Test using the fully-qualified filenames we were given when the files were unpacked
-        pack_zip_or_tar(qual_new_archive_filename, l_filenames=l_qualified_filenames)
-        assert os.path.isfile(qual_new_archive_filename)
+        qual_new_archive_filename_returned = pack_zip_or_tar(qual_new_archive_filename,
+                                                             l_filenames=l_qualified_filenames)
+        assert os.path.isfile(qual_new_archive_filename_returned)
 
         # Check that input files were not deleted
         for filename in l_qualified_filenames:
             assert os.path.isfile(filename), (archive_filename, filename)
 
-        # Now try using relative filenames, and clean up afterwards
+        # Now try using relative filenames, just the root name for the archive, and clean up afterwards
         l_filenames = [os.path.split(x)[1] for x in l_qualified_filenames]
         os.remove(qual_new_archive_filename)
-        pack_zip_or_tar(qual_new_archive_filename,
+
+        new_archive_filename_base, ext = os.path.splitext(qual_new_archive_filename)
+        if new_archive_filename_base.endswith(".tar"):
+            new_archive_filename_base, pre_ext = os.path.splitext(new_archive_filename_base)
+            ext = pre_ext + ext
+
+        pack_zip_or_tar(new_archive_filename_base,
                         l_filenames=l_filenames,
                         source_dir=extract_dir,
+                        archive_format=ext,
                         cleanup=True)
         assert os.path.isfile(qual_new_archive_filename)
 

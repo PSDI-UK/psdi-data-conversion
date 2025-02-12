@@ -22,7 +22,7 @@ def is_archive(filename: str) -> bool:
 def is_supported_archive(filename: str) -> bool:
     """Uses a file's extension to check if it's an archive of a supported type or not
     """
-    return any([filename.endswith(x) for x in const.L_SUPPORTED_ARCHIVE_EXTENSIONS])
+    return any([filename.endswith(x) for x in const.D_SUPPORTED_ARCHIVE_FORMATS])
 
 
 def unpack_zip_or_tar(archive_filename: str,
@@ -55,13 +55,13 @@ def unpack_zip_or_tar(archive_filename: str,
 
         raise ValueError(f"The archive file '{qual_archive_filename}' is of an unsupported archive type")
 
-    elif any([qual_archive_filename.endswith(x) for x in const.L_ZIP_EXTENSIONS]):
+    elif any([qual_archive_filename.endswith(x) for x in const.D_ZIP_FORMATS]):
 
         # Zip types don't support the "filter" kwarg, but use similar security measures by default. This may prompt
         # a warning, which can be ignored
         pass
 
-    elif any([qual_archive_filename.endswith(x) for x in const.L_TAR_EXTENSIONS]):
+    elif any([qual_archive_filename.endswith(x) for x in const.D_TAR_FORMATS]):
 
         # Tar types need to set up the "filter" argument to ensure no files are unpacked outside the base directory
         unpack_kwargs["filter"] = "data"
@@ -93,8 +93,9 @@ def unpack_zip_or_tar(archive_filename: str,
 
 def pack_zip_or_tar(archive_filename: str,
                     l_filenames: list[str],
+                    archive_format: str | None = None,
                     source_dir: str = ".",
-                    cleanup=False):
+                    cleanup=False) -> str:
     """_summary_
 
     Parameters
@@ -110,6 +111,11 @@ def pack_zip_or_tar(archive_filename: str,
     cleanup : bool, optional
         If True, source files will be deleted after the archive is successfully created
 
+    Returns
+    -------
+    str
+        The name of the created archive file
+
     Raises
     ------
     ValueError
@@ -118,34 +124,50 @@ def pack_zip_or_tar(archive_filename: str,
         If one of the listed files does not exist
     """
 
-    if not is_supported_archive(archive_filename):
+    if not archive_format and not is_supported_archive(archive_filename):
         raise ValueError(f"Desired archive filename '{archive_filename}' is not of a supported type. Supported types "
-                         f"are: {const.L_SUPPORTED_ARCHIVE_EXTENSIONS}")
+                         f"are: {const.D_SUPPORTED_ARCHIVE_FORMATS.keys()}")
 
     # It's supported, so determine the specific format, and provide it and the base of the filename in the forms that
     # `make_archive` wants
-    if archive_filename.endswith(const.ZIP_EXTENSION):
-        archive_format = "zip"
-    elif archive_filename.endswith(const.TAR_EXTENSION):
-        archive_format = "tar"
-        archive_root_filename = os.path.splitext(archive_filename)[0]
-    elif archive_filename.endswith(const.GZTAR_EXTENSION):
-        archive_format = "gztar"
-        archive_root_filename = os.path.splitext(os.path.splitext(archive_filename)[0])[0]
-    elif archive_filename.endswith(const.BZTAR_EXTENSION):
-        archive_format = "bztar"
-        archive_root_filename = os.path.splitext(os.path.splitext(archive_filename)[0])[0]
-    elif archive_filename.endswith(const.XZTAR_EXTENSION):
-        archive_format = "xztar"
-        archive_root_filename = os.path.splitext(os.path.splitext(archive_filename)[0])[0]
+    if archive_format is None:
+        for _ext, _format in const.D_SUPPORTED_ARCHIVE_FORMATS.items():
+            if archive_filename.endswith(_ext):
+                archive_format = _format
+                archive_root_filename = os.path.splitext(archive_filename)[0]
+                # For compound extensions, we need to strip off the second extension as well
+                if _ext in const.L_COMPOUND_EXTENSIONS:
+                    archive_root_filename = os.path.splitext(archive_root_filename)[0]
+                break
+        # Check that the format was found
+        if archive_format is None:
+            raise AssertionError("Invalid execution path entered - filename wasn't found with a valid archive "
+                                 "extension, but it did pass the `is_supported_archive` check")
     else:
-        raise AssertionError("Invalid execution path entered - filename wasn't found with a valid archive extension, "
-                             "but it did pass the `is_supported_archive` check")
+        archive_root_filename = archive_filename
 
-    archive_root_filename = os.path.splitext(archive_filename)[0]
-    # If it has a compound extension, strip away the extra extension from the root filename as well
-    if archive_format in ("gztar", "bztar", "xztar"):
-        archive_root_filename = os.path.splitext(archive_root_filename)[0]
+        # Check that the provided archive format is valid, and add the appropriate extension to the filename
+        archive_extension: str | None = None
+        for _ext, _format in const.D_SUPPORTED_ARCHIVE_FORMATS.items():
+            if archive_format == _ext:
+                # Extension was provided instead of the format; we can work with that
+                archive_extension = archive_format
+                archive_format = _format
+                break
+            elif archive_format == _format:
+                archive_extension = _ext
+                break
+        if archive_extension is None:
+            raise ValueError(f"Invalid archive format '{archive_format}'. Valid formats are: "
+                             f"{const.D_SUPPORTED_ARCHIVE_FORMATS.keys()}")
+
+        # Check if the root filename already contained the extension so we don't add it again, and strip it from the
+        # root
+        if archive_root_filename.endswith(archive_extension):
+            archive_filename = archive_root_filename
+            archive_root_filename = archive_root_filename[:-len(archive_extension)]
+        else:
+            archive_filename = archive_root_filename+archive_extension
 
     with TemporaryDirectory() as root_dir:
 
@@ -179,3 +201,6 @@ def pack_zip_or_tar(archive_filename: str,
                 os.remove(filename)
             except Exception:
                 pass
+
+    # Return the name of the created file
+    return archive_filename
