@@ -9,7 +9,7 @@ import os
 
 import pytest
 
-from psdi_data_conversion.file_io import is_archive, is_supported_archive, unpack_zip_or_tar
+from psdi_data_conversion.file_io import is_archive, is_supported_archive, pack_zip_or_tar, unpack_zip_or_tar
 from psdi_data_conversion import constants as const
 
 # Archive files prepared in the test data directory to be used for testing
@@ -51,12 +51,21 @@ def test_unpack_archive(test_data_loc, tmp_path_factory):
         # Check that we can extract each archive without error
         qual_archive_filename = os.path.join(test_data_loc, archive_filename)
 
-        l_filenames = unpack_zip_or_tar(qual_archive_filename, extract_dir=extract_dir)
+        l_qualified_filenames = unpack_zip_or_tar(qual_archive_filename, extract_dir=extract_dir)
 
         # Check that files were successfully extracted
-        assert l_filenames, archive_filename
-        for filename in l_filenames:
+        assert l_qualified_filenames, archive_filename
+        for filename in l_qualified_filenames:
             assert os.path.isfile(filename), (archive_filename, filename)
+
+        # Test that we can repack the files into a new archive in various ways
+        new_archive_filename = f"new-{archive_filename}"
+        pack_dir = tmp_path_factory.mktemp("pack-test")
+        qual_new_archive_filename = os.path.join(pack_dir, new_archive_filename)
+
+        # Test using the fully-qualified filenames we were given when the files were unpacked
+        pack_zip_or_tar(qual_new_archive_filename, l_filenames=l_qualified_filenames)
+        assert os.path.isfile(qual_new_archive_filename)
 
     # Check that we get expected exceptions for unsupported archives
     with pytest.raises(ValueError, match="unsupported"):

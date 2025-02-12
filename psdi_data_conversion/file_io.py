@@ -122,6 +122,31 @@ def pack_zip_or_tar(archive_filename: str,
         raise ValueError(f"Desired archive filename '{archive_filename}' is not of a supported type. Supported types "
                          f"are: {const.L_SUPPORTED_ARCHIVE_EXTENSIONS}")
 
+    # It's supported, so determine the specific format, and provide it and the base of the filename in the forms that
+    # `make_archive` wants
+    if archive_filename.endswith(const.ZIP_EXTENSION):
+        archive_format = "zip"
+    elif archive_filename.endswith(const.TAR_EXTENSION):
+        archive_format = "tar"
+        archive_root_filename = os.path.splitext(archive_filename)[0]
+    elif archive_filename.endswith(const.GZTAR_EXTENSION):
+        archive_format = "gztar"
+        archive_root_filename = os.path.splitext(os.path.splitext(archive_filename)[0])[0]
+    elif archive_filename.endswith(const.BZTAR_EXTENSION):
+        archive_format = "bztar"
+        archive_root_filename = os.path.splitext(os.path.splitext(archive_filename)[0])[0]
+    elif archive_filename.endswith(const.XZTAR_EXTENSION):
+        archive_format = "xztar"
+        archive_root_filename = os.path.splitext(os.path.splitext(archive_filename)[0])[0]
+    else:
+        raise AssertionError("Invalid execution path entered - filename wasn't found with a valid archive extension, "
+                             "but it did pass the `is_supported_archive` check")
+
+    archive_root_filename = os.path.splitext(archive_filename)[0]
+    # If it has a compound extension, strip away the extra extension from the root filename as well
+    if archive_format in ("gztar", "bztar", "xztar"):
+        archive_root_filename = os.path.splitext(archive_root_filename)[0]
+
     with TemporaryDirectory() as root_dir:
 
         # Copy all files from the source dir to the root dir, which is what will be packed
@@ -144,7 +169,8 @@ def pack_zip_or_tar(archive_filename: str,
                 raise FileNotFoundError(f"File '{filename}' could not be found, either fully-qualified or relative to "
                                         f"{source_dir}")
 
-        make_archive(archive_filename,
+        make_archive(archive_root_filename,
+                     format=archive_format,
                      root_dir=root_dir)
 
     if cleanup:
