@@ -220,7 +220,8 @@ def run_converter(filename: str,
     ----------
     filename : str
         Either the filename of the input file to be converted or of an archive file containing files to be converted
-        (zip and tar supported), either relative to current directory or fully-qualified
+        (zip and tar supported), either relative to current directory or fully-qualified. If an archive is provided,
+        the contents will be converted and then packed into an archive of the same type
     to_format : str
         The desired format to convert to, as the file extension (e.g. "cif")
     from_format : str | None

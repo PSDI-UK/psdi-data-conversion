@@ -246,9 +246,11 @@ def get_argument_parser():
 
     # Positional arguments
     parser.add_argument("l_args", type=str, nargs="*",
-                        help="Normally, file(s) to be converted. Filenames should be provided as either relative to "
-                             "the input directory (default current directory) or absolute. If the '-l' or '--list' "
-                             "flag is set, instead the name of a converter can be used here to get information on it.")
+                        help="Normally, file(s) to be converted or zip/tar archives thereof. If an archive or archives "
+                        "are provided, the output will be packed into an archive of the same type. Filenames should be "
+                        "provided as either relative to the input directory (default current directory) or absolute. "
+                        "If the '-l' or '--list' flag is set, instead the name of a converter can be used here to get "
+                        "information on it.")
 
     # Keyword arguments for standard conversion
     parser.add_argument("-f", "--from", type=str, default=None,
