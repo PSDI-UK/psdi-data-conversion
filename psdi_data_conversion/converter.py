@@ -201,7 +201,7 @@ def check_from_format(filename: str,
     if strict:
         raise base.FileConverterInputException(msg)
 
-    print(f"WARNING: {msg}")
+    print(f"WARNING: {msg}", file=sys.stderr)
 
     return False
 
@@ -211,6 +211,7 @@ def run_converter(filename: str,
                   *args,
                   from_format: str | None = None,
                   log_file: str | None = None,
+                  strict=False,
                   archive_output=True,
                   **converter_kwargs) -> FileConversionRunResult:
     """Shortcut to create and run a FileConverter in one step
@@ -240,6 +241,9 @@ def run_converter(filename: str,
         The location of input files relative to the current directory
     download_dir : str
         The location of output files relative to the current directory
+    strict : bool
+        If True and `from_format` is not None, will fail if any input file has the wrong extension (including files
+        within archives, but not the archives themselves). Otherwise, will only print a warning in this case
     archive_output : bool
         If True (default) and the input file is an archive (i.e. zip or tar file), the converted files will be archived
         into a file of the same format, their logs will be combined into a single log, and the converted files and
@@ -288,7 +292,7 @@ def run_converter(filename: str,
     if not file_is_archive:
         # Not an archive, so just get and run the converter straightforwardly
         if from_format is not None:
-            check_from_format(filename, from_format, strict=True)
+            check_from_format(filename, from_format, strict=strict)
         l_run_output.append(get_converter(filename,
                                           to_format,
                                           *args,
@@ -316,7 +320,7 @@ def run_converter(filename: str,
                 # log will end up being in
                 individual_log_file = os.path.join(log_path, os.path.basename(extracted_filename) + const.LOG_EXT)
                 if from_format is not None:
-                    check_from_format(extracted_filename, from_format, strict=True)
+                    check_from_format(extracted_filename, from_format, strict=strict)
                 l_run_output.append(get_converter(extracted_filename,
                                                   to_format,
                                                   *args,
