@@ -219,12 +219,14 @@ class FileConverter:
         log_mode : str
             How logs should be stores. Allowed values are:
             - 'full' - Multi-file logging, only recommended when running as a public web app
+            - 'full-force' - Multi-file logging, only recommended when running as a public web app, with the log file
+                name forced to be used for the output log
             - 'simple' - Logs saved to one file
             - 'stdout' - Output logs and errors only to stdout
             - 'none' - Output only errors to stdout
         log_level : int | None
             The level to log output at. If None (default), the level will depend on the chosen `log_mode`:
-            - 'full' or 'simple': INFO
+            - 'full', 'full-force', or 'simple': INFO
             - 'stdout' - INFO to stdout, no logging to file
             - 'none' - ERROR to stdout, no logging to file
         refresh_local_log : bool
@@ -345,13 +347,13 @@ class FileConverter:
             elif self.log_mode == const.LOG_STDOUT:
                 self._local_logger_level = None
                 self._stdout_output_level = logging.INFO
-            elif self.log_mode == const.LOG_SIMPLE or self.log_mode == const.LOG_FULL:
+            elif self.log_mode in (const.LOG_FULL, const.LOG_FULL_FORCE, const.LOG_SIMPLE):
                 self._local_logger_level = const.DEFAULT_LOCAL_LOGGER_LEVEL
                 self._stdout_output_level = logging.ERROR
             else:
                 raise FileConverterInputException(f"ERROR: Unrecognised logging option: {self.log_mode}. Allowed "
                                                   f"options are: {const.L_ALLOWED_LOG_MODES}")
-        if self.log_mode == const.LOG_FULL:
+        if self.log_mode in (const.LOG_FULL, const.LOG_FULL_FORCE):
             return self._setup_server_loggers()
 
         self.output_log = self.log_file
@@ -373,7 +375,12 @@ class FileConverter:
     def _setup_server_loggers(self):
         """Run at init to set up loggers for this object in server-style execution
         """
-        self.output_log = os.path.join(self.download_dir, f"{self.filename_base}{const.OUTPUT_LOG_EXT}")
+        # For server mode, we need a specific log name, so set that up unless the mode is set to force the use of
+        # the input log file
+        if self.log_mode == const.LOG_FULL_FORCE:
+            self.output_log = self.log_file
+        else:
+            self.output_log = os.path.join(self.download_dir, f"{self.filename_base}{const.OUTPUT_LOG_EXT}")
 
         # If any previous log exists, delete it
         if os.path.exists(self.output_log):

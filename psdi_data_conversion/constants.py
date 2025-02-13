@@ -91,6 +91,7 @@ GLOBAL_LOGGER_LEVEL = logging.ERROR
 
 # Log mode info and settings
 LOG_FULL = "full"
+LOG_FULL_FORCE = "full-force"
 LOG_SIMPLE = "simple"
 LOG_STDOUT = "stdout"
 LOG_NONE = "none"
