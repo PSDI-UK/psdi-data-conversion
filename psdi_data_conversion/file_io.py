@@ -98,6 +98,9 @@ def unpack_zip_or_tar(archive_filename: str,
     # list with nested list comprehension
     l_new_files = [x for l_glob_files in l_new_globs for x in l_glob_files]
 
+    # Sort the file list for consistency in output
+    l_new_files.sort(key=lambda s: s.lower())
+
     return l_new_files
 
 
