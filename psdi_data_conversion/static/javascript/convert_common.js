@@ -6,6 +6,15 @@
 const SECOND = 1000; // Milliseconds
 const CONVERT_TIMEOUT = 60 * SECOND;
 
+const ZIP_EXT = "zip"
+const TAR_EXT = "tar"
+const TAR_GZ_EXT2 = "gz"
+const TAR_BZ_EXT2 = "bz"
+const TAR_XZ_EXT2 = "gz"
+
+// Whether or not file extensions will be checked
+let extCheck = true;
+
 var token = "",
     max_file_size = 0,
     in_ext = "",
@@ -32,6 +41,7 @@ export function commonConvertReady(converter) {
     $("#heading").html("Convert from \'" + in_ext + "\' (" + in_note + ") to \'" + out_ext + "\' (" + out_note +
         ") using " + converter);
 
+    $("#extCheck").click(setExtCheck);
     $("#fileToUpload").change(checkFile);
 
     return [token, max_file_size, in_str, in_ext, out_str, out_ext];
@@ -123,6 +133,10 @@ export function convertFile(form_data, download_fname, fname) {
         })
 }
 
+function setExtCheck(event) {
+    extCheck = this.checked;
+}
+
 // Check that the file meets requirements for upload
 function checkFile(event) {
 
@@ -130,14 +144,33 @@ function checkFile(event) {
     let file = this.files[0];
     let message = "";
 
-    // Check file has the proper extension
-    const file_name = file.name;
-    const file_name_array = file_name.split(".");
-    const extension = file_name_array[1];
-    if (extension != in_ext) {
-        message += "The file extension is not " + in_ext +
-            ": please select another file or change the 'from' format on the 'Home' page.";
-        allGood = false;
+    // Check file has the proper extension if checking is enabled
+    if (extCheck) {
+
+        const file_name = file.name;
+        const file_name_array = file_name.split(".");
+        const extension = file_name_array.at(-1);
+
+        let badExt = false;
+
+        if (![in_ext, ZIP_EXT, TAR_EXT, TAR_GZ_EXT2, TAR_BZ_EXT2, TAR_XZ_EXT2].includes(extension)) {
+            badExt = true;
+        } else if ([TAR_GZ_EXT2, TAR_BZ_EXT2, TAR_XZ_EXT2].includes(extension)) {
+            // In the case that the extension is one of the second parts of tarball extensions, check that the prior
+            // extension is "tar"
+            let prior_ext = file_name_array.at(-2);
+            if (prior_ext != "tar" || file_name_array.length < 3) {
+                badExt = true;
+            }
+        }
+
+        if (badExt) {
+            message += "The file extension is not " + in_ext + " or a zip or tar archive extension" +
+                ": If you're confident this file is the correct type, untick the box above to disable file extension " +
+                "enforcement (note that zip/tar archives MUST have the correct extension, regardless of this " +
+                "tickbox). Otherwise, please select another file or change the 'from' format on the 'Home' page.";
+            allGood = false;
+        }
     }
 
     // Check file does not exceed maximum size
