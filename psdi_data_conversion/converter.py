@@ -126,7 +126,7 @@ def get_converter(*args, name=const.CONVERTER_DEFAULT, **converter_kwargs) -> ba
         If the converter isn't recognized or there's some other issue with the input
     """
     if name not in L_REGISTERED_CONVERTERS:
-        raise base.FileConverterInputException(f"Converter {name} not recognized. Allowed converters are: " +
+        raise base.FileConverterInputException(const.ERR_CONVERTER_NOT_RECOGNISED % name +
                                                f"{L_REGISTERED_CONVERTERS}")
     converter_class = D_REGISTERED_CONVERTERS[name]
 
@@ -197,7 +197,7 @@ def check_from_format(filename: str,
     if filename.endswith(from_format):
         return True
 
-    msg = f"Input file '{filename}' does not have expected extension"
+    msg = const.ERR_WRONG_EXTENSIONS % (os.path.basename(filename), from_format)
 
     if strict:
         raise base.FileConverterInputException(msg)
@@ -330,7 +330,7 @@ def run_converter(filename: str,
 
             # Check for no files in archive
             if len(l_filenames) == 0:
-                raise base.FileConverterInputException("No files to convert were contained in archive")
+                raise base.FileConverterInputException(const.ERR_EMPTY_ARCHIVE)
 
             # First check for files of invalid type, to avoid converting if one will cause a failure
             if from_format is not None:
@@ -417,8 +417,7 @@ def run_converter(filename: str,
         # If the run was ultimately unsuccessful, raise an exception now, referencing the output log and including
         # error lines in it
         if status_code:
-            msg = ("File conversion failed for one or more files. Lines from the output log "
-                   f"{run_output.log_filename} which indicate possible sources of error: ")
+            msg = const.ERR_CONVERSION_FAILED % run_output.log_filename
             l_output_log_lines = open(run_output.log_filename, "r").read().splitlines()
             l_error_lines = [line for line in l_output_log_lines if "ERROR" in line]
             msg += "\n".join(l_error_lines)

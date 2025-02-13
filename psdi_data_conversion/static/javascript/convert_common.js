@@ -6,6 +6,18 @@
 const SECOND = 1000; // Milliseconds
 const CONVERT_TIMEOUT = 60 * SECOND;
 
+const ZIP_EXT = "zip"
+const TAR_EXT = "tar"
+const GZ_EXT = "gz"
+const BZ_EXT = "bz"
+const XZ_EXT = "gz"
+const TARGZ_EXT = "tar.gz"
+const TARBZ_EXT = "tar.bz"
+const TARXZ_EXT = "tar.xz"
+
+// Whether or not file extensions will be checked
+let extCheck = true;
+
 var token = "",
     max_file_size = 0,
     in_ext = "",
@@ -32,6 +44,7 @@ export function commonConvertReady(converter) {
     $("#heading").html("Convert from \'" + in_ext + "\' (" + in_note + ") to \'" + out_ext + "\' (" + out_note +
         ") using " + converter);
 
+    $("#extCheck").click(setExtCheck);
     $("#fileToUpload").change(checkFile);
 
     return [token, max_file_size, in_str, in_ext, out_str, out_ext];
@@ -84,10 +97,6 @@ export function convertFile(form_data, download_fname, fname) {
                 alert("ERROR: Conversion attempt timed out. This may be because the conversion is too complicated, " +
                     "or because the server is currently busy.");
                 console.log("ERROR: Conversion timed out")
-            } else {
-                alert("ERROR: Backend converter could not be accessed. Request returned status '" + textstatus +
-                    "' and message:\n" + message);
-                console.log("ERROR: AJAX request failed for reason other than timeout")
             }
         }
     })
@@ -98,14 +107,18 @@ export function convertFile(form_data, download_fname, fname) {
                     "the navigation bar.");
             }
         })
-        .fail(function (e) {
+        .fail(function (e, textstatus, message) {
             let errLog = `/static/downloads/${fname}.log.txt`;
 
             fetch(errLog, { cache: "no-store" })
                 .then(function (response) {
                     if (response.status == 404) {
-                        return "An unknown error occurred, which produced no error log. Please provide feedback on " +
-                            "the conversion that you were attempting by clicking on 'Contact' in the navigation bar.";
+                        alert("An unknown error occurred, which produced no error log. If you are using the web " +
+                            "app, please provide feedback on the conversion that you were attempting by clicking on " +
+                            "'Contact' in the navigation bar.\n" +
+                            "If you were trying to run this locally, check your terminal for error messages which " +
+                            "may help explain what went wrong.");
+                        return "";
                     }
                     else if (!convertTimedOut) {
                         return response.text();
@@ -113,7 +126,8 @@ export function convertFile(form_data, download_fname, fname) {
                 })
                 .then(function (text) {
                     if (text != "" && text != null)
-                        alert(text);
+                        alert("ERROR: Request to the backend converter returned status '" + textstatus +
+                            "' and message: " + message + "\n" + text);
                 })
 
             // For debugging
@@ -123,6 +137,47 @@ export function convertFile(form_data, download_fname, fname) {
         })
 }
 
+function setExtCheck(event) {
+    extCheck = this.checked;
+}
+
+export function getExtCheck() {
+    return extCheck;
+}
+
+export function splitArchiveExt(filename) {
+    const filename_segments = filename.split(".");
+    // Check for extreme cases
+    if (filename_segments.length == 0) {
+        return ["", ""];
+    } else if (filename_segments.length == 1) {
+        return [filename, ""];
+    }
+
+    let base;
+    let ext = filename_segments.at(-1);
+
+    if ([GZ_EXT, BZ_EXT, XZ_EXT].includes(ext)) {
+        // In the case that the extension is one of the second parts of tarball extensions, check if the prior
+        // extension is "tar"
+        let prior_ext = filename_segments.at(-2);
+        if (prior_ext == TAR_EXT && filename_segments.length > 2) {
+            base = filename_segments.slice(0, -2).join(".");
+            ext = prior_ext + "." + ext;
+        } else {
+            base = filename_segments.slice(0, -1).join(".");
+        }
+    } else {
+        base = filename_segments.slice(0, -1).join(".");
+    }
+
+    return [base, ext];
+}
+
+export function isArchiveExt(ext) {
+    return [ZIP_EXT, TAR_EXT, TARGZ_EXT, TARBZ_EXT, TARXZ_EXT].includes(ext);
+}
+
 // Check that the file meets requirements for upload
 function checkFile(event) {
 
@@ -130,14 +185,20 @@ function checkFile(event) {
     let file = this.files[0];
     let message = "";
 
-    // Check file has the proper extension
-    const file_name = file.name;
-    const file_name_array = file_name.split(".");
-    const extension = file_name_array[1];
-    if (extension != in_ext) {
-        message += "The file extension is not " + in_ext +
-            ": please select another file or change the 'from' format on the 'Home' page.";
-        allGood = false;
+    // Check file has the proper extension if checking is enabled
+    if (extCheck) {
+
+        const file_name = file.name;
+
+        const [_, ext] = splitArchiveExt(file_name);
+
+        if (![in_ext, ZIP_EXT, TAR_EXT, TARGZ_EXT, TARBZ_EXT, TARXZ_EXT].includes(ext)) {
+            message += "The file extension is not " + in_ext + " or a zip or tar archive extension" +
+                ": If you're confident this file is the correct type, untick the box above to disable file extension " +
+                "enforcement (note that zip/tar archives MUST have the correct extension, regardless of this " +
+                "tickbox). Otherwise, please select another file or change the 'from' format on the 'Home' page.";
+            allGood = false;
+        }
     }
 
     // Check file does not exceed maximum size

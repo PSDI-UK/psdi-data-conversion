@@ -205,3 +205,10 @@ DB_OUT_OPTIONS_ID_KEY_BASE = "argflags_out_id"
 STATUS_CODE_BAD_METHOD = 405
 STATUS_CODE_SIZE = 413
 STATUS_CODE_GENERAL = 422
+
+# Error messages
+ERR_CONVERTER_NOT_RECOGNISED = "Converter %s not recognized. Allowed converters are: "
+ERR_WRONG_EXTENSIONS = "Input file '%s' does not have expected extension '%s'"
+ERR_EMPTY_ARCHIVE = "No files to convert were contained in archive"
+ERR_CONVERSION_FAILED = ("File conversion failed for one or more files. Lines from the output log "
+                         "%s which indicate possible sources of error: ")
