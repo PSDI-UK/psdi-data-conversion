@@ -337,6 +337,7 @@ def run_converter(filename: str,
                                                       *args,
                                                       from_format=from_format,
                                                       log_file=individual_log_file,
+                                                      max_file_size=remaining_file_size,
                                                       **converter_kwargs).run()
                 l_run_output.append(individual_run_output)
 
