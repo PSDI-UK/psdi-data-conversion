@@ -98,7 +98,7 @@ export function convertFile(form_data, download_fname, fname) {
                     "or because the server is currently busy.");
                 console.log("ERROR: Conversion timed out")
             } else {
-                alert("ERROR: Backend converter could not be accessed. Request returned status '" + textstatus +
+                alert("ERROR: Request to the backend converter returned status '" + textstatus +
                     "' and message:\n" + message);
                 console.log("ERROR: AJAX request failed for reason other than timeout")
             }
@@ -117,8 +117,11 @@ export function convertFile(form_data, download_fname, fname) {
             fetch(errLog, { cache: "no-store" })
                 .then(function (response) {
                     if (response.status == 404) {
-                        return "An unknown error occurred, which produced no error log. Please provide feedback on " +
-                            "the conversion that you were attempting by clicking on 'Contact' in the navigation bar.";
+                        return "An unknown error occurred, which produced no error log. If you are using the web " +
+                            "app, please provide feedback on the conversion that you were attempting by clicking on " +
+                            "'Contact' in the navigation bar.\n" +
+                            "If you were trying to run this locally, check your terminal for error messages which " +
+                            "may help explain what went wrong.";
                     }
                     else if (!convertTimedOut) {
                         return response.text();
