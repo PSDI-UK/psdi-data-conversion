@@ -5,7 +5,7 @@
   This is the JavaScript which makes the convertato.htm gui work.
 */
 
-import { commonConvertReady, convertFile } from "./convert_common.js"
+import { commonConvertReady, convertFile, getExtCheck } from "./convert_common.js"
 
 var token = "",
     max_file_size = 0,
@@ -105,6 +105,7 @@ function submitFile() {
     form_data.append("coordOption", coordOption);
     form_data.append("fileToUpload", file);
     form_data.append("upload_file", true);
+    form_data.append("check_ext", getExtCheck());
 
     convertFile(form_data, download_fname, fname);
 }

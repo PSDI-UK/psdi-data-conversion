@@ -137,6 +137,10 @@ function setExtCheck(event) {
     extCheck = this.checked;
 }
 
+export function getExtCheck() {
+    return extCheck;
+}
+
 // Check that the file meets requirements for upload
 function checkFile(event) {
 

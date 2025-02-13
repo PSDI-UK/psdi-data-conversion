@@ -77,6 +77,7 @@ def convert():
                                           data=request.form,
                                           to_format=request.form['to'],
                                           from_format=request.form['from'],
+                                          strict=request.form['check_ext'],
                                           log_mode=log_mode,
                                           delete_input=True,
                                           abort_callback=abort)
