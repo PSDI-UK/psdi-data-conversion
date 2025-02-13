@@ -87,10 +87,23 @@ def convert():
                                               delete_input=True,
                                               abort_callback=abort)
         except Exception:
-            # Failsafe exception block. Catch whatever error was raised, and print it to the output log before aborting
+
+            # Check for anticipated exceptions, and write a simpler message for them
+            msg = ""
+            for err_message in (const.ERR_CONVERSION_FAILED, const.ERR_CONVERTER_NOT_RECOGNISED,
+                                const.ERR_EMPTY_ARCHIVE, const.ERR_WRONG_EXTENSIONS):
+                message_segments = err_message.split(r"%s")
+                if all([x in err_message for x in message_segments]):
+                    msg = err_message
+                    break
+
+            if not msg:
+                # Failsafe exception message
+                msg = "The following unexpected exception was raised by the converter:\n" + traceback.format_exc()+"\n"
+
             with open(qualified_output_log, "a") as fo:
-                msg = "ERROR: The following exception was raised by the converter:\n" + traceback.format_exc()+"\n"
                 fo.write(msg)
+
             abort(const.STATUS_CODE_GENERAL)
 
         return repr(conversion_output)

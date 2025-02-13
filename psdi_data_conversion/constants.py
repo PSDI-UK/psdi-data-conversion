@@ -207,8 +207,8 @@ STATUS_CODE_SIZE = 413
 STATUS_CODE_GENERAL = 422
 
 # Error messages
-ERR_CONVERTER_NOT_RECOGNISED = "Converter %s not recognized. Allowed converters are: "
-ERR_WRONG_EXTENSIONS = "Input file '%s' does not have expected extension"
-ERR_EMPTY_ARCHIVE = "No files to convert were contained in archive"
-ERR_CONVERSION_FAILED = ("File conversion failed for one or more files. Lines from the output log "
-                         "%s which indicate possible sources of error: ")
+ERR_CONVERTER_NOT_RECOGNISED = r"Converter %s not recognized. Allowed converters are: "
+ERR_WRONG_EXTENSIONS = r"Input file '%s' does not have expected extension"
+ERR_EMPTY_ARCHIVE = r"No files to convert were contained in archive"
+ERR_CONVERSION_FAILED = (r"File conversion failed for one or more files. Lines from the output log "
+                         r"%s which indicate possible sources of error: ")
