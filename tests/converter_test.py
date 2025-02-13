@@ -19,6 +19,7 @@ from psdi_data_conversion.converters.atomsk import CONVERTER_ATO
 from psdi_data_conversion.converters.base import FileConverterAbortException
 from psdi_data_conversion.converters.c2x import CONVERTER_C2X
 from psdi_data_conversion.converters.openbabel import OBFileConverter
+from psdi_data_conversion.file_io import split_archive_ext
 from psdi_data_conversion.main import FileConverterInputException
 
 
@@ -116,7 +117,7 @@ class TestConverter:
         # Save some variables from input we'll be using throughout this test
         self.local_filename = filename
         self.source_filename = os.path.join(self.test_data_loc, filename)
-        self.filename_base = os.path.splitext(filename)[0]
+        self.filename_base = split_archive_ext(filename)[0]
         self.to_format = self.input["to_format"]
 
     def get_converter_kwargs(self, **kwargs):
@@ -186,7 +187,8 @@ class TestConverter:
 
         for log_type in ("global", "output"):
             try:
-                log_text = open(getattr(self, f"{log_type}_log_filename")).read()
+                log_file = getattr(self, f"{log_type}_log_filename")
+                log_text = open(log_file, "r").read()
             except FileNotFoundError:
                 log_text = ""
             setattr(self, f"{log_type}_log_text", log_text)
@@ -242,6 +244,15 @@ class TestConverter:
         self.get_input_info(filename="1NE6.mmcif")
         self.run_converter(max_file_size=0)
         self.check_file_status(input_exist=True, output_exist=True)
+
+        # Check that it stops partway through when running on an archive. The tarball here is smaller than the size
+        # limit, but the unpacked files are larger
+        self.get_input_info(filename="caffeine-smi.tar.gz")
+        self.run_converter(expect_code=const.STATUS_CODE_SIZE,
+                           max_file_size=0.0005)
+        self.check_file_status(input_exist=True, output_exist=False)
+        self.get_logs()
+        assert "Output file exceeds maximum size" in self.output_log_text
 
     def test_invalid_converter(self):
         """Run a test of the converter to ensure it reports an error properly if an invalid converter is requested

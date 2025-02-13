@@ -286,6 +286,11 @@ def run_converter(filename: str,
         If something goes wrong during the conversion process
     """
 
+    # Set the log file if it was unset
+    if log_file is None:
+        base_filename = split_archive_ext(filename)[0]
+        log_file = base_filename + const.OUTPUT_LOG_EXT
+
     # Check if the filename is for an archive file, and handle appropriately
 
     l_run_output: list[base.FileConversionResult] = []
