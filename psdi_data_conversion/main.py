@@ -78,7 +78,8 @@ class ConvertArgs:
         self.delete_input = args.delete_input
         self.from_flags: str = args.from_flags.replace(r"\-", "-")
         self.to_flags: str = args.to_flags.replace(r"\-", "-")
-        self.no_check = args.nc
+        self.no_check: bool = args.nc
+        self.strict: bool = args.strict
 
         # Keyword arguments specific to OpenBabel conversion
         self.coord_gen: str
@@ -245,9 +246,11 @@ def get_argument_parser():
 
     # Positional arguments
     parser.add_argument("l_args", type=str, nargs="*",
-                        help="Normally, file(s) to be converted. Filenames should be provided as either relative to "
-                             "the input directory (default current directory) or absolute. If the '-l' or '--list' "
-                             "flag is set, instead the name of a converter can be used here to get information on it.")
+                        help="Normally, file(s) to be converted or zip/tar archives thereof. If an archive or archives "
+                        "are provided, the output will be packed into an archive of the same type. Filenames should be "
+                        "provided as either relative to the input directory (default current directory) or absolute. "
+                        "If the '-l' or '--list' flag is set, instead the name of a converter can be used here to get "
+                        "information on it.")
 
     # Keyword arguments for standard conversion
     parser.add_argument("-f", "--from", type=str, default=None,
@@ -275,6 +278,10 @@ def get_argument_parser():
                              "For information on the flags accepted by a converter, call this script with '-l "
                              "<converter name>'. The first preceding hyphen for each flag must be backslash-escaped, "
                              "e.g. '--to-flags \"\\-a \\-bc \\--example\"'")
+    parser.add_argument("-s", "--strict", action="store_true",
+                        help="If set, will fail if one of the input files has the wrong extension (including those "
+                        "contained in archives, but not the archive files themselves). Otherwise, will only print a "
+                        "warning in this case.")
     parser.add_argument("--nc", "--no-check", action="store_true",
                         help="If set, will not perform a pre-check in the database on the validity of a conversion. "
                         "Setting this will result in a less human-friendly error message (or may even falsely indicate "
@@ -631,6 +638,7 @@ def run_from_args(args: ConvertArgs):
                                               upload_dir=args.input_dir,
                                               download_dir=args.output_dir,
                                               no_check=args.no_check,
+                                              strict=args.strict,
                                               log_file=args.log_file,
                                               log_mode=args.log_mode,
                                               log_level=args.log_level,

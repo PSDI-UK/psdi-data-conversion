@@ -45,13 +45,15 @@ def test_input_validity():
     cwd = os.getcwd()
     args = get_parsed_args(f"file1 file2 -f mmcif -i {cwd} -t pdb -o {cwd}/.. -w 'Atomsk' " +
                            r"--delete-input --from-flags '\-ab \-c \--example' --to-flags '\-d' " +
-                           "--coord-gen Gen3D best -q --log-file text.log")
+                           "--strict --nc --coord-gen Gen3D best -q --log-file text.log")
     assert args.l_args[0] == "file1"
     assert args.l_args[1] == "file2"
     assert args.input_dir == cwd
     assert args.to_format == "pdb"
     assert args.output_dir == f"{cwd}/.."
     assert args.name == "Atomsk"
+    assert args.no_check is True
+    assert args.strict is True
     assert args.delete_input is True
     assert args.from_flags == "-ab -c --example"
     assert args.to_flags == "-d"
@@ -313,11 +315,22 @@ def test_convert(tmp_path_factory, capsys, test_data_loc):
     assert "Success!" not in captured.out
     assert "ERROR" not in captured.err
 
-    # Test a call we expect to fail due to invalid input type being provided
-    run_with_arg_string(basic_arg_string + " -f pdb")
+    # Test a call we expect to fail due to unsupported conversion
+    test_pdb_file = "hemoglobin.pdb"
+    os.symlink(os.path.join(test_data_loc, test_pdb_file),
+               os.path.join(input_dir, test_pdb_file))
+    run_with_arg_string(f"{test_pdb_file} -t pdb -i {input_dir} -o {output_dir}")
     captured = capsys.readouterr()
     assert "Success!" not in captured.out
     assert "ERROR" in captured.err
+
+    # Testa call we expect to fail due to the wrong input type being provided
+    bad_from_arg_string = f"{basic_arg_string} -f pdb"
+    run_with_arg_string(bad_from_arg_string)
+    captured = capsys.readouterr()
+    assert "ERROR" in captured.err
+    assert "WARNING" in captured.err
+    assert "Success!" not in captured.out
 
     # Check that we can specify a file with its format instead of extension
     run_with_arg_string(f"{test_filename_base} -f {from_format} -t {to_format} -i {input_dir} -o {output_dir}")
@@ -371,3 +384,15 @@ def test_archive_convert(tmp_path_factory, capsys, test_data_loc):
         for ex_filename_base in l_ex_filename_bases:
             ex_filename = f"{os.path.join(output_dir, ex_filename_base)}.{to_format}"
             assert os.path.isfile(ex_filename)
+
+        # Test that a warning is returned if the archive contains files of the wrong type
+        bad_from_arg_string = f"{basic_arg_string} -f pdb"
+        run_with_arg_string(bad_from_arg_string)
+        captured = capsys.readouterr()
+        assert "WARNING" in captured.err
+
+        # And test that it fails in strict mode
+        bad_from_arg_string = f"{basic_arg_string} -f pdb --strict"
+        run_with_arg_string(bad_from_arg_string)
+        captured = capsys.readouterr()
+        assert "ERROR" in captured.err

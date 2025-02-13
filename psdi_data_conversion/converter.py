@@ -143,6 +143,7 @@ class FileConversionRunResult:
     l_log_filenames: list[str] = field(default_factory=list)
     l_in_size: list[int] = field(default_factory=list)
     l_out_size: list[int] = field(default_factory=list)
+    status_code: int = 0
 
     # If only one conversion was performed, these variables will hold the results for that conversion. Otherwise they
     # will point to summary files / hold the combined size
@@ -164,11 +165,57 @@ class FileConversionRunResult:
         self.out_size = sum(self.l_out_size)
 
 
+def check_from_format(filename: str,
+                      from_format: str,
+                      strict=False) -> bool:
+    """Check that the filename for an input file ends with the expected extension
+
+    Parameters
+    ----------
+    filename : str
+        The filename
+    from_format : str
+        The expected format (extension)
+    strict : bool, optional
+        If True, will raise an exception on failure. Otherwise will print a warning and return False
+
+    Returns
+    -------
+    bool
+        Whether the file ends with the expected extension or not
+
+    Raises
+    ------
+    base.FileConverterInputException
+        If `strict` is True and the the file does not end with the expected exception
+    """
+
+    # Silently make sure `from_format` starts with a dot
+    if not from_format.startswith("."):
+        from_format = f".{from_format}"
+
+    if filename.endswith(from_format):
+        return True
+
+    msg = f"Input file '{filename}' does not have expected extension"
+
+    if strict:
+        raise base.FileConverterInputException(msg)
+
+    print(f"WARNING: {msg}", file=sys.stderr)
+
+    return False
+
+
 def run_converter(filename: str,
                   to_format: str,
                   *args,
                   from_format: str | None = None,
+                  download_dir=const.DEFAULT_DOWNLOAD_DIR,
+                  max_file_size=const.DEFAULT_MAX_FILE_SIZE,
                   log_file: str | None = None,
+                  log_mode=const.LOG_FULL,
+                  strict=False,
                   archive_output=True,
                   **converter_kwargs) -> FileConversionRunResult:
     """Shortcut to create and run a FileConverter in one step
@@ -177,7 +224,8 @@ def run_converter(filename: str,
     ----------
     filename : str
         Either the filename of the input file to be converted or of an archive file containing files to be converted
-        (zip and tar supported), either relative to current directory or fully-qualified
+        (zip and tar supported), either relative to current directory or fully-qualified. If an archive is provided,
+        the contents will be converted and then packed into an archive of the same type
     to_format : str
         The desired format to convert to, as the file extension (e.g. "cif")
     from_format : str | None
@@ -198,12 +246,16 @@ def run_converter(filename: str,
         The location of input files relative to the current directory
     download_dir : str
         The location of output files relative to the current directory
+    strict : bool
+        If True and `from_format` is not None, will fail if any input file has the wrong extension (including files
+        within archives, but not the archives themselves). Otherwise, will only print a warning in this case
     archive_output : bool
         If True (default) and the input file is an archive (i.e. zip or tar file), the converted files will be archived
         into a file of the same format, their logs will be combined into a single log, and the converted files and
         individual logs will be deleted
     max_file_size : float
-        The maximum allowed file size for input/output files, in MB, default 1 MB. If 0, will be unlimited
+        The maximum allowed file size for input/output files, in MB, default 1 MB. If 0, will be unlimited. If an
+        archive of files is provided, this will apply to the total of all files contained in it
     log_file : str | None
         If provided, all logging will go to a single file or stream. Otherwise, logs will be split up among multiple
         files for server-style logging.
@@ -237,29 +289,42 @@ def run_converter(filename: str,
         If something goes wrong during the conversion process
     """
 
+    # Set the log file if it was unset - note that in server logging mode, this value won't be used within the
+    # converter class, so it needs to be set up here to match what will be set up there
+    if log_file is None:
+        base_filename = os.path.basename(split_archive_ext(filename)[0])
+        log_file = os.path.join(download_dir, base_filename + const.OUTPUT_LOG_EXT)
+
     # Check if the filename is for an archive file, and handle appropriately
 
     l_run_output: list[base.FileConversionResult] = []
 
     file_is_archive = is_archive(filename)
 
+    # Status code for the overall success of the process
+    status_code = 0
+
     if not file_is_archive:
         # Not an archive, so just get and run the converter straightforwardly
+        if from_format is not None:
+            check_from_format(filename, from_format, strict=strict)
         l_run_output.append(get_converter(filename,
                                           to_format,
                                           *args,
                                           from_format=from_format,
+                                          download_dir=download_dir,
+                                          max_file_size=max_file_size,
                                           log_file=log_file,
+                                          log_mode=log_mode,
                                           **converter_kwargs).run())
 
     elif not is_supported_archive(filename):
         raise base.FileConverterInputException(f"{filename} is an unsupported archive type. Supported types are: "
-                                               f"{const.L_SUPPORTED_ARCHIVE_EXTENSIONS}")
+                                               f"{const.D_SUPPORTED_ARCHIVE_FORMATS}")
 
     else:
         # The filename is of a supported archive type. Make a temporary directory to extract its contents
         # to, then run the converter on each file extracted
-        log_path = os.path.split(log_file)[0]
         with TemporaryDirectory() as extract_dir:
             l_filenames = unpack_zip_or_tar(filename, extract_dir=extract_dir)
 
@@ -267,44 +332,96 @@ def run_converter(filename: str,
             if len(l_filenames) == 0:
                 raise base.FileConverterInputException("No files to convert were contained in archive")
 
+            # First check for files of invalid type, to avoid converting if one will cause a failure
+            if from_format is not None:
+                for extracted_filename in l_filenames:
+                    check_from_format(extracted_filename, from_format, strict=strict)
+
+            # Keep track of the file size budget
+            remaining_file_size = max_file_size
+
             for extracted_filename in l_filenames:
-                # Make a filename for the log for this particular conversion, putting it in the path that the primary
-                # log will end up being in
-                individual_log_file = os.path.join(log_path, os.path.basename(extracted_filename) + const.LOG_EXT)
-                l_run_output.append(get_converter(extracted_filename,
-                                                  to_format,
-                                                  *args,
-                                                  from_format=from_format,
-                                                  log_file=individual_log_file,
-                                                  **converter_kwargs).run())
+                # Make a filename for the log for this particular conversion
+                individual_log_file = os.path.join(extract_dir,
+                                                   os.path.basename(os.path.splitext(extracted_filename)[0]) +
+                                                   const.OUTPUT_LOG_EXT)
+
+                # If the log mode is "full", set it to "full-force" for the individual runs to force use of the log file
+                # name we set up for it
+                individual_log_mode = log_mode if log_mode != const.LOG_FULL else const.LOG_FULL_FORCE
+
+                try:
+                    individual_run_output = get_converter(extracted_filename,
+                                                          to_format,
+                                                          *args,
+                                                          from_format=from_format,
+                                                          download_dir=download_dir,
+                                                          log_file=individual_log_file,
+                                                          log_mode=individual_log_mode,
+                                                          max_file_size=remaining_file_size,
+                                                          **converter_kwargs).run()
+                except base.FileConverterAbortException as e:
+                    # If the run fails, create a run output object to indicate that
+                    individual_run_output = base.FileConversionResult(log_filename=individual_log_file,
+                                                                      status_code=e.status_code)
+                    status_code = max((status_code, e.status_code))
+                    # If we specifically have a failure due to the size being exceeded, stop here, since no further
+                    # runs are allowed
+                    if isinstance(e, base.FileConverterSizeException):
+                        l_run_output.append(individual_run_output)
+                        break
+
+                l_run_output.append(individual_run_output)
+
+                # Reduce the file size limit by how much was used here
+                remaining_file_size -= max((individual_run_output.in_size, individual_run_output.out_size))
+
+            # Combine the output logs into a single log
+            with open(log_file, "w") as fo:
+                for individual_run_output in l_run_output:
+                    individual_log_filename = individual_run_output.log_filename
+                    if not os.path.exists(individual_log_filename):
+                        raise base.FileConverterException(f"Expected log file '{individual_log_filename}' cannot be "
+                                                          "found")
+                    fo.write(open(individual_log_filename, "r").read() + "\n")
+                    os.remove(individual_log_filename)
+
     # Combine the possibly-multiple FileConversionResults objects into a single FileConversionRunResult
     run_output = FileConversionRunResult(*zip(*[(x.output_filename,
                                                  x.log_filename,
                                                  x.in_size,
-                                                 x.out_size) for x in l_run_output]))
+                                                 x.out_size) for x in l_run_output]),
+                                         log_filename=log_file,
+                                         status_code=status_code)
 
     if file_is_archive and archive_output:
         # If we get here, the file is an archive and we want to archive the output
 
-        # Determine the directory for the output from the output filenames
-        downloads_dir = os.path.split(run_output.l_output_filenames[0])[0]
+        # Prune any unsuccessful runs from the list of output files
+        l_successful_files = [x for x in run_output.l_output_filenames if x is not None]
 
-        # Create new names for the archive file and log file
-        filename_base, ext = split_archive_ext(os.path.basename(filename))
-        run_output.output_filename = os.path.join(downloads_dir, f"{filename_base}-{to_format}{ext}")
-        run_output.log_filename = log_file
+        if len(l_successful_files) > 0:
 
-        # Pack the output files into an archive, cleaning them up afterwards
-        pack_zip_or_tar(run_output.output_filename,
-                        run_output.l_output_filenames,
-                        cleanup=True)
+            # Determine the directory for the output from the output filenames
+            downloads_dir = os.path.split(l_successful_files[0])[0]
 
-        # Combine the output logs into a single log
-        with open(run_output.log_filename, "w") as fo:
-            for log_filename in run_output.l_log_filenames:
-                if not os.path.exists(log_filename):
-                    raise base.FileConverterException(f"Expected log file '{log_filename}' cannot be found")
-                fo.write(open(log_filename, "r").read() + "\n")
-                os.remove(log_filename)
+            # Create new names for the archive file and log file
+            filename_base, ext = split_archive_ext(os.path.basename(filename))
+            run_output.output_filename = os.path.join(downloads_dir, f"{filename_base}-{to_format}{ext}")
+
+            # Pack the output files into an archive, cleaning them up afterwards
+            pack_zip_or_tar(run_output.output_filename,
+                            l_successful_files,
+                            cleanup=True)
+
+        # If the run was ultimately unsuccessful, raise an exception now, referencing the output log and including
+        # error lines in it
+        if status_code:
+            msg = ("File conversion failed for one or more files. Lines from the output log "
+                   f"{run_output.log_filename} which indicate possible sources of error: ")
+            l_output_log_lines = open(run_output.log_filename, "r").read().splitlines()
+            l_error_lines = [line for line in l_output_log_lines if "ERROR" in line]
+            msg += "\n".join(l_error_lines)
+            raise base.FileConverterAbortException(status_code, msg)
 
     return run_output
