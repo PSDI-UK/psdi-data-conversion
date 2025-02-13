@@ -40,9 +40,28 @@ class FileConverterAbortException(FileConverterException):
     """Class representing an exception triggered by a call to abort a file conversion
     """
 
-    def __init__(self, status_code, *args):
-        super().__init__(*args)
+    def __init__(self,
+                 status_code: int,
+                 *args,
+                 **kwargs):
+        super().__init__(*args, **kwargs)
         self.status_code = status_code
+
+
+class FileConverterSizeException(FileConverterAbortException):
+    """Class representing an exception triggered by the maximum size being exceeded
+    """
+
+    def __init__(self,
+                 in_size: int,
+                 out_size: int,
+                 max_file_size: int,
+                 *args,
+                 **kwargs):
+        super().__init__(const.STATUS_CODE_SIZE, *args, **kwargs)
+        self.in_size = in_size
+        self.out_size = out_size
+        self.max_file_size = max_file_size
 
 
 class FileConverterInputException(FileConverterException):
@@ -62,16 +81,22 @@ class FileConversionResult:
     """An object of this class will be output by the file converter's `run` function on success to provide key info on
     the files created
     """
-    output_filename: str
-    log_filename: str
-    in_size: int
-    out_size: int
+    output_filename: str | None = None
+    log_filename: str | None = None
+    in_size: int = 0
+    out_size: int = 0
+    success: bool = True
 
 
-def abort_raise(status_code):
-    """Callback for aborting during a file conversion, which re-raises any raised exceptions
+def abort_raise(status_code, *args, **kwargs):
+    """Callback for aborting during a file conversion, which passes relevant information to an exception of the
+    appropriate type
     """
-    raise FileConverterAbortException(status_code)
+    if status_code == const.STATUS_CODE_SIZE:
+        exception_class = FileConverterSizeException
+    else:
+        exception_class = FileConverterAbortException
+    raise exception_class(status_code, *args, **kwargs)
 
 
 class FileConverter:
@@ -389,7 +414,7 @@ class FileConverter:
                                     in_size=self.in_size,
                                     out_size=self.out_size)
 
-    def _abort(self, status_code=const.STATUS_CODE_GENERAL, message=None):
+    def _abort(self, status_code=const.STATUS_CODE_GENERAL, message=None, **kwargs):
         """Abort the conversion, reporting the desired message to the user at the top of the output
 
         Parameters
@@ -397,8 +422,11 @@ class FileConverter:
         status_code : int
             The HTTP status code to exit with. Default is 422: Unprocessable Content
         message : str | None
-            If provided, this message will be logged in the user output log at the top of the file. This should
-            typically explain the reason the process failed
+            If provided, this message will be logged in the user output log at the top of the file and will appear in
+            any raised exception if possible. This should typically explain the reason the process failed
+        **kwargs : Any
+            Any additional keyword arguments are passed to the `self.abort_callback` function if it accepts them
+
         """
 
         # Remove the input and output files if they exist
@@ -430,7 +458,12 @@ class FileConverter:
             # Note this message in the dev logger as well
             self.logger.error(message)
 
-        self.abort_callback(status_code)
+        # Call the abort callback function now. We first try to add information to it, but in case that isn't supported,
+        # we fall back to just calling it with the status code
+        try:
+            self.abort_callback(status_code, message, **kwargs)
+        except TypeError:
+            self.abort_callback(status_code)
 
     def _abort_from_err(self):
         """Call an abort after a call to the converter has completed, but it's returned an error. Create a message for
@@ -508,7 +541,10 @@ class FileConverter:
                         os.path.basename(self.out_filename) + ": "
                         f"Output file exceeds maximum size.\nInput file size is "
                         f"{in_size/const.MEGABYTE:.2f} MB; Output file size is {out_size/const.MEGABYTE:.2f} "
-                        f"MB; maximum output file size is {self.max_file_size/const.MEGABYTE:.2f} MB.\n")
+                        f"MB; maximum output file size is {self.max_file_size/const.MEGABYTE:.2f} MB.\n",
+                        in_size=self.in_size,
+                        out_size=self.out_size,
+                        max_file_size=self.max_file_size)
         self.logger.debug(f"Output file found to have size {out_size/const.MEGABYTE:.2f} MB")
 
         return in_size, out_size
