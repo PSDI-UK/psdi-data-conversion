@@ -10,11 +10,13 @@ import os
 import json
 from datetime import datetime
 import sys
+import traceback
 from flask import Flask, request, render_template, abort, Response
 
 from psdi_data_conversion import log_utility
 from psdi_data_conversion import constants as const
 from psdi_data_conversion.converter import run_converter
+from psdi_data_conversion.file_io import split_archive_ext
 
 # Create a token by hashing the current date and time.
 dt = str(datetime.now())
@@ -70,17 +72,27 @@ def convert():
 
     qualified_filename = os.path.join(const.DEFAULT_UPLOAD_DIR, filename)
     file.save(qualified_filename)
+    qualified_output_log = os.path.join(const.DEFAULT_DOWNLOAD_DIR,
+                                        split_archive_ext(filename)[0] + const.OUTPUT_LOG_EXT)
 
     if (not check_auth) or (request.form['token'] == token and token != ''):
-        conversion_output = run_converter(name=request.form['converter'],
-                                          filename=qualified_filename,
-                                          data=request.form,
-                                          to_format=request.form['to'],
-                                          from_format=request.form['from'],
-                                          strict=request.form['check_ext'],
-                                          log_mode=log_mode,
-                                          delete_input=True,
-                                          abort_callback=abort)
+        try:
+            conversion_output = run_converter(name=request.form['converter'],
+                                              filename=qualified_filename,
+                                              data=request.form,
+                                              to_format=request.form['to'],
+                                              from_format=request.form['from'],
+                                              strict=request.form['check_ext'],
+                                              log_mode=log_mode,
+                                              delete_input=True,
+                                              abort_callback=abort)
+        except Exception:
+            # Failsafe exception block. Catch whatever error was raised, and print it to the output log before aborting
+            with open(qualified_output_log, "a") as fo:
+                msg = "ERROR: The following exception was raised by the converter:\n" + traceback.format_exc()+"\n"
+                fo.write(msg)
+            abort(const.STATUS_CODE_GENERAL)
+
         return repr(conversion_output)
     else:
         # return http status code 405
