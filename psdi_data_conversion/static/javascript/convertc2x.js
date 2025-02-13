@@ -5,7 +5,7 @@
   This is the JavaScript which makes the convertc2x.htm gui work.
 */
 
-import { commonConvertReady, convertFile, getExtCheck } from "./convert_common.js"
+import { commonConvertReady, convertFile, getExtCheck, splitArchiveExt, isArchiveExt } from "./convert_common.js"
 
 var token = "",
     max_file_size = 0,
@@ -22,8 +22,7 @@ $(document).ready(function () {
 // Uploads a user-supplied file
 function submitFile() {
     const file = $("#fileToUpload")[0].files[0],
-        fname = file.name.split(".")[0],
-        extension = file.name.split(".")[1];
+        [fname, ext] = splitArchiveExt(file.name);
 
     var quality = sessionStorage.getItem("success"),
         start = quality.indexOf(':') + 2,
@@ -83,8 +82,11 @@ function submitFile() {
     }
 
     const coordinates = 'neither', //$('input[name="coordinates"]:checked').val(),
-        coordOption = 'medium', //$('input[name="coordOptions"]:checked').val(),
-        download_fname = file.name.split(".")[0] + "." + out_ext;
+        coordOption = 'medium'; //$('input[name="coordOptions"]:checked').val();
+
+    // If the uploaded file was an archive, we'll expect to download one too. Otherwise we'll expect to download
+    // something with the output extension
+    const download_fname = isArchiveExt(ext) ? fname + "-" + out_ext + "." + ext : fname + "." + out_ext;
 
     var form_data = new FormData();
 

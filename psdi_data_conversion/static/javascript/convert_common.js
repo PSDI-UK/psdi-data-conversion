@@ -8,9 +8,12 @@ const CONVERT_TIMEOUT = 60 * SECOND;
 
 const ZIP_EXT = "zip"
 const TAR_EXT = "tar"
-const TAR_GZ_EXT2 = "gz"
-const TAR_BZ_EXT2 = "bz"
-const TAR_XZ_EXT2 = "gz"
+const GZ_EXT = "gz"
+const BZ_EXT = "bz"
+const XZ_EXT = "gz"
+const TARGZ_EXT = "tar.gz"
+const TARBZ_EXT = "tar.bz"
+const TARXZ_EXT = "tar.xz"
 
 // Whether or not file extensions will be checked
 let extCheck = true;
@@ -141,6 +144,39 @@ export function getExtCheck() {
     return extCheck;
 }
 
+export function splitArchiveExt(filename) {
+    const filename_segments = filename.split(".");
+    // Check for extreme cases
+    if (filename_segments.length == 0) {
+        return ["", ""];
+    } else if (filename_segments.length == 1) {
+        return [filename, ""];
+    }
+
+    let base;
+    let ext = filename_segments.at(-1);
+
+    if ([GZ_EXT, BZ_EXT, XZ_EXT].includes(ext)) {
+        // In the case that the extension is one of the second parts of tarball extensions, check if the prior
+        // extension is "tar"
+        let prior_ext = filename_segments.at(-2);
+        if (prior_ext == TAR_EXT && filename_segments.length > 2) {
+            base = filename_segments.slice(0, -2).join(".");
+            ext = prior_ext + "." + ext;
+        } else {
+            base = filename_segments.slice(0, -1).join(".");
+        }
+    } else {
+        base = filename_segments.slice(0, -1).join(".");
+    }
+
+    return [base, ext];
+}
+
+export function isArchiveExt(ext) {
+    return [ZIP_EXT, TAR_EXT, TARGZ_EXT, TARBZ_EXT, TARXZ_EXT].includes(ext);
+}
+
 // Check that the file meets requirements for upload
 function checkFile(event) {
 
@@ -152,23 +188,10 @@ function checkFile(event) {
     if (extCheck) {
 
         const file_name = file.name;
-        const file_name_array = file_name.split(".");
-        const extension = file_name_array.at(-1);
 
-        let badExt = false;
+        const [_, ext] = splitArchiveExt(file_name);
 
-        if (![in_ext, ZIP_EXT, TAR_EXT, TAR_GZ_EXT2, TAR_BZ_EXT2, TAR_XZ_EXT2].includes(extension)) {
-            badExt = true;
-        } else if ([TAR_GZ_EXT2, TAR_BZ_EXT2, TAR_XZ_EXT2].includes(extension)) {
-            // In the case that the extension is one of the second parts of tarball extensions, check that the prior
-            // extension is "tar"
-            let prior_ext = file_name_array.at(-2);
-            if (prior_ext != "tar" || file_name_array.length < 3) {
-                badExt = true;
-            }
-        }
-
-        if (badExt) {
+        if (![in_ext, ZIP_EXT, TAR_EXT, TARGZ_EXT, TARBZ_EXT, TARXZ_EXT].includes(ext)) {
             message += "The file extension is not " + in_ext + " or a zip or tar archive extension" +
                 ": If you're confident this file is the correct type, untick the box above to disable file extension " +
                 "enforcement (note that zip/tar archives MUST have the correct extension, regardless of this " +
