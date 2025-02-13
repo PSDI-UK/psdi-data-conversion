@@ -53,10 +53,10 @@ class FileConverterSizeException(FileConverterAbortException):
     """
 
     def __init__(self,
+                 *args,
                  in_size: int,
                  out_size: int,
                  max_file_size: int,
-                 *args,
                  **kwargs):
         super().__init__(const.STATUS_CODE_SIZE, *args, **kwargs)
         self.in_size = in_size
@@ -85,7 +85,7 @@ class FileConversionResult:
     log_filename: str | None = None
     in_size: int = 0
     out_size: int = 0
-    success: bool = True
+    status_code: int = 0
 
 
 def abort_raise(status_code, *args, **kwargs):
@@ -542,8 +542,8 @@ class FileConverter:
                         f"Output file exceeds maximum size.\nInput file size is "
                         f"{in_size/const.MEGABYTE:.2f} MB; Output file size is {out_size/const.MEGABYTE:.2f} "
                         f"MB; maximum output file size is {self.max_file_size/const.MEGABYTE:.2f} MB.\n",
-                        in_size=self.in_size,
-                        out_size=self.out_size,
+                        in_size=in_size,
+                        out_size=out_size,
                         max_file_size=self.max_file_size)
         self.logger.debug(f"Output file found to have size {out_size/const.MEGABYTE:.2f} MB")
 
