@@ -197,7 +197,7 @@ def check_from_format(filename: str,
     if filename.endswith(from_format):
         return True
 
-    msg = const.ERR_WRONG_EXTENSIONS % filename
+    msg = const.ERR_WRONG_EXTENSIONS % (os.path.basename(filename), from_format)
 
     if strict:
         raise base.FileConverterInputException(msg)
