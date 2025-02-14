@@ -15,3 +15,10 @@
 export function getServiceMode() {
   return sessionStorage.getItem("service_mode");
 }
+
+/**
+ * Sets the service mode for the CSS document of the current page
+ */
+export function loadServiceMode() {
+  document.documentElement.setAttribute("service-mode", getServiceMode());
+}

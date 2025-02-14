@@ -6,17 +6,21 @@
 */
 
 import { getAllFormats, getConverters } from "./data.js";
+import { loadServiceMode } from "./common.js";
 
 var token = "",
     fromList = new Array(),
     toList = new Array(),
     formatList = new Array();
 
-$(document).ready(function() {
+// Set the service mode variable for this page so that only appropriate elements are shown
+loadServiceMode();
+
+$(document).ready(function () {
 
     token = sessionStorage.getItem("token");
 
-    $("#success").css({display: "none"});
+    $("#success").css({ display: "none" });
 
     // Populates the "Convert from" and "Convert to" selection lists
     getAllFormats().then((allFormats) => {
@@ -67,14 +71,14 @@ function populateConversionSuccess(event) {
 
     try {
         const in_str = $("#searchFrom").val(), // e.g. "ins: ShelX"
-              in_str_array = in_str.split(": "),
-              in_ext = in_str_array[0],           // e.g. "ins"
-              in_note = in_str_array[1];          // e.g. "ShelX"
+            in_str_array = in_str.split(": "),
+            in_ext = in_str_array[0],           // e.g. "ins"
+            in_note = in_str_array[1];          // e.g. "ShelX"
 
         const out_str = $("#searchTo").val(),
-              out_str_array = out_str.split(": "),
-              out_ext = out_str_array[0],
-              out_note = out_str_array[1];
+            out_str_array = out_str.split(": "),
+            out_ext = out_str_array[0],
+            out_note = out_str_array[1];
 
         getConverters(in_ext, in_note, out_ext, out_note).then((converters) => {
             populateList(converters, "success");
@@ -84,11 +88,11 @@ function populateConversionSuccess(event) {
         // Can do without an error message if the 'Conversion options' box remains empty;
         // however, consider a greyed-out message inside the box (using some of the commented out code below).
 
-//        const ID_a = getFormat($("#searchFrom").val()),
-  //            ID_b = getFormat($("#searchTo").val());
+        //        const ID_a = getFormat($("#searchFrom").val()),
+        //            ID_b = getFormat($("#searchTo").val());
 
-    //    if (ID_a.toString() != ID_b.toString() && ID_a != "" && ID_b != "") {
-      //          conversionSuccessEmpty();
+        //    if (ID_a.toString() != ID_b.toString() && ID_a != "" && ID_b != "") {
+        //          conversionSuccessEmpty();
         //}
     }
 }
@@ -107,14 +111,14 @@ function getSelectedText(el) {
 
 // Hides converter details
 function hideConverterDetails() {
-    $("#converter").css({display: "none"});
-    $("h3").css({display: "none"});
+    $("#converter").css({ display: "none" });
+    $("h3").css({ display: "none" });
 }
 
 // Submits user input
 function submitUserInput() {
     const from = $("#searchFrom").val(),
-          to = $("#searchTo").val();
+        to = $("#searchTo").val();
 
     var reason = $("#in").val(),
         missing = $("#missingFormat").val()
@@ -163,26 +167,26 @@ function submitUserInput() {
 }
 
 // Hide Open Babel conversion offer (not required to do anything on this page)
-function hideOffer() {}
+function hideOffer() { }
 
 // Writes user input to a server-side file
 // $$$$$$$$$$ Retain for now in case logging to file is required for some other purpose $$$$$$$$$$
 //function writeLog(message) {
-  //  var jqXHR = $.get(`/data/`, {
-    //        'token': token,
-      //      'data': message
-        //})
+//  var jqXHR = $.get(`/data/`, {
+//        'token': token,
+//      'data': message
+//})
 //        .done(response => {
-  //          alert("Report received!");
-    //    })
-      //  .fail(function(e) {
-        //    alert("Reporting failed. Please provide feedback by clicking on 'Contact' in the navigation bar.");
+//          alert("Report received!");
+//    })
+//  .fail(function(e) {
+//    alert("Reporting failed. Please provide feedback by clicking on 'Contact' in the navigation bar.");
 
-          //  // For debugging
-            //console.log("Error writing to log");
+//  // For debugging
+//console.log("Error writing to log");
 //            console.log(e.status);
-  //          console.log(e.responseText);
-    //    })
+//          console.log(e.responseText);
+//    })
 //}
 
 // Submit feedback
@@ -191,15 +195,15 @@ function submitFeedback(data) {
         'token': token,
         'data': JSON.stringify(data)
     })
-    .done(() => {
-        alert("Report received!");
-    })
-    .fail(function(e) {
-        alert("Reporting failed. Please provide feedback by clicking on 'Contact' in the navigation bar.");
+        .done(() => {
+            alert("Report received!");
+        })
+        .fail(function (e) {
+            alert("Reporting failed. Please provide feedback by clicking on 'Contact' in the navigation bar.");
 
-        // For debugging
-        console.error("Error submitting feedback", e.status, e.responseText);
-    });
+            // For debugging
+            console.error("Error submitting feedback", e.status, e.responseText);
+        });
 }
 
 // Only options having user filter input as a substring (case insensitive) are included in the selection list
@@ -241,7 +245,7 @@ function filterOptions(event) {
         $("#formatLabel").html("Check that the format is not present in the list. If it is, consider reporting a missing conversion. (" + count + ")");
     }
 
-    $("#success").prop({disabled: true});
+    $("#success").prop({ disabled: true });
     emptySuccess();
     hideConverterDetails();
     hideOffer();
@@ -266,18 +270,18 @@ function populateList(entries, sel) {
         rows = entries.map(entry => `${entry.name}: ${entry.degree_of_success}`);
     }
 
-    rows.sort(function(a, b) {
+    rows.sort(function (a, b) {
         return a.toLowerCase().localeCompare(b.toLowerCase());
     });
 
-    $("#success").prop({disabled: true});
+    $("#success").prop({ disabled: true });
 
     for (var i = 0; i < rows.length; i++) {
         const support = rows[i].substring(0, 10) == "Open Babel" ? " (supported)" : " (unsupported)";
 
-        if ( sel == "success") {
+        if (sel == "success") {
             if (rows.length > 0) {
-                $("#success").prop({disabled: false});
+                $("#success").prop({ disabled: false });
             }
 
             $("#success").append($('<option>', { text: "" + rows[i] + support }));
@@ -324,26 +328,26 @@ function display(event) {
     $("#missingFormat").val("");
 
     if (selectedText == "conversion") {
-        $("#in_out_formats").css({display: "block"});
-        $("#formats").css({display: "none"});
-        $("#missing").css({display: "none"});
-        $("#message").css({display: "inline"});
+        $("#in_out_formats").css({ display: "block" });
+        $("#formats").css({ display: "none" });
+        $("#missing").css({ display: "none" });
+        $("#message").css({ display: "inline" });
         $("#message").html("Explain why the conversion is required and provide a link to appropriate documentation if possible [max 500 characters].");
         $("#message1").html("The displayed 'from' and 'to' formats will be automatically submitted with your message.");
-        $("#userInput").css({display: "block"});
+        $("#userInput").css({ display: "block" });
     }
     else if (selectedText == "format") {
-        $("#formats").css({display: "block"});
-        $("#in_out_formats").css({display: "none"});
-        $("#missing").css({display: "block"});
-        $("#message").css({display: "none"});
+        $("#formats").css({ display: "block" });
+        $("#in_out_formats").css({ display: "none" });
+        $("#missing").css({ display: "block" });
+        $("#message").css({ display: "none" });
         $("#message1").html("Enter details of the file conversions expected for this format and provide a link to appropriate documentation if possible [max 500 characters].");
-        $("#userInput").css({display: "block"});
+        $("#userInput").css({ display: "block" });
     }
     else {
-        $("#formats").css({display: "none"});
-        $("#missing").css({display: "none"});
-        $("#userInput").css({display: "none"});
+        $("#formats").css({ display: "none" });
+        $("#missing").css({ display: "none" });
+        $("#userInput").css({ display: "none" });
     }
 }
 
