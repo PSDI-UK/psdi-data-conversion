@@ -125,3 +125,13 @@ select#dark-background option {
   background-color: var(--psdi-default-color-primary);
   color           : var(--psdi-light-text-color-body);
 }
+
+/* We use the service-mode variable to control whether elements with the "service-only" or "local-only" class are shown
+*/
+[service-mode=True] .local-only {
+  display: none;
+}
+
+[service-mode=False] .service-only {
+  display: none;
+}

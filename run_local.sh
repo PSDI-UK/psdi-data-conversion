@@ -7,6 +7,10 @@ fi
 
 export LOGGING=Full
 
+# The envvar SERVICE_MODE can be set to "true" to make this behave as if it's running as the public web service -
+# uncomment the following line to enable that
+# export SERVICE_MODE=true
+
 # Uncomment the following line to enable debug mode
 # export FLASK_ENV=development
 

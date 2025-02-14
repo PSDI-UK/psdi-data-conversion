@@ -42,6 +42,7 @@ RUN pip install -r requirements.txt
 
 ENV PYTHONPATH="."
 ENV LOGGING=stdout
+ENV SERVICE_MODE=true
 ENV MAX_FILESIZE=1
 
 EXPOSE 8000
