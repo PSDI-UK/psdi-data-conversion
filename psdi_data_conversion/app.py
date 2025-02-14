@@ -23,8 +23,8 @@ dt = str(datetime.now())
 token = hashlib.md5(dt.encode('utf8')).hexdigest()
 
 # Check the authorisation envvar to see if we're checking auth
-auth_ev = os.environ.get(const.AUTH_ENVVAR)
-check_auth = (auth_ev is not None) and (auth_ev.lower() == "true")
+service_mode_ev = os.environ.get(const.SERVICE_MODE_ENVVAR)
+service_mode = (service_mode_ev is not None) and (service_mode_ev.lower() == "true")
 
 # Get the logging style from the envvar for it
 ev_logging = os.environ.get(const.LOG_MODE_ENVVAR)
@@ -53,7 +53,8 @@ def website():
         max_file_size = const.DEFAULT_MAX_FILE_SIZE
 
     data = [{'token': token,
-             'max_file_size': max_file_size}]
+             'max_file_size': max_file_size,
+             'service_mode': service_mode}]
     return render_template("index.htm", data=data)
 
 
@@ -75,7 +76,7 @@ def convert():
     qualified_output_log = os.path.join(const.DEFAULT_DOWNLOAD_DIR,
                                         split_archive_ext(filename)[0] + const.OUTPUT_LOG_EXT)
 
-    if (not check_auth) or (request.form['token'] == token and token != ''):
+    if (not service_mode) or (request.form['token'] == token and token != ''):
         try:
             conversion_output = run_converter(name=request.form['converter'],
                                               filename=qualified_filename,
@@ -165,7 +166,7 @@ def data():
     str
         Output status - 'okay' if exited successfuly
     """
-    if check_auth and request.args['token'] == token and token != '':
+    if service_mode and request.args['token'] == token and token != '':
         message = '[' + log_utility.get_date_time() + '] ' + request.args['data'] + '\n'
 
         with open("user_responses", "a") as f:

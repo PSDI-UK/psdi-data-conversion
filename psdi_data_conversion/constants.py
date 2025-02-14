@@ -15,7 +15,7 @@ import shutil
 CLI_SCRIPT_NAME = "psdi-data-convert"
 
 # Environmental variables
-AUTH_ENVVAR = "AUTH"
+SERVICE_MODE_ENVVAR = "SERVICE_MODE"
 LOG_MODE_ENVVAR = "LOGGING"
 MAX_FILESIZE_ENVVAR = "MAX_FILESIZE"
 
