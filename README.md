@@ -6,7 +6,7 @@ This is the repository for the PSDI PF2 Chemistry File Format Conversion project
 
 - Online web service, available at https://psdidev2.azurewebsites.net
 - Version of the web app you can download and run locally (e.g. if you need to convert files which exceed the online app's file size limit)
-- Command-line interface, to run conversions from a terminal
+- Command-line application, to run conversions from a terminal
 - Python library
 
 ## Table of Contents
@@ -15,7 +15,7 @@ This is the repository for the PSDI PF2 Chemistry File Format Conversion project
 - [Requirements](#requirements)
   - [Python](#python)
   - [Other Dependencies](#other-dependencies)
-- [Command-Line Interface](#command-line-interface)
+- [Command-Line Application](#command-line-application)
   - [Installation](#installation)
   - [Execution](#execution)
     - [Data Conversion](#data-conversion)
@@ -131,11 +131,11 @@ Required to run unit tests:
 
 In addition to the dependencies listed above, this project uses the assets made public by PSDI's common style project at https://github.com/PSDI-UK/psdi-common-style. The latest versions of these assets are copied to this project periodically (using the scripts in the `scripts` directory). In case a future release of these assets causes a breaking change in this project, the file `fetch-common-style.conf` can be modified to set a previous fixed version to download and use until this project is updated to work with the latest version of the assets.
 
-## Command-Line Interface
+## Command-Line Application
 
 ### Installation
 
-The CLI and Python library are installed together. This package is not yet available on PyPI, and so must be installed locally. This can be done most easily with:
+The CLA and Python library are installed together. This package is not yet available on PyPI, and so must be installed locally. This can be done most easily with:
 
 ```bash
 pip install .
@@ -213,7 +213,7 @@ If an input format is provided, information on input flags and options accepted 
 
 ### Installation
 
-The CLI and Python library are installed together. This package is not yet available on PyPI, and so must be installed locally. This can be done most easily with:
+The CLA and Python library are installed together. This package is not yet available on PyPI, and so must be installed locally. This can be done most easily with:
 
 ```bash
 pip install .
@@ -272,7 +272,7 @@ converter = get_converter(filename, to_format, name=name, data=data)
 converter.run()
 ```
 
-`get_converter` takes all the same arguments as `run_converter`. See the method's documentation via `help(get_converter)` after importing it for further details on usage.
+Note that the `run_converter` function includes support for converting zip and tar archives of files, while `get_converter().run()` can only handle files one at a time.
 
 #### `constants`
 
@@ -352,7 +352,7 @@ open -a "Google Chrome.app" --args --allow-file-access-from-files
 
 ## Extending Functionality
 
-The Python library and CLI are written to make it easy to extend the functionality of this package to use other file format converters. This can by downloading or cloning the project's source from it's GitHub Repository (https://github.com/PSDI-UK/psdi-data-conversion), editing the code to add your converter following the guidance in the "[Adding File Format Converters](https://github.com/PSDI-UK/psdi-data-conversion/blob/main/CONTRIBUTING.md#adding-file-format-converters)" section of CONTRIBUTING.md to integrate it with the Python code, and installing the modified package on your system via:
+The Python library and CLA are written to make it easy to extend the functionality of this package to use other file format converters. This can by downloading or cloning the project's source from it's GitHub Repository (https://github.com/PSDI-UK/psdi-data-conversion), editing the code to add your converter following the guidance in the "[Adding File Format Converters](https://github.com/PSDI-UK/psdi-data-conversion/blob/main/CONTRIBUTING.md#adding-file-format-converters)" section of CONTRIBUTING.md to integrate it with the Python code, and installing the modified package on your system via:
 
 ```bash
 pip install --editable .'[test]'
