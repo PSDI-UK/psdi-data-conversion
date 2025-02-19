@@ -15,7 +15,7 @@ import shutil
 CLI_SCRIPT_NAME = "psdi-data-convert"
 
 # Environmental variables
-AUTH_ENVVAR = "AUTH"
+SERVICE_MODE_ENVVAR = "SERVICE_MODE"
 LOG_MODE_ENVVAR = "LOGGING"
 MAX_FILESIZE_ENVVAR = "MAX_FILESIZE"
 
@@ -24,6 +24,9 @@ L_ALLOWED_COORD_GENS = ["Gen2D", "Gen3D", "neither"]
 DEFAULT_COORD_GEN = "neither"
 L_ALLOWED_COORD_GEN_QUALS = ["fastest", "fast", "medium", "better", "best"]
 DEFAULT_COORD_GEN_QUAL = "medium"
+
+# Keywords
+AUTO = "auto"
 
 # Files and Folders
 # -----------------
@@ -37,6 +40,33 @@ DEFAULT_DOWNLOAD_DIR = './psdi_data_conversion/static/downloads'
 
 # Filename of the database, relative to the base of the python package
 DATABASE_FILENAME = "static/data/data.json"
+
+# Archive extensions
+
+ZIP_EXTENSION = ".zip"
+ZIP_FORMAT = "zip"
+D_ZIP_FORMATS = {ZIP_EXTENSION: ZIP_FORMAT}
+
+TAR_EXTENSION = ".tar"
+TAR_FORMAT = "tar"
+GZTAR_EXTENSION = ".tar.gz"
+GZTAR_FORMAT = "gztar"
+BZTAR_EXTENSION = ".tar.bz"
+BZTAR_FORMAT = "bztar"
+XZTAR_EXTENSION = ".tar.xz"
+XZTAR_FORMAT = "xztar"
+D_TAR_FORMATS = {TAR_EXTENSION: TAR_FORMAT,
+                 GZTAR_EXTENSION: GZTAR_FORMAT,
+                 BZTAR_EXTENSION: BZTAR_FORMAT,
+                 XZTAR_EXTENSION: BZTAR_FORMAT}
+L_COMPOUND_EXTENSIONS = [GZTAR_EXTENSION, BZTAR_EXTENSION, XZTAR_EXTENSION]
+
+D_SUPPORTED_ARCHIVE_FORMATS = {**D_ZIP_FORMATS, **D_TAR_FORMATS}
+
+L_UNSUPPORTED_ARCHIVE_EXTENSIONS = [".rar", ".7z"]
+
+L_ALL_ARCHIVE_EXTENSIONS = [*D_SUPPORTED_ARCHIVE_FORMATS.keys(), *L_UNSUPPORTED_ARCHIVE_EXTENSIONS]
+
 
 # Logging and Formatting
 # ----------------------
@@ -61,6 +91,7 @@ GLOBAL_LOGGER_LEVEL = logging.ERROR
 
 # Log mode info and settings
 LOG_FULL = "full"
+LOG_FULL_FORCE = "full-force"
 LOG_SIMPLE = "simple"
 LOG_STDOUT = "stdout"
 LOG_NONE = "none"
@@ -77,14 +108,36 @@ LOCAL_LOGGER_NAME = "data-conversion"
 DEFAULT_LOCAL_LOGGER_LEVEL = logging.INFO
 DEFAULT_LISTING_LOG_FILE = "data-convert-list" + LOG_EXT
 
-# Converters
-# ----------
+# Converters and Related
+# ----------------------
 
 # Converter names are determined based on the modules present in the 'converters' package by the 'converter' module
 # This module contains constant dicts and lists of registered converters
 
 # Default converter
 CONVERTER_DEFAULT = 'Open Babel'
+
+# File format properties which are used to judge conversion quality
+QUAL_COMP_KEY = "composition"
+QUAL_COMP_LABEL = "Composition"
+QUAL_CONN_KEY = "connections"
+QUAL_CONN_LABEL = "Connections"
+QUAL_2D_KEY = "two_dim"
+QUAL_2D_LABEL = "2D"
+QUAL_3D_KEY = "three_dim"
+QUAL_3D_LABEL = "3D"
+
+D_QUAL_LABELS = {QUAL_COMP_KEY: QUAL_COMP_LABEL,
+                 QUAL_CONN_KEY: QUAL_CONN_LABEL,
+                 QUAL_2D_KEY: QUAL_2D_LABEL,
+                 QUAL_3D_KEY: QUAL_3D_LABEL}
+
+# Notes for conversion quality
+QUAL_NOTE_IN_UNKNOWN = "The output format supports the %s property, but its support by the input format is unknown"
+QUAL_NOTE_OUT_UNKNOWN = "The input format supports the %s property, but its support by the output format is unknown"
+QUAL_NOTE_BOTH_UNKNOWN = "The support for the %s property is unknown by both the input and output formats"
+QUAL_NOTE_IN_MISSING = "The %s property is supported by the output format but not the input format"
+QUAL_NOTE_OUT_MISSING = "The %s property is supported by the input format but not the output format"
 
 # Conversion quality strings
 QUAL_UNKNOWN = 'unknown'
@@ -152,3 +205,10 @@ DB_OUT_OPTIONS_ID_KEY_BASE = "argflags_out_id"
 STATUS_CODE_BAD_METHOD = 405
 STATUS_CODE_SIZE = 413
 STATUS_CODE_GENERAL = 422
+
+# Error messages
+ERR_CONVERTER_NOT_RECOGNISED = "Converter %s not recognized. Allowed converters are: "
+ERR_WRONG_EXTENSIONS = "Input file '%s' does not have expected extension '%s'"
+ERR_EMPTY_ARCHIVE = "No files to convert were contained in archive"
+ERR_CONVERSION_FAILED = ("File conversion failed for one or more files. Lines from the output log "
+                         "%s which indicate possible sources of error: ")

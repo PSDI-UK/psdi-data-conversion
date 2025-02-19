@@ -7,6 +7,7 @@ Base class and information for file format converters
 
 
 from copy import deepcopy
+from dataclasses import dataclass
 import json
 import logging
 from collections.abc import Callable
@@ -39,9 +40,28 @@ class FileConverterAbortException(FileConverterException):
     """Class representing an exception triggered by a call to abort a file conversion
     """
 
-    def __init__(self, status_code, *args):
-        super().__init__(*args)
+    def __init__(self,
+                 status_code: int,
+                 *args,
+                 **kwargs):
+        super().__init__(*args, **kwargs)
         self.status_code = status_code
+
+
+class FileConverterSizeException(FileConverterAbortException):
+    """Class representing an exception triggered by the maximum size being exceeded
+    """
+
+    def __init__(self,
+                 *args,
+                 in_size: int,
+                 out_size: int,
+                 max_file_size: int,
+                 **kwargs):
+        super().__init__(const.STATUS_CODE_SIZE, *args, **kwargs)
+        self.in_size = in_size
+        self.out_size = out_size
+        self.max_file_size = max_file_size
 
 
 class FileConverterInputException(FileConverterException):
@@ -56,10 +76,27 @@ else:
     l_abort_exceptions = (FileConverterAbortException,)
 
 
-def abort_raise(status_code):
-    """Callback for aborting during a file conversion, which re-raises any raised exceptions
+@dataclass
+class FileConversionResult:
+    """An object of this class will be output by the file converter's `run` function on success to provide key info on
+    the files created
     """
-    raise FileConverterAbortException(status_code)
+    output_filename: str | None = None
+    log_filename: str | None = None
+    in_size: int = 0
+    out_size: int = 0
+    status_code: int = 0
+
+
+def abort_raise(status_code, *args, **kwargs):
+    """Callback for aborting during a file conversion, which passes relevant information to an exception of the
+    appropriate type
+    """
+    if status_code == const.STATUS_CODE_SIZE:
+        exception_class = FileConverterSizeException
+    else:
+        exception_class = FileConverterAbortException
+    raise exception_class(status_code, *args, **kwargs)
 
 
 class FileConverter:
@@ -142,6 +179,7 @@ class FileConverter:
                  upload_dir=const.DEFAULT_UPLOAD_DIR,
                  download_dir=const.DEFAULT_DOWNLOAD_DIR,
                  max_file_size=const.DEFAULT_MAX_FILE_SIZE,
+                 no_check=False,
                  log_file: str | None = None,
                  log_mode=const.LOG_FULL,
                  log_level: int | None = None,
@@ -172,18 +210,23 @@ class FileConverter:
             The location of output files relative to the current directory
         max_file_size : float
             The maximum allowed file size for input/output files, in MB. If 0, will be unlimited. Default 0 (unlimited)
+        no_check : bool
+            If False (default), will check at setup whether or not a conversion between the desired file formats is
+            supported with the specified converter
         log_file : str | None
             If provided, all logging will go to a single file or stream. Otherwise, logs will be split up among multiple
             files for server-style logging.
         log_mode : str
             How logs should be stores. Allowed values are:
             - 'full' - Multi-file logging, only recommended when running as a public web app
+            - 'full-force' - Multi-file logging, only recommended when running as a public web app, with the log file
+                name forced to be used for the output log
             - 'simple' - Logs saved to one file
             - 'stdout' - Output logs and errors only to stdout
             - 'none' - Output only errors to stdout
         log_level : int | None
             The level to log output at. If None (default), the level will depend on the chosen `log_mode`:
-            - 'full' or 'simple': INFO
+            - 'full', 'full-force', or 'simple': INFO
             - 'stdout' - INFO to stdout, no logging to file
             - 'none' - ERROR to stdout, no logging to file
         refresh_local_log : bool
@@ -257,6 +300,14 @@ class FileConverter:
             # Set up files to log to
             self._setup_loggers()
 
+            # Check that the requested conversion is valid unless suppressed
+            if not no_check:
+                from psdi_data_conversion.database import get_conversion_quality
+                qual = get_conversion_quality(self.name, self.from_format, self.to_format)
+                if not qual:
+                    raise FileConverterInputException(f"Conversion from {self.from_format} to {self.to_format} "
+                                                      f"with {self.name} is not supported.")
+
             self.logger.debug("Finished FileConverter initialisation")
 
         except Exception as e:
@@ -265,11 +316,11 @@ class FileConverter:
                 self.logger.error(f"Unexpected exception raised while initializing the converter, of type '{type(e)}' "
                                   f"with message: {str(e)}")
                 raise
-            self.logger.error(f"Exception triggering an abort was raised while initializing the converter. Exception "
-                              f"was type '{type(e)}', with message: {str(e)}")
             # Try to run the standard abort method. There's a good chance this will fail though depending on what went
             # wrong when during init, so we fallback to printing the exception to stderr
             try:
+                self.logger.error(f"Exception triggering an abort was raised while initializing the converter. "
+                                  f"Exception was type '{type(e)}', with message: {str(e)}")
                 self._abort(message="The application encountered an error while initializing the converter:\n" +
                             traceback.format_exc())
             except Exception as ee:
@@ -296,13 +347,13 @@ class FileConverter:
             elif self.log_mode == const.LOG_STDOUT:
                 self._local_logger_level = None
                 self._stdout_output_level = logging.INFO
-            elif self.log_mode == const.LOG_SIMPLE or self.log_mode == const.LOG_FULL:
+            elif self.log_mode in (const.LOG_FULL, const.LOG_FULL_FORCE, const.LOG_SIMPLE):
                 self._local_logger_level = const.DEFAULT_LOCAL_LOGGER_LEVEL
                 self._stdout_output_level = logging.ERROR
             else:
                 raise FileConverterInputException(f"ERROR: Unrecognised logging option: {self.log_mode}. Allowed "
                                                   f"options are: {const.L_ALLOWED_LOG_MODES}")
-        if self.log_mode == const.LOG_FULL:
+        if self.log_mode in (const.LOG_FULL, const.LOG_FULL_FORCE):
             return self._setup_server_loggers()
 
         self.output_log = self.log_file
@@ -324,7 +375,12 @@ class FileConverter:
     def _setup_server_loggers(self):
         """Run at init to set up loggers for this object in server-style execution
         """
-        self.output_log = os.path.join(self.download_dir, f"{self.filename_base}{const.OUTPUT_LOG_EXT}")
+        # For server mode, we need a specific log name, so set that up unless the mode is set to force the use of
+        # the input log file
+        if self.log_mode == const.LOG_FULL_FORCE:
+            self.output_log = self.log_file
+        else:
+            self.output_log = os.path.join(self.download_dir, f"{self.filename_base}{const.OUTPUT_LOG_EXT}")
 
         # If any previous log exists, delete it
         if os.path.exists(self.output_log):
@@ -360,10 +416,12 @@ class FileConverter:
             self._abort(message="The application encountered an error while running the converter:\n" +
                         traceback.format_exc())
 
-        return ('\nConverting from ' + self.filename_base + '.' + self.from_format + ' to ' + self.filename_base +
-                '.' + self.to_format + '\n')
+        return FileConversionResult(output_filename=self.out_filename,
+                                    log_filename=self.output_log,
+                                    in_size=self.in_size,
+                                    out_size=self.out_size)
 
-    def _abort(self, status_code=const.STATUS_CODE_GENERAL, message=None):
+    def _abort(self, status_code=const.STATUS_CODE_GENERAL, message=None, **kwargs):
         """Abort the conversion, reporting the desired message to the user at the top of the output
 
         Parameters
@@ -371,8 +429,11 @@ class FileConverter:
         status_code : int
             The HTTP status code to exit with. Default is 422: Unprocessable Content
         message : str | None
-            If provided, this message will be logged in the user output log at the top of the file. This should
-            typically explain the reason the process failed
+            If provided, this message will be logged in the user output log at the top of the file and will appear in
+            any raised exception if possible. This should typically explain the reason the process failed
+        **kwargs : Any
+            Any additional keyword arguments are passed to the `self.abort_callback` function if it accepts them
+
         """
 
         # Remove the input and output files if they exist
@@ -404,7 +465,12 @@ class FileConverter:
             # Note this message in the dev logger as well
             self.logger.error(message)
 
-        self.abort_callback(status_code)
+        # Call the abort callback function now. We first try to add information to it, but in case that isn't supported,
+        # we fall back to just calling it with the status code
+        try:
+            self.abort_callback(status_code, message, **kwargs)
+        except TypeError:
+            self.abort_callback(status_code)
 
     def _abort_from_err(self):
         """Call an abort after a call to the converter has completed, but it's returned an error. Create a message for
@@ -482,7 +548,10 @@ class FileConverter:
                         os.path.basename(self.out_filename) + ": "
                         f"Output file exceeds maximum size.\nInput file size is "
                         f"{in_size/const.MEGABYTE:.2f} MB; Output file size is {out_size/const.MEGABYTE:.2f} "
-                        f"MB; maximum output file size is {self.max_file_size/const.MEGABYTE:.2f} MB.\n")
+                        f"MB; maximum output file size is {self.max_file_size/const.MEGABYTE:.2f} MB.\n",
+                        in_size=in_size,
+                        out_size=out_size,
+                        max_file_size=self.max_file_size)
         self.logger.debug(f"Output file found to have size {out_size/const.MEGABYTE:.2f} MB")
 
         return in_size, out_size

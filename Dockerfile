@@ -19,29 +19,35 @@
 # Running the service
 # -------------------
 #
-# The command ``docker run -p 5000:5000 psdi-data-conversion`` will run the
-# service on port 5000 of localhost, with logs output to stdout. To access the
-# service visit http://localhost:5000 in your browser.
+# The command ``docker run -p 8000:8000 psdi-data-conversion`` will run the
+# service on port 8000 of localhost, with logs output to stdout. To access the
+# service visit http://localhost:8000 in your browser.
 #
 
 FROM python:3.12-slim-bookworm
-WORKDIR /app
-COPY . .
-
-# Install Python packages (including openbabel-wheel)
-RUN pip install --upgrade pip
-RUN pip install -r requirements.txt
-RUN pip install flask
-RUN pip install gunicorn
 
 RUN apt update
 RUN apt-get -y install libxrender1 libxext6
 
-ENV FLASK_APP=psdi_data_conversion/app.py
-ENV FLASK_RUN_HOST=0.0.0.0
+# Install Python packages (including openbabel-wheel)
+RUN pip install --upgrade pip
+RUN pip install gunicorn
+RUN pip install flask
+
+WORKDIR /app
+COPY requirements.txt /app
+COPY psdi_data_conversion /app/psdi_data_conversion
+
+RUN pip install -r requirements.txt
+
 ENV PYTHONPATH="."
+ENV LOGGING=stdout
+ENV SERVICE_MODE=true
+ENV MAX_FILESIZE=1
 
-EXPOSE 5000
+EXPOSE 8000
 
-CMD ["/bin/bash", "-c", "gunicorn app:app & python -m flask run"]
+RUN mkdir /app/psdi_data_conversion/static/uploads
+RUN mkdir /app/psdi_data_conversion/static/downloads
 
+CMD ["gunicorn", "-b", "0.0.0.0:8000", "psdi_data_conversion.app:app"]

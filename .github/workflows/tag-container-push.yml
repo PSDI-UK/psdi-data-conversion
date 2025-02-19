@@ -22,11 +22,17 @@ name: tag-container-push
 run-name: tag-container-push
 
 on:
-    workflow_call:
+  workflow_call:
+    outputs:
+      container_tag:
+        description: "Container Tag"
+        value: ${{ jobs.tag-container-push.outputs.container_tag }}
     
 jobs:
   tag-container-push:
-    runs-on: ubuntu-latest
+    outputs:
+      container_tag: ${{ steps.tag_version.outputs.new_tag }}
+    runs-on: psdi-uk-runners
     steps:
       - uses: actions/checkout@v4
       - name: Bump version and push tag
@@ -44,6 +50,7 @@ jobs:
           body: ${{ steps.tag_version.outputs.changelog }}
       - name: Setup docker auth
         run: |
+          mkdir -p ~/.docker
           cat <<EOF > ~/.docker/config.json
           {
             "auths": {
@@ -62,4 +69,3 @@ jobs:
         run: |
           docker build -t $IMAGE_NAME .
           docker push $IMAGE_NAME
-

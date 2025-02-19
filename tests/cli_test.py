@@ -17,6 +17,7 @@ from psdi_data_conversion.converters.atomsk import CONVERTER_ATO
 from psdi_data_conversion.converters.openbabel import CONVERTER_OB
 from psdi_data_conversion.database import (get_conversion_quality, get_converter_info, get_in_format_args,
                                            get_out_format_args, get_possible_converters, get_possible_formats)
+from psdi_data_conversion.file_io import unpack_zip_or_tar
 from psdi_data_conversion.main import FileConverterInputException, main, parse_args
 
 
@@ -44,13 +45,15 @@ def test_input_validity():
     cwd = os.getcwd()
     args = get_parsed_args(f"file1 file2 -f mmcif -i {cwd} -t pdb -o {cwd}/.. -w 'Atomsk' " +
                            r"--delete-input --from-flags '\-ab \-c \--example' --to-flags '\-d' " +
-                           "--coord-gen Gen3D best -q --log-file text.log")
+                           "--strict --nc --coord-gen Gen3D best -q --log-file text.log")
     assert args.l_args[0] == "file1"
     assert args.l_args[1] == "file2"
     assert args.input_dir == cwd
     assert args.to_format == "pdb"
     assert args.output_dir == f"{cwd}/.."
     assert args.name == "Atomsk"
+    assert args.no_check is True
+    assert args.strict is True
     assert args.delete_input is True
     assert args.from_flags == "-ab -c --example"
     assert args.to_flags == "-d"
@@ -113,10 +116,6 @@ def test_input_processing():
     assert args.name == converter_name
     args = get_parsed_args(f"file1.mmcif -t pdb -w '{converter_name}'")
     assert args.name == converter_name
-
-    # Check that input format is determined from the first file in a list
-    args = get_parsed_args("file1.mmcif file2.pdb -t pdb")
-    assert args.from_format == "mmcif"
 
     # Check that input dir defaults to the current directory
     cwd = os.getcwd()
@@ -241,7 +240,7 @@ def test_conversion_info(capsys):
     converter_name = CONVERTER_OB
     in_format = "xyz"
     out_format = "inchi"
-    qual = get_conversion_quality(converter_name, in_format, out_format)
+    qual_str, details, d_prop_conv_info = get_conversion_quality(converter_name, in_format, out_format)
 
     # Test a basic listing of arguments
     run_with_arg_string(f"-l {converter_name} -f {in_format} -t {out_format}")
@@ -253,9 +252,13 @@ def test_conversion_info(capsys):
 
     assert not captured.err
 
-    # Check that degree of success is printed as expected
+    # Check that conversion quality details are in the output as expected
     assert string_is_present_in_out(f"Conversion from '{in_format}' to '{out_format}' with {converter_name} is "
-                                    f"possible with {qual} conversion quality")
+                                    f"possible with {qual_str} conversion quality")
+    assert string_is_present_in_out("Notes on this conversion:")
+    assert string_is_present_in_out(const.QUAL_NOTE_OUT_MISSING % const.QUAL_2D_LABEL)
+    assert string_is_present_in_out(const.QUAL_NOTE_OUT_MISSING % const.QUAL_3D_LABEL)
+    assert string_is_present_in_out(const.QUAL_NOTE_IN_MISSING % const.QUAL_CONN_LABEL)
 
     l_in_flags, l_in_options = get_in_format_args(converter_name, in_format)
     l_out_flags, l_out_options = get_out_format_args(converter_name, out_format)
@@ -312,15 +315,84 @@ def test_convert(tmp_path_factory, capsys, test_data_loc):
     assert "Success!" not in captured.out
     assert "ERROR" not in captured.err
 
-    # Test a call we expect to fail due to invalid input type being provided
-    with pytest.raises(SystemExit):
-        run_with_arg_string(basic_arg_string + " -f pdb")
+    # Test a call we expect to fail due to unsupported conversion
+    test_pdb_file = "hemoglobin.pdb"
+    os.symlink(os.path.join(test_data_loc, test_pdb_file),
+               os.path.join(input_dir, test_pdb_file))
+    run_with_arg_string(f"{test_pdb_file} -t pdb -i {input_dir} -o {output_dir}")
     captured = capsys.readouterr()
     assert "Success!" not in captured.out
     assert "ERROR" in captured.err
+
+    # Testa call we expect to fail due to the wrong input type being provided
+    bad_from_arg_string = f"{basic_arg_string} -f pdb"
+    run_with_arg_string(bad_from_arg_string)
+    captured = capsys.readouterr()
+    assert "ERROR" in captured.err
+    assert "WARNING" in captured.err
+    assert "Success!" not in captured.out
 
     # Check that we can specify a file with its format instead of extension
     run_with_arg_string(f"{test_filename_base} -f {from_format} -t {to_format} -i {input_dir} -o {output_dir}")
     captured = capsys.readouterr()
     assert "Success!" in captured.out
     assert "ERROR" not in captured.err
+
+
+def test_archive_convert(tmp_path_factory, capsys, test_data_loc):
+    """Test running conversion on archives of files
+    """
+
+    test_filename_base = "caffeine-smi"
+    l_archive_exts = [".zip", ".tar", ".tar.gz"]
+
+    l_ex_filename_bases = ["caffeine-no-flags",
+                           "caffeine-ia",
+                           "caffeine-ia-ox",
+                           "caffeine-ia-okx",
+                           "caffeine-ia-okx-oof4",
+                           "caffeine-ia-okx-oof4l5",]
+    to_format = "inchi"
+
+    for archive_ext in l_archive_exts:
+        input_filename = f"{test_filename_base}{archive_ext}"
+
+        input_dir = tmp_path_factory.mktemp("input")
+        output_dir = tmp_path_factory.mktemp("output")
+
+        # Symlink the input file from the test_data directory to the input directory
+        os.symlink(os.path.join(test_data_loc, input_filename),
+                   os.path.join(input_dir, input_filename))
+
+        # Run the conversion
+        basic_arg_string = f"{input_filename} -t {to_format} -i {input_dir} -o {output_dir}"
+        run_with_arg_string(basic_arg_string)
+        captured = capsys.readouterr()
+        assert "ERROR" not in captured.err
+        assert "Success!" in captured.out
+
+        # Check that the expected output archive file exists
+        ex_output_filename = os.path.join(output_dir, f"{test_filename_base}-{to_format}{archive_ext}")
+        assert os.path.isfile(ex_output_filename)
+
+        # Check that the expected output log exists
+        ex_output_log = os.path.join(output_dir, f"{test_filename_base}{const.LOG_EXT}")
+        assert os.path.isfile(ex_output_log)
+
+        # Check that the expected files exist within the archive
+        unpack_zip_or_tar(ex_output_filename, extract_dir=output_dir)
+        for ex_filename_base in l_ex_filename_bases:
+            ex_filename = f"{os.path.join(output_dir, ex_filename_base)}.{to_format}"
+            assert os.path.isfile(ex_filename)
+
+        # Test that a warning is returned if the archive contains files of the wrong type
+        bad_from_arg_string = f"{basic_arg_string} -f pdb"
+        run_with_arg_string(bad_from_arg_string)
+        captured = capsys.readouterr()
+        assert "WARNING" in captured.err
+
+        # And test that it fails in strict mode
+        bad_from_arg_string = f"{basic_arg_string} -f pdb --strict"
+        run_with_arg_string(bad_from_arg_string)
+        captured = capsys.readouterr()
+        assert "ERROR" in captured.err

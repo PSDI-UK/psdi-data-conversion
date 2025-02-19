@@ -1,12 +1,12 @@
 # PSDI Data Conversion
 
-Version: Pre-release 2024-02-10
+Version: Pre-release 2024-02-19
 
 This is the repository for the PSDI PF2 Chemistry File Format Conversion project. The goal of this project is to provide utilities to assist in converting files between the many different file formats used in chemistry, providing information on what converters are available for a given conversion and the expected quality of it, and providing multiple interfaces to perform these conversions. These interfaces are:
 
 - Online web service, available at https://psdidev2.azurewebsites.net
 - Version of the web app you can download and run locally (e.g. if you need to convert files which exceed the online app's file size limit)
-- Command-line interface, to run conversions from a terminal
+- Command-line application, to run conversions from a terminal
 - Python library
 
 ## Table of Contents
@@ -15,7 +15,7 @@ This is the repository for the PSDI PF2 Chemistry File Format Conversion project
 - [Requirements](#requirements)
   - [Python](#python)
   - [Other Dependencies](#other-dependencies)
-- [Command-Line Interface](#command-line-interface)
+- [Command-Line Application](#command-line-application)
   - [Installation](#installation)
   - [Execution](#execution)
     - [Data Conversion](#data-conversion)
@@ -23,10 +23,10 @@ This is the repository for the PSDI PF2 Chemistry File Format Conversion project
 - [Python Library](#python-library)
   - [Installation](#installation-1)
   - [Use](#use)
-    - [`run_converter](#run_converter)
-    - [`get_converter](#get_converter)
-    - [`constants](#constants)
-    - [`database](#database)
+    - [`run_converter`](#run_converter)
+    - [`get_converter`](#get_converter)
+    - [`constants`](#constants)
+    - [`database`](#database)
 - [Using the Online Conversion Service](#using-the-online-conversion-service)
 - [Running the Python/Flask app locally](#running-the-pythonflask-app-locally)
   - [Installation and Setup](#installation-and-setup)
@@ -69,7 +69,7 @@ This is the repository for the PSDI PF2 Chemistry File Format Conversion project
 
 ### Python
 
-Any local installation of this project requires Python 3.10 or greater. The best way to do this is dependant on your system, and you are likely to find the best tailored instructions by searching the web for e.g. "install Python 3.10 <your-os-or-distribution>". Some standard options are:
+Any local installation of this project requires Python 3.12 or greater. The best way to do this is dependant on your system, and you are likely to find the best tailored instructions by searching the web for e.g. "install Python 3.12 <your-os-or-distribution>". Some standard options are:
 
 For Windows and MacOS: Download and run the installer for the latest version from the official site: https://www.python.org/downloads/
 
@@ -105,11 +105,11 @@ sudo apt install python3-pip
 If this doesn't work, or the version installed is too low, an alternative is to install Python via the Anaconda package manager. For this, see the guide here: https://www.askpython.com/python/examples/install-python-with-conda. If you already have an earlier version of Python installed with Anaconda, you can install and activate a newer version with a command such as:
 
 ```bash
-conda create --name converter python=3.10 anaconda # Where 'converter' is a possible conda environment name
+conda create --name converter python=3.12 anaconda # Where 'converter' is a possible conda environment name
 conda activate converter
 ```
 
-You can also install a new version of Python if you wish by substituting "3.10" in the above with e.g. "3.12".
+You can also install a newer version of Python if you wish by substituting "3.12" in the above with e.g. "3.13".
 
 ### Other Dependencies
 
@@ -131,11 +131,11 @@ Required to run unit tests:
 
 In addition to the dependencies listed above, this project uses the assets made public by PSDI's common style project at https://github.com/PSDI-UK/psdi-common-style. The latest versions of these assets are copied to this project periodically (using the scripts in the `scripts` directory). In case a future release of these assets causes a breaking change in this project, the file `fetch-common-style.conf` can be modified to set a previous fixed version to download and use until this project is updated to work with the latest version of the assets.
 
-## Command-Line Interface
+## Command-Line Application
 
 ### Installation
 
-The CLI and Python library are installed together. This package is not yet available on PyPI, and so must be installed locally. This can be done most easily with:
+The CLA and Python library are installed together. This package is not yet available on PyPI, and so must be installed locally. This can be done most easily with:
 
 ```bash
 pip install .
@@ -213,7 +213,7 @@ If an input format is provided, information on input flags and options accepted 
 
 ### Installation
 
-The CLI and Python library are installed together. This package is not yet available on PyPI, and so must be installed locally. This can be done most easily with:
+The CLA and Python library are installed together. This package is not yet available on PyPI, and so must be installed locally. This can be done most easily with:
 
 ```bash
 pip install .
@@ -272,7 +272,7 @@ converter = get_converter(filename, to_format, name=name, data=data)
 converter.run()
 ```
 
-`get_converter` takes all the same arguments as `run_converter`. See the method's documentation via `help(get_converter)` after importing it for further details on usage.
+Note that the `run_converter` function includes support for converting zip and tar archives of files, while `get_converter().run()` can only handle files one at a time.
 
 #### `constants`
 
@@ -297,6 +297,7 @@ The `database` module provides classes and methods to interface with the databas
 - `get_possible_converters` - This method takes the names of an input and output file format, and returns a list of converters which can perform the desired conversion and their degree of success.
 - `get_possible_formats` - This method takes the name of a converter and returns a list of input formats it can accept and a list of output formats it can produce. While it's usually a safe bet that a converter can handle any combination between these lists, it's best to make sure that it can with the `get_degree_of_success` method
 - `get_in_format_args` and `get_out_format_args` - These methods take the name of a converter and the name of an input/output file format, and return a list of info on flags accepted by the converter when using this format for input/output
+- `get_conversion_quality` - Provides information on the quality of a conversion from one format to another with a given converter. If conversion isn't possible, returns `None`. Otherwise returns a short string describing the quality of the conversion, a string providing information on possible issues with the conversion, and a dict providing details on property support between the input and output formats
 
 ## Using the Online Conversion Service
 
@@ -351,7 +352,7 @@ open -a "Google Chrome.app" --args --allow-file-access-from-files
 
 ## Extending Functionality
 
-The Python library and CLI are written to make it easy to extend the functionality of this package to use other file format converters. This can by downloading or cloning the project's source from it's GitHub Repository (https://github.com/PSDI-UK/psdi-data-conversion), editing the code to add your converter following the guidance in the "[Adding File Format Converters](https://github.com/PSDI-UK/psdi-data-conversion/blob/main/CONTRIBUTING.md#adding-file-format-converters)" section of CONTRIBUTING.md to integrate it with the Python code, and installing the modified package on your system via:
+The Python library and CLA are written to make it easy to extend the functionality of this package to use other file format converters. This can by downloading or cloning the project's source from it's GitHub Repository (https://github.com/PSDI-UK/psdi-data-conversion), editing the code to add your converter following the guidance in the "[Adding File Format Converters](https://github.com/PSDI-UK/psdi-data-conversion/blob/main/CONTRIBUTING.md#adding-file-format-converters)" section of CONTRIBUTING.md to integrate it with the Python code, and installing the modified package on your system via:
 
 ```bash
 pip install --editable .'[test]'

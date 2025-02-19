@@ -7,7 +7,7 @@
 
 
 import { getInputFlags, getOutputFlags, getInputArgFlags, getOutputArgFlags } from "./data.js";
-import { commonConvertReady, convertFile } from "./convert_common.js"
+import { commonConvertReady, convertFile, getExtCheck, splitArchiveExt, isArchiveExt } from "./convert_common.js"
 
 var token = "",
     max_file_size = 0,
@@ -55,8 +55,8 @@ function enterArgument(event) {
 // Uploads a user-supplied file
 function submitFile() {
     const file = $("#fileToUpload")[0].files[0],
-        fname = file.name.split(".")[0],
-        extension = file.name.split(".")[1];
+        [fname, ext] = splitArchiveExt(file.name);
+
 
     var quality = sessionStorage.getItem("success"),
         start = quality.indexOf(':') + 2,
@@ -64,20 +64,13 @@ function submitFile() {
 
     quality = quality.substring(start, finish);
 
-    if (extension != in_ext) {
-        alert("The file extension is not " + in_ext + ": please select another file or change the 'from' format on the 'Home' page.");
-        $("#uploadButton").css({ "background-color": "var(--psdi-bg-color-secondary)", "color": "gray" });
-        return;
-    }
-
     const read_flags_text = $("#inFlags").find(":selected").text(),
         read_flags = extractFlags(read_flags_text);
 
     const write_flags_text = $("#outFlags").find(":selected").text(),
         write_flags = extractFlags(write_flags_text);
 
-    var count = 0,
-        read_arg_flags = '',
+    var read_arg_flags = '',
         write_arg_flags = '',
         read_args = '',
         write_args = '',
@@ -116,8 +109,11 @@ function submitFile() {
     }
 
     const coordinates = $('input[name="coordinates"]:checked').val(),
-        coordOption = $('input[name="coordOptions"]:checked').val(),
-        download_fname = file.name.split(".")[0] + "." + out_ext;
+        coordOption = $('input[name="coordOptions"]:checked').val();
+
+    // If the uploaded file was an archive, we'll expect to download one too. Otherwise we'll expect to download
+    // something with the output extension
+    const download_fname = isArchiveExt(ext) ? fname + "-" + out_ext + "." + ext : fname + "." + out_ext;
 
     var form_data = new FormData();
 
@@ -138,6 +134,7 @@ function submitFile() {
     form_data.append("coordOption", coordOption);
     form_data.append("fileToUpload", file);
     form_data.append("upload_file", true);
+    form_data.append("check_ext", getExtCheck());
 
     convertFile(form_data, download_fname, fname);
 }

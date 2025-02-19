@@ -10,19 +10,21 @@ import os
 import json
 from datetime import datetime
 import sys
+import traceback
 from flask import Flask, request, render_template, abort, Response
 
 from psdi_data_conversion import log_utility
 from psdi_data_conversion import constants as const
 from psdi_data_conversion.converter import run_converter
+from psdi_data_conversion.file_io import split_archive_ext
 
 # Create a token by hashing the current date and time.
 dt = str(datetime.now())
 token = hashlib.md5(dt.encode('utf8')).hexdigest()
 
 # Check the authorisation envvar to see if we're checking auth
-auth_ev = os.environ.get(const.AUTH_ENVVAR)
-check_auth = (auth_ev is not None) and (auth_ev.lower() == "true")
+service_mode_ev = os.environ.get(const.SERVICE_MODE_ENVVAR)
+service_mode = (service_mode_ev is not None) and (service_mode_ev.lower() == "true")
 
 # Get the logging style from the envvar for it
 ev_logging = os.environ.get(const.LOG_MODE_ENVVAR)
@@ -51,7 +53,8 @@ def website():
         max_file_size = const.DEFAULT_MAX_FILE_SIZE
 
     data = [{'token': token,
-             'max_file_size': max_file_size}]
+             'max_file_size': max_file_size,
+             'service_mode': service_mode}]
     return render_template("index.htm", data=data)
 
 
@@ -70,16 +73,38 @@ def convert():
 
     qualified_filename = os.path.join(const.DEFAULT_UPLOAD_DIR, filename)
     file.save(qualified_filename)
+    qualified_output_log = os.path.join(const.DEFAULT_DOWNLOAD_DIR,
+                                        split_archive_ext(filename)[0] + const.OUTPUT_LOG_EXT)
 
-    if (not check_auth) or (request.form['token'] == token and token != ''):
-        return run_converter(name=request.form['converter'],
-                             filename=qualified_filename,
-                             data=request.form,
-                             to_format=request.form['to'],
-                             from_format=request.form['from'],
-                             log_mode=log_mode,
-                             delete_input=True,
-                             abort_callback=abort)
+    if (not service_mode) or (request.form['token'] == token and token != ''):
+        try:
+            conversion_output = run_converter(name=request.form['converter'],
+                                              filename=qualified_filename,
+                                              data=request.form,
+                                              to_format=request.form['to'],
+                                              from_format=request.form['from'],
+                                              strict=request.form['check_ext'],
+                                              log_mode=log_mode,
+                                              delete_input=True,
+                                              abort_callback=abort)
+        except Exception as e:
+
+            # Check for anticipated exceptions, and write a simpler message for them
+            for err_message in (const.ERR_CONVERSION_FAILED, const.ERR_CONVERTER_NOT_RECOGNISED,
+                                const.ERR_EMPTY_ARCHIVE, const.ERR_WRONG_EXTENSIONS):
+                l_message_segments = err_message.split("%s")
+                if all([x in str(e) for x in l_message_segments]):
+                    with open(qualified_output_log, "w") as fo:
+                        fo.write(str(e))
+                    abort(const.STATUS_CODE_GENERAL)
+
+            # Failsafe exception message
+            msg = "The following unexpected exception was raised by the converter:\n" + traceback.format_exc()+"\n"
+            with open(qualified_output_log, "w") as fo:
+                fo.write(msg)
+            abort(const.STATUS_CODE_GENERAL)
+
+        return repr(conversion_output)
     else:
         # return http status code 405
         abort(405)
@@ -141,7 +166,7 @@ def data():
     str
         Output status - 'okay' if exited successfuly
     """
-    if check_auth and request.args['token'] == token and token != '':
+    if service_mode and request.args['token'] == token and token != '':
         message = '[' + log_utility.get_date_time() + '] ' + request.args['data'] + '\n'
 
         with open("user_responses", "a") as f:
