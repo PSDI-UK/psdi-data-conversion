@@ -93,7 +93,7 @@ def convert():
             # Check for anticipated exceptions, and write a simpler message for them
             for err_message in (const.ERR_CONVERSION_FAILED, const.ERR_CONVERTER_NOT_RECOGNISED,
                                 const.ERR_EMPTY_ARCHIVE, const.ERR_WRONG_EXTENSIONS):
-                l_message_segments = re.split(r"\{[\w]*\}", err_message)
+                l_message_segments = re.split(r"\{.*?\}", err_message)
                 if all([x in str(e) for x in l_message_segments]):
                     with open(qualified_output_log, "w") as fo:
                         fo.write(str(e))
