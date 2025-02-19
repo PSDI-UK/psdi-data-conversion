@@ -1,5 +1,9 @@
 [build-system]
-requires = ["setuptools>=64", "setuptools-scm>=8"]
+requires = [
+  "setuptools>=64",
+  "setuptools-scm>=8",
+  "setuptools-git-versioning>=2.0,<3",
+]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -48,6 +52,9 @@ where = ["."]
 
 [tool.setuptools.package-data]
 psdi_data_conversion = ["bin/**", "static/**", "templates/**", "scripts/**"]
+
+[tool.setuptools-git-versioning]
+enabled = true
 
 [tool.setuptools_scm]
 
