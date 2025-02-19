@@ -64,6 +64,8 @@ jobs:
           name: release-dists
           path: dist/
 
+      # This workflow uses Trustred Publishing to authenticate, which requires some setup on PyPI. For details, see:
+      # https://docs.github.com/en/actions/security-for-github-actions/security-hardening-your-deployments/configuring-openid-connect-in-pypi
       - name: Publish release distributions to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
