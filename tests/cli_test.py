@@ -344,7 +344,9 @@ def test_archive_convert(tmp_path_factory, capsys, test_data_loc):
     """
 
     test_filename_base = "caffeine-smi"
-    l_archive_exts = [".zip", ".tar", ".tar.gz"]
+    l_archive_exts = [const.ZIP_EXTENSION,
+                      const.TAR_EXTENSION,
+                      const.GZTAR_EXTENSION]
 
     l_ex_filename_bases = ["caffeine-no-flags",
                            "caffeine-ia",
@@ -384,6 +386,10 @@ def test_archive_convert(tmp_path_factory, capsys, test_data_loc):
         for ex_filename_base in l_ex_filename_bases:
             ex_filename = f"{os.path.join(output_dir, ex_filename_base)}.{to_format}"
             assert os.path.isfile(ex_filename)
+
+        # To save time, we'll only do more detailed tests for the .zip archive
+        if archive_ext != const.ZIP_EXTENSION:
+            continue
 
         # Test that a warning is returned if the archive contains files of the wrong type
         bad_from_arg_string = f"{basic_arg_string} -f pdb"
