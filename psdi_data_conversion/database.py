@@ -409,7 +409,7 @@ class PropertyConversionInfo:
             self.note = const.QUAL_NOTE_IN_MISSING
 
         if self.note:
-            self.note = self.note.format(prop=self.label)
+            self.note = self.note.format(self.label)
 
 
 class ConversionsTable:

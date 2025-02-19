@@ -417,7 +417,7 @@ def run_converter(filename: str,
         # If the run was ultimately unsuccessful, raise an exception now, referencing the output log and including
         # error lines in it
         if status_code:
-            msg = const.ERR_CONVERSION_FAILED.format(logfile=run_output.log_filename)
+            msg = const.ERR_CONVERSION_FAILED.format(run_output.log_filename)
             l_output_log_lines = open(run_output.log_filename, "r").read().splitlines()
             l_error_lines = [line for line in l_output_log_lines if "ERROR" in line]
             msg += "\n".join(l_error_lines)

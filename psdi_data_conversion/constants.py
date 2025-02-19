@@ -137,11 +137,11 @@ D_QUAL_LABELS = {QUAL_COMP_KEY: QUAL_COMP_LABEL,
                  QUAL_3D_KEY: QUAL_3D_LABEL}
 
 # Notes for conversion quality
-QUAL_NOTE_IN_UNKNOWN = "The output format supports the {prop} property, but its support by the input format is unknown"
-QUAL_NOTE_OUT_UNKNOWN = "The input format supports the {prop} property, but its support by the output format is unknown"
-QUAL_NOTE_BOTH_UNKNOWN = "The support for the {prop} property is unknown by both the input and output formats"
-QUAL_NOTE_IN_MISSING = "The {prop} property is supported by the output format but not the input format"
-QUAL_NOTE_OUT_MISSING = "The {prop} property is supported by the input format but not the output format"
+QUAL_NOTE_IN_UNKNOWN = "The output format supports the {} property, but its support by the input format is unknown"
+QUAL_NOTE_OUT_UNKNOWN = "The input format supports the {} property, but its support by the output format is unknown"
+QUAL_NOTE_BOTH_UNKNOWN = "The support for the {} property is unknown by both the input and output formats"
+QUAL_NOTE_IN_MISSING = "The {} property is supported by the output format but not the input format"
+QUAL_NOTE_OUT_MISSING = "The {} property is supported by the input format but not the output format"
 
 # Conversion quality strings
 QUAL_UNKNOWN = 'unknown'
@@ -211,8 +211,8 @@ STATUS_CODE_SIZE = 413
 STATUS_CODE_GENERAL = 422
 
 # Error messages
-ERR_CONVERTER_NOT_RECOGNISED = "Converter {name} not recognized. Allowed converters are: "
+ERR_CONVERTER_NOT_RECOGNISED = "Converter {} not recognized. Allowed converters are: "
 ERR_WRONG_EXTENSIONS = "Input file '{file}' does not have expected extension '{ext}'"
 ERR_EMPTY_ARCHIVE = "No files to convert were contained in archive"
 ERR_CONVERSION_FAILED = ("File conversion failed for one or more files. Lines from the output log "
-                         "{logfile} which indicate possible sources of error: ")
+                         "{} which indicate possible sources of error: ")

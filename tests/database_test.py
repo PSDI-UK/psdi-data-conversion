@@ -139,9 +139,9 @@ def test_conversion_table():
     assert qual_str == const.QUAL_OKAY
 
     # Check the details are as expected
-    assert const.QUAL_NOTE_OUT_MISSING % const.QUAL_2D_LABEL in details
-    assert const.QUAL_NOTE_OUT_MISSING % const.QUAL_3D_LABEL in details
-    assert const.QUAL_NOTE_IN_MISSING % const.QUAL_CONN_LABEL in details
+    assert const.QUAL_NOTE_OUT_MISSING.format(const.QUAL_2D_LABEL) in details
+    assert const.QUAL_NOTE_OUT_MISSING.format(const.QUAL_3D_LABEL) in details
+    assert const.QUAL_NOTE_IN_MISSING.format(const.QUAL_CONN_LABEL) in details
     assert const.QUAL_COMP_LABEL not in details
 
     # Check we don't have any extra lines in the details
