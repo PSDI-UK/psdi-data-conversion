@@ -41,10 +41,11 @@ DEFAULT_DOWNLOAD_DIR = './psdi_data_conversion/static/downloads'
 # Filename of the database, relative to the base of the python package
 DATABASE_FILENAME = "static/data/data.json"
 
-# Archive extensions
+# Archive extensions and formats ('format' here meaning the value expected by shutil's archive functions)
 
 ZIP_EXTENSION = ".zip"
 ZIP_FORMAT = "zip"
+
 D_ZIP_FORMATS = {ZIP_EXTENSION: ZIP_FORMAT}
 
 TAR_EXTENSION = ".tar"
@@ -55,10 +56,13 @@ BZTAR_EXTENSION = ".tar.bz"
 BZTAR_FORMAT = "bztar"
 XZTAR_EXTENSION = ".tar.xz"
 XZTAR_FORMAT = "xztar"
+
 D_TAR_FORMATS = {TAR_EXTENSION: TAR_FORMAT,
                  GZTAR_EXTENSION: GZTAR_FORMAT,
                  BZTAR_EXTENSION: BZTAR_FORMAT,
                  XZTAR_EXTENSION: BZTAR_FORMAT}
+
+# A list of specifically the extensions that are combinations of multiple different extensions
 L_COMPOUND_EXTENSIONS = [GZTAR_EXTENSION, BZTAR_EXTENSION, XZTAR_EXTENSION]
 
 D_SUPPORTED_ARCHIVE_FORMATS = {**D_ZIP_FORMATS, **D_TAR_FORMATS}
@@ -133,11 +137,11 @@ D_QUAL_LABELS = {QUAL_COMP_KEY: QUAL_COMP_LABEL,
                  QUAL_3D_KEY: QUAL_3D_LABEL}
 
 # Notes for conversion quality
-QUAL_NOTE_IN_UNKNOWN = "The output format supports the %s property, but its support by the input format is unknown"
-QUAL_NOTE_OUT_UNKNOWN = "The input format supports the %s property, but its support by the output format is unknown"
-QUAL_NOTE_BOTH_UNKNOWN = "The support for the %s property is unknown by both the input and output formats"
-QUAL_NOTE_IN_MISSING = "The %s property is supported by the output format but not the input format"
-QUAL_NOTE_OUT_MISSING = "The %s property is supported by the input format but not the output format"
+QUAL_NOTE_IN_UNKNOWN = "The output format supports the {prop} property, but its support by the input format is unknown"
+QUAL_NOTE_OUT_UNKNOWN = "The input format supports the {prop} property, but its support by the output format is unknown"
+QUAL_NOTE_BOTH_UNKNOWN = "The support for the {prop} property is unknown by both the input and output formats"
+QUAL_NOTE_IN_MISSING = "The {prop} property is supported by the output format but not the input format"
+QUAL_NOTE_OUT_MISSING = "The {prop} property is supported by the input format but not the output format"
 
 # Conversion quality strings
 QUAL_UNKNOWN = 'unknown'
@@ -207,8 +211,8 @@ STATUS_CODE_SIZE = 413
 STATUS_CODE_GENERAL = 422
 
 # Error messages
-ERR_CONVERTER_NOT_RECOGNISED = "Converter %s not recognized. Allowed converters are: "
-ERR_WRONG_EXTENSIONS = "Input file '%s' does not have expected extension '%s'"
+ERR_CONVERTER_NOT_RECOGNISED = "Converter {name} not recognized. Allowed converters are: "
+ERR_WRONG_EXTENSIONS = "Input file '{file}' does not have expected extension '{ext}'"
 ERR_EMPTY_ARCHIVE = "No files to convert were contained in archive"
 ERR_CONVERSION_FAILED = ("File conversion failed for one or more files. Lines from the output log "
-                         "%s which indicate possible sources of error: ")
+                         "{logfile} which indicate possible sources of error: ")

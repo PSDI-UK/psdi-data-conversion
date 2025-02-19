@@ -396,17 +396,20 @@ class PropertyConversionInfo:
         self.label = const.D_QUAL_LABELS[self.key]
 
         if self.input_supported is None and self.output_supported is None:
-            self.note = const.QUAL_NOTE_BOTH_UNKNOWN % self.label
+            self.note = const.QUAL_NOTE_BOTH_UNKNOWN
         elif self.input_supported is None and self.output_supported is not None:
-            self.note = const.QUAL_NOTE_IN_UNKNOWN % self.label
+            self.note = const.QUAL_NOTE_IN_UNKNOWN
         elif self.input_supported is not None and self.output_supported is None:
-            self.note = const.QUAL_NOTE_OUT_UNKNOWN % self.label
+            self.note = const.QUAL_NOTE_OUT_UNKNOWN
         elif self.input_supported == self.output_supported:
             self.note = ""
         elif self.input_supported:
-            self.note = const.QUAL_NOTE_OUT_MISSING % self.label
+            self.note = const.QUAL_NOTE_OUT_MISSING
         else:
-            self.note = const.QUAL_NOTE_IN_MISSING % self.label
+            self.note = const.QUAL_NOTE_IN_MISSING
+
+        if self.note:
+            self.note = self.note.format(prop=self.label)
 
 
 class ConversionsTable:
