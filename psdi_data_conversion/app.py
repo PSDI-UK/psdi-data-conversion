@@ -9,7 +9,6 @@ import hashlib
 import os
 import json
 from datetime import datetime
-import re
 import sys
 import traceback
 from flask import Flask, request, render_template, abort, Response
@@ -93,8 +92,7 @@ def convert():
             # Check for anticipated exceptions, and write a simpler message for them
             for err_message in (const.ERR_CONVERSION_FAILED, const.ERR_CONVERTER_NOT_RECOGNISED,
                                 const.ERR_EMPTY_ARCHIVE, const.ERR_WRONG_EXTENSIONS):
-                l_message_segments = re.split(r"\{.*?\}", err_message)
-                if all([x in str(e) for x in l_message_segments]):
+                if log_utility.string_with_placeholders_matches(err_message, str(e)):
                     with open(qualified_output_log, "w") as fo:
                         fo.write(str(e))
                     abort(const.STATUS_CODE_GENERAL)
