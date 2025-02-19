@@ -18,6 +18,7 @@ from psdi_data_conversion.converters.openbabel import CONVERTER_OB
 from psdi_data_conversion.database import (get_conversion_quality, get_converter_info, get_in_format_args,
                                            get_out_format_args, get_possible_converters, get_possible_formats)
 from psdi_data_conversion.file_io import unpack_zip_or_tar
+from psdi_data_conversion.log_utility import string_with_placeholders_matches
 from psdi_data_conversion.main import FileConverterInputException, main, parse_args
 
 
@@ -395,10 +396,10 @@ def test_archive_convert(tmp_path_factory, capsys, test_data_loc):
         bad_from_arg_string = f"{basic_arg_string} -f pdb"
         run_with_arg_string(bad_from_arg_string)
         captured = capsys.readouterr()
-        assert "WARNING" in captured.err
+        assert string_with_placeholders_matches(f"WARNING: {const.ERR_WRONG_EXTENSIONS}", captured.err)
 
         # And test that it fails in strict mode
         bad_from_arg_string = f"{basic_arg_string} -f pdb --strict"
         run_with_arg_string(bad_from_arg_string)
         captured = capsys.readouterr()
-        assert "ERROR" in captured.err
+        assert string_with_placeholders_matches("ERROR: {}" + const.ERR_WRONG_EXTENSIONS, captured.err)
