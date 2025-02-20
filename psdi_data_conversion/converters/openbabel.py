@@ -102,23 +102,45 @@ class OBFileConverter(FileConverter):
         self.data["read_flags_args"] = []
         self.data["write_flags_args"] = []
 
-        for char in from_arg_flags:
-            index = from_args.find('£')
-            arg = from_args[0:index]
-            from_args = from_args[index + 1:len(from_args)]
-            self.data["read_flags_args"].append(char + "  " + arg)
-            ob_conversion.AddOption(char, ob_conversion.INOPTIONS, arg)
+        # Check if we were provided options by the command-line script/library or the web app, and handle them
+        # appropriately
+        if "from_options" in self.data:
+            # From options were provided by the command-line script or library
+            l_from_options = self.data["from_options"].split()
+            for opt in l_from_options:
+                # The first character is the option, the rest is the argument for it
+                ob_conversion.AddOption(opt[0], ob_conversion.INOPTIONS, opt[1:])
+            self.logger.debug(f"Set Open Babel read flags arguments to: {self.data['from_options']}")
+            # Store the options in the "read_flags_args" entry for the later logging
+            self.data["read_flags_args"] = l_from_options
+        else:
+            # From options were provided by the command-line script or library
+            for char in from_arg_flags:
+                index = from_args.find('£')
+                arg = from_args[0:index]
+                from_args = from_args[index + 1:len(from_args)]
+                self.data["read_flags_args"].append(char + "  " + arg)
+                ob_conversion.AddOption(char, ob_conversion.INOPTIONS, arg)
+            self.logger.debug(f"Set Open Babel read flags arguments to: {self.data['read_flags_args']}")
 
-        self.logger.debug(f"Set Open Babel read flags arguments to: {self.data['read_flags_args']}")
-
-        for char in to_arg_flags:
-            index = to_args.find('£')
-            arg = to_args[0:index]
-            to_args = to_args[index + 1:len(to_args)]
-            self.data["write_flags_args"].append(char + "  " + arg)
-            ob_conversion.AddOption(char, ob_conversion.OUTOPTIONS, arg)
-
-        self.logger.debug(f"Set Open Babel write flags arguments to: {self.data['read_flags_args']}")
+        if "to_options" in self.data:
+            # From options were provided by the command-line script or library
+            l_to_options = self.data["to_options"].split()
+            for opt in l_to_options:
+                # The first character is the option, the rest is the argument for it
+                ob_conversion.AddOption(opt[0], ob_conversion.OUTOPTIONS, opt[1:])
+            self.logger.debug(f"Set Open Babel write flags arguments to: {self.data['to_options']}")
+            # Store the options in the "write_flags_args" entry for the later logging
+            self.data["write_flags_args"] = l_from_options
+        else:
+            # From options were provided by the command-line script or library
+            for char in to_arg_flags:
+                index = to_args.find('£')
+                arg = to_args[0:index]
+                to_args = to_args[index + 1:len(to_args)]
+                self.data["write_flags_args"].append(char + "  " + arg)
+                ob_conversion.AddOption(char, ob_conversion.OUTOPTIONS, arg)
+            self.logger.debug(f"Set Open Babel write flags arguments to: {self.data['read_flags_args']}")
 
         # Read the file to be converted
         mol = openbabel.OBMol()
