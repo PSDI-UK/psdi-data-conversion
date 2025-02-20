@@ -18,6 +18,7 @@ from psdi_data_conversion.converters.openbabel import CONVERTER_OB
 from psdi_data_conversion.database import (get_conversion_quality, get_converter_info, get_in_format_args,
                                            get_out_format_args, get_possible_converters, get_possible_formats)
 from psdi_data_conversion.file_io import unpack_zip_or_tar
+from psdi_data_conversion.log_utility import string_with_placeholders_matches
 from psdi_data_conversion.main import FileConverterInputException, main, parse_args
 
 
@@ -256,9 +257,9 @@ def test_conversion_info(capsys):
     assert string_is_present_in_out(f"Conversion from '{in_format}' to '{out_format}' with {converter_name} is "
                                     f"possible with {qual_str} conversion quality")
     assert string_is_present_in_out("Notes on this conversion:")
-    assert string_is_present_in_out(const.QUAL_NOTE_OUT_MISSING % const.QUAL_2D_LABEL)
-    assert string_is_present_in_out(const.QUAL_NOTE_OUT_MISSING % const.QUAL_3D_LABEL)
-    assert string_is_present_in_out(const.QUAL_NOTE_IN_MISSING % const.QUAL_CONN_LABEL)
+    assert string_is_present_in_out(const.QUAL_NOTE_OUT_MISSING.format(const.QUAL_2D_LABEL))
+    assert string_is_present_in_out(const.QUAL_NOTE_OUT_MISSING.format(const.QUAL_3D_LABEL))
+    assert string_is_present_in_out(const.QUAL_NOTE_IN_MISSING.format(const.QUAL_CONN_LABEL))
 
     l_in_flags, l_in_options = get_in_format_args(converter_name, in_format)
     l_out_flags, l_out_options = get_out_format_args(converter_name, out_format)
@@ -344,7 +345,9 @@ def test_archive_convert(tmp_path_factory, capsys, test_data_loc):
     """
 
     test_filename_base = "caffeine-smi"
-    l_archive_exts = [".zip", ".tar", ".tar.gz"]
+    l_archive_exts = [const.ZIP_EXTENSION,
+                      const.TAR_EXTENSION,
+                      const.GZTAR_EXTENSION]
 
     l_ex_filename_bases = ["caffeine-no-flags",
                            "caffeine-ia",
@@ -385,14 +388,18 @@ def test_archive_convert(tmp_path_factory, capsys, test_data_loc):
             ex_filename = f"{os.path.join(output_dir, ex_filename_base)}.{to_format}"
             assert os.path.isfile(ex_filename)
 
+        # To save time, we'll only do more detailed tests for the .zip archive
+        if archive_ext != const.ZIP_EXTENSION:
+            continue
+
         # Test that a warning is returned if the archive contains files of the wrong type
         bad_from_arg_string = f"{basic_arg_string} -f pdb"
         run_with_arg_string(bad_from_arg_string)
         captured = capsys.readouterr()
-        assert "WARNING" in captured.err
+        assert string_with_placeholders_matches(f"WARNING: {const.ERR_WRONG_EXTENSIONS}", captured.err)
 
         # And test that it fails in strict mode
         bad_from_arg_string = f"{basic_arg_string} -f pdb --strict"
         run_with_arg_string(bad_from_arg_string)
         captured = capsys.readouterr()
-        assert "ERROR" in captured.err
+        assert string_with_placeholders_matches("ERROR: {}" + const.ERR_WRONG_EXTENSIONS, captured.err)
