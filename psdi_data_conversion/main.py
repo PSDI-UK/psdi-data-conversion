@@ -587,6 +587,8 @@ def run_from_args(args: ConvertArgs):
     data = {'success': 'unknown',
             'from_flags': args.from_flags,
             'to_flags': args.to_flags,
+            'from_options': args.from_options,
+            'to_options': args.to_options,
             'from_arg_flags': '',
             'from_args': '',
             'to_arg_flags': '',
