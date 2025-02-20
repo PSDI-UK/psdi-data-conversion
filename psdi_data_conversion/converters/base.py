@@ -281,7 +281,7 @@ class FileConverter:
             # Set values from envvars if desired
             if use_envvars:
                 # Get the maximum allowed size from the envvar for it
-                ev_max_file_size = os.environ.get(const.MAX_FILESIZE_ENVVAR)
+                ev_max_file_size = os.environ.get(const.MAX_FILESIZE_EV)
                 if ev_max_file_size is not None:
                     self.max_file_size = float(ev_max_file_size)*const.MEGABYTE
 

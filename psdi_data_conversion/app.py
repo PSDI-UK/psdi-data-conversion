@@ -18,16 +18,19 @@ from psdi_data_conversion import constants as const
 from psdi_data_conversion.converter import run_converter
 from psdi_data_conversion.file_io import split_archive_ext
 
+# Key for the label given to the file uploaded in the web interface
+FILE_TO_UPLOAD_KEY = 'fileToUpload'
+
 # Create a token by hashing the current date and time.
 dt = str(datetime.now())
 token = hashlib.md5(dt.encode('utf8')).hexdigest()
 
 # Check the authorisation envvar to see if we're checking auth
-service_mode_ev = os.environ.get(const.SERVICE_MODE_ENVVAR)
+service_mode_ev = os.environ.get(const.SERVICE_MODE_EV)
 service_mode = (service_mode_ev is not None) and (service_mode_ev.lower() == "true")
 
 # Get the logging style from the envvar for it
-ev_logging = os.environ.get(const.LOG_MODE_ENVVAR)
+ev_logging = os.environ.get(const.LOG_MODE_EV)
 if ev_logging is None:
     log_mode = const.LOG_DEFAULT
 else:
@@ -46,7 +49,7 @@ def website():
     """Return the web page along with the token
     """
     # Get the maximum allowed size from the envvar for it
-    ev_max_file_size = os.environ.get(const.MAX_FILESIZE_ENVVAR)
+    ev_max_file_size = os.environ.get(const.MAX_FILESIZE_EV)
     if ev_max_file_size is not None:
         max_file_size = float(ev_max_file_size)*const.MEGABYTE
     else:
@@ -68,7 +71,7 @@ def convert():
     os.makedirs(const.DEFAULT_UPLOAD_DIR, exist_ok=True)
 
     # Save the file in the upload directory
-    file = request.files[const.FILE_TO_UPLOAD_KEY]
+    file = request.files[FILE_TO_UPLOAD_KEY]
     filename = filename = file.filename
 
     qualified_filename = os.path.join(const.DEFAULT_UPLOAD_DIR, filename)

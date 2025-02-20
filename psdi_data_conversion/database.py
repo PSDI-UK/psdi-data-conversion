@@ -17,6 +17,51 @@ from psdi_data_conversion import constants as const
 from psdi_data_conversion.converter import D_REGISTERED_CONVERTERS
 from psdi_data_conversion.converters.base import FileConverterException
 
+# Keys for top-level and general items in the database
+DB_FORMATS_KEY = "formats"
+DB_CONVERTERS_KEY = "converters"
+DB_CONVERTS_TO_KEY = "converts_to"
+DB_ID_KEY = "id"
+DB_NAME_KEY = "name"
+
+# Keys for converter general info in the database
+DB_DESC_KEY = "description"
+DB_INFO_KEY = "further_info"
+DB_URL_KEY = "url"
+
+# Keys for format general info in the database
+DB_FORMAT_EXT_KEY = "extension"
+DB_FORMAT_NOTE_KEY = "note"
+DB_FORMAT_COMP_KEY = "composition"
+DB_FORMAT_CONN_KEY = "connections"
+DB_FORMAT_2D_KEY = "two_dim"
+DB_FORMAT_3D_KEY = "three_dim"
+
+# Keys for converts_to info in the database
+DB_CONV_ID_KEY = "converters_id"
+DB_IN_ID_KEY = "in_id"
+DB_OUT_ID_KEY = "out_id"
+DB_SUCCESS_KEY = "degree_of_success"
+
+# Key bases for converter-specific items in the database
+DB_IN_FLAGS_KEY_BASE = "flags_in"
+DB_OUT_FLAGS_KEY_BASE = "flags_out"
+DB_IN_OPTIONS_KEY_BASE = "argflags_in"
+DB_OUT_OPTIONS_KEY_BASE = "argflags_out"
+DB_IN_FLAGS_FORMATS_KEY_BASE = "format_to_flags_in"
+DB_OUT_FLAGS_FORMATS_KEY_BASE = "format_to_flags_out"
+DB_IN_OPTIONS_FORMATS_KEY_BASE = "format_to_argflags_in"
+DB_OUT_OPTIONS_FORMATS_KEY_BASE = "format_to_argflags_out"
+
+# Keys for argument info in the database
+DB_FLAG_KEY = "flag"
+DB_BRIEF_KEY = "brief"
+DB_FORMAT_ID_KEY = "formats_id"
+DB_IN_FLAGS_ID_KEY_BASE = "flags_in_id"
+DB_OUT_FLAGS_ID_KEY_BASE = "flags_out_id"
+DB_IN_OPTIONS_ID_KEY_BASE = "argflags_in_id"
+DB_OUT_OPTIONS_ID_KEY_BASE = "argflags_out_id"
+
 logger = getLogger(__name__)
 
 
@@ -81,9 +126,9 @@ class ConverterInfo:
         self.parent = parent
 
         # Get info about the converter from the database
-        self.id: int = d_single_converter_info.get(const.DB_ID_KEY, -1)
-        self.description: str = d_single_converter_info.get(const.DB_DESC_KEY, "")
-        self.url: str = d_single_converter_info.get(const.DB_URL_KEY, "")
+        self.id: int = d_single_converter_info.get(DB_ID_KEY, -1)
+        self.description: str = d_single_converter_info.get(DB_DESC_KEY, "")
+        self.url: str = d_single_converter_info.get(DB_URL_KEY, "")
 
         # Get necessary info about the converter from the class
         try:
@@ -109,14 +154,14 @@ class ConverterInfo:
         # If the converter class has no defined key prefix, don't add any extra info for it
         if self._key_prefix is None:
             return
-        for key_base in (const.DB_IN_FLAGS_KEY_BASE,
-                         const.DB_OUT_FLAGS_KEY_BASE,
-                         const.DB_IN_OPTIONS_KEY_BASE,
-                         const.DB_OUT_OPTIONS_KEY_BASE,
-                         const.DB_IN_FLAGS_FORMATS_KEY_BASE,
-                         const.DB_OUT_FLAGS_FORMATS_KEY_BASE,
-                         const.DB_IN_OPTIONS_FORMATS_KEY_BASE,
-                         const.DB_OUT_OPTIONS_FORMATS_KEY_BASE):
+        for key_base in (DB_IN_FLAGS_KEY_BASE,
+                         DB_OUT_FLAGS_KEY_BASE,
+                         DB_IN_OPTIONS_KEY_BASE,
+                         DB_OUT_OPTIONS_KEY_BASE,
+                         DB_IN_FLAGS_FORMATS_KEY_BASE,
+                         DB_OUT_FLAGS_FORMATS_KEY_BASE,
+                         DB_IN_OPTIONS_FORMATS_KEY_BASE,
+                         DB_OUT_OPTIONS_FORMATS_KEY_BASE):
             self._arg_info[key_base] = d_data.get(self._key_prefix + key_base)
 
     def _create_l_arg_info(self, subclass: type[ArgInfo]) -> tuple[list[ArgInfo], list[ArgInfo]]:
@@ -125,51 +170,51 @@ class ConverterInfo:
 
         # Set values based on whether we're working with flags or options
         if issubclass(subclass, FlagInfo):
-            in_key_base = const.DB_IN_FLAGS_KEY_BASE
-            out_key_base = const.DB_OUT_FLAGS_KEY_BASE
-            in_formats_key_base = const.DB_IN_FLAGS_FORMATS_KEY_BASE
-            in_args_id_key_base = const.DB_IN_FLAGS_ID_KEY_BASE
-            out_formats_key_base = const.DB_OUT_FLAGS_FORMATS_KEY_BASE
-            out_args_id_key_base = const.DB_OUT_FLAGS_ID_KEY_BASE
+            in_key_base = DB_IN_FLAGS_KEY_BASE
+            out_key_base = DB_OUT_FLAGS_KEY_BASE
+            in_formats_key_base = DB_IN_FLAGS_FORMATS_KEY_BASE
+            in_args_id_key_base = DB_IN_FLAGS_ID_KEY_BASE
+            out_formats_key_base = DB_OUT_FLAGS_FORMATS_KEY_BASE
+            out_args_id_key_base = DB_OUT_FLAGS_ID_KEY_BASE
         elif issubclass(subclass, OptionInfo):
-            in_key_base = const.DB_IN_OPTIONS_KEY_BASE
-            out_key_base = const.DB_OUT_OPTIONS_KEY_BASE
-            in_formats_key_base = const.DB_IN_OPTIONS_FORMATS_KEY_BASE
-            in_args_id_key_base = const.DB_IN_OPTIONS_ID_KEY_BASE
-            out_formats_key_base = const.DB_OUT_OPTIONS_FORMATS_KEY_BASE
-            out_args_id_key_base = const.DB_OUT_OPTIONS_ID_KEY_BASE
+            in_key_base = DB_IN_OPTIONS_KEY_BASE
+            out_key_base = DB_OUT_OPTIONS_KEY_BASE
+            in_formats_key_base = DB_IN_OPTIONS_FORMATS_KEY_BASE
+            in_args_id_key_base = DB_IN_OPTIONS_ID_KEY_BASE
+            out_formats_key_base = DB_OUT_OPTIONS_FORMATS_KEY_BASE
+            out_args_id_key_base = DB_OUT_OPTIONS_ID_KEY_BASE
         else:
             raise FileConverterDatabaseException(f"Unrecognised subclass passed to `_create_l_arg_info`: {subclass}")
 
         for key_base, in_or_out in ((in_key_base, "in"),
                                     (out_key_base, "out")):
 
-            max_id = max([x[const.DB_ID_KEY] for x in self._arg_info[key_base]])
+            max_id = max([x[DB_ID_KEY] for x in self._arg_info[key_base]])
             l_arg_info: list[ArgInfo] = [None]*(max_id+1)
 
             for d_single_arg_info in self._arg_info[key_base]:
-                name: str = d_single_arg_info[const.DB_FLAG_KEY]
-                arg_id: int = d_single_arg_info[const.DB_ID_KEY]
-                brief = d_single_arg_info.get(const.DB_BRIEF_KEY)
+                name: str = d_single_arg_info[DB_FLAG_KEY]
+                arg_id: int = d_single_arg_info[DB_ID_KEY]
+                brief = d_single_arg_info.get(DB_BRIEF_KEY)
                 optional_arg_info_kwargs = {}
                 if brief is not None:
                     optional_arg_info_kwargs["brief"] = brief
                 arg_info = subclass(parent=self,
                                     id=arg_id,
                                     flag=name,
-                                    description=d_single_arg_info[const.DB_DESC_KEY],
-                                    info=d_single_arg_info[const.DB_INFO_KEY],
+                                    description=d_single_arg_info[DB_DESC_KEY],
+                                    info=d_single_arg_info[DB_INFO_KEY],
                                     **optional_arg_info_kwargs)
                 l_arg_info[arg_id] = arg_info
 
                 # Get a list of all in and formats applicable to this flag, and add them to the flag info's sets
                 if in_or_out == "in":
-                    l_in_formats = [x[const.DB_FORMAT_ID_KEY]
+                    l_in_formats = [x[DB_FORMAT_ID_KEY]
                                     for x in self._arg_info[in_formats_key_base]
                                     if x[self._key_prefix + in_args_id_key_base] == arg_id]
                     arg_info.s_in_formats.update(l_in_formats)
                 else:
-                    l_out_formats = [x[const.DB_FORMAT_ID_KEY]
+                    l_out_formats = [x[DB_FORMAT_ID_KEY]
                                      for x in self._arg_info[out_formats_key_base]
                                      if x[self._key_prefix + out_args_id_key_base] == arg_id]
                     arg_info.s_out_formats.update(l_out_formats)
@@ -371,12 +416,12 @@ class FormatInfo:
         self.parent = parent
 
         # Load attributes from the database
-        self.id: int = d_single_format_info.get(const.DB_ID_KEY, -1)
-        self.note: str = d_single_format_info.get(const.DB_FORMAT_NOTE_KEY, "")
-        self.composition = d_single_format_info.get(const.DB_FORMAT_COMP_KEY)
-        self.connections = d_single_format_info.get(const.DB_FORMAT_CONN_KEY)
-        self.two_dim = d_single_format_info.get(const.DB_FORMAT_2D_KEY)
-        self.three_dim = d_single_format_info.get(const.DB_FORMAT_3D_KEY)
+        self.id: int = d_single_format_info.get(DB_ID_KEY, -1)
+        self.note: str = d_single_format_info.get(DB_FORMAT_NOTE_KEY, "")
+        self.composition = d_single_format_info.get(DB_FORMAT_COMP_KEY)
+        self.connections = d_single_format_info.get(DB_FORMAT_CONN_KEY)
+        self.two_dim = d_single_format_info.get(DB_FORMAT_2D_KEY)
+        self.three_dim = d_single_format_info.get(DB_FORMAT_3D_KEY)
 
 
 @dataclass
@@ -473,9 +518,9 @@ class ConversionsTable:
         for possible_conversion in l_converts_to:
 
             try:
-                conv_id: int = possible_conversion[const.DB_CONV_ID_KEY]
-                in_id: int = possible_conversion[const.DB_IN_ID_KEY]
-                out_id: int = possible_conversion[const.DB_OUT_ID_KEY]
+                conv_id: int = possible_conversion[DB_CONV_ID_KEY]
+                in_id: int = possible_conversion[DB_IN_ID_KEY]
+                out_id: int = possible_conversion[DB_OUT_ID_KEY]
             except KeyError:
                 raise FileConverterDatabaseException(
                     f"Malformed 'converts_to' entry in database: {possible_conversion}")
@@ -650,9 +695,9 @@ class DataConversionDatabase:
         self._d_data = d_data
 
         # Store top-level items not tied to a specific converter
-        self.formats: list[dict[str, bool | int | str | None]] = d_data[const.DB_FORMATS_KEY]
-        self.converters: list[dict[str, bool | int | str | None]] = d_data[const.DB_CONVERTERS_KEY]
-        self.converts_to: list[dict[str, bool | int | str | None]] = d_data[const.DB_CONVERTS_TO_KEY]
+        self.formats: list[dict[str, bool | int | str | None]] = d_data[DB_FORMATS_KEY]
+        self.converters: list[dict[str, bool | int | str | None]] = d_data[DB_CONVERTERS_KEY]
+        self.converts_to: list[dict[str, bool | int | str | None]] = d_data[DB_CONVERTS_TO_KEY]
 
         # Placeholders for properties that are generated when needed
         self._d_converter_info: dict[str, ConverterInfo] | None = None
@@ -668,7 +713,7 @@ class DataConversionDatabase:
         if self._d_converter_info is None:
             self._d_converter_info: dict[str, ConverterInfo] = {}
             for d_single_converter_info in self.converters:
-                name: str = d_single_converter_info[const.DB_NAME_KEY]
+                name: str = d_single_converter_info[DB_NAME_KEY]
                 if name in self._d_converter_info:
                     logger.warning(f"Converter '{name}' appears more than once in the database. Only the first instance"
                                    " will be used.")
@@ -686,7 +731,7 @@ class DataConversionDatabase:
         """
         if self._l_converter_info is None:
             # Pre-size a list based on the maximum ID plus 1 (since IDs are 1-indexed)
-            max_id: int = max([x[const.DB_ID_KEY] for x in self.converters])
+            max_id: int = max([x[DB_ID_KEY] for x in self.converters])
             self._l_converter_info: list[ConverterInfo | None] = [None] * (max_id+1)
 
             # Fill the list with all converters in the dict
@@ -703,7 +748,7 @@ class DataConversionDatabase:
             self._d_format_info: dict[str, FormatInfo] = {}
 
             for d_single_format_info in self.formats:
-                name: str = d_single_format_info[const.DB_FORMAT_EXT_KEY]
+                name: str = d_single_format_info[DB_FORMAT_EXT_KEY]
 
                 format_info = FormatInfo(name=name,
                                          parent=self,
@@ -735,7 +780,7 @@ class DataConversionDatabase:
         """
         if self._l_format_info is None:
             # Pre-size a list based on the maximum ID plus 1 (since IDs are 1-indexed)
-            max_id: int = max([x[const.DB_ID_KEY] for x in self.formats])
+            max_id: int = max([x[DB_ID_KEY] for x in self.formats])
             self._l_format_info: list[FormatInfo | None] = [None] * (max_id+1)
 
             # Fill the list with all formats in the dict

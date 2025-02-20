@@ -339,7 +339,7 @@ class TestConverter:
         """
 
         test_file_size = 1234
-        os.environ[const.MAX_FILESIZE_ENVVAR] = str(test_file_size)
+        os.environ[const.MAX_FILESIZE_EV] = str(test_file_size)
 
         self.get_input_info(filename="1NE6.mmcif")
         converter = OBFileConverter(use_envvars=True,

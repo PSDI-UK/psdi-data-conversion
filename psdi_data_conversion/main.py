@@ -14,13 +14,16 @@ import sys
 import textwrap
 
 from psdi_data_conversion import constants as const
-from psdi_data_conversion.constants import ARG_LEN, CLI_SCRIPT_NAME, CONVERTER_DEFAULT, TERM_WIDTH
+from psdi_data_conversion.constants import CL_SCRIPT_NAME, CONVERTER_DEFAULT, TERM_WIDTH
 from psdi_data_conversion.converter import D_REGISTERED_CONVERTERS, L_REGISTERED_CONVERTERS, run_converter
 from psdi_data_conversion.converters.base import FileConverterAbortException, FileConverterInputException
 from psdi_data_conversion.database import (get_conversion_quality, get_converter_info, get_format_info,
                                            get_in_format_args, get_out_format_args, get_possible_converters,
                                            get_possible_formats)
 from psdi_data_conversion.file_io import split_archive_ext
+
+# Number of character spaces allocated for flags/options when printing them out
+ARG_LEN = 20
 
 
 class FileConverterHelpException(FileConverterInputException):
@@ -152,7 +155,7 @@ class ConvertArgs:
         if self.to_format is None:
             msg = textwrap.fill("ERROR Output format (-t or --to) must be provided. For information on supported "
                                 "formats and converters, call:\n")
-            msg += f"{CLI_SCRIPT_NAME} -l"
+            msg += f"{CL_SCRIPT_NAME} -l"
             raise FileConverterHelpException(msg, msg_preformatted=True)
 
         # If the output directory doesn't exist, silently create it
@@ -470,13 +473,13 @@ def detail_converter_use(args: ConvertArgs):
     # Now at the end, bring up input/output-format-specific flags and options
     if mention_input_format and mention_output_format:
         print_wrap("For details on input/output flags and options allowed for specific formats, call:\n"
-                   f"{CLI_SCRIPT_NAME} -l {args.name} -f <input_format> -t <output_format>")
+                   f"{CL_SCRIPT_NAME} -l {args.name} -f <input_format> -t <output_format>")
     elif mention_input_format:
         print_wrap("For details on input flags and options allowed for a specific format, call:\n"
-                   f"{CLI_SCRIPT_NAME} -l {args.name} -f <input_format> [-t <output_format>]")
+                   f"{CL_SCRIPT_NAME} -l {args.name} -f <input_format> [-t <output_format>]")
     elif mention_output_format:
         print_wrap("For details on output flags and options allowed for a specific format, call:\n"
-                   f"{CLI_SCRIPT_NAME} -l {args.name} -t <output_format> [-f <input_format>]")
+                   f"{CL_SCRIPT_NAME} -l {args.name} -t <output_format> [-f <input_format>]")
 
 
 def list_supported_formats(err=False):
@@ -538,7 +541,7 @@ def detail_possible_converters(from_format: str, to_format: str):
     print("\n    ".join(l_possible_converters))
 
     print_wrap("For details on input/output flags and options allowed by a converter for this conversion, call:")
-    print(f"{CLI_SCRIPT_NAME} -l <converter name> -f {from_format} -t {to_format}")
+    print(f"{CL_SCRIPT_NAME} -l <converter name> -f {from_format} -t {to_format}")
 
 
 def get_supported_converters():
@@ -575,13 +578,13 @@ def detail_converters_and_formats(args: ConvertArgs):
     print("")
 
     print_wrap("For more details on a converter, call:")
-    print(f"{CLI_SCRIPT_NAME} -l <converter name>\n")
+    print(f"{CL_SCRIPT_NAME} -l <converter name>\n")
 
     print_wrap("For a list of converters that can perform a desired conversion, call:")
-    print(f"{CLI_SCRIPT_NAME} -l -f <input format> -t <output format>\n")
+    print(f"{CL_SCRIPT_NAME} -l -f <input format> -t <output format>\n")
 
     print_wrap("For a list of options provided by a converter for a desired conversion, call:")
-    print(f"{CLI_SCRIPT_NAME} -l <converter name> -f <input format> -t <output format>")
+    print(f"{CL_SCRIPT_NAME} -l <converter name> -f <input format> -t <output format>")
 
 
 def run_from_args(args: ConvertArgs):
@@ -676,7 +679,7 @@ def main():
     if len(sys.argv) == 1:
         print_wrap("See the README.md file for information on using this utility and examples of basic usage, or for "
                    "detailed explanation of arguments call:")
-        print(f"{CLI_SCRIPT_NAME} -h")
+        print(f"{CL_SCRIPT_NAME} -h")
         exit(1)
 
     try:
