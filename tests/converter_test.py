@@ -14,7 +14,7 @@ import shutil
 import pytest
 
 from psdi_data_conversion import constants as const
-from psdi_data_conversion.converter import run_converter
+from psdi_data_conversion.converter import L_REGISTERED_CONVERTERS, run_converter
 from psdi_data_conversion.converters.atomsk import CONVERTER_ATO
 from psdi_data_conversion.converters.base import FileConverterAbortException
 from psdi_data_conversion.converters.c2x import CONVERTER_C2X
@@ -66,6 +66,12 @@ def tmp_download_path(tmp_path):
     download_path = os.path.join(tmp_path, "downloads")
     os.makedirs(download_path, exist_ok=True)
     return download_path
+
+
+def test_default():
+    """Test that the default converter is registered.
+    """
+    assert const.CONVERTER_DEFAULT in L_REGISTERED_CONVERTERS
 
 
 class TestConverter:

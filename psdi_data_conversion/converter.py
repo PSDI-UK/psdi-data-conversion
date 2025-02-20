@@ -11,7 +11,7 @@ import importlib
 import sys
 from tempfile import TemporaryDirectory
 import traceback
-from typing import NamedTuple
+from typing import Any, Callable, NamedTuple
 from psdi_data_conversion import constants as const
 from psdi_data_conversion.converters import base
 
@@ -61,10 +61,25 @@ try:
     D_REGISTERED_CONVERTERS: dict[str, type[base.FileConverter]] = dict(l_converter_names_and_classes)
     L_REGISTERED_CONVERTERS: list[str] = [name for name in D_REGISTERED_CONVERTERS.keys()]
 
+    # Make dicts of flags, options, and args (combined flags and options) for each converter
+    _d_converter_flags, _d_converter_options, _d_converter_args = {}, {}, {}
+    for name, converter_class in D_REGISTERED_CONVERTERS.items():
+        l_flags = converter_class.allowed_flags if converter_class.allowed_flags else ()
+        l_options = converter_class.allowed_options if converter_class.allowed_options else ()
+        _d_converter_flags[name] = l_flags
+        _d_converter_options[name] = l_options
+        _d_converter_args[name] = (*l_flags, *l_options)
+    D_CONVERTER_FLAGS: dict[str, tuple[tuple[str, dict[str, Any], Callable]]] = _d_converter_flags
+    D_CONVERTER_OPTIONS: dict[str, tuple[tuple[str, dict[str, Any], Callable]]] = _d_converter_options
+    D_CONVERTER_ARGS: dict[str, tuple[tuple[str, dict[str, Any], Callable]]] = _d_converter_args
+
 except Exception:
     print(f"ERROR: Failed to register converters. Exception was: \n{traceback.format_exc()}", file=sys.stderr)
     D_REGISTERED_CONVERTERS: dict[str, type[base.FileConverter]] = {}
     L_REGISTERED_CONVERTERS: list[str] = []
+    D_CONVERTER_FLAGS = {}
+    D_CONVERTER_OPTIONS = {}
+    D_CONVERTER_ARGS = {}
 
 
 def get_converter(*args, name=const.CONVERTER_DEFAULT, **converter_kwargs) -> base.FileConverter:

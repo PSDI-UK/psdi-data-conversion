@@ -41,12 +41,6 @@ SERVICE_MODE_EV = "SERVICE_MODE"
 LOG_MODE_EV = "LOGGING"
 MAX_FILESIZE_EV = "MAX_FILESIZE"
 
-# Allowed and default options for command-line arguments
-L_ALLOWED_COORD_GENS = ["Gen2D", "Gen3D", "neither"]
-DEFAULT_COORD_GEN = "neither"
-L_ALLOWED_COORD_GEN_QUALS = ["fastest", "fast", "medium", "better", "best"]
-DEFAULT_COORD_GEN_QUAL = "medium"
-
 # Files and Folders
 # -----------------
 

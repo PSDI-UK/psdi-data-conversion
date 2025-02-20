@@ -8,9 +8,49 @@ Open Babel FileConverter
 from openbabel import openbabel
 import py
 
-from psdi_data_conversion.converters.base import FileConverter
+from psdi_data_conversion.converters.base import FileConverter, FileConverterHelpException
 
 CONVERTER_OB = 'Open Babel'
+
+# Constants related to command-line arguments unique to this converter
+L_ALLOWED_COORD_GENS = ["Gen2D", "Gen3D", "neither"]
+DEFAULT_COORD_GEN = "neither"
+COORD_GEN_KEY = "coordinates"
+L_ALLOWED_COORD_GEN_QUALS = ["fastest", "fast", "medium", "better", "best"]
+DEFAULT_COORD_GEN_QUAL = "medium"
+COORD_GEN_QUAL_KEY = "coordOption"
+
+
+def get_coord_gen(l_opts: list[str] | None) -> dict[str, str]:
+
+    # Keyword arguments specific to OpenBabel conversion
+    coord_gen: str
+    if l_opts is None:
+        coord_gen = DEFAULT_COORD_GEN
+    else:
+        coord_gen = l_opts[0]
+
+    coord_gen_qual: str
+    if l_opts is None or len(l_opts) == 1:
+        coord_gen_qual = DEFAULT_COORD_GEN_QUAL
+    else:
+        coord_gen_qual = l_opts[1]
+
+    # No more than two arguments supplied to --coord-gen
+    if l_opts is not None and len(l_opts) > 2:
+        raise FileConverterHelpException("At most two arguments may be provided to --coord-gen, the mode and "
+                                         "quality, e.g. '--coord-gen Gen3D best'")
+
+    # Coordinate generation options are valid
+    if coord_gen not in L_ALLOWED_COORD_GENS:
+        raise FileConverterHelpException(f"Coordinate generation type '{coord_gen}' not recognised. Allowed "
+                                         f"types are: {L_ALLOWED_COORD_GENS}")
+    if coord_gen_qual not in L_ALLOWED_COORD_GEN_QUALS:
+        raise FileConverterHelpException(f"Coordinate generation quality '{coord_gen_qual}' not recognised. "
+                                         f"Allowed qualities are: {L_ALLOWED_COORD_GEN_QUALS}")
+
+    return {COORD_GEN_KEY: coord_gen,
+            COORD_GEN_QUAL_KEY: coord_gen_qual}
 
 
 class OBFileConverter(FileConverter):
@@ -22,6 +62,18 @@ class OBFileConverter(FileConverter):
     has_in_format_flags_or_options = True
     has_out_format_flags_or_options = True
     database_key_prefix = "ob"
+
+    allowed_flags = ()
+    allowed_options = (("--coord-gen",
+                        {"help": "(Open Babel converter only). The mode to be used for Open Babel calculation of "
+                         "atomic coordinates, and optionally the quality of the conversion. The mode should be one of "
+                         "'Gen2D', 'Gen3D', or 'neither' (default 'neither'). The quality, if supplied, should be "
+                         "one of 'fastest', 'fast', 'medium', 'better' or 'best' (default 'medium'). E.g. "
+                         "'--coord-gen Gen2D' (quality defaults to 'medium'), '--coord-gen Gen3D best'",
+                         "type": str,
+                         "default": None,
+                         "nargs": "+"},
+                        get_coord_gen),)
 
     def _convert(self):
 
@@ -73,16 +125,16 @@ class OBFileConverter(FileConverter):
         ob_conversion.ReadFile(mol, self.in_filename)
 
         # Calculate atomic coordinates
-        if self.data["coordinates"] == 'neither':
-            self.data['coordOption'] = 'N/A'
+        if self.data[COORD_GEN_KEY] == 'neither':
+            self.data[COORD_GEN_QUAL_KEY] = 'N/A'
         else:
             # Retrieve coordinate calculation option (fastest, fast, medium, better, best)
-            self.option = self.data['coordOption']
+            self.option = self.data[COORD_GEN_QUAL_KEY]
 
-            gen = openbabel.OBOp.FindType(self.data["coordinates"])
-            self.logger.debug(f"Performing Open Babel {self.data['coordinates']} coordinate conversion with option "
+            gen = openbabel.OBOp.FindType(self.data[COORD_GEN_KEY])
+            self.logger.debug(f"Performing Open Babel {self.data[COORD_GEN_KEY]} coordinate conversion with option "
                               f"'{self.option}'")
-            gen.Do(mol, self.data['coordOption'])
+            gen.Do(mol, self.data[COORD_GEN_QUAL_KEY])
 
         # Write the converted file
         ob_conversion.WriteFile(mol, self.out_filename)
@@ -101,7 +153,7 @@ class OBFileConverter(FileConverter):
 
         label_length = 19
 
-        for (label, key, multi) in (("Coord. gen.:", "coordinates", False),
+        for (label, key, multi) in (("Coord. gen.:", COORD_GEN_KEY, False),
                                     ("Coord. option:", "coord_option", False),
                                     ("Read options:", "from_flags", False),
                                     ("Write options:", "to_flags", False),
