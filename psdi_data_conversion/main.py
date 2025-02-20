@@ -22,9 +22,6 @@ from psdi_data_conversion.database import (get_conversion_quality, get_converter
                                            get_possible_formats)
 from psdi_data_conversion.file_io import split_archive_ext
 
-# Number of character spaces allocated for flags/options when printing them out
-ARG_LEN = 20
-
 
 class FileConverterHelpException(FileConverterInputException):
     """An exception class which indicates an error where we will likely want to help the user figure out how to
@@ -274,12 +271,14 @@ def get_argument_parser():
     parser.add_argument("--from-flags", type=str, default="",
                         help="Any command-line flags to be provided to the converter for reading in the input file(s). "
                              "For information on the flags accepted by a converter, call this script with '-l "
-                             "<converter name>'. The first preceding hyphen for each flag must be backslash-escaped, "
+                             "<converter name>'. If the set of flags includes any spaces, it must be quoted, and if "
+                             "hyphens are used, the first preceding hyphen for each flag must be backslash-escaped, "
                              "e.g. '--from-flags \"\\-a \\-bc \\--example\"'")
     parser.add_argument("--to-flags", type=str, default="",
                         help="Any command-line flags to be provided to the converter for writing the output file(s). "
                              "For information on the flags accepted by a converter, call this script with '-l "
-                             "<converter name>'. The first preceding hyphen for each flag must be backslash-escaped, "
+                             "<converter name>'. If the set of flags includes any spaces, it must be quoted, and if "
+                             "hyphens are used, the first preceding hyphen for each flag must be backslash-escaped, "
                              "e.g. '--to-flags \"\\-a \\-bc \\--example\"'")
     parser.add_argument("-s", "--strict", action="store_true",
                         help="If set, will fail if one of the input files has the wrong extension (including those "
@@ -447,6 +446,9 @@ def detail_converter_use(args: ConvertArgs):
         to_format = "N/A"
         if converter_class.has_out_format_flags_or_options:
             mention_output_format = True
+
+    # Number of character spaces allocated for flags/options when printing them out
+    ARG_LEN = 20
 
     for l_args, flag_or_option, input_or_output, format_name in ((in_flags, "flag", "input", from_format),
                                                                  (in_options, "option", "input", from_format),
