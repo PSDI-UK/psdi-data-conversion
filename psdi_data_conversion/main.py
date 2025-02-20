@@ -243,28 +243,28 @@ def get_argument_parser():
                         help="If set, input files will be deleted after conversion, default they will be kept")
     parser.add_argument("--from-flags", type=str, default="",
                         help="Any command-line flags to be provided to the converter for reading in the input file(s). "
-                             "For information on the flags accepted by a converter, call this script with '-l "
-                             "<converter name>'. If the set of flags includes any spaces, it must be quoted, and if "
-                             "hyphens are used, the first preceding hyphen for each flag must be backslash-escaped, "
-                             "e.g. '--from-flags \"\\-a \\-bc \\--example\"'")
+                             "For information on the flags accepted by a converter and its required format for them, "
+                             "call this script with '-l <converter name>'. If the set of flags includes any spaces, it "
+                             "must be quoted, and if hyphens are used, the first preceding hyphen for each flag must "
+                             "be backslash-escaped, e.g. '--from-flags \"\\-a \\-bc \\--example\"'")
     parser.add_argument("--to-flags", type=str, default="",
                         help="Any command-line flags to be provided to the converter for writing the output file(s). "
-                             "For information on the flags accepted by a converter, call this script with '-l "
-                             "<converter name>'. If the set of flags includes any spaces, it must be quoted, and if "
-                             "hyphens are used, the first preceding hyphen for each flag must be backslash-escaped, "
-                             "e.g. '--to-flags \"\\-a \\-bc \\--example\"'")
+                             "For information on the flags accepted by a converter and its required format for them, "
+                             "call this script with '-l <converter name>'. If the set of flags includes any spaces, it "
+                             "must be quoted, and if hyphens are used, the first preceding hyphen for each flag must "
+                             "be backslash-escaped, e.g. '--to-flags \"\\-a \\-bc \\--example\"'")
     parser.add_argument("--from-options", type=str, default="",
                         help="Any command-line options to be provided to the converter for reading in the input "
-                             "file(s). For information on the options accepted by a converter, call this script with "
-                             "'-l <converter name>'. The set of options must be quoted, and the first preceding "
-                             "hyphen for each option must be backslash-escaped, e.g. '--from-options \"\\-x xval "
-                             "--opt optval\"'")
+                             "file(s). For information on the options accepted by a converter and its required format "
+                             "for them, call this script with '-l <converter name>'. If the set of options includes "
+                             "any spaces, it must be quoted, and the first preceding hyphen for each option must be "
+                             "backslash-escaped, e.g. '--from-options \"\\-x xval --opt optval\"'")
     parser.add_argument("--to-options", type=str, default="",
                         help="Any command-line options to be provided to the converter for writing the output "
-                             "file(s). For information on the options accepted by a converter, call this script with "
-                             "'-l <converter name>'. The set of options must be quoted, and the first preceding "
-                             "hyphen for each option must be backslash-escaped, e.g. '--to-options \"\\-x xval "
-                             "--opt optval\"'")
+                             "file(s). For information on the options accepted by a converter and its required format "
+                             "for them, call this script with '-l <converter name>'. If the set of options includes "
+                             "any spaces, it must be quoted, and the first preceding hyphen for each option must be "
+                             "backslash-escaped, e.g. '--to-options \"\\-x xval --opt optval\"'")
     parser.add_argument("-s", "--strict", action="store_true",
                         help="If set, will fail if one of the input files has the wrong extension (including those "
                         "contained in archives, but not the archive files themselves). Otherwise, will only print a "
