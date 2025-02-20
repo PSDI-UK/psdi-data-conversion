@@ -58,6 +58,7 @@ def test_input_validity():
     cwd = os.getcwd()
     args = get_parsed_args(f"file1 file2 -f mmcif -i {cwd} -t pdb -o {cwd}/.. -w '{CONVERTER_ATO}' " +
                            r"--delete-input --from-flags '\-ab \-c \--example' --to-flags '\-d' " +
+                           r"--from-options '-x xval --xopt xoptval' --to-options '-y yval --yopt yoptval' "
                            "--strict --nc --coord-gen Gen3D best -q --log-file text.log")
     assert args.l_args[0] == "file1"
     assert args.l_args[1] == "file2"
@@ -70,6 +71,8 @@ def test_input_validity():
     assert args.delete_input is True
     assert args.from_flags == "-ab -c --example"
     assert args.to_flags == "-d"
+    assert args.from_options == "-x xval --xopt xoptval"
+    assert args.to_options == "-y yval --yopt yoptval"
     assert args.quiet is True
     assert args.log_file == "text.log"
     assert args.log_mode == const.LOG_NONE
@@ -419,3 +422,103 @@ def test_archive_convert(tmp_path_factory, capsys, test_data_loc):
         run_with_arg_string(bad_from_arg_string)
         captured = capsys.readouterr()
         assert string_with_placeholders_matches("ERROR: {}" + const.ERR_WRONG_EXTENSIONS, captured.err)
+
+
+def test_format_flags(tmp_path_factory, capsys, test_data_loc):
+    """Test that Open Babel's unique --coord-gen option is processed correctly and results in the right conversions
+    """
+    input_dir = tmp_path_factory.mktemp("input")
+    output_dir = tmp_path_factory.mktemp("output")
+
+    test_filename_base = "caffeine"
+
+    from_format = "inchi"
+    to_format = "smi"
+
+    input_filename = f"{test_filename_base}.{from_format}"
+    output_filename = f"{test_filename_base}.{to_format}"
+
+    # Symlink the input file from the test_data directory to the input directory
+    os.symlink(os.path.join(test_data_loc, input_filename),
+               os.path.join(input_dir, input_filename))
+
+    basic_arg_string = f"{input_filename} -t {to_format} -i {input_dir} -o {output_dir}"
+
+    # Run for each set of format flags
+    for (from_flags, to_flags, from_options, to_options, ex_file
+         ) in ((None, None, None, None, "caffeine-no-flags.smi"),
+               ("a", None, None, None, "caffeine-ia.smi"),
+               ("a", "x", None, None, "caffeine-ia-ox.smi"),
+               ("a", "kx", None, None, "caffeine-ia-okx.smi"),
+               ("a", "kx", None, "f4", "caffeine-ia-okx-oof4.smi"),
+               ("a", "kx", None, "'f4 l5'", "caffeine-ia-okx-oof4l5.smi"),):
+
+        arg_string = basic_arg_string
+        if from_flags is not None:
+            arg_string += f" --from-flags {from_flags}"
+        if to_flags is not None:
+            arg_string += f" --to-flags {to_flags}"
+        if from_options is not None:
+            arg_string += f" --from-options {from_options}"
+        if to_options is not None:
+            arg_string += f" --to-options {to_options}"
+
+        # Run the conversion
+        run_with_arg_string(arg_string)
+
+        # Check that the expected output file has been created
+        ex_output_file = os.path.join(output_dir, f"{output_filename}")
+        assert os.path.isfile(ex_output_file), f"Expected output file {ex_output_file} does not exist"
+
+        # Check that the contents of this file match what's expected
+        text = open(ex_output_file, "r").read()
+        ex_text = open(os.path.join(test_data_loc, ex_file), "r").read()
+
+        # We want to check they're the same without worrying about whitespace (which doesn't matter for this format),
+        # so we accomplish this by using the string's `split` method, which splits on whitespace by default
+        assert text.split() == ex_text.split(), f"Format flag test failed for {ex_file}"
+
+
+def test_coord_gen(tmp_path_factory, capsys, test_data_loc):
+    """Test that Open Babel's unique --coord-gen option is processed correctly and results in the right conversions
+    """
+    input_dir = tmp_path_factory.mktemp("input")
+    output_dir = tmp_path_factory.mktemp("output")
+
+    test_filename_base = "caffeine"
+
+    from_format = "inchi"
+    to_format = "xyz"
+
+    input_filename = f"{test_filename_base}.{from_format}"
+    output_filename = f"{test_filename_base}.{to_format}"
+
+    # Symlink the input file from the test_data directory to the input directory
+    os.symlink(os.path.join(test_data_loc, input_filename),
+               os.path.join(input_dir, input_filename))
+
+    basic_arg_string = f"{input_filename} -t {to_format} -i {input_dir} -o {output_dir}"
+    # Run for each set of coord-gen options
+    for cg_opts, ex_file in ((None, "caffeine.xyz"),
+                             ("Gen2D fastest", "caffeine-2D-fastest.xyz"),
+                             ("Gen3D best", "caffeine-3D-best.xyz"),):
+
+        if cg_opts is None:
+            arg_string = basic_arg_string
+        else:
+            arg_string = f"{basic_arg_string} --coord-gen {cg_opts}"
+
+        # Run the conversion
+        run_with_arg_string(arg_string)
+
+        # Check that the expected output file has been created
+        ex_output_file = os.path.join(output_dir, f"{output_filename}")
+        assert os.path.isfile(ex_output_file), f"Expected output file {ex_output_file} does not exist"
+
+        # Check that the contents of this file match what's expected
+        text = open(ex_output_file, "r").read()
+        ex_text = open(os.path.join(test_data_loc, ex_file), "r").read()
+
+        # We want to check they're the same without worrying about whitespace (which doesn't matter for this format),
+        # so we accomplish this by using the string's `split` method, which splits on whitespace by default
+        assert text.split() == ex_text.split(), f"Coord Gen test failed for {ex_file}"
