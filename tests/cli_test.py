@@ -12,7 +12,7 @@ import sys
 from unittest.mock import patch
 
 from psdi_data_conversion import constants as const
-from psdi_data_conversion.converter import L_REGISTERED_CONVERTERS
+from psdi_data_conversion.converter import D_CONVERTER_ARGS, L_REGISTERED_CONVERTERS
 from psdi_data_conversion.converters.atomsk import CONVERTER_ATO
 from psdi_data_conversion.converters.openbabel import (CONVERTER_OB, COORD_GEN_KEY, COORD_GEN_QUAL_KEY,
                                                        DEFAULT_COORD_GEN, DEFAULT_COORD_GEN_QUAL)
@@ -21,6 +21,17 @@ from psdi_data_conversion.database import (get_conversion_quality, get_converter
 from psdi_data_conversion.file_io import unpack_zip_or_tar
 from psdi_data_conversion.log_utility import string_with_placeholders_matches
 from psdi_data_conversion.main import FileConverterInputException, main, parse_args
+
+
+def test_unique_args():
+    """Check that all converter-specific arguments have unique names
+    """
+    s_arg_names = set()
+    for name in L_REGISTERED_CONVERTERS:
+        for arg_name, _, _ in D_CONVERTER_ARGS[name]:
+            assert arg_name not in s_arg_names, ("Name clash between converters, with multiple using the argument "
+                                                 f"'{arg_name}'")
+            s_arg_names.add(arg_name)
 
 
 def get_parsed_args(s):
