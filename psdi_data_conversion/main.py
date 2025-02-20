@@ -15,29 +15,14 @@ import textwrap
 
 from psdi_data_conversion import constants as const
 from psdi_data_conversion.constants import CL_SCRIPT_NAME, CONVERTER_DEFAULT, TERM_WIDTH
-from psdi_data_conversion.converter import D_REGISTERED_CONVERTERS, L_REGISTERED_CONVERTERS, run_converter
-from psdi_data_conversion.converters.base import FileConverterAbortException, FileConverterInputException
+from psdi_data_conversion.converter import (D_CONVERTER_ARGS, D_REGISTERED_CONVERTERS, L_REGISTERED_CONVERTERS,
+                                            run_converter)
+from psdi_data_conversion.converters.base import (FileConverterAbortException, FileConverterInputException,
+                                                  FileConverterHelpException)
 from psdi_data_conversion.database import (get_conversion_quality, get_converter_info, get_format_info,
                                            get_in_format_args, get_out_format_args, get_possible_converters,
                                            get_possible_formats)
 from psdi_data_conversion.file_io import split_archive_ext
-
-
-class FileConverterHelpException(FileConverterInputException):
-    """An exception class which indicates an error where we will likely want to help the user figure out how to
-    correctly use the CLI instead of simply printing a traceback
-    """
-
-    def __init__(self, *args, msg_preformatted=False):
-        """Init the exception, noting if the message should be treated as preformatted or not
-
-        Parameters
-        ----------
-        msg_preformatted : bool, optional
-            If True, indicates that the message of the exception has already been formatted. Default False
-        """
-        super().__init__(*args)
-        self.msg_preformatted = msg_preformatted
 
 
 def print_wrap(s, newline=False, err=False, **kwargs):
@@ -80,19 +65,6 @@ class ConvertArgs:
         self.to_flags: str = args.to_flags.replace(r"\-", "-")
         self.no_check: bool = args.nc
         self.strict: bool = args.strict
-
-        # Keyword arguments specific to OpenBabel conversion
-        self.coord_gen: str
-        if args.coord_gen is None:
-            self.coord_gen = const.DEFAULT_COORD_GEN
-        else:
-            self.coord_gen = args.coord_gen[0]
-
-        self.coord_gen_qual: str
-        if args.coord_gen is None or len(args.coord_gen) == 1:
-            self.coord_gen_qual = const.DEFAULT_COORD_GEN_QUAL
-        else:
-            self.coord_gen_qual = args.coord_gen[1]
 
         # Keyword arguments for alternative functionality
         self.list: bool = args.list
@@ -168,23 +140,22 @@ class ConvertArgs:
             msg += f"\n\n{get_supported_converters()}"
             raise FileConverterHelpException(msg, msg_preformatted=True)
 
-        # No more than two arguments supplied to --coord-gen
-        if args.coord_gen is not None and len(args.coord_gen) > 2:
-            raise FileConverterHelpException("At most two arguments may be provided to --coord-gen, the mode and "
-                                             "quality, e.g. '--coord-gen Gen3D best'")
-
-        # Coordinate generation options are valid
-        if self.coord_gen not in const.L_ALLOWED_COORD_GENS:
-            raise FileConverterHelpException(f"Coordinate generation type '{self.coord_gen}' not recognised. Allowed "
-                                             f"types are: {const.L_ALLOWED_COORD_GENS}")
-        if self.coord_gen_qual not in const.L_ALLOWED_COORD_GEN_QUALS:
-            raise FileConverterHelpException(f"Coordinate generation quality '{self.coord_gen_qual}' not recognised. "
-                                             f"Allowed qualities are: {const.L_ALLOWED_COORD_GEN_QUALS}")
-
         # Logging mode is valid
         if self.log_mode not in const.L_ALLOWED_LOG_MODES:
             raise FileConverterHelpException(f"Unrecognised logging mode: {self.log_mode}. Allowed "
                                              f"modes are: {const.L_ALLOWED_LOG_MODES}")
+
+        # Arguments specific to this converter
+        self.d_converter_args = {}
+        l_converter_args = D_CONVERTER_ARGS[self.name]
+        if not l_converter_args:
+            l_converter_args = []
+        for arg_name, _, get_data in l_converter_args:
+            # Convert the argument name to how it will be represented in the parsed_args object
+            while arg_name.startswith("-"):
+                arg_name = arg_name[1:]
+            arg_name = arg_name.replace("-", "_")
+            self.d_converter_args.update(get_data(getattr(args, arg_name)))
 
     @property
     def input_dir(self):
@@ -290,13 +261,12 @@ def get_argument_parser():
                         "success) if the conversion is not supported, but will save some execution time. Recommended "
                         "only for automated execution after the user has confirmed a conversion is supported")
 
-    # Keyword arguments specific to OpenBabel conversion
-    parser.add_argument("--coord-gen", type=str, default=None, nargs="+",
-                        help="(Open Babel converter only). The mode to be used for Open Babel calculation of atomic "
-                             "coordinates, and optionally the quality of the conversion. The mode should be one of "
-                             "'Gen2D', 'Gen3D', or 'neither' (default 'neither'). The quality, if supplied, should be "
-                             "one of 'fastest', 'fast', 'medium', 'better' or 'best' (default 'medium'). E.g. "
-                             "'--coord-gen Gen2D' (quality defaults to 'medium'), '--coord-gen Gen3D best'")
+    # Keyword arguments specific to converters
+    for converter_name in L_REGISTERED_CONVERTERS:
+        l_converter_args = D_CONVERTER_ARGS[converter_name]
+        if l_converter_args:
+            for arg_name, kwargs, _ in l_converter_args:
+                parser.add_argument(arg_name, **kwargs)
 
     # Keyword arguments for alternative functionality
     parser.add_argument("-l", "--list", action="store_true",
@@ -404,23 +374,21 @@ def detail_converter_use(args: ConvertArgs):
 
     if converter_class.allowed_flags is None:
         print_wrap("Information has not been provided about general flags accepted by this converter.", newline=True)
-    elif len(converter_class.allowed_flags) == 0:
-        print_wrap("This converter does not accept any general flags.", newline=True)
-    else:
+    elif len(converter_class.allowed_flags) > 0:
         print_wrap("Allowed general flags:")
-        for flag, help in converter_class.allowed_flags:
+        for flag, d_data, _ in converter_class.allowed_flags:
+            help = d_data.get("help", "(No information provided)")
             print(f"  {flag}")
             print_wrap(help, width=TERM_WIDTH, initial_indent=" "*4, subsequent_indent=" "*4)
         print("")
 
     if converter_class.allowed_options is None:
         print_wrap("Information has not been provided about general options accepted by this converter.", newline=True)
-    elif len(converter_class.allowed_options) == 0:
-        print_wrap("This converter does not accept any general options.", newline=True)
-    else:
+    elif len(converter_class.allowed_options) > 0:
         print_wrap("Allowed general options:")
-        for option, help in converter_class.allowed_options:
-            print(f"  {option} <val>")
+        for option, d_data, _ in converter_class.allowed_options:
+            help = d_data.get("help", "(No information provided)")
+            print(f"  {option} <val(s)>")
             print(textwrap.fill(help, initial_indent=" "*4, subsequent_indent=" "*4))
         print("")
 
@@ -609,9 +577,8 @@ def run_from_args(args: ConvertArgs):
             'from_args': '',
             'to_arg_flags': '',
             'to_args': '',
-            'coordinates': args.coord_gen,
-            'coordOption': args.coord_gen_qual,
             'upload_file': 'true'}
+    data.update(args.d_converter_args)
 
     for filename in args.l_args:
 

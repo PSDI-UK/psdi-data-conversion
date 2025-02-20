@@ -5,6 +5,7 @@ Created 2024-12-10 by Bryan Gillis.
 Class and functions to perform file conversion
 """
 
+from copy import copy
 from dataclasses import dataclass, field
 import os
 import importlib
@@ -61,10 +62,21 @@ try:
     D_REGISTERED_CONVERTERS: dict[str, type[base.FileConverter]] = dict(l_converter_names_and_classes)
     L_REGISTERED_CONVERTERS: list[str] = [name for name in D_REGISTERED_CONVERTERS.keys()]
 
+    D_CONVERTER_FLAGS = {name: D_REGISTERED_CONVERTERS[name].allowed_flags
+                         for name in D_REGISTERED_CONVERTERS}
+    D_CONVERTER_OPTIONS = {name: D_REGISTERED_CONVERTERS[name].allowed_options
+                           for name in D_REGISTERED_CONVERTERS}
+    _d_converter_args = copy(D_CONVERTER_FLAGS)
+    _d_converter_args.update(D_CONVERTER_OPTIONS)
+    D_CONVERTER_ARGS = _d_converter_args
+
 except Exception:
     print(f"ERROR: Failed to register converters. Exception was: \n{traceback.format_exc()}", file=sys.stderr)
     D_REGISTERED_CONVERTERS: dict[str, type[base.FileConverter]] = {}
     L_REGISTERED_CONVERTERS: list[str] = []
+    D_CONVERTER_FLAGS = {}
+    D_CONVERTER_OPTIONS = {}
+    D_CONVERTER_ARGS = {}
 
 
 def get_converter(*args, name=const.CONVERTER_DEFAULT, **converter_kwargs) -> base.FileConverter:

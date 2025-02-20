@@ -14,7 +14,8 @@ from unittest.mock import patch
 from psdi_data_conversion import constants as const
 from psdi_data_conversion.converter import L_REGISTERED_CONVERTERS
 from psdi_data_conversion.converters.atomsk import CONVERTER_ATO
-from psdi_data_conversion.converters.openbabel import CONVERTER_OB
+from psdi_data_conversion.converters.openbabel import (CONVERTER_OB, COORD_GEN_KEY, COORD_GEN_QUAL_KEY,
+                                                       DEFAULT_COORD_GEN, DEFAULT_COORD_GEN_QUAL)
 from psdi_data_conversion.database import (get_conversion_quality, get_converter_info, get_in_format_args,
                                            get_out_format_args, get_possible_converters, get_possible_formats)
 from psdi_data_conversion.file_io import unpack_zip_or_tar
@@ -44,7 +45,7 @@ def test_input_validity():
 
     # Test that we get what we put in for a standard execution
     cwd = os.getcwd()
-    args = get_parsed_args(f"file1 file2 -f mmcif -i {cwd} -t pdb -o {cwd}/.. -w 'Atomsk' " +
+    args = get_parsed_args(f"file1 file2 -f mmcif -i {cwd} -t pdb -o {cwd}/.. -w '{CONVERTER_ATO}' " +
                            r"--delete-input --from-flags '\-ab \-c \--example' --to-flags '\-d' " +
                            "--strict --nc --coord-gen Gen3D best -q --log-file text.log")
     assert args.l_args[0] == "file1"
@@ -58,11 +59,14 @@ def test_input_validity():
     assert args.delete_input is True
     assert args.from_flags == "-ab -c --example"
     assert args.to_flags == "-d"
-    assert args.coord_gen == "Gen3D"
-    assert args.coord_gen_qual == "best"
     assert args.quiet is True
     assert args.log_file == "text.log"
     assert args.log_mode == const.LOG_NONE
+
+    # Test Open-Babel-specific arguments
+    args = get_parsed_args(f"file1 -t pdb -w '{CONVERTER_OB}' --coord-gen Gen3D best")
+    assert args.d_converter_args[COORD_GEN_KEY] == "Gen3D"
+    assert args.d_converter_args[COORD_GEN_QUAL_KEY] == "best"
 
     # It should fail with no arguments
     with pytest.raises(FileConverterInputException):
@@ -127,9 +131,10 @@ def test_input_processing():
     assert output_check_args.output_dir == f"{cwd}/.."
 
     # Check that we get the default coordinate generation options
-    assert args.coord_gen == const.DEFAULT_COORD_GEN
-    assert args.coord_gen_qual == const.DEFAULT_COORD_GEN_QUAL
-    assert get_parsed_args("file1.mmcif -t pdb --coord-gen Gen3D").coord_gen_qual == const.DEFAULT_COORD_GEN_QUAL
+    assert args.d_converter_args[COORD_GEN_KEY] == DEFAULT_COORD_GEN
+    assert args.d_converter_args[COORD_GEN_QUAL_KEY] == DEFAULT_COORD_GEN_QUAL
+    assert (get_parsed_args("file1.mmcif -t pdb --coord-gen Gen3D").d_converter_args[COORD_GEN_QUAL_KEY] ==
+            DEFAULT_COORD_GEN_QUAL)
 
     # Check that trying to get the log file raises an exception due to the test file not existing
     with pytest.raises(FileConverterInputException):
