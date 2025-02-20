@@ -58,6 +58,7 @@ def test_input_validity():
     cwd = os.getcwd()
     args = get_parsed_args(f"file1 file2 -f mmcif -i {cwd} -t pdb -o {cwd}/.. -w '{CONVERTER_ATO}' " +
                            r"--delete-input --from-flags '\-ab \-c \--example' --to-flags '\-d' " +
+                           r"--from-options '-x xval --xopt xoptval' --to-options '-y yval --yopt yoptval' "
                            "--strict --nc --coord-gen Gen3D best -q --log-file text.log")
     assert args.l_args[0] == "file1"
     assert args.l_args[1] == "file2"
@@ -70,6 +71,8 @@ def test_input_validity():
     assert args.delete_input is True
     assert args.from_flags == "-ab -c --example"
     assert args.to_flags == "-d"
+    assert args.from_options == "-x xval --xopt xoptval"
+    assert args.to_options == "-y yval --yopt yoptval"
     assert args.quiet is True
     assert args.log_file == "text.log"
     assert args.log_mode == const.LOG_NONE

@@ -63,6 +63,8 @@ class ConvertArgs:
         self.delete_input = args.delete_input
         self.from_flags: str = args.from_flags.replace(r"\-", "-")
         self.to_flags: str = args.to_flags.replace(r"\-", "-")
+        self.from_options: str = args.from_options.replace(r"\-", "-")
+        self.to_options: str = args.to_options.replace(r"\-", "-")
         self.no_check: bool = args.nc
         self.strict: bool = args.strict
 
@@ -251,6 +253,18 @@ def get_argument_parser():
                              "<converter name>'. If the set of flags includes any spaces, it must be quoted, and if "
                              "hyphens are used, the first preceding hyphen for each flag must be backslash-escaped, "
                              "e.g. '--to-flags \"\\-a \\-bc \\--example\"'")
+    parser.add_argument("--from-options", type=str, default="",
+                        help="Any command-line options to be provided to the converter for reading in the input "
+                             "file(s). For information on the options accepted by a converter, call this script with "
+                             "'-l <converter name>'. The set of options must be quoted, and the first preceding "
+                             "hyphen for each option must be backslash-escaped, e.g. '--from-options \"\\-x xval "
+                             "--opt optval\"'")
+    parser.add_argument("--to-options", type=str, default="",
+                        help="Any command-line options to be provided to the converter for writing the output "
+                             "file(s). For information on the options accepted by a converter, call this script with "
+                             "'-l <converter name>'. The set of options must be quoted, and the first preceding "
+                             "hyphen for each option must be backslash-escaped, e.g. '--to-options \"\\-x xval "
+                             "--opt optval\"'")
     parser.add_argument("-s", "--strict", action="store_true",
                         help="If set, will fail if one of the input files has the wrong extension (including those "
                         "contained in archives, but not the archive files themselves). Otherwise, will only print a "
