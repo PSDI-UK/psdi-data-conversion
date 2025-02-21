@@ -173,8 +173,8 @@ function getQualityDetails(entries, format = false) {
         }
 
         if (quality != '') {
-            quality = "<strong>WARNING:</strong> Potential data loss or extrapolation in conversion due to mismatch " +
-                "in properties between input and output formats:\n<ul>" + quality + "</ul>";
+            quality = "<strong>WARNING:</strong> Potential data loss or extrapolation in conversion due to a " +
+                "mismatch in representation between input and output formats:\n<ul>" + quality + "</ul>";
         }
     }
 
@@ -378,21 +378,35 @@ function showConverterDetails(event) {
 
 // Create content for conversion quality details based on level of chemical information
 function qualityDetail(input, output, type) {
+
+    let label;
+    if (type.includes("2D")) {
+        label = "2D atomic coordinates are"
+    } else if (type.includes("3D")) {
+        label = "3D atomic coordinates are"
+    } else if (type.includes("Composition")) {
+        label = "Atomic composition is"
+    } else if (type.includes("Connections")) {
+        label = "Atomic connections are"
+    } else {
+        label = "The '" + type + "' property is"
+    }
+
     if (input == true && output == true) {
         qualityCriteriaCount += 1;
         qualityMeasureSum += 5;
         return '';
     }
     else if (input == true && output == false) {
-        return '<li><strong>Potential data loss:</strong> The <em>' + type +
-            '</em> property is represented in the input format but not the output format.</li>\n';
+        return '<li><strong>Potential data loss:</strong> ' + label +
+            ' represented in the input format but not the output format.</li>\n';
     }
     else if (input == false && output == true) {
         // We penalize the quality if the output format contains information that the input doesn't, as this might
         // result in info being extrapolated
         qualityCriteriaCount += 1;
-        return '<li><strong>Potential data extrapolation:</strong> The <em>' + type +
-            '</em> property is represented in the output format but not the input format.</li>\n';
+        return '<li><strong>Potential data extrapolation:</strong> ' + label +
+            ' represented in the output format but not the input format.</li>\n';
     }
     else {
         return '';
