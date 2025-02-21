@@ -122,6 +122,12 @@ function showQualityDetails(event) {
     getLevelChemInfo(in_ext, in_note, out_ext, out_note).then(entries => displayLevelChemInfo(entries));
 }
 
+/**
+ * 
+ * @param {*} entries 
+ * @param {bool} format 
+ * @returns 
+ */
 function getQualityDetails(entries, format = false) {
     var composition_in = entries[0].composition,
         composition_out = entries[1].composition,
@@ -167,7 +173,7 @@ function getQualityDetails(entries, format = false) {
 
         if (quality != '') {
             quality = "<strong>WARNING:</strong> Potential data loss or extrapolation in conversion due to mismatch " +
-                "in properties between input and output formats:\n" + quality;
+                "in properties between input and output formats:\n<ul>" + quality + "</ul>";
         }
     }
 
@@ -284,15 +290,26 @@ function hideConverterDetails() {
 
 // Show conversion offer
 function showOffer() {
-    const from_format = getFormat($("#searchFrom").val()),
-        to_format = getFormat($("#searchTo").val()),
-        quest = " like to convert a file from '" + from_format + "' to '" + to_format + "' on this site";
+
+    const [in_ext, in_note, out_ext, out_note] = getExtAndNotes();
+
+    const quest = " like to convert a file from '" + in_ext + "' to '" + out_ext + "' on this site";
 
     if ($("#name").html() == "Open Babel" || $("#name").html() == "Atomsk" || $("#name").html() == "c2x") {
         $("#info").html("");
         $("#visit").html("visit website");
         $("#question").html("Would you" + quest + " using " + $("#name").html() + "?");
         $("#yesButton").css({ display: "inline" });
+
+        // Check for any warnings about this conversion
+        getLevelChemInfo(in_ext, in_note, out_ext, out_note).then(function (entries) {
+            const [quality, _percent, _qualityText] = getQualityDetails(entries, true);
+            if (quality != "") {
+                $("#formatWarning").html(quality);
+                $("#formatWarning").css({ display: "block" });
+            }
+        });
+
     }
     else {
         $("#info").html("This converter is not supported on our website; however, you can find out how to use it at");
@@ -310,6 +327,7 @@ function hideOffer() {
     $("#converter").css({ display: "none" });
     $("#question").css({ display: "none" });
     $("#offer").css({ display: "none" });
+    $("#formatWarning").css({ display: "none" });
 }
 
 // Displays converter details given its name
@@ -365,15 +383,15 @@ function qualityDetail(input, output, type) {
         return '';
     }
     else if (input == true && output == false) {
-        return '<strong>Potential data loss:</strong> The <em>' + type +
-            '</em> property is represented in the input format but not the output format.\n';
+        return '<li><strong>Potential data loss:</strong> The <em>' + type +
+            '</em> property is represented in the input format but not the output format.</li>\n';
     }
     else if (input == false && output == true) {
         // We penalize the quality if the output format contains information that the input doesn't, as this might
         // result in info being extrapolated
         qualityCriteriaCount += 1;
-        return '<strong>Potential data extrapolation:</strong> The <em>' + type +
-            '</em> property is represented in the output format but not the input format.\n';
+        return '<li><strong>Potential data extrapolation:</strong> The <em>' + type +
+            '</em> property is represented in the output format but not the input format.</li>\n';
     }
     else {
         return '';
