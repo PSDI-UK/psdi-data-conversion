@@ -457,6 +457,32 @@ class PropertyConversionInfo:
             self.note = self.note.format(self.label)
 
 
+@dataclass
+class ConversionQualityInfo:
+    """Class describing the quality of a conversion from one format to another with a given converter.
+    """
+
+    converter_name: str
+    """The name of the converter"""
+
+    in_format: str
+    """The extension of the input file format"""
+
+    out_format: str
+    """The extension of the output file format"""
+
+    qual_str: str
+    """A string describing the quality of the conversion"""
+
+    details: str
+    """A string providing details on any possible issues with the conversion"""
+
+    d_prop_conversion_info: dict[str, PropertyConversionInfo]
+    """A dict of PropertyConversionInfo objects, which provide information on each property's support in the
+    input and output file formats and a note on the implications
+    """
+
+
 class ConversionsTable:
     """Class providing information on available file format conversions.
 
@@ -530,7 +556,7 @@ class ConversionsTable:
     def get_conversion_quality(self,
                                converter_name: str,
                                in_format: str,
-                               out_format: str) -> tuple[str, str, dict[str, PropertyConversionInfo]] | None:
+                               out_format: str) -> ConversionQualityInfo | None:
         """Get an indication of the quality of a conversion from one format to another, or if it's not possible
 
         Parameters
@@ -544,12 +570,9 @@ class ConversionsTable:
 
         Returns
         -------
-        tuple[str, dict[str, PropertyConversionInfo]] | None
-            If the conversion is not possible, returns None. If the conversion is possible, returns a tuple of:
-            - A string describing the quality of the conversion
-            - A string providing details on any possible issues with the conversion
-            - A dict of PropertyConversionInfo objects, which provide information on each property's support in the
-              input and output file formats and a note on the implications
+        ConversionQualityInfo | None
+            If the conversion is not possible, returns None. If the conversion is possible, returns a
+            `ConversionQualityInfo` object with info on the conversion
         """
 
         conv_id: int = self.parent.get_converter_info(converter_name).id
@@ -608,7 +631,12 @@ class ConversionsTable:
 
         details = "\n".join([d_prop_conversion_info[x].note for x in l_props if d_prop_conversion_info[x].note])
 
-        return qual_str, details, d_prop_conversion_info
+        return ConversionQualityInfo(converter_name=converter_name,
+                                     in_format=in_format,
+                                     out_format=out_format,
+                                     qual_str=qual_str,
+                                     details=details,
+                                     d_prop_conversion_info=d_prop_conversion_info)
 
     def get_possible_converters(self,
                                 in_format: str,
@@ -904,7 +932,7 @@ def get_format_info(name: str) -> FormatInfo:
 
 def get_conversion_quality(converter_name: str,
                            in_format: str,
-                           out_format: str) -> tuple[str, str, dict[str, PropertyConversionInfo]] | None:
+                           out_format: str) -> ConversionQualityInfo | None:
     """Get an indication of the quality of a conversion from one format to another, or if it's not possible
 
     Parameters
@@ -918,12 +946,9 @@ def get_conversion_quality(converter_name: str,
 
     Returns
     -------
-    tuple[str, dict[str, PropertyConversionInfo]] | None
-        If the conversion is not possible, returns None. If the conversion is possible, returns a tuple of:
-        - A string describing the quality of the conversion
-        - A string providing details on any possible issues with the conversion
-        - A dict of PropertyConversionInfo objects, which provide information on each property's support in the
-            input and output file formats and a note on the implications
+    ConversionQualityInfo | None
+        If the conversion is not possible, returns None. If the conversion is possible, returns a
+        `ConversionQualityInfo` object with info on the conversion
     """
 
     return get_database().conversions_table.get_conversion_quality(converter_name=converter_name,

@@ -319,13 +319,16 @@ class FileConverter:
             # Set up files to log to
             self._setup_loggers()
 
-            # Check that the requested conversion is valid unless suppressed
+            # Check that the requested conversion is valid and warn of any issues unless suppressed
             if not no_check:
                 from psdi_data_conversion.database import get_conversion_quality
                 qual = get_conversion_quality(self.name, self.from_format, self.to_format)
                 if not qual:
                     raise FileConverterInputException(f"Conversion from {self.from_format} to {self.to_format} "
                                                       f"with {self.name} is not supported.")
+                if qual.details:
+                    self.logger.warning(":\nPotential data loss or extrapolation issues with the conversion from "
+                                        f"{self.from_format} to {self.to_format}:\n" + qual.details + "\n")
 
             self.logger.debug("Finished FileConverter initialisation")
 
