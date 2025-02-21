@@ -138,13 +138,13 @@ CONVERTER_DEFAULT = 'Open Babel'
 # File format properties which are used to judge conversion quality - KEY is the key for it in the database, and LABEL
 # is how we want to print it out for the user
 QUAL_COMP_KEY = "composition"
-QUAL_COMP_LABEL = "Composition"
+QUAL_COMP_LABEL = "Atomic composition is"
 QUAL_CONN_KEY = "connections"
-QUAL_CONN_LABEL = "Connections"
+QUAL_CONN_LABEL = "Atomic connections are"
 QUAL_2D_KEY = "two_dim"
-QUAL_2D_LABEL = "2D"
+QUAL_2D_LABEL = "2D atomic coordinates are"
 QUAL_3D_KEY = "three_dim"
-QUAL_3D_LABEL = "3D"
+QUAL_3D_LABEL = "2D atomic coordinates are"
 
 D_QUAL_LABELS = {QUAL_COMP_KEY: QUAL_COMP_LABEL,
                  QUAL_CONN_KEY: QUAL_CONN_LABEL,
@@ -152,11 +152,14 @@ D_QUAL_LABELS = {QUAL_COMP_KEY: QUAL_COMP_LABEL,
                  QUAL_3D_KEY: QUAL_3D_LABEL}
 
 # Notes for conversion quality
-QUAL_NOTE_IN_UNKNOWN = "The output format supports the {} property, but its support by the input format is unknown"
-QUAL_NOTE_OUT_UNKNOWN = "The input format supports the {} property, but its support by the output format is unknown"
-QUAL_NOTE_BOTH_UNKNOWN = "The support for the {} property is unknown by both the input and output formats"
-QUAL_NOTE_IN_MISSING = "The {} property is supported by the output format but not the input format"
-QUAL_NOTE_OUT_MISSING = "The {} property is supported by the input format but not the output format"
+QUAL_NOTE_IN_UNKNOWN = ("Potential data extrapolation: {} represented in the output format but its representation in "
+                        "the input format is unknown")
+QUAL_NOTE_OUT_UNKNOWN = ("Potential data loss: {} represented in the input format, but its representation in the "
+                         "output format is unknown")
+QUAL_NOTE_BOTH_UNKNOWN = ("Potential data loss or extrapolation: {} potentially not supported in either or both of "
+                          "the input and output formats")
+QUAL_NOTE_IN_MISSING = "Potential data extrapolation: {} represented in the output format but not the input format"
+QUAL_NOTE_OUT_MISSING = "Potential data loss: {} represented in the input format but not the output format"
 
 # Conversion quality strings
 QUAL_UNKNOWN = 'unknown'
