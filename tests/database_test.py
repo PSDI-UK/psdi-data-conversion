@@ -130,13 +130,15 @@ def test_conversion_table():
     assert conversions_table.parent is database
 
     # Check we can get the correct conversion quality
-    assert get_conversion_quality(CONVERTER_OB, "pdb", "cif")[0] == const.QUAL_UNKNOWN
+    assert get_conversion_quality(CONVERTER_OB, "pdb", "cif").qual_str == const.QUAL_UNKNOWN
     assert get_conversion_quality(CONVERTER_ATO, "xyz", "inchi") is None
 
     # Do some detailed checks on one conversion
-    qual_str, details, d_prop_conv_info = get_conversion_quality(CONVERTER_OB, "xyz", "inchi")
+    qual = get_conversion_quality(CONVERTER_OB, "xyz", "inchi")
 
-    assert qual_str == const.QUAL_OKAY
+    assert qual.qual_str == const.QUAL_OKAY
+
+    details = qual.details
 
     # Check the details are as expected
     assert const.QUAL_NOTE_OUT_MISSING.format(const.QUAL_2D_LABEL) in details
@@ -150,7 +152,7 @@ def test_conversion_table():
     assert not details.endswith("\n")
 
     # Check the property info dict is as expected (mostly covered by details check, so just a couple checks here)
-    comp_prop_info = d_prop_conv_info[const.QUAL_COMP_KEY]
+    comp_prop_info = qual.d_prop_conversion_info[const.QUAL_COMP_KEY]
     assert comp_prop_info.input_supported is True
     assert comp_prop_info.output_supported is True
     assert comp_prop_info.label == const.QUAL_COMP_LABEL
