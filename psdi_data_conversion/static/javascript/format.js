@@ -121,7 +121,7 @@ function showQualityDetails(event) {
     getLevelChemInfo(in_ext, in_note, out_ext, out_note).then(entries => displayLevelChemInfo(entries));
 }
 
-function getQualityDetails(entries) {
+function getQualityDetails(entries, format = False) {
     var composition_in = entries[0].composition,
         composition_out = entries[1].composition,
         connections_in = entries[0].connections,
@@ -165,9 +165,14 @@ function getQualityDetails(entries) {
         }
 
         if (quality != '') {
-            quality = "WARNING: Potential data loss or extrapolation in conversion due to mismatch in properties " +
-                "between input and output formats:\n" + quality;
+            quality = "<strong>WARNING:</strong> Potential data loss or extrapolation in conversion due to mismatch " +
+                "in properties between input and output formats:\n" + quality;
         }
+    }
+
+    // Strip the HTML formatting from the output if it isn't desired
+    if (!format) {
+        quality = quality.replaceAll(/<.*?>/g, "");
     }
 
     return [quality, percent, qualityText];
@@ -359,15 +364,15 @@ function qualityDetail(input, output, type) {
         return '';
     }
     else if (input == true && output == false) {
-        return 'Potential data loss: The ' + type +
-            ' property is represented in the input format but not the output format.\n';
+        return '<strong>Potential data loss:</strong> The <em>' + type +
+            '</em> property is represented in the input format but not the output format.\n';
     }
     else if (input == false && output == true) {
         // We penalize the quality if the output format contains information that the input doesn't, as this might
         // result in info being extrapolated
         qualityCriteriaCount += 1;
-        return 'Potential data extrapolation: The ' + type +
-            ' property is represented in the output format but not the input format.\n';
+        return '<strong>Potential data extrapolation:</strong> The <em>' + type +
+            '</em> property is represented in the output format but not the input format.\n';
     }
     else {
         return '';
