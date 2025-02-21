@@ -118,11 +118,10 @@ function showQualityDetails(event) {
 
     const converter = sessionStorage.getItem("success").split(": ")[0]
 
-    getLevelChemInfo(in_ext, in_note, out_ext, out_note).then(formats => displayLevelChemInfo(formats, "to"));
+    getLevelChemInfo(in_ext, in_note, out_ext, out_note).then(entries => displayLevelChemInfo(entries));
 }
 
-// Assemble quality information based on level of chemical information and display it.
-function displayLevelChemInfo(entries, sel) {
+function getQualityDetails(entries) {
     var composition_in = entries[0].composition,
         composition_out = entries[1].composition,
         connections_in = entries[0].connections,
@@ -139,13 +138,16 @@ function displayLevelChemInfo(entries, sel) {
         qualityDetail(connections_in, connections_out, 'Connections') +
         qualityDetail(two_dim_in, two_dim_out, '2D coordinates') +
         qualityDetail(three_dim_in, three_dim_out, '3D coordinates');
+    let percent, qualityText;
 
     if (qualityCriteriaCount == 0) {
         quality = 'Conversion quality details not available for this converter/conversion combination.';
+        percent = "N/A";
+        qualityText = "N/A";
     }
     else {
-        var qualityText = 'very poor',
-            percent = qualityMeasureSum * 20 / qualityCriteriaCount;
+        qualityText = 'very poor';
+        percent = qualityMeasureSum * 20 / qualityCriteriaCount;
 
         percent = (Math.round(percent * 100) / 100);
 
@@ -162,10 +164,26 @@ function displayLevelChemInfo(entries, sel) {
             qualityText = 'poor';
         }
 
+        if (quality != '') {
+            quality = "WARNING: Potential data loss or extrapolation in conversion due to mismatch in properties " +
+                "between input and output formats:\n" + quality;
+        }
+    }
+
+    return [quality, percent, qualityText];
+}
+
+// Assemble quality information based on level of chemical information and display it.
+function displayLevelChemInfo(entries) {
+    var [quality, percent, qualityText] = getQualityDetails(entries);
+
+    if (percent != "N/A") {
+
         quality += '-----------------------------\n' +
             'Total score: ' + percent + '%\n' +
             'Conversion quality: ' + qualityText + '\n' +
             '-----------------------------\n';
+
     }
 
     alert(quality);
@@ -338,16 +356,18 @@ function qualityDetail(input, output, type) {
     if (input == true && output == true) {
         qualityCriteriaCount += 1;
         qualityMeasureSum += 5;
-        return type + ': 5\n';
+        return '';
     }
     else if (input == true && output == false) {
-        return type + ': WARNING: Not represented in the output format.\n';
+        return 'Potential data loss: The ' + type +
+            ' property is represented in the input format but not the output format.\n';
     }
     else if (input == false && output == true) {
         // We penalize the quality if the output format contains information that the input doesn't, as this might
         // result in info being extrapolated
         qualityCriteriaCount += 1;
-        return type + ': 0 WARNING: Not represented in the input format, but the output format has the ability to do so.\n';
+        return 'Potential data extrapolation: The ' + type +
+            ' property is represented in the output format but not the input format.\n';
     }
     else {
         return '';
