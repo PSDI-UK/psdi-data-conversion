@@ -327,8 +327,11 @@ class FileConverter:
                     raise FileConverterInputException(f"Conversion from {self.from_format} to {self.to_format} "
                                                       f"with {self.name} is not supported.")
                 if qual.details:
-                    self.logger.warning(":\nPotential data loss or extrapolation issues with the conversion from "
-                                        f"{self.from_format} to {self.to_format}:\n" + qual.details + "\n")
+                    msg = (":\nPotential data loss or extrapolation issues with the conversion from "
+                           f"{self.from_format} to {self.to_format}:\n")
+                    for detail_line in qual.details.split("\n"):
+                        msg += f"- {detail_line}\n"
+                    self.logger.warning(msg)
 
             self.logger.debug("Finished FileConverter initialisation")
 

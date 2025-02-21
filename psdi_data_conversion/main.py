@@ -351,7 +351,7 @@ def detail_converter_use(args: ConvertArgs):
                        f"possible with {qual.qual_str} conversion quality", newline=True)
             # If there are any potential issues with the conversion, print them out
             if qual.details:
-                print_wrap("Notes on this conversion:")
+                print_wrap("WARNING: Potential data loss or extrapolation issues with this conversion:")
                 for detail_line in qual.details.split("\n"):
                     print_wrap(f"- {detail_line}")
                 print("")
@@ -450,8 +450,6 @@ def detail_converter_use(args: ConvertArgs):
                            initial_indent=" "*(ARG_LEN+2),
                            subsequent_indent=" "*(ARG_LEN+2))
         print("")
-
-    print_wrap("NOTE: Support for format-specific flags and options in the CLI is yet to be implemented")
 
     # Now at the end, bring up input/output-format-specific flags and options
     if mention_input_format and mention_output_format:
