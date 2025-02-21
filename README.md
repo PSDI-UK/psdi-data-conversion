@@ -380,4 +380,4 @@ pytest
 
 ## Funding
 
-TODO: Note funding here
+PSDI acknowledges the funding support by the EPSRC grants EP/X032701/1, EP/X032663/1 and EP/W032252/1
