@@ -110,6 +110,9 @@ def get_converter(*args, name=const.CONVERTER_DEFAULT, **converter_kwargs) -> ba
         The location of output files relative to the current directory
     max_file_size : float
         The maximum allowed file size for input/output files, in MB, default 1 MB. If 0, will be unlimited
+    no_check : bool
+        If False (default), will check at setup whether or not a conversion between the desired file formats is
+        supported with the specified converter
     log_file : str | None
         If provided, all logging will go to a single file or stream. Otherwise, logs will be split up among multiple
         files for server-style logging.
@@ -271,6 +274,9 @@ def run_converter(filename: str,
     max_file_size : float
         The maximum allowed file size for input/output files, in MB, default 1 MB. If 0, will be unlimited. If an
         archive of files is provided, this will apply to the total of all files contained in it
+    no_check : bool
+        If False (default), will check at setup whether or not a conversion between the desired file formats is
+        supported with the specified converter
     log_file : str | None
         If provided, all logging will go to a single file or stream. Otherwise, logs will be split up among multiple
         files for server-style logging.
