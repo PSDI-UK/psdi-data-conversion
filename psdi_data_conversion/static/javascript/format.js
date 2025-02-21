@@ -44,6 +44,24 @@ $(document).ready(function () {
     $("#showButton").click(showQualityDetails);
 });
 
+/**
+ * Gets the input and output extensions and their notes from what's currently selected in the search boxes.
+ * @returns {Array<str>} Input extension, Input note, Output extension, Output note
+ */
+function getExtAndNotes() {
+    const in_str = $("#searchFrom").val(), // e.g. "ins: ShelX"
+        in_str_array = in_str.split(": "),
+        in_ext = in_str_array[0],           // e.g. "ins"
+        in_note = in_str_array[1];          // e.g. "ShelX"
+
+    const out_str = $("#searchTo").val(),
+        out_str_array = out_str.split(": "),
+        out_ext = out_str_array[0],
+        out_note = out_str_array[1];
+
+    return [in_ext, in_note, out_ext, out_note];
+}
+
 // Selects a file format; populates the "Conversion success" selection list given input and output IDs;
 // filters the output format list when an input format is selected, and vice versa (formats not convertible
 // to/from the selected format are removed); and removes converter details and text input (if showing)
@@ -73,15 +91,7 @@ function populateConversionSuccess(event) {
     hideOffer();
 
     try {
-        const in_str = $("#searchFrom").val(), // e.g. "ins: ShelX"
-            in_str_array = in_str.split(": "),
-            in_ext = in_str_array[0],           // e.g. "ins"
-            in_note = in_str_array[1];          // e.g. "ShelX"
-
-        const out_str = $("#searchTo").val(),
-            out_str_array = out_str.split(": "),
-            out_ext = out_str_array[0],
-            out_note = out_str_array[1];
+        const [in_ext, in_note, out_ext, out_note] = getExtAndNotes();
 
         if (this.id == "fromList") {
             toList = [];
@@ -106,22 +116,13 @@ function populateConversionSuccess(event) {
 
 // Shows how the conversion quality was determined for the selected conversion/converter combination
 function showQualityDetails(event) {
-    const in_str = sessionStorage.getItem("in_str"), // e.g. "ins: ShelX"
-        in_str_array = in_str.split(": "),
-        in_ext = in_str_array[0],                  // e.g. "ins"
-        in_note = in_str_array[1];                 // e.g. "ShelX"
-
-    const out_str = sessionStorage.getItem("out_str"),
-        out_str_array = out_str.split(": "),
-        out_ext = out_str_array[0],
-        out_note = out_str_array[1];
-
+    const [in_ext, in_note, out_ext, out_note] = getExtAndNotes();
     const converter = sessionStorage.getItem("success").split(": ")[0]
 
     getLevelChemInfo(in_ext, in_note, out_ext, out_note).then(entries => displayLevelChemInfo(entries));
 }
 
-function getQualityDetails(entries, format = False) {
+function getQualityDetails(entries, format = false) {
     var composition_in = entries[0].composition,
         composition_out = entries[1].composition,
         connections_in = entries[0].connections,
@@ -281,7 +282,7 @@ function hideConverterDetails() {
     $("h3").css({ display: "none" });
 }
 
-// Show Open Babel conversion offer
+// Show conversion offer
 function showOffer() {
     const from_format = getFormat($("#searchFrom").val()),
         to_format = getFormat($("#searchTo").val()),
@@ -304,7 +305,7 @@ function showOffer() {
     $("#offer").css({ display: "inline" });
 }
 
-// Hide Open Babel conversion offer
+// Hide conversion offer
 function hideOffer() {
     $("#converter").css({ display: "none" });
     $("#question").css({ display: "none" });
@@ -499,15 +500,7 @@ function goToConversionPage(event) {
 
 // Populates a selection list
 function populateList(entries, sel) {
-    const in_str = $("#searchFrom").val(), // e.g. "ins: ShelX"
-        in_str_array = in_str.split(": "),
-        in_ext = in_str_array[0],           // e.g. "ins"
-        in_note = in_str_array[1];          // e.g. "ShelX"
-
-    const out_str = $("#searchTo").val(),
-        out_str_array = out_str.split(": "),
-        out_ext = out_str_array[0],
-        out_note = out_str_array[1];
+    const [in_ext, in_note, out_ext, out_note] = getExtAndNotes();
 
     let rows;
 
@@ -543,10 +536,12 @@ function populateList(entries, sel) {
         }
     }
 
-    if (sel == "from" && !isOption(out_str, "toList")) {
+    const in_str = in_ext + ": " + in_note;
+    const out_str = out_ext + ": " + out_note;
+    if (sel == "from" && !isOption(in_str, "toList")) {
         filter("searchFrom");
     }
-    else if (sel == "to" && !isOption(in_str, "fromList")) {
+    else if (sel == "to" && !isOption(out_str, "fromList")) {
         filter("searchTo");
     }
 
