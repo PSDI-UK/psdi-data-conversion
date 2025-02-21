@@ -326,7 +326,9 @@ class FileConverter:
                 if not qual:
                     raise FileConverterInputException(f"Conversion from {self.from_format} to {self.to_format} "
                                                       f"with {self.name} is not supported.")
-                # TODO
+                if qual.details:
+                    self.logger.warning("Potential data loss or extrapolation issues with the conversion from "
+                                        f"{self.from_format} to {self.to_format}:\n" + qual.details)
 
             self.logger.debug("Finished FileConverter initialisation")
 
