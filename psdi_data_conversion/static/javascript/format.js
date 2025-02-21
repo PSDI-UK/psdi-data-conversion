@@ -123,10 +123,11 @@ function showQualityDetails(event) {
 }
 
 /**
- * 
+ * Compiles details on quality issues for a conversion between two formats
  * @param {*} entries 
  * @param {bool} format 
- * @returns 
+ * @returns {Array<str>} A long description of quality issues, the percent rating of the conversion, a short description
+ *                       of the quality
  */
 function getQualityDetails(entries, format = false) {
     var composition_in = entries[0].composition,
