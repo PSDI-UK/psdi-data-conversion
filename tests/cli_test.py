@@ -275,7 +275,7 @@ def test_conversion_info(capsys):
     # Check that conversion quality details are in the output as expected
     assert string_is_present_in_out(f"Conversion from '{in_format}' to '{out_format}' with {converter_name} is "
                                     f"possible with {qual.qual_str} conversion quality")
-    assert string_is_present_in_out("Notes on this conversion:")
+    assert string_is_present_in_out("WARNING: Potential data loss or extrapolation issues with this conversion:")
     assert string_is_present_in_out(const.QUAL_NOTE_OUT_MISSING.format(const.QUAL_2D_LABEL))
     assert string_is_present_in_out(const.QUAL_NOTE_OUT_MISSING.format(const.QUAL_3D_LABEL))
     assert string_is_present_in_out(const.QUAL_NOTE_IN_MISSING.format(const.QUAL_CONN_LABEL))
