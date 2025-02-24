@@ -330,8 +330,8 @@ class FileConverter:
                 from psdi_data_conversion.database import get_conversion_quality
                 qual = get_conversion_quality(self.name, self.from_format, self.to_format)
                 if not qual:
-                    raise FileConverterInputException(f"Conversion from {self.from_format} to {self.to_format} "
-                                                      f"with {self.name} is not supported.")
+                    raise FileConverterHelpException(f"Conversion from {self.from_format} to {self.to_format} "
+                                                     f"with {self.name} is not supported.")
                 if qual.details:
                     msg = (":\nPotential data loss or extrapolation issues with the conversion from "
                            f"{self.from_format} to {self.to_format}:\n")
@@ -356,8 +356,8 @@ class FileConverter:
                 self._abort(message="The application encountered an error while initializing the converter:\n" +
                             traceback.format_exc(), e=e)
             except Exception as ee:
-                if isinstance(ee, l_abort_exceptions):
-                    # Don't catch a deliberate abort; let it pass through
+                if isinstance(ee, (l_abort_exceptions, FileConverterHelpException)):
+                    # Don't catch a deliberate abort or help exception; let it pass through
                     raise
                 print("ERROR: The application encounted an error during initialization of the converter and could " +
                       "not cleanly log the error due to incomplete init: " +
