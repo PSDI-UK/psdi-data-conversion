@@ -212,11 +212,13 @@ def test_detail_converter(capsys):
         # Check that no errors were produced
         assert not captured.err
 
-    # Test we do get an error for a bad converter name
+    # Test we do get a simple error for a bad converter name
     with pytest.raises(SystemExit):
         run_with_arg_string("--list bad_converter")
     captured = capsys.readouterr()
     assert "not recognized" in captured.err
+    assert "Traceback" not in captured.out
+    assert "Traceback" not in captured.err
 
     # Test that we can also provide the converter name with -w/--with
     run_with_arg_string(f"-l -w {CONVERTER_ATO}")
@@ -343,6 +345,8 @@ def test_convert(tmp_path_factory, capsys, test_data_loc):
     captured = capsys.readouterr()
     assert "Success!" not in captured.out
     assert "ERROR" in captured.err
+    assert "Traceback" not in captured.out
+    assert "Traceback" not in captured.err
 
     # Testa call we expect to fail due to the wrong input type being provided
     bad_from_arg_string = f"{basic_arg_string} -f pdb"
@@ -350,6 +354,8 @@ def test_convert(tmp_path_factory, capsys, test_data_loc):
     captured = capsys.readouterr()
     assert "ERROR" in captured.err
     assert "WARNING" in captured.err
+    assert "Traceback" not in captured.out
+    assert "Traceback" not in captured.err
     assert "Success!" not in captured.out
 
     # Check that we can specify a file with its format instead of extension
@@ -422,6 +428,8 @@ def test_archive_convert(tmp_path_factory, capsys, test_data_loc):
         run_with_arg_string(bad_from_arg_string)
         captured = capsys.readouterr()
         assert string_with_placeholders_matches("ERROR: {}" + const.ERR_WRONG_EXTENSIONS, captured.err)
+        assert "Traceback" not in captured.out
+        assert "Traceback" not in captured.err
 
 
 def test_format_args(tmp_path_factory, test_data_loc):
