@@ -424,8 +424,8 @@ def test_archive_convert(tmp_path_factory, capsys, test_data_loc):
         assert string_with_placeholders_matches("ERROR: {}" + const.ERR_WRONG_EXTENSIONS, captured.err)
 
 
-def test_format_flags(tmp_path_factory, capsys, test_data_loc):
-    """Test that Open Babel's unique --coord-gen option is processed correctly and results in the right conversions
+def test_format_args(tmp_path_factory, capsys, test_data_loc):
+    """Test that format flags and options are processed correctly and results in the right conversions
     """
     input_dir = tmp_path_factory.mktemp("input")
     output_dir = tmp_path_factory.mktemp("output")
