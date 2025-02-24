@@ -27,7 +27,7 @@ def check_string_security(s: str):
     """
     if not string_is_safe(s):
         raise FileConverterHelpException(f"Format option '{s}' does not pass security checks. It must pass the regex "
-                                         f"{SAFE_STRING_RE.pattern}.")
+                                         f"/{SAFE_STRING_RE.pattern}/.")
 
 
 def get_option_and_value(s: str):

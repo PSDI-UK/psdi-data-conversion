@@ -106,11 +106,16 @@ class FileConversionResult:
     status_code: int = 0
 
 
-def abort_raise(status_code, *args, **kwargs):
+def abort_raise(status_code: int,
+                *args,
+                e: Exception | None = None,
+                **kwargs):
     """Callback for aborting during a file conversion, which passes relevant information to an exception of the
     appropriate type
     """
-    if status_code == const.STATUS_CODE_SIZE:
+    if e:
+        raise e
+    elif status_code == const.STATUS_CODE_SIZE:
         exception_class = FileConverterSizeException
     else:
         exception_class = FileConverterAbortException
@@ -345,10 +350,11 @@ class FileConverter:
             # Try to run the standard abort method. There's a good chance this will fail though depending on what went
             # wrong when during init, so we fallback to printing the exception to stderr
             try:
-                self.logger.error(f"Exception triggering an abort was raised while initializing the converter. "
-                                  f"Exception was type '{type(e)}', with message: {str(e)}")
+                if not isinstance(e, FileConverterHelpException):
+                    self.logger.error(f"Exception triggering an abort was raised while initializing the converter. "
+                                      f"Exception was type '{type(e)}', with message: {str(e)}")
                 self._abort(message="The application encountered an error while initializing the converter:\n" +
-                            traceback.format_exc())
+                            traceback.format_exc(), e=e)
             except Exception as ee:
                 if isinstance(ee, l_abort_exceptions):
                     # Don't catch a deliberate abort; let it pass through
@@ -437,17 +443,22 @@ class FileConverter:
                 self.logger.error(f"Unexpected exception raised while running the converter, of type '{type(e)}' with "
                                   f"message: {str(e)}")
                 raise
-            self.logger.error(f"Exception triggering an abort was raised while running the converter. Exception was "
-                              f"type '{type(e)}', with message: {str(e)}")
+            if not isinstance(e, FileConverterHelpException):
+                self.logger.error(f"Exception triggering an abort was raised while running the converter. Exception "
+                                  f"was type '{type(e)}', with message: {str(e)}")
             self._abort(message="The application encountered an error while running the converter:\n" +
-                        traceback.format_exc())
+                        traceback.format_exc(), e=e)
 
         return FileConversionResult(output_filename=self.out_filename,
                                     log_filename=self.output_log,
                                     in_size=self.in_size,
                                     out_size=self.out_size)
 
-    def _abort(self, status_code=const.STATUS_CODE_GENERAL, message=None, **kwargs):
+    def _abort(self,
+               status_code: int = const.STATUS_CODE_GENERAL,
+               message: str | None = None,
+               e: Exception | None = None,
+               **kwargs):
         """Abort the conversion, reporting the desired message to the user at the top of the output
 
         Parameters
@@ -457,6 +468,8 @@ class FileConverter:
         message : str | None
             If provided, this message will be logged in the user output log at the top of the file and will appear in
             any raised exception if possible. This should typically explain the reason the process failed
+        e : Exception | None
+            The caught exception which triggered this abort, if any
         **kwargs : Any
             Any additional keyword arguments are passed to the `self.abort_callback` function if it accepts them
 
@@ -476,6 +489,11 @@ class FileConverter:
         else:
             self.logger.debug(f"Application aborting, so cleaning up output file {self.out_filename}")
 
+        # If we have a Help exception, override the message with its message
+        if isinstance(e, FileConverterHelpException):
+            self.logger.debug("Help exception triggered, so only using its message for output")
+            message = str(e)
+
         if message:
             # If we're adding a message in server mode, read in any prior logs, clear the log, write the message, then
             # write the prior logs
@@ -489,12 +507,13 @@ class FileConverter:
                     fo.write(prior_output_log)
 
             # Note this message in the dev logger as well
-            self.logger.error(message)
+            if not isinstance(e, FileConverterHelpException):
+                self.logger.error(message)
 
         # Call the abort callback function now. We first try to add information to it, but in case that isn't supported,
         # we fall back to just calling it with the status code
         try:
-            self.abort_callback(status_code, message, **kwargs)
+            self.abort_callback(status_code, message, e=e, **kwargs)
         except TypeError:
             self.abort_callback(status_code)
 

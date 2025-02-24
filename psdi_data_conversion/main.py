@@ -629,6 +629,9 @@ def run_from_args(args: ConvertArgs):
                                               log_level=args.log_level,
                                               delete_input=args.delete_input,
                                               refresh_local_log=False)
+        except FileConverterHelpException as e:
+            print_wrap(f"ERROR: {e}")
+            continue
         except FileConverterAbortException as e:
             print_wrap(f"ERROR: Attempt to convert file {filename} aborted with status code {e.status_code} and "
                        f"message:\n{e}\n", err=True)
