@@ -113,5 +113,5 @@ def test_format_arg_security(tmp_path_factory, capsys, test_data_loc):
         run_with_arg_string(arg_string)
 
         captured = capsys.readouterr()
-        assert "ERROR" in captured.out, arg_string
-        assert "security" in captured.out, arg_string
+        assert "ERROR" in captured.err, arg_string
+        assert "security" in captured.err, arg_string
