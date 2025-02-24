@@ -112,9 +112,11 @@ class OBFileConverter(FileConverter):
 
         # Add option flags and arguments as appropriate
         for char in from_flags:
+            check_string_security(char)
             ob_conversion.AddOption(char, ob_conversion.INOPTIONS)
 
         for char in to_flags:
+            check_string_security(char)
             ob_conversion.AddOption(char, ob_conversion.OUTOPTIONS)
 
         self.data["read_flags_args"] = []
