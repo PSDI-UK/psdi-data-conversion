@@ -10,9 +10,16 @@ import re
 # Short list of safe allowed characters:
 # \w: All letters and digits
 # \s: All whitespace characters
-# .: The period character
-# \-: The hyphen character
-_SAFE_CHARS = r"[\w\s.\-]"
+# .: Period
+# \-: Hyphen
+# :: Colon
+# +: Plus symbol
+# *: Asterisk
+# =: Equals sign
+# $: Dollar sign
+# /: Forward-slash
+# \\: Backslash
+_SAFE_CHARS = r"[\w\s.\-:+*=$/\\]"
 SAFE_CHAR_RE = re.compile(_SAFE_CHARS)
 SAFE_STRING_RE = re.compile(f"{_SAFE_CHARS}*")
 
