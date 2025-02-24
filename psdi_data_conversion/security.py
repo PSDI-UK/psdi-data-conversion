@@ -19,11 +19,13 @@ SAFE_STRING_RE = re.compile(f"{_SAFE_CHARS}*")
 
 def char_is_safe(s: str):
     """Checks whether a character is in the set of predefined safe characters.
+
+    Will return False if the string does not contain exactly one character.
     """
-    return bool(SAFE_CHAR_RE.match(s))
+    return bool(SAFE_CHAR_RE.fullmatch(s))
 
 
 def string_is_safe(s: str):
     """Checks whether a string contains only characters in the predefined list of safe characters.
     """
-    return bool(SAFE_STRING_RE.match(s))
+    return bool(SAFE_STRING_RE.fullmatch(s))
