@@ -92,13 +92,12 @@ def test_format_arg_security(tmp_path_factory, capsys, test_data_loc):
     basic_arg_string = f"{input_filename} -t {to_format} -i {input_dir} -o {output_dir}"
 
     # Run for each set of flags that might trigger a security error
-    for l_args in (("'; stop'", None, None, None),
-                   (None, "`command`", None, None),
-                   (None, None, "} cmd", None),
-                   (None, None, None, "(nope)"),
-                   (None, None, None, "'quoted'"),):
-
-        from_flags, to_flags, from_options, to_options = l_args
+    for from_flags, to_flags, from_options, to_options in (("'; stop'", None, None, None),
+                                                           (None, "'`command`'", None, None),
+                                                           (None, None, "'this & that'", None),
+                                                           (None, None, None, "(nope)"),
+                                                           (None, None, None, "'now || never'"),
+                                                           (None, None, None, "'} a b'"),):
 
         arg_string = basic_arg_string
         if from_flags is not None:
@@ -114,5 +113,5 @@ def test_format_arg_security(tmp_path_factory, capsys, test_data_loc):
         run_with_arg_string(arg_string)
 
         captured = capsys.readouterr()
-        assert "ERROR" in captured.out, l_args
-        assert "security" in captured.out, l_args
+        assert "ERROR" in captured.out, arg_string
+        assert "security" in captured.out, arg_string
