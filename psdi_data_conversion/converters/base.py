@@ -20,6 +20,7 @@ import traceback
 from typing import Any
 
 from psdi_data_conversion import constants as const, log_utility
+from psdi_data_conversion.security import SAFE_STRING_RE, string_is_safe
 
 try:
     # werkzeug is installed in the optional dependency Flask. It's only used here to recognize an exception type,
@@ -641,13 +642,19 @@ class ScriptFileConverter(FileConverter):
 
         self.logger.debug(f"Performing conversion with ScriptFileConverter using script '{self.script}'")
 
-        if "from_flags" not in self.data:
-            self.data["from_flags"] = ""
-        if "to_flags" not in self.data:
-            self.data["to_flags"] = ""
-        print(self.to_format)
+        from_flags = self.data.get("from_flags", "")
+        to_flags = self.data.get("from_flags", "")
+        from_options = self.data.get("from_options", "")
+        to_options = self.data.get("from_options", "")
+
+        # Check that all user-provided input passes security checks
+        for user_args in [from_flags, to_flags, from_options, to_options]:
+            if not string_is_safe(user_args):
+                raise FileConverterHelpException(f"Provided argument '{user_args}' does not pass security check - it "
+                                                 f"must match the regex {SAFE_STRING_RE.pattern}.")
+
         process = subprocess.run(['sh', f'psdi_data_conversion/scripts/{self.script}', '--' + self.to_format,
-                                  self.in_filename, self.out_filename, self.data["from_flags"], self.data["to_flags"]],
+                                  self.in_filename, self.out_filename, from_flags, to_flags, from_options, to_options],
                                  capture_output=True, text=True)
 
         self.out = process.stdout
