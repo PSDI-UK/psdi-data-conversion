@@ -26,6 +26,10 @@ D_DIST_NAME_HEADS = {LINUX_LABEL: LINUX_NAME_HEAD,
                      MAC_LABEL: MAC_NAME_HEAD, }
 
 
+# Determine the fully-qualified binary directory when this module is first imported
+BIN_DIR: str = os.path.join(psdi_data_conversion.__path__[0], "bin")
+
+
 def _get_dist():
     """Determine the current platform
     """
@@ -35,13 +39,6 @@ def _get_dist():
             dist = label
             break
     return dist
-
-
-# Determine the dist when this module is first imported
-DIST = _get_dist()
-
-# Determine the fully-qualified binary directory when this module is first imported
-BIN_DIR: str = os.path.join(psdi_data_conversion.__path__[0], "bin")
 
 
 def get_bin_path(bin_name: str) -> str | None:
@@ -59,10 +56,11 @@ def get_bin_path(bin_name: str) -> str | None:
     """
 
     # If DIST is None, then the user's OS/distribution is unsupported
-    if not DIST:
+    dist = _get_dist()
+    if not dist:
         return None
 
-    bin_path = os.path.join(BIN_DIR, DIST, bin_name)
+    bin_path = os.path.join(BIN_DIR, dist, bin_name)
 
     # Check if the binary exists in the path for the user's OS/distribution
     if not os.path.isfile(bin_path):
