@@ -38,7 +38,7 @@ BIN_DIR: str = os.path.join(psdi_data_conversion.__path__[0], "bin")
 
 
 def get_bin_path(bin_name: str) -> str | None:
-    """Gets the path to an appropriate binary for the user's OS/distribution, if one exists
+    """Gets the path to an appropriate binary for the user's platform, if one exists
 
     Parameters
     ----------
@@ -48,7 +48,7 @@ def get_bin_path(bin_name: str) -> str | None:
     Returns
     -------
     str | None
-        If an appropriate binary exists for the user's distribution, a fully-qualified path to it. Otherwise, None
+        If an appropriate binary exists for the user's platform, a fully-qualified path to it. Otherwise, None
     """
 
     # If DIST is None, then the user's OS/distribution is unsupported
@@ -65,7 +65,7 @@ def get_bin_path(bin_name: str) -> str | None:
 
 
 def bin_exists(bin_name: str) -> bool:
-    """Gets whether or not a binary of the given name exists for the user's distribution
+    """Gets whether or not a binary of the given name exists for the user's platform
     """
 
     return get_bin_path(bin_name) is not None

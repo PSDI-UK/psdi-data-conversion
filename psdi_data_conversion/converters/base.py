@@ -669,7 +669,7 @@ class ScriptFileConverter(FileConverter):
 
     required_bin: str | None = None
     """The name of the binary called by the script, relative to the ``psdi_data_conversion/bin/$DIST`` directory,
-    where `DIST` is 'linux', 'windows', and/or 'mac', depending on the user's OS and distribution. The code will check
+    where `DIST` is 'linux', 'windows', and/or 'mac', depending on the user's platform. The code will check
     that a binary by this name exists for the user's distribution, and will only register this converter if one is
     found.
     """
