@@ -31,6 +31,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ steps.auth.outputs.token }}
         run: |
+          git remote set-url origin https://<TOKEN>@github.com/PSDI-UK/psdi-data-conversion
           git config --global user.name 'psdi-update-bot'
           git config --global user.email 'psdi-update-bot@users.noreply.github.com'
           git commit -am "Automated update of metadata vocab" || echo "No changes to commit"
