@@ -12,6 +12,8 @@ jobs:
     name: Update common assets
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
       - name: Authenticate with GitHub App
         id: auth
@@ -19,10 +21,6 @@ jobs:
         with:
           app_id: ${{ secrets.PSDI_UPDATE_BOT_ID }}
           private_key: ${{ secrets.PSDI_UPDATE_BOT_PRIVATE_KEY }}
-
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
       - name: Fetch assets
         run: |
@@ -35,4 +33,5 @@ jobs:
         run: |
           git config --global user.name 'psdi-update-bot'
           git config --global user.email 'psdi-update-bot@users.noreply.github.com'
-          git commit -am "Automated update of metadata vocab" && git push || echo "No changes to commit"
+          git commit -am "Automated update of metadata vocab" || echo "No changes to commit"
+          git push
