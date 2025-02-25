@@ -542,7 +542,7 @@ a svg {
   }
 }
 
-.navbar__title {
+.navbar__title h5 {
   display: unset;
   color  : var(--ifm-heading-color);
   margin : 0 0 0.5rem 0.5rem;
