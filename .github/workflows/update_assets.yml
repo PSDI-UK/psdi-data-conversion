@@ -15,25 +15,10 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Authenticate with GitHub App
-        id: auth
-        uses: tibdex/github-app-token@v1
-        with:
-          app_id: ${{ secrets.PSDI_UPDATE_BOT_ID }}
-          private_key: ${{ secrets.PSDI_UPDATE_BOT_PRIVATE_KEY }}
-
       - name: Fetch assets
         run: |
           ./scripts/fetch-common-style.sh
           ./scripts/make-index-html.sh
-
-      - name: Commit and push updated assets
-        run: |
-          git remote set-url origin https://${{ steps.auth.outputs.token }}@github.com/PSDI-UK/psdi-data-conversion
-          git config --global user.name 'psdi-update-bot'
-          git config --global user.email 'psdi-update-bot@users.noreply.github.com'
-          git commit -am "Automated update of metadata vocab" || echo "No changes to commit"
-          git push
 
       - name: Check for changes in staged files
         id: check-changes
