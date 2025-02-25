@@ -47,6 +47,11 @@ try:
             return None
 
         converter_class = module.converter
+
+        # Check that the converter passes necessary checks to be registered
+        if not converter_class.can_be_registered():
+            return None
+
         name = converter_class.name
 
         return NameAndClass(name, converter_class)
@@ -54,7 +59,8 @@ try:
     # Get a list of all converter names and FileConverter subclasses
     l_converter_names_and_classes = [get_converter_name_and_class(module_name) for
                                      module_name in l_converter_modules]
-    # Remove the None entry from the list, which corresponds to the 'base' module
+    # Remove the None entry from the list, which corresponds to the 'base' module and any converters that can't be
+    # registered
     l_converter_names_and_classes = [x for x in l_converter_names_and_classes if x is not None]
 
     # Make constant dict and list of registered converters

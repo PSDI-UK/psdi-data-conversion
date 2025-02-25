@@ -20,6 +20,7 @@ import traceback
 from typing import Any
 
 from psdi_data_conversion import constants as const, log_utility
+from psdi_data_conversion.dist import bin_exists
 from psdi_data_conversion.security import SAFE_STRING_RE, string_is_safe
 
 try:
@@ -156,6 +157,14 @@ class FileConverter:
         """Run the conversion with the desired converter. This must be implemented for each converter class.
         """
         pass
+
+    @classmethod
+    def can_be_registered(cls) -> bool:
+        """If the converter class may not be able to be registered (for instance, it relies on a binary which isn't
+        supported on all platforms), this method should be overridden to perform necessary checks to indicate if it
+        can be registered or not.
+        """
+        return True
 
     # If the converter supports flags specific to the input file format, set the below to True for the subclass so help
     # text will be properly displayed notifying the user that they can request this by providing an input format (and
@@ -656,6 +665,23 @@ class ScriptFileConverter(FileConverter):
     """
 
     script: str | None = None
+    """The name of the script to run this converter, relative to the ``psdi_data_conversion/scripts`` directory"""
+
+    required_bin: str | None = None
+    """The name of the binary called by the script, relative to the ``psdi_data_conversion/bin/$DIST`` directory,
+    where `DIST` is 'linux', 'windows', and/or 'mac', depending on the user's OS and distribution. The code will check
+    that a binary by this name exists for the user's distribution, and will only register this converter if one is
+    found.
+    """
+
+    @classmethod
+    def can_be_registered(cls) -> bool:
+        """If a binary is required for this script, check that it exists for the user's OS/distribution. If one isn't
+        required (`cls.required_bin` is None), also return True
+        """
+        if cls.required_bin is None:
+            return True
+        return bin_exists(cls.required_bin)
 
     def _convert(self):
 

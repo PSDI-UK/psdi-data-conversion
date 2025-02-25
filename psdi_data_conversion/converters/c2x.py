@@ -16,6 +16,7 @@ class C2xFileConverter(ScriptFileConverter):
 
     name = CONVERTER_C2X
     script = "c2x.sh"
+    required_bin = "c2x"
     info = "See documentation for c2x at https://www.c2x.org.uk/"
 
 

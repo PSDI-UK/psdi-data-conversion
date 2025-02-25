@@ -16,6 +16,7 @@ class AtoFileConverter(ScriptFileConverter):
 
     name = CONVERTER_ATO
     script = "atomsk.sh"
+    required_bin = "atomsk"
     info = "See documentation for Atomsk at https://atomsk.univ-lille.fr/"
 
 
