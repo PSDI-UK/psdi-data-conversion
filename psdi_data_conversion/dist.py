@@ -25,13 +25,20 @@ D_DIST_NAME_HEADS = {LINUX_LABEL: LINUX_NAME_HEAD,
                      WINDOWS_LABEL: WINDOWS_NAME_HEAD,
                      MAC_LABEL: MAC_NAME_HEAD, }
 
+
+def _get_dist():
+    """Determine the current platform
+    """
+    dist: str | None = None
+    for label, name_head in D_DIST_NAME_HEADS.items():
+        if sys.platform.startswith(name_head):
+            dist = label
+            break
+    return dist
+
+
 # Determine the dist when this module is first imported
-_dist: str | None = None
-for label, name_head in D_DIST_NAME_HEADS.items():
-    if sys.platform.startswith(name_head):
-        _dist = label
-        break
-DIST = _dist
+DIST = _get_dist()
 
 # Determine the fully-qualified binary directory when this module is first imported
 BIN_DIR: str = os.path.join(psdi_data_conversion.__path__[0], "bin")
