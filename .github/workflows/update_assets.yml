@@ -12,6 +12,14 @@ jobs:
     name: Update common assets
     runs-on: ubuntu-latest
     steps:
+
+      - name: Authenticate with GitHub App
+        id: auth
+        uses: tibdex/github-app-token@v1
+        with:
+          app_id: ${{ secrets.PSDI_UPDATE_BOT_ID }}
+          private_key: ${{ secrets.PSDI_UPDATE_BOT_PRIVATE_KEY }}
+
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
@@ -22,6 +30,8 @@ jobs:
           ./scripts/make-index-html.sh
 
       - name: Commit and push updated assets
+        env:
+          GITHUB_TOKEN: ${{ steps.auth.outputs.token }}
         run: |
           git config --global user.name 'PSDI Automated Workflow'
           git config --global user.email 'psdi@users.noreply.github.com'
