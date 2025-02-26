@@ -5,6 +5,7 @@ Created 2025-01-15 by Bryan Gillis.
 Tests of the command-line interface
 """
 
+from math import isclose
 import os
 import pytest
 import shlex
@@ -432,6 +433,25 @@ def test_archive_convert(tmp_path_factory, capsys, test_data_loc):
         assert "Traceback" not in captured.err
 
 
+def check_numerical_text_match(text: str, ex_text: str, fail_msg: str | None = None) -> None:
+    """Check that the contents of two files match without worrying about whitespace or negligible numerical differences.
+    """
+
+    # We want to check they're the same without worrying about whitespace (which doesn't matter for this format),
+    # so we accomplish this by using the string's `split` method, which splits on whitespace by default
+    l_words, l_ex_words = text.split(), ex_text.split()
+
+    # And we also want to avoid spurious false negatives from numerical comparisons (such as one file having
+    # negative zero and the other positive zero - yes, this happened), so we convert words to floats if possible
+    for word, ex_word in zip(l_words, l_ex_words):
+        try:
+            val, ex_val = float(word), float(ex_word)
+            assert isclose(val, ex_val), fail_msg
+        except ValueError:
+            # If it can't be converted to a float, treat it as a string and require an exact match
+            assert word == ex_word, fail_msg
+
+
 def test_format_args(tmp_path_factory, test_data_loc):
     """Test that format flags and options are processed correctly and results in the right conversions
     """
@@ -479,12 +499,9 @@ def test_format_args(tmp_path_factory, test_data_loc):
         assert os.path.isfile(ex_output_file), f"Expected output file {ex_output_file} does not exist"
 
         # Check that the contents of this file match what's expected
-        text = open(ex_output_file, "r").read()
-        ex_text = open(os.path.join(test_data_loc, ex_file), "r").read()
-
-        # We want to check they're the same without worrying about whitespace (which doesn't matter for this format),
-        # so we accomplish this by using the string's `split` method, which splits on whitespace by default
-        assert text.split() == ex_text.split(), f"Format flag test failed for {ex_file}"
+        check_numerical_text_match(text=open(ex_output_file, "r").read(),
+                                   ex_text=open(os.path.join(test_data_loc, ex_file), "r").read(),
+                                   fail_msg=f"Format flag test failed for {ex_file}")
 
 
 def test_coord_gen(tmp_path_factory, test_data_loc):
@@ -524,9 +541,6 @@ def test_coord_gen(tmp_path_factory, test_data_loc):
         assert os.path.isfile(ex_output_file), f"Expected output file {ex_output_file} does not exist"
 
         # Check that the contents of this file match what's expected
-        text = open(ex_output_file, "r").read()
-        ex_text = open(os.path.join(test_data_loc, ex_file), "r").read()
-
-        # We want to check they're the same without worrying about whitespace (which doesn't matter for this format),
-        # so we accomplish this by using the string's `split` method, which splits on whitespace by default
-        assert text.split() == ex_text.split(), f"Coord Gen test failed for {ex_file}"
+        check_numerical_text_match(text=open(ex_output_file, "r").read(),
+                                   ex_text=open(os.path.join(test_data_loc, ex_file), "r").read(),
+                                   fail_msg=f"Coord Gen test failed for {ex_file}")
