@@ -68,7 +68,7 @@ def test_input_validity():
     assert args.input_dir == cwd
     assert args.to_format == "pdb"
     assert args.output_dir == f"{cwd}/.."
-    assert args.name == "Atomsk"
+    assert args.name == CONVERTER_C2X
     assert args.no_check is True
     assert args.strict is True
     assert args.delete_input is True
@@ -227,7 +227,7 @@ def test_detail_converter(capsys):
     run_with_arg_string(f"-l -w {CONVERTER_C2X}")
     captured = capsys.readouterr()
     assert not captured.err
-    assert CONVERTER_ATO in captured.out
+    assert CONVERTER_C2X in captured.out
     assert const.CONVERTER_DEFAULT not in captured.out
 
     # On Mac, test that we get a warning with Atomsk
