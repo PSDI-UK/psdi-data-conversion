@@ -20,7 +20,7 @@ from psdi_data_conversion.converters.openbabel import (CONVERTER_OB, COORD_GEN_K
                                                        DEFAULT_COORD_GEN, DEFAULT_COORD_GEN_QUAL)
 from psdi_data_conversion.database import (get_conversion_quality, get_converter_info, get_in_format_args,
                                            get_out_format_args, get_possible_converters, get_possible_formats)
-from psdi_data_conversion.dist import MAC_LABEL, get_dist
+from psdi_data_conversion.dist import LINUX_LABEL, MAC_LABEL, get_dist
 from psdi_data_conversion.file_io import unpack_zip_or_tar
 from psdi_data_conversion.log_utility import string_with_placeholders_matches
 from psdi_data_conversion.main import FileConverterInputException, main, parse_args
@@ -451,10 +451,18 @@ def check_numerical_text_match(text: str, ex_text: str, fail_msg: str | None = N
 
     # And we also want to avoid spurious false negatives from numerical comparisons (such as one file having
     # negative zero and the other positive zero - yes, this happened), so we convert words to floats if possible
+
+    # We allow greater tolerance for numerical inaccuracy on platforms other than Linux, which is where the expected
+    # files were originally created
+    rel_tol = 0.001
+    if not get_dist() == LINUX_LABEL:
+        rel_tol = 0.1
+
     for word, ex_word in zip(l_words, l_ex_words):
         try:
             val, ex_val = float(word), float(ex_word)
-            assert isclose(val, ex_val, rel_tol=0.10, abs_tol=1e-4), fail_msg
+
+            assert isclose(val, ex_val, rel_tol=rel_tol, abs_tol=1e-4), fail_msg
         except ValueError:
             # If it can't be converted to a float, treat it as a string and require an exact match
             assert word == ex_word, fail_msg
