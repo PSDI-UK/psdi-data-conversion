@@ -22,4 +22,4 @@ on:
       
 jobs:
   test-package:
-    uses: ./.github/workflows/test_package.yml
+    uses: ./.github/workflows/test-python.yml
