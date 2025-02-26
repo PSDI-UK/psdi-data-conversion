@@ -17,9 +17,16 @@ class C2xFileConverter(ScriptFileConverter):
     name = CONVERTER_C2X
     script = "c2x.sh"
     required_bin = "c2x"
-    info = "See documentation for c2x at https://www.c2x.org.uk/"
+    info = ("A c2x binaries compiled for 64-bit Linux and MacOS systems is distributed with this package. It may be "
+            "registered on other systems by compiling it locally and adding the compiled 'c2x' binary (with this "
+            "exact name - rename it or make a symbolic link to it if necessary) to your $PATH.\n"
+            "\n"
+            "c2x is licensed under GPLv3, the full text of which may be found at "
+            "https://www.gnu.org/licenses/gpl-3.0.en.html. Its binary is redistributed here under the terms of this "
+            "license, and any further redistribution must also follow these terms. Its corresponding source code "
+            "may be downloaded from https://www.c2x.org.uk/downloads/")
 
 
 # Assign this converter to the `converter` variable - this lets the psdi_data_conversion.converter module detect and
-# register it, making it available for use by the CLI and web app
+# register it, making it available for use by the command-line script, python library, and web app
 converter = C2xFileConverter
