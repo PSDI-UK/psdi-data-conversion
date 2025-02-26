@@ -14,14 +14,14 @@ permissions:
 jobs:
   build:
     runs-on: ${{ matrix.os }}
-    continue-on-error: ${{ matrix.experimental }}
+    continue-on-error: ${{ matrix.secondary }}
     strategy:
       matrix:
         os: [ubuntu-latest]
-        experimental: [false]
+        secondary: [false]
         include:
           - os: [macos-latest]
-            experimental: true
+            secondary: true
 
     steps:
       - uses: actions/checkout@v4
