@@ -16,7 +16,8 @@ if [ -z $DIST ]; then
   DIST=$DEFAULT_DIST
 fi
 
-psdi_data_conversion/bin/$DIST/atomsk <<EOD
+# psdi_data_conversion/bin/$DIST/atomsk <<EOD
+psdi_data_conversion/bin/linux/atomsk <<EOD
 read $2
 write $3
 clear
