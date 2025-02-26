@@ -17,7 +17,7 @@ class C2xFileConverter(ScriptFileConverter):
     name = CONVERTER_C2X
     script = "c2x.sh"
     required_bin = "c2x"
-    info = ("A c2x binaries compiled for 64-bit Linux and MacOS systems is distributed with this package. It may be "
+    info = ("c2x binaries compiled for 64-bit Linux and MacOS systems are distributed with this package. It may be "
             "registered on other systems by compiling it locally and adding the compiled 'c2x' binary (with this "
             "exact name - rename it or make a symbolic link to it if necessary) to your $PATH.\n"
             "\n"
