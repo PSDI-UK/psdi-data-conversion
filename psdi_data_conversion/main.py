@@ -25,14 +25,15 @@ from psdi_data_conversion.database import (get_conversion_quality, get_converter
 from psdi_data_conversion.file_io import split_archive_ext
 
 
-def print_wrap(s, newline=False, err=False, **kwargs):
+def print_wrap(s: str, newline=False, err=False, **kwargs):
     """Print a string wrapped to the terminal width
     """
     if err:
         file = sys.stderr
     else:
         file = sys.stdout
-    print(textwrap.fill(s, width=TERM_WIDTH, **kwargs), file=file)
+    for line in s.split("\n"):
+        print(textwrap.fill(line, width=TERM_WIDTH, **kwargs), file=file)
     if newline:
         print("")
 
@@ -343,6 +344,9 @@ def detail_converter_use(args: ConvertArgs):
 
     print_wrap(f"{converter_info.name}: {converter_info.description} ({converter_info.url})", break_long_words=False,
                break_on_hyphens=False, newline=True)
+
+    if converter_class.info:
+        print_wrap(converter_class.info, break_long_words=False, break_on_hyphens=False, newline=True)
 
     # If both an input and output format are specified, provide the degree of success for this conversion. Otherwise
     # list possible input output formats
