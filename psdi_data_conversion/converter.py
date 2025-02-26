@@ -69,7 +69,7 @@ try:
 
     # Make dicts of flags, options, and args (combined flags and options) for each converter
     _d_converter_flags, _d_converter_options, _d_converter_args = {}, {}, {}
-    for name, converter_class in D_REGISTERED_CONVERTERS.items():
+    for name, converter_class in D_SUPPORTED_CONVERTERS.items():
         l_flags = converter_class.allowed_flags if converter_class.allowed_flags else ()
         l_options = converter_class.allowed_options if converter_class.allowed_options else ()
         _d_converter_flags[name] = l_flags
