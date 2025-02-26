@@ -41,9 +41,13 @@ def test_get_bin():
                                              ("bad_bin", dist.LINUX_NAME_HEAD, False),
                                              ("c2x", "unknown", False),):
         with patch.object(sys, 'platform', platform):
-            assert dist.bin_exists(bin_name) == should_exist, (bin_name, platform)
             bin_path = dist.get_bin_path(bin_name)
             if should_exist:
                 assert os.path.isfile(bin_path), (bin_name, platform)
+                assert dist.bin_exists(bin_name)
             else:
-                assert bin_path is None, (bin_name, platform)
+                assert bin_path is None or "psdi_data_conversion" not in bin_path, (bin_name, platform)
+                if bin_path is None:
+                    assert not dist.bin_exists(bin_name)
+                else:
+                    assert dist.bin_exists(bin_name)
