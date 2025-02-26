@@ -30,7 +30,7 @@ D_DIST_NAME_HEADS = {LINUX_LABEL: LINUX_NAME_HEAD,
 BIN_DIR: str = os.path.join(psdi_data_conversion.__path__[0], "bin")
 
 
-def _get_dist():
+def get_dist():
     """Determine the current platform
     """
     dist: str | None = None
@@ -56,7 +56,7 @@ def get_bin_path(bin_name: str) -> str | None:
     """
 
     # If DIST is None, then the user's OS/distribution is unsupported
-    dist = _get_dist()
+    dist = get_dist()
     if not dist:
         return None
 

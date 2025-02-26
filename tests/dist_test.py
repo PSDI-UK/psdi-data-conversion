@@ -17,11 +17,11 @@ def test_get_dist():
     # Test each known platform
     for label, platform in dist.D_DIST_NAME_HEADS.items():
         with patch.object(sys, 'platform', platform):
-            assert dist._get_dist() == label
+            assert dist.get_dist() == label
 
     # Test an unknown platform
     with patch.object(sys, 'platform', "unknown"):
-        assert dist._get_dist() is None
+        assert dist.get_dist() is None
 
 
 def test_get_bin():
