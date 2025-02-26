@@ -16,7 +16,7 @@ import textwrap
 from psdi_data_conversion import constants as const
 from psdi_data_conversion.constants import CL_SCRIPT_NAME, CONVERTER_DEFAULT, TERM_WIDTH
 from psdi_data_conversion.converter import (D_CONVERTER_ARGS, D_REGISTERED_CONVERTERS, L_REGISTERED_CONVERTERS,
-                                            run_converter)
+                                            L_SUPPORTED_CONVERTERS, run_converter)
 from psdi_data_conversion.converters.base import (FileConverterAbortException, FileConverterInputException,
                                                   FileConverterHelpException)
 from psdi_data_conversion.database import (get_conversion_quality, get_converter_info, get_format_info,
@@ -528,7 +528,26 @@ def detail_possible_converters(from_format: str, to_format: str):
 def get_supported_converters():
     """Gets a string containing a list of supported converters
     """
-    return "Available converters: \n\n    " + "\n    ".join(L_REGISTERED_CONVERTERS)
+
+    MSG_NOT_REGISTERED = "(supported but not registered)"
+
+    l_converters: list[str] = []
+    any_not_registered = False
+    for converter_name in L_SUPPORTED_CONVERTERS:
+        converter_text = converter_name
+        if converter_name not in L_REGISTERED_CONVERTERS:
+            converter_text += f" {MSG_NOT_REGISTERED}"
+            any_not_registered = True
+        l_converters.append(converter_text)
+
+    output_str = "Available converters: \n\n    " + "\n    ".join(l_converters)
+
+    if any_not_registered:
+        output_str += (f"\n\nConverters marked as \"{MSG_NOT_REGISTERED}\" are supported by this package, but no "
+                       "appropriate binary for your platform was either distributed with this package or "
+                       "found on your system")
+
+    return output_str
 
 
 def list_supported_converters(err=False):
