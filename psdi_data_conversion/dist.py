@@ -6,6 +6,7 @@ Functions and utilities related to handling multiple user OSes and distributions
 """
 
 import os
+import shutil
 import psdi_data_conversion
 import sys
 
@@ -41,13 +42,23 @@ def get_dist():
     return dist
 
 
+def _get_local_bin(bin_name: str) -> str | None:
+    """Searches for a binary in the user's path
+    """
+    bin_path = shutil.which(bin_name)
+    if bin_path:
+        return bin_path
+    return None
+
+
 def get_bin_path(bin_name: str) -> str | None:
-    """Gets the path to an appropriate binary for the user's platform, if one exists
+    """Gets the path to an appropriate binary for the user's platform, if one exists. Will first search in this
+    package, then in the user's $PATH
 
     Parameters
     ----------
     bin_name : str
-        The name of the binary relative to the ``psdi_data_conversion/bin/$DIST`` directory
+        The unqualified name of the binary
 
     Returns
     -------
@@ -58,13 +69,13 @@ def get_bin_path(bin_name: str) -> str | None:
     # If DIST is None, then the user's OS/distribution is unsupported
     dist = get_dist()
     if not dist:
-        return None
+        return _get_local_bin(bin_name)
 
     bin_path = os.path.join(BIN_DIR, dist, bin_name)
 
     # Check if the binary exists in the path for the user's OS/distribution
     if not os.path.isfile(bin_path):
-        return None
+        return _get_local_bin(bin_name)
 
     return bin_path
 

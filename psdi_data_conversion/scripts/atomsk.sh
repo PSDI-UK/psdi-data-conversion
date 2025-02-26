@@ -16,7 +16,12 @@ if [ -z $DIST ]; then
   DIST=$DEFAULT_DIST
 fi
 
-psdi_data_conversion/bin/$DIST/atomsk <<EOD
+# If the envvar BIN_PATH is set, we use that path directly. Otherwise we use the binary distributed with this package
+if [ ! -z $BIN_PATH ]; then
+  BIN_PATH=psdi_data_conversion/bin/$DIST/atomsk
+fi
+
+$BIN_PATH <<EOD
 read $2
 write $3
 clear

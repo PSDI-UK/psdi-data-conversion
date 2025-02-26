@@ -20,7 +20,7 @@ import traceback
 from typing import Any
 
 from psdi_data_conversion import constants as const, log_utility
-from psdi_data_conversion.dist import bin_exists, get_dist
+from psdi_data_conversion.dist import bin_exists, get_bin_path, get_dist
 from psdi_data_conversion.security import SAFE_STRING_RE, string_is_safe
 
 try:
@@ -698,9 +698,13 @@ class ScriptFileConverter(FileConverter):
                 raise FileConverterHelpException(f"Provided argument '{user_args}' does not pass security check - it "
                                                  f"must match the regex {SAFE_STRING_RE.pattern}.")
 
+        env = {"DIST": get_dist()}
+        if self.required_bin is not None:
+            env["BIN_PATH"] = get_bin_path(self.required_bin)
+
         process = subprocess.run(['sh', f'psdi_data_conversion/scripts/{self.script}', '--' + self.to_format,
                                   self.in_filename, self.out_filename, from_flags, to_flags, from_options, to_options],
-                                 env={"DIST": get_dist()}, capture_output=True, text=True)
+                                 env=env, capture_output=True, text=True)
 
         self.out = process.stdout
         self.err = process.stderr
