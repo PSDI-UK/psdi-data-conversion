@@ -130,27 +130,27 @@ class FileConverter:
     # Class variables and methods which must/can be overridden by subclasses
     # ----------------------------------------------------------------------
 
-    # Name of the converter - must be overridden in each subclass to name each converter uniquely
     name: str | None = None
+    """Name of the converter - must be overridden in each subclass to name each converter uniquely"""
 
-    # General info about the converter - should be overridden in each subclass to describe the converter
     info: str | None = None
+    """General info about the converter - should be overridden in each subclass to describe the converter"""
 
-    # List of flags allowed for the converter (flags are arguments that are set by being present, and don't require a
-    # value specified - e.g. "-v" to enable verbose mode) - should be overridden with a tuple of tuples containing the
-    # flag names, a dict of kwargs to be passed to the argument parser's `add_argument` method, and callable function to
-    # get a dict of needed info for them. If the converter does not accept any flags, an empty tuple should be supplied
-    # (e.g `allowed_flags = ()`), as `None` will be interpreted as this value not having been overridden
     allowed_flags: tuple[tuple[str, dict, Callable], ...] | None = None
+    """List of flags allowed for the converter (flags are arguments that are set by being present, and don't require a
+    value specified - e.g. "-v" to enable verbose mode) - should be overridden with a tuple of tuples containing the
+    flag names, a dict of kwargs to be passed to the argument parser's `add_argument` method, and callable function to
+    get a dict of needed info for them. If the converter does not accept any flags, an empty tuple should be supplied
+    (e.g `allowed_flags = ()`), as `None` will be interpreted as this value not having been overridden"""
 
-    # List of options allowed for the converter (options are arguments that take one or more values, e.g. "-o out.txt")
-    # - should be overridden with a tuple of tuples containing the option names, a dict of kwargs to be passed to the
-    # argument parser's `add_argument` method, and callable function to get a dict of needed info for them.
-    # As with flags, an empty tuple should be provided if the converter does not accept any options
     allowed_options: tuple[tuple[str, dict, Callable], ...] | None = None
+    """List of options allowed for the converter (options are arguments that take one or more values, e.g. "-o out.txt")
+    - should be overridden with a tuple of tuples containing the option names, a dict of kwargs to be passed to the
+    argument parser's `add_argument` method, and callable function to get a dict of needed info for them.
+    As with flags, an empty tuple should be provided if the converter does not accept any options"""
 
-    # The prefix used in the database for keys related to this converter
     database_key_prefix: str | None = None
+    """The prefix used in the database for keys related to this converter"""
 
     @abc.abstractmethod
     def _convert(self):
