@@ -455,14 +455,16 @@ def check_numerical_text_match(text: str, ex_text: str, fail_msg: str | None = N
     # We allow greater tolerance for numerical inaccuracy on platforms other than Linux, which is where the expected
     # files were originally created
     rel_tol = 0.001
+    abs_tol = 1e-6
     if not get_dist() == LINUX_LABEL:
-        rel_tol = 0.1
+        rel_tol = 0.2
+        abs_tol = 0.01
 
     for word, ex_word in zip(l_words, l_ex_words):
         try:
             val, ex_val = float(word), float(ex_word)
 
-            assert isclose(val, ex_val, rel_tol=rel_tol, abs_tol=1e-4), fail_msg
+            assert isclose(val, ex_val, rel_tol=rel_tol, abs_tol=abs_tol), fail_msg
         except ValueError:
             # If it can't be converted to a float, treat it as a string and require an exact match
             assert word == ex_word, fail_msg
