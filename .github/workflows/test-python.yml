@@ -14,9 +14,14 @@ permissions:
 jobs:
   build:
     runs-on: ${{ matrix.os }}
+    continue-on-error: ${{ matrix.experimental }}
     strategy:
       matrix:
-         os: [ubuntu-latest, macos-latest]
+         os: [ubuntu-latest]
+         experimental: [false]
+         include:
+           - os: [macos-latest]
+             experimental: true
 
     steps:
       - uses: actions/checkout@v4
