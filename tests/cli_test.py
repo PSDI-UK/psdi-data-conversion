@@ -456,7 +456,7 @@ def check_numerical_text_match(text: str, ex_text: str, fail_msg: str | None = N
     # files were originally created
     rel_tol = 0.001
     abs_tol = 1e-6
-    if not get_dist() == LINUX_LABEL:
+    if get_dist() != LINUX_LABEL:
         rel_tol = 0.2
         abs_tol = 0.01
 
