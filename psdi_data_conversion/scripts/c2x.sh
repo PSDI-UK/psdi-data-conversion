@@ -18,7 +18,7 @@ if [ -z $DIST ]; then
 fi
 
 # If the envvar BIN_PATH is set, we use that path directly. Otherwise we use the binary distributed with this package
-if [ ! -z $BIN_PATH ]; then
+if [ -z $BIN_PATH ]; then
   BIN_PATH=psdi_data_conversion/bin/$DIST/atomsk
 fi
 
