@@ -602,8 +602,10 @@ def detail_converters_and_formats(args: ConvertArgs):
     """
     if args.name in L_SUPPORTED_CONVERTERS:
         detail_converter_use(args)
-        print_wrap("WARNING: This converter is supported by this package but is not registered. It may be possible "
-                   "to register it by installing an appropriate binary on your system.", err=True)
+        if args.name not in L_REGISTERED_CONVERTERS:
+            print_wrap("WARNING: This converter is supported by this package but is not registered. It may be possible "
+                       "to register it by installing an appropriate binary on your system.", err=True)
+        return
 
     elif args.name != "":
         print_wrap(f"ERROR: Converter '{args.name}' not recognized.", err=True, newline=True)

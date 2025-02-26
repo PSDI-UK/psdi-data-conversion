@@ -245,7 +245,7 @@ def test_get_converters(capsys):
 
     assert not captured.err
 
-    assert bool(l_converters) == string_is_present_in_out("The following converters can convert from "
+    assert bool(l_converters) == string_is_present_in_out("The following registered converters can convert from "
                                                           f"{in_format} to {out_format}:")
 
     for converter_name in l_converters:
