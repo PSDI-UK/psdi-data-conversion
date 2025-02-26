@@ -17,11 +17,11 @@ jobs:
     continue-on-error: ${{ matrix.experimental }}
     strategy:
       matrix:
-         os: [ubuntu-latest]
-         experimental: [false]
-         include:
-           - os: [macos-latest]
-             experimental: true
+        os: [ubuntu-latest]
+        experimental: [false]
+        include:
+          - os: [macos-latest]
+            experimental: true
 
     steps:
       - uses: actions/checkout@v4
