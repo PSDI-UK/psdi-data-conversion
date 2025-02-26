@@ -48,10 +48,6 @@ try:
 
         converter_class = module.converter
 
-        # Check that the converter passes necessary checks to be registered
-        if not converter_class.can_be_registered():
-            return None
-
         name = converter_class.name
 
         return NameAndClass(name, converter_class)
@@ -59,12 +55,16 @@ try:
     # Get a list of all converter names and FileConverter subclasses
     l_converter_names_and_classes = [get_converter_name_and_class(module_name) for
                                      module_name in l_converter_modules]
-    # Remove the None entry from the list, which corresponds to the 'base' module and any converters that can't be
-    # registered
+    # Remove the None entry from the list, which corresponds to the 'base' module
     l_converter_names_and_classes = [x for x in l_converter_names_and_classes if x is not None]
 
+    # Make constant dict and list of supported converters
+    D_SUPPORTED_CONVERTERS: dict[str, type[base.FileConverter]] = dict(l_converter_names_and_classes)
+    L_SUPPORTED_CONVERTERS: list[str] = [name for name in D_SUPPORTED_CONVERTERS.keys()]
+
     # Make constant dict and list of registered converters
-    D_REGISTERED_CONVERTERS: dict[str, type[base.FileConverter]] = dict(l_converter_names_and_classes)
+    D_REGISTERED_CONVERTERS = {converter_name: converter_class for converter_name, converter_class in
+                               D_SUPPORTED_CONVERTERS.items() if converter_class.can_be_registered()}
     L_REGISTERED_CONVERTERS: list[str] = [name for name in D_REGISTERED_CONVERTERS.keys()]
 
     # Make dicts of flags, options, and args (combined flags and options) for each converter
@@ -81,6 +81,8 @@ try:
 
 except Exception:
     print(f"ERROR: Failed to register converters. Exception was: \n{traceback.format_exc()}", file=sys.stderr)
+    D_SUPPORTED_CONVERTERS: dict[str, type[base.FileConverter]] = {}
+    L_SUPPORTED_CONVERTERS: list[str] = []
     D_REGISTERED_CONVERTERS: dict[str, type[base.FileConverter]] = {}
     L_REGISTERED_CONVERTERS: list[str] = []
     D_CONVERTER_FLAGS = {}
