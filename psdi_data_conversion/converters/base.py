@@ -134,7 +134,8 @@ class FileConverter:
     """Name of the converter - must be overridden in each subclass to name each converter uniquely"""
 
     info: str | None = None
-    """General info about the converter - should be overridden in each subclass to describe the converter"""
+    """General info about the converter - can be overridden in a subclass to add information about a converter which
+    isn't covered in its database entry, such as notes on its support."""
 
     allowed_flags: tuple[tuple[str, dict, Callable], ...] | None = None
     """List of flags allowed for the converter (flags are arguments that are set by being present, and don't require a
