@@ -14,13 +14,12 @@ from unittest.mock import patch
 
 from psdi_data_conversion import constants as const
 from psdi_data_conversion.converter import D_CONVERTER_ARGS, L_REGISTERED_CONVERTERS
-from psdi_data_conversion.converters.atomsk import CONVERTER_ATO
 from psdi_data_conversion.converters.c2x import CONVERTER_C2X
 from psdi_data_conversion.converters.openbabel import (CONVERTER_OB, COORD_GEN_KEY, COORD_GEN_QUAL_KEY,
                                                        DEFAULT_COORD_GEN, DEFAULT_COORD_GEN_QUAL)
 from psdi_data_conversion.database import (get_conversion_quality, get_converter_info, get_in_format_args,
                                            get_out_format_args, get_possible_converters, get_possible_formats)
-from psdi_data_conversion.dist import LINUX_LABEL, MAC_LABEL, get_dist
+from psdi_data_conversion.dist import LINUX_LABEL, get_dist
 from psdi_data_conversion.file_io import unpack_zip_or_tar
 from psdi_data_conversion.log_utility import string_with_placeholders_matches
 from psdi_data_conversion.main import FileConverterInputException, main, parse_args
@@ -229,12 +228,6 @@ def test_detail_converter(capsys):
     assert not captured.err
     assert CONVERTER_C2X in captured.out
     assert const.CONVERTER_DEFAULT not in captured.out
-
-    # On Mac, test that we get a warning with Atomsk
-    if get_dist() == MAC_LABEL:
-        run_with_arg_string(f"-l -w {CONVERTER_ATO}")
-        captured = capsys.readouterr()
-        assert "WARNING" in captured.err
 
 
 def test_get_converters(capsys):

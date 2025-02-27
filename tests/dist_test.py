@@ -34,7 +34,7 @@ def test_get_bin():
     # Test that binaries are found only when we expect them to be
     for bin_name, platform, should_exist in (("atomsk", dist.LINUX_NAME_HEAD, True),
                                              ("atomsk", dist.WINDOWS_NAME_HEAD, False),
-                                             ("atomsk", dist.MAC_NAME_HEAD, False),
+                                             ("atomsk", dist.MAC_NAME_HEAD, True),
                                              ("c2x", dist.LINUX_NAME_HEAD, True),
                                              ("c2x", dist.WINDOWS_NAME_HEAD, False),
                                              ("c2x", dist.MAC_NAME_HEAD, True),
