@@ -14,7 +14,7 @@ on:
 jobs:
   # Runs on all of the 'on' conditions above, including pull request events
   test-package:
-    uses: ./.github/workflows/test_package.yml
+    uses: ./.github/workflows/test-python.yml
   open-pull-request:
     uses: ./.github/workflows/open-pull-request.yml
     with:

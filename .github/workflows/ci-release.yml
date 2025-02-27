@@ -9,7 +9,7 @@ on:
     
 jobs:
   test-package:
-    uses: ./.github/workflows/test_package.yml
+    uses: ./.github/workflows/test-python.yml
 
   # The commented out code below runs a code vulnerability scan on the
   # containerised app. This will not work on the free GitHub plan, since

@@ -30,12 +30,6 @@ function submitFile() {
 
     quality = quality.substring(start, finish);
 
-    if (extension != in_ext) {
-        alert("The file extension is not " + in_ext + ": please select another file or change the 'from' format on the 'Home' page.");
-        $("#uploadButton").css({ "background-color": "var(--psdi-bg-color-secondary)", "color": "gray" });
-        return;
-    }
-
     const read_flags_text = $("#inFlags").find(":selected").text(),
         read_flags = '';
 

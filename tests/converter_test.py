@@ -18,7 +18,7 @@ from psdi_data_conversion.converter import L_REGISTERED_CONVERTERS, run_converte
 from psdi_data_conversion.converters.atomsk import CONVERTER_ATO
 from psdi_data_conversion.converters.base import FileConverterAbortException
 from psdi_data_conversion.converters.c2x import CONVERTER_C2X
-from psdi_data_conversion.converters.openbabel import OBFileConverter
+from psdi_data_conversion.converters.openbabel import CONVERTER_OB, OBFileConverter
 from psdi_data_conversion.file_io import split_archive_ext
 from psdi_data_conversion.main import FileConverterInputException
 
@@ -307,7 +307,7 @@ class TestConverter:
         shutil.copyfile(self.source_filename, upload_filename)
         self.source_filename = upload_filename
 
-        self.run_converter(name=CONVERTER_ATO,
+        self.run_converter(name=CONVERTER_OB,
                            filename=upload_filename,
                            delete_input=True)
 
@@ -315,8 +315,10 @@ class TestConverter:
         self.check_file_status(input_exist=False, output_exist=True)
 
     def test_atomsk(self):
-        """Run a test of the Atomsk converter on a straightforward `.pdb` to `.cif` conversion
+        """Run tests of Atomsk on some conversions we expect to succeed without issue
         """
+
+        # pdb to cif
 
         self.get_input_info(filename="hemoglobin.pdb",
                             to_format="cif")
@@ -326,8 +328,15 @@ class TestConverter:
         # Check that the input file has not been deleted and the output file exists where we expect it to
         self.check_file_status(input_exist=True, output_exist=True)
 
+        # cif to xyz
+
+        self.get_input_info(filename="nacl.cif",
+                            to_format="xyz")
+        self.run_converter(name=CONVERTER_ATO)
+        self.check_file_status(input_exist=True, output_exist=True)
+
     def test_c2x(self):
-        """Run a test of the C2X converter on a straightforward `.pdb` to `.cif` conversion
+        """Run tests of c2x on some conversions we expect to succeed without issue
         """
 
         self.get_input_info(filename="hemoglobin.pdb",
@@ -336,6 +345,13 @@ class TestConverter:
         self.run_converter(name=CONVERTER_C2X)
 
         # Check that the input file has not been deleted and the output file exists where we expect it to
+        self.check_file_status(input_exist=True, output_exist=True)
+
+        # cif to cml
+
+        self.get_input_info(filename="nacl.cif",
+                            to_format="cml")
+        self.run_converter(name=CONVERTER_C2X)
         self.check_file_status(input_exist=True, output_exist=True)
 
     def test_xyz_to_inchi_err(self):

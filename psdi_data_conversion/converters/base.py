@@ -20,6 +20,7 @@ import traceback
 from typing import Any
 
 from psdi_data_conversion import constants as const, log_utility
+from psdi_data_conversion.dist import bin_exists, get_bin_path, get_dist
 from psdi_data_conversion.security import SAFE_STRING_RE, string_is_safe
 
 try:
@@ -129,33 +130,42 @@ class FileConverter:
     # Class variables and methods which must/can be overridden by subclasses
     # ----------------------------------------------------------------------
 
-    # Name of the converter - must be overridden in each subclass to name each converter uniquely
     name: str | None = None
+    """Name of the converter - must be overridden in each subclass to name each converter uniquely"""
 
-    # General info about the converter - should be overridden in each subclass to describe the converter
     info: str | None = None
+    """General info about the converter - can be overridden in a subclass to add information about a converter which
+    isn't covered in its database entry, such as notes on its support."""
 
-    # List of flags allowed for the converter (flags are arguments that are set by being present, and don't require a
-    # value specified - e.g. "-v" to enable verbose mode) - should be overridden with a tuple of tuples containing the
-    # flag names, a dict of kwargs to be passed to the argument parser's `add_argument` method, and callable function to
-    # get a dict of needed info for them. If the converter does not accept any flags, an empty tuple should be supplied
-    # (e.g `allowed_flags = ()`), as `None` will be interpreted as this value not having been overridden
     allowed_flags: tuple[tuple[str, dict, Callable], ...] | None = None
+    """List of flags allowed for the converter (flags are arguments that are set by being present, and don't require a
+    value specified - e.g. "-v" to enable verbose mode) - should be overridden with a tuple of tuples containing the
+    flag names, a dict of kwargs to be passed to the argument parser's `add_argument` method, and callable function to
+    get a dict of needed info for them. If the converter does not accept any flags, an empty tuple should be supplied
+    (e.g `allowed_flags = ()`), as `None` will be interpreted as this value not having been overridden"""
 
-    # List of options allowed for the converter (options are arguments that take one or more values, e.g. "-o out.txt")
-    # - should be overridden with a tuple of tuples containing the option names, a dict of kwargs to be passed to the
-    # argument parser's `add_argument` method, and callable function to get a dict of needed info for them.
-    # As with flags, an empty tuple should be provided if the converter does not accept any options
     allowed_options: tuple[tuple[str, dict, Callable], ...] | None = None
+    """List of options allowed for the converter (options are arguments that take one or more values, e.g. "-o out.txt")
+    - should be overridden with a tuple of tuples containing the option names, a dict of kwargs to be passed to the
+    argument parser's `add_argument` method, and callable function to get a dict of needed info for them.
+    As with flags, an empty tuple should be provided if the converter does not accept any options"""
 
-    # The prefix used in the database for keys related to this converter
     database_key_prefix: str | None = None
+    """The prefix used in the database for keys related to this converter"""
 
     @abc.abstractmethod
     def _convert(self):
         """Run the conversion with the desired converter. This must be implemented for each converter class.
         """
         pass
+
+    @classmethod
+    def can_be_registered(cls) -> bool:
+        """If the converter class may not be able to be registered (for instance, it relies on a binary which isn't
+        supported on all platforms), this method should be overridden to perform necessary checks to indicate if it
+        can be registered or not.
+        """
+        return True
 
     # If the converter supports flags specific to the input file format, set the below to True for the subclass so help
     # text will be properly displayed notifying the user that they can request this by providing an input format (and
@@ -656,6 +666,23 @@ class ScriptFileConverter(FileConverter):
     """
 
     script: str | None = None
+    """The name of the script to run this converter, relative to the ``psdi_data_conversion/scripts`` directory"""
+
+    required_bin: str | None = None
+    """The name of the binary called by the script, relative to the ``psdi_data_conversion/bin/$DIST`` directory,
+    where `DIST` is 'linux', 'windows', and/or 'mac', depending on the user's platform. The code will check
+    that a binary by this name exists for the user's distribution, and will only register this converter if one is
+    found.
+    """
+
+    @classmethod
+    def can_be_registered(cls) -> bool:
+        """If a binary is required for this script, check that it exists for the user's OS/distribution. If one isn't
+        required (`cls.required_bin` is None), also return True
+        """
+        if cls.required_bin is None:
+            return True
+        return bin_exists(cls.required_bin)
 
     def _convert(self):
 
@@ -672,9 +699,13 @@ class ScriptFileConverter(FileConverter):
                 raise FileConverterHelpException(f"Provided argument '{user_args}' does not pass security check - it "
                                                  f"must match the regex {SAFE_STRING_RE.pattern}.")
 
+        env = {"DIST": get_dist()}
+        if self.required_bin is not None:
+            env["BIN_PATH"] = get_bin_path(self.required_bin)
+
         process = subprocess.run(['sh', f'psdi_data_conversion/scripts/{self.script}', '--' + self.to_format,
                                   self.in_filename, self.out_filename, from_flags, to_flags, from_options, to_options],
-                                 capture_output=True, text=True)
+                                 env=env, capture_output=True, text=True)
 
         self.out = process.stdout
         self.err = process.stderr

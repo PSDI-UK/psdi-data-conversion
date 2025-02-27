@@ -26,6 +26,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: create pull request
-        run: gh pr create -B ${{ inputs.target }} -H ${{ env.BRANCH_NAME }} --title 'Merge ${{ env.BRANCH_NAME }} into release' --body '' || echo "Pull request already exists"
+        run: gh pr create -B ${{ inputs.target }} -H ${{ env.BRANCH_NAME }} --title 'Merge ${{ env.BRANCH_NAME }} into ${{ inputs.target }}' --body '' || echo "Pull request already exists"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
