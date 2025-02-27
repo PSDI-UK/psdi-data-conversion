@@ -3,18 +3,18 @@
 // customise aspects of the common HTML header
 
 const ORIG_TITLE = "$REPLACEME_SITE_TITLE"
-const ORIG_BRAND_LINK = "./"
+const ORIG_TITLE_LINK = "./"
 
 const DEFAULT_TITLE = "";
-const DEFAULT_BRAND_LINK_TARGET = "./";
+const DEFAULT_TITLE_LINK_TARGET = "./";
 const DEFAULT_HEADER_LINKS_SOURCE = "./header-links.html";
 const DEFAULT_HEADER_SOURCE = "./psdi-common-header.html";
 const DEFAULT_FOOTER_SOURCE = "./psdi-common-footer.html";
 
 let title = DEFAULT_TITLE;
 let useDefaultTitle = true;
-let brandLinkTarget = DEFAULT_BRAND_LINK_TARGET;
-let useDefaultBrandLink = true;
+let titleLinkTarget = DEFAULT_TITLE_LINK_TARGET;
+let useDefaultTitleLink = true;
 let headerLinksSource = DEFAULT_HEADER_LINKS_SOURCE;
 let headerSource = DEFAULT_HEADER_SOURCE
 let footerSource = DEFAULT_FOOTER_SOURCE
@@ -25,11 +25,14 @@ export function setTitle(s) {
   useDefaultTitle = false;
 }
 
-export function setBrandLinkTarget(s) {
-  // Public function for the user to set the target that clicking on the PSDI brand should link to
-  brandLinkTarget = s;
-  useDefaultBrandLink = false;
+export function setTitleLinkTarget(s) {
+  // Public function for the user to set the target that clicking on the site title should link to
+  titleLinkTarget = s;
+  useDefaultTitleLink = false;
 }
+
+// Alias for previous name of `setTitleLinkTarget` to maintain backwards compatibility
+export const setBrandLinkTarget = setTitleLinkTarget;
 
 export function setHeaderLinksSource(s) {
   // Public function to set the name of an HTML file containing the links to appear on the right side of the header
@@ -136,17 +139,17 @@ $(document).ready(function () {
     $("#psdi-header").load(headerSource,
       function (_response, status, _xhr) {
         if (status != "error") {
-          // Check if we should replace the brand link by if a value is set, or if the value in the header matches
+          // Check if we should replace the title link by if a value is set, or if the value in the header matches
           // the original value in the source
-          let brandLinkElement = $("#psdi-header a.navbar__brand")[0];
-          if (!useDefaultBrandLink || String(brandLinkElement.href) == ORIG_BRAND_LINK)
-            brandLinkElement.href = brandLinkTarget;
+          let titleLinkElement = $("#psdi-header a.navbar__title")[0];
+          if (!useDefaultTitleLink || String(titleLinkElement.href) == ORIG_TITLE_LINK)
+            titleLinkElement.href = titleLinkTarget;
 
           // Check if we should replace the title by if a value is set, or if the value in the header matches
           // the original value in the source
-          let titleElement = $("#psdi-header .navbar__title")[0];
+          let titleElement = $("#psdi-header .navbar__title h5")[0];
           if (!useDefaultTitle || String(titleElement.textContent) == ORIG_TITLE)
-            $("#psdi-header .navbar__title")[0].textContent = title;
+            titleElement.textContent = title;
           addHeaderLinks();
         } else {
           $("#psdi-header")[0].textContent = "ERROR: Could not load page header";

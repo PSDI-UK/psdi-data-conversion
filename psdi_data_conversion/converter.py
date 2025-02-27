@@ -11,7 +11,7 @@ import importlib
 import sys
 from tempfile import TemporaryDirectory
 import traceback
-from typing import NamedTuple
+from typing import Any, Callable, NamedTuple
 from psdi_data_conversion import constants as const
 from psdi_data_conversion.converters import base
 
@@ -61,10 +61,25 @@ try:
     D_REGISTERED_CONVERTERS: dict[str, type[base.FileConverter]] = dict(l_converter_names_and_classes)
     L_REGISTERED_CONVERTERS: list[str] = [name for name in D_REGISTERED_CONVERTERS.keys()]
 
+    # Make dicts of flags, options, and args (combined flags and options) for each converter
+    _d_converter_flags, _d_converter_options, _d_converter_args = {}, {}, {}
+    for name, converter_class in D_REGISTERED_CONVERTERS.items():
+        l_flags = converter_class.allowed_flags if converter_class.allowed_flags else ()
+        l_options = converter_class.allowed_options if converter_class.allowed_options else ()
+        _d_converter_flags[name] = l_flags
+        _d_converter_options[name] = l_options
+        _d_converter_args[name] = (*l_flags, *l_options)
+    D_CONVERTER_FLAGS: dict[str, tuple[tuple[str, dict[str, Any], Callable]]] = _d_converter_flags
+    D_CONVERTER_OPTIONS: dict[str, tuple[tuple[str, dict[str, Any], Callable]]] = _d_converter_options
+    D_CONVERTER_ARGS: dict[str, tuple[tuple[str, dict[str, Any], Callable]]] = _d_converter_args
+
 except Exception:
     print(f"ERROR: Failed to register converters. Exception was: \n{traceback.format_exc()}", file=sys.stderr)
     D_REGISTERED_CONVERTERS: dict[str, type[base.FileConverter]] = {}
     L_REGISTERED_CONVERTERS: list[str] = []
+    D_CONVERTER_FLAGS = {}
+    D_CONVERTER_OPTIONS = {}
+    D_CONVERTER_ARGS = {}
 
 
 def get_converter(*args, name=const.CONVERTER_DEFAULT, **converter_kwargs) -> base.FileConverter:
@@ -95,6 +110,9 @@ def get_converter(*args, name=const.CONVERTER_DEFAULT, **converter_kwargs) -> ba
         The location of output files relative to the current directory
     max_file_size : float
         The maximum allowed file size for input/output files, in MB, default 1 MB. If 0, will be unlimited
+    no_check : bool
+        If False (default), will check at setup whether or not a conversion between the desired file formats is
+        supported with the specified converter
     log_file : str | None
         If provided, all logging will go to a single file or stream. Otherwise, logs will be split up among multiple
         files for server-style logging.
@@ -126,7 +144,7 @@ def get_converter(*args, name=const.CONVERTER_DEFAULT, **converter_kwargs) -> ba
         If the converter isn't recognized or there's some other issue with the input
     """
     if name not in L_REGISTERED_CONVERTERS:
-        raise base.FileConverterInputException(const.ERR_CONVERTER_NOT_RECOGNISED % name +
+        raise base.FileConverterInputException(const.ERR_CONVERTER_NOT_RECOGNISED.format(name) +
                                                f"{L_REGISTERED_CONVERTERS}")
     converter_class = D_REGISTERED_CONVERTERS[name]
 
@@ -197,7 +215,7 @@ def check_from_format(filename: str,
     if filename.endswith(from_format):
         return True
 
-    msg = const.ERR_WRONG_EXTENSIONS % (os.path.basename(filename), from_format)
+    msg = const.ERR_WRONG_EXTENSIONS.format(file=os.path.basename(filename), ext=from_format)
 
     if strict:
         raise base.FileConverterInputException(msg)
@@ -256,6 +274,9 @@ def run_converter(filename: str,
     max_file_size : float
         The maximum allowed file size for input/output files, in MB, default 1 MB. If 0, will be unlimited. If an
         archive of files is provided, this will apply to the total of all files contained in it
+    no_check : bool
+        If False (default), will check at setup whether or not a conversion between the desired file formats is
+        supported with the specified converter
     log_file : str | None
         If provided, all logging will go to a single file or stream. Otherwise, logs will be split up among multiple
         files for server-style logging.
@@ -417,7 +438,7 @@ def run_converter(filename: str,
         # If the run was ultimately unsuccessful, raise an exception now, referencing the output log and including
         # error lines in it
         if status_code:
-            msg = const.ERR_CONVERSION_FAILED % run_output.log_filename
+            msg = const.ERR_CONVERSION_FAILED.format(run_output.log_filename)
             l_output_log_lines = open(run_output.log_filename, "r").read().splitlines()
             l_error_lines = [line for line in l_output_log_lines if "ERROR" in line]
             msg += "\n".join(l_error_lines)

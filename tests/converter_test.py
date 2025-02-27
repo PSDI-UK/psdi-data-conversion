@@ -14,7 +14,7 @@ import shutil
 import pytest
 
 from psdi_data_conversion import constants as const
-from psdi_data_conversion.converter import run_converter
+from psdi_data_conversion.converter import L_REGISTERED_CONVERTERS, run_converter
 from psdi_data_conversion.converters.atomsk import CONVERTER_ATO
 from psdi_data_conversion.converters.base import FileConverterAbortException
 from psdi_data_conversion.converters.c2x import CONVERTER_C2X
@@ -66,6 +66,12 @@ def tmp_download_path(tmp_path):
     download_path = os.path.join(tmp_path, "downloads")
     os.makedirs(download_path, exist_ok=True)
     return download_path
+
+
+def test_default():
+    """Test that the default converter is registered.
+    """
+    assert const.CONVERTER_DEFAULT in L_REGISTERED_CONVERTERS
 
 
 class TestConverter:
@@ -267,7 +273,8 @@ class TestConverter:
         self.check_file_status(input_exist=True, output_exist=False)
 
     def test_xyz_to_inchi(self):
-        """Run a test of the converter on a straightforward `.xyz` to `.inchi` conversion
+        """Run a test of the converter on an `.xyz` to `.inchi` conversion which we expect to have warnings about data
+        loss and extrapolation
         """
 
         self.get_input_info(filename="quartz.xyz",
@@ -277,6 +284,15 @@ class TestConverter:
 
         # Check that the input file has not been deleted and the output file exists where we expect it to
         self.check_file_status(input_exist=True, output_exist=True)
+
+        self.get_logs()
+
+        # XYZ has the 2D and 3D properties while inchi doesn't, while inchi has the Connections property while xyz
+        # doesn't, so check these exist in the logs as a warning
+        assert "WARNING" in self.output_log_text
+        assert const.QUAL_NOTE_OUT_MISSING.format(const.QUAL_2D_LABEL) in self.output_log_text
+        assert const.QUAL_NOTE_OUT_MISSING.format(const.QUAL_3D_LABEL) in self.output_log_text
+        assert const.QUAL_NOTE_IN_MISSING.format(const.QUAL_CONN_LABEL) in self.output_log_text
 
     def test_cleanup(self):
         """Test that input files are deleted if requested
@@ -339,7 +355,7 @@ class TestConverter:
         """
 
         test_file_size = 1234
-        os.environ[const.MAX_FILESIZE_ENVVAR] = str(test_file_size)
+        os.environ[const.MAX_FILESIZE_EV] = str(test_file_size)
 
         self.get_input_info(filename="1NE6.mmcif")
         converter = OBFileConverter(use_envvars=True,
