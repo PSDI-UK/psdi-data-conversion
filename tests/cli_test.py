@@ -5,6 +5,7 @@ Created 2025-01-15 by Bryan Gillis.
 Tests of the command-line interface
 """
 
+from math import isclose
 import os
 import pytest
 import shlex
@@ -13,11 +14,12 @@ from unittest.mock import patch
 
 from psdi_data_conversion import constants as const
 from psdi_data_conversion.converter import D_CONVERTER_ARGS, L_REGISTERED_CONVERTERS
-from psdi_data_conversion.converters.atomsk import CONVERTER_ATO
+from psdi_data_conversion.converters.c2x import CONVERTER_C2X
 from psdi_data_conversion.converters.openbabel import (CONVERTER_OB, COORD_GEN_KEY, COORD_GEN_QUAL_KEY,
                                                        DEFAULT_COORD_GEN, DEFAULT_COORD_GEN_QUAL)
 from psdi_data_conversion.database import (get_conversion_quality, get_converter_info, get_in_format_args,
                                            get_out_format_args, get_possible_converters, get_possible_formats)
+from psdi_data_conversion.dist import LINUX_LABEL, get_dist
 from psdi_data_conversion.file_io import unpack_zip_or_tar
 from psdi_data_conversion.log_utility import string_with_placeholders_matches
 from psdi_data_conversion.main import FileConverterInputException, main, parse_args
@@ -56,7 +58,7 @@ def test_input_validity():
 
     # Test that we get what we put in for a standard execution
     cwd = os.getcwd()
-    args = get_parsed_args(f"file1 file2 -f mmcif -i {cwd} -t pdb -o {cwd}/.. -w '{CONVERTER_ATO}' " +
+    args = get_parsed_args(f"file1 file2 -f mmcif -i {cwd} -t pdb -o {cwd}/.. -w '{CONVERTER_C2X}' " +
                            r"--delete-input --from-flags '\-ab \-c \--example' --to-flags '\-d' " +
                            r"--from-options '-x xval --xopt xoptval' --to-options '-y yval --yopt yoptval' "
                            "--strict --nc --coord-gen Gen3D best -q --log-file text.log")
@@ -65,7 +67,7 @@ def test_input_validity():
     assert args.input_dir == cwd
     assert args.to_format == "pdb"
     assert args.output_dir == f"{cwd}/.."
-    assert args.name == "Atomsk"
+    assert args.name == CONVERTER_C2X
     assert args.no_check is True
     assert args.strict is True
     assert args.delete_input is True
@@ -221,10 +223,10 @@ def test_detail_converter(capsys):
     assert "Traceback" not in captured.err
 
     # Test that we can also provide the converter name with -w/--with
-    run_with_arg_string(f"-l -w {CONVERTER_ATO}")
+    run_with_arg_string(f"-l -w {CONVERTER_C2X}")
     captured = capsys.readouterr()
     assert not captured.err
-    assert CONVERTER_ATO in captured.out
+    assert CONVERTER_C2X in captured.out
     assert const.CONVERTER_DEFAULT not in captured.out
 
 
@@ -244,7 +246,7 @@ def test_get_converters(capsys):
 
     assert not captured.err
 
-    assert bool(l_converters) == string_is_present_in_out("The following converters can convert from "
+    assert bool(l_converters) == string_is_present_in_out("The following registered converters can convert from "
                                                           f"{in_format} to {out_format}:")
 
     for converter_name in l_converters:
@@ -432,6 +434,35 @@ def test_archive_convert(tmp_path_factory, capsys, test_data_loc):
         assert "Traceback" not in captured.err
 
 
+def check_numerical_text_match(text: str, ex_text: str, fail_msg: str | None = None) -> None:
+    """Check that the contents of two files match without worrying about whitespace or negligible numerical differences.
+    """
+
+    # We want to check they're the same without worrying about whitespace (which doesn't matter for this format),
+    # so we accomplish this by using the string's `split` method, which splits on whitespace by default
+    l_words, l_ex_words = text.split(), ex_text.split()
+
+    # And we also want to avoid spurious false negatives from numerical comparisons (such as one file having
+    # negative zero and the other positive zero - yes, this happened), so we convert words to floats if possible
+
+    # We allow greater tolerance for numerical inaccuracy on platforms other than Linux, which is where the expected
+    # files were originally created
+    rel_tol = 0.001
+    abs_tol = 1e-6
+    if get_dist() != LINUX_LABEL:
+        rel_tol = 0.2
+        abs_tol = 0.01
+
+    for word, ex_word in zip(l_words, l_ex_words):
+        try:
+            val, ex_val = float(word), float(ex_word)
+
+            assert isclose(val, ex_val, rel_tol=rel_tol, abs_tol=abs_tol), fail_msg
+        except ValueError:
+            # If it can't be converted to a float, treat it as a string and require an exact match
+            assert word == ex_word, fail_msg
+
+
 def test_format_args(tmp_path_factory, test_data_loc):
     """Test that format flags and options are processed correctly and results in the right conversions
     """
@@ -479,12 +510,9 @@ def test_format_args(tmp_path_factory, test_data_loc):
         assert os.path.isfile(ex_output_file), f"Expected output file {ex_output_file} does not exist"
 
         # Check that the contents of this file match what's expected
-        text = open(ex_output_file, "r").read()
-        ex_text = open(os.path.join(test_data_loc, ex_file), "r").read()
-
-        # We want to check they're the same without worrying about whitespace (which doesn't matter for this format),
-        # so we accomplish this by using the string's `split` method, which splits on whitespace by default
-        assert text.split() == ex_text.split(), f"Format flag test failed for {ex_file}"
+        check_numerical_text_match(text=open(ex_output_file, "r").read(),
+                                   ex_text=open(os.path.join(test_data_loc, ex_file), "r").read(),
+                                   fail_msg=f"Format flag test failed for {ex_file}")
 
 
 def test_coord_gen(tmp_path_factory, test_data_loc):
@@ -524,9 +552,6 @@ def test_coord_gen(tmp_path_factory, test_data_loc):
         assert os.path.isfile(ex_output_file), f"Expected output file {ex_output_file} does not exist"
 
         # Check that the contents of this file match what's expected
-        text = open(ex_output_file, "r").read()
-        ex_text = open(os.path.join(test_data_loc, ex_file), "r").read()
-
-        # We want to check they're the same without worrying about whitespace (which doesn't matter for this format),
-        # so we accomplish this by using the string's `split` method, which splits on whitespace by default
-        assert text.split() == ex_text.split(), f"Coord Gen test failed for {ex_file}"
+        check_numerical_text_match(text=open(ex_output_file, "r").read(),
+                                   ex_text=open(os.path.join(test_data_loc, ex_file), "r").read(),
+                                   fail_msg=f"Coord Gen test failed for {ex_file}")

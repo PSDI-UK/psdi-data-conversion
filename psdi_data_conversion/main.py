@@ -15,8 +15,8 @@ import textwrap
 
 from psdi_data_conversion import constants as const
 from psdi_data_conversion.constants import CL_SCRIPT_NAME, CONVERTER_DEFAULT, TERM_WIDTH
-from psdi_data_conversion.converter import (D_CONVERTER_ARGS, D_REGISTERED_CONVERTERS, L_REGISTERED_CONVERTERS,
-                                            run_converter)
+from psdi_data_conversion.converter import (D_CONVERTER_ARGS, D_SUPPORTED_CONVERTERS, L_REGISTERED_CONVERTERS,
+                                            L_SUPPORTED_CONVERTERS, run_converter)
 from psdi_data_conversion.converters.base import (FileConverterAbortException, FileConverterInputException,
                                                   FileConverterHelpException)
 from psdi_data_conversion.database import (get_conversion_quality, get_converter_info, get_format_info,
@@ -25,14 +25,15 @@ from psdi_data_conversion.database import (get_conversion_quality, get_converter
 from psdi_data_conversion.file_io import split_archive_ext
 
 
-def print_wrap(s, newline=False, err=False, **kwargs):
+def print_wrap(s: str, newline=False, err=False, **kwargs):
     """Print a string wrapped to the terminal width
     """
     if err:
         file = sys.stderr
     else:
         file = sys.stdout
-    print(textwrap.fill(s, width=TERM_WIDTH, **kwargs), file=file)
+    for line in s.split("\n"):
+        print(textwrap.fill(line, width=TERM_WIDTH, **kwargs), file=file)
     if newline:
         print("")
 
@@ -137,8 +138,13 @@ class ConvertArgs:
             os.makedirs(self._output_dir, exist_ok=True)
 
         # Check the converter is recognized
-        if self.name not in L_REGISTERED_CONVERTERS:
+        if self.name not in L_SUPPORTED_CONVERTERS:
             msg = textwrap.fill(f"ERROR: Converter '{self.name}' not recognised", width=TERM_WIDTH)
+            msg += f"\n\n{get_supported_converters()}"
+            raise FileConverterHelpException(msg, msg_preformatted=True)
+        elif self.name not in L_REGISTERED_CONVERTERS:
+            msg = textwrap.fill(f"ERROR: Converter '{self.name}' is not registered. It may be possible to register "
+                                "it by installing an appropriate binary for your platform.", width=TERM_WIDTH)
             msg += f"\n\n{get_supported_converters()}"
             raise FileConverterHelpException(msg, msg_preformatted=True)
 
@@ -334,10 +340,13 @@ def detail_converter_use(args: ConvertArgs):
     """
 
     converter_info = get_converter_info(args.name)
-    converter_class = D_REGISTERED_CONVERTERS[args.name]
+    converter_class = D_SUPPORTED_CONVERTERS[args.name]
 
     print_wrap(f"{converter_info.name}: {converter_info.description} ({converter_info.url})", break_long_words=False,
                break_on_hyphens=False, newline=True)
+
+    if converter_class.info:
+        print_wrap(converter_class.info, break_long_words=False, break_on_hyphens=False, newline=True)
 
     # If both an input and output format are specified, provide the degree of success for this conversion. Otherwise
     # list possible input output formats
@@ -466,24 +475,42 @@ def detail_converter_use(args: ConvertArgs):
 def list_supported_formats(err=False):
     """Prints a list of all formats recognised by at least one registered converter
     """
-    # Make a list of all formats recognised by at least one converter
+    # Make a list of all formats recognised by at least one registered converter
     s_all_formats: set[str] = set()
-    for converter_name in L_REGISTERED_CONVERTERS:
+    s_registered_formats: set[str] = set()
+    for converter_name in L_SUPPORTED_CONVERTERS:
         l_in_formats, l_out_formats = get_possible_formats(converter_name)
         s_all_formats.update(l_in_formats)
         s_all_formats.update(l_out_formats)
+        if converter_name in L_REGISTERED_CONVERTERS:
+            s_registered_formats.update(l_in_formats)
+            s_registered_formats.update(l_out_formats)
 
-    # Convert the set to a list and alphabetise it
-    l_all_formats = list(s_all_formats)
-    l_all_formats.sort(key=lambda s: s.lower())
+    s_unregistered_formats = s_all_formats.difference(s_registered_formats)
+
+    # Convert the sets to lists and alphabetise them
+    l_registered_formats = list(s_registered_formats)
+    l_registered_formats.sort(key=lambda s: s.lower())
+    l_unregistered_formats = list(s_unregistered_formats)
+    l_unregistered_formats.sort(key=lambda s: s.lower())
 
     # Pad the format strings to all be the same length. To keep columns aligned, all padding is done with non-
     # breaking spaces (\xa0), and each format is followed by a single normal space
-    longest_format_len = max([len(x) for x in l_all_formats])
-    l_padded_formats = [f"{x:\xa0<{longest_format_len}} " for x in l_all_formats]
+    longest_format_len = max([len(x) for x in l_registered_formats])
+    l_padded_formats = [f"{x:\xa0<{longest_format_len}} " for x in l_registered_formats]
 
-    print_wrap("Supported formats are: ", err=err, newline=True)
+    print_wrap("Formats supported by registered converters: ", err=err, newline=True)
     print_wrap("".join(l_padded_formats), err=err, initial_indent="  ", subsequent_indent="  ", newline=True)
+
+    if l_unregistered_formats:
+        longest_unregistered_format_len = max([len(x) for x in l_unregistered_formats])
+        l_padded_unregistered_formats = [f"{x:\xa0<{longest_unregistered_format_len}} "
+                                         for x in l_unregistered_formats]
+        print_wrap("Formats supported by unregistered converters which are supported by this package: ", err=err,
+                   newline=True)
+        print_wrap("".join(l_padded_unregistered_formats), err=err,
+                   initial_indent="  ", subsequent_indent="  ", newline=True)
+
     print_wrap("Note that not all formats are supported with all converters, or both as input and as output.")
 
 
@@ -511,15 +538,29 @@ def detail_possible_converters(from_format: str, to_format: str):
         list_supported_formats(err=True)
         exit(1)
 
-    l_possible_converters = [x for x in get_possible_converters(from_format, to_format)
-                             if x in L_REGISTERED_CONVERTERS]
+    l_possible_converters = get_possible_converters(from_format, to_format)
 
-    if len(l_possible_converters) == 0:
+    l_possible_registered_converters = [x for x in l_possible_converters if x in L_REGISTERED_CONVERTERS]
+    l_possible_unregistered_converters = [x for x in l_possible_converters if
+                                          x in L_SUPPORTED_CONVERTERS and x not in L_REGISTERED_CONVERTERS]
+
+    if len(l_possible_registered_converters)+len(l_possible_unregistered_converters) == 0:
         print_wrap(f"No converters are available which can perform a conversion from {from_format} to {to_format}")
         return
+    elif len(l_possible_registered_converters) == 0:
+        print_wrap(f"No registered converters can perform a conversion from {from_format} to {to_format}, however "
+                   "the following converters are supported by this package on other platforms and can perform this "
+                   "conversion:", newline=True)
+        print("\n    ".join(l_possible_unregistered_converters))
+        return
 
-    print_wrap(f"The following converters can convert from {from_format} to {to_format}:", newline=True)
-    print("\n    ".join(l_possible_converters))
+    print_wrap(f"The following registered converters can convert from {from_format} to {to_format}:", newline=True)
+    print("\n    ".join(l_possible_registered_converters))
+    if l_possible_unregistered_converters:
+        print("")
+        print_wrap("Additionally, the following converters are supported by this package on other platforms and can "
+                   "perform this conversion:", newline=True)
+        print("\n    ".join(l_possible_registered_converters))
 
     print_wrap("For details on input/output flags and options allowed by a converter for this conversion, call:")
     print(f"{CL_SCRIPT_NAME} -l <converter name> -f {from_format} -t {to_format}")
@@ -528,7 +569,26 @@ def detail_possible_converters(from_format: str, to_format: str):
 def get_supported_converters():
     """Gets a string containing a list of supported converters
     """
-    return "Available converters: \n\n    " + "\n    ".join(L_REGISTERED_CONVERTERS)
+
+    MSG_NOT_REGISTERED = "(supported but not registered)"
+
+    l_converters: list[str] = []
+    any_not_registered = False
+    for converter_name in L_SUPPORTED_CONVERTERS:
+        converter_text = converter_name
+        if converter_name not in L_REGISTERED_CONVERTERS:
+            converter_text += f" {MSG_NOT_REGISTERED}"
+            any_not_registered = True
+        l_converters.append(converter_text)
+
+    output_str = "Available converters: \n\n    " + "\n    ".join(l_converters)
+
+    if any_not_registered:
+        output_str += (f"\n\nConverters marked as \"{MSG_NOT_REGISTERED}\" are supported by this package, but no "
+                       "appropriate binary for your platform was either distributed with this package or "
+                       "found on your system")
+
+    return output_str
 
 
 def list_supported_converters(err=False):
@@ -544,14 +604,20 @@ def list_supported_converters(err=False):
 def detail_converters_and_formats(args: ConvertArgs):
     """Prints details on available converters and formats for the user.
     """
-    if args.name in L_REGISTERED_CONVERTERS:
-        return detail_converter_use(args)
+    if args.name in L_SUPPORTED_CONVERTERS:
+        detail_converter_use(args)
+        if args.name not in L_REGISTERED_CONVERTERS:
+            print_wrap("WARNING: This converter is supported by this package but is not registered. It may be possible "
+                       "to register it by installing an appropriate binary on your system.", err=True)
+        return
+
     elif args.name != "":
         print_wrap(f"ERROR: Converter '{args.name}' not recognized.", err=True, newline=True)
         list_supported_converters(err=True)
         exit(1)
     elif args.from_format and args.to_format:
-        return detail_possible_converters(args.from_format, args.to_format)
+        detail_possible_converters(args.from_format, args.to_format)
+        return
 
     list_supported_converters()
     list_supported_formats()
