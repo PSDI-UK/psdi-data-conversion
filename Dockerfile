@@ -41,7 +41,7 @@ COPY psdi_data_conversion /app/psdi_data_conversion
 RUN pip install -r requirements.txt
 
 ENV PYTHONPATH="."
-ENV LOGGING=stdout
+ENV LOGGING=full
 ENV SERVICE_MODE=true
 ENV MAX_FILESIZE=1
 
