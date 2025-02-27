@@ -17,12 +17,12 @@ class AtoFileConverter(ScriptFileConverter):
     name = CONVERTER_ATO
     script = "atomsk.sh"
     required_bin = "atomsk"
-    info = ("An Atomsk binary compiled for 64-bit Linux systems is distributed with this package. It may be registered "
-            "on other systems by compiling it locally and adding the compiled 'atomsk' binary (with this exact name - "
-            "rename it or make a symbolic link to it if necessary) to your $PATH.\n"
+    info = ("Atomsk binaries compiled for 64-bit Linux and MacOS systems are distributed with this package. It may be "
+            "registered on other systems by compiling it locally and adding the compiled 'atomsk' binary (with this "
+            "exact name - rename it or make a symbolic link to it if necessary) to your $PATH.\n"
             "\n"
             "Atomsk is licensed under GPLv3, the full text of which may be found at "
-            "https://www.gnu.org/licenses/gpl-3.0.en.html. Its binary is redistributed here under the terms of this "
+            "https://www.gnu.org/licenses/gpl-3.0.en.html. Its binaries are redistributed here under the terms of this "
             "license, and any further redistribution must also follow these terms. Its corresponding source code "
             "may be found at https://github.com/pierrehirel/atomsk/")
 

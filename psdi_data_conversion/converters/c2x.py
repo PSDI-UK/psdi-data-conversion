@@ -22,7 +22,7 @@ class C2xFileConverter(ScriptFileConverter):
             "exact name - rename it or make a symbolic link to it if necessary) to your $PATH.\n"
             "\n"
             "c2x is licensed under GPLv3, the full text of which may be found at "
-            "https://www.gnu.org/licenses/gpl-3.0.en.html. Its binary is redistributed here under the terms of this "
+            "https://www.gnu.org/licenses/gpl-3.0.en.html. Its binaries are redistributed here under the terms of this "
             "license, and any further redistribution must also follow these terms. Its corresponding source code "
             "may be downloaded from https://www.c2x.org.uk/downloads/")
 
