@@ -71,11 +71,13 @@ export function convertFile(form_data, download_fname, fname) {
                 const delay = ms => new Promise(response => setTimeout(response, ms));
 
                 downloadFile(`../downloads/${download_fname}`, download_fname)
-                await delay(300);
+                await delay(0);
                 if (requestLog) {
                     downloadFile(`../downloads/${fname}.log.txt`, fname + '.log.txt')
-                    await delay(300);
                 }
+                // We wait a healthy amount of time here to give the browser a chance to fetch the file before
+                // downloading it, so it doesn't get deleted too soon
+                await delay(5000);
             }
 
             var fdata = new FormData();
