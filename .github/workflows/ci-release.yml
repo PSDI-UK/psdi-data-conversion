@@ -40,3 +40,11 @@ jobs:
     with:
       container_tag: ${{ needs.tag-container-push.outputs.container_tag }}
       environment: development
+
+  deploy-stfc-staging-k8s:
+    needs: [tag-container-push, deploy-stfc-dev-k8s]
+    uses: ./.github/workflows/deploy-k8s.yml  # use the callable deploy job
+    secrets: inherit # pass all secrets for the environment
+    with:
+      container_tag: ${{ needs.tag-container-push.outputs.container_tag }}
+      environment: staging
