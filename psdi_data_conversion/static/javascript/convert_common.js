@@ -68,16 +68,20 @@ export function convertFile(form_data, download_fname, fname) {
         timeout: CONVERT_TIMEOUT,
         success: async function () {
             if (!convertTimedOut) {
-                const delay = ms => new Promise(response => setTimeout(response, ms));
+                await downloadFile(`../downloads/${download_fname}`, download_fname)
 
-                downloadFile(`../downloads/${download_fname}`, download_fname)
-                await delay(0);
+                let msg = "To the best of our knowledge, this conversion has worked. A download prompt for your " +
+                    "converted file should now be open for you.";
                 if (requestLog) {
-                    downloadFile(`../downloads/${fname}.log.txt`, fname + '.log.txt')
+                    msg += " A download prompt for the log will appear when you close this box.\n\n" +
+                        "You may need to tell your browser to allow this site to download multiple files and try the " +
+                        "conversion again if your browser initially disallows the download of the log file.";
                 }
-                // We wait a healthy amount of time here to give the browser a chance to fetch the file before
-                // downloading it, so it doesn't get deleted too soon
-                await delay(5000);
+                alert(msg);
+
+                if (requestLog) {
+                    await downloadFile(`../downloads/${fname}.log.txt`, fname + '.log.txt')
+                }
             }
 
             var fdata = new FormData();
@@ -108,18 +112,6 @@ export function convertFile(form_data, download_fname, fname) {
             }
         }
     })
-        .done(response => {
-            if (!convertTimedOut) {
-                let msg = "To the best of our knowledge, this conversion has worked. A download prompt for your " +
-                    "converted file should now be open for you.";
-                if (requestLog) {
-                    msg += " A download prompt for the log will appear when you close this box.\n\n" +
-                        "You may need to tell your browser to allow this site to download multiple files and try the " +
-                        "conversion again if your browser initially disallows the download of the log file.";
-                }
-                alert(msg);
-            }
-        })
         .fail(function (e, textstatus, message) {
             let errLog = `/static/downloads/${fname}.log.txt`;
 
@@ -237,12 +229,23 @@ function checkFile(event) {
     }
 }
 
-// A link is created, clicked and removed, resulting in the download of a file
-function downloadFile(path, filename) {
-    const a = $("<a>")
-        .attr("href", path)
-        .attr("download", filename)
-        .appendTo("body");
-    a[0].click();
-    a.remove();
+/**
+ * Start a download of a file
+ * 
+ * The file is first fetched as a blob, then a link to download it is created, clicked, and removed
+ * 
+ * @param {str} path The path to the file to be downloaded
+ * @param {str} filename The desired filename of the downloaded file
+ * @returns {Promise<Response>}
+ */
+async function downloadFile(path, filename) {
+    return fetch(path)
+        .then(res => res.blob())
+        .then(data => {
+            var a = document.createElement("a");
+            a.href = window.URL.createObjectURL(data);
+            a.download = filename;
+            a.click();
+            a.remove();
+        });
 }
