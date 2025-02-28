@@ -66,9 +66,9 @@ export function convertFile(form_data, download_fname, fname) {
             if (!convertTimedOut) {
                 const delay = ms => new Promise(response => setTimeout(response, ms));
 
-                downloadFile(`../downloads/${fname}.log.txt`, fname + '.log.txt')
-                await delay(300);
                 downloadFile(`../downloads/${download_fname}`, download_fname)
+                await delay(300);
+                downloadFile(`../downloads/${fname}.log.txt`, fname + '.log.txt')
                 await delay(300);
             }
 
@@ -102,9 +102,12 @@ export function convertFile(form_data, download_fname, fname) {
     })
         .done(response => {
             if (!convertTimedOut) {
-                alert("To the best of our knowledge, this conversion has worked. Your output file should download " +
-                    "automatically when you close this alert. Please report any problems by clicking on 'Contact' in " +
-                    "the navigation bar.");
+                alert("To the best of our knowledge, this conversion has worked. A download prompt for your " +
+                    "converted file should now be open for you. If you've requested to also download the log for " +
+                    "this conversion, a download prompt for it will appear when you close this box.\n\n" +
+                    "You may need to tell your browser to allow this site to download multiple files and try the " +
+                    "conversion again if your browser initially disallows the download of the log file."
+                );
             }
         })
         .fail(function (e, textstatus, message) {
