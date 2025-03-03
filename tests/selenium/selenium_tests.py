@@ -105,6 +105,10 @@ class TestBasicOperations(unittest.TestCase):
         WebDriverWait(driver, 10).until(EC.visibility_of_element_located((By.XPATH, "//input[@id='fileToUpload']")))
         driver.find_element(By.XPATH, "//input[@id='fileToUpload']").send_keys(str(input_file))
 
+        # Request the log file
+
+        driver.find_element(By.XPATH, "//input[@id='requestLog']").click()
+
         # Click on the "Convert" button.
 
         WebDriverWait(driver, 10).until(EC.visibility_of_element_located((By.XPATH, "//input[@id='uploadButton']")))
