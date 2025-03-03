@@ -11,7 +11,7 @@ permissions:
   contents: read
 
 jobs:
-  build:
+  test:
     runs-on: ubuntu-latest
 
     steps:
@@ -28,5 +28,6 @@ jobs:
           pip install .[gui,gui-test]
       - name: Run Selenium tests
         run: |
+          ./run_local.sh &
           cd tests/selenium
           ./run.sh
