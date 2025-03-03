@@ -122,7 +122,7 @@ class TestBasicOperations(unittest.TestCase):
             time.sleep(1)
             time_elapsed += 1
             if time_elapsed > TIMEOUT:
-                assert f"Download of {output_file} and {log_file} timed out"
+                assert False, f"Download of {output_file} and {log_file} timed out"
 
         time.sleep(1)
 
