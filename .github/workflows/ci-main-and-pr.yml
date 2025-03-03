@@ -7,9 +7,9 @@ run-name: ci-main-and-pr
 on:
   workflow_dispatch:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
     paths:
       [
         "**.py",
@@ -19,7 +19,9 @@ on:
         "**/bin/**",
         "test_data/**",
       ]
-      
+
 jobs:
-  test-package:
+  test-python:
     uses: ./.github/workflows/test-python.yml
+  test-gui:
+    uses: ./.github/workflows/test-gui.yml
