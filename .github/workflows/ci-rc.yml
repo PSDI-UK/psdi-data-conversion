@@ -7,14 +7,16 @@ run-name: ci-rc
 on:
   workflow_dispatch:
   push:
-    branches: [ "rc-**" ]
+    branches: ["rc-**"]
   pull_request:
-    branches: [ "rc-**" ]
-    
+    branches: ["rc-**"]
+
 jobs:
   # Runs on all of the 'on' conditions above, including pull request events
   test-package:
     uses: ./.github/workflows/test-python.yml
+  test-gui:
+    uses: ./.github/workflows/test-gui.yml
   open-pull-request:
     uses: ./.github/workflows/open-pull-request.yml
     with:
