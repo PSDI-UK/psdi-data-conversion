@@ -29,4 +29,5 @@ jobs:
       - name: Run Selenium tests
         run: |
           ./run_local.sh &
-          ./test/selenium/run.sh
+          cd tests/selenium
+          ./run.sh
