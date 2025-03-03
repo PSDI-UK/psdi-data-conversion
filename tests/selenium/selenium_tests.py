@@ -28,6 +28,9 @@ if (origin is None):
     print("ORIGIN environment variable must be set.")
     exit(1)
 
+# Loop timeout at 10 seconds
+TIMEOUT = 10
+
 # print(f"origin: {origin}")
 # print(f"driver: {driver_path}")
 
@@ -114,8 +117,12 @@ class TestBasicOperations(unittest.TestCase):
 
         # Wait until files exist.
 
+        time_elapsed = 0
         while (not Path.is_file(log_file)) or (not Path.is_file(output_file)):
             time.sleep(1)
+            time_elapsed += 1
+            if time_elapsed > TIMEOUT:
+                assert f"Download of {output_file} and {log_file} timed out"
 
         time.sleep(1)
 
