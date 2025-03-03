@@ -19,19 +19,20 @@ from webdriver_manager.firefox import GeckoDriverManager
 env_driver = os.environ.get("DRIVER")
 origin = os.environ.get("ORIGIN")
 
-if (env_driver == None):
+if (env_driver is None):
     driver_path = GeckoDriverManager().install()
 else:
     driver_path = env_driver
 
-if (origin == None):
+if (origin is None):
     print("ORIGIN environment variable must be set.")
     exit(1)
 
-#print(f"origin: {origin}")
-#print(f"driver: {driver_path}")
+# print(f"origin: {origin}")
+# print(f"driver: {driver_path}")
 
 driver = webdriver.Firefox(service=FirefoxService(driver_path))
+
 
 class TestBasicOperations(unittest.TestCase):
 
@@ -47,7 +48,8 @@ class TestBasicOperations(unittest.TestCase):
 
         # Check that the 'from' and 'to' lists contains "abinit" and "acesin" respectively.
 
-        WebDriverWait(driver, 10).until(EC.visibility_of_element_located((By.XPATH, "//select[@id='fromList']/option")))
+        WebDriverWait(driver, 10).until(EC.visibility_of_element_located(
+            (By.XPATH, "//select[@id='fromList']/option")))
         driver.find_element(By.XPATH, "//select[@id='fromList']/option[contains(.,'abinit: ABINIT output')]")
 
         WebDriverWait(driver, 10).until(EC.visibility_of_element_located((By.XPATH, "//select[@id='toList']/option")))
@@ -76,7 +78,8 @@ class TestBasicOperations(unittest.TestCase):
 
         driver.get(f"{origin}/")
 
-        WebDriverWait(driver, 10).until(EC.visibility_of_element_located((By.XPATH, "//select[@id='fromList']/option")))
+        WebDriverWait(driver, 10).until(EC.visibility_of_element_located(
+            (By.XPATH, "//select[@id='fromList']/option")))
 
         # Select cdxml from the 'from' list.
 
@@ -120,6 +123,6 @@ class TestBasicOperations(unittest.TestCase):
 
         self.assertEqual(output_file.read_text().strip(), "InChI=1S/C12NO/c1-12(2)6-7-13-11-5-4-9(14-3)8-10(11)12")
 
+
 if __name__ == '__main__':
     unittest.main()
-
