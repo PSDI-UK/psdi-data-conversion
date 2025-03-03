@@ -11,6 +11,7 @@ from selenium.common.exceptions import NoSuchElementException
 from selenium import webdriver
 from selenium.webdriver.common.alert import Alert
 from selenium.webdriver.common.by import By
+from selenium.webdriver import FirefoxOptions
 from selenium.webdriver.firefox.service import Service as FirefoxService
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
@@ -34,7 +35,11 @@ TIMEOUT = 10
 
 @pytest.fixture(scope="module")
 def driver():
-    ff_driver = webdriver.Firefox(service=FirefoxService(driver_path))
+    """Get a headless Firefox web driver"""
+    opts = FirefoxOptions()
+    opts.add_argument("--headless")
+    ff_driver = webdriver.Firefox(service=FirefoxService(driver_path),
+                                  options=opts)
     yield ff_driver
     ff_driver.quit()
 
