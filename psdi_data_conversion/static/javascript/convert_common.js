@@ -5,6 +5,7 @@
 
 const SECOND = 1000; // Milliseconds
 const CONVERT_TIMEOUT = 60 * SECOND;
+const MEGABYTE = 1024 * 1024;
 
 const ZIP_EXT = "zip"
 const TAR_EXT = "tar"
