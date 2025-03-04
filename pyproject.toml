@@ -61,5 +61,8 @@ exclude = [
   "Dockerfile",
 ]
 
+[tool.hatch.build.hooks.custom]
+path = "scripts/setup_bin.py"
+
 [tool.pytest.ini_options]
 pythonpath = ["."]
