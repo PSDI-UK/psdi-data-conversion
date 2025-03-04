@@ -40,9 +40,15 @@ jobs:
           fi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: test-package
-        if: steps.create-pr.outputs.is_new == '1'
-        uses: ./.github/workflows/test-python.yml
-      - name: test-gui
-        if: steps.create-pr.outputs.is_new == '1'
-        uses: ./.github/workflows/test-gui.yml
+    outputs:
+      is_new: ${{ steps.create-pr.outputs.is_new }}
+          
+  test-package:
+    needs: create-pr
+    uses: ./.github/workflows/test-python.yml
+    if: needs.create-pr.outputs.is_new == '1'
+    
+  test-gui:
+    needs: create-pr
+    uses: ./.github/workflows/test-gui.yml
+    if: needs.create-pr.outputs.is_new == '1'
