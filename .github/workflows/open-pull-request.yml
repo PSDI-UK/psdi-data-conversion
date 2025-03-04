@@ -30,7 +30,7 @@ jobs:
         run: |
           gh pr create -B ${{ inputs.target }} -H ${{ env.BRANCH_NAME }} --title \
           'Merge ${{ env.BRANCH_NAME }} into ${{ inputs.target }}' --body '' \
-          && echo "Pull request successfully created"; echo "is_new=1" >> $GITHUB_OUTPUT
+          && echo "Pull request successfully created"; echo "is_new=1" >> $GITHUB_OUTPUT |
           || echo "Pull request already exists"; echo "is_new=0" >> $GITHUB_OUTPUT
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
