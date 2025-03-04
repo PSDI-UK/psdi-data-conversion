@@ -17,7 +17,7 @@ authors = [
 ]
 description = "Chemistry file format conversion service, provided by PSDI"
 readme = "README.md"
-keywords = ["chemistry", "conversion", "openbabel", "atomsk", "flask"]
+keywords = ["chemistry", "conversion", "openbabel", "atomsk", "flask", "c2x"]
 license = { file = "LICENSE" }
 classifiers = [
   "Development Status :: 3 - Alpha",
