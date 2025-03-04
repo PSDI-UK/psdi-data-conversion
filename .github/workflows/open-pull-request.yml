@@ -26,6 +26,29 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: create pull request
-        run: gh pr create -B ${{ inputs.target }} -H ${{ env.BRANCH_NAME }} --title 'Merge ${{ env.BRANCH_NAME }} into ${{ inputs.target }}' --body '' || echo "Pull request already exists"
+        id: create-pr
+        run: |
+          gh pr create -B ${{ inputs.target }} -H ${{ env.BRANCH_NAME }} --title \
+            'Merge ${{ env.BRANCH_NAME }} into ${{ inputs.target }}' --body '' \
+            && SUCCESS=1 || SUCCESS=0
+          if [ $SUCCESS -eq 1 ]; then
+            echo "Pull request successfully created"
+            echo "is_new=1" >> $GITHUB_OUTPUT
+          else
+            echo "Pull request already exists"
+            echo "is_new=0" >> $GITHUB_OUTPUT
+          fi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    outputs:
+      is_new: ${{ steps.create-pr.outputs.is_new }}
+          
+  test-package:
+    needs: create-pr
+    uses: ./.github/workflows/test-python.yml
+    if: needs.create-pr.outputs.is_new == '1'
+    
+  test-gui:
+    needs: create-pr
+    uses: ./.github/workflows/test-gui.yml
+    if: needs.create-pr.outputs.is_new == '1'
