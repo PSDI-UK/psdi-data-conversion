@@ -18,6 +18,9 @@ error_log.txt
 psdi_data_conversion/static/downloads/*
 psdi_data_conversion/static/uploads/*
 
+# Binary files which have been copied into the project as part of the build
+psdi_data_conversion/bin/*
+
 # Any zone identifiers created by Windows copying
 *:Zone.Identifier
 

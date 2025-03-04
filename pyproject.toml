@@ -1,10 +1,6 @@
 [build-system]
-requires = [
-  "setuptools>=64",
-  "setuptools-scm>=8",
-  "setuptools-git-versioning>=2.0,<3",
-]
-build-backend = "setuptools.build_meta"
+requires = ["hatchling>=1.0.0", "hatch-vcs"]
+build-backend = "hatchling.build"
 
 [project]
 name = "psdi_data_conversion"
@@ -17,7 +13,7 @@ authors = [
 ]
 description = "Chemistry file format conversion service, provided by PSDI"
 readme = "README.md"
-keywords = ["chemistry", "conversion", "openbabel", "atomsk", "flask", "c2x"]
+keywords = ["chemistry", "conversion", "openbabel", "atomsk", "flask"]
 license = { file = "LICENSE" }
 classifiers = [
   "Development Status :: 3 - Alpha",
@@ -48,16 +44,22 @@ Homepage = "https://psdidev2.azurewebsites.net/"
 Repository = "https://github.com/PSDI-UK/psdi-data-conversion"
 Issues = "https://github.com/PSDI-UK/psdi-data-conversion/issues"
 
-[tool.setuptools.packages.find]
-where = ["."]
+# Hatch-specific configuration
+[tool.hatch]
+version = { source = "vcs" } # Use version Git tags
 
-[tool.setuptools.package-data]
-psdi_data_conversion = ["bin/**", "static/**", "templates/**", "scripts/**"]
-
-[tool.setuptools-git-versioning]
-enabled = true
-
-[tool.setuptools_scm]
+[tool.hatch.build]
+exclude = [
+  ".github/**",
+  "bin/**",
+  "deploy/**",
+  "scripts/**",
+  "convert.py",
+  "byte.js",
+  "run_tests.py",
+  "requirements.txt",
+  "Dockerfile",
+]
 
 [tool.pytest.ini_options]
 pythonpath = ["."]
