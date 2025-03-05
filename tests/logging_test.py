@@ -32,7 +32,7 @@ def test_date_time():
     assert datetime_re.match(datetime_str_1)
 
     # Test that the time changes after a second, and is still in the correct format
-    time.sleep(1.1)
+    time.sleep(1.2)
     time_str_2 = log_utility.get_time()
     datetime_str_2 = log_utility.get_date_time()
 
