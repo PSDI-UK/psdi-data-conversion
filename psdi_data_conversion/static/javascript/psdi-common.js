@@ -118,18 +118,19 @@ $(document).ready(function () {
 
   // Count the elements we'll need to load first, to avoid prematurely removing the cover
   // We load an element only if it's a pure stub with no children; otherwise we assume it is intended to be used
-  // as-is and not overwritten by a load
+  // as-is and not overwritten by a load. If it's intended to be used as a fallback for if we can't load, it can be
+  // assigned the "fallback" class to load if possible despite something existing
 
   const headerStub = $("#psdi-header");
   let loadHeader = false;
-  if (headerStub.length > 0 && headerStub[0].childNodes.length == 0) {
+  if (headerStub.length > 0 && (headerStub[0].childNodes.length == 0 || headerStub[0].classList.contains("fallback"))) {
     loadHeader = true;
     ++loadSteps;
   }
 
   const footerStub = $("#psdi-footer");
   let loadFooter = false;
-  if (footerStub.length > 0 && footerStub[0].childNodes.length == 0) {
+  if (footerStub.length > 0 && (footerStub[0].childNodes.length == 0 || footerStub[0].classList.contains("fallback"))) {
     loadFooter = true;
     ++loadSteps;
   }
