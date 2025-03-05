@@ -51,7 +51,6 @@ version = { source = "vcs" } # Use version Git tags
 [tool.hatch.build]
 exclude = [
   ".github/**",
-  "bin/**",
   "deploy/**",
   "scripts/fetch-*",
   "scripts/make-index-html.sh",

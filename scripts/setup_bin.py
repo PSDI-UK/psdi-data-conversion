@@ -4,6 +4,7 @@ Created 2025-03-04 by Bryan Gillis.
 
 Copy appropriate binaries into the project's files before packaging
 """
+from tempfile import TemporaryDirectory
 from typing import Any
 from hatchling.builders.hooks.plugin.interface import BuildHookInterface  # type: ignore
 
@@ -11,31 +12,45 @@ import sys
 import os
 import shutil
 
-BASE_DIR = os.path.abspath(os.path.split(__file__)[0] + "/..")
+base_dir = os.path.abspath(os.path.split(__file__)[0] + "/..")
+source_bin_dir = os.path.join(base_dir, "psdi_data_conversion/bin")
+
+L_PLATFORMS = ["linux", "windows", "mac"]
 
 
 class SetupBin(BuildHookInterface):
     PLUGIN_NAME = 'setup binaries'
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.tmpdir = TemporaryDirectory("bin-storage")
+        self.platform: str | None = None
+
     def initialize(self, version: str, build_data: dict[str, Any]) -> None:
 
         platform = sys.platform
         if platform.startswith('linux'):
-            platform_folder_name = "linux"
+            self.platform = "linux"
         elif platform.startswith('win'):
-            platform_folder_name = "windows"
+            self.platform = "windows"
         elif platform.startswith('darwin'):
-            platform_folder_name = "mac"
+            self.platform = "mac"
         else:
-            platform_folder_name = None
+            self.platform = None
 
-        source_root_dir = os.path.join(BASE_DIR, "bin")
-        dest_root_dir = "psdi_data_conversion/bin"
+        if self.platform is not None:
+            for platform in L_PLATFORMS:
+                source_platform_bin_dir = os.path.join(source_bin_dir, platform)
+                if platform != self.platform and os.path.exists(source_platform_bin_dir):
+                    shutil.move(source_platform_bin_dir,
+                                os.path.join(self.tmpdir.name, platform))
 
-        if platform_folder_name is None:
-            shutil.copytree(source_root_dir, dest_root_dir, dirs_exist_ok=True)
-        else:
-            shutil.copytree(os.path.join(source_root_dir, platform_folder_name),
-                            os.path.join(dest_root_dir, platform_folder_name), dirs_exist_ok=True)
+    def finalize(self, version: str, build_data: dict[str, Any], artifact_path: str) -> None:
 
-        self.build_config.include_path(f"{dest_root_dir}/**")
+        if self.platform is not None:
+            for platform in L_PLATFORMS:
+                source_platform_bin_dir = os.path.join(self.tmpdir.name, platform)
+                if platform != self.platform and os.path.exists(source_platform_bin_dir):
+                    shutil.move(source_platform_bin_dir,
+                                os.path.join(source_bin_dir, platform),
+                                )
