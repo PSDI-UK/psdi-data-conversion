@@ -31,7 +31,7 @@ class SetupBin(BuildHookInterface):
         dest_root_dir = "psdi_data_conversion/bin"
 
         if platform_folder_name is None:
-            shutil.copytree(source_root_dir, dest_root_dir)
+            shutil.copytree(source_root_dir, dest_root_dir, dirs_exist_ok=True)
         else:
             shutil.copytree(os.path.join(source_root_dir, platform_folder_name),
-                            os.path.join(dest_root_dir, platform_folder_name))
+                            os.path.join(dest_root_dir, platform_folder_name), dirs_exist_ok=True)
