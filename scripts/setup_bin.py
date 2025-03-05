@@ -11,6 +11,8 @@ import sys
 import os
 import shutil
 
+BASE_DIR = os.path.abspath(os.path.split(__file__)[0] + "/..")
+
 
 class SetupBin(BuildHookInterface):
     PLUGIN_NAME = 'setup binaries'
@@ -27,7 +29,7 @@ class SetupBin(BuildHookInterface):
         else:
             platform_folder_name = None
 
-        source_root_dir = "bin"
+        source_root_dir = os.path.join(BASE_DIR, "bin")
         dest_root_dir = "psdi_data_conversion/bin"
 
         if platform_folder_name is None:
@@ -35,3 +37,5 @@ class SetupBin(BuildHookInterface):
         else:
             shutil.copytree(os.path.join(source_root_dir, platform_folder_name),
                             os.path.join(dest_root_dir, platform_folder_name), dirs_exist_ok=True)
+
+        self.build_config.include_path(f"{dest_root_dir}/**")
