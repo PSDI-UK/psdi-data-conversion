@@ -153,6 +153,7 @@
   --psdi-heading-color-inverse : var(--psdi-light-text-color-heading);
   --ifm-font-color-secondary   : var(--psdi-text-color-secondary-body);
   --ifm-heading-color-secondary: var(--psdi-dark-text-color-heading);
+  --psdi-font-color-faint      : gray;
 
   --psdi-border-color: var(--psdi-border-color-light);
 
@@ -184,6 +185,7 @@
   --psdi-heading-color-inverse : var(--psdi-dark-text-color-heading);
   --ifm-font-color-secondary   : var(--psdi-dm-text-color-secondary-body);
   --ifm-heading-color-secondary: var(--psdi-dark-text-color-heading);
+  --psdi-font-color-faint      : gray;
 
   --psdi-border-color: var(--psdi-border-color-dark);
 
@@ -247,9 +249,8 @@ option:checked {
 }
 
 input::placeholder {
-  color      : var(--ifm-font-color-base);
-  font-weight: 100;
-  font-style : italic;
+  color     : var(--psdi-font-color-faint);
+  font-style: italic;
 }
 
 button,
