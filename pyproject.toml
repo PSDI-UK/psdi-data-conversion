@@ -61,10 +61,10 @@ exclude = [
   "Dockerfile",
 ]
 
-[tool.hatch.build.hooks.custom]
-# The following line runs a script which excludes binaries for platforms other than the current from the binary.
+# The following lines run a script which excludes binaries for platforms other than the current from the binary.
 # Once the project is set up to make separate builds for different platforms, the below can be uncommented to
 # enable this behaviour.
+# [tool.hatch.build.hooks.custom]
 # path = "scripts/setup_bin.py"
 
 [tool.pytest.ini_options]
