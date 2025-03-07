@@ -257,13 +257,7 @@ If an input format is provided, information on input flags and options accepted 
 
 ### Installation
 
-The CLA and Python library are installed together. This package is not yet available on PyPI, and so must be installed locally. This can be done most easily with:
-
-```bash
-pip install .
-```
-
-executed from this project's directory. You can also replace the '.' in this command with the path to this project's directory to install it from elsewhere.
+The CLA and Python library are installed together. See the [above instructions for installing the CLA](#installation), which will also install the Python library.
 
 ### Use
 
@@ -278,7 +272,6 @@ The most useful modules and functions within this package to know about are:
 - `psdi_data_conversion`
   - `converter`
     - `run_converter`
-    - `get_converter`
   - `constants`
   - `database`
 
@@ -296,27 +289,9 @@ For a simple conversion, this can be used via:
 run_converter(filename, to_format, name=name, data=data)
 ```
 
-Where `filename` is the name of the file to convert (either fully-qualified or relative to the current directory), `to_format` is the desired format to convert to (e.g. `"pdb"`), `name` is the name of the converter to use (default "Open Babel"), and `data` is a dict of any extra information required by the specific converter being used (default empty dict).
+Where `filename` is the name of the file to convert (either fully-qualified or relative to the current directory), `to_format` is the desired format to convert to (e.g. `"pdb"`), `name` is the name of the converter to use (default "Open Babel"), and `data` is a dict of any extra information required by the specific converter being used, such as flags for how to read/write input/output files (default empty dict).
 
 See the method's documentation via `help(run_converter)` after importing it for further details on usage.
-
-#### `get_converter`
-
-This method provides the class which will perform a file conversion. This method may be imported via:
-
-```python
-from psdi_data_conversion.converter import get_converter
-```
-
-This can be used to create and run a converter via e.g.:
-
-```python
-converter = get_converter(filename, to_format, name=name, data=data)
-...
-converter.run()
-```
-
-Note that the `run_converter` function includes support for converting zip and tar archives of files, while `get_converter().run()` can only handle files one at a time.
 
 #### `constants`
 
@@ -328,8 +303,9 @@ from psdi_data_conversion import constants
 
 Of the constants not defined in this package, the most notable are the names of available converters. Each converter has its own name defined in its module within the `psdi_data_conversion.converters` package (e.g. `psdi_data_conversion.converters.atomsk.CONVERTER_ATO`), and these are compiled within the `psdi_data_conversion.converter` module into:
 
-- `D_REGISTERED_CONVERTERS` - A dict which relates the names of converters to their classes
-- `L_REGISTERED_CONVERTERS` - A list of the names of converters
+- `D_SUPPORTED_CONVERTERS` - A dict which relates the names of all converters supported by this package to their classes
+- `D_REGISTERED_CONVERTERS` - As above, but limited to those converters which can be run on the current machine (e.g. a converter may require a precompiled binary which is only available for certain platforms, and hence it will be in the "supported" dict but not the "registered" dict)
+- `L_SUPPORTED_CONVERTERS`/`L_REGISTERED_CONVERTERS` - Lists of the names of supported/registered converters
 
 #### `database`
 
@@ -337,8 +313,8 @@ The `database` module provides classes and methods to interface with the databas
 
 - `get_converter_info` - This method takes the name of a converter and returns an object containing the general information about it stored in the database (note that this doesn't include file formats it can handle - use the `get_possible_formats` method for that)
 - `get_format_info` - This method takes the name of a file format (its extension) and returns an object containing the general information about it stored in the database
-- `get_degree_of_success` - This method takes the name of a converter, the name of an input file format (its extension), and the name of an output file format, and provides the degree of success for this conversion (`None` if not possible, otherwise a string describing it).
-- `get_possible_converters` - This method takes the names of an input and output file format, and returns a list of converters which can perform the desired conversion and their degree of success.
+- `get_degree_of_success` - This method takes the name of a converter, the name of an input file format (its extension), and the name of an output file format, and provides the degree of success for this conversion (`None` if not possible, otherwise a string describing it)
+- `get_possible_converters` - This method takes the names of an input and output file format, and returns a list of converters which can perform the desired conversion and their degree of success
 - `get_possible_formats` - This method takes the name of a converter and returns a list of input formats it can accept and a list of output formats it can produce. While it's usually a safe bet that a converter can handle any combination between these lists, it's best to make sure that it can with the `get_degree_of_success` method
 - `get_in_format_args` and `get_out_format_args` - These methods take the name of a converter and the name of an input/output file format, and return a list of info on flags accepted by the converter when using this format for input/output
 - `get_conversion_quality` - Provides information on the quality of a conversion from one format to another with a given converter. If conversion isn't possible, returns `None`. Otherwise returns a short string describing the quality of the conversion, a string providing information on possible issues with the conversion, and a dict providing details on property support between the input and output formats
