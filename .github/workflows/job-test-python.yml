@@ -1,6 +1,6 @@
 # Reusable workflow intended to be called as a job by other workflows
 
-# Runs automated tests on the Python backend with pytest
+# Runs automated tests on the Python backend with pytest and calculates test coverage
 
 name: Job - Test Python
 run-name: Test Python
