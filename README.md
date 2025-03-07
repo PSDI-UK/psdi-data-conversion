@@ -38,10 +38,12 @@ This is the repository for the PSDI PF2 Chemistry File Format Conversion project
 - `.github`
   - `workflows`
     - (Automated workflows for various tasks related to project maintenance)
-- `psdi_data_conversion`
+- `deploy`
+  - (Files used as part of the deployment to STFC infrastructure)
+- `psdi_data_conversion` (Primary source directory)
   - `bin`
     - (Precompiled binaries for running file format converters)
-  - `static`
+  - `static` (Static code and assets for the web app)
     - `content`
       - (HTML assets for the web app)
     - `downloads` (created by app.py if not extant)
@@ -58,9 +60,13 @@ This is the repository for the PSDI PF2 Chemistry File Format Conversion project
   - (Python packages, modules, and scripts)
 - `scripts`
   - (Scripts used for project maintenance)
+- `test_data`
+  - (Files used for testing the project)
 - `tests`
   - (Unit tests for the project)
-- `CONTRIBUTING.md` (Guidelines for contributors to the project)
+- `CHANGELOG.md` (Updates since initial public release)
+- `CONTRIBUTING.md` (Guidelines and information for contributors to the project)
+- `DOCKERFILE` (Dockerfile for image containerising PSDI's data conversion service)
 - `LICENSE` (Apache Licence version 2.0)
 - `pyproject.toml` (Python project metadata and settings)
 - `README.md` (This file)
