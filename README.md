@@ -187,13 +187,13 @@ pytest
 
 ### Execution
 
-Once installed, the command-line script `psdi-data-convert` will be made available, which can be called to either perform a data conversion or to get information about possible conversions or converters (the latter TODO). You can see the full options for it by calling:
+Once installed, the command-line script `psdi-data-convert` will be made available, which can be called to either perform a data conversion or to get information about possible conversions and converters. You can see the full options for it by calling:
 
 ```bash
 psdi-data-convert -h
 ```
 
-This script has two modes of execution: Data conversion, and requesting information on possible conversions.
+This script has two modes of execution: Data conversion, and requesting information on possible conversions and converters.
 
 #### Data Conversion
 
@@ -211,8 +211,10 @@ The full possible syntax for the script is:
 psdi-data-convert <input file 1> [<input file 2> <input file 3> ...] -t/--to <output format> [-f/--from <input file
 format>] [-i/--in <input file location>] [-o/--out <location for output files>] [-w/--with <converter>] [--delete-input]
 [--from-flags '<flags to be provided to the converter for reading input>'] [--to-flags '<flags to be provided to the
-converter for writing output>'] [--coord-gen <coordinate generation options] [--nc/--no-check] [-q/--quiet]
-[-g/--log-file <log file name] [--log-mode <mode>] [--log-level <level>]
+converter for writing output>'] [--from-options '<options to be provided to the converter for reading input>']
+[--to-options '<options to be provided to the converter for writing output>'] [--coord-gen <coordinate generation
+options] [-s/--strict] [--nc/--no-check] [-q/--quiet] [-g/--log-file <log file name] [--log-level <level>] [--log-mode
+<mode>]
 ```
 
 Call `psdi-data-convert -h` for details on each of these options.
@@ -225,7 +227,7 @@ The script can also be used to get information on possible conversions by provid
 psdi-data-convert -l
 ```
 
-Without any further arguments, the script will list converters available for use. More detailed information about a specific converter or conversion can be obtained through providing more information about the desired conversion.
+Without any further arguments, the script will list converters available for use and file formats supported by at least one converter. More detailed information about a specific converter or conversion can be obtained through providing more information.
 
 To get more information about a converter, call:
 
