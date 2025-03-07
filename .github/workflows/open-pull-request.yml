@@ -35,10 +35,9 @@ jobs:
             echo "Pull request successfully created"
           else
             echo "Pull request already exists"
-            echo "run_tests=0" >> $GITHUB_OUTPUT
           fi
           # For merges to release, we don't need to additionally run tests here
-          if [ ${{ inputs.target }} -eq release ]; then
+          if [ "${{ inputs.target }}" = "release" ]; then
             RUN_TESTS=0
           else
             RUN_TESTS=$SUCCESS
