@@ -32,9 +32,16 @@ requires-python = ">= 3.12"
 dynamic = ["version"]
 
 [project.optional-dependencies]
-test = ["pytest"]
+test = ["pytest", "coverage"]
 gui = ["Flask", "requests"]
-gui-test = ["Flask", "requests", "pytest", "selenium", "webdriver_manager"]
+gui-test = [
+  "Flask",
+  "requests",
+  "pytest",
+  "coverage",
+  "selenium",
+  "webdriver_manager",
+]
 
 [project.scripts]
 psdi-data-convert = "psdi_data_conversion.main:main"
@@ -69,3 +76,15 @@ exclude = [
 
 [tool.pytest.ini_options]
 pythonpath = ["."]
+
+[tool.coverage.run]
+source_pkgs = ["psdi_data_conversion", "tests"]
+branch = true
+omit = []
+
+[tool.coverage.paths]
+test_project = ["test_project"]
+tests = ["tests"]
+
+[tool.coverage.report]
+exclude_lines = ["no cov", "if __name__ == .__main__.:", "if TYPE_CHECKING:"]
