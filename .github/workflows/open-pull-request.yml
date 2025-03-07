@@ -33,11 +33,16 @@ jobs:
             && SUCCESS=1 || SUCCESS=0
           if [ $SUCCESS -eq 1 ]; then
             echo "Pull request successfully created"
-            echo "is_new=1" >> $GITHUB_OUTPUT
           else
             echo "Pull request already exists"
-            echo "is_new=0" >> $GITHUB_OUTPUT
           fi
+          # For merges to release, we don't need to additionally run tests here
+          if [ "${{ inputs.target }}" = "release" ]; then
+            RUN_TESTS=0
+          else
+            RUN_TESTS=$SUCCESS
+          fi
+          echo "run_tests=$RUN_TESTS" >> $GITHUB_OUTPUT
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     outputs:
