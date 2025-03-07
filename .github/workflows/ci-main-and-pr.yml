@@ -9,12 +9,12 @@ on:
   push:
     branches: ["main"]
   pull_request:
-    branches: ["main"]
+    branches: ["main", "release"]
     paths:
       [
         "**.py",
         "pyproject.toml",
-        "c2x.sh",
+        "**/c2x.sh",
         "**/atomsk.sh",
         "**/bin/**",
         "test_data/**",

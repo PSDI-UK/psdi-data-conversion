@@ -27,6 +27,8 @@ jobs:
       - uses: actions/checkout@v4
       - name: create pull request
         id: create-pr
+        # Create the PR, and store an output for whether or not we want to run tests afterward - if this workflow
+        # creates a PR, it won't trigger the standard CI PR, so we'll want to trigger those tests here
         run: |
           gh pr create -B ${{ inputs.target }} -H ${{ env.BRANCH_NAME }} --title \
             'Merge ${{ env.BRANCH_NAME }} into ${{ inputs.target }}' --body '' \
@@ -36,13 +38,7 @@ jobs:
           else
             echo "Pull request already exists"
           fi
-          # For merges to release, we don't need to additionally run tests here
-          if [ "${{ inputs.target }}" = "release" ]; then
-            RUN_TESTS=0
-          else
-            RUN_TESTS=$SUCCESS
-          fi
-          echo "run_tests=$RUN_TESTS" >> $GITHUB_OUTPUT
+          echo "run_tests=$SUCCESS" >> $GITHUB_OUTPUT
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     outputs:
