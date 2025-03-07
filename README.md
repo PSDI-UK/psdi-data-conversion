@@ -82,7 +82,7 @@ Any local installation of this project requires Python 3.12 or greater. The best
 
 For Windows and MacOS: Download and run the installer for the latest version from the official site: https://www.python.org/downloads/
 
-For Linux systems, Python is most readily installed with your distributions package manager. For Ubuntu/Debian-based systems, this is `apt`, and the following series of commands can be used to install the latest version of Python compatible with your system:
+For Linux systems, Python is most readily installed with your distribution's package manager. For Ubuntu/Debian-based systems, this is `apt`, and the following series of commands can be used to install the latest version of Python compatible with your system:
 
 ```bash
 sudo apt update # Make sure the package manager has access to the latest versions of all packages
@@ -97,9 +97,13 @@ python --version
 python3 --version
 ```
 
-Usually `python` will be set up as an alias to python3, but if you already have an older version installed on your system, this might not be the case.
+Usually `python` will be set up as an alias to python3, but if you already have an older version installed on your system, this might not be the case. You may be able to set this behaviour up by installing the `python-is-python3` package:
 
-Also check that this installed Python's package manager, `pip`, on your system:
+```bash
+sudo apt install python-is-python3
+```
+
+Also check that this process installed Python's package manager, `pip`, on your system:
 
 ```bash
 pip --version
@@ -124,19 +128,26 @@ You can also install a newer version of Python if you wish by substituting "3.12
 
 This project depends on other projects available via pip, which will be installed automatically as required:
 
-Required for all installations:
+Required for all installations (`pip install .`):
 
 - `py`
 - `openbabel-wheel`
 
-Required to run the web app locally for a GUI experience:
+Required to run the web app locally for a GUI experience (`pip install .[gui]`):
 
 - `Flask`
 - `requests`
 
-Required to run unit tests:
+Required to run unit tests (`pip install .[test]`):
 
 - `pytest`
+- `coverage`
+
+Required to run unit tests on the web app (`pip install .[gui-test]`):
+
+- (all web app and test requirements listed above)
+- `selenium`
+- `webdriver_manager`
 
 In addition to the dependencies listed above, this project uses the assets made public by PSDI's common style project at https://github.com/PSDI-UK/psdi-common-style. The latest versions of these assets are copied to this project periodically (using the scripts in the `scripts` directory). In case a future release of these assets causes a breaking change in this project, the file `fetch-common-style.conf` can be modified to set a previous fixed version to download and use until this project is updated to work with the latest version of the assets.
 
