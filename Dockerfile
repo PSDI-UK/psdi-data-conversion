@@ -45,8 +45,9 @@ ENV SERVICE_MODE=true
 ENV MAX_FILESIZE=1
 ENV LOG_MODE=full
 
-# Set LOG_LEVEL to a desired level (e.g. "debug") to force all logging to be at that level
-ENV LOG_LEVEL= 
+# Set LOG_LEVEL to a desired level (e.g. "debug") to force all logging to be at that level. Leave blank for default
+# behaviour (INFO+ to user log, ERROR+ to server log and stdout)
+ENV LOG_LEVEL=debug
 
 EXPOSE 8000
 
