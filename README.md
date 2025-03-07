@@ -178,13 +178,6 @@ source .venv/bin/activate
 
 You should then be able to install this project. When you wish to deactivate the virtual environment, you can do so with the `deactivate` command.
 
-Optionally, you can install the necessary requirements to run unit tests and run them with:
-
-```bash
-pip install .[test]
-pytest
-```
-
 ### Execution
 
 Once installed, the command-line script `psdi-data-convert` will be made available, which can be called to either perform a data conversion or to get information about possible conversions and converters. You can see the full options for it by calling:
@@ -333,11 +326,7 @@ Install the package and its requirements, including the optional requirements us
 pip install .'[gui]'
 ```
 
-To enable debug mode, if required, enter:
-
-```bash
-export FLASK_ENV=development
-```
+If your system does not allow installs in this manner, it may be necessary to set up a virtual environment. See the instructions in the [command-line application installation](#installation) section above for how to do that, and then try to install again once you've set one up and activated it.
 
 If you've cloned this repository, you can use the `run_local.sh` bash script to run the application. Otherwise (e.g. if you've installed from a wheel or PyPI), copy and paste the following into a script:
 
@@ -396,7 +385,7 @@ Install the package requirements locally (ideally within a virtual environment) 
 
 ```bash
 source .venv/bin/activate # Create a venv first if necessary with `python -m venv .venv`
-pip install .'[gui,test]'
+pip install .'[gui-test]'
 pytest
 ```
 
