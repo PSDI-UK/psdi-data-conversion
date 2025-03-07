@@ -61,9 +61,6 @@ exclude = [
   "deploy/**",
   "scripts/fetch-*",
   "scripts/make-index-html.sh",
-  "convert.py",
-  "byte.js",
-  "run_tests.py",
   "requirements.txt",
   "Dockerfile",
 ]
