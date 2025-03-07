@@ -1,5 +1,7 @@
 # Reusable workflow intended to be called as a job by other workflows
 
+# Deploys the project to the k8s-hosted web app on STFC infrastructure
+
 name: Job - Deploy to k8s
 run-name: Deploy to k8s
 on:

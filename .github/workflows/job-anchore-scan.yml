@@ -1,5 +1,7 @@
 # Reusable workflow intended to be called as a job by other workflows
 
+# Runs a security scan of the project
+
 # This file is a modified version of a workflow file provided by GitHub, namely
 # the Security code-scanning workflow 'Anchore Grype Vulnerability Scan'.
 
@@ -14,6 +16,7 @@
 # and parameters, see https://github.com/anchore/scan-action. For more
 # information on Anchore's container image scanning tool Grype, see
 # https://github.com/anchore/grype
+
 name: Job - Anchore Grype vulnerability scan
 run-name: Anchore Grype vulnerability scan
 
