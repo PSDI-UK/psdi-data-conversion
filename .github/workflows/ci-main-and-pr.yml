@@ -1,27 +1,16 @@
-# Pipeline to run tests on:
-# - pushes to the main branch
-# - pushes PRs to the main branch upon changes to certain files (see the 'paths:' list)
+# Workflow for continuous integration tasks triggered on pushes to main and PRs to it and release
 
-name: ci-main-and-pr
-run-name: ci-main-and-pr
+name: CI - Main and PRs
+run-name: CI - Main and PRs
 on:
   workflow_dispatch:
   push:
     branches: ["main"]
   pull_request:
-    branches: ["main"]
-    paths:
-      [
-        "**.py",
-        "pyproject.toml",
-        "c2x.sh",
-        "**/atomsk.sh",
-        "**/bin/**",
-        "test_data/**",
-      ]
+    branches: ["main", "release"]
 
 jobs:
   test-python:
-    uses: ./.github/workflows/test-python.yml
+    uses: ./.github/workflows/job-test-python.yml
   test-gui:
-    uses: ./.github/workflows/test-gui.yml
+    uses: ./.github/workflows/job-test-gui.yml

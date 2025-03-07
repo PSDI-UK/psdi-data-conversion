@@ -1,5 +1,9 @@
-name: deploy-k8s
-run-name: deploy-k8s
+# Reusable workflow intended to be called as a job by other workflows
+
+# Deploys the project to the k8s-hosted web app on STFC infrastructure
+
+name: Job - Deploy to k8s
+run-name: Deploy to k8s
 on:
   workflow_call:  # allow this workflow to be called from other workflows
     inputs:

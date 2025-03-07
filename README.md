@@ -35,6 +35,9 @@ This is the repository for the PSDI PF2 Chemistry File Format Conversion project
 
 ## Project Structure
 
+- `.github`
+  - `workflows`
+    - (Automated workflows for various tasks related to project maintenance)
 - `psdi_data_conversion`
   - `bin`
     - (Precompiled binaries for running file format converters)

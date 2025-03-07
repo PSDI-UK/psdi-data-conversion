@@ -1,5 +1,6 @@
-#
-# This action does the following upon a new commit to the 'main' branch:
+# Reusable workflow intended to be called as a job by other workflows
+
+# This action does the following:
 # 1) Creates a new release containing the repository source code, and tagging the
 #    release with an appropriate version number, and publishing it on the Github project
 #    page
@@ -18,8 +19,8 @@
 #   https://github.com/conventional-changelog/conventional-changelog/tree/master/packages/conventional-changelog-angular.
 #
 
-name: tag-container-push
-run-name: tag-container-push
+name: Job - Tag and push container
+run-name: Tag and push container
 
 on:
   workflow_call:
