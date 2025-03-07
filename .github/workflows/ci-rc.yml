@@ -1,4 +1,4 @@
-# Workflow for continuous integration tasks triggered on the push to a Release Candidate branch
+# Workflow for continuous integration tasks triggered on push to a release candidate branch
 
 name: CI - Release candidate branches
 run-name: CI - Release candidate branches

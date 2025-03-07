@@ -1,3 +1,5 @@
+# Workflow for continuous integration tasks run periodically
+
 name: CI - Periodic jobs
 run-name: CI - Periodic jobs
 

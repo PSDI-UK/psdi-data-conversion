@@ -1,4 +1,4 @@
-# Pipeline to run on release branch only
+# Workflow for continuous integration tasks triggered on push to release
 
 name: CI - Release
 run-name: CI - Release

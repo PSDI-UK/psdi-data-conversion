@@ -1,6 +1,4 @@
-# Pipeline to run tests on:
-# - pushes to the main branch
-# - pushes PRs to the main branch upon changes to certain files (see the 'paths:' list)
+# Workflow for continuous integration tasks triggered on pushes to main and PRs to it and release
 
 name: CI - Main and PRs
 run-name: CI - Main and PRs
