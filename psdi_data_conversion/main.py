@@ -23,6 +23,7 @@ from psdi_data_conversion.database import (get_conversion_quality, get_converter
                                            get_in_format_args, get_out_format_args, get_possible_converters,
                                            get_possible_formats)
 from psdi_data_conversion.file_io import split_archive_ext
+from psdi_data_conversion.log_utility import get_log_level_from_str
 
 
 def print_wrap(s: str, newline=False, err=False, **kwargs):
@@ -77,20 +78,12 @@ class ConvertArgs:
         self.quiet = args.quiet
         self._log_file: str | None = args.log_file
 
-        if not args.log_level:
-            self.log_level = None
-        elif args.log_level.lower() == "debug":
-            self.log_level = logging.DEBUG
-        elif args.log_level.lower() == "info":
-            self.log_level = logging.INFO
-        elif args.log_level.lower().startswith("warn"):
-            self.log_level = logging.WARNING
-        elif args.log_level.lower() == "error":
-            self.log_level = logging.ERROR
-        elif args.log_level.lower() == "critical":
-            self.log_level = logging.CRITICAL
-        elif args.log_level:
-            raise FileConverterHelpException(f"Unrecognised logging level: {args.log_level}")
+        try:
+            self.log_level = get_log_level_from_str(args.log_level)
+        except ValueError as e:
+            # A ValueError indicates an unrecognised logging level, so we reraise this as a help exception to indicate
+            # we want to provide this as feedback to the user so they can correct their command
+            raise FileConverterHelpException(str(e))
 
         # Special handling for listing converters
         if self.list:

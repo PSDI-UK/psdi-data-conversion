@@ -1,10 +1,6 @@
 [build-system]
-requires = [
-  "setuptools>=64",
-  "setuptools-scm>=8",
-  "setuptools-git-versioning>=2.0,<3",
-]
-build-backend = "setuptools.build_meta"
+requires = ["hatchling>=1.0.0", "hatch-vcs"]
+build-backend = "hatchling.build"
 
 [project]
 name = "psdi_data_conversion"
@@ -36,8 +32,16 @@ requires-python = ">= 3.12"
 dynamic = ["version"]
 
 [project.optional-dependencies]
-test = ["pytest"]
+test = ["pytest", "coverage"]
 gui = ["Flask", "requests"]
+gui-test = [
+  "Flask",
+  "requests",
+  "pytest",
+  "coverage",
+  "selenium",
+  "webdriver_manager",
+]
 
 [project.scripts]
 psdi-data-convert = "psdi_data_conversion.main:main"
@@ -47,16 +51,38 @@ Homepage = "https://psdidev2.azurewebsites.net/"
 Repository = "https://github.com/PSDI-UK/psdi-data-conversion"
 Issues = "https://github.com/PSDI-UK/psdi-data-conversion/issues"
 
-[tool.setuptools.packages.find]
-where = ["."]
+# Hatch-specific configuration
+[tool.hatch]
+version = { source = "vcs" } # Use version Git tags
 
-[tool.setuptools.package-data]
-psdi_data_conversion = ["bin/**", "static/**", "templates/**", "scripts/**"]
+[tool.hatch.build]
+exclude = [
+  ".github/**",
+  "deploy/**",
+  "scripts/fetch-*",
+  "scripts/make-index-html.sh",
+  "Dockerfile",
+  "requirements.txt",
+  "startup.sh",
+]
 
-[tool.setuptools-git-versioning]
-enabled = true
-
-[tool.setuptools_scm]
+# The following lines run a script which excludes binaries for platforms other than the current from the binary.
+# Once the project is set up to make separate builds for different platforms, the below can be uncommented to
+# enable this behaviour.
+# [tool.hatch.build.hooks.custom]
+# path = "scripts/setup_bin.py"
 
 [tool.pytest.ini_options]
 pythonpath = ["."]
+
+[tool.coverage.run]
+source_pkgs = ["psdi_data_conversion", "tests"]
+branch = true
+omit = []
+
+[tool.coverage.paths]
+test_project = ["test_project"]
+tests = ["tests"]
+
+[tool.coverage.report]
+exclude_lines = ["no cov", "if __name__ == .__main__.:", "if TYPE_CHECKING:"]

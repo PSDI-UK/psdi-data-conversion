@@ -29,17 +29,27 @@ token = hashlib.md5(dt.encode('utf8')).hexdigest()
 service_mode_ev = os.environ.get(const.SERVICE_MODE_EV)
 service_mode = (service_mode_ev is not None) and (service_mode_ev.lower() == "true")
 
-# Get the logging style from the envvar for it
-ev_logging = os.environ.get(const.LOG_MODE_EV)
-if ev_logging is None:
-    log_mode = const.LOG_DEFAULT
+# Get the logging mode and level from their envvars
+ev_log_mode = os.environ.get(const.LOG_MODE_EV)
+if ev_log_mode is None:
+    log_mode = const.LOG_MODE_DEFAULT
 else:
-    ev_logging = ev_logging.lower()
-    if ev_logging not in const.L_ALLOWED_LOG_MODES:
-        print(f"ERROR: Unrecognised logging option: {ev_logging}. Allowed options are: {const.L_ALLOWED_LOG_MODES}",
+    ev_log_mode = ev_log_mode.lower()
+    if ev_log_mode not in const.L_ALLOWED_LOG_MODES:
+        print(f"ERROR: Unrecognised logging option: {ev_log_mode}. Allowed options are: {const.L_ALLOWED_LOG_MODES}",
               file=sys.stderr)
         exit(1)
-    log_mode = ev_logging
+    log_mode = ev_log_mode
+
+ev_log_level = os.environ.get(const.LOG_LEVEL_EV)
+if ev_log_level is None:
+    log_level = None
+else:
+    try:
+        log_level = log_utility.get_log_level_from_str(ev_log_level)
+    except ValueError as e:
+        print(f"ERROR: {str(e)}")
+        exit(1)
 
 app = Flask(__name__)
 
@@ -88,6 +98,7 @@ def convert():
                                               from_format=request.form['from'],
                                               strict=request.form['check_ext'],
                                               log_mode=log_mode,
+                                              log_level=log_level,
                                               delete_input=True,
                                               abort_callback=abort)
         except Exception as e:
