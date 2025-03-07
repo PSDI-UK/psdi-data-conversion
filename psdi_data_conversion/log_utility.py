@@ -13,6 +13,29 @@ import sys
 
 from psdi_data_conversion import constants as const
 
+D_LOG_LEVELS = {"notset": logging.NOTSET,
+                "debug": logging.DEBUG,
+                "info": logging.INFO,
+                "warn": logging.WARNING,
+                "warning": logging.WARNING,
+                "error": logging.ERROR,
+                "critical": logging.CRITICAL,
+                "fatal": logging.CRITICAL}
+
+
+def get_log_level_from_str(log_level_str: str | None) -> int:
+    """Gets a log level, as one of the literal ints defined in the `logging` module, from the string representation
+    of it.
+    """
+
+    if not log_level_str:
+        return logging.NOTSET
+    try:
+        return D_LOG_LEVELS[log_level_str.lower()]
+    except KeyError:
+        raise ValueError(f"Unrecognised logging level: {log_level_str}. Allowed levels are (case-insensitive): "
+                         f"{D_LOG_LEVELS}")
+
 
 def set_up_data_conversion_logger(name=const.LOCAL_LOGGER_NAME,
                                   local_log_file=None,
