@@ -371,7 +371,7 @@ open -a "Google Chrome.app" --args --allow-file-access-from-files
 
 ## Extending Functionality
 
-The Python library and CLA are written to make it easy to extend the functionality of this package to use other file format converters. This can by downloading or cloning the project's source from it's GitHub Repository (https://github.com/PSDI-UK/psdi-data-conversion), editing the code to add your converter following the guidance in the "[Adding File Format Converters](https://github.com/PSDI-UK/psdi-data-conversion/blob/main/CONTRIBUTING.md#adding-file-format-converters)" section of CONTRIBUTING.md to integrate it with the Python code, and installing the modified package on your system via:
+The Python library and CLA are written to make it easy to extend the functionality of this package to use other file format converters. This can be done by downloading or cloning the project's source from it's GitHub Repository (https://github.com/PSDI-UK/psdi-data-conversion), editing the code to add your converter following the guidance in the "[Adding File Format Converters](https://github.com/PSDI-UK/psdi-data-conversion/blob/main/CONTRIBUTING.md#adding-file-format-converters)" section of CONTRIBUTING.md to integrate it with the Python code, and installing the modified package on your system via:
 
 ```bash
 pip install --editable .'[test]'
@@ -379,14 +379,25 @@ pip install --editable .'[test]'
 
 (This command uses the `--editable` option and optional `test` dependencies to ease the process of testing and debugging your changes.)
 
+Note that when adding a converter in this manner, information on its possible conversions will not be added to the database, and so these will not show up when you run the CLA with the `-l/--list` option. You will also need to add the `--nc/--no-check` option when running conversions to skip the database check that the conversion is allowed.
+
 ## Testing
 
-Install the package requirements locally (ideally within a virtual environment) and test with pytest by executing the following commands from this project's directory:
+To test the CLA and Python library, install the optional testing requirements locally (ideally within a virtual environment) and test with pytest by executing the following commands from this project's directory:
 
 ```bash
-source .venv/bin/activate # Create a venv first if necessary with `python -m venv .venv`
-pip install .'[gui-test]'
+pip install .'[test]'
 pytest
+```
+
+To test the local version of the web app, install the GUI testing requirements locally (which also include the standard GUI requirements and standard testing requirements), start the server, and test by executing the GUI test script:
+
+```bash
+pip install .'[gui-test]'
+./run_local.sh & # Start the server for the web app in the background
+cd tests/selenium
+./run.sh
+kill %1 # Stop the web server - it may have a different job ID. If you don't know the job ID, you can alternatively call "fg" to bring the job to the foreground, then type CTRL+c to stop it
 ```
 
 ## Contributors
