@@ -1,3 +1,5 @@
+# Reusable workflow intended to be called as a job by other workflows
+
 # This workflow will install the Firefox browser and python dependencies necessary for automated tests of the gui
 
 name: Job - Test GUI

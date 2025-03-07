@@ -1,3 +1,5 @@
+# Reusable workflow intended to be called as a job by other workflows
+
 # This workflow will automatically open a Pull Request when an applicable branch is pushed to
 
 name: Job - Open PR

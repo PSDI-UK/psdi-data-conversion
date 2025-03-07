@@ -1,4 +1,5 @@
-#
+# Reusable workflow intended to be called as a job by other workflows
+
 # This action does the following upon a new commit to the 'main' branch:
 # 1) Creates a new release containing the repository source code, and tagging the
 #    release with an appropriate version number, and publishing it on the Github project

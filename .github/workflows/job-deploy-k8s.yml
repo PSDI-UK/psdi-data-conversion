@@ -1,3 +1,5 @@
+# Reusable workflow intended to be called as a job by other workflows
+
 name: Job - Deploy to k8s
 run-name: Deploy to k8s
 on:
