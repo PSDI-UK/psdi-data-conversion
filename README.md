@@ -163,6 +163,28 @@ pip install .
 
 executed from this project's directory. You can also replace the '.' in this command with the path to this project's directory to install it from elsewhere.
 
+Depending on your system, it may not be possible to install packages in this manner without creating a virtual environment to do so in. You can do this by first installing the `venv` module for Python3 with e.g.:
+
+```bash
+sudo apt install python3-venv # Or equivalent for your distribution
+```
+
+You can then create and activate a virtual environment with:
+
+```bash
+python -m venv .venv # ".venv" here can be replaced with any name you desire for the virtual environment
+source .venv/bin/activate
+```
+
+You should then be able to install this project. When you wish to deactivate the virtual environment, you can do so with the `deactivate` command.
+
+Optionally, you can install the necessary requirements to run unit tests and run them with:
+
+```bash
+pip install .[test]
+pytest
+```
+
 ### Execution
 
 Once installed, the command-line script `psdi-data-convert` will be made available, which can be called to either perform a data conversion or to get information about possible conversions or converters (the latter TODO). You can see the full options for it by calling:
