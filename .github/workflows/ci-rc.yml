@@ -9,7 +9,7 @@ on:
   push:
     branches: ["rc-**"]
   pull_request:
-    branches: ["rc-**"]
+    branches: ["release"]
 
 jobs:
   # Runs on all of the 'on' conditions above, including pull request events
