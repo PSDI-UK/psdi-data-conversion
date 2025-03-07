@@ -8,16 +8,16 @@ on:
   workflow_call:
     inputs:
       target:
-        description: 'Branch to open a PR to'     
+        description: "Branch to open a PR to"
         required: false
-        default: 'main'
+        default: "main"
         type: string
   workflow_dispatch:
     inputs:
       target:
-        description: 'Branch to open a PR to'     
+        description: "Branch to open a PR to"
         required: false
-        default: 'main'
+        default: "main"
 
 env:
   BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
@@ -44,14 +44,14 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     outputs:
-      is_new: ${{ steps.create-pr.outputs.is_new }}
-          
+      run_tests: ${{ steps.create-pr.outputs.run_tests }}
+
   test-package:
     needs: create-pr
     uses: ./.github/workflows/job-test-python.yml
-    if: needs.create-pr.outputs.is_new == '1'
-    
+    if: needs.create-pr.outputs.run_tests == '1'
+
   test-gui:
     needs: create-pr
     uses: ./.github/workflows/job-test-gui.yml
-    if: needs.create-pr.outputs.is_new == '1'
+    if: needs.create-pr.outputs.run_tests == '1'
