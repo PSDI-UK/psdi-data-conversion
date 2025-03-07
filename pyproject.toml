@@ -61,11 +61,9 @@ exclude = [
   "deploy/**",
   "scripts/fetch-*",
   "scripts/make-index-html.sh",
-  "convert.py",
-  "byte.js",
-  "run_tests.py",
-  "requirements.txt",
   "Dockerfile",
+  "requirements.txt",
+  "startup.sh",
 ]
 
 # The following lines run a script which excludes binaries for platforms other than the current from the binary.
