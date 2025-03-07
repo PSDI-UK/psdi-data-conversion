@@ -33,8 +33,8 @@ def get_log_level_from_str(log_level_str: str | None) -> int:
     try:
         return D_LOG_LEVELS[log_level_str.lower()]
     except KeyError:
-        raise ValueError(f"Unrecognised logging level: {log_level_str}. Allowed levels are (case-insensitive): "
-                         f"{D_LOG_LEVELS}")
+        raise ValueError(f"Unrecognised logging level: '{log_level_str}'. Allowed levels are (case-insensitive): "
+                         f"{list(D_LOG_LEVELS.keys())}")
 
 
 def set_up_data_conversion_logger(name=const.LOCAL_LOGGER_NAME,
