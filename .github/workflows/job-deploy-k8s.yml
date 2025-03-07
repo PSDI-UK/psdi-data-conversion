@@ -1,5 +1,5 @@
-name: deploy-k8s
-run-name: deploy-k8s
+name: Job - Deploy to k8s
+run-name: Deploy to k8s
 on:
   workflow_call:  # allow this workflow to be called from other workflows
     inputs:

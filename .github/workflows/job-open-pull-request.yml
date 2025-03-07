@@ -1,7 +1,7 @@
 # This workflow will automatically open a Pull Request when an applicable branch is pushed to
 
-name: Open Pull Request
-run-name: Open Pull Request
+name: Job - Open PR
+run-name: Open PR
 on:
   workflow_call:
     inputs:
@@ -46,10 +46,10 @@ jobs:
           
   test-package:
     needs: create-pr
-    uses: ./.github/workflows/test-python.yml
+    uses: ./.github/workflows/job-test-python.yml
     if: needs.create-pr.outputs.is_new == '1'
     
   test-gui:
     needs: create-pr
-    uses: ./.github/workflows/test-gui.yml
+    uses: ./.github/workflows/job-test-gui.yml
     if: needs.create-pr.outputs.is_new == '1'

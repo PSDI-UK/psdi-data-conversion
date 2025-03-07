@@ -2,8 +2,8 @@
 # - pushes to the main branch
 # - pushes PRs to the main branch upon changes to certain files (see the 'paths:' list)
 
-name: ci-main-and-pr
-run-name: ci-main-and-pr
+name: CI - Main and PRs
+run-name: CI - Main and PRs
 on:
   workflow_dispatch:
   push:
@@ -22,6 +22,6 @@ on:
 
 jobs:
   test-python:
-    uses: ./.github/workflows/test-python.yml
+    uses: ./.github/workflows/job-test-python.yml
   test-gui:
-    uses: ./.github/workflows/test-gui.yml
+    uses: ./.github/workflows/job-test-gui.yml

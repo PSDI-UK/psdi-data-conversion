@@ -1,4 +1,5 @@
-name: Update Common Assets
+name: CI - Periodic jobs
+run-name: CI - Periodic jobs
 
 on:
   schedule:

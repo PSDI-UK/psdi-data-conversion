@@ -1,6 +1,7 @@
 # This workflow will install the Firefox browser and python dependencies necessary for automated tests of the gui
 
-name: Test GUI
+name: Job - Test GUI
+run-name: Test GUI
 
 on:
   workflow_call:
