@@ -432,6 +432,7 @@ class FileConverter:
         # Set up loggers - one for general-purpose log_utility, and one just for what we want to output to the user
         self.logger = log_utility.set_up_data_conversion_logger(local_log_file=self.output_log,
                                                                 local_logger_level=self._local_logger_level,
+                                                                stdout_output_level=self._stdout_output_level,
                                                                 local_logger_raw_output=False,
                                                                 mode=write_mode)
 
