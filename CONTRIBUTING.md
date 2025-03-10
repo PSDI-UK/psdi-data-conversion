@@ -362,4 +362,8 @@ The Azure host starts the server by running the script `startup.sh`. This script
 
 ### STFC Deployment
 
-TODO
+STFC deployment is handled automatically by the `ci-release.yml` workflow, which triggers the `job-deploy-k8s.yml` reusable workflow to perform the deployment.
+
+TODO - Describe details of setup
+
+The server can be configured by editing the environmental variables set in `Dockerfile`.
