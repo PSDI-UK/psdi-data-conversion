@@ -25,11 +25,11 @@ jobs:
   #
   #anchore-scan:
   #  uses: ./.github/workflows/anchore-scan.yml
-  #  needs: [test-package]
+  #  needs: [test-package, test-gui]
 
   tag-container-push:
     uses: ./.github/workflows/job-tag-container-push.yml
-    needs: [test-package]
+    needs: [test-package, test-gui]
 
   deploy-azure:
     needs: [tag-container-push]
@@ -54,3 +54,8 @@ jobs:
     with:
       container_tag: ${{ needs.tag-container-push.outputs.container_tag }}
       environment: staging
+
+  # Publish to PyPI - uncomment once ready for regular publishing
+  # publish-pypi:
+  #   needs: [tag-container-push]
+  #   uses: ./.github/workflows/job-publish-pypi.yml
