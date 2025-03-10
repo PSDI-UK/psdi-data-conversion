@@ -81,7 +81,6 @@ branch = true
 omit = []
 
 [tool.coverage.paths]
-test_project = ["test_project"]
 tests = ["tests"]
 
 [tool.coverage.report]
