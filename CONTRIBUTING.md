@@ -15,23 +15,57 @@ This project uses a version of [GitLab Flow](https://about.gitlab.com/topics/ver
 
 The following tasks should be completed before merging a release candidate branch to `release`:
 
-- Open a draft pull request from this release branch to `release`, which indicates the target version number
+- Detemine the target version based on the changes made:
+
+  - If any breaking changes have been made (after version 1.0.0), the version will advance to the next major version - `X.Y.Z` to `(X+1).0.0`
+  - Otherwise, if any features are added, or any breaking changes are made before version 1.0.0, the version will advance to the next minor version - `X.Y.Z` to `X.(Y+1).0`.
+  - Otherwise, the version will advance to the next bugfix version - `X.Y.Z` to `X.Y.(Z+1)`.
+
+- Create a release candidate branch with the name `rc-<target-version>` (e.g. `rc-1.2.3`). This should trigger an automated workflow to create a Pull Request from this branch to`release`. You may wish to edit the PR's name and/or description.
+
+- Tagging of the release is handled by an automated workflow which determines the new version based on the previous version and the commit history, looking for any commits which indicate a feature addition or breaking change using [Angular convention](https://github.com/conventional-changelog/conventional-changelog/tree/master/packages/conventional-changelog-angular#commit-message-format). Since we don't practice this regularly, you'll need to make a commit with this style to indicate any feature additions or breaking changes (this can be done when updating the version in the next step):
+
+  - If there are any breaking changes **after version 1.0.0 is first published**, start the commit's first line with "feat(release): ", followed by a brief description of the release in a single line, then a blank line, then start the third line with "BREAKING CHANGE: ", followed by a description of the breaking change(s). Use manual newlines if necessary to keep lines in this description to a maximum of 50 characters. E.g.:
+
+    ```
+    feat(release): Remove deprecated Functionality
+
+    BREAKING CHANGE: Deprecated functions X, Y, and Z
+    are now removed, in favor of new functions I, J,
+    and K. Also added new feature Q and fixed bugs R
+    and S
+    ```
+
+  - Otherwise, if there are any new features added, or breaking changes before version 1.0.0 is first published, do as above, except without "BREAKING CHANGE: " starting the third line, e.g.:
+
+    ```
+    feat(release): Added new feature X
+
+    Also fixed bugs Y and Z
+    ```
+
+  - Otherwise, no special formatting is needed for a commit - the workflow will default to assuming a bugfix version incrementation when it doesn't see one of the two patterns above.
+
+- Check that the project version is updated to the desired new version in all places it appears:
+
+  - `CHANGELOG.md` (The top section should reflect the new version)
+  - `README.md` (The top line should reflect the new version)
+
 - Ensure that all automated tests and checks pass - these should be run automatically on the PR opened above
+
 - Manually test the local web interface
+
   - If there have been any changes to the Python backend, run a test that a file can be converted successfully and produces a proper log
   - If there have been any changes to the web frontend, check the appearance of the site to ensure that it looks as desired. Test the Accessibility page to ensure that changes there work properly, are saved when requested and apply to other pages
-- Check that `CHANGELOG.md` is up-to-date with all changes in this version. Any subsections for categories with no changes in this version can be removed to keep the file concise
-- Check that the project version is updated to the desired new version in all places it appears:
-  - `CHANGELOG.md` (The top section should reflect the new version)
-  - `pyproject.toml` (if/when the version number is added to it - currently it gets the version automatically from the last tag)
+
+- Check that `CHANGELOG.md` is up-to-date with all changes in this version (including any fixes found to be necessary in the testing above). Any subsections for categories with no changes in this version can be removed to keep the file concise
 
 If any of these tasks fail and require changes, make the needed changes and then recheck that all other tasks still pass. E.g. if testing the local web interface reveals a bug in the Python backend that needs to be fixed, ensure that all automated tests still pass after doing so
 
 Then, follow the following steps to make the release:
 
-1. Merge the pull request to `release`. The release candidate branch can be safely deleted
-2. Merge `release` into `main` via PR (obviously don't delete `release` - if it even gives you the option to, something has gone wrong in the project rulesets, so report this)
-3. Create a new release for the project on GitHub from the `release` branch, and tag the latest commit to `release` in the process. The release and tag should both be named `v<version-number>`, e.g. `v0.1.4`. The description can be used to highlight any important changes.
+1. Merge the pull request to `release`. The release candidate branch can be safely deleted. This should trigger an automated pipeline to tag, publish, and deploy and the new code.
+2. Merge `release` into `main` via PR (obviously don't delete `release` - if it even gives you the option to, something has gone wrong in the project rulesets, so report this).
 
 ## Changelog
 
