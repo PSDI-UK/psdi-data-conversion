@@ -69,19 +69,32 @@ Then, follow the following steps to make the release:
 
 ## Changelog
 
-Explanation of possible sections in the CHANGELOG:
+`CHANGELOG.md` should be used to keep a record of notable changes to the project. Trivial changes such as fixing typos, formatting, and minor refactoring (e.g. changing the name of a variable) do not need to be recorded. These changes should be sorted into appropriate sections as described below:
 
 - **Breaking Changes:** Any changes which would result in previous integration with this project breaking and no longer being compatible with the new version (e.g. a command-line option is removed)
-- **Deprecated Features:** Any features which are planned to be removed or changed in a breaking way in a future release (e.g. a command-line option will be removed soon, and perhaps an alternative way to achieve the same goal already exists)
-- **New and Changed Functionality:** Anything new the project can do for the user
-- **Bugfixes:** Any issues fixed
-- **Testing Changes:** New unit tests or significant changes to existing tests, not including any incidental updates to tests which are necessary for other features already noted. E.g. if a test is implemented to ensure that a bugfix noted in this section works properly, that doesn't need to be noted
-- **Documentation Changes:** Any notable updates to `README.md`, `CONTRIBUTING.md`, docstrings, and comments. This doesn't need to include incidental changes - for instance, if a new command-line option is added, it isn't necessary to make a separate note that documentation for it is added. However, if documentation was previously missing for an option and is now added, that should be noted
-- **Formatting and Refactoring Changes:** Any non-functional changes to the code (e.g. "Changed all python variables to `snake_case`", "Refactored set of separate functions to use the same common code")
-- **Stylistic Changes:** Non-functional changes to the aesthetic appearance of the web app or the formatting of text displayed to the user by the CLI (including logs)
-- **Miscellaneous Changes:** Anything that doesn't fit into one of the above categories, such as project meta changes (e.g. "Implemented new GitHub action to lint JavaScript code")
 
-The below can be used as a template for new sections to be added to `CHANGELOG.md` with each new release. When a release is made, any sections without any entries can be removed to help keep the file concise:
+- **Deprecated Features:** Any features which are planned to be removed or changed in a breaking way in a future release (e.g. a command-line option will be removed soon, and perhaps an alternative way to achieve the same goal already exists)
+
+- **New and Changed Functionality:** Anything new the project can do for the user
+
+- **Bugfixes:** Any issues fixed
+
+- **Testing Changes:** New unit tests or significant changes to existing tests, not including any incidental updates to tests which are necessary for other features already noted. E.g. if a test is implemented to ensure that a bugfix noted in this section works properly, that doesn't need to be noted
+
+- **Documentation Changes:** Any notable updates to `README.md`, `CONTRIBUTING.md`, docstrings, and comments. This doesn't need to include incidental changes - for instance, if a new command-line option is added, it isn't necessary to make a separate note that documentation for it is added. However, if documentation was previously missing for an option and is now added, that should be noted
+
+- **Formatting and Refactoring Changes:** Any notable non-functional changes to the code (e.g. "Changed all python variables to `snake_case`", "Refactored set of separate functions to use the same common code")
+
+- **Stylistic Changes:** Non-functional changes to the aesthetic appearance of the web app or the formatting of text displayed to the user by the CLI (including logs)
+
+- **Miscellaneous Changes:** Anything that doesn't fit into one of the above categories, such as project meta changes (e.g. "Implemented new GitHub workflow to lint JavaScript code")
+
+A new section should be added to the CHANGELOG after each release, which can be temporarily named e.g. "Since v1.2.3" (the last release) until it is known whether the next release will increment the major, minor, or bugfix number in the version. As part of the release, this section should be renamed to the target version.
+
+The below can be used as a template for new sections to be added to the Changelog with each new release. When a release is made, any sections without any entries can be removed to help keep the file concise:
+
+```
+## Since v...
 
 ### Breaking Changes
 
@@ -118,6 +131,8 @@ The below can be used as a template for new sections to be added to `CHANGELOG.m
 ### Miscellaneous Changes
 
 -
+
+```
 
 ## Editing Advice
 
