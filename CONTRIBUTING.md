@@ -299,6 +299,15 @@ pip install --editable .'[gui-test]'
 
 ## Continuous Integration
 
+This project uses various GitHub workflows to perform Continuous Integration tasks. These can be found in the `.github/workflows` folder. The files which start with "ci-" are the directly-triggered workflows, and the files which start with "job-" are reusable workflows called by the former. These workflows handle the following tasks:
+
+- Testing and scanning (triggered by pushes to `main`, `release`, `feature*`, and `rc*` branches)
+- Periodic checks for updates to common assets
+- Automatic creation of pull requests for `feature*` and `rc*` branches
+- Automatic tagging, publishing, and deployment of the `release` branch
+
+See the commons within the files for further details.
+
 ## Publishing
 
 The Python library, CLA, and local GUI are (planned to be) published as a Python package via PyPI. This section describes how the package is set up and how it's published.
