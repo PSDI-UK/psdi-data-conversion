@@ -20,6 +20,8 @@ import traceback
 from typing import Any
 
 from psdi_data_conversion import constants as const, log_utility
+from psdi_data_conversion.dist import bin_exists, get_bin_path, get_dist
+from psdi_data_conversion.security import SAFE_STRING_RE, string_is_safe
 
 try:
     # werkzeug is installed in the optional dependency Flask. It's only used here to recognize an exception type,
@@ -70,6 +72,23 @@ class FileConverterInputException(FileConverterException):
     pass
 
 
+class FileConverterHelpException(FileConverterInputException):
+    """An exception class which indicates an error where we will likely want to help the user figure out how to
+    correctly use the CLI instead of simply printing a traceback
+    """
+
+    def __init__(self, *args, msg_preformatted=False):
+        """Init the exception, noting if the message should be treated as preformatted or not
+
+        Parameters
+        ----------
+        msg_preformatted : bool, optional
+            If True, indicates that the message of the exception has already been formatted. Default False
+        """
+        super().__init__(*args)
+        self.msg_preformatted = msg_preformatted
+
+
 if HTTPException is not None:
     l_abort_exceptions = (HTTPException, FileConverterAbortException)
 else:
@@ -88,11 +107,16 @@ class FileConversionResult:
     status_code: int = 0
 
 
-def abort_raise(status_code, *args, **kwargs):
+def abort_raise(status_code: int,
+                *args,
+                e: Exception | None = None,
+                **kwargs):
     """Callback for aborting during a file conversion, which passes relevant information to an exception of the
     appropriate type
     """
-    if status_code == const.STATUS_CODE_SIZE:
+    if e:
+        raise e
+    elif status_code == const.STATUS_CODE_SIZE:
         exception_class = FileConverterSizeException
     else:
         exception_class = FileConverterAbortException
@@ -106,31 +130,42 @@ class FileConverter:
     # Class variables and methods which must/can be overridden by subclasses
     # ----------------------------------------------------------------------
 
-    # Name of the converter - must be overridden in each subclass to name each converter uniquely
     name: str | None = None
+    """Name of the converter - must be overridden in each subclass to name each converter uniquely"""
 
-    # General info about the converter - should be overridden in each subclass to describe the converter
     info: str | None = None
+    """General info about the converter - can be overridden in a subclass to add information about a converter which
+    isn't covered in its database entry, such as notes on its support."""
 
-    # List of flags allowed for the converter (flags are arguments that are set by being present, and don't require a
-    # value specified - e.g. "-v" to enable verbose mode) - should be overridden with a tuple of tuples containing the
-    # flag names and help texts for them. If the converter does not accept any flags, an empty tuple should be supplied
-    # (e.g `allowed_flags = (,)`), as `None` will be interpreted as this value not having been overridden
-    allowed_flags: tuple[tuple[str, str], ...] | None = None
+    allowed_flags: tuple[tuple[str, dict, Callable], ...] | None = None
+    """List of flags allowed for the converter (flags are arguments that are set by being present, and don't require a
+    value specified - e.g. "-v" to enable verbose mode) - should be overridden with a tuple of tuples containing the
+    flag names, a dict of kwargs to be passed to the argument parser's `add_argument` method, and callable function to
+    get a dict of needed info for them. If the converter does not accept any flags, an empty tuple should be supplied
+    (e.g `allowed_flags = ()`), as `None` will be interpreted as this value not having been overridden"""
 
-    # List of options allowed for the converter (options are arguments that take one or more values, e.g. "-o out.txt")
-    # - should be overridden with a tuple of tuples containing the option names and help texts for them. As with flags,
-    # an empty tuple should be provided if the converter does not accept any options
-    allowed_options: tuple[tuple[str, str], ...] | None = None
+    allowed_options: tuple[tuple[str, dict, Callable], ...] | None = None
+    """List of options allowed for the converter (options are arguments that take one or more values, e.g. "-o out.txt")
+    - should be overridden with a tuple of tuples containing the option names, a dict of kwargs to be passed to the
+    argument parser's `add_argument` method, and callable function to get a dict of needed info for them.
+    As with flags, an empty tuple should be provided if the converter does not accept any options"""
 
-    # The prefix used in the database for keys related to this converter
     database_key_prefix: str | None = None
+    """The prefix used in the database for keys related to this converter"""
 
     @abc.abstractmethod
     def _convert(self):
         """Run the conversion with the desired converter. This must be implemented for each converter class.
         """
         pass
+
+    @classmethod
+    def can_be_registered(cls) -> bool:
+        """If the converter class may not be able to be registered (for instance, it relies on a binary which isn't
+        supported on all platforms), this method should be overridden to perform necessary checks to indicate if it
+        can be registered or not.
+        """
+        return True
 
     # If the converter supports flags specific to the input file format, set the below to True for the subclass so help
     # text will be properly displayed notifying the user that they can request this by providing an input format (and
@@ -281,7 +316,7 @@ class FileConverter:
             # Set values from envvars if desired
             if use_envvars:
                 # Get the maximum allowed size from the envvar for it
-                ev_max_file_size = os.environ.get(const.MAX_FILESIZE_ENVVAR)
+                ev_max_file_size = os.environ.get(const.MAX_FILESIZE_EV)
                 if ev_max_file_size is not None:
                     self.max_file_size = float(ev_max_file_size)*const.MEGABYTE
 
@@ -300,13 +335,19 @@ class FileConverter:
             # Set up files to log to
             self._setup_loggers()
 
-            # Check that the requested conversion is valid unless suppressed
+            # Check that the requested conversion is valid and warn of any issues unless suppressed
             if not no_check:
                 from psdi_data_conversion.database import get_conversion_quality
                 qual = get_conversion_quality(self.name, self.from_format, self.to_format)
                 if not qual:
-                    raise FileConverterInputException(f"Conversion from {self.from_format} to {self.to_format} "
-                                                      f"with {self.name} is not supported.")
+                    raise FileConverterHelpException(f"Conversion from {self.from_format} to {self.to_format} "
+                                                     f"with {self.name} is not supported.")
+                if qual.details:
+                    msg = (":\nPotential data loss or extrapolation issues with the conversion from "
+                           f"{self.from_format} to {self.to_format}:\n")
+                    for detail_line in qual.details.split("\n"):
+                        msg += f"- {detail_line}\n"
+                    self.logger.warning(msg)
 
             self.logger.debug("Finished FileConverter initialisation")
 
@@ -319,13 +360,14 @@ class FileConverter:
             # Try to run the standard abort method. There's a good chance this will fail though depending on what went
             # wrong when during init, so we fallback to printing the exception to stderr
             try:
-                self.logger.error(f"Exception triggering an abort was raised while initializing the converter. "
-                                  f"Exception was type '{type(e)}', with message: {str(e)}")
+                if not isinstance(e, FileConverterHelpException):
+                    self.logger.error(f"Exception triggering an abort was raised while initializing the converter. "
+                                      f"Exception was type '{type(e)}', with message: {str(e)}")
                 self._abort(message="The application encountered an error while initializing the converter:\n" +
-                            traceback.format_exc())
+                            traceback.format_exc(), e=e)
             except Exception as ee:
-                if isinstance(ee, l_abort_exceptions):
-                    # Don't catch a deliberate abort; let it pass through
+                if isinstance(ee, (l_abort_exceptions, FileConverterHelpException)):
+                    # Don't catch a deliberate abort or help exception; let it pass through
                     raise
                 print("ERROR: The application encounted an error during initialization of the converter and could " +
                       "not cleanly log the error due to incomplete init: " +
@@ -390,6 +432,7 @@ class FileConverter:
         # Set up loggers - one for general-purpose log_utility, and one just for what we want to output to the user
         self.logger = log_utility.set_up_data_conversion_logger(local_log_file=self.output_log,
                                                                 local_logger_level=self._local_logger_level,
+                                                                stdout_output_level=self._stdout_output_level,
                                                                 local_logger_raw_output=False,
                                                                 mode=write_mode)
 
@@ -411,17 +454,22 @@ class FileConverter:
                 self.logger.error(f"Unexpected exception raised while running the converter, of type '{type(e)}' with "
                                   f"message: {str(e)}")
                 raise
-            self.logger.error(f"Exception triggering an abort was raised while running the converter. Exception was "
-                              f"type '{type(e)}', with message: {str(e)}")
+            if not isinstance(e, FileConverterHelpException):
+                self.logger.error(f"Exception triggering an abort was raised while running the converter. Exception "
+                                  f"was type '{type(e)}', with message: {str(e)}")
             self._abort(message="The application encountered an error while running the converter:\n" +
-                        traceback.format_exc())
+                        traceback.format_exc(), e=e)
 
         return FileConversionResult(output_filename=self.out_filename,
                                     log_filename=self.output_log,
                                     in_size=self.in_size,
                                     out_size=self.out_size)
 
-    def _abort(self, status_code=const.STATUS_CODE_GENERAL, message=None, **kwargs):
+    def _abort(self,
+               status_code: int = const.STATUS_CODE_GENERAL,
+               message: str | None = None,
+               e: Exception | None = None,
+               **kwargs):
         """Abort the conversion, reporting the desired message to the user at the top of the output
 
         Parameters
@@ -431,6 +479,8 @@ class FileConverter:
         message : str | None
             If provided, this message will be logged in the user output log at the top of the file and will appear in
             any raised exception if possible. This should typically explain the reason the process failed
+        e : Exception | None
+            The caught exception which triggered this abort, if any
         **kwargs : Any
             Any additional keyword arguments are passed to the `self.abort_callback` function if it accepts them
 
@@ -450,6 +500,11 @@ class FileConverter:
         else:
             self.logger.debug(f"Application aborting, so cleaning up output file {self.out_filename}")
 
+        # If we have a Help exception, override the message with its message
+        if isinstance(e, FileConverterHelpException):
+            self.logger.debug("Help exception triggered, so only using its message for output")
+            message = str(e)
+
         if message:
             # If we're adding a message in server mode, read in any prior logs, clear the log, write the message, then
             # write the prior logs
@@ -463,12 +518,13 @@ class FileConverter:
                     fo.write(prior_output_log)
 
             # Note this message in the dev logger as well
-            self.logger.error(message)
+            if not isinstance(e, FileConverterHelpException):
+                self.logger.error(message)
 
         # Call the abort callback function now. We first try to add information to it, but in case that isn't supported,
         # we fall back to just calling it with the status code
         try:
-            self.abort_callback(status_code, message, **kwargs)
+            self.abort_callback(status_code, message, e=e, **kwargs)
         except TypeError:
             self.abort_callback(status_code)
 
@@ -611,19 +667,46 @@ class ScriptFileConverter(FileConverter):
     """
 
     script: str | None = None
+    """The name of the script to run this converter, relative to the ``psdi_data_conversion/scripts`` directory"""
+
+    required_bin: str | None = None
+    """The name of the binary called by the script, relative to the ``psdi_data_conversion/bin/$DIST`` directory,
+    where `DIST` is 'linux', 'windows', and/or 'mac', depending on the user's platform. The code will check
+    that a binary by this name exists for the user's distribution, and will only register this converter if one is
+    found.
+    """
+
+    @classmethod
+    def can_be_registered(cls) -> bool:
+        """If a binary is required for this script, check that it exists for the user's OS/distribution. If one isn't
+        required (`cls.required_bin` is None), also return True
+        """
+        if cls.required_bin is None:
+            return True
+        return bin_exists(cls.required_bin)
 
     def _convert(self):
 
         self.logger.debug(f"Performing conversion with ScriptFileConverter using script '{self.script}'")
 
-        if "from_flags" not in self.data:
-            self.data["from_flags"] = ""
-        if "to_flags" not in self.data:
-            self.data["to_flags"] = ""
-        print(self.to_format)
+        from_flags = self.data.get("from_flags", "")
+        to_flags = self.data.get("from_flags", "")
+        from_options = self.data.get("from_options", "")
+        to_options = self.data.get("from_options", "")
+
+        # Check that all user-provided input passes security checks
+        for user_args in [from_flags, to_flags, from_options, to_options]:
+            if not string_is_safe(user_args):
+                raise FileConverterHelpException(f"Provided argument '{user_args}' does not pass security check - it "
+                                                 f"must match the regex {SAFE_STRING_RE.pattern}.")
+
+        env = {"DIST": get_dist()}
+        if self.required_bin is not None:
+            env["BIN_PATH"] = get_bin_path(self.required_bin)
+
         process = subprocess.run(['sh', f'psdi_data_conversion/scripts/{self.script}', '--' + self.to_format,
-                                  self.in_filename, self.out_filename, self.data["from_flags"], self.data["to_flags"]],
-                                 capture_output=True, text=True)
+                                  self.in_filename, self.out_filename, from_flags, to_flags, from_options, to_options],
+                                 env=env, capture_output=True, text=True)
 
         self.out = process.stdout
         self.err = process.stderr

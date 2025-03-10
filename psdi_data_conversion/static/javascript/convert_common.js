@@ -5,6 +5,7 @@
 
 const SECOND = 1000; // Milliseconds
 const CONVERT_TIMEOUT = 60 * SECOND;
+const MEGABYTE = 1024 * 1024;
 
 const ZIP_EXT = "zip"
 const TAR_EXT = "tar"
@@ -17,6 +18,9 @@ const TARXZ_EXT = "tar.xz"
 
 // Whether or not file extensions will be checked
 let extCheck = true;
+
+// Whether or not the user wants to also get the log file
+let requestLog = false;
 
 var token = "",
     max_file_size = 0,
@@ -45,6 +49,7 @@ export function commonConvertReady(converter) {
         ") using " + converter);
 
     $("#extCheck").click(setExtCheck);
+    $("#requestLog").click(setRequestLog);
     $("#fileToUpload").change(checkFile);
 
     return [token, max_file_size, in_str, in_ext, out_str, out_ext];
@@ -64,12 +69,20 @@ export function convertFile(form_data, download_fname, fname) {
         timeout: CONVERT_TIMEOUT,
         success: async function () {
             if (!convertTimedOut) {
-                const delay = ms => new Promise(response => setTimeout(response, ms));
+                await downloadFile(`../downloads/${download_fname}`, download_fname)
 
-                downloadFile(`../downloads/${fname}.log.txt`, fname + '.log.txt')
-                await delay(300);
-                downloadFile(`../downloads/${download_fname}`, download_fname)
-                await delay(300);
+                let msg = "To the best of our knowledge, this conversion has worked. A download prompt for your " +
+                    "converted file should now be open for you.";
+                if (requestLog) {
+                    msg += " A download prompt for the log will appear when you close this box.\n\n" +
+                        "You may need to tell your browser to allow this site to download multiple files and try the " +
+                        "conversion again if your browser initially disallows the download of the log file.";
+                }
+                alert(msg);
+
+                if (requestLog) {
+                    await downloadFile(`../downloads/${fname}.log.txt`, fname + '.log.txt')
+                }
             }
 
             var fdata = new FormData();
@@ -100,13 +113,6 @@ export function convertFile(form_data, download_fname, fname) {
             }
         }
     })
-        .done(response => {
-            if (!convertTimedOut) {
-                alert("To the best of our knowledge, this conversion has worked. Your output file should download " +
-                    "automatically when you close this alert. Please report any problems by clicking on 'Contact' in " +
-                    "the navigation bar.");
-            }
-        })
         .fail(function (e, textstatus, message) {
             let errLog = `/static/downloads/${fname}.log.txt`;
 
@@ -143,6 +149,10 @@ function setExtCheck(event) {
 
 export function getExtCheck() {
     return extCheck;
+}
+
+function setRequestLog(event) {
+    requestLog = this.checked;
 }
 
 export function splitArchiveExt(filename) {
@@ -220,12 +230,23 @@ function checkFile(event) {
     }
 }
 
-// A link is created, clicked and removed, resulting in the download of a file
-function downloadFile(path, filename) {
-    const a = $("<a>")
-        .attr("href", path)
-        .attr("download", filename)
-        .appendTo("body");
-    a[0].click();
-    a.remove();
+/**
+ * Start a download of a file
+ * 
+ * The file is first fetched as a blob, then a link to download it is created, clicked, and removed
+ * 
+ * @param {str} path The path to the file to be downloaded
+ * @param {str} filename The desired filename of the downloaded file
+ * @returns {Promise<Response>}
+ */
+async function downloadFile(path, filename) {
+    return fetch(path)
+        .then(res => res.blob())
+        .then(data => {
+            var a = document.createElement("a");
+            a.href = window.URL.createObjectURL(data);
+            a.download = filename;
+            a.click();
+            a.remove();
+        });
 }

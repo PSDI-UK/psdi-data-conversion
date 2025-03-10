@@ -1,15 +1,17 @@
-# Pipeline to run on release branch only
+# Workflow for continuous integration tasks triggered on push to release
 
-name: ci-release
-run-name: ci-release
+name: CI - Release
+run-name: CI - Release
 on:
   workflow_dispatch:
   push:
-    branches: [ "release" ]
-    
+    branches: ["release"]
+
 jobs:
   test-package:
-    uses: ./.github/workflows/test_package.yml
+    uses: ./.github/workflows/job-test-python.yml
+  test-gui:
+    uses: ./.github/workflows/job-test-gui.yml
 
   # The commented out code below runs a code vulnerability scan on the
   # containerised app. This will not work on the free GitHub plan, since
@@ -24,10 +26,14 @@ jobs:
   #anchore-scan:
   #  uses: ./.github/workflows/anchore-scan.yml
   #  needs: [test-package]
-    
+
   tag-container-push:
-    uses: ./.github/workflows/tag-container-push.yml
+    uses: ./.github/workflows/job-tag-container-push.yml
     needs: [test-package]
+
+  deploy-azure:
+    needs: [tag-container-push]
+    uses: ./.github/workflows/job-deploy-azure.yml # use the callable deploy job
 
   # Deploy to Kubernetes Job
   # Requires an environment, which must reflect the target environment as defined in the
@@ -35,8 +41,16 @@ jobs:
   # The downstream deploy job leverages on Environment specific secrets, which also must be defined
   deploy-stfc-dev-k8s:
     needs: [tag-container-push]
-    uses: ./.github/workflows/deploy-k8s.yml  # use the callable deploy job
+    uses: ./.github/workflows/job-deploy-k8s.yml # use the callable deploy job
     secrets: inherit # pass all secrets for the environment
     with:
       container_tag: ${{ needs.tag-container-push.outputs.container_tag }}
       environment: development
+
+  deploy-stfc-staging-k8s:
+    needs: [tag-container-push, deploy-stfc-dev-k8s]
+    uses: ./.github/workflows/job-deploy-k8s.yml # use the callable deploy job
+    secrets: inherit # pass all secrets for the environment
+    with:
+      container_tag: ${{ needs.tag-container-push.outputs.container_tag }}
+      environment: staging

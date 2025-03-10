@@ -1,0 +1,57 @@
+# Reusable workflow intended to be called as a job by other workflows
+
+# Opens a PR to the desired target branch (default main)
+
+name: Job - Open PR
+run-name: Open PR
+on:
+  workflow_call:
+    inputs:
+      target:
+        description: "Branch to open a PR to"
+        required: false
+        default: "main"
+        type: string
+  workflow_dispatch:
+    inputs:
+      target:
+        description: "Branch to open a PR to"
+        required: false
+        default: "main"
+
+env:
+  BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
+
+jobs:
+  create-pr:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: create pull request
+        id: create-pr
+        # Create the PR, and store an output for whether or not we want to run tests afterward - if this workflow
+        # creates a PR, it won't trigger the standard CI PR, so we'll want to trigger those tests here
+        run: |
+          gh pr create -B ${{ inputs.target }} -H ${{ env.BRANCH_NAME }} --title \
+            'Merge ${{ env.BRANCH_NAME }} into ${{ inputs.target }}' --body '' \
+            && SUCCESS=1 || SUCCESS=0
+          if [ $SUCCESS -eq 1 ]; then
+            echo "Pull request successfully created"
+          else
+            echo "Pull request already exists"
+          fi
+          echo "run_tests=$SUCCESS" >> $GITHUB_OUTPUT
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    outputs:
+      run_tests: ${{ steps.create-pr.outputs.run_tests }}
+
+  test-package:
+    needs: create-pr
+    uses: ./.github/workflows/job-test-python.yml
+    if: needs.create-pr.outputs.run_tests == '1'
+
+  test-gui:
+    needs: create-pr
+    uses: ./.github/workflows/job-test-gui.yml
+    if: needs.create-pr.outputs.run_tests == '1'

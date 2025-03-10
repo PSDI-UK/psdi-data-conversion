@@ -5,6 +5,7 @@ Created 2025-01-15 by Bryan Gillis.
 Tests of the command-line interface
 """
 
+from math import isclose
 import os
 import pytest
 import shlex
@@ -12,13 +13,27 @@ import sys
 from unittest.mock import patch
 
 from psdi_data_conversion import constants as const
-from psdi_data_conversion.converter import L_REGISTERED_CONVERTERS
-from psdi_data_conversion.converters.atomsk import CONVERTER_ATO
-from psdi_data_conversion.converters.openbabel import CONVERTER_OB
+from psdi_data_conversion.converter import D_CONVERTER_ARGS, L_REGISTERED_CONVERTERS
+from psdi_data_conversion.converters.c2x import CONVERTER_C2X
+from psdi_data_conversion.converters.openbabel import (CONVERTER_OB, COORD_GEN_KEY, COORD_GEN_QUAL_KEY,
+                                                       DEFAULT_COORD_GEN, DEFAULT_COORD_GEN_QUAL)
 from psdi_data_conversion.database import (get_conversion_quality, get_converter_info, get_in_format_args,
                                            get_out_format_args, get_possible_converters, get_possible_formats)
+from psdi_data_conversion.dist import LINUX_LABEL, get_dist
 from psdi_data_conversion.file_io import unpack_zip_or_tar
+from psdi_data_conversion.log_utility import string_with_placeholders_matches
 from psdi_data_conversion.main import FileConverterInputException, main, parse_args
+
+
+def test_unique_args():
+    """Check that all converter-specific arguments have unique names
+    """
+    s_arg_names = set()
+    for name in L_REGISTERED_CONVERTERS:
+        for arg_name, _, _ in D_CONVERTER_ARGS[name]:
+            assert arg_name not in s_arg_names, ("Name clash between converters, with multiple using the argument "
+                                                 f"'{arg_name}'")
+            s_arg_names.add(arg_name)
 
 
 def get_parsed_args(s):
@@ -43,25 +58,31 @@ def test_input_validity():
 
     # Test that we get what we put in for a standard execution
     cwd = os.getcwd()
-    args = get_parsed_args(f"file1 file2 -f mmcif -i {cwd} -t pdb -o {cwd}/.. -w 'Atomsk' " +
+    args = get_parsed_args(f"file1 file2 -f mmcif -i {cwd} -t pdb -o {cwd}/.. -w '{CONVERTER_C2X}' " +
                            r"--delete-input --from-flags '\-ab \-c \--example' --to-flags '\-d' " +
+                           r"--from-options '-x xval --xopt xoptval' --to-options '-y yval --yopt yoptval' "
                            "--strict --nc --coord-gen Gen3D best -q --log-file text.log")
     assert args.l_args[0] == "file1"
     assert args.l_args[1] == "file2"
     assert args.input_dir == cwd
     assert args.to_format == "pdb"
     assert args.output_dir == f"{cwd}/.."
-    assert args.name == "Atomsk"
+    assert args.name == CONVERTER_C2X
     assert args.no_check is True
     assert args.strict is True
     assert args.delete_input is True
     assert args.from_flags == "-ab -c --example"
     assert args.to_flags == "-d"
-    assert args.coord_gen == "Gen3D"
-    assert args.coord_gen_qual == "best"
+    assert args.from_options == "-x xval --xopt xoptval"
+    assert args.to_options == "-y yval --yopt yoptval"
     assert args.quiet is True
     assert args.log_file == "text.log"
     assert args.log_mode == const.LOG_NONE
+
+    # Test Open-Babel-specific arguments
+    args = get_parsed_args(f"file1 -t pdb -w '{CONVERTER_OB}' --coord-gen Gen3D best")
+    assert args.d_converter_args[COORD_GEN_KEY] == "Gen3D"
+    assert args.d_converter_args[COORD_GEN_QUAL_KEY] == "best"
 
     # It should fail with no arguments
     with pytest.raises(FileConverterInputException):
@@ -126,9 +147,10 @@ def test_input_processing():
     assert output_check_args.output_dir == f"{cwd}/.."
 
     # Check that we get the default coordinate generation options
-    assert args.coord_gen == const.DEFAULT_COORD_GEN
-    assert args.coord_gen_qual == const.DEFAULT_COORD_GEN_QUAL
-    assert get_parsed_args("file1.mmcif -t pdb --coord-gen Gen3D").coord_gen_qual == const.DEFAULT_COORD_GEN_QUAL
+    assert args.d_converter_args[COORD_GEN_KEY] == DEFAULT_COORD_GEN
+    assert args.d_converter_args[COORD_GEN_QUAL_KEY] == DEFAULT_COORD_GEN_QUAL
+    assert (get_parsed_args("file1.mmcif -t pdb --coord-gen Gen3D").d_converter_args[COORD_GEN_QUAL_KEY] ==
+            DEFAULT_COORD_GEN_QUAL)
 
     # Check that trying to get the log file raises an exception due to the test file not existing
     with pytest.raises(FileConverterInputException):
@@ -192,17 +214,19 @@ def test_detail_converter(capsys):
         # Check that no errors were produced
         assert not captured.err
 
-    # Test we do get an error for a bad converter name
+    # Test we do get a simple error for a bad converter name
     with pytest.raises(SystemExit):
         run_with_arg_string("--list bad_converter")
     captured = capsys.readouterr()
     assert "not recognized" in captured.err
+    assert "Traceback" not in captured.out
+    assert "Traceback" not in captured.err
 
     # Test that we can also provide the converter name with -w/--with
-    run_with_arg_string(f"-l -w {CONVERTER_ATO}")
+    run_with_arg_string(f"-l -w {CONVERTER_C2X}")
     captured = capsys.readouterr()
     assert not captured.err
-    assert CONVERTER_ATO in captured.out
+    assert CONVERTER_C2X in captured.out
     assert const.CONVERTER_DEFAULT not in captured.out
 
 
@@ -222,7 +246,7 @@ def test_get_converters(capsys):
 
     assert not captured.err
 
-    assert bool(l_converters) == string_is_present_in_out("The following converters can convert from "
+    assert bool(l_converters) == string_is_present_in_out("The following registered converters can convert from "
                                                           f"{in_format} to {out_format}:")
 
     for converter_name in l_converters:
@@ -240,7 +264,7 @@ def test_conversion_info(capsys):
     converter_name = CONVERTER_OB
     in_format = "xyz"
     out_format = "inchi"
-    qual_str, details, d_prop_conv_info = get_conversion_quality(converter_name, in_format, out_format)
+    qual = get_conversion_quality(converter_name, in_format, out_format)
 
     # Test a basic listing of arguments
     run_with_arg_string(f"-l {converter_name} -f {in_format} -t {out_format}")
@@ -254,11 +278,11 @@ def test_conversion_info(capsys):
 
     # Check that conversion quality details are in the output as expected
     assert string_is_present_in_out(f"Conversion from '{in_format}' to '{out_format}' with {converter_name} is "
-                                    f"possible with {qual_str} conversion quality")
-    assert string_is_present_in_out("Notes on this conversion:")
-    assert string_is_present_in_out(const.QUAL_NOTE_OUT_MISSING % const.QUAL_2D_LABEL)
-    assert string_is_present_in_out(const.QUAL_NOTE_OUT_MISSING % const.QUAL_3D_LABEL)
-    assert string_is_present_in_out(const.QUAL_NOTE_IN_MISSING % const.QUAL_CONN_LABEL)
+                                    f"possible with {qual.qual_str} conversion quality")
+    assert string_is_present_in_out("WARNING: Potential data loss or extrapolation issues with this conversion:")
+    assert string_is_present_in_out(const.QUAL_NOTE_OUT_MISSING.format(const.QUAL_2D_LABEL))
+    assert string_is_present_in_out(const.QUAL_NOTE_OUT_MISSING.format(const.QUAL_3D_LABEL))
+    assert string_is_present_in_out(const.QUAL_NOTE_IN_MISSING.format(const.QUAL_CONN_LABEL))
 
     l_in_flags, l_in_options = get_in_format_args(converter_name, in_format)
     l_out_flags, l_out_options = get_out_format_args(converter_name, out_format)
@@ -323,6 +347,8 @@ def test_convert(tmp_path_factory, capsys, test_data_loc):
     captured = capsys.readouterr()
     assert "Success!" not in captured.out
     assert "ERROR" in captured.err
+    assert "Traceback" not in captured.out
+    assert "Traceback" not in captured.err
 
     # Testa call we expect to fail due to the wrong input type being provided
     bad_from_arg_string = f"{basic_arg_string} -f pdb"
@@ -330,6 +356,8 @@ def test_convert(tmp_path_factory, capsys, test_data_loc):
     captured = capsys.readouterr()
     assert "ERROR" in captured.err
     assert "WARNING" in captured.err
+    assert "Traceback" not in captured.out
+    assert "Traceback" not in captured.err
     assert "Success!" not in captured.out
 
     # Check that we can specify a file with its format instead of extension
@@ -344,7 +372,9 @@ def test_archive_convert(tmp_path_factory, capsys, test_data_loc):
     """
 
     test_filename_base = "caffeine-smi"
-    l_archive_exts = [".zip", ".tar", ".tar.gz"]
+    l_archive_exts = [const.ZIP_EXTENSION,
+                      const.TAR_EXTENSION,
+                      const.GZTAR_EXTENSION]
 
     l_ex_filename_bases = ["caffeine-no-flags",
                            "caffeine-ia",
@@ -385,14 +415,143 @@ def test_archive_convert(tmp_path_factory, capsys, test_data_loc):
             ex_filename = f"{os.path.join(output_dir, ex_filename_base)}.{to_format}"
             assert os.path.isfile(ex_filename)
 
+        # To save time, we'll only do more detailed tests for the .zip archive
+        if archive_ext != const.ZIP_EXTENSION:
+            continue
+
         # Test that a warning is returned if the archive contains files of the wrong type
         bad_from_arg_string = f"{basic_arg_string} -f pdb"
         run_with_arg_string(bad_from_arg_string)
         captured = capsys.readouterr()
-        assert "WARNING" in captured.err
+        assert string_with_placeholders_matches(f"WARNING: {const.ERR_WRONG_EXTENSIONS}", captured.err)
 
         # And test that it fails in strict mode
         bad_from_arg_string = f"{basic_arg_string} -f pdb --strict"
         run_with_arg_string(bad_from_arg_string)
         captured = capsys.readouterr()
-        assert "ERROR" in captured.err
+        assert string_with_placeholders_matches("ERROR: {}" + const.ERR_WRONG_EXTENSIONS, captured.err)
+        assert "Traceback" not in captured.out
+        assert "Traceback" not in captured.err
+
+
+def check_numerical_text_match(text: str, ex_text: str, fail_msg: str | None = None) -> None:
+    """Check that the contents of two files match without worrying about whitespace or negligible numerical differences.
+    """
+
+    # We want to check they're the same without worrying about whitespace (which doesn't matter for this format),
+    # so we accomplish this by using the string's `split` method, which splits on whitespace by default
+    l_words, l_ex_words = text.split(), ex_text.split()
+
+    # And we also want to avoid spurious false negatives from numerical comparisons (such as one file having
+    # negative zero and the other positive zero - yes, this happened), so we convert words to floats if possible
+
+    # We allow greater tolerance for numerical inaccuracy on platforms other than Linux, which is where the expected
+    # files were originally created
+    rel_tol = 0.001
+    abs_tol = 1e-6
+    if get_dist() != LINUX_LABEL:
+        rel_tol = 0.2
+        abs_tol = 0.01
+
+    for word, ex_word in zip(l_words, l_ex_words):
+        try:
+            val, ex_val = float(word), float(ex_word)
+
+            assert isclose(val, ex_val, rel_tol=rel_tol, abs_tol=abs_tol), fail_msg
+        except ValueError:
+            # If it can't be converted to a float, treat it as a string and require an exact match
+            assert word == ex_word, fail_msg
+
+
+def test_format_args(tmp_path_factory, test_data_loc):
+    """Test that format flags and options are processed correctly and results in the right conversions
+    """
+    input_dir = tmp_path_factory.mktemp("input")
+    output_dir = tmp_path_factory.mktemp("output")
+
+    test_filename_base = "caffeine"
+
+    from_format = "inchi"
+    to_format = "smi"
+
+    input_filename = f"{test_filename_base}.{from_format}"
+    output_filename = f"{test_filename_base}.{to_format}"
+
+    # Symlink the input file from the test_data directory to the input directory
+    os.symlink(os.path.join(test_data_loc, input_filename),
+               os.path.join(input_dir, input_filename))
+
+    basic_arg_string = f"{input_filename} -t {to_format} -i {input_dir} -o {output_dir}"
+
+    # Run for each set of format flags
+    for (from_flags, to_flags, from_options, to_options, ex_file
+         ) in ((None, None, None, None, "caffeine-no-flags.smi"),
+               ("a", None, None, None, "caffeine-ia.smi"),
+               ("a", "x", None, None, "caffeine-ia-ox.smi"),
+               ("a", "kx", None, None, "caffeine-ia-okx.smi"),
+               ("a", "kx", None, "f4", "caffeine-ia-okx-oof4.smi"),
+               ("a", "kx", None, "'f4 l5'", "caffeine-ia-okx-oof4l5.smi"),):
+
+        arg_string = basic_arg_string
+        if from_flags is not None:
+            arg_string += f" --from-flags {from_flags}"
+        if to_flags is not None:
+            arg_string += f" --to-flags {to_flags}"
+        if from_options is not None:
+            arg_string += f" --from-options {from_options}"
+        if to_options is not None:
+            arg_string += f" --to-options {to_options}"
+
+        # Run the conversion
+        run_with_arg_string(arg_string)
+
+        # Check that the expected output file has been created
+        ex_output_file = os.path.join(output_dir, f"{output_filename}")
+        assert os.path.isfile(ex_output_file), f"Expected output file {ex_output_file} does not exist"
+
+        # Check that the contents of this file match what's expected
+        check_numerical_text_match(text=open(ex_output_file, "r").read(),
+                                   ex_text=open(os.path.join(test_data_loc, ex_file), "r").read(),
+                                   fail_msg=f"Format flag test failed for {ex_file}")
+
+
+def test_coord_gen(tmp_path_factory, test_data_loc):
+    """Test that Open Babel's unique --coord-gen option is processed correctly and results in the right conversions
+    """
+    input_dir = tmp_path_factory.mktemp("input")
+    output_dir = tmp_path_factory.mktemp("output")
+
+    test_filename_base = "caffeine"
+
+    from_format = "inchi"
+    to_format = "xyz"
+
+    input_filename = f"{test_filename_base}.{from_format}"
+    output_filename = f"{test_filename_base}.{to_format}"
+
+    # Symlink the input file from the test_data directory to the input directory
+    os.symlink(os.path.join(test_data_loc, input_filename),
+               os.path.join(input_dir, input_filename))
+
+    basic_arg_string = f"{input_filename} -t {to_format} -i {input_dir} -o {output_dir}"
+    # Run for each set of coord-gen options
+    for cg_opts, ex_file in ((None, "caffeine.xyz"),
+                             ("Gen2D fastest", "caffeine-2D-fastest.xyz"),
+                             ("Gen3D best", "caffeine-3D-best.xyz"),):
+
+        if cg_opts is None:
+            arg_string = basic_arg_string
+        else:
+            arg_string = f"{basic_arg_string} --coord-gen {cg_opts}"
+
+        # Run the conversion
+        run_with_arg_string(arg_string)
+
+        # Check that the expected output file has been created
+        ex_output_file = os.path.join(output_dir, f"{output_filename}")
+        assert os.path.isfile(ex_output_file), f"Expected output file {ex_output_file} does not exist"
+
+        # Check that the contents of this file match what's expected
+        check_numerical_text_match(text=open(ex_output_file, "r").read(),
+                                   ex_text=open(os.path.join(test_data_loc, ex_file), "r").read(),
+                                   fail_msg=f"Coord Gen test failed for {ex_file}")

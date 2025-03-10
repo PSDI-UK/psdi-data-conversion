@@ -5,7 +5,13 @@ if [ -z $MAX_FILESIZE ]; then
   export MAX_FILESIZE=0
 fi
 
-export LOGGING=Full
+# Logging control - "full" sets server-style logging, which is necessary to produce the output logs with the expected
+# names. This should not be changed, or else errors will occur
+export LOG_MODE=full
+
+# The level to log at. Leave blank for defaults, which logs at INFO level for user output and ERROR level for the server
+# log and stdout. If set to a different value here (e.g. DEBUG), all these channels will be set to that level
+export LOG_LEVEL=
 
 # The envvar SERVICE_MODE can be set to "true" to make this behave as if it's running as the public web service -
 # uncomment the following line to enable that

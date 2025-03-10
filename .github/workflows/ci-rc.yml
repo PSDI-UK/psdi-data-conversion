@@ -1,30 +1,16 @@
-# Pipeline to run on pushes to release candidate branches PRs to such branches
+# Workflow for continuous integration tasks triggered on push to a release candidate branch
 
-# NOTE: It is assumed that all release candidate branches match the pattern 'rc-**'
-
-name: ci-rc
-run-name: ci-rc
+name: CI - Release candidate branches
+run-name: CI - Release candidate branches
 on:
   workflow_dispatch:
   push:
-    branches: [ "rc-**" ]
-  pull_request:
-    branches: [ "rc-**" ]
-    
+    branches: [ "rc**" ]
+      
 jobs:
-  # Runs on all of the 'on' conditions above, including pull request events
-  test-package:
-    uses: ./.github/workflows/test_package.yml
   open-pull-request:
-    uses: ./.github/workflows/open-pull-request.yml
+    # Open a PR if the branch isn't release itself
+    if: ${{ github.head_ref || github.ref_name }} != 'release'
+    uses: ./.github/workflows/job-open-pull-request.yml
     with:
-      target: release
-
-  # The commented out code below runs a code vulnerability scan on the
-  # containerised app. This will not work on the free GitHub plan, since
-  # for that plan code scanning is not supported for private repos - and
-  # this is a private repo. There may be a work-around.
-  #
-  #anchore-scan:
-  #  uses: ./.github/workflows/anchore-scan.yml
-  #  needs: [test-package]
+      target: main

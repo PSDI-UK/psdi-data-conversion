@@ -1,0 +1,36 @@
+# Reusable workflow intended to be called as a job by other workflows
+
+# Runs automated tests of the GUI using pytest and Selenium with a Firefox browser
+
+name: Job - Test GUI
+run-name: Test GUI
+
+on:
+  workflow_call:
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Firefox
+        uses: browser-actions/setup-firefox@v1
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v3
+        with:
+          python-version: "3.12"
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install .[gui-test]
+      - name: Run Selenium tests
+        run: |
+          ./run_local.sh &
+          cd tests/selenium
+          ./run.sh
