@@ -348,4 +348,6 @@ To upload, follow [this tutorial](https://packaging.python.org/en/latest/tutoria
 
 ### Publishing Updates
 
+The `ci-release.yml` workflow in `.github/workflows` is planned to publish any new releases to PyPI after the initial publication. This can be set up by uncommenting the relevant lines in this file, possibly updating the `job-publish-pypi.yml` to enable this (testing will be necessary), and setting up Trusted Publishing for the project on PyPI (see [guide](https://docs.github.com/en/actions/security-for-github-actions/security-hardening-your-deployments/configuring-openid-connect-in-pypi))
+
 ## Deployment
