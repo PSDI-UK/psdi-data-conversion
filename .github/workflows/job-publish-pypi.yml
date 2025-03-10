@@ -1,4 +1,5 @@
-# This workflow will upload a Python Package to PyPI when a release is created
+# Reusable workflow to upload a Python Package to PyPI
+
 # For more information see: https://docs.github.com/en/actions/use-cases-and-examples/building-and-testing/building-and-testing-python#publishing-to-pypi
 
 # This workflow uses actions that are not certified by GitHub.
@@ -6,7 +7,8 @@
 # separate terms of service, privacy policy, and support
 # documentation.
 
-name: Upload Python Package
+name: Job - Publish to PyPI
+run-name: Publish to PyPI
 
 on:
   release:
