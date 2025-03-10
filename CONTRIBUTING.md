@@ -296,3 +296,47 @@ For debugging python issues, it's recommended to install the package in editable
 ```bash
 pip install --editable .'[gui-test]'
 ```
+
+## Continuous Integration
+
+## Publishing
+
+The Python library, CLA, and local GUI are (planned to be) published as a Python package via PyPI. This section describes how the package is set up and how it's published.
+
+### Package Setup
+
+The package's setup is defined in the `pyproject.toml` file. This defines the project's metadata as well as necessary information for its build system.
+
+The package uses [Hatch](https://hatch.pypa.io/latest/) for its build backend, as it is simpler to configure than the classic [Setuptools](https://setuptools.pypa.io/en/latest/userguide/) and provides some useful extensibility.
+
+The version of the package is set to be determined from the version control system, meaning on the release branch, the version will always match the latest tag.
+
+### Initial Publication
+
+This section details the plan for the initial publication of this package - after this is complete, this section will be left in for reference in case of future need.
+
+First, it's necessary to install a couple required packages in order to build a Python package: `build` to build it and `twine` to upload it. These can be installed with pip via:
+
+```bash
+pip install --upgrade build twine
+```
+
+Alternatively, your system may require installing them via its package manager, e.g. via:
+
+```bash
+sudo apt install python3-build twine
+```
+
+First, test building the project to ensure that it's build correctly and includes the correct files. This can be done through:
+
+```bash
+python -m build
+```
+
+This will create a directory "dist" which contains two files: a tarball of the package source, and a compiled wheel. Inspect the tarball (e.g. with `tar tf dist/filename.tar.gz`) to confirm that it contains the desired files.
+
+To upload, follow [this tutorial](https://packaging.python.org/en/latest/tutorials/packaging-projects/#uploading-the-distribution-archives), which first walks through a test upload to TestPyPI, and then provides the changes necessary to upload to PyPI proper.
+
+### Publishing Updates
+
+## Deployment
