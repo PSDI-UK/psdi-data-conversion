@@ -42,6 +42,7 @@ gui-test = [
   "selenium",
   "webdriver_manager",
 ]
+doc = ["pdoc3"]
 
 [project.scripts]
 psdi-data-convert = "psdi_data_conversion.main:main"
