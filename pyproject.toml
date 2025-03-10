@@ -61,7 +61,7 @@ version = { source = "vcs" } # Use version Git tags
 exclude = [
   ".github/**",
   "deploy/**",
-  "scripts/fetch-*",
+  "scripts/fetch-common-style.*",
   "scripts/make-index-html.sh",
   "Dockerfile",
   "requirements.txt",
