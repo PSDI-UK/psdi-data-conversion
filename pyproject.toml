@@ -50,6 +50,8 @@ psdi-data-convert = "psdi_data_conversion.main:main"
 Homepage = "https://psdidev2.azurewebsites.net/"
 Repository = "https://github.com/PSDI-UK/psdi-data-conversion"
 Issues = "https://github.com/PSDI-UK/psdi-data-conversion/issues"
+Changelog = "https://github.com/PSDI-UK/psdi-data-conversion/blob/main/CHANGELOG.md"
+Download = "https://github.com/PSDI-UK/psdi-data-conversion/releases/latest"
 
 # Hatch-specific configuration
 [tool.hatch]
