@@ -348,6 +348,18 @@ To upload, follow [this tutorial](https://packaging.python.org/en/latest/tutoria
 
 ### Publishing Updates
 
-The `ci-release.yml` workflow in `.github/workflows` is planned to publish any new releases to PyPI after the initial publication. This can be set up by uncommenting the relevant lines in this file, possibly updating the `job-publish-pypi.yml` to enable this (testing will be necessary), and setting up Trusted Publishing for the project on PyPI (see [guide](https://docs.github.com/en/actions/security-for-github-actions/security-hardening-your-deployments/configuring-openid-connect-in-pypi))
+The `ci-release.yml` workflow is planned to publish any new releases to PyPI after the initial publication. This can be set up by uncommenting the relevant lines in this file, possibly updating the `job-publish-pypi.yml` to enable this (testing will be necessary), and setting up Trusted Publishing for the project on PyPI (see [guide](https://docs.github.com/en/actions/security-for-github-actions/security-hardening-your-deployments/configuring-openid-connect-in-pypi))
 
 ## Deployment
+
+The project is currently deployed to two locations: An Azure webserver, which was used in development, and the STFC infrastructure, which will be used in production.
+
+### Azure Deployment
+
+Azure deployment is handled automatically by the `ci-release.yml` workflow, which triggers the `job-deploy-azure.yml` reusable workflow to perform the deployment. This should not need to be edited often.
+
+The Azure host starts the server by running the script `startup.sh`. This script can be edited to set any environmental variables which are set up to control the behaviour of the app.
+
+### STFC Deployment
+
+TODO
