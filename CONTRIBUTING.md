@@ -1,5 +1,7 @@
 # Contributing
 
+This file contains information for people working on developing or maintaining this project, explaining the project structure, procedures used, and other information likely to be useful.
+
 ## Git Workflow
 
 This project uses a version of [GitLab Flow](https://about.gitlab.com/topics/version-control/what-is-gitlab-flow/) for its workflow. This uses two primary long-lived branches, `main` and `release`, plus short-lived feature and release candidate branches:
