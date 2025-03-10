@@ -138,21 +138,30 @@ The below can be used as a template for new sections to be added to the Changelo
 
 ### Adding File Format Converters
 
-If you wish to make a converter accessible by the CLI, you only need to follow the steps in the Python Integration section below. If you also wish to make it available in the web app, you will additionally have to follow this instructions in the Web App Integration section.
+If you wish to make a converter accessible by the CLI, you only need to follow the steps in the [Python Integration](#python-integration) section below. If you also wish to make it available in the web app, you will additionally have to follow the instructions in the [Web App Integration](#web-app-integration) section.
 
 #### Python Integration
 
 In the Python layer of the code, each file format converter is defined in its own module in the `psdi_data_conversion.converters` package, as a subclass of the `FileConverter` class defined in `psdi_data_conversion.converters.base`. A new converter can be integrated with the Python layer of the code by:
 
-1. Create a new module in the `psdi_data_conversion.converters` for the converter
-2. Define a new class for this converter, as a subclass of `FileConverter`
-3. Set the class variable `name` for the converter to be the name you want to use for this converter. This will be what needs to be specified in the command-line to request this converter
-4. Implement the `_convert(self)` method of the class with a call to the converter. This method must create the converted file at the location specified by the variable `self.out_filename` (which is provided fully qualified) and set the variables `self.out` and `self.err` with normal output and error output respectively (at minimum they must be set to empty strings)
-5. After defining the converter's class, set the module-level variable `converter` to the class
+1. Create a new module in the `psdi_data_conversion.converters` for the converter.
+
+2. Define a new class for this converter, as a subclass of `FileConverter`.
+
+3. Set the class variable `name` for the converter to be the name you want to use for this converter. This will be what needs to be specified in the command-line to request this converter.
+
+4. (Optional) Set the class variables `info`, `allowed_flags`, and `allowed_options` to provide further information about the converter and its use - see the documentation of these variables in the `psdi_data_conversion.converters.base` module for further info on their structure and use.
+
+5. Implement the `_convert(self)` method of the class with a call to the converter. This method must create the converted file at the location specified by the variable `self.out_filename` (which is provided fully qualified) and set the variables `self.out` and `self.err` with normal output and error output respectively (at minimum they must be set to empty strings).
+
+6. (Optional) If the converter might not be usable on all platforms (e.g. it requires a binary that only works on Linux), override the `can_be_registered(cls` class method to implement an appropriate test on if the converter is usable - e.g. `return sys.platform.startswith("linux")` in the case of a converter that only works on Linux platforms.
+
+7. After defining the converter's class, set the module-level variable `converter` to the class.
 
 This will look something like:
 
 ```python
+import sys
 from psdi_data_conversion.converters.base import FileConverter
 
 CONVERTER_MY = 'My Converter'
@@ -162,27 +171,35 @@ class MyFileConverter(FileConverter):
     """
 
     name = CONVERTER_MY
+    info = "My converter's info"
+    allowed_flags = ()
+    allowed_options = ()
 
     def _convert(self):
 
         # Run whatever steps are necessary to perform the conversion
+        load_input_file_from(self.in_filename)
         create_my_converted_file_at(self.out_filename)
 
         self.out = "Standard output goes here"
         self.err = "Errors go here"
+
+    @classmethod
+    def can_be_registered(cls):
+        return sys.platform.startswith("linux")
 
 # Assign this converter to the `converter` variable - this lets the psdi_data_conversion.converter module detect and
 # register it, making it available for use by the CLI and web app
 converter = MyFileConverter
 ```
 
-That's all you need to do! The `psdi_data_conversion.converter` module parses all modules in the `converters` package to find converters, so if you've done everything correctly, it will find the new converter and register it for you. You can test that it is properly registered by using the CLI to run:
+That's all you need to do! The `psdi_data_conversion.converter` module parses all modules in the `converters` package to find converters, so if you've done everything correctly, it will find the new converter and register it for you. You can test that it is properly registered by using the CLA to run:
 
 ```bash
 psdi-data-convert -l
 ```
 
-Your new converter should appear, or else you will probably see an error message which will detail an exception raised when trying to register it.
+Your new converter should appear, or else you will probably see an error message which will detail an exception raised when trying to register it. Note that until the converter's information is added to the database (the file `psdi_data_conversion/static/data/data.json`), the CLA will show that it is unable to perform any conversions, and it will fail on any conversion (believing it to be impossible) unless you provide the `--nc/--no-check` command-line flag.
 
 For file converters which can be run with a call to a script, this can be streamlined even further by taking advantage of the `ScriptFileConverter` subclass. With this, the converter's subclass can be defined even more succinctly:
 
@@ -201,13 +218,13 @@ class MyScriptFileConverter(ScriptFileConverter):
 converter = MyScriptFileConverter
 ```
 
-When a converter is defined this way, the `_convert(self)` method will be defined to execute a subprocess call to run the script defined in the class's `script` class variable, searching for it in the `psdi_data_conversion/scripts` directory. Typically this will be a wrapper to call a binary to perform the conversion, which should be placed in the `psdi_data_conversion/bin` directory. It will pass to it the fully-qualified input filename (`self.in_filename`) as the first argument, the fully-qualified output filename (`self.out_filename`) as the second argument, and then any flags defined in `self.data["to_flags"]` and `self.data["from_flags"]`.
+When a converter is defined this way, the `_convert(self)` method will be defined to execute a subprocess call to run the script defined in the class's `script` class variable, searching for it in the `psdi_data_conversion/scripts` directory. It will pass to it the fully-qualified input filename (`self.in_filename`) as the first argument, the fully-qualified output filename (`self.out_filename`) as the second argument, and then any flags defined in `self.data["to_flags"]` and `self.data["from_flags"]`.
 
 Finally, it's good practice to add a unit test of the converter. You can do this by following the example of tests in `tests/converter_test.py`. If necessary, add a (small) file it can convert to the `test_data` folder, and implement a test that it can convert it to another format by adding a new method to the `TestConverter` class in this file. At its simplest, this method should look something like:
 
 ```python
     def test_c2x(self):
-        """Run a test of the C2X converter on a straightforward `.pdb` to `.cif` conversion
+        """Run a test of the c2x converter on a straightforward `.pdb` to `.cif` conversion
         """
 
         self.get_input_info(filename="hemoglobin.pdb",
@@ -248,15 +265,15 @@ It may also be useful to add a test that the converter fails when you expect it 
 
 If the test is more complicated that this, you can implement a modified version of `self.run_converter` within the test method to perform the desired test. You can also check that output logs include the desired information by either opening the log filenames or using PyTest's `capsys` feature, which captures output to logs, stdout, and stderr.
 
-You can then run the any tests you added, plus the existing test suite through running the following commands from the project's root directory:
+You can then run the any tests you added, plus the existing test suite, through running the following commands from the project's root directory:
 
 ```bash
 source .venv/bin/activate # Create a venv first if necessary with `python -m venv .venv`
-pip install --editable .'[test]'
+pip install --editable .[test]
 pytest
 ```
 
-This installs the project in a virtual environment in 'editable' mode (which means the source files will be used from where they are rather than being copied, so any changes to them will be directly reflected in tests and uses of the CLI) and then calls `pytest` to run the unit tests in the project. `pytest` will automatically pick up any extra tests you add and run them as well.
+This installs the project in a virtual environment in "editable" mode (which means the source files will be used from where they are rather than being copied, so any changes to them will be directly reflected in tests and uses of the CLA) and then calls `pytest` to run the unit tests in the project. `pytest` will automatically pick up any extra tests you add and run them as well.
 
 #### Web App Integration
 
