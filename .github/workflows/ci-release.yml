@@ -31,6 +31,10 @@ jobs:
     uses: ./.github/workflows/job-tag-container-push.yml
     needs: [test-package, test-gui]
 
+  publish-doc:
+    needs: [tag-container-push]
+    uses: ./.github/workflows/job-publish-doc.yml
+
   deploy-azure:
     needs: [tag-container-push]
     uses: ./.github/workflows/job-deploy-azure.yml # use the callable deploy job
