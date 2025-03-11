@@ -4,8 +4,8 @@ namespace: data-conversion-development
 resources:
 - ../base
 - namespace.yaml
-- flask-ingress.yaml
+- data-conversion-ingress.yaml
 images:
-- name: flask
+- name: data-conversion
   newName: ghcr.io/psdi-uk/psdi-data-conversion/data-conversion
   newTag: 0.0.1

@@ -60,7 +60,7 @@ jobs:
           DEPLOY_ENV="${{ inputs.environment }}"
           cd deploy/$DEPLOY_ENV
           # update image with version passed from upstream build job
-          kustomize edit set image flask=ghcr.io/psdi-uk/psdi-data-conversion/data-conversion:$CONTAINER_TAG
+          kustomize edit set image data-conversion=ghcr.io/psdi-uk/psdi-data-conversion/data-conversion:$CONTAINER_TAG
           # return to root of repository
           cd -
           # Apply env specific kustomizations
