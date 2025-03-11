@@ -312,6 +312,10 @@ The `database` module provides classes and methods to interface with the databas
 - `get_in_format_args` and `get_out_format_args` - These methods take the name of a converter and the name of an input/output file format, and return a list of info on flags accepted by the converter when using this format for input/output
 - `get_conversion_quality` - Provides information on the quality of a conversion from one format to another with a given converter. If conversion isn't possible, returns `None`. Otherwise returns a short string describing the quality of the conversion, a string providing information on possible issues with the conversion, and a dict providing details on property support between the input and output formats
 
+### Further information
+
+The code documentation for the Python library is published online at https://psdi-uk.github.io/psdi-data-conversion/. Information on modules, classes, and methods in the package can also be obtained through standard Python methods such as `help()` and `dir()`.
+
 ## Using the Online Conversion Service
 
 Enter https://psdidev2.azurewebsites.net in a browser. Guidance on usage is given on each page of the website.

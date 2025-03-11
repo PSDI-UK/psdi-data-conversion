@@ -1,6 +1,11 @@
-"""@file psdi-data-conversion/psdi_data_conversion/__init__.py
+"""
+# PSDI Data Conversion package
 
-Created 2024-12-09 by Bryan Gillis.
+This is the primary package for the PSDI Data Conversion python package, including all library code and executable
+scripts used for it.
 
-This is the primary package for the PSDI Data Conversion python package, including all library code used for it
+The README for this project can be found either packaged alongside it or online at
+https://github.com/PSDI-UK/psdi-data-conversion/blob/main/README.md
+
+The documentation for this package is still WIP as we prepare for release.
 """
