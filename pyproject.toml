@@ -49,6 +49,7 @@ psdi-data-convert = "psdi_data_conversion.main:main"
 
 [project.urls]
 Homepage = "https://psdidev2.azurewebsites.net/"
+Documentation = "https://psdi-uk.github.io/psdi-data-conversion/"
 Repository = "https://github.com/PSDI-UK/psdi-data-conversion"
 Issues = "https://github.com/PSDI-UK/psdi-data-conversion/issues"
 Changelog = "https://github.com/PSDI-UK/psdi-data-conversion/blob/main/CHANGELOG.md"
