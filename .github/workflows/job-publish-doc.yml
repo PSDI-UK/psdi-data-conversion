@@ -1,10 +1,10 @@
-# Simple workflow for deploying static content to GitHub Pages
-name: Deploy static content to Pages
+# Reusable workflow to publish documentation to GitHub Pages
+name: Job - Publish to Pages
+run-name: Publish to Pages
 
 on:
-  # Runs on pushes targeting the default branch
-  push:
-    branches: ["release"]
+  # Allows to be called by other workflows
+  workflow_call:
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
