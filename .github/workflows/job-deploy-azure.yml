@@ -10,7 +10,7 @@ name: Job - Deploy to Azure
 run-name: Deploy to Azure
 
 on:
-  workflow_call:  # allow this workflow to be called from other workflows
+  workflow_call: # allow this workflow to be called from other workflows
 
 jobs:
   build:
@@ -64,7 +64,7 @@ jobs:
         run: unzip release.zip
 
       - name: Login to Azure
-        uses: azure/login@v1
+        uses: azure/login@v2
         with:
           client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_5D29518D1EE14107A61C0D5316BD180E }}
           tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_BBA11EDFC02844E1AC766345289C1140 }}
