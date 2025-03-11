@@ -37,7 +37,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install .[doc]
+          pip install .[gui,doc]
       - name: Build doc
         run: pdoc --html psdi_data_conversion
       - name: Setup Pages
