@@ -78,12 +78,15 @@ class ConvertArgs:
         self.quiet = args.quiet
         self._log_file: str | None = args.log_file
 
-        try:
-            self.log_level = get_log_level_from_str(args.log_level)
-        except ValueError as e:
-            # A ValueError indicates an unrecognised logging level, so we reraise this as a help exception to indicate
-            # we want to provide this as feedback to the user so they can correct their command
-            raise FileConverterHelpException(str(e))
+        if not args.log_level:
+            self.log_level = None
+        else:
+            try:
+                self.log_level = get_log_level_from_str(args.log_level)
+            except ValueError as e:
+                # A ValueError indicates an unrecognised logging level, so we reraise this as a help exception to
+                # indicate we want to provide this as feedback to the user so they can correct their command
+                raise FileConverterHelpException(str(e))
 
         # Special handling for listing converters
         if self.list:

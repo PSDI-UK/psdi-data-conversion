@@ -42,14 +42,18 @@ gui-test = [
   "selenium",
   "webdriver_manager",
 ]
+doc = ["pdoc3"]
 
 [project.scripts]
 psdi-data-convert = "psdi_data_conversion.main:main"
 
 [project.urls]
 Homepage = "https://psdidev2.azurewebsites.net/"
+Documentation = "https://psdi-uk.github.io/psdi-data-conversion/"
 Repository = "https://github.com/PSDI-UK/psdi-data-conversion"
 Issues = "https://github.com/PSDI-UK/psdi-data-conversion/issues"
+Changelog = "https://github.com/PSDI-UK/psdi-data-conversion/blob/main/CHANGELOG.md"
+Download = "https://github.com/PSDI-UK/psdi-data-conversion/releases/latest"
 
 # Hatch-specific configuration
 [tool.hatch]
@@ -59,7 +63,7 @@ version = { source = "vcs" } # Use version Git tags
 exclude = [
   ".github/**",
   "deploy/**",
-  "scripts/fetch-*",
+  "scripts/fetch-common-style.*",
   "scripts/make-index-html.sh",
   "Dockerfile",
   "requirements.txt",
@@ -81,7 +85,6 @@ branch = true
 omit = []
 
 [tool.coverage.paths]
-test_project = ["test_project"]
 tests = ["tests"]
 
 [tool.coverage.report]

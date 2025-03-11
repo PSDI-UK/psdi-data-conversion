@@ -35,10 +35,15 @@ This is the repository for the PSDI PF2 Chemistry File Format Conversion project
 
 ## Project Structure
 
-- `psdi_data_conversion`
+- `.github`
+  - `workflows`
+    - (Automated workflows for various tasks related to project maintenance)
+- `deploy`
+  - (Files used as part of the deployment to STFC infrastructure)
+- `psdi_data_conversion` (Primary source directory)
   - `bin`
     - (Precompiled binaries for running file format converters)
-  - `static`
+  - `static` (Static code and assets for the web app)
     - `content`
       - (HTML assets for the web app)
     - `downloads` (created by app.py if not extant)
@@ -55,9 +60,13 @@ This is the repository for the PSDI PF2 Chemistry File Format Conversion project
   - (Python packages, modules, and scripts)
 - `scripts`
   - (Scripts used for project maintenance)
+- `test_data`
+  - (Files used for testing the project)
 - `tests`
   - (Unit tests for the project)
-- `CONTRIBUTING.md` (Guidelines for contributors to the project)
+- `CHANGELOG.md` (Updates since initial public release)
+- `CONTRIBUTING.md` (Guidelines and information for contributors to the project)
+- `DOCKERFILE` (Dockerfile for image containerising PSDI's data conversion service)
 - `LICENSE` (Apache Licence version 2.0)
 - `pyproject.toml` (Python project metadata and settings)
 - `README.md` (This file)
@@ -73,7 +82,7 @@ Any local installation of this project requires Python 3.12 or greater. The best
 
 For Windows and MacOS: Download and run the installer for the latest version from the official site: https://www.python.org/downloads/
 
-For Linux systems, Python is most readily installed with your distributions package manager. For Ubuntu/Debian-based systems, this is `apt`, and the following series of commands can be used to install the latest version of Python compatible with your system:
+For Linux systems, Python is most readily installed with your distribution's package manager. For Ubuntu/Debian-based systems, this is `apt`, and the following series of commands can be used to install the latest version of Python compatible with your system:
 
 ```bash
 sudo apt update # Make sure the package manager has access to the latest versions of all packages
@@ -88,9 +97,13 @@ python --version
 python3 --version
 ```
 
-Usually `python` will be set up as an alias to python3, but if you already have an older version installed on your system, this might not be the case.
+Usually `python` will be set up as an alias to python3, but if you already have an older version installed on your system, this might not be the case. You may be able to set this behaviour up by installing the `python-is-python3` package:
 
-Also check that this installed Python's package manager, `pip`, on your system:
+```bash
+sudo apt install python-is-python3
+```
+
+Also check that this process installed Python's package manager, `pip`, on your system:
 
 ```bash
 pip --version
@@ -115,19 +128,26 @@ You can also install a newer version of Python if you wish by substituting "3.12
 
 This project depends on other projects available via pip, which will be installed automatically as required:
 
-Required for all installations:
+Required for all installations (`pip install .`):
 
 - `py`
 - `openbabel-wheel`
 
-Required to run the web app locally for a GUI experience:
+Required to run the web app locally for a GUI experience (`pip install .[gui]`):
 
 - `Flask`
 - `requests`
 
-Required to run unit tests:
+Required to run unit tests (`pip install .[test]`):
 
 - `pytest`
+- `coverage`
+
+Required to run unit tests on the web app (`pip install .[gui-test]`):
+
+- (all web app and test requirements listed above)
+- `selenium`
+- `webdriver_manager`
 
 In addition to the dependencies listed above, this project uses the assets made public by PSDI's common style project at https://github.com/PSDI-UK/psdi-common-style. The latest versions of these assets are copied to this project periodically (using the scripts in the `scripts` directory). In case a future release of these assets causes a breaking change in this project, the file `fetch-common-style.conf` can be modified to set a previous fixed version to download and use until this project is updated to work with the latest version of the assets.
 
@@ -143,15 +163,30 @@ pip install .
 
 executed from this project's directory. You can also replace the '.' in this command with the path to this project's directory to install it from elsewhere.
 
+Depending on your system, it may not be possible to install packages in this manner without creating a virtual environment to do so in. You can do this by first installing the `venv` module for Python3 with e.g.:
+
+```bash
+sudo apt install python3-venv # Or equivalent for your distribution
+```
+
+You can then create and activate a virtual environment with:
+
+```bash
+python -m venv .venv # ".venv" here can be replaced with any name you desire for the virtual environment
+source .venv/bin/activate
+```
+
+You should then be able to install this project. When you wish to deactivate the virtual environment, you can do so with the `deactivate` command.
+
 ### Execution
 
-Once installed, the command-line script `psdi-data-convert` will be made available, which can be called to either perform a data conversion or to get information about possible conversions or converters (the latter TODO). You can see the full options for it by calling:
+Once installed, the command-line script `psdi-data-convert` will be made available, which can be called to either perform a data conversion or to get information about possible conversions and converters. You can see the full options for it by calling:
 
 ```bash
 psdi-data-convert -h
 ```
 
-This script has two modes of execution: Data conversion, and requesting information on possible conversions.
+This script has two modes of execution: Data conversion, and requesting information on possible conversions and converters.
 
 #### Data Conversion
 
@@ -169,8 +204,10 @@ The full possible syntax for the script is:
 psdi-data-convert <input file 1> [<input file 2> <input file 3> ...] -t/--to <output format> [-f/--from <input file
 format>] [-i/--in <input file location>] [-o/--out <location for output files>] [-w/--with <converter>] [--delete-input]
 [--from-flags '<flags to be provided to the converter for reading input>'] [--to-flags '<flags to be provided to the
-converter for writing output>'] [--coord-gen <coordinate generation options] [--nc/--no-check] [-q/--quiet]
-[-g/--log-file <log file name] [--log-mode <mode>] [--log-level <level>]
+converter for writing output>'] [--from-options '<options to be provided to the converter for reading input>']
+[--to-options '<options to be provided to the converter for writing output>'] [--coord-gen <coordinate generation
+options] [-s/--strict] [--nc/--no-check] [-q/--quiet] [-g/--log-file <log file name] [--log-level <level>] [--log-mode
+<mode>]
 ```
 
 Call `psdi-data-convert -h` for details on each of these options.
@@ -183,7 +220,7 @@ The script can also be used to get information on possible conversions by provid
 psdi-data-convert -l
 ```
 
-Without any further arguments, the script will list converters available for use. More detailed information about a specific converter or conversion can be obtained through providing more information about the desired conversion.
+Without any further arguments, the script will list converters available for use and file formats supported by at least one converter. More detailed information about a specific converter or conversion can be obtained through providing more information.
 
 To get more information about a converter, call:
 
@@ -213,13 +250,7 @@ If an input format is provided, information on input flags and options accepted 
 
 ### Installation
 
-The CLA and Python library are installed together. This package is not yet available on PyPI, and so must be installed locally. This can be done most easily with:
-
-```bash
-pip install .
-```
-
-executed from this project's directory. You can also replace the '.' in this command with the path to this project's directory to install it from elsewhere.
+The CLA and Python library are installed together. See the [above instructions for installing the CLA](#installation), which will also install the Python library.
 
 ### Use
 
@@ -234,7 +265,6 @@ The most useful modules and functions within this package to know about are:
 - `psdi_data_conversion`
   - `converter`
     - `run_converter`
-    - `get_converter`
   - `constants`
   - `database`
 
@@ -252,27 +282,9 @@ For a simple conversion, this can be used via:
 run_converter(filename, to_format, name=name, data=data)
 ```
 
-Where `filename` is the name of the file to convert (either fully-qualified or relative to the current directory), `to_format` is the desired format to convert to (e.g. `"pdb"`), `name` is the name of the converter to use (default "Open Babel"), and `data` is a dict of any extra information required by the specific converter being used (default empty dict).
+Where `filename` is the name of the file to convert (either fully-qualified or relative to the current directory), `to_format` is the desired format to convert to (e.g. `"pdb"`), `name` is the name of the converter to use (default "Open Babel"), and `data` is a dict of any extra information required by the specific converter being used, such as flags for how to read/write input/output files (default empty dict).
 
 See the method's documentation via `help(run_converter)` after importing it for further details on usage.
-
-#### `get_converter`
-
-This method provides the class which will perform a file conversion. This method may be imported via:
-
-```python
-from psdi_data_conversion.converter import get_converter
-```
-
-This can be used to create and run a converter via e.g.:
-
-```python
-converter = get_converter(filename, to_format, name=name, data=data)
-...
-converter.run()
-```
-
-Note that the `run_converter` function includes support for converting zip and tar archives of files, while `get_converter().run()` can only handle files one at a time.
 
 #### `constants`
 
@@ -284,8 +296,9 @@ from psdi_data_conversion import constants
 
 Of the constants not defined in this package, the most notable are the names of available converters. Each converter has its own name defined in its module within the `psdi_data_conversion.converters` package (e.g. `psdi_data_conversion.converters.atomsk.CONVERTER_ATO`), and these are compiled within the `psdi_data_conversion.converter` module into:
 
-- `D_REGISTERED_CONVERTERS` - A dict which relates the names of converters to their classes
-- `L_REGISTERED_CONVERTERS` - A list of the names of converters
+- `D_SUPPORTED_CONVERTERS` - A dict which relates the names of all converters supported by this package to their classes
+- `D_REGISTERED_CONVERTERS` - As above, but limited to those converters which can be run on the current machine (e.g. a converter may require a precompiled binary which is only available for certain platforms, and hence it will be in the "supported" dict but not the "registered" dict)
+- `L_SUPPORTED_CONVERTERS`/`L_REGISTERED_CONVERTERS` - Lists of the names of supported/registered converters
 
 #### `database`
 
@@ -293,11 +306,15 @@ The `database` module provides classes and methods to interface with the databas
 
 - `get_converter_info` - This method takes the name of a converter and returns an object containing the general information about it stored in the database (note that this doesn't include file formats it can handle - use the `get_possible_formats` method for that)
 - `get_format_info` - This method takes the name of a file format (its extension) and returns an object containing the general information about it stored in the database
-- `get_degree_of_success` - This method takes the name of a converter, the name of an input file format (its extension), and the name of an output file format, and provides the degree of success for this conversion (`None` if not possible, otherwise a string describing it).
-- `get_possible_converters` - This method takes the names of an input and output file format, and returns a list of converters which can perform the desired conversion and their degree of success.
+- `get_degree_of_success` - This method takes the name of a converter, the name of an input file format (its extension), and the name of an output file format, and provides the degree of success for this conversion (`None` if not possible, otherwise a string describing it)
+- `get_possible_converters` - This method takes the names of an input and output file format, and returns a list of converters which can perform the desired conversion and their degree of success
 - `get_possible_formats` - This method takes the name of a converter and returns a list of input formats it can accept and a list of output formats it can produce. While it's usually a safe bet that a converter can handle any combination between these lists, it's best to make sure that it can with the `get_degree_of_success` method
 - `get_in_format_args` and `get_out_format_args` - These methods take the name of a converter and the name of an input/output file format, and return a list of info on flags accepted by the converter when using this format for input/output
 - `get_conversion_quality` - Provides information on the quality of a conversion from one format to another with a given converter. If conversion isn't possible, returns `None`. Otherwise returns a short string describing the quality of the conversion, a string providing information on possible issues with the conversion, and a dict providing details on property support between the input and output formats
+
+### Further information
+
+The code documentation for the Python library is published online at https://psdi-uk.github.io/psdi-data-conversion/. Information on modules, classes, and methods in the package can also be obtained through standard Python methods such as `help()` and `dir()`.
 
 ## Using the Online Conversion Service
 
@@ -313,11 +330,7 @@ Install the package and its requirements, including the optional requirements us
 pip install .'[gui]'
 ```
 
-To enable debug mode, if required, enter:
-
-```bash
-export FLASK_ENV=development
-```
+If your system does not allow installs in this manner, it may be necessary to set up a virtual environment. See the instructions in the [command-line application installation](#installation) section above for how to do that, and then try to install again once you've set one up and activated it.
 
 If you've cloned this repository, you can use the `run_local.sh` bash script to run the application. Otherwise (e.g. if you've installed from a wheel or PyPI), copy and paste the following into a script:
 
@@ -362,7 +375,7 @@ open -a "Google Chrome.app" --args --allow-file-access-from-files
 
 ## Extending Functionality
 
-The Python library and CLA are written to make it easy to extend the functionality of this package to use other file format converters. This can by downloading or cloning the project's source from it's GitHub Repository (https://github.com/PSDI-UK/psdi-data-conversion), editing the code to add your converter following the guidance in the "[Adding File Format Converters](https://github.com/PSDI-UK/psdi-data-conversion/blob/main/CONTRIBUTING.md#adding-file-format-converters)" section of CONTRIBUTING.md to integrate it with the Python code, and installing the modified package on your system via:
+The Python library and CLA are written to make it easy to extend the functionality of this package to use other file format converters. This can be done by downloading or cloning the project's source from it's GitHub Repository (https://github.com/PSDI-UK/psdi-data-conversion), editing the code to add your converter following the guidance in the "[Adding File Format Converters](https://github.com/PSDI-UK/psdi-data-conversion/blob/main/CONTRIBUTING.md#adding-file-format-converters)" section of CONTRIBUTING.md to integrate it with the Python code, and installing the modified package on your system via:
 
 ```bash
 pip install --editable .'[test]'
@@ -370,14 +383,25 @@ pip install --editable .'[test]'
 
 (This command uses the `--editable` option and optional `test` dependencies to ease the process of testing and debugging your changes.)
 
+Note that when adding a converter in this manner, information on its possible conversions will not be added to the database, and so these will not show up when you run the CLA with the `-l/--list` option. You will also need to add the `--nc/--no-check` option when running conversions to skip the database check that the conversion is allowed.
+
 ## Testing
 
-Install the package requirements locally (ideally within a virtual environment) and test with pytest by executing the following commands from this project's directory:
+To test the CLA and Python library, install the optional testing requirements locally (ideally within a virtual environment) and test with pytest by executing the following commands from this project's directory:
 
 ```bash
-source .venv/bin/activate # Create a venv first if necessary with `python -m venv .venv`
-pip install .'[gui,test]'
+pip install .'[test]'
 pytest
+```
+
+To test the local version of the web app, install the GUI testing requirements locally (which also include the standard GUI requirements and standard testing requirements), start the server, and test by executing the GUI test script:
+
+```bash
+pip install .'[gui-test]'
+./run_local.sh & # Start the server for the web app in the background
+cd tests/selenium
+./run.sh
+kill %1 # Stop the web server - it may have a different job ID. If you don't know the job ID, you can alternatively call "fg" to bring the job to the foreground, then type CTRL+c to stop it
 ```
 
 ## Contributors

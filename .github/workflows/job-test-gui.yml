@@ -1,6 +1,9 @@
-# This workflow will install the Firefox browser and python dependencies necessary for automated tests of the gui
+# Reusable workflow intended to be called as a job by other workflows
 
-name: Test GUI
+# Runs automated tests of the GUI using pytest and Selenium with a Firefox browser
+
+name: Job - Test GUI
+run-name: Test GUI
 
 on:
   workflow_call:
@@ -25,7 +28,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install .[gui,gui-test]
+          pip install .[gui-test]
       - name: Run Selenium tests
         run: |
           ./run_local.sh &
