@@ -1,16 +1,16 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: flask
+  name: data-conversion
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: flask
+      app: data-conversion
   template:
     metadata:
       labels:
-        app: flask
+        app: data-conversion
     spec:
       affinity:
         podAntiAffinity:
@@ -22,11 +22,11 @@ spec:
                 - key: app
                   operator: In
                   values:
-                  - flask
+                  - data-conversion
               topologyKey: "kubernetes.io/hostname"
       containers:
-      - name: flask
-        image: flask
+      - name: data-conversion
+        image: data-conversion
         volumeMounts:
         - mountPath: /tmp
           name: uploads
