@@ -14,3 +14,5 @@ jobs:
     uses: ./.github/workflows/job-open-pull-request.yml
     with:
       target: release
+      # Pass an empty string for args, which disables the default -d flag which creates the PR as a draft
+      args: 
