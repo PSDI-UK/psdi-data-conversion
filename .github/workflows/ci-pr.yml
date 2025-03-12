@@ -7,6 +7,16 @@ on:
   pull_request:
     types: ["opened", "edited", "reopened", "synchronize", "ready_for_review"]
     branches: ["main", "release"]
+    # No need to run tests for doc-only changes, maintenance code, or deployment code not covered by tests
+    paths-ignore:
+      - "**.md"
+      - "Dockerfile"
+      - "LICENSE"
+      - "**.txt"
+      - "startup.sh"
+      - "deploy/**"
+      - "scripts/fetch-common-style.*"
+      - "scripts/make-index-html.sh"
 
 jobs:
   test-python:
