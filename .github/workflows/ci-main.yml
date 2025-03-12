@@ -1,0 +1,14 @@
+# Workflow for continuous integration tasks triggered on pushes to main
+
+name: CI - Main
+run-name: CI - Main
+on:
+  workflow_dispatch:
+  push:
+    branches: ["main"]
+
+jobs:
+  test-python:
+    uses: ./.github/workflows/job-test-python.yml
+  test-gui:
+    uses: ./.github/workflows/job-test-gui.yml
