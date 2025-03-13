@@ -19,6 +19,9 @@ from psdi_data_conversion import constants as const
 from psdi_data_conversion.converter import run_converter
 from psdi_data_conversion.file_io import split_archive_ext
 
+# Envvar for the SHA of the latest commit
+SHA_EV = "SHA"
+
 # Key for the label given to the file uploaded in the web interface
 FILE_TO_UPLOAD_KEY = 'fileToUpload'
 
@@ -58,6 +61,11 @@ app = Flask(__name__)
 def get_last_sha() -> str:
     """Get the SHA of the last commit
     """
+
+    # First check if the SHA is provided through an environmental variable
+    ev_sha = os.environ.get(SHA_EV)
+    if ev_sha:
+        return ev_sha
 
     try:
         # This bash command calls `git log` to get info on the last commit, uses `head` to trim it to one line, then
