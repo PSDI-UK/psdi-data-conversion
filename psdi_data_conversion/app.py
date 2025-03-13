@@ -19,8 +19,14 @@ from psdi_data_conversion import constants as const
 from psdi_data_conversion.converter import run_converter
 from psdi_data_conversion.file_io import split_archive_ext
 
-# Envvar for the SHA of the latest commit
+# Env var for the SHA of the latest commit
 SHA_EV = "SHA"
+
+# Env var for whether this is running in service mode or locally
+SERVICE_MODE_EV = "SERVICE_MODE"
+
+# Env var for whether this is a production release or development
+PRODUCTION_EV = "PRODUCTION_MODE"
 
 # Key for the label given to the file uploaded in the web interface
 FILE_TO_UPLOAD_KEY = 'fileToUpload'
@@ -29,9 +35,11 @@ FILE_TO_UPLOAD_KEY = 'fileToUpload'
 dt = str(datetime.now())
 token = hashlib.md5(dt.encode('utf8')).hexdigest()
 
-# Check the authorisation envvar to see if we're checking auth
-service_mode_ev = os.environ.get(const.SERVICE_MODE_EV)
+# Get the service and production modes from their envvars
+service_mode_ev = os.environ.get(SERVICE_MODE_EV)
 service_mode = (service_mode_ev is not None) and (service_mode_ev.lower() == "true")
+production_mode_ev = os.environ.get(PRODUCTION_EV)
+production_mode = (production_mode_ev is not None) and (production_mode_ev.lower() == "true")
 
 # Get the logging mode and level from their envvars
 ev_log_mode = os.environ.get(const.LOG_MODE_EV)
@@ -97,6 +105,7 @@ def website():
     data = [{'token': token,
              'max_file_size': max_file_size,
              'service_mode': service_mode,
+             'production_mode': production_mode,
              'sha': get_last_sha()}]
     return render_template("index.htm", data=data)
 
