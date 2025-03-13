@@ -6,13 +6,6 @@ on:
   workflow_dispatch:
   push:
     branches: ["main"]
-    # No need to run for doc-only changes, maintenance code
-    paths-ignore:
-      - "**.md"
-      - "LICENSE"
-      - "**.txt"
-      - "scripts/fetch-common-style.*"
-      - "scripts/make-index-html.sh"
 
 jobs:
   test-python:
