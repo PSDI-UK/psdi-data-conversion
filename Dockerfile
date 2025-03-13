@@ -47,6 +47,10 @@ ENV LOG_MODE=full
 ARG SHA
 ENV SHA=$SHA
 
+# The PRODUCTION_MODE env var hides features from the GUI that are only useful to developers, such as the SHA of the
+# latest commit. Uncomment the following line or otherwise set this env var to enable production mode
+# ENV PRODUCTION_MODE=true
+
 # Set LOG_LEVEL to a desired level (e.g. "debug") to force all logging to be at that level. Leave blank for default
 # behaviour (INFO+ to user log, ERROR+ to server log and stdout)
 ENV LOG_LEVEL=debug
