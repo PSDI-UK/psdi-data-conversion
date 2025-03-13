@@ -135,3 +135,13 @@ select#dark-background option {
 [service-mode=False] .service-only {
   display: none;
 }
+
+/* We use the production-mode variable to control whether elements with the "prod-only" or "dev-only" class are shown
+*/
+[production-mode=True] .prod-only {
+  display: none;
+}
+
+[production-mode=False] .dev-only {
+  display: none;
+}
