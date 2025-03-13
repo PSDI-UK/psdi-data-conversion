@@ -26,7 +26,6 @@ jobs:
     with:
       # container_tag
       container_tag: ${{ github.sha }}
-
   # Deploy to Kubernetes Job
   # Requires an environment, which must reflect the target environment as defined in the
   # GitHub repository: https://github.com/PSDI-UK/psdi-data-conversion/settings/environments
