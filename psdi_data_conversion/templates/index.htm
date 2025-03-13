@@ -100,6 +100,9 @@
     const max_file_size = "{{item.max_file_size}}";
     const service_mode = "{{item.service_mode}}";
   </script>
+  <div class="secondary">
+    <div class="max-width-box">SHA: {{item.sha}}</div>
+  </div>
   {% endfor %}
   <script src="{{url_for('static', filename='/javascript/format.js')}}" type="module" language="JavaScript"></script>
 

@@ -65,7 +65,7 @@ def get_last_sha() -> str:
         cmd = "git log -n 1 | head -n 1 | gawk '{print($2)}'"
 
         out_bytes = run(cmd, shell=True, capture_output=True).stdout
-        out_str = str(out_bytes).strip()
+        out_str = str(out_bytes.decode()).strip()
 
     except Exception:
         print("ERROR: Could not determine SHA of most recent commit. Error was:\n" + traceback.format_exc(),
