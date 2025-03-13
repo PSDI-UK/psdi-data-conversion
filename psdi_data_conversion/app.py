@@ -9,6 +9,7 @@ import hashlib
 import os
 import json
 from datetime import datetime
+from subprocess import run
 import sys
 import traceback
 from flask import Flask, request, render_template, abort, Response
@@ -54,6 +55,26 @@ else:
 app = Flask(__name__)
 
 
+def get_last_sha() -> str:
+    """Get the SHA of the last commit
+    """
+
+    try:
+        # This bash command calls `git log` to get info on the last commit, uses `head` to trim it to one line, then
+        # uses `gawk` to get just the second word of this line, which is the SHA of this commit
+        cmd = "git log -n 1 | head -n 1 | gawk '{print($2)}'"
+
+        out_bytes = run(cmd, shell=True, capture_output=True).stdout
+        out_str = str(out_bytes.decode()).strip()
+
+    except Exception:
+        print("ERROR: Could not determine SHA of most recent commit. Error was:\n" + traceback.format_exc(),
+              file=sys.stderr)
+        out_str = "N/A"
+
+    return out_str
+
+
 @app.route('/')
 def website():
     """Return the web page along with the token
@@ -67,7 +88,8 @@ def website():
 
     data = [{'token': token,
              'max_file_size': max_file_size,
-             'service_mode': service_mode}]
+             'service_mode': service_mode,
+             'sha': get_last_sha()}]
     return render_template("index.htm", data=data)
 
 
