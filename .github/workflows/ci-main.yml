@@ -6,14 +6,11 @@ on:
   workflow_dispatch:
   push:
     branches: ["main"]
-    # No need to run tests for doc-only changes, maintenance code, or deployment code not covered by tests
+    # No need to run for doc-only changes, maintenance code
     paths-ignore:
       - "**.md"
-      - "Dockerfile"
       - "LICENSE"
       - "**.txt"
-      - "startup.sh"
-      - "deploy/**"
       - "scripts/fetch-common-style.*"
       - "scripts/make-index-html.sh"
 
@@ -23,13 +20,19 @@ jobs:
   test-gui:
     uses: ./.github/workflows/job-test-gui.yml
 
+  container-push:
+    uses: ./.github/workflows/job-container-push.yml
+    needs: [test-python, test-gui]
+    with:
+      # container_tag
+      container_tag: ${{ github.sha }}
   # Deploy to Kubernetes Job
   # Requires an environment, which must reflect the target environment as defined in the
   # GitHub repository: https://github.com/PSDI-UK/psdi-data-conversion/settings/environments
   # The downstream deploy job leverages on Environment specific secrets, which also must be defined
   # For the tag, we need something unique for each push, so we use the SHA of the latest commit
   deploy-stfc-dev-k8s:
-    needs: [test-python, test-gui]
+    needs: [container-push]
     uses: ./.github/workflows/job-deploy-k8s.yml # use the callable deploy job
     secrets: inherit # pass all secrets for the environment
     with:

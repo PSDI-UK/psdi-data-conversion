@@ -1,11 +1,10 @@
 # Reusable workflow intended to be called as a job by other workflows
 
 # This action does the following:
-# 1) Creates a new release containing the repository source code, and tagging the
-#    release with an appropriate version number, and publishing it on the Github project
-#    page
-# 2) Build a container image, tagging the release with an appropriate version number,
-#    and publishing it on the Github project page
+#
+# Creates a new release containing the repository source code, and tagging the
+# release with an appropriate version number, and publishing it on the Github project
+# page
 #
 # Notes:
 # - The version number is incremented every release as described in
@@ -19,18 +18,18 @@
 #   https://github.com/conventional-changelog/conventional-changelog/tree/master/packages/conventional-changelog-angular.
 #
 
-name: Job - Tag and push container
-run-name: Tag and push container
+name: Job - Tag
+run-name: Tag
 
 on:
   workflow_call:
     outputs:
       container_tag:
         description: "Container Tag"
-        value: ${{ jobs.tag-container-push.outputs.container_tag }}
+        value: ${{ jobs.tag.outputs.container_tag }}
     
 jobs:
-  tag-container-push:
+  tag:
     outputs:
       container_tag: ${{ steps.tag_version.outputs.new_tag }}
     runs-on: psdi-uk-runners
@@ -49,24 +48,3 @@ jobs:
           tag: ${{ steps.tag_version.outputs.new_tag }}
           name: Release ${{ steps.tag_version.outputs.new_tag }}
           body: ${{ steps.tag_version.outputs.changelog }}
-      - name: Setup docker auth
-        run: |
-          mkdir -p ~/.docker
-          cat <<EOF > ~/.docker/config.json
-          {
-            "auths": {
-              "ghcr.io": {
-                "auth": "$(echo -n "$GIT_USERNAME:$GIT_PASSWORD" | base64 -w0)"
-              }
-            }
-          }
-          EOF
-        env: # needed to authenticate to github and download the repo
-          GIT_USERNAME: ${{ github.actor }}
-          GIT_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
-      - name: Docker build API
-        env:
-          IMAGE_NAME: "ghcr.io/psdi-uk/psdi-data-conversion/data-conversion:${{ steps.tag_version.outputs.new_tag }}"
-        run: |
-          docker build -t $IMAGE_NAME .
-          docker push $IMAGE_NAME
