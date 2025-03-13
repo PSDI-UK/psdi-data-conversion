@@ -9,6 +9,7 @@ import {
     getInputFormats, getOutputFormats, getOutputFormatsForInputFormat,
     getInputFormatsForOutputFormat, getConverters, getConverterByName, getLevelChemInfo
 } from "./data.js";
+import { loadProductionMode } from "./common.js";
 
 var fromList = new Array(),
     toList = new Array(),
@@ -30,9 +31,13 @@ $(document).ready(function () {
     sessionStorage.setItem("token", token);
     sessionStorage.setItem("max_file_size", max_file_size);
     sessionStorage.setItem("service_mode", service_mode);
+    sessionStorage.setItem("production_mode", production_mode);
     sessionStorage.setItem("in_str", "");
     sessionStorage.setItem("out_str", "");
     sessionStorage.setItem("success", "");
+
+    // Set the production mode variable for this page so that only appropriate elements are shown
+    loadProductionMode();
 
     $("#fromList").click(populateConversionSuccess);
     $("#toList").click(populateConversionSuccess);
