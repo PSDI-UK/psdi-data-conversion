@@ -39,6 +39,6 @@ jobs:
         env:
           IMAGE_NAME: "ghcr.io/psdi-uk/psdi-data-conversion/data-conversion:${{ inputs.container_tag }}"
         run: |
-          SHA=`git log -n 1 | head -n 1 | gawk '{print($2)}'`
+          SHA=`git log -n 1 | head -n 1 | awk '{print($2)}'`
           docker build --build-arg SHA=$SHA -t $IMAGE_NAME .
           docker push $IMAGE_NAME
