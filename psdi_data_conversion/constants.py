@@ -37,7 +37,6 @@ import shutil
 CL_SCRIPT_NAME = "psdi-data-convert"
 
 # Environmental variables
-SERVICE_MODE_EV = "SERVICE_MODE"
 LOG_MODE_EV = "LOG_MODE"
 LOG_LEVEL_EV = "LOG_LEVEL"
 MAX_FILESIZE_EV = "MAX_FILESIZE"
