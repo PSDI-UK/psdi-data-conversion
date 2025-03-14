@@ -13,6 +13,24 @@ var token = "",
     toList = new Array(),
     formatList = new Array();
 
+const pageURL = new URL(window.location.toLocaleString());
+
+// If coming to this page from a local version of the app, warn if the user clicks a link in the header, which will
+// take them to another page on the public app
+const originUrlParam = pageURL.searchParams.get('origin');
+const localOrigin = (originUrlParam != null && originUrlParam.toLowerCase() == "local") ? true : false;
+let originAlertDisplayed = false;
+
+if (localOrigin) {
+    $("#psdi-header").click(function (e) {
+        if (originAlertDisplayed) return;
+        alert("WARNING: This is the online, public version of the app, which you arrived at from the local " +
+            "app. Press the back button on your browser to return to the local version, or click \"OK\" on this " +
+            "alert to continue to the public app.");
+        originAlertDisplayed = true;
+    });
+}
+
 // Set the service mode variable for this page so that only appropriate elements are shown
 loadServiceMode();
 
