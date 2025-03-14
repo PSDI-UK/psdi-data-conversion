@@ -329,24 +329,34 @@ function display(event) {
 
     if (selectedText == "conversion") {
         $("#in_out_formats").css({ display: "block" });
+        $("#message").css({ display: "inline" });
+
+        $("#userInput").css({ display: "block" });
+
         $("#formats").css({ display: "none" });
         $("#missing").css({ display: "none" });
-        $("#message").css({ display: "inline" });
+
         $("#message").html("Explain why the conversion is required and provide a link to appropriate documentation if possible [max 500 characters].");
         $("#message1").html("The displayed 'from' and 'to' formats will be automatically submitted with your message.");
-        $("#userInput").css({ display: "block" });
     }
     else if (selectedText == "format") {
         $("#formats").css({ display: "block" });
-        $("#in_out_formats").css({ display: "none" });
         $("#missing").css({ display: "block" });
-        $("#message").css({ display: "none" });
-        $("#message1").html("Enter details of the file conversions expected for this format and provide a link to appropriate documentation if possible [max 500 characters].");
+
         $("#userInput").css({ display: "block" });
+
+        $("#in_out_formats").css({ display: "none" });
+        $("#message").css({ display: "none" });
+
+        $("#message1").html("Enter details of the file conversions expected for this format and provide a link to appropriate documentation if possible [max 500 characters].");
     }
     else {
+        $("#in_out_formats").css({ display: "none" });
+        $("#message").css({ display: "none" });
+
         $("#formats").css({ display: "none" });
         $("#missing").css({ display: "none" });
+
         $("#userInput").css({ display: "none" });
     }
 }
