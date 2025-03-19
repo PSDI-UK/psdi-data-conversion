@@ -30,6 +30,12 @@ class ConversionTestInfo:
     caught_exception: Exception | None = None
     """If the test conversion raised an exception, that exception, otherwise None"""
 
+    captured_stdout: str | None = None
+    """If the test was run through the CLA, any output to stdout, otherwise None"""
+
+    captured_stderr: str | None = None
+    """If the test was run through the CLA, any output to stderr, otherwise None"""
+
     conversion_kwargs: dict[str | Any] = field(default_factory=dict)
     """Any keyword arguments provided to the call to `run_converter`, aside from those listed above"""
 
