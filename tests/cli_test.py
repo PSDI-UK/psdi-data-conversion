@@ -23,6 +23,7 @@ from psdi_data_conversion.dist import LINUX_LABEL, get_dist
 from psdi_data_conversion.file_io import unpack_zip_or_tar
 from psdi_data_conversion.log_utility import string_with_placeholders_matches
 from psdi_data_conversion.main import FileConverterInputException, main, parse_args
+from psdi_data_conversion.testing.constants import INPUT_TEST_DATA_LOC, OUTPUT_TEST_DATA_LOC
 
 
 def test_unique_args():
@@ -302,7 +303,7 @@ def test_conversion_info(capsys):
         assert string_is_present_in_out(f"{option_info.flag}<{option_info.brief}>{option_info.description}{info}")
 
 
-def test_convert(tmp_path_factory, capsys, test_data_loc):
+def test_convert(tmp_path_factory, capsys):
     """Test running file conversions
     """
     input_dir = tmp_path_factory.mktemp("input")
@@ -317,7 +318,7 @@ def test_convert(tmp_path_factory, capsys, test_data_loc):
     output_filename = f"{test_filename_base}.{to_format}"
 
     # Symlink the input file from the test_data directory to the input directory
-    os.symlink(os.path.join(test_data_loc, input_filename),
+    os.symlink(os.path.join(INPUT_TEST_DATA_LOC, input_filename),
                os.path.join(input_dir, input_filename))
 
     # Run a basic conversion
@@ -341,7 +342,7 @@ def test_convert(tmp_path_factory, capsys, test_data_loc):
 
     # Test a call we expect to fail due to unsupported conversion
     test_pdb_file = "hemoglobin.pdb"
-    os.symlink(os.path.join(test_data_loc, test_pdb_file),
+    os.symlink(os.path.join(INPUT_TEST_DATA_LOC, test_pdb_file),
                os.path.join(input_dir, test_pdb_file))
     run_with_arg_string(f"{test_pdb_file} -t pdb -i {input_dir} -o {output_dir}")
     captured = capsys.readouterr()
@@ -367,7 +368,7 @@ def test_convert(tmp_path_factory, capsys, test_data_loc):
     assert "ERROR" not in captured.err
 
 
-def test_archive_convert(tmp_path_factory, capsys, test_data_loc):
+def test_archive_convert(tmp_path_factory, capsys):
     """Test running conversion on archives of files
     """
 
@@ -391,7 +392,7 @@ def test_archive_convert(tmp_path_factory, capsys, test_data_loc):
         output_dir = tmp_path_factory.mktemp("output")
 
         # Symlink the input file from the test_data directory to the input directory
-        os.symlink(os.path.join(test_data_loc, input_filename),
+        os.symlink(os.path.join(INPUT_TEST_DATA_LOC, input_filename),
                    os.path.join(input_dir, input_filename))
 
         # Run the conversion
@@ -463,7 +464,7 @@ def check_numerical_text_match(text: str, ex_text: str, fail_msg: str | None = N
             assert word == ex_word, fail_msg
 
 
-def test_format_args(tmp_path_factory, test_data_loc):
+def test_format_args(tmp_path_factory):
     """Test that format flags and options are processed correctly and results in the right conversions
     """
     input_dir = tmp_path_factory.mktemp("input")
@@ -478,7 +479,7 @@ def test_format_args(tmp_path_factory, test_data_loc):
     output_filename = f"{test_filename_base}.{to_format}"
 
     # Symlink the input file from the test_data directory to the input directory
-    os.symlink(os.path.join(test_data_loc, input_filename),
+    os.symlink(os.path.join(INPUT_TEST_DATA_LOC, input_filename),
                os.path.join(input_dir, input_filename))
 
     basic_arg_string = f"{input_filename} -t {to_format} -i {input_dir} -o {output_dir}"
@@ -511,11 +512,11 @@ def test_format_args(tmp_path_factory, test_data_loc):
 
         # Check that the contents of this file match what's expected
         check_numerical_text_match(text=open(ex_output_file, "r").read(),
-                                   ex_text=open(os.path.join(test_data_loc, ex_file), "r").read(),
+                                   ex_text=open(os.path.join(OUTPUT_TEST_DATA_LOC, ex_file), "r").read(),
                                    fail_msg=f"Format flag test failed for {ex_file}")
 
 
-def test_coord_gen(tmp_path_factory, test_data_loc):
+def test_coord_gen(tmp_path_factory):
     """Test that Open Babel's unique --coord-gen option is processed correctly and results in the right conversions
     """
     input_dir = tmp_path_factory.mktemp("input")
@@ -530,7 +531,7 @@ def test_coord_gen(tmp_path_factory, test_data_loc):
     output_filename = f"{test_filename_base}.{to_format}"
 
     # Symlink the input file from the test_data directory to the input directory
-    os.symlink(os.path.join(test_data_loc, input_filename),
+    os.symlink(os.path.join(INPUT_TEST_DATA_LOC, input_filename),
                os.path.join(input_dir, input_filename))
 
     basic_arg_string = f"{input_filename} -t {to_format} -i {input_dir} -o {output_dir}"
@@ -553,5 +554,5 @@ def test_coord_gen(tmp_path_factory, test_data_loc):
 
         # Check that the contents of this file match what's expected
         check_numerical_text_match(text=open(ex_output_file, "r").read(),
-                                   ex_text=open(os.path.join(test_data_loc, ex_file), "r").read(),
+                                   ex_text=open(os.path.join(OUTPUT_TEST_DATA_LOC, ex_file), "r").read(),
                                    fail_msg=f"Coord Gen test failed for {ex_file}")

@@ -21,6 +21,7 @@ from psdi_data_conversion.converters.c2x import CONVERTER_C2X
 from psdi_data_conversion.converters.openbabel import CONVERTER_OB, OBFileConverter
 from psdi_data_conversion.file_io import split_archive_ext
 from psdi_data_conversion.main import FileConverterInputException
+from psdi_data_conversion.testing.constants import INPUT_TEST_DATA_LOC
 
 
 @pytest.fixture()
@@ -77,7 +78,7 @@ def test_default():
 class TestConverter:
 
     @pytest.fixture(autouse=True)
-    def setup_test(self, base_mock_data, base_input, tmp_upload_path, tmp_download_path, test_data_loc):
+    def setup_test(self, base_mock_data, base_input, tmp_upload_path, tmp_download_path):
         """Reset global aspects before a test, so that different tests won't interfere with each other,
         and save references to fixtures.
         """
@@ -90,9 +91,6 @@ class TestConverter:
 
         # Clear any existing loggers so new ones will be created fresh
         logging.Logger.manager.loggerDict.clear()
-
-        # Save test data location
-        self.test_data_loc = test_data_loc
 
         # Save fixtures
         self.base_mock_data = base_mock_data
@@ -122,7 +120,7 @@ class TestConverter:
 
         # Save some variables from input we'll be using throughout this test
         self.local_filename = filename
-        self.source_filename = os.path.join(self.test_data_loc, filename)
+        self.source_filename = os.path.join(INPUT_TEST_DATA_LOC, filename)
         self.filename_base = split_archive_ext(filename)[0]
         self.to_format = self.input["to_format"]
 

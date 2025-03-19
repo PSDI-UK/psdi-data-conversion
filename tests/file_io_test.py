@@ -13,6 +13,7 @@ import pytest
 from psdi_data_conversion.file_io import (is_archive, is_supported_archive, pack_zip_or_tar, split_archive_ext,
                                           unpack_zip_or_tar)
 from psdi_data_conversion import constants as const
+from psdi_data_conversion.testing.constants import INPUT_TEST_DATA_LOC
 
 # Archive files prepared in the test data directory to be used for testing
 ARCHIVE_FILENAME_TAR = "caffeine-smi.tar"
@@ -53,7 +54,7 @@ def test_split_archive_ext():
         assert split_archive_ext(filename) == (base, ext)
 
 
-def test_archive(test_data_loc, tmp_path_factory):
+def test_archive(tmp_path_factory):
     """Test that archives can successfully be unpacked
     """
 
@@ -63,7 +64,7 @@ def test_archive(test_data_loc, tmp_path_factory):
         extract_dir = tmp_path_factory.mktemp("unpack-test")
 
         # Check that we can extract each archive without error
-        qual_archive_filename = os.path.join(test_data_loc, archive_filename)
+        qual_archive_filename = os.path.join(INPUT_TEST_DATA_LOC, archive_filename)
 
         l_qualified_filenames = unpack_zip_or_tar(qual_archive_filename, extract_dir=extract_dir)
 
