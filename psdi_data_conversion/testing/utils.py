@@ -27,6 +27,9 @@ class ConversionTestInfo:
     name: str
     """The name of the converter to used for the test"""
 
+    success: bool = True
+    """Whether or not the conversion was successful"""
+
     caught_exception: Exception | None = None
     """If the test conversion raised an exception, that exception, otherwise None"""
 
