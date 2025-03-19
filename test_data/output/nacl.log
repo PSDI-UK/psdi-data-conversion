@@ -1,0 +1,16 @@
+[2025-03-03 13:54:36] WARNING [data-conversion.__init__:350] :
+Potential data loss or extrapolation issues with the conversion from cif to mol:
+- Potential data extrapolation: 2D atomic coordinates are represented in the output format but its representation in the input format is unknown
+- Potential data extrapolation: 2D atomic coordinates are represented in the output format but its representation in the input format is unknown
+- Potential data extrapolation: Atomic composition is represented in the output format but its representation in the input format is unknown
+- Potential data extrapolation: Atomic connections are represented in the output format but its representation in the input format is unknown
+
+[2025-03-03 13:54:36] INFO [data-conversion._log_success:576] :
+File name:         nacl
+From:              cif
+To:                mol
+Converter:         c2x
+Quality:           unknown
+Success:           Assuming that the data provided was of the correct format, the conversion
+                   was successful (to the best of our knowledge) subject to any warnings below.
+
