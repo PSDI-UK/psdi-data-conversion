@@ -1,7 +1,7 @@
 """
-# conversion_test_spec.py
+# utils.py
 
-This module defines a class to provide a specification for a test conversion to be run.
+This module defines general classes and methods used for unit tests.
 """
 
 from __future__ import annotations
