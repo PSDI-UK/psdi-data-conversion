@@ -30,15 +30,6 @@ class ConversionTestInfo:
     success: bool = True
     """Whether or not the conversion was successful"""
 
-    caught_exception: Exception | None = None
-    """If the test conversion raised an exception, that exception, otherwise None"""
-
-    captured_stdout: str | None = None
-    """If the test was run through the CLA, any output to stdout, otherwise None"""
-
-    captured_stderr: str | None = None
-    """If the test was run through the CLA, any output to stderr, otherwise None"""
-
     conversion_kwargs: dict[str | Any] = field(default_factory=dict)
     """Any keyword arguments provided to the call to `run_converter`, aside from those listed above"""
 
@@ -56,6 +47,34 @@ class ConversionTestInfo:
     def log_filename(self) -> str:
         """The unqualified name of the log file which should have been created by the conversion."""
         return f"{os.path.splitext(self.filename)[0]}.{LOG_EXT}"
+
+
+@dataclass
+class LibraryConversionTestInfo(ConversionTestInfo):
+    """Information about a tested conversion, specifically for when it was tested through a call to the library"""
+
+    caught_exception: Exception | None = None
+    """If the test conversion raised an exception, that exception, otherwise None"""
+
+
+@dataclass
+class CLAConversionTestInfo(ConversionTestInfo):
+    """Information about a tested conversion, specifically for when it was tested through a the command-line
+    application (CLA)
+    """
+
+    captured_stdout: str | None = None
+    """If the test was run through the CLA, any output to stdout, otherwise None"""
+
+    captured_stderr: str | None = None
+    """If the test was run through the CLA, any output to stderr, otherwise None"""
+
+
+@dataclass
+class GUIConversionTestInfo(ConversionTestInfo):
+    """Information about a tested conversion, specifically for when it was tested through the GUI (the local version of
+    the web app)
+    """
 
 
 @dataclass
