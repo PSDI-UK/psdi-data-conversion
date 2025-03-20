@@ -163,8 +163,7 @@ class ConversionTestSpec:
         """Allow to iterate over the class, getting a `SingleConversionTestSpec` for each value
         """
         l_l_attr_vals = zip(*[getattr(self, attr_name) for attr_name in self._l_attr_names])
-        while True:
-            l_attr_vals = next(l_l_attr_vals)
+        for l_attr_vals in l_l_attr_vals:
             yield _SingleConversionTestSpec(**dict(zip(self._l_attr_names, l_attr_vals)))
 
 
