@@ -11,6 +11,7 @@ import math
 import os
 import re
 import shutil
+from typing import Any
 import pytest
 
 from psdi_data_conversion import constants as const
@@ -25,7 +26,7 @@ from psdi_data_conversion.testing.constants import INPUT_TEST_DATA_LOC
 
 
 @pytest.fixture()
-def base_mock_data():
+def base_data():
     """A fixture providing a default `data` object which can be used to instantiate a converter
     """
     return {'token': '1041c0a661d118d5f28e7c6830375dd0',
@@ -78,7 +79,7 @@ def test_default():
 class TestConverter:
 
     @pytest.fixture(autouse=True)
-    def setup_test(self, base_mock_data, base_input, tmp_upload_path, tmp_download_path):
+    def setup_test(self, base_data: dict[str, Any], base_input: dict[str, Any]) -> None:
         """Reset global aspects before a test, so that different tests won't interfere with each other,
         and save references to fixtures.
         """
@@ -93,65 +94,20 @@ class TestConverter:
         logging.Logger.manager.loggerDict.clear()
 
         # Save fixtures
-        self.base_mock_data = base_mock_data
+        self.base_data = base_data
         self.base_input = base_input
-        self.tmp_upload_path = tmp_upload_path
-        self.tmp_download_path = tmp_download_path
 
-    def get_input_info(self, filename: str, **kwargs,):
-        """Sets up a mock `data` for input and gets various variables we'll want to use for checks on output
-
-        Parameters
-        ----------
-        filename : str
-            The name of the file to use as input for the test
-        """
-
-        self.mock_data = deepcopy(self.base_mock_data)
-        self.input = deepcopy(self.base_input)
-
-        for key, value in kwargs.items():
-            if key in self.mock_data:
-                self.mock_data[key] = value
-            elif key in self.input:
-                self.input[key] = value
-            else:
-                raise RuntimeError(f"Invalid key {key} provided for data or input")
-
-        # Save some variables from input we'll be using throughout this test
-        self.local_filename = filename
-        self.source_filename = os.path.join(INPUT_TEST_DATA_LOC, filename)
-        self.filename_base = split_archive_ext(filename)[0]
-        self.to_format = self.input["to_format"]
-
-    def get_converter_kwargs(self, **kwargs):
+    def get_converter_kwargs(self,
+                             data: dict | None = None,
+                             **kwargs):
         """Get the keyword arguments to be passed to a FileConverter for testing
         """
-        standard_kwargs = {"filename": self.source_filename,
-                           "data": self.mock_data,
-                           "upload_dir": self.tmp_upload_path,
-                           "download_dir": self.tmp_download_path}
-        standard_kwargs.update(self.input)
+        combined_data = deepcopy(self.base_data)
+        if data:
+            combined_data.update(data)
+        standard_kwargs: dict[str, Any] = {"data": combined_data}
         standard_kwargs.update(kwargs)
         return standard_kwargs
-
-    def run_converter(self, expect_exception=None, expect_code=None, **kwargs):
-        """Runs a test on a file converter and checks that it returns successfully or else fails with an expected error
-        code.
-        """
-
-        converter_kwargs = self.get_converter_kwargs(**kwargs)
-
-        if expect_exception is None and expect_code is None:
-            # If we don't expect an error, just try running the converter
-            run_converter(**converter_kwargs)
-        elif expect_exception is not None:
-            with pytest.raises(expect_exception) as esc_info:
-                run_converter(**converter_kwargs)
-        else:
-            with pytest.raises(FileConverterAbortException) as esc_info:
-                run_converter(**converter_kwargs)
-            assert esc_info.value.status_code == expect_code
 
     def check_file_status(self, input_exist=None, output_exist=None):
         """Common check for unit tests on whether the input/output files from a conversion exist or not
