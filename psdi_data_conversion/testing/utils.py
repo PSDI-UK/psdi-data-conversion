@@ -9,52 +9,38 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from collections.abc import Callable, Iterable
 import os
+from tempfile import TemporaryDirectory
 from typing import Any
 
+import pytest
+
 from psdi_data_conversion.constants import CONVERTER_DEFAULT, LOG_EXT
+from psdi_data_conversion.converter import run_converter
 
 
 @dataclass
 class ConversionTestInfo:
     """Information about a tested conversion."""
 
-    test_spec: ConversionTestSpec
+    test_spec: SingleConversionTestSpec
     """The specification of the test conversion which was run to produce this"""
 
-    to_format: str
-    """The format the input file was tested to be converted to"""
+    input_dir: str
+    """The directory used to store input data for the test"""
 
-    name: str
-    """The name of the converter to used for the test"""
+    output_dir: str
+    """The directory used to create output data in for the test"""
 
     success: bool = True
     """Whether or not the conversion was successful"""
-
-    conversion_kwargs: dict[str | Any] = field(default_factory=dict)
-    """Any keyword arguments provided to the call to `run_converter`, aside from those listed above"""
-
-    def __post_init__(self):
-        """Set some properties from the test spec.
-        """
-        self.filename = self.test_spec.filename
-
-    @property
-    def out_filename(self) -> str:
-        """The unqualified name of the output file which should have been created by the conversion."""
-        return f"{os.path.splitext(self.filename)[0]}.{self.to_format}"
-
-    @property
-    def log_filename(self) -> str:
-        """The unqualified name of the log file which should have been created by the conversion."""
-        return f"{os.path.splitext(self.filename)[0]}.{LOG_EXT}"
 
 
 @dataclass
 class LibraryConversionTestInfo(ConversionTestInfo):
     """Information about a tested conversion, specifically for when it was tested through a call to the library"""
 
-    caught_exception: Exception | None = None
-    """If the test conversion raised an exception, that exception, otherwise None"""
+    exc_info: pytest.ExceptionInfo | None = None
+    """If the test conversion raised an exception, that exception's info, otherwise None"""
 
 
 @dataclass
@@ -107,6 +93,16 @@ class ConversionTestSpec:
     """Function to be called after the conversion is performed to check in detail whether results are as expected. It
     should take as its only argument a `ConversionTestInfo` and return a string. The string should be empty if the check
     is passed and should explain the failure otherwise."""
+
+    @property
+    def out_filename(self) -> str:
+        """The unqualified name of the output file which should have been created by the conversion."""
+        return f"{os.path.splitext(self.filename)[0]}.{self.to_format}"
+
+    @property
+    def log_filename(self) -> str:
+        """The unqualified name of the log file which should have been created by the conversion."""
+        return f"{os.path.splitext(self.filename)[0]}.{LOG_EXT}"
 
     def __post_init__(self):
         """Regularize the lengths of all attribute lists, in case some were provided as single values and others as
@@ -164,11 +160,11 @@ class ConversionTestSpec:
         """
         l_l_attr_vals = zip(*[getattr(self, attr_name) for attr_name in self._l_attr_names])
         for l_attr_vals in l_l_attr_vals:
-            yield _SingleConversionTestSpec(**dict(zip(self._l_attr_names, l_attr_vals)))
+            yield SingleConversionTestSpec(**dict(zip(self._l_attr_names, l_attr_vals)))
 
 
 @dataclass
-class _SingleConversionTestSpec:
+class SingleConversionTestSpec:
     """Class providing a specification for a single test file conversion, produced by iterating over a
     `ConversionTestSpec` object
     """
@@ -202,18 +198,43 @@ def run_test_conversion_with_library(test_spec: ConversionTestSpec):
     test_spec : ConversionTestSpec
         The specification for the test or series of tests to be run
     """
+    # Make temporary directories for the input and output files to be stored in
+    with TemporaryDirectory("input") as input_dir, TemporaryDirectory("output") as output_dir:
+        # Iterate over the test spec to run each individual test it defines
+        for single_test_spec in test_spec:
+            _run_single_test_conversion_with_library(single_test_spec)
 
-    # Iterate over the test spec to run each individual test it defines
-    for single_test_spec in test_spec:
-        _run_single_test_conversion_with_library(single_test_spec)
 
-
-def _run_single_test_conversion_with_library(single_test_spec: _SingleConversionTestSpec):
+def _run_single_test_conversion_with_library(single_test_spec: SingleConversionTestSpec,
+                                             input_dir: str,
+                                             output_dir: str):
     """Runs a single test conversion through a call to the python library's `run_converter` function.
 
     Parameters
     ----------
     single_test_spec : _SingleConversionTestSpec
         The specification for the test to be run
+    input_dir : str
+        A directory which can be used to store input data
+    output_dir : str
+        A directory which can be used to create output data
     """
-    pass
+
+    exc_info: pytest.ExceptionInfo | None = None
+    if single_test_spec.expect_success:
+        run_converter(**converter_kwargs)
+        success = True
+    else:
+        with pytest.raises(Exception) as exc_info:
+            run_converter(**converter_kwargs)
+        success = False
+
+    # Compile output info for the test and call the callback function if one is provided
+    if single_test_spec.post_conversion_callback:
+        test_info = LibraryConversionTestInfo(test_spec=single_test_spec,
+                                              input_dir=input_dir,
+                                              output_dir=output_dir,
+                                              success=success,
+                                              exc_info=exc_info)
+        callback_msg = single_test_spec.post_conversion_callback(test_info)
+        assert not callback_msg, callback_msg
