@@ -179,7 +179,8 @@ class SingleConversionTestSpec:
     """The name of the converter to be used for the test"""
 
     conversion_kwargs: dict[str, Any] = field(default_factory=dict)
-    """Any keyword arguments to be provided to the call to `run_converter`, aside from those listed above"""
+    """Any keyword arguments to be provided to the call to `run_converter`, aside from those listed above and
+    `upload_dir` and `download_dir` (for which temporary directories are used)"""
 
     expect_success: bool = True
     """Whether or not to expect the test to succeed"""
@@ -205,14 +206,14 @@ def run_test_conversion_with_library(test_spec: ConversionTestSpec):
             _run_single_test_conversion_with_library(single_test_spec)
 
 
-def _run_single_test_conversion_with_library(single_test_spec: SingleConversionTestSpec,
+def _run_single_test_conversion_with_library(test_spec: SingleConversionTestSpec,
                                              input_dir: str,
                                              output_dir: str):
     """Runs a single test conversion through a call to the python library's `run_converter` function.
 
     Parameters
     ----------
-    single_test_spec : _SingleConversionTestSpec
+    test_spec : _SingleConversionTestSpec
         The specification for the test to be run
     input_dir : str
         A directory which can be used to store input data
@@ -221,20 +222,30 @@ def _run_single_test_conversion_with_library(single_test_spec: SingleConversionT
     """
 
     exc_info: pytest.ExceptionInfo | None = None
-    if single_test_spec.expect_success:
-        run_converter(**converter_kwargs)
+    if test_spec.expect_success:
+        run_converter(filename=test_spec.filename,
+                      to_format=test_spec.to_format,
+                      name=test_spec.name,
+                      upload_dir=input_dir,
+                      download_dir=output_dir,
+                      **test_spec.conversion_kwargs)
         success = True
     else:
         with pytest.raises(Exception) as exc_info:
-            run_converter(**converter_kwargs)
+            run_converter(filename=test_spec.filename,
+                          to_format=test_spec.to_format,
+                          name=test_spec.name,
+                          upload_dir=input_dir,
+                          download_dir=output_dir,
+                          **test_spec.conversion_kwargs)
         success = False
 
     # Compile output info for the test and call the callback function if one is provided
-    if single_test_spec.post_conversion_callback:
-        test_info = LibraryConversionTestInfo(test_spec=single_test_spec,
+    if test_spec.post_conversion_callback:
+        test_info = LibraryConversionTestInfo(test_spec=test_spec,
                                               input_dir=input_dir,
                                               output_dir=output_dir,
                                               success=success,
                                               exc_info=exc_info)
-        callback_msg = single_test_spec.post_conversion_callback(test_info)
+        callback_msg = test_spec.post_conversion_callback(test_info)
         assert not callback_msg, callback_msg
