@@ -76,26 +76,6 @@ class ConversionTestSpec:
     """Any keyword arguments to be provided to the call to `run_converter`, aside from those listed above, or a list
     thereof"""
 
-    test_all_combinations: bool = False
-    """When more than one of `to_format`, `name`, and `conversion_kwargs` is provided as a list, the default behaviour
-    (when this is set to False) is to zip through the lists, e.g.:
-    
-    ```
-    to_format = ["pdb", "mmcif"]
-    name = ["Open Babel", "c2x"]
-    ```
-    
-    will run one test of converting to "pdb" with the "Open Babel" converter, and one test of converting to "mmcif" with
-    the "c2x" converter.
-
-    When this is set to True, instead all possibilities between the lists will be tested, so the above will run four
-    test conversions:
-    - Converting to "pdb" with "Open Babel"
-    - Converting to "pdb" with "c2x"
-    - Converting to "mmcif" with "Open Babel"
-    - Converting to "mmcif" with "c2x"
-    """
-
     expect_success: bool = True
     """Whether or not to expect the test to succeed"""
 
