@@ -34,6 +34,21 @@ class ConversionTestInfo:
     success: bool = True
     """Whether or not the conversion was successful"""
 
+    @property
+    def qualified_in_filename(self):
+        """Get the fully-qualified name of the input file"""
+        return os.path.join(self.input_dir, self.test_spec.filename)
+
+    @property
+    def qualified_out_filename(self):
+        """Get the fully-qualified name of the output file"""
+        return os.path.join(self.output_dir, self.test_spec.out_filename)
+
+    @property
+    def qualified_log_filename(self):
+        """Get the fully-qualified name of the log file"""
+        return os.path.join(self.output_dir, self.test_spec.log_filename)
+
 
 @dataclass
 class LibraryConversionTestInfo(ConversionTestInfo):
@@ -93,16 +108,6 @@ class ConversionTestSpec:
     """Function to be called after the conversion is performed to check in detail whether results are as expected. It
     should take as its only argument a `ConversionTestInfo` and return a string. The string should be empty if the check
     is passed and should explain the failure otherwise."""
-
-    @property
-    def out_filename(self) -> str:
-        """The unqualified name of the output file which should have been created by the conversion."""
-        return f"{os.path.splitext(self.filename)[0]}.{self.to_format}"
-
-    @property
-    def log_filename(self) -> str:
-        """The unqualified name of the log file which should have been created by the conversion."""
-        return f"{os.path.splitext(self.filename)[0]}.{LOG_EXT}"
 
     def __post_init__(self):
         """Regularize the lengths of all attribute lists, in case some were provided as single values and others as
@@ -189,6 +194,16 @@ class SingleConversionTestSpec:
     """Function to be called after the conversion is performed to check in detail whether results are as expected. It
     should take as its only argument a `ConversionTestInfo` and return a string. The string should be empty if the check
     is passed and should explain the failure otherwise."""
+
+    @property
+    def out_filename(self) -> str:
+        """The unqualified name of the output file which should have been created by the conversion."""
+        return f"{os.path.splitext(self.filename)[0]}.{self.to_format}"
+
+    @property
+    def log_filename(self) -> str:
+        """The unqualified name of the log file which should have been created by the conversion."""
+        return f"{os.path.splitext(self.filename)[0]}.{LOG_EXT}"
 
 
 def run_test_conversion_with_library(test_spec: ConversionTestSpec):
