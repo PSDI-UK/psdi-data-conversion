@@ -23,6 +23,8 @@ from psdi_data_conversion.converters.openbabel import CONVERTER_OB, OBFileConver
 from psdi_data_conversion.file_io import split_archive_ext
 from psdi_data_conversion.main import FileConverterInputException
 from psdi_data_conversion.testing.constants import INPUT_TEST_DATA_LOC
+from psdi_data_conversion.testing.utils import run_test_conversion_with_library
+from psdi_data_conversion.testing import conversion_test_specs as specs
 
 
 @pytest.fixture()
@@ -152,6 +154,12 @@ class TestConverter:
             except FileNotFoundError:
                 log_text = ""
             setattr(self, f"{log_type}_log_text", log_text)
+
+    def test_basic_conversions(self):
+        """Run a basic set of conversions with various converters and file formats which we expect to succeed without
+        issue.
+        """
+        run_test_conversion_with_library(specs.basic_tests)
 
     def test_mmcif_to_pdb(self):
         """Run a test of the converter on a straightforward `.mmcif` to `.pdb` conversion
