@@ -9,7 +9,7 @@ application, and GUI.
 from psdi_data_conversion.converters.atomsk import CONVERTER_ATO
 from psdi_data_conversion.converters.c2x import CONVERTER_C2X
 from psdi_data_conversion.converters.openbabel import CONVERTER_OB
-from psdi_data_conversion.testing.conversion_callbacks import CheckOutputStatus
+from psdi_data_conversion.testing.conversion_callbacks import CheckLogContents, CheckOutputStatus, MultiCallback
 from psdi_data_conversion.testing.utils import ConversionTestSpec
 
 default_ob_data = {"coordinates": "neither",
@@ -28,4 +28,6 @@ basic_tests = ConversionTestSpec(filename=["1NE6.mmcif", "standard_test.cdxml",
                                  conversion_kwargs=[{"data": default_ob_data}, {"data": default_ob_data},
                                                     {}, {},
                                                     {}, {},],
-                                 post_conversion_callback=CheckOutputStatus())
+                                 post_conversion_callback=MultiCallback([CheckOutputStatus(),
+                                                                         CheckLogContents()])
+                                 )
