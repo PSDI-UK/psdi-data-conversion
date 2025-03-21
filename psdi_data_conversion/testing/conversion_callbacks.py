@@ -19,7 +19,7 @@ class MultiCallback:
     callbacks will be run, even if some fail, and the results will be joined to an output string.
     """
 
-    l_callbacks: Iterable[Callable[[ConversionTestInfo]]]
+    l_callbacks: Iterable[Callable[[ConversionTestInfo], str]]
     """A list of callbacks to be called in turn"""
 
     def __call__(self, test_info: ConversionTestInfo) -> str:

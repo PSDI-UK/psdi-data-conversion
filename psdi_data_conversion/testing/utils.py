@@ -223,7 +223,9 @@ def run_test_conversion_with_library(test_spec: ConversionTestSpec):
     with TemporaryDirectory("input") as input_dir, TemporaryDirectory("output") as output_dir:
         # Iterate over the test spec to run each individual test it defines
         for single_test_spec in test_spec:
-            _run_single_test_conversion_with_library(single_test_spec)
+            _run_single_test_conversion_with_library(test_spec=single_test_spec,
+                                                     input_dir=input_dir,
+                                                     output_dir=output_dir)
 
 
 def _run_single_test_conversion_with_library(test_spec: SingleConversionTestSpec,
