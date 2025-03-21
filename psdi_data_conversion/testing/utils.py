@@ -16,6 +16,7 @@ import pytest
 
 from psdi_data_conversion.constants import CONVERTER_DEFAULT, GLOBAL_LOG_FILENAME, LOG_EXT
 from psdi_data_conversion.converter import run_converter
+from psdi_data_conversion.testing.constants import INPUT_TEST_DATA_LOC
 
 
 @dataclass
@@ -48,6 +49,11 @@ class ConversionTestInfo:
     def qualified_log_filename(self):
         """Get the fully-qualified name of the log file"""
         return os.path.join(self.output_dir, self.test_spec.log_filename)
+
+    @property
+    def qualified_global_log_filename(self):
+        """Get the fully-qualified name of the log file"""
+        return self.test_spec.global_log_filename
 
 
 @dataclass
@@ -154,7 +160,7 @@ class ConversionTestSpec:
         # that aren't. To keep everything regularised, we make everything a list of this length
         for attr_name in self._l_attr_names:
             if attr_name in l_single_val_attrs:
-                setattr(self, attr_name, [attr_name]*self._len)
+                setattr(self, attr_name, [getattr(self, attr_name)]*self._len)
 
     def __len__(self):
         """Get the length from the member - valid only after `__post_init__` has been called"""
@@ -165,7 +171,8 @@ class ConversionTestSpec:
         """
         l_l_attr_vals = zip(*[getattr(self, attr_name) for attr_name in self._l_attr_names])
         for l_attr_vals in l_l_attr_vals:
-            yield SingleConversionTestSpec(**dict(zip(self._l_attr_names, l_attr_vals)))
+            next_test_spec = SingleConversionTestSpec(**dict(zip(self._l_attr_names, l_attr_vals)))
+            yield next_test_spec
 
 
 @dataclass
@@ -203,7 +210,7 @@ class SingleConversionTestSpec:
     @property
     def log_filename(self) -> str:
         """The unqualified name of the log file which should have been created by the conversion."""
-        return f"{os.path.splitext(self.filename)[0]}.{LOG_EXT}"
+        return f"{os.path.splitext(self.filename)[0]}{LOG_EXT}"
 
     @property
     def global_log_filename(self) -> str:
@@ -220,7 +227,7 @@ def run_test_conversion_with_library(test_spec: ConversionTestSpec):
         The specification for the test or series of tests to be run
     """
     # Make temporary directories for the input and output files to be stored in
-    with TemporaryDirectory("input") as input_dir, TemporaryDirectory("output") as output_dir:
+    with TemporaryDirectory("_input") as input_dir, TemporaryDirectory("_output") as output_dir:
         # Iterate over the test spec to run each individual test it defines
         for single_test_spec in test_spec:
             _run_single_test_conversion_with_library(test_spec=single_test_spec,
@@ -243,9 +250,14 @@ def _run_single_test_conversion_with_library(test_spec: SingleConversionTestSpec
         A directory which can be used to create output data
     """
 
+    # Symlink the input file to the input directory
+    qualified_in_filename = os.path.join(input_dir, test_spec.filename)
+    os.symlink(os.path.join(INPUT_TEST_DATA_LOC, test_spec.filename),
+               qualified_in_filename)
+
     exc_info: pytest.ExceptionInfo | None = None
     if test_spec.expect_success:
-        run_converter(filename=test_spec.filename,
+        run_converter(filename=qualified_in_filename,
                       to_format=test_spec.to_format,
                       name=test_spec.name,
                       upload_dir=input_dir,
@@ -254,7 +266,7 @@ def _run_single_test_conversion_with_library(test_spec: SingleConversionTestSpec
         success = True
     else:
         with pytest.raises(Exception) as exc_info:
-            run_converter(filename=test_spec.filename,
+            run_converter(filename=qualified_in_filename,
                           to_format=test_spec.to_format,
                           name=test_spec.name,
                           upload_dir=input_dir,
