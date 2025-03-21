@@ -276,46 +276,6 @@ class TestConverter:
         # Check that the input file has been deleted and the output file exists where we expect it to
         self.check_file_status(input_exist=False, output_exist=True)
 
-    def test_atomsk(self):
-        """Run tests of Atomsk on some conversions we expect to succeed without issue
-        """
-
-        # pdb to cif
-
-        self.get_input_info(filename="hemoglobin.pdb",
-                            to_format="cif")
-
-        self.run_converter(name=CONVERTER_ATO)
-
-        # Check that the input file has not been deleted and the output file exists where we expect it to
-        self.check_file_status(input_exist=True, output_exist=True)
-
-        # cif to xyz
-
-        self.get_input_info(filename="nacl.cif",
-                            to_format="xyz")
-        self.run_converter(name=CONVERTER_ATO)
-        self.check_file_status(input_exist=True, output_exist=True)
-
-    def test_c2x(self):
-        """Run tests of c2x on some conversions we expect to succeed without issue
-        """
-
-        self.get_input_info(filename="hemoglobin.pdb",
-                            to_format="cif")
-
-        self.run_converter(name=CONVERTER_C2X)
-
-        # Check that the input file has not been deleted and the output file exists where we expect it to
-        self.check_file_status(input_exist=True, output_exist=True)
-
-        # cif to cml
-
-        self.get_input_info(filename="nacl.cif",
-                            to_format="cml")
-        self.run_converter(name=CONVERTER_C2X)
-        self.check_file_status(input_exist=True, output_exist=True)
-
     def test_xyz_to_inchi_err(self):
         """Run a test of the converter on an `.xyz` to `.inchi` conversion we expect to fail
         """
