@@ -6,6 +6,7 @@ checked. These test specs can be used to test the same conversion in each of the
 application, and GUI.
 """
 
+from psdi_data_conversion import constants as const
 from psdi_data_conversion.converters.atomsk import CONVERTER_ATO
 from psdi_data_conversion.converters.c2x import CONVERTER_C2X
 from psdi_data_conversion.converters.openbabel import CONVERTER_OB
@@ -31,3 +32,12 @@ basic_tests = ConversionTestSpec(filename=["1NE6.mmcif", "standard_test.cdxml",
                                  post_conversion_callback=MultiCallback([CheckOutputStatus(),
                                                                          CheckLogContents()])
                                  )
+
+quality_note_test = ConversionTestSpec(filename="quartz.xyz",
+                                       to_format="inchi",
+                                       conversion_kwargs={"data": default_ob_data},
+                                       post_conversion_callback=CheckLogContents(
+                                           l_strings_to_find=["WARNING",
+                                                              const.QUAL_NOTE_OUT_MISSING.format(const.QUAL_2D_LABEL),
+                                                              const.QUAL_NOTE_OUT_MISSING.format(const.QUAL_3D_LABEL),
+                                                              const.QUAL_NOTE_IN_MISSING.format(const.QUAL_CONN_LABEL)]))
