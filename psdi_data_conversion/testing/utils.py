@@ -14,7 +14,7 @@ from typing import Any
 
 import pytest
 
-from psdi_data_conversion.constants import CONVERTER_DEFAULT, LOG_EXT
+from psdi_data_conversion.constants import CONVERTER_DEFAULT, GLOBAL_LOG_FILENAME, LOG_EXT
 from psdi_data_conversion.converter import run_converter
 
 
@@ -204,6 +204,11 @@ class SingleConversionTestSpec:
     def log_filename(self) -> str:
         """The unqualified name of the log file which should have been created by the conversion."""
         return f"{os.path.splitext(self.filename)[0]}.{LOG_EXT}"
+
+    @property
+    def global_log_filename(self) -> str:
+        """The unqualified name of the global log file which stores info on all conversions."""
+        return GLOBAL_LOG_FILENAME
 
 
 def run_test_conversion_with_library(test_spec: ConversionTestSpec):
