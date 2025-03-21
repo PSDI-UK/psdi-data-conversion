@@ -154,7 +154,8 @@ class ConversionTestSpec:
             if (self._len > 1) and (val_len > 1) and (val_len != self._len):
                 raise ValueError("All lists of values which are set as attributes for a `ConversionTestSpec` must be "
                                  "the same length.")
-            self._len = val_len
+            if val_len > 1:
+                self._len = val_len
 
         # At this point, self._len will be either 1 if all attrs are single values, or the length of the lists for attrs
         # that aren't. To keep everything regularised, we make everything a list of this length
@@ -251,8 +252,11 @@ def _run_single_test_conversion_with_library(test_spec: SingleConversionTestSpec
 
     # Symlink the input file to the input directory
     qualified_in_filename = os.path.join(input_dir, test_spec.filename)
-    os.symlink(os.path.join(INPUT_TEST_DATA_LOC, test_spec.filename),
-               qualified_in_filename)
+    try:
+        os.symlink(os.path.join(INPUT_TEST_DATA_LOC, test_spec.filename),
+                   qualified_in_filename)
+    except FileExistsError:
+        pass
 
     exc_info: pytest.ExceptionInfo | None = None
     if test_spec.expect_success:
