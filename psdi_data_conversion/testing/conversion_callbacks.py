@@ -42,14 +42,16 @@ class MultiCallback:
 class CheckOutputStatus:
     """Callable class which checks the status of standard output files from a conversion"""
 
-    expect_output_exists: bool = True
-    """Whether to expect that the output file of the conversion exists (with non-zero size) or not, by default True"""
+    expect_output_exists: bool | None = True
+    """Whether to expect that the output file of the conversion exists (with non-zero size) or not. If None, will
+    not check either way.
+    """
 
-    expect_log_exists: bool = True
-    """Whether to expect that the log exists (with non-zero size) or not, by default True"""
+    expect_log_exists: bool | None = True
+    """Whether to expect that the log exists (with non-zero size) or not. If None, will not check either way."""
 
-    expect_global_log_exists: bool = False
-    """Whether to expect that the global log exists (with non-zero size) or not, by default False"""
+    expect_global_log_exists: bool | None = None
+    """Whether to expect that the global log exists (with non-zero size) or not. If None, will not check either way."""
 
     def __call__(self, test_info: ConversionTestInfo) -> str:
         """Perform the check on output file and log status"""
@@ -65,7 +67,7 @@ class CheckOutputStatus:
             elif os.path.getsize(qualified_out_filename) == 0:
                 l_errors.append(f"ERROR: Expected output file from conversion '{qualified_out_filename}' exists but "
                                 "is unexpectedly empty")
-        elif os.path.isfile(qualified_out_filename):
+        elif self.expect_output_exists is False and os.path.isfile(qualified_out_filename):
             l_errors.append(f"ERROR: Output file from conversion '{qualified_out_filename}' exists, but was expected "
                             "to not exist")
 
@@ -77,7 +79,7 @@ class CheckOutputStatus:
             elif os.path.getsize(qualified_log_filename) == 0:
                 l_errors.append(f"ERROR: Expected log file from conversion '{qualified_log_filename}' exists but "
                                 "is unexpectedly empty")
-        elif os.path.isfile(qualified_log_filename):
+        elif self.expect_log_exists is False and os.path.isfile(qualified_log_filename):
             l_errors.append(f"ERROR: Log file from conversion '{qualified_log_filename}' exists, but was expected "
                             "to not exist")
 
@@ -89,7 +91,7 @@ class CheckOutputStatus:
             elif os.path.getsize(qualified_global_log_filename) == 0:
                 l_errors.append(f"ERROR: Expected global log file from conversion '{qualified_global_log_filename}' "
                                 "exists but is unexpectedly empty")
-        elif os.path.isfile(qualified_global_log_filename):
+        elif self.expect_global_log_exists is False and os.path.isfile(qualified_global_log_filename):
             l_errors.append(f"ERROR: Global log file from conversion '{qualified_global_log_filename}' exists, but was "
                             "expected to not exist")
 
