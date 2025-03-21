@@ -14,7 +14,7 @@ from typing import Any
 
 import pytest
 
-from psdi_data_conversion.constants import CONVERTER_DEFAULT, GLOBAL_LOG_FILENAME, LOG_EXT
+from psdi_data_conversion.constants import CONVERTER_DEFAULT, GLOBAL_LOG_FILENAME, OUTPUT_LOG_EXT
 from psdi_data_conversion.converter import run_converter
 from psdi_data_conversion.testing.constants import INPUT_TEST_DATA_LOC
 
@@ -171,8 +171,7 @@ class ConversionTestSpec:
         """
         l_l_attr_vals = zip(*[getattr(self, attr_name) for attr_name in self._l_attr_names])
         for l_attr_vals in l_l_attr_vals:
-            next_test_spec = SingleConversionTestSpec(**dict(zip(self._l_attr_names, l_attr_vals)))
-            yield next_test_spec
+            yield SingleConversionTestSpec(**dict(zip(self._l_attr_names, l_attr_vals)))
 
 
 @dataclass
@@ -210,7 +209,7 @@ class SingleConversionTestSpec:
     @property
     def log_filename(self) -> str:
         """The unqualified name of the log file which should have been created by the conversion."""
-        return f"{os.path.splitext(self.filename)[0]}{LOG_EXT}"
+        return f"{os.path.splitext(self.filename)[0]}{OUTPUT_LOG_EXT}"
 
     @property
     def global_log_filename(self) -> str:

@@ -240,7 +240,7 @@ def run_converter(filename: str,
                   download_dir=const.DEFAULT_DOWNLOAD_DIR,
                   max_file_size=const.DEFAULT_MAX_FILE_SIZE,
                   log_file: str | None = None,
-                  log_mode=const.LOG_FULL,
+                  log_mode=const.LOG_SIMPLE,
                   strict=False,
                   archive_output=True,
                   **converter_kwargs) -> FileConversionRunResult:
