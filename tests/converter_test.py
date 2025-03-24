@@ -16,7 +16,6 @@ import pytest
 from psdi_data_conversion import constants as const
 from psdi_data_conversion.converter import L_REGISTERED_CONVERTERS
 from psdi_data_conversion.converters.openbabel import CONVERTER_OB, OBFileConverter
-from psdi_data_conversion.main import FileConverterInputException
 from psdi_data_conversion.testing.utils import run_test_conversion_with_library
 from psdi_data_conversion.testing import conversion_test_specs as specs
 
@@ -159,14 +158,7 @@ class TestConverter:
     def test_invalid_converter(self):
         """Run a test of the converter to ensure it reports an error properly if an invalid converter is requested
         """
-
-        self.get_input_info(filename="1NE6.mmcif")
-
-        self.run_converter(expect_exception=FileConverterInputException,
-                           name="INVALID")
-
-        # Check that the input file remains but no output file has been created
-        self.check_file_status(input_exist=True, output_exist=False)
+        run_test_conversion_with_library(specs.invalid_converter_test)
 
     def test_quality_note(self):
         """Run a test of the converter on an `.xyz` to `.inchi` conversion which we expect to have warnings about data

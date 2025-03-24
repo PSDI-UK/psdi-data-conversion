@@ -8,7 +8,7 @@ application, and GUI.
 
 from psdi_data_conversion import constants as const
 from psdi_data_conversion.converters.atomsk import CONVERTER_ATO
-from psdi_data_conversion.converters.base import FileConverterSizeException
+from psdi_data_conversion.converters.base import FileConverterInputException, FileConverterSizeException
 from psdi_data_conversion.converters.c2x import CONVERTER_C2X
 from psdi_data_conversion.converters.openbabel import CONVERTER_OB
 from psdi_data_conversion.testing.conversion_callbacks import (CheckException, CheckLogContents,
@@ -46,6 +46,18 @@ open_babel_warning_test = ConversionTestSpec(filename="1NE6.mmcif",
                                              ]))
 """A test that confirms expected warnings form Open Babel are output and captured in the log"""
 
+invalid_converter_callback = MultiCallback([CheckOutputStatus(expect_output_exists=False,
+                                                              expect_log_exists=False),
+                                            CheckException(ex_type=FileConverterInputException,
+                                                           ex_message="Converter {} not recognized")])
+invalid_converter_test = ConversionTestSpec(filename="1NE6.mmcif",
+                                            to_format="pdb",
+                                            name="INVALID",
+                                            conversion_kwargs={"data": default_ob_data},
+                                            expect_success=False,
+                                            post_conversion_callback=invalid_converter_callback)
+"""A test that a proper error is returned if an invalid converter is requested"""
+
 quality_note_callback = CheckLogContentsSuccess(
     l_strings_to_find=["WARNING",
                        const.QUAL_NOTE_OUT_MISSING.format(const.QUAL_2D_LABEL),
@@ -59,7 +71,8 @@ quality_note_test = ConversionTestSpec(filename="quartz.xyz",
 isn't present in the input and has to be extrapolated, and the 2D and 3D coordinates properties aren't present in the
 output and will be lost"""
 
-max_size_callback = MultiCallback([CheckLogContents(l_strings_to_find=["Output file exceeds maximum size"]),
+max_size_callback = MultiCallback([CheckOutputStatus(expect_output_exists=False),
+                                   CheckLogContents(l_strings_to_find=["Output file exceeds maximum size"]),
                                    CheckException(ex_type=FileConverterSizeException,
                                                   ex_message="exceeds maximum size",
                                                   ex_status_code=const.STATUS_CODE_SIZE)])

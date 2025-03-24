@@ -267,8 +267,8 @@ class CheckException:
         # Check the exception status code, if applicable
         if self.ex_status_code:
             if not hasattr(exc, "status_code"):
-                l_errors.append(f"ERROR: Expected status code {self.ex_status_code} for exception {exc}, but "
-                                "exception does not have any status code")
+                l_errors.append(f"ERROR: Expected status code {self.ex_status_code} for exception of type {type(exc)}, "
+                                "but this exception type does not have a status code attribute")
             elif self.ex_status_code != exc.status_code:
                 l_errors.append(f"ERROR: Expected status code {self.ex_status_code} does not match that of {exc}: "
                                 f"{exc.status_code}")
