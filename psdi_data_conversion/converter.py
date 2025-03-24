@@ -450,6 +450,10 @@ def run_converter(filename: str,
             l_output_log_lines = open(run_output.log_filename, "r").read().splitlines()
             l_error_lines = [line for line in l_output_log_lines if "ERROR" in line]
             msg += "\n".join(l_error_lines)
-            raise base.FileConverterAbortException(status_code, msg)
+            if status_code == const.STATUS_CODE_SIZE:
+                exception_class = base.FileConverterSizeException
+            else:
+                exception_class = base.FileConverterAbortException
+            raise exception_class(status_code, msg)
 
     return run_output

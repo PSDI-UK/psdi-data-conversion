@@ -55,9 +55,9 @@ class FileConverterSizeException(FileConverterAbortException):
 
     def __init__(self,
                  *args,
-                 in_size: int,
-                 out_size: int,
-                 max_file_size: int,
+                 in_size: int | None = None,
+                 out_size: int | None = None,
+                 max_file_size: int | None = None,
                  **kwargs):
         super().__init__(*args, **kwargs)
         self.in_size = in_size
