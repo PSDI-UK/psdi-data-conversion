@@ -59,7 +59,7 @@ class FileConverterSizeException(FileConverterAbortException):
                  out_size: int,
                  max_file_size: int,
                  **kwargs):
-        super().__init__(const.STATUS_CODE_SIZE, *args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.in_size = in_size
         self.out_size = out_size
         self.max_file_size = max_file_size

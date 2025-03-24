@@ -8,10 +8,12 @@ application, and GUI.
 
 from psdi_data_conversion import constants as const
 from psdi_data_conversion.converters.atomsk import CONVERTER_ATO
+from psdi_data_conversion.converters.base import FileConverterSizeException
 from psdi_data_conversion.converters.c2x import CONVERTER_C2X
 from psdi_data_conversion.converters.openbabel import CONVERTER_OB
-from psdi_data_conversion.testing.conversion_callbacks import (CheckLogContents, CheckLogContentsSuccess,
-                                                               CheckOutputStatus, MultiCallback)
+from psdi_data_conversion.testing.conversion_callbacks import (CheckException, CheckLogContents,
+                                                               CheckLogContentsSuccess, CheckOutputStatus,
+                                                               MultiCallback)
 from psdi_data_conversion.testing.utils import ConversionTestSpec
 
 default_ob_data = {"coordinates": "neither",
@@ -48,14 +50,17 @@ quality_note_test = ConversionTestSpec(filename="quartz.xyz",
 isn't present in the input and has to be extrapolated, and the 2D and 3D coordinates properties aren't present in the
 output and will be lost"""
 
+max_size_callback = MultiCallback([CheckLogContents(l_strings_to_find=["Output file exceeds maximum size"]),
+                                   CheckException(ex_type=FileConverterSizeException,
+                                                  ex_message="exceeds maximum size",
+                                                  ex_status_code=const.STATUS_CODE_SIZE)])
 max_size_test = ConversionTestSpec(filename=["1NE6.mmcif",
                                              "caffeine-smi.tar.gz"],
                                    to_format="pdb",
                                    conversion_kwargs=[{"data": default_ob_data, "max_file_size": 0.0001},
                                                       {"data": default_ob_data, "max_file_size": 0.0005}],
                                    expect_success=False,
-                                   post_conversion_callback=CheckLogContents(
-                                       l_strings_to_find=["Output file exceeds maximum size"]))
+                                   post_conversion_callback=max_size_callback)
 """A set of test conversion that the maximum size constraint is properly applied. In the first test, the input file
 will be greater than the maximum size, and the test should fail as soon as it checks it. In the second test, the input
 archive is smaller than the maximum size, but the unpacked files in it are greater, so it should fail midway through."""

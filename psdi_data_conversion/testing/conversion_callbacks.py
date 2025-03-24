@@ -12,7 +12,7 @@ import re
 
 from psdi_data_conversion.constants import DATETIME_RE_RAW
 from psdi_data_conversion.log_utility import string_with_placeholders_matches
-from psdi_data_conversion.testing.utils import ConversionTestInfo
+from psdi_data_conversion.testing.utils import ConversionTestInfo, LibraryConversionTestInfo
 
 
 @dataclass
@@ -219,3 +219,60 @@ class CheckLogContentsSuccess(CheckLogContents):
         classes to implement defaults"""
         return [r"File name:\s*"+os.path.splitext(test_info.test_spec.filename)[0],
                 DATETIME_RE_RAW]
+
+
+@dataclass
+class CheckException:
+    """Callable class which checks an exception raised for its type, status code, and message. Tests will only be
+    run on tests with the python library, as that's the only route that provides exceptions."""
+
+    ex_type: type[Exception]
+    """The expected type of the raised exception (subclasses of it will also be allowed)"""
+
+    ex_message: str | None = None
+    """A string pattern (with placeholders allowed) which must be found in the exceptions message"""
+
+    ex_status_code: int | None = None
+    """The required status code of the exception - will not pass if this is provided and the exception doesn't come
+    with a status code"""
+
+    def __call__(self, test_info: ConversionTestInfo) -> str:
+        """Perform the check on the exception"""
+
+        if not isinstance(test_info, LibraryConversionTestInfo):
+            return ""
+
+        # Confirm that an exception was indeed raised
+        exc_info = test_info.exc_info
+        if not exc_info:
+            return f"ERROR: No exception was raised - expected an exception of type {self.ex_type}"
+
+        l_errors: list[str] = []
+
+        # Check the exception type
+        if not issubclass(exc_info.type, self.ex_type):
+            l_errors.append(f"ERROR: Raised exception is of type '{exc_info.type}', but expected '{self.ex_type}'")
+
+        exc = exc_info.value
+
+        # Check the exception message, if applicable
+        if self.ex_message:
+            if len(exc.args) == 0:
+                l_errors.append(f"ERROR: Expected string \"{self.ex_message}\" in exception {exc}'s message, but "
+                                "exception does not have any message")
+            elif not string_with_placeholders_matches(self.ex_message, str(exc.args[0])):
+                l_errors.append(f"ERROR: Expected string \"{self.ex_message}\" not found in exception message: "
+                                f"\"{exc.args[0]}\"")
+
+        # Check the exception status code, if applicable
+        if self.ex_status_code:
+            if not hasattr(exc, "status_code"):
+                l_errors.append(f"ERROR: Expected status code {self.ex_status_code} for exception {exc}, but "
+                                "exception does not have any status code")
+            elif self.ex_status_code != exc.status_code:
+                l_errors.append(f"ERROR: Expected status code {self.ex_status_code} does not match that of {exc}: "
+                                f"{exc.status_code}")
+
+        # Join any errors for output
+        res = "\n".join(l_errors)
+        return res
