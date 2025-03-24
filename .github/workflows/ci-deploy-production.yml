@@ -41,7 +41,7 @@ jobs:
             "https://api.github.com/v2/container/ghcr.io/psdi-uk/psdi-data-conversion/data-conversion/tags")
         # Extract only the tags corresponding to releases, i.e. of the form 'v*.*.*'
         TAGS=$(echo "$RESPONSE" | jq -r '.[].name' | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+')
-	# Find the highest version number
+        # Find the highest version number
         TARGET_TAG=$(echo "$TAGS" | sort -V | tail -n 1)
         echo "TARGET_TAG=$TARGET_TAG" >> $GITHUB_ENV # Make 'TARGET_TAG' available in future steps via 'env.TARGET_TAG'
       env: # needed to authenticate to GitHub CR API
