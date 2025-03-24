@@ -1,5 +1,6 @@
 # Workflow for continuous integration tasks triggered on push to release
 
+
 name: CI - Release
 run-name: CI - Release
 on:
@@ -49,29 +50,13 @@ jobs:
   # Requires an environment, which must reflect the target environment as defined in the
   # GitHub repository: https://github.com/PSDI-UK/psdi-data-conversion/settings/environments
   # The downstream deploy job leverages on Environment specific secrets, which also must be defined
-  deploy-stfc-dev-k8s:
+  deploy-stfc-staging-k8s:
     needs: [tag, container-push]
     uses: ./.github/workflows/job-deploy-k8s.yml # use the callable deploy job
     secrets: inherit # pass all secrets for the environment
     with:
       container_tag: ${{ needs.tag.outputs.container_tag }}
-      environment: development
-
-  deploy-stfc-staging-k8s:
-    needs: [tag, container-push, deploy-stfc-dev-k8s]
-    uses: ./.github/workflows/job-deploy-k8s.yml # use the callable deploy job
-    secrets: inherit # pass all secrets for the environment
-    with:
-      container_tag: ${{ needs.tag.outputs.container_tag }}
       environment: staging
-
-  deploy-stfc-production-k8s:
-    needs: [tag, container-push, deploy-stfc-staging-k8s]
-    uses: ./.github/workflows/job-deploy-k8s.yml # use the callable deploy job
-    secrets: inherit # pass all secrets for the environment
-    with:
-      container_tag: ${{ needs.tag.outputs.container_tag }}
-      environment: production
 
   # Publish to PyPI - uncomment once ready for regular publishing
   # publish-pypi:
