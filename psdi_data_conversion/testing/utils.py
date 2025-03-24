@@ -12,6 +12,7 @@ import os
 from tempfile import TemporaryDirectory
 from typing import Any
 
+import py
 import pytest
 
 from psdi_data_conversion.constants import CONVERTER_DEFAULT, GLOBAL_LOG_FILENAME, OUTPUT_LOG_EXT
@@ -35,6 +36,12 @@ class ConversionTestInfo:
 
     success: bool = True
     """Whether or not the conversion was successful"""
+
+    captured_stdout: str | None = None
+    """Any output to stdout while the test was run"""
+
+    captured_stderr: str | None = None
+    """Any output to stderr while the test was run"""
 
     @property
     def qualified_in_filename(self):
@@ -70,12 +77,6 @@ class CLAConversionTestInfo(ConversionTestInfo):
     """Information about a tested conversion, specifically for when it was tested through a the command-line
     application (CLA)
     """
-
-    captured_stdout: str | None = None
-    """If the test was run through the CLA, any output to stdout, otherwise None"""
-
-    captured_stderr: str | None = None
-    """If the test was run through the CLA, any output to stderr, otherwise None"""
 
 
 @dataclass
@@ -263,24 +264,33 @@ def _run_single_test_conversion_with_library(test_spec: SingleConversionTestSpec
     except FileExistsError:
         pass
 
-    exc_info: pytest.ExceptionInfo | None = None
-    if test_spec.expect_success:
-        run_converter(filename=qualified_in_filename,
-                      to_format=test_spec.to_format,
-                      name=test_spec.name,
-                      upload_dir=input_dir,
-                      download_dir=output_dir,
-                      **test_spec.conversion_kwargs)
-        success = True
-    else:
-        with pytest.raises(Exception) as exc_info:
+    # Capture stdout and stderr while we run this test. We use a try block to stop capturing as soon as testing finishes
+    try:
+        stdouterr = py.io.StdCaptureFD(in_=False)
+
+        exc_info: pytest.ExceptionInfo | None = None
+        if test_spec.expect_success:
             run_converter(filename=qualified_in_filename,
                           to_format=test_spec.to_format,
                           name=test_spec.name,
                           upload_dir=input_dir,
                           download_dir=output_dir,
                           **test_spec.conversion_kwargs)
-        success = False
+            success = True
+        else:
+            with pytest.raises(Exception) as exc_info:
+                run_converter(filename=qualified_in_filename,
+                              to_format=test_spec.to_format,
+                              name=test_spec.name,
+                              upload_dir=input_dir,
+                              download_dir=output_dir,
+                              **test_spec.conversion_kwargs)
+            success = False
+
+    finally:
+        stdout, stderr = stdouterr.reset()   # Grab stdout and stderr
+        # Reset stdout and stderr capture
+        stdouterr.done()
 
     # Compile output info for the test and call the callback function if one is provided
     if test_spec.post_conversion_callback:
@@ -288,6 +298,8 @@ def _run_single_test_conversion_with_library(test_spec: SingleConversionTestSpec
                                               input_dir=input_dir,
                                               output_dir=output_dir,
                                               success=success,
+                                              captured_stdout=stdout,
+                                              captured_stderr=stderr,
                                               exc_info=exc_info)
         callback_msg = test_spec.post_conversion_callback(test_info)
         assert not callback_msg, callback_msg
