@@ -20,9 +20,9 @@ jobs:
     # run on our self hosted github runners enabling access to STFC infrastructure
     runs-on: psdi-uk-runners
     steps:
-    - name: Install jq
-      run: |
-        sudo apt-get install jq
+    - uses: actions/checkout@v4
+      with:
+        ref: release
     - name: Setup docker auth
       run: |
         mkdir -p ~/.docker
