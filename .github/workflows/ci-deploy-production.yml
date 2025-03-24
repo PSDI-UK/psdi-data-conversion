@@ -20,28 +20,28 @@ jobs:
       with:
         ref: release
     - name: Setup docker auth
-        run: |
-          mkdir -p ~/.docker
-          cat <<EOF > ~/.docker/config.json
-          {
-            "auths": {
-              "ghcr.io": {
-                "auth": "$(echo -n "$GIT_USERNAME:$GIT_PASSWORD" | base64 -w0)"
-              }
+      run: |
+        mkdir -p ~/.docker
+        cat <<EOF > ~/.docker/config.json
+        {
+          "auths": {
+            "ghcr.io": {
+              "auth": "$(echo -n "$GIT_USERNAME:$GIT_PASSWORD" | base64 -w0)"
             }
           }
-          EOF
-        env: # needed to authenticate to github and download the repo
-          GIT_USERNAME: ${{ github.actor }}
-          GIT_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
+        }
+        EOF
+      env: # needed to authenticate to github and download the repo
+        GIT_USERNAME: ${{ github.actor }}
+        GIT_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
     - name: Get latest tag in the relase branch
       run: |
-          TAG=`git tag`
-          echo "TAG=$TAG" >> $GITHUB_ENV # Make 'TAG' available in future steps as 'env.TAG'
+        TAG=`git tag`
+        echo "TAG=$TAG" >> $GITHUB_ENV # Make 'TAG' available in future steps as 'env.TAG'
     - name: Check that the tag is sensible and corresponds to a real container
       run: |
-          [ -n "$TAG" ] # Check tag is non-empty string
-          docker inspect --type=image ghcr.io/psdi-uk/psdi-data-conversion/data-conversion:${{ env.TAG }}    # Check that the container with this tag exists
+        [ -n "$TAG" ] # Check tag is non-empty string
+        docker inspect --type=image ghcr.io/psdi-uk/psdi-data-conversion/data-conversion:${{ env.TAG }}    # Check that the container with this tag exists
     - name: Deploy container with tag to production environment
       uses: ./.github/workflows/job-deploy-k8s.yml # use the callable deploy job
       secrets: inherit # pass all secrets for the environment
