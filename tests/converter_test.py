@@ -1,8 +1,9 @@
-"""@file psdi-data-conversion/tests/converter_test.py
+"""
+# converter_test.py
 
-Created 2024-12-15 by Bryan Gillis.
-
-Unit tests of the converter class
+Unit tests of the converter class. This module uses the common test specifications defined in
+psdi_data_conversion/testing/conversion_test_specs.py so that a common set of conversion tests is performed through
+the Python library (this module), the command-line application, and the GUI.
 """
 
 import logging
