@@ -42,9 +42,10 @@ jobs:
     needs: [tag]
     uses: ./.github/workflows/job-publish-doc.yml
 
-  deploy-azure:
-    needs: [tag]
-    uses: ./.github/workflows/job-deploy-azure.yml # use the callable deploy job
+  # >>>>>>>>>>>>>>> MODIFICATION FOR TESTING PURPOSES: disable deploy-azure <<<<<<<<<<<<<<<
+  #deploy-azure:
+  #  needs: [tag]
+  #  uses: ./.github/workflows/job-deploy-azure.yml # use the callable deploy job
 
   # Deploy to Kubernetes Job
   # Requires an environment, which must reflect the target environment as defined in the
