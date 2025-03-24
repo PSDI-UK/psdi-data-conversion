@@ -8,7 +8,8 @@ application, and GUI.
 
 from psdi_data_conversion import constants as const
 from psdi_data_conversion.converters.atomsk import CONVERTER_ATO
-from psdi_data_conversion.converters.base import FileConverterInputException, FileConverterSizeException
+from psdi_data_conversion.converters.base import (FileConverterAbortException, FileConverterInputException,
+                                                  FileConverterSizeException)
 from psdi_data_conversion.converters.c2x import CONVERTER_C2X
 from psdi_data_conversion.converters.openbabel import CONVERTER_OB
 from psdi_data_conversion.testing.conversion_callbacks import (CheckException, CheckLogContents,
@@ -76,6 +77,16 @@ cleanup_input_test = ConversionTestSpec(filename="hemoglobin.pdb",
                                         conversion_kwargs={"data": default_ob_data, "delete_input": True},
                                         post_conversion_callback=CheckFileStatus(expect_input_exists=False))
 """A test that the input file to a conversion is deleted when cleanup is requested"""
+
+failed_conversion_callback = MultiCallback([CheckFileStatus(expect_output_exists=False),
+                                            CheckException(ex_type=FileConverterAbortException,
+                                                           ex_message="Problems reading an XYZ file")])
+failed_conversion_test = ConversionTestSpec(filename="quartz_err.xyz",
+                                            to_format="inchi",
+                                            conversion_kwargs={"data": default_ob_data},
+                                            expect_success=False,
+                                            post_conversion_callback=failed_conversion_callback)
+"""A test that a conversion which fails due to an invalid input file will properly fail"""
 
 max_size_callback = MultiCallback([CheckFileStatus(expect_output_exists=False),
                                    CheckLogContents(l_strings_to_find=["Output file exceeds maximum size"]),

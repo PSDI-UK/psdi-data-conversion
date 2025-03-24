@@ -170,17 +170,10 @@ class TestConverter:
         """
         run_test_conversion_with_library(specs.cleanup_input_test)
 
-    def test_xyz_to_inchi_err(self):
-        """Run a test of the converter on an `.xyz` to `.inchi` conversion we expect to fail
+    def test_failed_conversion(self):
+        """Run a test of the converter on a conversion we expect to fail
         """
-
-        self.get_input_info(filename="quartz_err.xyz",
-                            to_format="inchi")
-
-        self.run_converter(expect_code=const.STATUS_CODE_GENERAL)
-
-        # Check that the input and output files have properly been deleted
-        self.check_file_status(input_exist=True, output_exist=False)
+        run_test_conversion_with_library(specs.failed_conversion_test)
 
     def test_envvars(self):
         """Test that setting appropriate envvars will set them for a file converter
