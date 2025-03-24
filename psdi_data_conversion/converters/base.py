@@ -8,7 +8,6 @@ Base class and information for file format converters
 
 from copy import deepcopy
 from dataclasses import dataclass
-import json
 import logging
 from collections.abc import Callable
 import os
@@ -612,35 +611,17 @@ class FileConverter:
 
         return in_size, out_size
 
-    def get_quality(self):
+    def get_quality(self) -> str:
         """Query the JSON file to obtain conversion quality
         """
+        from psdi_data_conversion.database import get_conversion_quality
 
-        try:
-
-            # Load JSON file.
-            with open("static/data/data.json") as datafile:
-                data = json.load(datafile)
-
-            from_format = [d for d in data["formats"] if d["extension"] == self.from_format]
-            to_format = [d for d in data["formats"] if d["extension"] == self.to_format]
-            open_babel = [d for d in data["converters"] if d["name"] == "Open Babel"]
-
-            open_babel_id = open_babel[0]["id"]
-            from_id = from_format[0]["id"]
-            to_id = to_format[0]["id"]
-
-            converts_to = [d for d in data["converts_to"] if
-                           d["converters_id"] == open_babel_id and d["in_id"] == from_id and d["out_id"] == to_id]
-
-            return converts_to[0]["degree_of_success"]
-
-        except Exception as e:
-
-            self.logger.warning(f"Unable to determine conversion quality from {self.from_format} to {self.to_format}. "
-                                f"Received exception of type '{type(e)}' and message: {str(e)}")
-
+        conversion_quality = get_conversion_quality(converter_name=self.name,
+                                                    in_format=self.from_format,
+                                                    out_format=self.to_format)
+        if not conversion_quality:
             return "unknown"
+        return conversion_quality.qual_str
 
     def _finish_convert(self):
         """Run final common steps to clean up a conversion and log success or abort due to an error

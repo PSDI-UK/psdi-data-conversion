@@ -212,7 +212,7 @@ class CheckLogContentsSuccess(CheckLogContents):
     def get_default_strings_to_exclude(self, test_info: ConversionTestInfo) -> Iterable[str]:
         """Get a default list of strings to NOT find in the output log; can be overridden by child classes to implement
         defaults"""
-        return ["ERROR", "Received exception"]
+        return ["ERROR", "exception", "Exception"]
 
     def get_default_regex_to_find(self, test_info: ConversionTestInfo) -> Iterable[str]:
         """Get a default list of uncompiled regular expressions to match in the output log; can be overridden by child
