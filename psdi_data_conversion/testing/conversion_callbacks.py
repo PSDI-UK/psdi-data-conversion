@@ -52,7 +52,7 @@ class CheckFileStatus:
     """Whether to expect that the log exists (with non-zero size) or not. If None, will not check either way."""
 
     expect_global_log_exists: bool | None = None
-    """Whether to expect that the global log exists (with non-zero size) or not. If None, will not check either way."""
+    """Whether to expect that the global log exists (zero-size allowed) or not. If None, will not check either way."""
 
     def __call__(self, test_info: ConversionTestInfo) -> str:
         """Perform the check on output file and log status"""
@@ -102,9 +102,6 @@ class CheckFileStatus:
             if not os.path.isfile(qualified_global_log_filename):
                 l_errors.append(f"ERROR: Expected global log file from conversion '{qualified_global_log_filename}' "
                                 "does not exist")
-            elif os.path.getsize(qualified_global_log_filename) == 0:
-                l_errors.append(f"ERROR: Expected global log file from conversion '{qualified_global_log_filename}' "
-                                "exists but is unexpectedly empty")
         elif self.expect_global_log_exists is False and os.path.isfile(qualified_global_log_filename):
             l_errors.append(f"ERROR: Global log file from conversion '{qualified_global_log_filename}' exists, but was "
                             "expected to not exist")

@@ -23,20 +23,41 @@ default_ob_data = {"coordinates": "neither",
 
 basic_tests = ConversionTestSpec(filename=["1NE6.mmcif", "standard_test.cdxml",
                                            "hemoglobin.pdb", "nacl.cif",
+                                           "hemoglobin.pdb", "nacl.cif",
                                            "hemoglobin.pdb", "nacl.cif"],
-                                 to_format=["pdb", "inchi",
+                                 to_format=["pdb", "inchi", "cif", "xyz",
                                             "cif", "xyz",
                                             "cif", "xyz"],
                                  name=[CONVERTER_OB, CONVERTER_OB,
+                                       CONVERTER_OB, CONVERTER_OB,
                                        CONVERTER_ATO, CONVERTER_ATO,
                                        CONVERTER_C2X, CONVERTER_C2X],
                                  conversion_kwargs=[{"data": default_ob_data}, {"data": default_ob_data},
+                                                    {"data": default_ob_data}, {"data": default_ob_data},
                                                     {}, {},
                                                     {}, {},],
                                  post_conversion_callback=MultiCallback([CheckFileStatus(),
                                                                          CheckLogContentsSuccess()]))
 """A basic set of test conversions which we expect to succeed without issue, running two conversions with each of the
 Open Babel, Atomsk, and c2x converters"""
+
+log_mode_tests = ConversionTestSpec(conversion_kwargs=[{"data": default_ob_data, "log_mode": const.LOG_NONE},
+                                                       {"data": default_ob_data, "log_mode": const.LOG_STDOUT},
+                                                       {"data": default_ob_data, "log_mode": const.LOG_SIMPLE},
+                                                       {"data": default_ob_data, "log_mode": const.LOG_FULL},
+                                                       {"data": default_ob_data, "log_mode": const.LOG_FULL_FORCE},],
+                                    post_conversion_callback=[CheckFileStatus(expect_log_exists=False,
+                                                                              expect_global_log_exists=False),
+                                                              CheckFileStatus(expect_log_exists=False,
+                                                                              expect_global_log_exists=False),
+                                                              CheckFileStatus(expect_log_exists=True,
+                                                                              expect_global_log_exists=False),
+                                                              CheckFileStatus(expect_log_exists=True,
+                                                                              expect_global_log_exists=True),
+                                                              CheckFileStatus(expect_log_exists=True,
+                                                                              expect_global_log_exists=True)],
+                                    )
+"""Tests that the different log modes have the desired effects on logs"""
 
 open_babel_warning_test = ConversionTestSpec(filename="1NE6.mmcif",
                                              to_format="pdb",
@@ -51,9 +72,7 @@ invalid_converter_callback = MultiCallback([CheckFileStatus(expect_output_exists
                                                             expect_log_exists=False),
                                             CheckException(ex_type=FileConverterInputException,
                                                            ex_message="Converter {} not recognized")])
-invalid_converter_test = ConversionTestSpec(filename="1NE6.mmcif",
-                                            to_format="pdb",
-                                            name="INVALID",
+invalid_converter_test = ConversionTestSpec(name="INVALID",
                                             conversion_kwargs={"data": default_ob_data},
                                             expect_success=False,
                                             post_conversion_callback=invalid_converter_callback)
@@ -72,9 +91,7 @@ quality_note_test = ConversionTestSpec(filename="quartz.xyz",
 isn't present in the input and has to be extrapolated, and the 2D and 3D coordinates properties aren't present in the
 output and will be lost"""
 
-cleanup_input_test = ConversionTestSpec(filename="hemoglobin.pdb",
-                                        to_format="cif",
-                                        conversion_kwargs={"data": default_ob_data, "delete_input": True},
+cleanup_input_test = ConversionTestSpec(conversion_kwargs={"data": default_ob_data, "delete_input": True},
                                         post_conversion_callback=CheckFileStatus(expect_input_exists=False))
 """A test that the input file to a conversion is deleted when cleanup is requested"""
 

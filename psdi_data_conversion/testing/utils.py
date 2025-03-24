@@ -94,10 +94,10 @@ class ConversionTestSpec:
     (as if using zip on the multiple lists) to test each element in turn.
     """
 
-    filename: str | Iterable[str]
+    filename: str | Iterable[str] = "nacl.cif"
     """The name of the input file, relative to the input test data location, or a list thereof"""
 
-    to_format: str | Iterable[str]
+    to_format: str | Iterable[str] = "pdb"
     """The format to test converting the input file to, or a list thereof"""
 
     name: str | Iterable[str] = CONVERTER_DEFAULT

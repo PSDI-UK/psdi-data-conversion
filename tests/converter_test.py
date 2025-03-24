@@ -44,6 +44,12 @@ def test_basic_conversions():
     run_test_conversion_with_library(specs.basic_tests)
 
 
+def test_log_mode():
+    """Test that the various log modes result in the expected log files being created
+    """
+    run_test_conversion_with_library(specs.log_mode_tests)
+
+
 def test_open_babel_warning():
     """Run a test that expected warnings from Open Babel are captured in the log
     """
