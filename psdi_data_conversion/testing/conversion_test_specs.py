@@ -14,7 +14,7 @@ from psdi_data_conversion.converters.c2x import CONVERTER_C2X
 from psdi_data_conversion.converters.openbabel import CONVERTER_OB
 from psdi_data_conversion.testing.conversion_callbacks import (CheckException, CheckLogContents,
                                                                CheckLogContentsSuccess, CheckFileStatus,
-                                                               MultiCallback)
+                                                               CheckStdoutContents, MultiCallback)
 from psdi_data_conversion.testing.utils import ConversionTestSpec
 
 default_ob_data = {"coordinates": "neither",
@@ -57,7 +57,22 @@ log_mode_tests = ConversionTestSpec(conversion_kwargs=[{"data": default_ob_data,
                                                               CheckFileStatus(expect_log_exists=True,
                                                                               expect_global_log_exists=True)],
                                     )
-"""Tests that the different log modes have the desired effects on logs"""
+"""Tests that the different log modes have the desired effects on logs
+
+NOTE: Not compatible with GUI tests, since the GUI requires the log mode to always be "Full"
+"""
+
+stdout_test = ConversionTestSpec(filename="nacl.cif",
+                                 conversion_kwargs={"data": default_ob_data, "log_mode": const.LOG_STDOUT},
+                                 post_conversion_callback=CheckStdoutContents(l_strings_to_exclude=[
+                                     "ERROR", "exception", "Exception"],
+                                     l_regex_to_find=[r"File name:\s*nacl",
+                                                      const.DATETIME_RE_RAW]
+                                 ))
+"""Test that the log is output to stdout when requested
+
+NOTE: Not compatible with GUI tests, since the GUI requires the log mode to always be "Full"
+"""
 
 open_babel_warning_test = ConversionTestSpec(filename="1NE6.mmcif",
                                              to_format="pdb",

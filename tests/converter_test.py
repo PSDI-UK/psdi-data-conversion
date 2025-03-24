@@ -50,6 +50,12 @@ def test_log_mode():
     run_test_conversion_with_library(specs.log_mode_tests)
 
 
+def test_stdout():
+    """Test that the output is sent to stdout when requested
+    """
+    run_test_conversion_with_library(specs.stdout_test)
+
+
 def test_open_babel_warning():
     """Run a test that expected warnings from Open Babel are captured in the log
     """
