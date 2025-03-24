@@ -1,11 +1,11 @@
-# Workflow for manually triggering deployment of latest release version to the production cluster in STFC
+# Workflow for manually triggering deployment of latest release version to the production environment
 
 # It is intended that this workflow be manually triggered after the 'ci-release.yml' job has been shown
 # to successfully deploy the latest release version to the staging cluster.
 
-# Note that this workflow will only work if the latest commit in the 'release' branch has a tag,
-# because it is the container which shares this tag which will be deployed to the cluster.
-
+# To be more specific, this workflow deploys the container in the GitHub Container Registry namespace for this
+# repo whose tag corresponds to the highest version number, while only considering tags of the form 'v*.*.*',
+# where '*' signify non-negative integers.
 
 name: CI - Deploy to production cluster
 run-name: CI - Deploy to production cluster
@@ -16,9 +16,9 @@ jobs:
 
   deploy-stfc-production-k8s:
     steps:
-    - uses: actions/checkout@v4
-      with:
-        ref: release
+    - name: Install jq
+      run: |
+        sudo apt-get install jq
     - name: Setup docker auth
       run: |
         mkdir -p ~/.docker
@@ -36,15 +36,19 @@ jobs:
         GIT_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
     - name: Get latest tag in the relase branch
       run: |
-        TAG=`git tag`
-        echo "TAG=$TAG" >> $GITHUB_ENV # Make 'TAG' available in future steps as 'env.TAG'
-    - name: Check that the tag is sensible and corresponds to a real container
-      run: |
-        [ -n "$TAG" ] # Check tag is non-empty string
-        docker inspect --type=image ghcr.io/psdi-uk/psdi-data-conversion/data-conversion:${{ env.TAG }}    # Check that the container with this tag exists
+        # Use GitHub CR API to get list of all tags
+        RESPONSE=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            "https://api.github.com/v2/container/ghcr.io/psdi-uk/psdi-data-conversion/data-conversion/tags")
+        # Extract only the tags corresponding to releases, i.e. of the form 'v*.*.*'
+        TAGS=$(echo "$RESPONSE" | jq -r '.[].name' | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+')
+	# Find the highest version number
+        TARGET_TAG=$(echo "$TAGS" | sort -V | tail -n 1)
+        echo "TARGET_TAG=$TARGET_TAG" >> $GITHUB_ENV # Make 'TARGET_TAG' available in future steps via 'env.TARGET_TAG'
+      env: # needed to authenticate to GitHub CR API
+        GIT_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
     - name: Deploy container with tag to production environment
       uses: ./.github/workflows/job-deploy-k8s.yml # use the callable deploy job
       secrets: inherit # pass all secrets for the environment
       with:
-        container_tag: ${{ env.TAG }}
+        container_tag: ${{ env.TARGET_TAG }}
         environment: production
