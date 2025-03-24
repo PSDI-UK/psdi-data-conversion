@@ -11,6 +11,8 @@ name: CI - Deploy to production cluster
 run-name: CI - Deploy to production cluster
 on:
   workflow_dispatch:
+  # >>>>>>>>>>>>>>> MODIFICATION FOR TESTING PURPOSES: added push: because workflow_dispatch only is not supported in non-main branches <<<<<<<<<<<<<<<
+  push:
 
 jobs:
 
