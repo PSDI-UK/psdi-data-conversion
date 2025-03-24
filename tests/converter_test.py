@@ -9,13 +9,12 @@ from copy import deepcopy
 import logging
 import math
 import os
-import shutil
 from typing import Any
 import pytest
 
 from psdi_data_conversion import constants as const
 from psdi_data_conversion.converter import L_REGISTERED_CONVERTERS
-from psdi_data_conversion.converters.openbabel import CONVERTER_OB, OBFileConverter
+from psdi_data_conversion.converters.openbabel import OBFileConverter
 from psdi_data_conversion.testing.utils import run_test_conversion_with_library
 from psdi_data_conversion.testing import conversion_test_specs as specs
 
@@ -169,22 +168,7 @@ class TestConverter:
     def test_cleanup(self):
         """Test that input files are deleted if requested
         """
-
-        self.get_input_info(filename="hemoglobin.pdb",
-                            to_format="cif")
-
-        # Make a copy of the source file in the uploads directory, and point the self.source_filename variable to it
-        # so it'll be properly checked to be deleted later
-        upload_filename = os.path.join(self.tmp_upload_path, self.local_filename)
-        shutil.copyfile(self.source_filename, upload_filename)
-        self.source_filename = upload_filename
-
-        self.run_converter(name=CONVERTER_OB,
-                           filename=upload_filename,
-                           delete_input=True)
-
-        # Check that the input file has been deleted and the output file exists where we expect it to
-        self.check_file_status(input_exist=False, output_exist=True)
+        run_test_conversion_with_library(specs.cleanup_input_test)
 
     def test_xyz_to_inchi_err(self):
         """Run a test of the converter on an `.xyz` to `.inchi` conversion we expect to fail

@@ -37,13 +37,16 @@ class MultiCallback:
 
 
 @dataclass
-class CheckOutputStatus:
-    """Callable class which checks the status of standard output files from a conversion"""
+class CheckFileStatus:
+    """Callable class which checks the presence or absence of standard input and output files for a conversion"""
+
+    expect_input_exists: bool | None = True
+    """Whether to expect that the input file of the conversion exists (with non-zero size) or not. If None, will
+    not check either way."""
 
     expect_output_exists: bool | None = True
     """Whether to expect that the output file of the conversion exists (with non-zero size) or not. If None, will
-    not check either way.
-    """
+    not check either way."""
 
     expect_log_exists: bool | None = True
     """Whether to expect that the log exists (with non-zero size) or not. If None, will not check either way."""
@@ -55,6 +58,19 @@ class CheckOutputStatus:
         """Perform the check on output file and log status"""
 
         l_errors: list[str] = []
+
+        # Check the status of the input file
+        qualified_in_filename = test_info.qualified_in_filename
+        if self.expect_input_exists:
+            if not os.path.isfile(qualified_in_filename):
+                l_errors.append(f"ERROR: Expected input file for conversion '{qualified_in_filename}' does not "
+                                "exist")
+            elif os.path.getsize(qualified_in_filename) == 0:
+                l_errors.append(f"ERROR: Expected input file for conversion '{qualified_in_filename}' exists but "
+                                "is unexpectedly empty")
+        elif self.expect_output_exists is False and os.path.isfile(qualified_in_filename):
+            l_errors.append(f"ERROR: Input file from conversion '{qualified_in_filename}' exists, but was expected "
+                            "to not exist")
 
         # Check the status of the output file
         qualified_out_filename = test_info.qualified_out_filename

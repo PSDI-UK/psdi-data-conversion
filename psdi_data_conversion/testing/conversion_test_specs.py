@@ -12,7 +12,7 @@ from psdi_data_conversion.converters.base import FileConverterInputException, Fi
 from psdi_data_conversion.converters.c2x import CONVERTER_C2X
 from psdi_data_conversion.converters.openbabel import CONVERTER_OB
 from psdi_data_conversion.testing.conversion_callbacks import (CheckException, CheckLogContents,
-                                                               CheckLogContentsSuccess, CheckOutputStatus,
+                                                               CheckLogContentsSuccess, CheckFileStatus,
                                                                MultiCallback)
 from psdi_data_conversion.testing.utils import ConversionTestSpec
 
@@ -32,7 +32,7 @@ basic_tests = ConversionTestSpec(filename=["1NE6.mmcif", "standard_test.cdxml",
                                  conversion_kwargs=[{"data": default_ob_data}, {"data": default_ob_data},
                                                     {}, {},
                                                     {}, {},],
-                                 post_conversion_callback=MultiCallback([CheckOutputStatus(),
+                                 post_conversion_callback=MultiCallback([CheckFileStatus(),
                                                                          CheckLogContentsSuccess()]))
 """A basic set of test conversions which we expect to succeed without issue, running two conversions with each of the
 Open Babel, Atomsk, and c2x converters"""
@@ -46,8 +46,8 @@ open_babel_warning_test = ConversionTestSpec(filename="1NE6.mmcif",
                                              ]))
 """A test that confirms expected warnings form Open Babel are output and captured in the log"""
 
-invalid_converter_callback = MultiCallback([CheckOutputStatus(expect_output_exists=False,
-                                                              expect_log_exists=False),
+invalid_converter_callback = MultiCallback([CheckFileStatus(expect_output_exists=False,
+                                                            expect_log_exists=False),
                                             CheckException(ex_type=FileConverterInputException,
                                                            ex_message="Converter {} not recognized")])
 invalid_converter_test = ConversionTestSpec(filename="1NE6.mmcif",
@@ -71,7 +71,13 @@ quality_note_test = ConversionTestSpec(filename="quartz.xyz",
 isn't present in the input and has to be extrapolated, and the 2D and 3D coordinates properties aren't present in the
 output and will be lost"""
 
-max_size_callback = MultiCallback([CheckOutputStatus(expect_output_exists=False),
+cleanup_input_test = ConversionTestSpec(filename="hemoglobin.pdb",
+                                        to_format="cif",
+                                        conversion_kwargs={"data": default_ob_data, "delete_input": True},
+                                        post_conversion_callback=CheckFileStatus(expect_input_exists=False))
+"""A test that the input file to a conversion is deleted when cleanup is requested"""
+
+max_size_callback = MultiCallback([CheckFileStatus(expect_output_exists=False),
                                    CheckLogContents(l_strings_to_find=["Output file exceeds maximum size"]),
                                    CheckException(ex_type=FileConverterSizeException,
                                                   ex_message="exceeds maximum size",
