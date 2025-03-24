@@ -178,27 +178,27 @@ class CheckLogContents:
         for string_to_find in l_strings_to_find:
             if not string_with_placeholders_matches(string_to_find, log_text):
                 l_errors.append(f"ERROR: String \"{string_to_find}\" was expected in log file "
-                                f"'{qualified_log_filename}' but was not found")
+                                f"'{qualified_log_filename}' but was not found. Log text:\n {log_text}")
 
         # Check that all excluded strings are not present
         for l_strings_to_exclude in l_strings_to_exclude:
             if string_with_placeholders_matches(l_strings_to_exclude, log_text):
                 l_errors.append(f"ERROR: String \"{l_strings_to_exclude}\" was not expected in log file "
-                                f"'{qualified_log_filename}' but was found")
+                                f"'{qualified_log_filename}' but was found. Log text:\n {log_text}")
 
         # Check that all expected regexes are present
         for regex_to_find in l_regex_to_find:
             compiled_regex = re.compile(regex_to_find)
             if not compiled_regex.search(log_text):
                 l_errors.append(f"ERROR: Regex /{regex_to_find}/ was expected in log file "
-                                f"'{qualified_log_filename}' but was not found")
+                                f"'{qualified_log_filename}' but was not found. Log text:\n {log_text}")
 
         # Check that all excluded regexes are not present
         for regex_to_exclude in l_regex_to_exclude:
             compiled_regex = re.compile(regex_to_find)
             if compiled_regex.search(log_text):
                 l_errors.append(f"ERROR: Regex /{regex_to_exclude}/ was not expected in log file "
-                                f"'{qualified_log_filename}' but was found")
+                                f"'{qualified_log_filename}' but was found. Log text:\n {log_text}")
 
         # Join any errors for output
         res = "\n".join(l_errors)
@@ -212,7 +212,7 @@ class CheckLogContentsSuccess(CheckLogContents):
     def get_default_strings_to_exclude(self, test_info: ConversionTestInfo) -> Iterable[str]:
         """Get a default list of strings to NOT find in the output log; can be overridden by child classes to implement
         defaults"""
-        return ["ERROR"]
+        return ["ERROR", "Received exception"]
 
     def get_default_regex_to_find(self, test_info: ConversionTestInfo) -> Iterable[str]:
         """Get a default list of uncompiled regular expressions to match in the output log; can be overridden by child
