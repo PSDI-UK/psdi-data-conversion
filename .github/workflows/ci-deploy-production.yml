@@ -17,6 +17,8 @@ on:
 jobs:
 
   deploy-stfc-production-k8s:
+    # run on our self hosted github runners enabling access to STFC infrastructure
+    runs-on: psdi-uk-runners 
     steps:
     - name: Install jq
       run: |
