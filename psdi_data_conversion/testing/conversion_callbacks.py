@@ -6,7 +6,6 @@ conversion test, run with the functions and classes defined in the `utils.py` mo
 """
 
 from collections.abc import Callable, Iterable
-from copy import deepcopy
 from dataclasses import dataclass, field
 import os
 import re
@@ -126,6 +125,26 @@ class CheckLogContents:
     l_regex_to_exclude: Iterable[str] = field(default_factory=list)
     """List of uncompiled regular expressions which must NOT be matched anywhere in the log"""
 
+    def get_default_strings_to_find(self, test_info: ConversionTestInfo) -> list[str]:
+        """Get a default list of strings to find in the output log; can be overridden by child classes to implement
+        defaults"""
+        return []
+
+    def get_default_strings_to_exclude(self, test_info: ConversionTestInfo) -> list[str]:
+        """Get a default list of strings to NOT find in the output log; can be overridden by child classes to implement
+        defaults"""
+        return []
+
+    def get_default_regex_to_find(self, test_info: ConversionTestInfo) -> list[str]:
+        """Get a default list of uncompiled regular expressions to match in the output log; can be overridden by child
+        classes to implement defaults"""
+        return []
+
+    def get_default_regex_to_exclude(self, test_info: ConversionTestInfo) -> list[str]:
+        """Get a default list of uncompiled regular expressions to NOT match in the output log; can be overridden by
+        child classes to implement defaults"""
+        return []
+
     def __call__(self, test_info: ConversionTestInfo) -> str:
         """Perform the check on log contents"""
 
@@ -145,20 +164,15 @@ class CheckLogContents:
             l_regex_to_find = self.l_regex_to_find
             l_regex_to_exclude = self.l_regex_to_exclude
 
-        if not self.disable_default_checks:
-
-            l_strings_to_find = self.l_strings_to_find
-
-            # Make sure there's no error listed in the log
-            l_strings_to_exclude = deepcopy(list(self.l_strings_to_exclude))
-            l_strings_to_exclude.append("ERROR")
-
-            # Make sure the log includes the filename and timestamp
-            l_regex_to_find = deepcopy(list(self.l_regex_to_find))
-            l_regex_to_find.append(r"File name:\s+"+os.path.splitext(test_info.test_spec.filename)[0])
-            l_regex_to_find.append(DATETIME_RE_RAW)
-
-            l_regex_to_exclude = self.l_regex_to_exclude
+        else:
+            l_strings_to_find: list[str] = (list(self.l_strings_to_find) +
+                                            self.get_default_strings_to_find(test_info))
+            l_strings_to_exclude: list[str] = (list(self.l_strings_to_exclude) +
+                                               self.get_default_strings_to_exclude(test_info))
+            l_regex_to_find: list[str] = (list(self.l_regex_to_find) +
+                                          self.get_default_regex_to_find(test_info))
+            l_regex_to_exclude: list[str] = (list(self.l_regex_to_exclude) +
+                                             self.get_default_regex_to_exclude(test_info))
 
         # Check that all expected strings are present
         for string_to_find in l_strings_to_find:
@@ -189,3 +203,19 @@ class CheckLogContents:
         # Join any errors for output
         res = "\n".join(l_errors)
         return res
+
+
+@dataclass
+class CheckLogContentsSuccess(CheckLogContents):
+    """Specialized callback to check log contents for a successful conversion"""
+
+    def get_default_strings_to_exclude(self, test_info: ConversionTestInfo) -> Iterable[str]:
+        """Get a default list of strings to NOT find in the output log; can be overridden by child classes to implement
+        defaults"""
+        return ["ERROR"]
+
+    def get_default_regex_to_find(self, test_info: ConversionTestInfo) -> Iterable[str]:
+        """Get a default list of uncompiled regular expressions to match in the output log; can be overridden by child
+        classes to implement defaults"""
+        return [r"File name:\s*"+os.path.splitext(test_info.test_spec.filename)[0],
+                DATETIME_RE_RAW]

@@ -42,14 +42,6 @@ def base_data():
 
 
 @pytest.fixture()
-def base_input():
-    """A fixture providing a dict of default input values for the converter which aren't provided in the `data`
-    """
-    return {'from_format': None,
-            'to_format': 'pdb'}
-
-
-@pytest.fixture()
 def tmp_upload_path(tmp_path):
     """Fixture providing a temporary directory for upload files
     """
@@ -76,7 +68,7 @@ def test_default():
 class TestConverter:
 
     @pytest.fixture(autouse=True)
-    def setup_test(self, base_data: dict[str, Any], base_input: dict[str, Any]) -> None:
+    def setup_test(self, base_data: dict[str, Any]) -> None:
         """Reset global aspects before a test, so that different tests won't interfere with each other,
         and save references to fixtures.
         """
@@ -92,7 +84,6 @@ class TestConverter:
 
         # Save fixtures
         self.base_data = base_data
-        self.base_input = base_input
 
     def get_converter_kwargs(self,
                              data: dict | None = None,
@@ -184,38 +175,7 @@ class TestConverter:
     def test_exceed_output_file_size(self):
         """Run a test of the converter to ensure it reports an error properly if the output file size is too large
         """
-
-        self.get_input_info(filename="1NE6.mmcif")
-
-        self.run_converter(expect_code=const.STATUS_CODE_SIZE,
-                           max_file_size=0.0001)
-
-        # Check that the input file remains but no output file has been created
-        self.check_file_status(input_exist=True, output_exist=False)
-
-        # Check that the logs are as we expect
-        self.get_logs()
-
-        # Check that all logs contain the expected error
-        for log_type in ("global", "output"):
-            log_text = getattr(self, f"{log_type}_log_text")
-            assert "Output file exceeds maximum size" in log_text, ("Did not find expected error message in "
-                                                                    f"{log_type} log at " +
-                                                                    getattr(self, f"{log_type}_log_filename"))
-
-        # Now check that 0 properly works to indicate unlimited size
-        self.get_input_info(filename="1NE6.mmcif")
-        self.run_converter(max_file_size=0)
-        self.check_file_status(input_exist=True, output_exist=True)
-
-        # Check that it stops partway through when running on an archive. The tarball here is smaller than the size
-        # limit, but the unpacked files are larger
-        self.get_input_info(filename="caffeine-smi.tar.gz")
-        self.run_converter(expect_code=const.STATUS_CODE_SIZE,
-                           max_file_size=0.0005)
-        self.check_file_status(input_exist=True, output_exist=False)
-        self.get_logs()
-        assert "Output file exceeds maximum size" in self.output_log_text
+        run_test_conversion_with_library(specs.max_size_test)
 
     def test_invalid_converter(self):
         """Run a test of the converter to ensure it reports an error properly if an invalid converter is requested

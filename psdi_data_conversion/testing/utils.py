@@ -16,6 +16,7 @@ import pytest
 
 from psdi_data_conversion.constants import CONVERTER_DEFAULT, GLOBAL_LOG_FILENAME, OUTPUT_LOG_EXT
 from psdi_data_conversion.converter import run_converter
+from psdi_data_conversion.file_io import is_archive, split_archive_ext
 from psdi_data_conversion.testing.constants import INPUT_TEST_DATA_LOC
 
 
@@ -205,12 +206,16 @@ class SingleConversionTestSpec:
     @property
     def out_filename(self) -> str:
         """The unqualified name of the output file which should have been created by the conversion."""
-        return f"{os.path.splitext(self.filename)[0]}.{self.to_format}"
+        if not is_archive(self.filename):
+            return f"{os.path.splitext(self.filename)[0]}.{self.to_format}"
+        else:
+            filename_base, ext = split_archive_ext(os.path.basename(self.filename))
+            return f"{filename_base}-{self.to_format}{ext}"
 
     @property
     def log_filename(self) -> str:
         """The unqualified name of the log file which should have been created by the conversion."""
-        return f"{os.path.splitext(self.filename)[0]}{OUTPUT_LOG_EXT}"
+        return f"{split_archive_ext(self.filename)[0]}{OUTPUT_LOG_EXT}"
 
     @property
     def global_log_filename(self) -> str:
