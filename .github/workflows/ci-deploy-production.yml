@@ -41,8 +41,11 @@ jobs:
     - name: Get latest tag in the relase branch
       run: |
         # Use GitHub CR API to get list of all tags
-        RESPONSE=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-            "https://ghcr.io/v2/psdi-uk/psdi-data-conversion/data-conversion/tags/list")
+# DEBUGGING
+         curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            "https://ghcr.io/v2/psdi-uk/psdi-data-conversion/data-conversion/tags/list"
+#        RESPONSE=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+#            "https://ghcr.io/v2/psdi-uk/psdi-data-conversion/data-conversion/tags/list")
         # Extract only the tags corresponding to releases, i.e. of the form 'v*.*.*'
         TAGS=$(echo "$RESPONSE" | jq -r '.[].name' | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+')
         # Find the highest version number
