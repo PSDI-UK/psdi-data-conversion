@@ -8,7 +8,6 @@ conversion test, run with the functions and classes defined in the `utils.py` mo
 from collections.abc import Callable, Iterable
 from copy import deepcopy
 from dataclasses import dataclass, field
-from genericpath import isfile
 import os
 import re
 

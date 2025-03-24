@@ -15,14 +15,9 @@ from typing import Any
 import pytest
 
 from psdi_data_conversion import constants as const
-from psdi_data_conversion.converter import L_REGISTERED_CONVERTERS, run_converter
-from psdi_data_conversion.converters.atomsk import CONVERTER_ATO
-from psdi_data_conversion.converters.base import FileConverterAbortException
-from psdi_data_conversion.converters.c2x import CONVERTER_C2X
+from psdi_data_conversion.converter import L_REGISTERED_CONVERTERS
 from psdi_data_conversion.converters.openbabel import CONVERTER_OB, OBFileConverter
-from psdi_data_conversion.file_io import split_archive_ext
 from psdi_data_conversion.main import FileConverterInputException
-from psdi_data_conversion.testing.constants import INPUT_TEST_DATA_LOC
 from psdi_data_conversion.testing.utils import run_test_conversion_with_library
 from psdi_data_conversion.testing import conversion_test_specs as specs
 

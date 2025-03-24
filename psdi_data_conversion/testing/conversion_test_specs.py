@@ -40,4 +40,5 @@ quality_note_test = ConversionTestSpec(filename="quartz.xyz",
                                            l_strings_to_find=["WARNING",
                                                               const.QUAL_NOTE_OUT_MISSING.format(const.QUAL_2D_LABEL),
                                                               const.QUAL_NOTE_OUT_MISSING.format(const.QUAL_3D_LABEL),
-                                                              const.QUAL_NOTE_IN_MISSING.format(const.QUAL_CONN_LABEL)]))
+                                                              const.QUAL_NOTE_IN_MISSING.format(const.QUAL_CONN_LABEL)]
+                                       ))
