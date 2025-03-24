@@ -53,5 +53,5 @@ jobs:
       secrets: inherit # pass all secrets for the environment
       with:
         container_tag: ${{ env.TARGET_TAG }}
-	# >>>>>>>>>>>>>>> MODIFICATION FOR TESTING PURPOSES: production -> staging <<<<<<<<<<<<<<<
+        # >>>>>>>>>>>>>>> MODIFICATION FOR TESTING PURPOSES: production -> staging <<<<<<<<<<<<<<<
         environment: staging
