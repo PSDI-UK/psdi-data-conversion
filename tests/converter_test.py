@@ -182,12 +182,13 @@ class TestConverter:
         test_file_size = 1234
         os.environ[const.MAX_FILESIZE_EV] = str(test_file_size)
 
-        self.get_input_info(filename="1NE6.mmcif")
-        converter = OBFileConverter(use_envvars=True,
-                                    **self.get_converter_kwargs())
+        converter = OBFileConverter(filename="1NE6.mmcif",
+                                    to_format="pdb",
+                                    use_envvars=True,)
         assert math.isclose(converter.max_file_size, test_file_size*const.MEGABYTE)
 
         # And also check it isn't applied if we don't ask it to use envvars
-        converter_no_ev = OBFileConverter(use_envvars=False,
-                                          **self.get_converter_kwargs())
+        converter_no_ev = OBFileConverter(filename="1NE6.mmcif",
+                                          to_format="pdb",
+                                          use_envvars=False,)
         assert not math.isclose(converter_no_ev.max_file_size, test_file_size*const.MEGABYTE)
