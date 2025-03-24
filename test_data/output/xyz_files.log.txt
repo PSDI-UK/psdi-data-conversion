@@ -1,0 +1,80 @@
+[2025-03-07 09:03:40] WARNING [data-conversion.__init__:350] :
+Potential data loss or extrapolation issues with the conversion from xyz to mol:
+- Potential data extrapolation: Atomic connections are represented in the output format but not the input format
+
+[2025-03-07 09:03:40] INFO [data-conversion._log_success:576] :
+File name:         caffeine
+From:              xyz: XYZ cartesian coordinates
+To:                mol: MDL MOL
+Converter:         Open Babel
+Coord. gen.:       neither
+Coord. option:     none
+Read options:      none
+Write options:     none
+Read opts + args:  none
+Write opts + args: none
+Quality:           good
+Success:           Assuming that the data provided was of the correct format, the conversion
+                   was successful (to the best of our knowledge) subject to any warnings below.
+
+
+[2025-03-07 09:03:40] WARNING [data-conversion.__init__:350] :
+Potential data loss or extrapolation issues with the conversion from xyz to mol:
+- Potential data extrapolation: Atomic connections are represented in the output format but not the input format
+
+[2025-03-07 09:03:40] INFO [data-conversion._log_success:576] :
+File name:         cholesterol
+From:              xyz: XYZ cartesian coordinates
+To:                mol: MDL MOL
+Converter:         Open Babel
+Coord. gen.:       neither
+Coord. option:     none
+Read options:      none
+Write options:     none
+Read opts + args:  none
+Write opts + args: none
+Quality:           good
+Success:           Assuming that the data provided was of the correct format, the conversion
+                   was successful (to the best of our knowledge) subject to any warnings below.
+
+
+[2025-03-07 09:03:40] WARNING [data-conversion.__init__:350] :
+Potential data loss or extrapolation issues with the conversion from xyz to mol:
+- Potential data extrapolation: Atomic connections are represented in the output format but not the input format
+
+[2025-03-07 09:03:40] INFO [data-conversion._log_success:576] :
+File name:         ethanol
+From:              xyz: XYZ cartesian coordinates
+To:                mol: MDL MOL
+Converter:         Open Babel
+Coord. gen.:       neither
+Coord. option:     none
+Read options:      none
+Write options:     none
+Read opts + args:  none
+Write opts + args: none
+Quality:           good
+Success:           Assuming that the data provided was of the correct format, the conversion
+                   was successful (to the best of our knowledge) subject to any warnings below.
+
+
+[2025-03-07 09:03:40] WARNING [data-conversion.__init__:350] :
+Potential data loss or extrapolation issues with the conversion from xyz to mol:
+- Potential data extrapolation: Atomic connections are represented in the output format but not the input format
+
+[2025-03-07 09:03:40] INFO [data-conversion._log_success:576] :
+File name:         taxol
+From:              xyz: XYZ cartesian coordinates
+To:                mol: MDL MOL
+Converter:         Open Babel
+Coord. gen.:       neither
+Coord. option:     none
+Read options:      none
+Write options:     none
+Read opts + args:  none
+Write opts + args: none
+Quality:           good
+Success:           Assuming that the data provided was of the correct format, the conversion
+                   was successful (to the best of our knowledge) subject to any warnings below.
+
+

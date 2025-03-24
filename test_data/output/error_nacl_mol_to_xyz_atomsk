@@ -1,0 +1,33 @@
+ERROR: Request to the backend converter returned status 'error' and message: INTERNAL SERVER ERROR
+The following unexpected exception was raised by the converter:
+Traceback (most recent call last):
+  File "/tmp/8dd574d89c8c153/psdi_data_conversion/converters/base.py", line 343, in __init__
+    raise FileConverterHelpException(f"Conversion from {self.from_format} to {self.to_format} "
+psdi_data_conversion.converters.base.FileConverterHelpException: Conversion from mol to xyz with Atomsk is not supported.
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/tmp/8dd574d89c8c153/psdi_data_conversion/converters/base.py", line 526, in _abort
+    self.abort_callback(status_code, message, e=e, **kwargs)
+  File "/opt/python/3.12.8/lib/python3.12/site-packages/flask/helpers.py", line 284, in abort
+    current_app.aborter(code, *args, **kwargs)
+  File "/opt/python/3.12.8/lib/python3.12/site-packages/werkzeug/exceptions.py", line 876, in __call__
+    raise self.mapping[code](*args, **kwargs)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: InternalServerError.__init__() got an unexpected keyword argument 'e'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/tmp/8dd574d89c8c153/psdi_data_conversion/app.py", line 84, in convert
+    conversion_output = run_converter(name=request.form['converter'],
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/8dd574d89c8c153/psdi_data_conversion/converter.py", line 340, in run_converter
+    l_run_output.append(get_converter(filename,
+                        ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/8dd574d89c8c153/psdi_data_conversion/converter.py", line 159, in get_converter
+    return converter_class(*args, **converter_kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/8dd574d89c8c153/psdi_data_conversion/converters/base.py", line 366, in __init__
+    self._ab

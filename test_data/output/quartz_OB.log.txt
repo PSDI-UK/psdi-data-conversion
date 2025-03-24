@@ -1,0 +1,27 @@
+[2025-03-06 11:26:17] WARNING [data-conversion.__init__:350] :
+Potential data loss or extrapolation issues with the conversion from xyz to cif:
+- Potential data loss: 2D atomic coordinates are represented in the input format, but its representation in the output format is unknown
+- Potential data loss: 2D atomic coordinates are represented in the input format, but its representation in the output format is unknown
+- Potential data loss: Atomic composition is represented in the input format, but its representation in the output format is unknown
+- Potential data loss: Atomic connections are represented in the input format, but its representation in the output format is unknown
+
+[2025-03-06 11:26:17] INFO [data-conversion._log_success:576] :
+File name:         quartz
+From:              xyz: XYZ cartesian coordinates
+To:                cif: Crystallographic Information File
+Converter:         Open Babel
+Coord. gen.:       neither
+Coord. option:     none
+Read options:      none
+Write options:     none
+Read opts + args:  none
+Write opts + args: none
+Quality:           not tested
+Success:           Assuming that the data provided was of the correct format, the conversion
+                   was successful (to the best of our knowledge) subject to any warnings below.
+
+==============================
+*** Open Babel Warning  in ReadMolecule
+  Problems reading an XYZ file: Could not read line #11, file error.
+ According to line one, there should be 9 atoms, and therefore 11 lines in the file.
+
