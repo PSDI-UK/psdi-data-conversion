@@ -18,7 +18,7 @@ jobs:
 
   deploy-stfc-production-k8s:
     # run on our self hosted github runners enabling access to STFC infrastructure
-    runs-on: psdi-uk-runners 
+    runs-on: psdi-uk-runners
     steps:
     - name: Install jq
       run: |
@@ -52,7 +52,6 @@ jobs:
         GIT_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
     - name: Deploy container with tag to production environment
       uses: ./.github/workflows/job-deploy-k8s.yml # use the callable deploy job
-      secrets: inherit # pass all secrets for the environment
       with:
         container_tag: ${{ env.TARGET_TAG }}
         # >>>>>>>>>>>>>>> MODIFICATION FOR TESTING PURPOSES: production -> staging <<<<<<<<<<<<<<<
