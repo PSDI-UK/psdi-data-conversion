@@ -37,6 +37,15 @@ basic_tests = ConversionTestSpec(filename=["1NE6.mmcif", "standard_test.cdxml",
 """A basic set of test conversions which we expect to succeed without issue, running two conversions with each of the
 Open Babel, Atomsk, and c2x converters"""
 
+open_babel_warning_test = ConversionTestSpec(filename="1NE6.mmcif",
+                                             to_format="pdb",
+                                             conversion_kwargs={"data": default_ob_data},
+                                             post_conversion_callback=CheckLogContentsSuccess(l_strings_to_find=[
+                                                 "Open Babel Warning",
+                                                 "Failed to kekulize aromatic bonds",
+                                             ]))
+"""A test that confirms expected warnings form Open Babel are output and captured in the log"""
+
 quality_note_callback = CheckLogContentsSuccess(
     l_strings_to_find=["WARNING",
                        const.QUAL_NOTE_OUT_MISSING.format(const.QUAL_2D_LABEL),

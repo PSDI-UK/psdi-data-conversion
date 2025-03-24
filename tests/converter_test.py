@@ -9,7 +9,6 @@ from copy import deepcopy
 import logging
 import math
 import os
-import re
 import shutil
 from typing import Any
 import pytest
@@ -147,30 +146,10 @@ class TestConverter:
         """
         run_test_conversion_with_library(specs.basic_tests)
 
-    def test_mmcif_to_pdb(self):
-        """Run a test of the converter on a straightforward `.mmcif` to `.pdb` conversion
+    def test_open_babel_warning(self):
+        """Run a test that expected warnings from Open Babel are captured in the log
         """
-
-        self.get_input_info(filename="1NE6.mmcif")
-
-        self.run_converter()
-
-        # Check that the input file has not been deleted and the output file exists where we expect it to
-        self.check_file_status(input_exist=True, output_exist=True)
-
-        # Check that the logs are as we expect
-        self.get_logs()
-
-        # Check that the global log file is empty
-        assert len(self.global_log_text) == 0
-
-        # Check that the output log contains expected information
-        assert re.compile(r"File name:\s+"+self.filename_base).search(self.output_log_text)
-        assert "Open Babel Warning" in self.output_log_text
-        assert "Failed to kekulize aromatic bonds" in self.output_log_text
-
-        timestamp_re = re.compile(const.DATETIME_RE_RAW)
-        assert timestamp_re.search(self.output_log_text)
+        run_test_conversion_with_library(specs.open_babel_warning_test)
 
     def test_exceed_output_file_size(self):
         """Run a test of the converter to ensure it reports an error properly if the output file size is too large
