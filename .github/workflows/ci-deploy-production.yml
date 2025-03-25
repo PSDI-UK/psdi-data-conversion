@@ -16,9 +16,11 @@ on:
 
 jobs:
 
-  deploy-stfc-production-k8s:
+  get-latest-release-tag:
     # run on our self hosted github runners enabling access to STFC infrastructure
     runs-on: psdi-uk-runners
+    outputs:
+      tag: ${{ steps.get-tag.outputs.TARGET_TAG }}
     steps:
     - uses: actions/checkout@v4
     - name: Setup docker auth
@@ -37,6 +39,7 @@ jobs:
         GIT_USERNAME: ${{ github.actor }}
         GIT_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
     - name: Get latest tag in the relase branch
+      id: get-tag
       run: |
         # Use GitHub CR API to get list of all tags
         GHCR_TOKEN=$(echo -n "${{ secrets.GITHUB_TOKEN }}" | base64 -w 0)
@@ -46,10 +49,13 @@ jobs:
         TAGS=$(echo "$RESPONSE" | jq -r '."tags"[]' | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+')
         # Find the highest version number
         TARGET_TAG=$(echo "$TAGS" | sort -V | tail -n 1)
-        echo "TARGET_TAG=$TARGET_TAG" >> $GITHUB_ENV # Make 'TARGET_TAG' available in future steps via 'env.TARGET_TAG'
-    - name: Deploy container with tag to production environment
+        echo "TARGET_TAG=$TARGET_TAG" >> "$GITHUB_OUTPUT"
+
+    # Deploy container with tag to production environment
+    deploy-stfc-production-k8s:
+      needs: get-latest-release-tag
       uses: ./.github/workflows/job-deploy-k8s.yml # use the callable deploy job
       with:
-        container_tag: ${{ env.TARGET_TAG }}
+        container_tag: ${{ needs.get-latest-release-tag.tag }}
         # >>>>>>>>>>>>>>> MODIFICATION FOR TESTING PURPOSES: production -> staging <<<<<<<<<<<<<<<
         environment: staging
