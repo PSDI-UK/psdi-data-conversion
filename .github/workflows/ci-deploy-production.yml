@@ -50,7 +50,7 @@ jobs:
         # Find the highest version number
         TARGET_TAG=$(echo "$TAGS" | sort -V | tail -n 1)
         echo "TARGET_TAG=$TARGET_TAG" >> "$GITHUB_OUTPUT"
-	echo "Highest version tag found to be = $TARGET_TAG"
+        echo "Highest version tag found to be = $TARGET_TAG"
 
   # Deploy container with tag to production environment
   deploy-stfc-production-k8s:
