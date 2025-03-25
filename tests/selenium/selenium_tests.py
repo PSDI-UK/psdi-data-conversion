@@ -112,13 +112,13 @@ def test_cdxml_to_inchi_conversion(driver: WebDriver):
     driver.find_element(By.XPATH, "//input[@id='yesButton']").click()
 
     # Select the input file.
-    wait_and_find_element("//input[@id='fileToUpload']").send_keys(str(input_file))
+    wait_and_find_element(driver, "//input[@id='fileToUpload']").send_keys(str(input_file))
 
     # Request the log file
-    wait_and_find_element("//input[@id='requestLog']").click()
+    wait_and_find_element(driver, "//input[@id='requestLog']").click()
 
     # Click on the "Convert" button.
-    wait_and_find_element("//input[@id='uploadButton']").click()
+    wait_and_find_element(driver, "//input[@id='uploadButton']").click()
 
     # Handle alert box.
     WebDriverWait(driver, TIMEOUT).until(EC.alert_is_present())
