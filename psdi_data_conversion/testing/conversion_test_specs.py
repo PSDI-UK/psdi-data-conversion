@@ -17,10 +17,6 @@ from psdi_data_conversion.testing.conversion_callbacks import (CheckException, C
                                                                CheckStdoutContents, MultiCallback)
 from psdi_data_conversion.testing.utils import ConversionTestSpec
 
-default_ob_data = {"coordinates": "neither",
-                   "coordOption": "medium",
-                   "upload_file": "true"}
-
 basic_tests = ConversionTestSpec(filename=["1NE6.mmcif", "standard_test.cdxml",
                                            "hemoglobin.pdb", "nacl.cif",
                                            "hemoglobin.pdb", "nacl.cif",
@@ -32,20 +28,16 @@ basic_tests = ConversionTestSpec(filename=["1NE6.mmcif", "standard_test.cdxml",
                                        CONVERTER_OB, CONVERTER_OB,
                                        CONVERTER_ATO, CONVERTER_ATO,
                                        CONVERTER_C2X, CONVERTER_C2X],
-                                 conversion_kwargs=[{"data": default_ob_data}, {"data": default_ob_data},
-                                                    {"data": default_ob_data}, {"data": default_ob_data},
-                                                    {}, {},
-                                                    {}, {},],
                                  post_conversion_callback=MultiCallback([CheckFileStatus(),
                                                                          CheckLogContentsSuccess()]))
 """A basic set of test conversions which we expect to succeed without issue, running two conversions with each of the
 Open Babel, Atomsk, and c2x converters"""
 
-log_mode_tests = ConversionTestSpec(conversion_kwargs=[{"data": default_ob_data, "log_mode": const.LOG_NONE},
-                                                       {"data": default_ob_data, "log_mode": const.LOG_STDOUT},
-                                                       {"data": default_ob_data, "log_mode": const.LOG_SIMPLE},
-                                                       {"data": default_ob_data, "log_mode": const.LOG_FULL},
-                                                       {"data": default_ob_data, "log_mode": const.LOG_FULL_FORCE},],
+log_mode_tests = ConversionTestSpec(conversion_kwargs=[{"log_mode": const.LOG_NONE},
+                                                       {"log_mode": const.LOG_STDOUT},
+                                                       {"log_mode": const.LOG_SIMPLE},
+                                                       {"log_mode": const.LOG_FULL},
+                                                       {"log_mode": const.LOG_FULL_FORCE},],
                                     post_conversion_callback=[CheckFileStatus(expect_log_exists=False,
                                                                               expect_global_log_exists=False),
                                                               CheckFileStatus(expect_log_exists=False,
@@ -63,7 +55,7 @@ NOTE: Not compatible with GUI tests, since the GUI requires the log mode to alwa
 """
 
 stdout_test = ConversionTestSpec(filename="nacl.cif",
-                                 conversion_kwargs={"data": default_ob_data, "log_mode": const.LOG_STDOUT},
+                                 conversion_kwargs={"log_mode": const.LOG_STDOUT},
                                  post_conversion_callback=CheckStdoutContents(l_strings_to_exclude=[
                                      "ERROR", "exception", "Exception"],
                                      l_regex_to_find=[r"File name:\s*nacl",
@@ -76,7 +68,6 @@ NOTE: Not compatible with GUI tests, since the GUI requires the log mode to alwa
 
 open_babel_warning_test = ConversionTestSpec(filename="1NE6.mmcif",
                                              to_format="pdb",
-                                             conversion_kwargs={"data": default_ob_data},
                                              post_conversion_callback=CheckLogContentsSuccess(l_strings_to_find=[
                                                  "Open Babel Warning",
                                                  "Failed to kekulize aromatic bonds",
@@ -88,7 +79,6 @@ invalid_converter_callback = MultiCallback([CheckFileStatus(expect_output_exists
                                             CheckException(ex_type=FileConverterInputException,
                                                            ex_message="Converter {} not recognized")])
 invalid_converter_test = ConversionTestSpec(name="INVALID",
-                                            conversion_kwargs={"data": default_ob_data},
                                             expect_success=False,
                                             post_conversion_callback=invalid_converter_callback)
 """A test that a proper error is returned if an invalid converter is requested"""
@@ -100,13 +90,12 @@ quality_note_callback = CheckLogContentsSuccess(
                        const.QUAL_NOTE_IN_MISSING.format(const.QUAL_CONN_LABEL)])
 quality_note_test = ConversionTestSpec(filename="quartz.xyz",
                                        to_format="inchi",
-                                       conversion_kwargs={"data": default_ob_data},
                                        post_conversion_callback=quality_note_callback)
 """A test conversion which we expect to produce a warning for conversion quality issues, where the connections property
 isn't present in the input and has to be extrapolated, and the 2D and 3D coordinates properties aren't present in the
 output and will be lost"""
 
-cleanup_input_test = ConversionTestSpec(conversion_kwargs={"data": default_ob_data, "delete_input": True},
+cleanup_input_test = ConversionTestSpec(conversion_kwargs={"delete_input": True},
                                         post_conversion_callback=CheckFileStatus(expect_input_exists=False))
 """A test that the input file to a conversion is deleted when cleanup is requested"""
 
@@ -115,7 +104,6 @@ failed_conversion_callback = MultiCallback([CheckFileStatus(expect_output_exists
                                                            ex_message="Problems reading an XYZ file")])
 failed_conversion_test = ConversionTestSpec(filename="quartz_err.xyz",
                                             to_format="inchi",
-                                            conversion_kwargs={"data": default_ob_data},
                                             expect_success=False,
                                             post_conversion_callback=failed_conversion_callback)
 """A test that a conversion which fails due to an invalid input file will properly fail"""
@@ -128,8 +116,8 @@ max_size_callback = MultiCallback([CheckFileStatus(expect_output_exists=False),
 max_size_test = ConversionTestSpec(filename=["1NE6.mmcif",
                                              "caffeine-smi.tar.gz"],
                                    to_format="pdb",
-                                   conversion_kwargs=[{"data": default_ob_data, "max_file_size": 0.0001},
-                                                      {"data": default_ob_data, "max_file_size": 0.0005}],
+                                   conversion_kwargs=[{"max_file_size": 0.0001},
+                                                      {"max_file_size": 0.0005}],
                                    expect_success=False,
                                    post_conversion_callback=max_size_callback)
 """A set of test conversion that the maximum size constraint is properly applied. In the first test, the input file
