@@ -434,7 +434,8 @@ def test_archive_convert(tmp_path_factory, capsys):
 
         # And test that it fails in strict mode
         bad_from_arg_string = f"{basic_arg_string} -f pdb --strict"
-        run_with_arg_string(bad_from_arg_string)
+        with pytest.raises(SystemExit):
+            run_with_arg_string(bad_from_arg_string)
         captured = capsys.readouterr()
         assert string_with_placeholders_matches("ERROR: {}" + const.ERR_WRONG_EXTENSIONS, captured.err)
         assert "Traceback" not in captured.out
