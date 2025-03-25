@@ -51,11 +51,11 @@ jobs:
         TARGET_TAG=$(echo "$TAGS" | sort -V | tail -n 1)
         echo "TARGET_TAG=$TARGET_TAG" >> "$GITHUB_OUTPUT"
 
-    # Deploy container with tag to production environment
-    deploy-stfc-production-k8s:
-      needs: get-latest-release-tag
-      uses: ./.github/workflows/job-deploy-k8s.yml # use the callable deploy job
-      with:
-        container_tag: ${{ needs.get-latest-release-tag.tag }}
-        # >>>>>>>>>>>>>>> MODIFICATION FOR TESTING PURPOSES: production -> staging <<<<<<<<<<<<<<<
-        environment: staging
+  # Deploy container with tag to production environment
+  deploy-stfc-production-k8s:
+    needs: get-latest-release-tag
+    uses: ./.github/workflows/job-deploy-k8s.yml # use the callable deploy job
+    with:
+      container_tag: ${{ needs.get-latest-release-tag.tag }}
+      # >>>>>>>>>>>>>>> MODIFICATION FOR TESTING PURPOSES: production -> staging <<<<<<<<<<<<<<<
+      environment: staging
