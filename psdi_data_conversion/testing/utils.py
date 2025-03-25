@@ -353,21 +353,32 @@ def _run_single_test_conversion_with_cla(test_spec: SingleConversionTestSpec,
     try:
         stdouterr = py.io.StdCaptureFD(in_=False)
 
-        run_converter_through_cla(filename=qualified_in_filename,
-                                  to_format=test_spec.to_format,
-                                  name=test_spec.name,
-                                  input_dir=input_dir,
-                                  output_dir=output_dir,
-                                  log_file=os.path.join(output_dir, test_spec.log_filename),
-                                  **test_spec.conversion_kwargs)
+        if test_spec.expect_success:
+            run_converter_through_cla(filename=qualified_in_filename,
+                                      to_format=test_spec.to_format,
+                                      name=test_spec.name,
+                                      input_dir=input_dir,
+                                      output_dir=output_dir,
+                                      log_file=os.path.join(output_dir, test_spec.log_filename),
+                                      **test_spec.conversion_kwargs)
+            success = True
+        else:
+            with pytest.raises(SystemExit) as exc_info:
+                run_converter_through_cla(filename=qualified_in_filename,
+                                          to_format=test_spec.to_format,
+                                          name=test_spec.name,
+                                          input_dir=input_dir,
+                                          output_dir=output_dir,
+                                          log_file=os.path.join(output_dir, test_spec.log_filename),
+                                          **test_spec.conversion_kwargs)
+            # Get the success from whether or not the exit code is 0
+            success = not exc_info.value.code
 
         qualified_out_filename = os.path.join(output_dir, test_spec.out_filename)
 
         # Determine success based on whether or not the output file exists with non-zero size
         if not os.path.isfile(qualified_out_filename) or os.path.getsize(qualified_out_filename) == 0:
             success = False
-        else:
-            success = True
 
     finally:
         stdout, stderr = stdouterr.reset()   # Grab stdout and stderr
