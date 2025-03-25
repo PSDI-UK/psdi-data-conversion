@@ -67,10 +67,10 @@ def test_initial_frontpage(driver: WebDriver):
 
     # Check that the 'from' and 'to' lists contains "abinit" and "acesin" respectively.
 
-    wait_for_element("//select[@id='fromList']/option")
+    wait_for_element(driver, "//select[@id='fromList']/option")
     driver.find_element(By.XPATH, "//select[@id='fromList']/option[contains(.,'abinit: ABINIT output')]")
 
-    wait_for_element("//select[@id='toList']/option")
+    wait_for_element(driver, "//select[@id='toList']/option")
     driver.find_element(By.XPATH, "//select[@id='toList']/option[contains(.,'acesin: ACES input')]")
 
     # Check that the available conversions list is empty.
@@ -97,7 +97,7 @@ def test_cdxml_to_inchi_conversion(driver: WebDriver):
 
     driver.get(f"{origin}/")
 
-    wait_for_element("//select[@id='fromList']/option")
+    wait_for_element(driver, "//select[@id='fromList']/option")
 
     # Select cdxml from the 'from' list.
     driver.find_element(By.XPATH, "//select[@id='fromList']/option[contains(.,'cdxml: ChemDraw CDXML')]").click()
