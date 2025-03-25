@@ -5,6 +5,7 @@ Created 2025-01-15 by Bryan Gillis.
 Tests of the command-line interface
 """
 
+import logging
 from math import isclose
 import os
 import pytest
@@ -22,8 +23,10 @@ from psdi_data_conversion.database import (get_conversion_quality, get_converter
 from psdi_data_conversion.dist import LINUX_LABEL, get_dist
 from psdi_data_conversion.file_io import unpack_zip_or_tar
 from psdi_data_conversion.log_utility import string_with_placeholders_matches
-from psdi_data_conversion.main import FileConverterInputException, main, parse_args
+from psdi_data_conversion.main import FileConverterInputException, parse_args
 from psdi_data_conversion.testing.constants import INPUT_TEST_DATA_LOC, OUTPUT_TEST_DATA_LOC
+from psdi_data_conversion.testing.utils import run_test_conversion_with_cla, run_with_arg_string
+from psdi_data_conversion.testing import conversion_test_specs as specs
 
 
 def test_unique_args():
@@ -45,12 +48,74 @@ def get_parsed_args(s):
         return parse_args()
 
 
-def run_with_arg_string(s):
-    """Runs the convert script with the provided argument string
+@pytest.fixture(autouse=True)
+def setup_test() -> None:
+    """Reset global aspects before a test, so that different tests won't interfere with each other"""
+
+    # Remove the global log file if one exists
+    try:
+        os.remove(const.GLOBAL_LOG_FILENAME)
+    except FileNotFoundError:
+        pass
+
+    # Clear any existing loggers so new ones will be created fresh
+    logging.Logger.manager.loggerDict.clear()
+
+
+def test_default():
+    """Test that the default converter is registered.
     """
-    l_args = shlex.split("test " + s)
-    with patch.object(sys, 'argv', l_args):
-        main()
+    assert const.CONVERTER_DEFAULT in L_REGISTERED_CONVERTERS
+
+
+def test_basic_conversions():
+    """Run a basic set of conversions with various converters and file formats which we expect to succeed without
+    issue.
+    """
+    run_test_conversion_with_cla(specs.basic_tests)
+
+
+def test_log_mode():
+    """Test that the various log modes result in the expected log files being created
+    """
+    run_test_conversion_with_cla(specs.log_mode_tests)
+
+
+def test_stdout():
+    """Test that the output is sent to stdout when requested
+    """
+    run_test_conversion_with_cla(specs.stdout_test)
+
+
+def test_open_babel_warning():
+    """Run a test that expected warnings from Open Babel are captured in the log
+    """
+    run_test_conversion_with_cla(specs.open_babel_warning_test)
+
+
+def test_invalid_converter():
+    """Run a test of the converter to ensure it reports an error properly if an invalid converter is requested
+    """
+    run_test_conversion_with_cla(specs.invalid_converter_test)
+
+
+def test_quality_note():
+    """Run a test of the converter on an `.xyz` to `.inchi` conversion which we expect to have warnings about data
+    loss and extrapolation
+    """
+    run_test_conversion_with_cla(specs.quality_note_test)
+
+
+def test_cleanup():
+    """Test that input files are deleted if requested
+    """
+    run_test_conversion_with_cla(specs.cleanup_input_test)
+
+
+def test_failed_conversion():
+    """Run a test of the converter on a conversion we expect to fail
+    """
+    run_test_conversion_with_cla(specs.failed_conversion_test)
 
 
 def test_input_validity():

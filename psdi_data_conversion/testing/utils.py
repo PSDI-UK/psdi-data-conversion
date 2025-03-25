@@ -358,6 +358,7 @@ def _run_single_test_conversion_with_cla(test_spec: SingleConversionTestSpec,
                                   name=test_spec.name,
                                   input_dir=input_dir,
                                   output_dir=output_dir,
+                                  log_file=os.path.join(output_dir, test_spec.log_filename),
                                   **test_spec.conversion_kwargs)
 
         qualified_out_filename = os.path.join(output_dir, test_spec.out_filename)
@@ -390,6 +391,7 @@ def run_converter_through_cla(filename: str,
                               name: str,
                               input_dir: str,
                               output_dir: str,
+                              log_file: str,
                               **conversion_kwargs):
     """Runs a test conversion through the command-line interface
 
@@ -408,10 +410,12 @@ def run_converter_through_cla(filename: str,
         The directory which contains the input file
     output_dir : str
         The directory which contains the output file
+    log_file : str
+        The desired name of the log file
     """
 
     # Start the argument string with the arguments we will always include
-    arg_string = f"{filename} -{input_dir} -t {to_format} -o {output_dir} -w {name}"
+    arg_string = f"{filename} -i {input_dir} -t {to_format} -o {output_dir} -w {name} --log-file {log_file}"
 
     # For each argument in the conversion kwargs, convert it to the appropriate argument to be provided to the
     # argument string. Keep track of all kwargs we've converted, and raise an error if any are left over

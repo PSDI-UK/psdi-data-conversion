@@ -122,4 +122,7 @@ max_size_test = ConversionTestSpec(filename=["1NE6.mmcif",
                                    post_conversion_callback=max_size_callback)
 """A set of test conversion that the maximum size constraint is properly applied. In the first test, the input file
 will be greater than the maximum size, and the test should fail as soon as it checks it. In the second test, the input
-archive is smaller than the maximum size, but the unpacked files in it are greater, so it should fail midway through."""
+archive is smaller than the maximum size, but the unpacked files in it are greater, so it should fail midway through.
+
+NOTE: Not compatible with CLA tests, since the CLA doesn't allow the imposition of a maximum size.
+"""
