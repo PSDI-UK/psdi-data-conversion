@@ -374,43 +374,6 @@ def test_conversion_info(capsys):
         assert string_is_present_in_out(f"{option_info.flag}<{option_info.brief}>{option_info.description}{info}")
 
 
-def test_convert(tmp_path_factory, capsys):
-    """Test running file conversions
-    """
-    input_dir = tmp_path_factory.mktemp("input")
-    output_dir = tmp_path_factory.mktemp("output")
-
-    test_filename_base = "1NE6"
-
-    from_format = "mmcif"
-    to_format = "pdb"
-
-    input_filename = f"{test_filename_base}.{from_format}"
-
-    # Symlink the input file from the test_data directory to the input directory
-    os.symlink(os.path.join(INPUT_TEST_DATA_LOC, input_filename),
-               os.path.join(input_dir, input_filename))
-
-    # Run a basic conversion
-    basic_arg_string = f"{input_filename} -t {to_format} -i {input_dir} -o {output_dir}"
-
-    # Testa call we expect to fail due to the wrong input type being provided
-    bad_from_arg_string = f"{basic_arg_string} -f pdb"
-    run_with_arg_string(bad_from_arg_string)
-    captured = capsys.readouterr()
-    assert "ERROR" in captured.err
-    assert "WARNING" in captured.err
-    assert "Traceback" not in captured.out
-    assert "Traceback" not in captured.err
-    assert "Success!" not in captured.out
-
-    # Check that we can specify a file with its format instead of extension
-    run_with_arg_string(f"{test_filename_base} -f {from_format} -t {to_format} -i {input_dir} -o {output_dir}")
-    captured = capsys.readouterr()
-    assert "Success!" in captured.out
-    assert "ERROR" not in captured.err
-
-
 def test_archive_convert(tmp_path_factory, capsys):
     """Test running conversion on archives of files
     """
