@@ -52,6 +52,13 @@ jobs:
         echo "TARGET_TAG=$TARGET_TAG" >> "$GITHUB_OUTPUT"
         echo "Highest version tag found to be = $TARGET_TAG"
 
+  debug-job:
+    needs: get-latest-release-tag
+    runs-on: psdi-uk-runners
+    steps:
+    - run: |
+        echo "Testing: tag = ${{ needs.get-latest-release-tag.outputs.tag }}"
+
   # Deploy container with tag to production environment
   deploy-stfc-production-k8s:
     needs: get-latest-release-tag
