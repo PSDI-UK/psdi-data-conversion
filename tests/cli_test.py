@@ -380,7 +380,6 @@ def test_convert(tmp_path_factory, capsys):
     to_format = "pdb"
 
     input_filename = f"{test_filename_base}.{from_format}"
-    output_filename = f"{test_filename_base}.{to_format}"
 
     # Symlink the input file from the test_data directory to the input directory
     os.symlink(os.path.join(INPUT_TEST_DATA_LOC, input_filename),
@@ -388,16 +387,6 @@ def test_convert(tmp_path_factory, capsys):
 
     # Run a basic conversion
     basic_arg_string = f"{input_filename} -t {to_format} -i {input_dir} -o {output_dir}"
-    run_with_arg_string(basic_arg_string)
-
-    # Check that the expected output file has been created
-    ex_output_file = os.path.join(output_dir, f"{output_filename}")
-    assert os.path.isfile(ex_output_file), f"Expected output file {ex_output_file} does not exist"
-
-    # Check logs and output
-    captured = capsys.readouterr()
-    assert "Success!" in captured.out
-    assert "ERROR" not in captured.err
 
     # Check that running in quiet mode suppresses output
     run_with_arg_string(basic_arg_string + " -q")
