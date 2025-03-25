@@ -9,8 +9,11 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from collections.abc import Callable, Iterable
 import os
+import shlex
+import sys
 from tempfile import TemporaryDirectory
 from typing import Any
+from unittest.mock import patch
 
 import py
 import pytest
@@ -18,6 +21,7 @@ import pytest
 from psdi_data_conversion.constants import CONVERTER_DEFAULT, GLOBAL_LOG_FILENAME, OUTPUT_LOG_EXT
 from psdi_data_conversion.converter import run_converter
 from psdi_data_conversion.file_io import is_archive, split_archive_ext
+from psdi_data_conversion.main import main as data_convert_main
 from psdi_data_conversion.testing.constants import INPUT_TEST_DATA_LOC
 
 
@@ -352,8 +356,8 @@ def _run_single_test_conversion_with_cla(test_spec: SingleConversionTestSpec,
         run_converter_through_cla(filename=qualified_in_filename,
                                   to_format=test_spec.to_format,
                                   name=test_spec.name,
-                                  upload_dir=input_dir,
-                                  download_dir=output_dir,
+                                  input_dir=input_dir,
+                                  output_dir=output_dir,
                                   **test_spec.conversion_kwargs)
 
         qualified_out_filename = os.path.join(output_dir, test_spec.out_filename)
@@ -379,3 +383,62 @@ def _run_single_test_conversion_with_cla(test_spec: SingleConversionTestSpec,
                                           captured_stderr=stderr)
         callback_msg = test_spec.post_conversion_callback(test_info)
         assert not callback_msg, callback_msg
+
+
+def run_converter_through_cla(filename: str,
+                              to_format: str,
+                              name: str,
+                              input_dir: str,
+                              output_dir: str,
+                              **conversion_kwargs):
+    """Runs a test conversion through the command-line interface
+
+    This function constructs an argument string to be passed to the script, which is called with the
+    `run_with_arg_string` function defined below.
+
+    Parameters
+    ----------
+    filename : str
+        The (unqualified) name of the input file to be converted
+    to_format : str
+        The format to convert the input file to
+    name : str
+        The name of the converter to use
+    input_dir : str
+        The directory which contains the input file
+    output_dir : str
+        The directory which contains the output file
+    """
+
+    # Start the argument string with the arguments we will always include
+    arg_string = f"{filename} -{input_dir} -t {to_format} -o {output_dir} -w {name}"
+
+    # For each argument in the conversion kwargs, convert it to the appropriate argument to be provided to the
+    # argument string. Keep track of all kwargs we've converted, and raise an error if any are left over
+    s_handled_kwargs = set()
+    for key, val in conversion_kwargs.items():
+        if key == "log_mode":
+            arg_string += f" --log-mode {val}"
+            s_handled_kwargs.add(key)
+        elif key == "delete_input":
+            if val:
+                arg_string += " --delete-input"
+            s_handled_kwargs.add(key)
+        elif key == "max_file_size":
+            if val != 0:
+                assert False, ("Test specification imposes a maximum file size, which isn't compatible with the "
+                               "command-line application.")
+    if len(conversion_kwargs) > len(s_handled_kwargs):
+        s_unhandled_kwargs = s_handled_kwargs.difference(set(conversion_kwargs))
+        assert False, ("Some values were passed to `conversion_kwargs` which could not be interpreted for the "
+                       f"command-line application: {s_unhandled_kwargs}")
+
+    run_with_arg_string(arg_string)
+
+
+def run_with_arg_string(arg_string: str):
+    """Runs the convert script with the provided argument string
+    """
+    l_args = shlex.split("test " + arg_string)
+    with patch.object(sys, 'argv', l_args):
+        data_convert_main()
