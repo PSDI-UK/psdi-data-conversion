@@ -11,8 +11,6 @@ name: CI - Deploy to production cluster
 run-name: CI - Deploy to production cluster
 on:
   workflow_dispatch:
-  # >>>>>>>>>>>>>>> MODIFICATION FOR TESTING PURPOSES: added push: because workflow_dispatch only is not supported in non-main branches <<<<<<<<<<<<<<<
-  push:
 
 jobs:
 
@@ -52,18 +50,11 @@ jobs:
         echo "TARGET_TAG=$TARGET_TAG" >> "$GITHUB_OUTPUT"
         echo "Highest version tag found to be = $TARGET_TAG"
 
-  debug-job:
-    needs: get-latest-release-tag
-    runs-on: psdi-uk-runners
-    steps:
-    - run: |
-        echo "Testing: tag = ${{ needs.get-latest-release-tag.outputs.tag }}"
-
   # Deploy container with tag to production environment
   deploy-stfc-production-k8s:
     needs: get-latest-release-tag
     uses: ./.github/workflows/job-deploy-k8s.yml # use the callable deploy job
     with:
       container_tag: ${{ needs.get-latest-release-tag.outputs.tag }}
-      # >>>>>>>>>>>>>>> MODIFICATION FOR TESTING PURPOSES: production -> staging <<<<<<<<<<<<<<<
+      #TODO: Change this to target production. Currently it targets staging
       environment: staging
