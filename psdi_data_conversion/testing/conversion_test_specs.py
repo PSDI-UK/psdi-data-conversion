@@ -8,8 +8,8 @@ application, and GUI.
 
 from psdi_data_conversion import constants as const
 from psdi_data_conversion.converters.atomsk import CONVERTER_ATO
-from psdi_data_conversion.converters.base import (FileConverterAbortException, FileConverterInputException,
-                                                  FileConverterSizeException)
+from psdi_data_conversion.converters.base import (FileConverterAbortException, FileConverterHelpException,
+                                                  FileConverterInputException, FileConverterSizeException)
 from psdi_data_conversion.converters.c2x import CONVERTER_C2X
 from psdi_data_conversion.converters.openbabel import CONVERTER_OB
 from psdi_data_conversion.testing.conversion_callbacks import (CheckException, CheckLogContents,
@@ -105,13 +105,20 @@ cleanup_input_test = ConversionTestSpec(conversion_kwargs={"delete_input": True}
                                         post_conversion_callback=CheckFileStatus(expect_input_exists=False))
 """A test that the input file to a conversion is deleted when cleanup is requested"""
 
-failed_conversion_callback = MultiCallback([CheckFileStatus(expect_output_exists=False),
-                                            CheckException(ex_type=FileConverterAbortException,
-                                                           ex_message="Problems reading an XYZ file")])
-failed_conversion_test = ConversionTestSpec(filename="quartz_err.xyz",
-                                            to_format="inchi",
+cant_read_xyz_callback = MultiCallback([CheckFileStatus(expect_output_exists=False),
+                                        CheckException(ex_type=FileConverterAbortException,
+                                                       ex_message="Problems reading an XYZ file")])
+invalid_conversion_callback = MultiCallback([CheckFileStatus(expect_output_exists=False,
+                                                             expect_log_exists=None),
+                                             CheckException(ex_type=FileConverterHelpException,
+                                                            ex_message="is not supported")])
+failed_conversion_test = ConversionTestSpec(filename=["quartz_err.xyz",
+                                                      "hemoglobin.pdb"],
+                                            to_format=["inchi",
+                                                       "pdb"],
                                             expect_success=False,
-                                            post_conversion_callback=failed_conversion_callback)
+                                            post_conversion_callback=[cant_read_xyz_callback,
+                                                                      invalid_conversion_callback])
 """A test that a conversion which fails due to an invalid input file will properly fail"""
 
 max_size_callback = MultiCallback([CheckFileStatus(expect_output_exists=False),

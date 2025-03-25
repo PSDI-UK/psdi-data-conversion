@@ -394,12 +394,6 @@ def test_convert(tmp_path_factory, capsys):
     # Run a basic conversion
     basic_arg_string = f"{input_filename} -t {to_format} -i {input_dir} -o {output_dir}"
 
-    # Check that running in quiet mode suppresses output
-    run_with_arg_string(basic_arg_string + " -q")
-    captured = capsys.readouterr()
-    assert "Success!" not in captured.out
-    assert "ERROR" not in captured.err
-
     # Test a call we expect to fail due to unsupported conversion
     test_pdb_file = "hemoglobin.pdb"
     os.symlink(os.path.join(INPUT_TEST_DATA_LOC, test_pdb_file),

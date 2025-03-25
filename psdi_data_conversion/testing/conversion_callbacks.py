@@ -308,8 +308,8 @@ class CheckException:
         # Check the exception message, if applicable
         if self.ex_message:
             if len(exc.args) == 0:
-                l_errors.append(f"ERROR: Expected string \"{self.ex_message}\" in exception {exc}'s message, but "
-                                "exception does not have any message")
+                l_errors.append(f"ERROR: Expected string \"{self.ex_message}\" in exception of type '{type(exc)}''s "
+                                "message, but exception does not have any message")
             elif not string_with_placeholders_matches(self.ex_message, str(exc.args[0])):
                 l_errors.append(f"ERROR: Expected string \"{self.ex_message}\" not found in exception message: "
                                 f"\"{exc.args[0]}\"")
