@@ -192,10 +192,22 @@ def feedback():
 def delete():
     """Delete files in folder 'downloads'
     """
-    os.remove(f"{const.DEFAULT_DOWNLOAD_DIR}/{request.form['filename']}")
-    os.remove(f"{const.DEFAULT_DOWNLOAD_DIR}/{request.form['logname']}")
 
-    return 'okay'
+    realbase = os.path.realpath(const.DEFAULT_DOWNLOAD_DIR)
+
+    realfilename = os.path.realpath(os.path.join(const.DEFAULT_DOWNLOAD_DIR, request.form['filename']))
+    reallogname = os.path.realpath(os.path.join(const.DEFAULT_DOWNLOAD_DIR, request.form['logname']))
+
+    if realfilename.startswith(realbase + os.sep) and reallogname.startswith(realbase + os.sep):
+
+        os.remove(realfilename)
+        os.remove(reallogname)
+
+        return 'okay'
+
+    else:
+
+        return Response(status=400)
 
 
 @app.route('/del/', methods=['POST'])
