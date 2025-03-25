@@ -432,7 +432,10 @@ def run_converter_through_cla(filename: str,
     # argument string. Keep track of all kwargs we've converted, and raise an error if any are left over
     s_handled_kwargs = set()
     for key, val in conversion_kwargs.items():
-        if key == "log_mode":
+        if key == "from_format":
+            arg_string += f" -f {val}"
+            s_handled_kwargs.add(key)
+        elif key == "log_mode":
             if val == LOG_NONE:
                 arg_string += " -q"
             else:

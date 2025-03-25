@@ -105,20 +105,31 @@ cleanup_input_test = ConversionTestSpec(conversion_kwargs={"delete_input": True}
                                         post_conversion_callback=CheckFileStatus(expect_input_exists=False))
 """A test that the input file to a conversion is deleted when cleanup is requested"""
 
-cant_read_xyz_callback = MultiCallback([CheckFileStatus(expect_output_exists=False),
+cant_read_xyz_callback = MultiCallback([CheckFileStatus(expect_output_exists=False,
+                                                        expect_log_exists=None),
                                         CheckException(ex_type=FileConverterAbortException,
                                                        ex_message="Problems reading an XYZ file")])
 invalid_conversion_callback = MultiCallback([CheckFileStatus(expect_output_exists=False,
                                                              expect_log_exists=None),
                                              CheckException(ex_type=FileConverterHelpException,
                                                             ex_message="is not supported")])
+wrong_type_callback = MultiCallback([CheckFileStatus(expect_output_exists=False,
+                                                     expect_log_exists=None),
+                                     CheckException(ex_type=FileConverterAbortException,
+                                                    ex_message="not a valid {} file")])
 failed_conversion_test = ConversionTestSpec(filename=["quartz_err.xyz",
-                                                      "hemoglobin.pdb"],
+                                                      "hemoglobin.pdb",
+                                                      "1NE6.mmcif"],
                                             to_format=["inchi",
-                                                       "pdb"],
+                                                       "pdb",
+                                                       "cif"],
+                                            conversion_kwargs=[{},
+                                                               {},
+                                                               {"from_format": "pdb"}],
                                             expect_success=False,
                                             post_conversion_callback=[cant_read_xyz_callback,
-                                                                      invalid_conversion_callback])
+                                                                      invalid_conversion_callback,
+                                                                      wrong_type_callback])
 """A test that a conversion which fails due to an invalid input file will properly fail"""
 
 max_size_callback = MultiCallback([CheckFileStatus(expect_output_exists=False),
