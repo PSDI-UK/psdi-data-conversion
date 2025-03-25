@@ -21,21 +21,6 @@ jobs:
       tag: ${{ steps.get-tag.outputs.TARGET_TAG }}
     steps:
     - uses: actions/checkout@v4
-    - name: Setup docker auth
-      run: |
-        mkdir -p ~/.docker
-        cat <<EOF > ~/.docker/config.json
-        {
-          "auths": {
-            "ghcr.io": {
-              "auth": "$(echo -n "$GIT_USERNAME:$GIT_PASSWORD" | base64 -w0)"
-            }
-          }
-        }
-        EOF
-      env: # needed to authenticate to github and download the repo
-        GIT_USERNAME: ${{ github.actor }}
-        GIT_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
     - name: Get latest tag in the relase branch
       id: get-tag
       run: |
