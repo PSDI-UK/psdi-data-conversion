@@ -303,3 +303,79 @@ def _run_single_test_conversion_with_library(test_spec: SingleConversionTestSpec
                                               exc_info=exc_info)
         callback_msg = test_spec.post_conversion_callback(test_info)
         assert not callback_msg, callback_msg
+
+
+def run_test_conversion_with_cla(test_spec: ConversionTestSpec):
+    """Runs a test conversion or series thereof through the command-line application.
+
+    Parameters
+    ----------
+    test_spec : ConversionTestSpec
+        The specification for the test or series of tests to be run
+    """
+    # Make temporary directories for the input and output files to be stored in
+    with TemporaryDirectory("_input") as input_dir, TemporaryDirectory("_output") as output_dir:
+        # Iterate over the test spec to run each individual test it defines
+        for single_test_spec in test_spec:
+            _run_single_test_conversion_with_cla(test_spec=single_test_spec,
+                                                 input_dir=input_dir,
+                                                 output_dir=output_dir)
+
+
+def _run_single_test_conversion_with_cla(test_spec: SingleConversionTestSpec,
+                                         input_dir: str,
+                                         output_dir: str):
+    """Runs a single test conversion through the command-line application.
+
+    Parameters
+    ----------
+    test_spec : _SingleConversionTestSpec
+        The specification for the test to be run
+    input_dir : str
+        A directory which can be used to store input data
+    output_dir : str
+        A directory which can be used to create output data
+    """
+
+    # Symlink the input file to the input directory
+    qualified_in_filename = os.path.join(input_dir, test_spec.filename)
+    try:
+        os.symlink(os.path.join(INPUT_TEST_DATA_LOC, test_spec.filename),
+                   qualified_in_filename)
+    except FileExistsError:
+        pass
+
+    # Capture stdout and stderr while we run this test. We use a try block to stop capturing as soon as testing finishes
+    try:
+        stdouterr = py.io.StdCaptureFD(in_=False)
+
+        run_converter_through_cla(filename=qualified_in_filename,
+                                  to_format=test_spec.to_format,
+                                  name=test_spec.name,
+                                  upload_dir=input_dir,
+                                  download_dir=output_dir,
+                                  **test_spec.conversion_kwargs)
+
+        qualified_out_filename = os.path.join(output_dir, test_spec.out_filename)
+
+        # Determine success based on whether or not the output file exists with non-zero size
+        if not os.path.isfile(qualified_out_filename) or os.path.getsize(qualified_out_filename) == 0:
+            success = False
+        else:
+            success = True
+
+    finally:
+        stdout, stderr = stdouterr.reset()   # Grab stdout and stderr
+        # Reset stdout and stderr capture
+        stdouterr.done()
+
+    # Compile output info for the test and call the callback function if one is provided
+    if test_spec.post_conversion_callback:
+        test_info = CLAConversionTestInfo(test_spec=test_spec,
+                                          input_dir=input_dir,
+                                          output_dir=output_dir,
+                                          success=success,
+                                          captured_stdout=stdout,
+                                          captured_stderr=stderr)
+        callback_msg = test_spec.post_conversion_callback(test_info)
+        assert not callback_msg, callback_msg
