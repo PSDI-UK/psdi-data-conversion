@@ -18,7 +18,7 @@ from unittest.mock import patch
 import py
 import pytest
 
-from psdi_data_conversion.constants import CONVERTER_DEFAULT, GLOBAL_LOG_FILENAME, OUTPUT_LOG_EXT
+from psdi_data_conversion.constants import CONVERTER_DEFAULT, GLOBAL_LOG_FILENAME, LOG_NONE, OUTPUT_LOG_EXT
 from psdi_data_conversion.converter import run_converter
 from psdi_data_conversion.file_io import is_archive, split_archive_ext
 from psdi_data_conversion.main import main as data_convert_main
@@ -433,7 +433,10 @@ def run_converter_through_cla(filename: str,
     s_handled_kwargs = set()
     for key, val in conversion_kwargs.items():
         if key == "log_mode":
-            arg_string += f" --log-mode {val}"
+            if val == LOG_NONE:
+                arg_string += " -q"
+            else:
+                arg_string += f" --log-mode {val}"
             s_handled_kwargs.add(key)
         elif key == "delete_input":
             if val:
@@ -443,6 +446,7 @@ def run_converter_through_cla(filename: str,
             if val != 0:
                 assert False, ("Test specification imposes a maximum file size, which isn't compatible with the "
                                "command-line application.")
+
     if len(conversion_kwargs) > len(s_handled_kwargs):
         s_unhandled_kwargs = s_handled_kwargs.difference(set(conversion_kwargs))
         assert False, ("Some values were passed to `conversion_kwargs` which could not be interpreted for the "

@@ -87,6 +87,12 @@ def test_stdout():
     run_test_conversion_with_cla(specs.stdout_test)
 
 
+def test_quiet():
+    """Test that quiet mode suppresses all output
+    """
+    run_test_conversion_with_cla(specs.quiet_test)
+
+
 def test_open_babel_warning():
     """Run a test that expected warnings from Open Babel are captured in the log
     """

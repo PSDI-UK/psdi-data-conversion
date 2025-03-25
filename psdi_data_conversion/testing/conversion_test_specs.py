@@ -54,16 +54,22 @@ log_mode_tests = ConversionTestSpec(conversion_kwargs=[{"log_mode": const.LOG_NO
 NOTE: Not compatible with GUI tests, since the GUI requires the log mode to always be "Full"
 """
 
-stdout_test = ConversionTestSpec(filename="nacl.cif",
-                                 conversion_kwargs={"log_mode": const.LOG_STDOUT},
+stdout_test = ConversionTestSpec(conversion_kwargs={"log_mode": const.LOG_STDOUT},
                                  post_conversion_callback=CheckStdoutContents(l_strings_to_exclude=[
                                      "ERROR", "exception", "Exception"],
                                      l_regex_to_find=[r"File name:\s*nacl",
                                                       const.DATETIME_RE_RAW]
-                                 ))
+))
 """Test that the log is output to stdout when requested
 
 NOTE: Not compatible with GUI tests, since the GUI requires the log mode to always be "Full"
+"""
+
+quiet_test = ConversionTestSpec(conversion_kwargs={"log_mode": const.LOG_NONE},
+                                post_conversion_callback=CheckStdoutContents(l_regex_to_exclude=r"."))
+"""Test that nothing is output to stdout when quiet mode is enabled
+
+NOTE: Not compatible with GUI tests, since the GUI doesn't support quiet mode
 """
 
 open_babel_warning_test = ConversionTestSpec(filename="1NE6.mmcif",

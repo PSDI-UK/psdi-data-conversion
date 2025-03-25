@@ -199,7 +199,7 @@ class CheckTextContents(abc.ABC):
 
         # Check that all excluded regexes are not present
         for regex_to_exclude in l_regex_to_exclude:
-            compiled_regex = re.compile(regex_to_find)
+            compiled_regex = re.compile(regex_to_exclude)
             if compiled_regex.search(test_text):
                 l_errors.append(f"ERROR: Regex /{regex_to_exclude}/ was not expected in "
                                 f"{self._get_text_source_label(test_info)} but was found. Log text:\n {test_text}")
