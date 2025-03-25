@@ -11,6 +11,8 @@ name: CI - Deploy to production cluster
 run-name: CI - Deploy to production cluster
 on:
   workflow_dispatch:
+  # >>>>>>>>>>>>>>>  ADDED FOR TESTING PURPOSES <<<<<<<<<<<<<<<
+  push:
 
 jobs:
 
