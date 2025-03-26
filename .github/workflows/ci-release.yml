@@ -1,6 +1,5 @@
 # Workflow for continuous integration tasks triggered on push to release
 
-
 name: CI - Release
 run-name: CI - Release
 on:
@@ -47,7 +46,7 @@ jobs:
   # GitHub repository: https://github.com/PSDI-UK/psdi-data-conversion/settings/environments
   # The downstream deploy job leverages on Environment specific secrets, which also must be defined
   deploy-stfc-staging-k8s:
-    needs: [deploy-stfc-dev-k8s]
+    needs: [tag]
     uses: ./.github/workflows/job-deploy-k8s.yml # use the callable deploy job
     secrets: inherit # pass all secrets for the environment
     with:
