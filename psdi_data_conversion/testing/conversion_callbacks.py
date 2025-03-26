@@ -219,27 +219,27 @@ class CheckTextContents(abc.ABC):
         for string_to_find in l_strings_to_find:
             if not string_with_placeholders_matches(string_to_find, test_text):
                 l_errors.append(f"ERROR: String \"{string_to_find}\" was expected in "
-                                f"{self._get_text_source_label(test_info)} but was not found. Log text:\n {test_text}")
+                                f"{self._get_text_source_label(test_info)} but was not found. Text:\n {test_text}")
 
         # Check that all excluded strings are not present
         for l_strings_to_exclude in l_strings_to_exclude:
             if string_with_placeholders_matches(l_strings_to_exclude, test_text):
                 l_errors.append(f"ERROR: String \"{l_strings_to_exclude}\" was not expected in "
-                                f"{self._get_text_source_label(test_info)} but was found. Log text:\n {test_text}")
+                                f"{self._get_text_source_label(test_info)} but was found. Text:\n {test_text}")
 
         # Check that all expected regexes are present
         for regex_to_find in l_regex_to_find:
             compiled_regex = re.compile(regex_to_find)
             if not compiled_regex.search(test_text):
                 l_errors.append(f"ERROR: Regex /{regex_to_find}/ was expected in "
-                                f"{self._get_text_source_label(test_info)} but was not found. Log text:\n {test_text}")
+                                f"{self._get_text_source_label(test_info)} but was not found. Text:\n {test_text}")
 
         # Check that all excluded regexes are not present
         for regex_to_exclude in l_regex_to_exclude:
             compiled_regex = re.compile(regex_to_exclude)
             if compiled_regex.search(test_text):
                 l_errors.append(f"ERROR: Regex /{regex_to_exclude}/ was not expected in "
-                                f"{self._get_text_source_label(test_info)} but was found. Log text:\n {test_text}")
+                                f"{self._get_text_source_label(test_info)} but was found. Text:\n {test_text}")
 
         # Join any errors for output
         res = "\n".join(l_errors)

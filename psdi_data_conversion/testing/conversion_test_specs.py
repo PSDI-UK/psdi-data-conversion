@@ -50,9 +50,10 @@ archive_tests = ConversionTestSpec(filename=["caffeine-smi.zip",
 
 archive_wrong_format_test = ConversionTestSpec(filename="caffeine-smi.zip",
                                                to_format="inchi",
-                                               conversion_kwargs={"from_format": "pdb"},
-                                               callback=CheckStderrContents(
-                                                   l_strings_to_find=[f"WARNING: {const.ERR_WRONG_EXTENSIONS}"])
+                                               conversion_kwargs=[{"from_format": "pdb"},
+                                                                  {"from_format": "pdb", "strict": True}],
+                                               expect_success=[True, False],
+                                               callback=CheckStderrContents([const.ERR_WRONG_EXTENSIONS])
                                                )
 """A test that if the user provides the wrong input format for files in an archive, and error will be output to stderr
 """

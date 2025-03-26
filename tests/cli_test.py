@@ -21,8 +21,6 @@ from psdi_data_conversion.converters.openbabel import (CONVERTER_OB, COORD_GEN_K
 from psdi_data_conversion.database import (get_conversion_quality, get_converter_info, get_in_format_args,
                                            get_out_format_args, get_possible_converters, get_possible_formats)
 from psdi_data_conversion.dist import LINUX_LABEL, get_dist
-from psdi_data_conversion.file_io import unpack_zip_or_tar
-from psdi_data_conversion.log_utility import string_with_placeholders_matches
 from psdi_data_conversion.main import FileConverterInputException, parse_args
 from psdi_data_conversion.testing.constants import INPUT_TEST_DATA_LOC, OUTPUT_TEST_DATA_LOC
 from psdi_data_conversion.testing.utils import run_test_conversion_with_cla, run_with_arg_string
@@ -384,74 +382,6 @@ def test_conversion_info(capsys):
     for option_info in l_in_options + l_out_options:
         info = option_info.info if option_info.info and option_info.info != "N/A" else ""
         assert string_is_present_in_out(f"{option_info.flag}<{option_info.brief}>{option_info.description}{info}")
-
-
-def test_archive_convert2(tmp_path_factory, capsys):
-    """Test running conversion on archives of files
-    """
-
-    test_filename_base = "caffeine-smi"
-    l_archive_exts = [const.ZIP_EXTENSION,
-                      const.TAR_EXTENSION,
-                      const.GZTAR_EXTENSION]
-
-    l_ex_filename_bases = ["caffeine-no-flags",
-                           "caffeine-ia",
-                           "caffeine-ia-ox",
-                           "caffeine-ia-okx",
-                           "caffeine-ia-okx-oof4",
-                           "caffeine-ia-okx-oof4l5",]
-    to_format = "inchi"
-
-    for archive_ext in l_archive_exts:
-        input_filename = f"{test_filename_base}{archive_ext}"
-
-        input_dir = tmp_path_factory.mktemp("input")
-        output_dir = tmp_path_factory.mktemp("output")
-
-        # Symlink the input file from the test_data directory to the input directory
-        os.symlink(os.path.join(INPUT_TEST_DATA_LOC, input_filename),
-                   os.path.join(input_dir, input_filename))
-
-        # Run the conversion
-        basic_arg_string = f"{input_filename} -t {to_format} -i {input_dir} -o {output_dir}"
-        run_with_arg_string(basic_arg_string)
-        captured = capsys.readouterr()
-        assert "ERROR" not in captured.err
-        assert "Success!" in captured.out
-
-        # Check that the expected output archive file exists
-        ex_output_filename = os.path.join(output_dir, f"{test_filename_base}-{to_format}{archive_ext}")
-        assert os.path.isfile(ex_output_filename)
-
-        # Check that the expected output log exists
-        ex_output_log = os.path.join(output_dir, f"{test_filename_base}{const.LOG_EXT}")
-        assert os.path.isfile(ex_output_log)
-
-        # Check that the expected files exist within the archive
-        unpack_zip_or_tar(ex_output_filename, extract_dir=output_dir)
-        for ex_filename_base in l_ex_filename_bases:
-            ex_filename = f"{os.path.join(output_dir, ex_filename_base)}.{to_format}"
-            assert os.path.isfile(ex_filename)
-
-        # To save time, we'll only do more detailed tests for the .zip archive
-        if archive_ext != const.ZIP_EXTENSION:
-            continue
-
-        # Test that a warning is returned if the archive contains files of the wrong type
-        bad_from_arg_string = f"{basic_arg_string} -f pdb"
-        run_with_arg_string(bad_from_arg_string)
-        captured = capsys.readouterr()
-        assert string_with_placeholders_matches(f"WARNING: {const.ERR_WRONG_EXTENSIONS}", captured.err)
-
-        # And test that it fails in strict mode
-        bad_from_arg_string = f"{basic_arg_string} -f pdb --strict"
-        with pytest.raises(SystemExit):
-            run_with_arg_string(bad_from_arg_string)
-        captured = capsys.readouterr()
-        assert string_with_placeholders_matches("ERROR: {}" + const.ERR_WRONG_EXTENSIONS, captured.err)
-        assert "Traceback" not in captured.out
-        assert "Traceback" not in captured.err
 
 
 def check_numerical_text_match(text: str, ex_text: str, fail_msg: str | None = None) -> None:
