@@ -9,6 +9,8 @@ import os
 import shlex
 import sys
 from unittest.mock import patch
+
+import pytest
 from psdi_data_conversion.main import main
 from psdi_data_conversion.security import char_is_safe, string_is_safe
 from psdi_data_conversion.testing.constants import INPUT_TEST_DATA_LOC
@@ -111,7 +113,8 @@ def test_format_arg_security(tmp_path_factory, capsys):
             arg_string += f" --to-options {to_options}"
 
         # Run the conversion
-        run_with_arg_string(arg_string)
+        with pytest.raises(SystemExit):
+            run_with_arg_string(arg_string)
 
         # Make sure the expected error is output, and not the full traceback
         captured = capsys.readouterr()

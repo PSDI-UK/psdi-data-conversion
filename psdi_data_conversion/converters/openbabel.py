@@ -160,7 +160,7 @@ class OBFileConverter(FileConverter):
                     ob_conversion.AddOption(option, ob_conversion.OUTOPTIONS, value)
                 self.logger.debug(f"Set Open Babel write flags arguments to: {self.data['to_options']}")
                 # Store the options in the "write_flags_args" entry for the later logging
-                self.data["write_flags_args"] = l_from_options
+                self.data["write_flags_args"] = l_to_options
             else:
                 # From options were provided by the command-line script or library
                 for char in to_arg_flags:

@@ -368,10 +368,13 @@ class FileConverter:
                 if isinstance(ee, (l_abort_exceptions, FileConverterHelpException)):
                     # Don't catch a deliberate abort or help exception; let it pass through
                     raise
-                print("ERROR: The application encounted an error during initialization of the converter and could " +
-                      "not cleanly log the error due to incomplete init: " +
-                      traceback.format_exc(), file=sys.stderr)
-                abort_callback(const.STATUS_CODE_GENERAL)
+                message = ("ERROR: The application encounted an error during initialization of the converter and "
+                           "could not cleanly log the error due to incomplete init: " + traceback.format_exc())
+                print(message, file=sys.stderr)
+                try:
+                    self.abort_callback(const.STATUS_CODE_GENERAL, message, e=e)
+                except TypeError:
+                    self.abort_callback(const.STATUS_CODE_GENERAL)
 
     def _setup_loggers(self):
         """Run at init to set up loggers for this object.

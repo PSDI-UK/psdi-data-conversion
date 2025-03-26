@@ -45,6 +45,18 @@ def test_basic_conversions():
     run_test_conversion_with_library(specs.basic_tests)
 
 
+def test_archive_convert():
+    """Run a test of converting an archive of files
+    """
+    run_test_conversion_with_library(specs.archive_tests)
+
+
+def test_archive_wrong_format():
+    """Run a test that converting an archive but specifying the wrong input format will produce a warning
+    """
+    run_test_conversion_with_library(specs.archive_wrong_format_test)
+
+
 def test_log_mode():
     """Test that the various log modes result in the expected log files being created
     """
@@ -55,6 +67,12 @@ def test_stdout():
     """Test that the output is sent to stdout when requested
     """
     run_test_conversion_with_library(specs.stdout_test)
+
+
+def test_quiet():
+    """Test that quiet mode suppresses all output
+    """
+    run_test_conversion_with_library(specs.quiet_test)
 
 
 def test_open_babel_warning():
@@ -92,6 +110,18 @@ def test_failed_conversion():
     """Run a test of the converter on a conversion we expect to fail
     """
     run_test_conversion_with_library(specs.failed_conversion_test)
+
+
+def test_format_args():
+    """Run a test that format args are processed correctly
+    """
+    run_test_conversion_with_library(specs.format_args_test)
+
+
+def test_coord_gen():
+    """Run a test that coordinate generation args are processed correctly
+    """
+    run_test_conversion_with_library(specs.coord_gen_test)
 
 
 def test_envvars():

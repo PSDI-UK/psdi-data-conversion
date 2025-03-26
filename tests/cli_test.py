@@ -5,7 +5,7 @@ Created 2025-01-15 by Bryan Gillis.
 Tests of the command-line interface
 """
 
-from math import isclose
+import logging
 import os
 import pytest
 import shlex
@@ -19,11 +19,9 @@ from psdi_data_conversion.converters.openbabel import (CONVERTER_OB, COORD_GEN_K
                                                        DEFAULT_COORD_GEN, DEFAULT_COORD_GEN_QUAL)
 from psdi_data_conversion.database import (get_conversion_quality, get_converter_info, get_in_format_args,
                                            get_out_format_args, get_possible_converters, get_possible_formats)
-from psdi_data_conversion.dist import LINUX_LABEL, get_dist
-from psdi_data_conversion.file_io import unpack_zip_or_tar
-from psdi_data_conversion.log_utility import string_with_placeholders_matches
-from psdi_data_conversion.main import FileConverterInputException, main, parse_args
-from psdi_data_conversion.testing.constants import INPUT_TEST_DATA_LOC, OUTPUT_TEST_DATA_LOC
+from psdi_data_conversion.main import FileConverterInputException, parse_args
+from psdi_data_conversion.testing.utils import run_test_conversion_with_cla, run_with_arg_string
+from psdi_data_conversion.testing import conversion_test_specs as specs
 
 
 def test_unique_args():
@@ -45,12 +43,104 @@ def get_parsed_args(s):
         return parse_args()
 
 
-def run_with_arg_string(s):
-    """Runs the convert script with the provided argument string
+@pytest.fixture(autouse=True)
+def setup_test() -> None:
+    """Reset global aspects before a test, so that different tests won't interfere with each other"""
+
+    # Remove the global log file if one exists
+    try:
+        os.remove(const.GLOBAL_LOG_FILENAME)
+    except FileNotFoundError:
+        pass
+
+    # Clear any existing loggers so new ones will be created fresh
+    logging.Logger.manager.loggerDict.clear()
+
+
+def test_default():
+    """Test that the default converter is registered.
     """
-    l_args = shlex.split("test " + s)
-    with patch.object(sys, 'argv', l_args):
-        main()
+    assert const.CONVERTER_DEFAULT in L_REGISTERED_CONVERTERS
+
+
+def test_basic_conversions():
+    """Run a basic set of conversions with various converters and file formats which we expect to succeed without
+    issue
+    """
+    run_test_conversion_with_cla(specs.basic_tests)
+
+
+def test_archive_convert():
+    """Run a test of converting an archive of files
+    """
+    run_test_conversion_with_cla(specs.archive_tests)
+
+
+def test_archive_wrong_format():
+    """Run a test that converting an archive but specifying the wrong input format will produce a warning
+    """
+    run_test_conversion_with_cla(specs.archive_wrong_format_test)
+
+
+def test_log_mode():
+    """Test that the various log modes result in the expected log files being created
+    """
+    run_test_conversion_with_cla(specs.log_mode_tests)
+
+
+def test_stdout():
+    """Test that the output is sent to stdout when requested
+    """
+    run_test_conversion_with_cla(specs.stdout_test)
+
+
+def test_quiet():
+    """Test that quiet mode suppresses all output
+    """
+    run_test_conversion_with_cla(specs.quiet_test)
+
+
+def test_open_babel_warning():
+    """Run a test that expected warnings from Open Babel are captured in the log
+    """
+    run_test_conversion_with_cla(specs.open_babel_warning_test)
+
+
+def test_invalid_converter():
+    """Run a test of the converter to ensure it reports an error properly if an invalid converter is requested
+    """
+    run_test_conversion_with_cla(specs.invalid_converter_test)
+
+
+def test_quality_note():
+    """Run a test of the converter on an `.xyz` to `.inchi` conversion which we expect to have warnings about data
+    loss and extrapolation
+    """
+    run_test_conversion_with_cla(specs.quality_note_test)
+
+
+def test_cleanup():
+    """Test that input files are deleted if requested
+    """
+    run_test_conversion_with_cla(specs.cleanup_input_test)
+
+
+def test_failed_conversion():
+    """Run a test of the converter on a conversion we expect to fail
+    """
+    run_test_conversion_with_cla(specs.failed_conversion_test)
+
+
+def test_format_args():
+    """Run a test that format args are processed correctly
+    """
+    run_test_conversion_with_cla(specs.format_args_test)
+
+
+def test_coord_gen():
+    """Run a test that coordinate generation args are processed correctly
+    """
+    run_test_conversion_with_cla(specs.coord_gen_test)
 
 
 def test_input_validity():
@@ -301,258 +391,3 @@ def test_conversion_info(capsys):
     for option_info in l_in_options + l_out_options:
         info = option_info.info if option_info.info and option_info.info != "N/A" else ""
         assert string_is_present_in_out(f"{option_info.flag}<{option_info.brief}>{option_info.description}{info}")
-
-
-def test_convert(tmp_path_factory, capsys):
-    """Test running file conversions
-    """
-    input_dir = tmp_path_factory.mktemp("input")
-    output_dir = tmp_path_factory.mktemp("output")
-
-    test_filename_base = "1NE6"
-
-    from_format = "mmcif"
-    to_format = "pdb"
-
-    input_filename = f"{test_filename_base}.{from_format}"
-    output_filename = f"{test_filename_base}.{to_format}"
-
-    # Symlink the input file from the test_data directory to the input directory
-    os.symlink(os.path.join(INPUT_TEST_DATA_LOC, input_filename),
-               os.path.join(input_dir, input_filename))
-
-    # Run a basic conversion
-    basic_arg_string = f"{input_filename} -t {to_format} -i {input_dir} -o {output_dir}"
-    run_with_arg_string(basic_arg_string)
-
-    # Check that the expected output file has been created
-    ex_output_file = os.path.join(output_dir, f"{output_filename}")
-    assert os.path.isfile(ex_output_file), f"Expected output file {ex_output_file} does not exist"
-
-    # Check logs and output
-    captured = capsys.readouterr()
-    assert "Success!" in captured.out
-    assert "ERROR" not in captured.err
-
-    # Check that running in quiet mode suppresses output
-    run_with_arg_string(basic_arg_string + " -q")
-    captured = capsys.readouterr()
-    assert "Success!" not in captured.out
-    assert "ERROR" not in captured.err
-
-    # Test a call we expect to fail due to unsupported conversion
-    test_pdb_file = "hemoglobin.pdb"
-    os.symlink(os.path.join(INPUT_TEST_DATA_LOC, test_pdb_file),
-               os.path.join(input_dir, test_pdb_file))
-    run_with_arg_string(f"{test_pdb_file} -t pdb -i {input_dir} -o {output_dir}")
-    captured = capsys.readouterr()
-    assert "Success!" not in captured.out
-    assert "ERROR" in captured.err
-    assert "Traceback" not in captured.out
-    assert "Traceback" not in captured.err
-
-    # Testa call we expect to fail due to the wrong input type being provided
-    bad_from_arg_string = f"{basic_arg_string} -f pdb"
-    run_with_arg_string(bad_from_arg_string)
-    captured = capsys.readouterr()
-    assert "ERROR" in captured.err
-    assert "WARNING" in captured.err
-    assert "Traceback" not in captured.out
-    assert "Traceback" not in captured.err
-    assert "Success!" not in captured.out
-
-    # Check that we can specify a file with its format instead of extension
-    run_with_arg_string(f"{test_filename_base} -f {from_format} -t {to_format} -i {input_dir} -o {output_dir}")
-    captured = capsys.readouterr()
-    assert "Success!" in captured.out
-    assert "ERROR" not in captured.err
-
-
-def test_archive_convert(tmp_path_factory, capsys):
-    """Test running conversion on archives of files
-    """
-
-    test_filename_base = "caffeine-smi"
-    l_archive_exts = [const.ZIP_EXTENSION,
-                      const.TAR_EXTENSION,
-                      const.GZTAR_EXTENSION]
-
-    l_ex_filename_bases = ["caffeine-no-flags",
-                           "caffeine-ia",
-                           "caffeine-ia-ox",
-                           "caffeine-ia-okx",
-                           "caffeine-ia-okx-oof4",
-                           "caffeine-ia-okx-oof4l5",]
-    to_format = "inchi"
-
-    for archive_ext in l_archive_exts:
-        input_filename = f"{test_filename_base}{archive_ext}"
-
-        input_dir = tmp_path_factory.mktemp("input")
-        output_dir = tmp_path_factory.mktemp("output")
-
-        # Symlink the input file from the test_data directory to the input directory
-        os.symlink(os.path.join(INPUT_TEST_DATA_LOC, input_filename),
-                   os.path.join(input_dir, input_filename))
-
-        # Run the conversion
-        basic_arg_string = f"{input_filename} -t {to_format} -i {input_dir} -o {output_dir}"
-        run_with_arg_string(basic_arg_string)
-        captured = capsys.readouterr()
-        assert "ERROR" not in captured.err
-        assert "Success!" in captured.out
-
-        # Check that the expected output archive file exists
-        ex_output_filename = os.path.join(output_dir, f"{test_filename_base}-{to_format}{archive_ext}")
-        assert os.path.isfile(ex_output_filename)
-
-        # Check that the expected output log exists
-        ex_output_log = os.path.join(output_dir, f"{test_filename_base}{const.LOG_EXT}")
-        assert os.path.isfile(ex_output_log)
-
-        # Check that the expected files exist within the archive
-        unpack_zip_or_tar(ex_output_filename, extract_dir=output_dir)
-        for ex_filename_base in l_ex_filename_bases:
-            ex_filename = f"{os.path.join(output_dir, ex_filename_base)}.{to_format}"
-            assert os.path.isfile(ex_filename)
-
-        # To save time, we'll only do more detailed tests for the .zip archive
-        if archive_ext != const.ZIP_EXTENSION:
-            continue
-
-        # Test that a warning is returned if the archive contains files of the wrong type
-        bad_from_arg_string = f"{basic_arg_string} -f pdb"
-        run_with_arg_string(bad_from_arg_string)
-        captured = capsys.readouterr()
-        assert string_with_placeholders_matches(f"WARNING: {const.ERR_WRONG_EXTENSIONS}", captured.err)
-
-        # And test that it fails in strict mode
-        bad_from_arg_string = f"{basic_arg_string} -f pdb --strict"
-        run_with_arg_string(bad_from_arg_string)
-        captured = capsys.readouterr()
-        assert string_with_placeholders_matches("ERROR: {}" + const.ERR_WRONG_EXTENSIONS, captured.err)
-        assert "Traceback" not in captured.out
-        assert "Traceback" not in captured.err
-
-
-def check_numerical_text_match(text: str, ex_text: str, fail_msg: str | None = None) -> None:
-    """Check that the contents of two files match without worrying about whitespace or negligible numerical differences.
-    """
-
-    # We want to check they're the same without worrying about whitespace (which doesn't matter for this format),
-    # so we accomplish this by using the string's `split` method, which splits on whitespace by default
-    l_words, l_ex_words = text.split(), ex_text.split()
-
-    # And we also want to avoid spurious false negatives from numerical comparisons (such as one file having
-    # negative zero and the other positive zero - yes, this happened), so we convert words to floats if possible
-
-    # We allow greater tolerance for numerical inaccuracy on platforms other than Linux, which is where the expected
-    # files were originally created
-    rel_tol = 0.001
-    abs_tol = 1e-6
-    if get_dist() != LINUX_LABEL:
-        rel_tol = 0.2
-        abs_tol = 0.01
-
-    for word, ex_word in zip(l_words, l_ex_words):
-        try:
-            val, ex_val = float(word), float(ex_word)
-
-            assert isclose(val, ex_val, rel_tol=rel_tol, abs_tol=abs_tol), fail_msg
-        except ValueError:
-            # If it can't be converted to a float, treat it as a string and require an exact match
-            assert word == ex_word, fail_msg
-
-
-def test_format_args(tmp_path_factory):
-    """Test that format flags and options are processed correctly and results in the right conversions
-    """
-    input_dir = tmp_path_factory.mktemp("input")
-    output_dir = tmp_path_factory.mktemp("output")
-
-    test_filename_base = "caffeine"
-
-    from_format = "inchi"
-    to_format = "smi"
-
-    input_filename = f"{test_filename_base}.{from_format}"
-    output_filename = f"{test_filename_base}.{to_format}"
-
-    # Symlink the input file from the test_data directory to the input directory
-    os.symlink(os.path.join(INPUT_TEST_DATA_LOC, input_filename),
-               os.path.join(input_dir, input_filename))
-
-    basic_arg_string = f"{input_filename} -t {to_format} -i {input_dir} -o {output_dir}"
-
-    # Run for each set of format flags
-    for (from_flags, to_flags, from_options, to_options, ex_file
-         ) in ((None, None, None, None, "caffeine-no-flags.smi"),
-               ("a", None, None, None, "caffeine-ia.smi"),
-               ("a", "x", None, None, "caffeine-ia-ox.smi"),
-               ("a", "kx", None, None, "caffeine-ia-okx.smi"),
-               ("a", "kx", None, "f4", "caffeine-ia-okx-oof4.smi"),
-               ("a", "kx", None, "'f4 l5'", "caffeine-ia-okx-oof4l5.smi"),):
-
-        arg_string = basic_arg_string
-        if from_flags is not None:
-            arg_string += f" --from-flags {from_flags}"
-        if to_flags is not None:
-            arg_string += f" --to-flags {to_flags}"
-        if from_options is not None:
-            arg_string += f" --from-options {from_options}"
-        if to_options is not None:
-            arg_string += f" --to-options {to_options}"
-
-        # Run the conversion
-        run_with_arg_string(arg_string)
-
-        # Check that the expected output file has been created
-        ex_output_file = os.path.join(output_dir, f"{output_filename}")
-        assert os.path.isfile(ex_output_file), f"Expected output file {ex_output_file} does not exist"
-
-        # Check that the contents of this file match what's expected
-        check_numerical_text_match(text=open(ex_output_file, "r").read(),
-                                   ex_text=open(os.path.join(OUTPUT_TEST_DATA_LOC, ex_file), "r").read(),
-                                   fail_msg=f"Format flag test failed for {ex_file}")
-
-
-def test_coord_gen(tmp_path_factory):
-    """Test that Open Babel's unique --coord-gen option is processed correctly and results in the right conversions
-    """
-    input_dir = tmp_path_factory.mktemp("input")
-    output_dir = tmp_path_factory.mktemp("output")
-
-    test_filename_base = "caffeine"
-
-    from_format = "inchi"
-    to_format = "xyz"
-
-    input_filename = f"{test_filename_base}.{from_format}"
-    output_filename = f"{test_filename_base}.{to_format}"
-
-    # Symlink the input file from the test_data directory to the input directory
-    os.symlink(os.path.join(INPUT_TEST_DATA_LOC, input_filename),
-               os.path.join(input_dir, input_filename))
-
-    basic_arg_string = f"{input_filename} -t {to_format} -i {input_dir} -o {output_dir}"
-    # Run for each set of coord-gen options
-    for cg_opts, ex_file in ((None, "caffeine.xyz"),
-                             ("Gen2D fastest", "caffeine-2D-fastest.xyz"),
-                             ("Gen3D best", "caffeine-3D-best.xyz"),):
-
-        if cg_opts is None:
-            arg_string = basic_arg_string
-        else:
-            arg_string = f"{basic_arg_string} --coord-gen {cg_opts}"
-
-        # Run the conversion
-        run_with_arg_string(arg_string)
-
-        # Check that the expected output file has been created
-        ex_output_file = os.path.join(output_dir, f"{output_filename}")
-        assert os.path.isfile(ex_output_file), f"Expected output file {ex_output_file} does not exist"
-
-        # Check that the contents of this file match what's expected
-        check_numerical_text_match(text=open(ex_output_file, "r").read(),
-                                   ex_text=open(os.path.join(OUTPUT_TEST_DATA_LOC, ex_file), "r").read(),
-                                   fail_msg=f"Coord Gen test failed for {ex_file}")
