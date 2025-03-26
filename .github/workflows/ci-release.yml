@@ -52,8 +52,3 @@ jobs:
     with:
       container_tag: ${{ needs.tag.outputs.container_tag }}
       environment: staging
-
-  # Publish to PyPI - uncomment once ready for regular publishing
-  publish-pypi:
-    needs: [tag]
-    uses: ./.github/workflows/job-publish-pypi.yml
