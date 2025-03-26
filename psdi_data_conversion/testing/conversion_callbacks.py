@@ -10,8 +10,10 @@ from collections.abc import Callable, Iterable
 from dataclasses import dataclass, field
 import os
 import re
+from tempfile import TemporaryDirectory
 
 from psdi_data_conversion.constants import DATETIME_RE_RAW
+from psdi_data_conversion.file_io import unpack_zip_or_tar
 from psdi_data_conversion.log_utility import string_with_placeholders_matches
 from psdi_data_conversion.testing.utils import ConversionTestInfo, LibraryConversionTestInfo
 
@@ -110,6 +112,41 @@ class CheckFileStatus:
         # Join any errors for output
         res = "\n".join(l_errors)
         return res
+
+
+@dataclass
+class CheckArchiveContents:
+    """Callable class which checks that an archive file created as the result of a conversion contains files with the
+    expected names and all of the expected type"""
+
+    l_filename_bases: Iterable[str]
+    """List of unqualified filenames without extensions, representing the files that should be found in the archive"""
+
+    to_format: str
+    """Format (extension) that all files in the archive should have"""
+
+    def __call__(self, test_info: ConversionTestInfo):
+        """Run the check on archive contents"""
+
+        # First, check that the archive file exists
+        qualified_out_filename = test_info.qualified_out_filename
+        if not os.path.isfile(qualified_out_filename):
+            raise FileNotFoundError(f"ERROR: Expected output file from conversion '{qualified_out_filename}' does not "
+                                    "exist")
+
+        l_errors = []
+
+        # Use a temporary directory to unpack the archive, then check for each file in it
+        with TemporaryDirectory() as extract_dir:
+            unpack_zip_or_tar(qualified_out_filename, extract_dir=extract_dir)
+
+            for filename_base in self.l_filename_bases:
+                filename = f"{filename_base}.{self.to_format}"
+                if not os.path.isfile(os.path.join(extract_dir, filename)):
+                    l_errors.append(f"ERROR: Expected file '{filename}' was not found in archive "
+                                    f"{qualified_out_filename}")
+
+        return "\n".join(l_errors)
 
 
 @dataclass

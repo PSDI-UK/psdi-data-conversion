@@ -45,6 +45,12 @@ def test_basic_conversions():
     run_test_conversion_with_library(specs.basic_tests)
 
 
+def test_archive_convert():
+    """Run a test of converting an archive of files
+    """
+    run_test_conversion_with_library(specs.archive_tests)
+
+
 def test_log_mode():
     """Test that the various log modes result in the expected log files being created
     """

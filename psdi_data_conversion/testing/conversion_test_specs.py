@@ -12,7 +12,7 @@ from psdi_data_conversion.converters.base import (FileConverterAbortException, F
                                                   FileConverterInputException, FileConverterSizeException)
 from psdi_data_conversion.converters.c2x import CONVERTER_C2X
 from psdi_data_conversion.converters.openbabel import CONVERTER_OB
-from psdi_data_conversion.testing.conversion_callbacks import (CheckException, CheckLogContents,
+from psdi_data_conversion.testing.conversion_callbacks import (CheckArchiveContents, CheckException, CheckLogContents,
                                                                CheckLogContentsSuccess, CheckFileStatus,
                                                                CheckStdoutContents, MultiCallback)
 from psdi_data_conversion.testing.utils import ConversionTestSpec
@@ -32,6 +32,21 @@ basic_tests = ConversionTestSpec(filename=["1NE6.mmcif", "standard_test.cdxml",
                                                          CheckLogContentsSuccess()]))
 """A basic set of test conversions which we expect to succeed without issue, running two conversions with each of the
 Open Babel, Atomsk, and c2x converters"""
+
+archive_callback = MultiCallback([CheckFileStatus(),
+                                  CheckArchiveContents(l_filename_bases=["caffeine-no-flags",
+                                                                         "caffeine-ia",
+                                                                         "caffeine-ia-ox",
+                                                                         "caffeine-ia-okx",
+                                                                         "caffeine-ia-okx-oof4",
+                                                                         "caffeine-ia-okx-oof4l5",],
+                                                       to_format="inchi")])
+archive_tests = ConversionTestSpec(filename=["caffeine-smi.zip",
+                                             "caffeine-smi.tar",
+                                             "caffeine-smi.tar.gz"],
+                                   to_format="inchi",
+                                   callback=archive_callback)
+"""A test of converting a archives of files"""
 
 log_mode_tests = ConversionTestSpec(conversion_kwargs=[{"log_mode": const.LOG_NONE},
                                                        {"log_mode": const.LOG_STDOUT},

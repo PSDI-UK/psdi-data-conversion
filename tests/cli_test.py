@@ -70,9 +70,15 @@ def test_default():
 
 def test_basic_conversions():
     """Run a basic set of conversions with various converters and file formats which we expect to succeed without
-    issue.
+    issue
     """
     run_test_conversion_with_cla(specs.basic_tests)
+
+
+def test_archive_convert():
+    """Run a test of converting an archive of files
+    """
+    run_test_conversion_with_cla(specs.archive_tests)
 
 
 def test_log_mode():
@@ -374,7 +380,7 @@ def test_conversion_info(capsys):
         assert string_is_present_in_out(f"{option_info.flag}<{option_info.brief}>{option_info.description}{info}")
 
 
-def test_archive_convert(tmp_path_factory, capsys):
+def test_archive_convert2(tmp_path_factory, capsys):
     """Test running conversion on archives of files
     """
 
