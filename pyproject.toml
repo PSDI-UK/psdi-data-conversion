@@ -56,8 +56,11 @@ Changelog = "https://github.com/PSDI-UK/psdi-data-conversion/blob/main/CHANGELOG
 Download = "https://github.com/PSDI-UK/psdi-data-conversion/releases/latest"
 
 # Hatch-specific configuration
-[tool.hatch]
-version = { source = "vcs" } # Use version Git tags
+[tool.hatch.version]
+source = "vcs"
+
+[tool.hatch.version.raw-options]
+version_scheme = "only-version"
 
 [tool.hatch.build]
 exclude = [
