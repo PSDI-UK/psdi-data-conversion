@@ -54,6 +54,6 @@ jobs:
       environment: staging
 
   # Publish to PyPI - uncomment once ready for regular publishing
-  # publish-pypi:
-  #   needs: [tag]
-  #   uses: ./.github/workflows/job-publish-pypi.yml
+  publish-pypi:
+    needs: [tag]
+    uses: ./.github/workflows/job-publish-pypi.yml
