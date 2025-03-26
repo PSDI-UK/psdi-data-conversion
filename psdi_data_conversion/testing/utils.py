@@ -8,6 +8,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from collections.abc import Callable, Iterable
+from math import isclose
 import os
 import shlex
 import sys
@@ -20,6 +21,7 @@ import pytest
 
 from psdi_data_conversion.constants import CONVERTER_DEFAULT, GLOBAL_LOG_FILENAME, LOG_NONE, OUTPUT_LOG_EXT
 from psdi_data_conversion.converter import run_converter
+from psdi_data_conversion.dist import LINUX_LABEL, get_dist
 from psdi_data_conversion.file_io import is_archive, split_archive_ext
 from psdi_data_conversion.main import main as data_convert_main
 from psdi_data_conversion.testing.constants import INPUT_TEST_DATA_LOC
@@ -468,3 +470,32 @@ def run_with_arg_string(arg_string: str):
     l_args = shlex.split("test " + arg_string)
     with patch.object(sys, 'argv', l_args):
         data_convert_main()
+
+
+def check_numerical_text_match(text: str, ex_text: str, fail_msg: str | None = None) -> None:
+    """Check that the contents of two files match without worrying about whitespace or negligible numerical differences.
+    """
+
+    # We want to check they're the same without worrying about whitespace (which doesn't matter for this format),
+    # so we accomplish this by using the string's `split` method, which splits on whitespace by default
+    l_words, l_ex_words = text.split(), ex_text.split()
+
+    # And we also want to avoid spurious false negatives from numerical comparisons (such as one file having
+    # negative zero and the other positive zero - yes, this happened), so we convert words to floats if possible
+
+    # We allow greater tolerance for numerical inaccuracy on platforms other than Linux, which is where the expected
+    # files were originally created
+    rel_tol = 0.001
+    abs_tol = 1e-6
+    if get_dist() != LINUX_LABEL:
+        rel_tol = 0.2
+        abs_tol = 0.01
+
+    for word, ex_word in zip(l_words, l_ex_words):
+        try:
+            val, ex_val = float(word), float(ex_word)
+
+            assert isclose(val, ex_val, rel_tol=rel_tol, abs_tol=abs_tol), fail_msg
+        except ValueError:
+            # If it can't be converted to a float, treat it as a string and require an exact match
+            assert word == ex_word, fail_msg

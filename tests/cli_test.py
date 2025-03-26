@@ -6,7 +6,6 @@ Tests of the command-line interface
 """
 
 import logging
-from math import isclose
 import os
 import pytest
 import shlex
@@ -20,10 +19,10 @@ from psdi_data_conversion.converters.openbabel import (CONVERTER_OB, COORD_GEN_K
                                                        DEFAULT_COORD_GEN, DEFAULT_COORD_GEN_QUAL)
 from psdi_data_conversion.database import (get_conversion_quality, get_converter_info, get_in_format_args,
                                            get_out_format_args, get_possible_converters, get_possible_formats)
-from psdi_data_conversion.dist import LINUX_LABEL, get_dist
 from psdi_data_conversion.main import FileConverterInputException, parse_args
 from psdi_data_conversion.testing.constants import INPUT_TEST_DATA_LOC, OUTPUT_TEST_DATA_LOC
-from psdi_data_conversion.testing.utils import run_test_conversion_with_cla, run_with_arg_string
+from psdi_data_conversion.testing.utils import (check_numerical_text_match, run_test_conversion_with_cla,
+                                                run_with_arg_string)
 from psdi_data_conversion.testing import conversion_test_specs as specs
 
 
@@ -382,35 +381,6 @@ def test_conversion_info(capsys):
     for option_info in l_in_options + l_out_options:
         info = option_info.info if option_info.info and option_info.info != "N/A" else ""
         assert string_is_present_in_out(f"{option_info.flag}<{option_info.brief}>{option_info.description}{info}")
-
-
-def check_numerical_text_match(text: str, ex_text: str, fail_msg: str | None = None) -> None:
-    """Check that the contents of two files match without worrying about whitespace or negligible numerical differences.
-    """
-
-    # We want to check they're the same without worrying about whitespace (which doesn't matter for this format),
-    # so we accomplish this by using the string's `split` method, which splits on whitespace by default
-    l_words, l_ex_words = text.split(), ex_text.split()
-
-    # And we also want to avoid spurious false negatives from numerical comparisons (such as one file having
-    # negative zero and the other positive zero - yes, this happened), so we convert words to floats if possible
-
-    # We allow greater tolerance for numerical inaccuracy on platforms other than Linux, which is where the expected
-    # files were originally created
-    rel_tol = 0.001
-    abs_tol = 1e-6
-    if get_dist() != LINUX_LABEL:
-        rel_tol = 0.2
-        abs_tol = 0.01
-
-    for word, ex_word in zip(l_words, l_ex_words):
-        try:
-            val, ex_val = float(word), float(ex_word)
-
-            assert isclose(val, ex_val, rel_tol=rel_tol, abs_tol=abs_tol), fail_msg
-        except ValueError:
-            # If it can't be converted to a float, treat it as a string and require an exact match
-            assert word == ex_word, fail_msg
 
 
 def test_format_args(tmp_path_factory):
