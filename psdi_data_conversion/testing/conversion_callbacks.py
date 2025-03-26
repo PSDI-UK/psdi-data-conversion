@@ -19,14 +19,15 @@ from psdi_data_conversion.testing.constants import OUTPUT_TEST_DATA_LOC
 from psdi_data_conversion.testing.utils import ConversionTestInfo, LibraryConversionTestInfo, check_file_match
 
 
-@dataclass
 class MultiCallback:
     """Callable class which stores a list of other callbacks to call on the input, and runs them all in sequence. All
     callbacks will be run, even if some fail, and the results will be joined to an output string.
     """
 
-    l_callbacks: Iterable[Callable[[ConversionTestInfo], str]]
-    """A list of callbacks to be called in turn"""
+    def __init__(self, *l_callbacks: Callable[[ConversionTestInfo], str]):
+
+        self.l_callbacks: Iterable[Callable[[ConversionTestInfo], str]] = l_callbacks
+        """A list of callbacks to be called in turn"""
 
     def __call__(self, test_info: ConversionTestInfo) -> str:
         """When called and passed test info, run each stored callback on the test info in turn and join the results
@@ -154,23 +155,34 @@ class CheckArchiveContents:
 class CheckTextContents(abc.ABC):
     """Callable class which checks the contents of some text (e.g. stdout or a log file) from a conversion"""
 
-    l_strings_to_find: Iterable[str] = field(default_factory=list)
-    """List of any strings which must be found in the text. These may optionally include formatting placeholders,
+    l_strings_to_find: str | Iterable[str] = field(default_factory=list)
+    """One or more strings which must be found in the text. These may optionally include formatting placeholders,
     e.g. "The filename is: {file}", in which case any text in the place of the placeholder will be considered valid for
     a match.
     """
 
-    l_strings_to_exclude: Iterable[str] = field(default_factory=list)
-    """List of any strings which must NOT be found in the text. These may optionally include formatting placeholders,
-    e.g. "The filename is: {file}", in which case any text in the place of the placeholder will be considered valid for
-    a match.
+    l_strings_to_exclude: str | Iterable[str] = field(default_factory=list)
+    """One or more strings which must NOT be found in the text. These may optionally include formatting
+    placeholders, e.g. "The filename is: {file}", in which case any text in the place of the placeholder will be
+    considered valid for a match.
     """
 
-    l_regex_to_find: Iterable[str] = field(default_factory=list)
-    """List of uncompiled regular expressions which must be matched somewhere in the text"""
+    l_regex_to_find: str | Iterable[str] = field(default_factory=list)
+    """One or more uncompiled regular expressions which must be matched somewhere in the text"""
 
-    l_regex_to_exclude: Iterable[str] = field(default_factory=list)
-    """List of uncompiled regular expressions which must NOT be matched anywhere in the text"""
+    l_regex_to_exclude: str | Iterable[str] = field(default_factory=list)
+    """One or more uncompiled regular expressions which must NOT be matched anywhere in the text"""
+
+    def __post_init__(self):
+        """If any input was provided as just a single string, coerce it to a list"""
+        if isinstance(self.l_strings_to_find, str):
+            self.l_strings_to_find = [self.l_strings_to_find]
+        if isinstance(self.l_strings_to_exclude, str):
+            self.l_strings_to_exclude = [self.l_strings_to_exclude]
+        if isinstance(self.l_regex_to_find, str):
+            self.l_regex_to_find = [self.l_regex_to_find]
+        if isinstance(self.l_regex_to_exclude, str):
+            self.l_regex_to_exclude = [self.l_regex_to_exclude]
 
     def get_default_strings_to_find(self, test_info: ConversionTestInfo) -> list[str]:
         """Get a default list of strings to find in the text; can be overridden by child classes to implement

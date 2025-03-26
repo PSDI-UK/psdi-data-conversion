@@ -153,7 +153,7 @@ class ConversionTestSpec:
                     val_len = len(val)
                     # If it's a single value in a list, unpack it for now
                     if val_len == 1:
-                        # Pylint for some reason things `Any` objects aren't subscriptable, but here we know it is
+                        # Pylint for some reason thinks `Any` objects aren't subscriptable, but here we know it is
                         val: Iterable[Any]
                         setattr(self, attr_name, val[0])
                 except TypeError:

@@ -29,19 +29,19 @@ basic_tests = ConversionTestSpec(filename=["1NE6.mmcif", "standard_test.cdxml",
                                        CONVERTER_OB, CONVERTER_OB,
                                        CONVERTER_ATO, CONVERTER_ATO,
                                        CONVERTER_C2X, CONVERTER_C2X],
-                                 callback=MultiCallback([CheckFileStatus(),
-                                                         CheckLogContentsSuccess()]))
+                                 callback=MultiCallback(CheckFileStatus(),
+                                                        CheckLogContentsSuccess()))
 """A basic set of test conversions which we expect to succeed without issue, running two conversions with each of the
 Open Babel, Atomsk, and c2x converters"""
 
-archive_callback = MultiCallback([CheckFileStatus(),
-                                  CheckArchiveContents(l_filename_bases=["caffeine-no-flags",
-                                                                         "caffeine-ia",
-                                                                         "caffeine-ia-ox",
-                                                                         "caffeine-ia-okx",
-                                                                         "caffeine-ia-okx-oof4",
-                                                                         "caffeine-ia-okx-oof4l5",],
-                                                       to_format="inchi")])
+archive_callback = MultiCallback(CheckFileStatus(),
+                                 CheckArchiveContents(l_filename_bases=["caffeine-no-flags",
+                                                                        "caffeine-ia",
+                                                                        "caffeine-ia-ox",
+                                                                        "caffeine-ia-okx",
+                                                                        "caffeine-ia-okx-oof4",
+                                                                        "caffeine-ia-okx-oof4l5",],
+                                                      to_format="inchi"))
 archive_tests = ConversionTestSpec(filename=["caffeine-smi.zip",
                                              "caffeine-smi.tar",
                                              "caffeine-smi.tar.gz"],
@@ -54,7 +54,7 @@ archive_wrong_format_test = ConversionTestSpec(filename="caffeine-smi.zip",
                                                conversion_kwargs=[{"from_format": "pdb"},
                                                                   {"from_format": "pdb", "strict": True}],
                                                expect_success=[True, False],
-                                               callback=[CheckStderrContents([const.ERR_WRONG_EXTENSIONS]),
+                                               callback=[CheckStderrContents(const.ERR_WRONG_EXTENSIONS),
                                                          CheckException(ex_type=FileConverterInputException,
                                                                         ex_message=const.ERR_WRONG_EXTENSIONS)]
                                                )
@@ -83,11 +83,10 @@ NOTE: Not compatible with GUI tests, since the GUI requires the log mode to alwa
 """
 
 stdout_test = ConversionTestSpec(conversion_kwargs={"log_mode": const.LOG_STDOUT},
-                                 callback=CheckStdoutContents(l_strings_to_exclude=[
-                                     "ERROR", "exception", "Exception"],
-                                     l_regex_to_find=[r"File name:\s*nacl",
-                                                      const.DATETIME_RE_RAW]
-))
+                                 callback=CheckStdoutContents(l_strings_to_exclude=["ERROR", "exception", "Exception"],
+                                                              l_regex_to_find=[r"File name:\s*nacl",
+                                                                               const.DATETIME_RE_RAW]
+                                                              ))
 """Test that the log is output to stdout when requested
 
 NOTE: Not compatible with GUI tests, since the GUI requires the log mode to always be "Full"
@@ -102,26 +101,24 @@ NOTE: Not compatible with GUI tests, since the GUI doesn't support quiet mode
 
 open_babel_warning_test = ConversionTestSpec(filename="1NE6.mmcif",
                                              to_format="pdb",
-                                             callback=CheckLogContentsSuccess(l_strings_to_find=[
-                                                 "Open Babel Warning",
-                                                 "Failed to kekulize aromatic bonds",
-                                             ]))
+                                             callback=CheckLogContentsSuccess(["Open Babel Warning",
+                                                                               "Failed to kekulize aromatic bonds",])
+                                             )
 """A test that confirms expected warnings form Open Babel are output and captured in the log"""
 
-invalid_converter_callback = MultiCallback([CheckFileStatus(expect_output_exists=False,
-                                                            expect_log_exists=False),
-                                            CheckException(ex_type=FileConverterInputException,
-                                                           ex_message="Converter {} not recognized")])
+invalid_converter_callback = MultiCallback(CheckFileStatus(expect_output_exists=False,
+                                                           expect_log_exists=False),
+                                           CheckException(ex_type=FileConverterInputException,
+                                                          ex_message="Converter {} not recognized"))
 invalid_converter_test = ConversionTestSpec(name="INVALID",
                                             expect_success=False,
                                             callback=invalid_converter_callback)
 """A test that a proper error is returned if an invalid converter is requested"""
 
-quality_note_callback = CheckLogContentsSuccess(
-    l_strings_to_find=["WARNING",
-                       const.QUAL_NOTE_OUT_MISSING.format(const.QUAL_2D_LABEL),
-                       const.QUAL_NOTE_OUT_MISSING.format(const.QUAL_3D_LABEL),
-                       const.QUAL_NOTE_IN_MISSING.format(const.QUAL_CONN_LABEL)])
+quality_note_callback = CheckLogContentsSuccess(["WARNING",
+                                                 const.QUAL_NOTE_OUT_MISSING.format(const.QUAL_2D_LABEL),
+                                                 const.QUAL_NOTE_OUT_MISSING.format(const.QUAL_3D_LABEL),
+                                                 const.QUAL_NOTE_IN_MISSING.format(const.QUAL_CONN_LABEL)])
 quality_note_test = ConversionTestSpec(filename="quartz.xyz",
                                        to_format="inchi",
                                        callback=quality_note_callback)
@@ -133,43 +130,34 @@ cleanup_input_test = ConversionTestSpec(conversion_kwargs={"delete_input": True}
                                         callback=CheckFileStatus(expect_input_exists=False))
 """A test that the input file to a conversion is deleted when cleanup is requested"""
 
-cant_read_xyz_callback = MultiCallback([CheckFileStatus(expect_output_exists=False,
-                                                        expect_log_exists=None),
-                                        CheckException(ex_type=FileConverterAbortException,
-                                                       ex_message="Problems reading an XYZ file")])
-invalid_conversion_callback = MultiCallback([CheckFileStatus(expect_output_exists=False,
-                                                             expect_log_exists=None),
-                                             CheckException(ex_type=FileConverterHelpException,
-                                                            ex_message="is not supported")])
-wrong_type_callback = MultiCallback([CheckFileStatus(expect_output_exists=False,
-                                                     expect_log_exists=None),
-                                     CheckException(ex_type=FileConverterAbortException,
-                                                    ex_message="not a valid {} file")])
-failed_conversion_test = ConversionTestSpec(filename=["quartz_err.xyz",
-                                                      "hemoglobin.pdb",
-                                                      "1NE6.mmcif"],
-                                            to_format=["inchi",
-                                                       "pdb",
-                                                       "cif"],
-                                            conversion_kwargs=[{},
-                                                               {},
-                                                               {"from_format": "pdb"}],
+cant_read_xyz_callback = MultiCallback(CheckFileStatus(expect_output_exists=False,
+                                                       expect_log_exists=None),
+                                       CheckException(ex_type=FileConverterAbortException,
+                                                      ex_message="Problems reading an XYZ file"))
+invalid_conversion_callback = MultiCallback(CheckFileStatus(expect_output_exists=False,
+                                                            expect_log_exists=None),
+                                            CheckException(ex_type=FileConverterHelpException,
+                                                           ex_message="is not supported"))
+wrong_type_callback = MultiCallback(CheckFileStatus(expect_output_exists=False,
+                                                    expect_log_exists=None),
+                                    CheckException(ex_type=FileConverterAbortException,
+                                                   ex_message="not a valid {} file"))
+failed_conversion_test = ConversionTestSpec(filename=["quartz_err.xyz", "hemoglobin.pdb", "1NE6.mmcif"],
+                                            to_format=["inchi", "pdb", "cif"],
+                                            conversion_kwargs=[{}, {}, {"from_format": "pdb"}],
                                             expect_success=False,
-                                            callback=[cant_read_xyz_callback,
-                                                      invalid_conversion_callback,
+                                            callback=[cant_read_xyz_callback, invalid_conversion_callback,
                                                       wrong_type_callback])
 """A test that a conversion which fails due to an invalid input file will properly fail"""
 
-max_size_callback = MultiCallback([CheckFileStatus(expect_output_exists=False),
-                                   CheckLogContents(l_strings_to_find=["Output file exceeds maximum size"]),
-                                   CheckException(ex_type=FileConverterSizeException,
-                                                  ex_message="exceeds maximum size",
-                                                  ex_status_code=const.STATUS_CODE_SIZE)])
-max_size_test = ConversionTestSpec(filename=["1NE6.mmcif",
-                                             "caffeine-smi.tar.gz"],
+max_size_callback = MultiCallback(CheckFileStatus(expect_output_exists=False),
+                                  CheckLogContents("Output file exceeds maximum size"),
+                                  CheckException(ex_type=FileConverterSizeException,
+                                                 ex_message="exceeds maximum size",
+                                                 ex_status_code=const.STATUS_CODE_SIZE))
+max_size_test = ConversionTestSpec(filename=["1NE6.mmcif", "caffeine-smi.tar.gz"],
                                    to_format="pdb",
-                                   conversion_kwargs=[{"max_file_size": 0.0001},
-                                                      {"max_file_size": 0.0005}],
+                                   conversion_kwargs=[{"max_file_size": 0.0001}, {"max_file_size": 0.0005}],
                                    expect_success=False,
                                    callback=max_size_callback)
 """A set of test conversion that the maximum size constraint is properly applied. In the first test, the input file
