@@ -5,6 +5,7 @@ Created 2025-01-23 by Bryan Gillis.
 Open Babel FileConverter
 """
 
+from copy import deepcopy
 from openbabel import openbabel
 import py
 
@@ -13,13 +14,16 @@ from psdi_data_conversion.security import SAFE_STRING_RE, string_is_safe
 
 CONVERTER_OB = 'Open Babel'
 
-# Constants related to command-line arguments unique to this converter
+# Constants related to command-line and library arguments unique to this converter
 L_ALLOWED_COORD_GENS = ["Gen2D", "Gen3D", "neither"]
 DEFAULT_COORD_GEN = "neither"
 COORD_GEN_KEY = "coordinates"
 L_ALLOWED_COORD_GEN_QUALS = ["fastest", "fast", "medium", "better", "best"]
 DEFAULT_COORD_GEN_QUAL = "medium"
 COORD_GEN_QUAL_KEY = "coordOption"
+
+D_DEFAULT_OB_DATA = {COORD_GEN_KEY: DEFAULT_COORD_GEN,
+                     COORD_GEN_QUAL_KEY: DEFAULT_COORD_GEN_QUAL}
 
 
 def check_string_security(s: str):
@@ -96,6 +100,11 @@ class OBFileConverter(FileConverter):
 
         self.logger.debug("Using OpenBabel's Python library to perform file conversion")
 
+        # Apply default values to the data dict
+        _data = deepcopy(D_DEFAULT_OB_DATA)
+        _data.update(self.data)
+        self.data = _data
+
         try:
             stdouterr_ob = py.io.StdCaptureFD(in_=False)
 
@@ -151,7 +160,7 @@ class OBFileConverter(FileConverter):
                     ob_conversion.AddOption(option, ob_conversion.OUTOPTIONS, value)
                 self.logger.debug(f"Set Open Babel write flags arguments to: {self.data['to_options']}")
                 # Store the options in the "write_flags_args" entry for the later logging
-                self.data["write_flags_args"] = l_from_options
+                self.data["write_flags_args"] = l_to_options
             else:
                 # From options were provided by the command-line script or library
                 for char in to_arg_flags:

@@ -8,7 +8,6 @@ Base class and information for file format converters
 
 from copy import deepcopy
 from dataclasses import dataclass
-import json
 import logging
 from collections.abc import Callable
 import os
@@ -56,11 +55,11 @@ class FileConverterSizeException(FileConverterAbortException):
 
     def __init__(self,
                  *args,
-                 in_size: int,
-                 out_size: int,
-                 max_file_size: int,
+                 in_size: int | None = None,
+                 out_size: int | None = None,
+                 max_file_size: int | None = None,
                  **kwargs):
-        super().__init__(const.STATUS_CODE_SIZE, *args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.in_size = in_size
         self.out_size = out_size
         self.max_file_size = max_file_size
@@ -369,10 +368,13 @@ class FileConverter:
                 if isinstance(ee, (l_abort_exceptions, FileConverterHelpException)):
                     # Don't catch a deliberate abort or help exception; let it pass through
                     raise
-                print("ERROR: The application encounted an error during initialization of the converter and could " +
-                      "not cleanly log the error due to incomplete init: " +
-                      traceback.format_exc(), file=sys.stderr)
-                abort_callback(const.STATUS_CODE_GENERAL)
+                message = ("ERROR: The application encounted an error during initialization of the converter and "
+                           "could not cleanly log the error due to incomplete init: " + traceback.format_exc())
+                print(message, file=sys.stderr)
+                try:
+                    self.abort_callback(const.STATUS_CODE_GENERAL, message, e=e)
+                except TypeError:
+                    self.abort_callback(const.STATUS_CODE_GENERAL)
 
     def _setup_loggers(self):
         """Run at init to set up loggers for this object.
@@ -612,35 +614,17 @@ class FileConverter:
 
         return in_size, out_size
 
-    def get_quality(self):
+    def get_quality(self) -> str:
         """Query the JSON file to obtain conversion quality
         """
+        from psdi_data_conversion.database import get_conversion_quality
 
-        try:
-
-            # Load JSON file.
-            with open("static/data/data.json") as datafile:
-                data = json.load(datafile)
-
-            from_format = [d for d in data["formats"] if d["extension"] == self.from_format]
-            to_format = [d for d in data["formats"] if d["extension"] == self.to_format]
-            open_babel = [d for d in data["converters"] if d["name"] == "Open Babel"]
-
-            open_babel_id = open_babel[0]["id"]
-            from_id = from_format[0]["id"]
-            to_id = to_format[0]["id"]
-
-            converts_to = [d for d in data["converts_to"] if
-                           d["converters_id"] == open_babel_id and d["in_id"] == from_id and d["out_id"] == to_id]
-
-            return converts_to[0]["degree_of_success"]
-
-        except Exception as e:
-
-            self.logger.warning(f"Unable to determine conversion quality from {self.from_format} to {self.to_format}. "
-                                f"Received exception of type '{type(e)}' and message: {str(e)}")
-
+        conversion_quality = get_conversion_quality(converter_name=self.name,
+                                                    in_format=self.from_format,
+                                                    out_format=self.to_format)
+        if not conversion_quality:
             return "unknown"
+        return conversion_quality.qual_str
 
     def _finish_convert(self):
         """Run final common steps to clean up a conversion and log success or abort due to an error

@@ -1,0 +1,49 @@
+# Workflow for manually triggering deployment of latest release version to the production environment
+
+# It is intended that this workflow be manually triggered after the 'ci-release.yml' job has been shown
+# to successfully deploy the latest release version to the staging cluster.
+
+# To be more specific, this workflow deploys the container in the GitHub Container Registry namespace for this
+# repo whose tag corresponds to the highest version number, while only considering tags of the form 'v*.*.*',
+# where '*' signify non-negative integers.
+
+name: CI - Deploy to production cluster
+run-name: CI - Deploy to production cluster
+on:
+  workflow_dispatch:
+
+jobs:
+
+  get-latest-release-tag:
+    # run on our self hosted github runners enabling access to STFC infrastructure
+    runs-on: psdi-uk-runners
+    outputs:
+      tag: ${{ steps.get-tag.outputs.TARGET_TAG }}
+    steps:
+    - uses: actions/checkout@v4
+    - name: Get latest tag in the relase branch
+      id: get-tag
+      run: |
+        # Use GitHub CR API to get list of all tags
+        GHCR_TOKEN=$(echo -n "${{ secrets.GITHUB_TOKEN }}" | base64 -w 0)
+        echo "Requesting list of tags from GitHub CR for repo..."
+        RESPONSE=$(curl -s -H "Authorization: Bearer $GHCR_TOKEN" "https://ghcr.io/v2/psdi-uk/psdi-data-conversion/data-conversion/tags/list")
+        echo "Response recieved = $RESPONSE"
+        # Extract only the tags corresponding to releases, i.e. of the form 'v*.*.*'
+        echo "Extracting tags from response..."
+        TAGS=$(echo "$RESPONSE" | jq -r '."tags"[]' | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+')
+        echo "Extracted tags = $TAGS"
+        # Find the highest version number
+        TARGET_TAG=$(echo "$TAGS" | sort -V | tail -n 1)
+        echo "TARGET_TAG=$TARGET_TAG" >> "$GITHUB_OUTPUT"
+        echo "Highest version tag found to be = $TARGET_TAG"
+
+  # Deploy container with tag to production environment
+  deploy-stfc-production-k8s:
+    needs: get-latest-release-tag
+    uses: ./.github/workflows/job-deploy-k8s.yml # use the callable deploy job
+    secrets: inherit # pass all secrets for the environment
+    with:
+      container_tag: ${{ needs.get-latest-release-tag.outputs.tag }}
+      #TODO: Change this to target production. Currently it targets staging
+      environment: staging

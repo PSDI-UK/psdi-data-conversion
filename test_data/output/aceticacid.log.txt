@@ -1,0 +1,19 @@
+[2025-03-06 13:52:39] WARNING [data-conversion.__init__:350] :
+Potential data loss or extrapolation issues with the conversion from mol to mol2:
+- Potential data loss: 2D atomic coordinates are represented in the input format but not the output format
+
+[2025-03-06 13:52:39] INFO [data-conversion._log_success:576] :
+File name:         aceticacid
+From:              mol: MDL MOL
+To:                mol2: Sybyl Mol2
+Converter:         Open Babel
+Coord. gen.:       neither
+Coord. option:     none
+Read options:      none
+Write options:     none
+Read opts + args:  none
+Write opts + args: none
+Quality:           very good
+Success:           Assuming that the data provided was of the correct format, the conversion
+                   was successful (to the best of our knowledge) subject to any warnings below.
+

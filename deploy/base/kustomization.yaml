@@ -5,5 +5,5 @@ resources:
 - data-conversion-admin-role.yml
 - data-conversion-sa-secret.yml
 - data-conversion-sa.yml
-- flask-deployment.yml
-- flask-service.yml
+- data-conversion-deployment.yml
+- data-conversion-service.yml

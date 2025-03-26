@@ -38,15 +38,7 @@
         underneath the select boxes if available. One or more input or output flags may be selected if required (command
         click [Mac] or control click [Windows] for multiple select box selections). To undo all selections in a box,
         click just underneath the final option. Ticking a check box reveals a text box for entry of required
-        information, along with further explanation if available. If 2- or 3-dimensional atomic coordinates need to be
-        calculated (using Open Babel), select '2D' or '3D' and a speed/accuracy option ('fastest' is least accurate).
-        Note that this calculation is not appropriate for all file formats, so in these cases selections will be
-        ignored.
-        Click on 'Choose file' and then select an input file of the correct format (and extension). Clicking on
-        'Convert'
-        uploads and converts the file. The output file is automatically downloaded, along with a log file. If any issues
-        are encountered (e.g., the output file does not download), please click on 'Provide Feedback' in the navigation
-        bar.
+        information, along with further explanation if available.
       </p>
       <h6 id="heading"></h6>
       <div id="flags">
@@ -74,6 +66,16 @@
       <div id="flag_break"><br /></div>
       <span id="out_argLabel">Write (output) option flags requiring further information (select all required):</span>
       <table id="out_argFlags"></table>
+      <p>If 2- or 3-dimensional atomic coordinates need to be calculated (e.g., if they do not already exist in the
+        input file), select '2D' or '3D' and a speed/accuracy option ('fastest' is least accurate).
+        Note that this calculation is not appropriate for all file formats, so in these cases selections will be
+        ignored.
+        Click on 'Choose file' and then select an input file of the correct format (and extension). Clicking on
+        'Convert'
+        uploads and converts the file. The output file is automatically downloaded, along with a log file. If any issues
+        are encountered (e.g., the output file does not download), please click on 'Provide Feedback' in the navigation
+        bar.
+      </p>
       <p>
         <label for="coordinates">Select '2D' or '3D' if an Open Babel calculation of 2- or 3-dimensional atomic
           coordinates is required. Ensure that this calculation is suitable for your purpose.<br>For more information,

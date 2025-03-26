@@ -17,6 +17,10 @@ export LOG_LEVEL=
 # uncomment the following line to enable that
 # export SERVICE_MODE=true
 
+# The envvar PRODUCTION_MODE is set to "true" to hide any dev-only aspects from the GUI, such as the label of the
+# latest SHA. Comment out the following line to disable this behaviour and expose those elements
+export PRODUCTION_MODE=true
+
 # Uncomment the following line to enable debug mode
 # export FLASK_ENV=development
 

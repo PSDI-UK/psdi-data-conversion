@@ -655,6 +655,8 @@ def run_from_args(args: ConvertArgs):
             'upload_file': 'true'}
     data.update(args.d_converter_args)
 
+    success = True
+
     for filename in args.l_args:
 
         # Search for the file in the input directory
@@ -693,10 +695,12 @@ def run_from_args(args: ConvertArgs):
                                               refresh_local_log=False)
         except FileConverterHelpException as e:
             print_wrap(f"ERROR: {e}", err=True)
+            success = False
             continue
         except FileConverterAbortException as e:
             print_wrap(f"ERROR: Attempt to convert file {filename} aborted with status code {e.status_code} and "
                        f"message:\n{e}\n", err=True)
+            success = False
             continue
         except FileConverterInputException as e:
             if "Conversion from" in str(e) and "is not supported" in str(e):
@@ -705,10 +709,12 @@ def run_from_args(args: ConvertArgs):
             else:
                 print_wrap(f"ERROR: Attempt to convert file {filename} failed at converter initialization with "
                            f"exception type {type(e)} and message: \n{e}\n", err=True)
+            success = False
             continue
         except Exception as e:
             print_wrap(f"ERROR: Attempt to convert file {filename} failed with exception type {type(e)} and message: " +
                        f"\n{e}\n", err=True)
+            success = False
             continue
 
         if not args.quiet:
@@ -716,6 +722,9 @@ def run_from_args(args: ConvertArgs):
             print(f"  {conversion_result.output_filename}")
             print_wrap("The log can be found at:")
             print(f"  {conversion_result.log_filename}")
+
+    if not success:
+        exit(1)
 
 
 def main():

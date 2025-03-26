@@ -9,6 +9,7 @@ import hashlib
 import os
 import json
 from datetime import datetime
+from subprocess import run
 import sys
 import traceback
 from flask import Flask, request, render_template, abort, Response
@@ -18,6 +19,15 @@ from psdi_data_conversion import constants as const
 from psdi_data_conversion.converter import run_converter
 from psdi_data_conversion.file_io import split_archive_ext
 
+# Env var for the SHA of the latest commit
+SHA_EV = "SHA"
+
+# Env var for whether this is running in service mode or locally
+SERVICE_MODE_EV = "SERVICE_MODE"
+
+# Env var for whether this is a production release or development
+PRODUCTION_EV = "PRODUCTION_MODE"
+
 # Key for the label given to the file uploaded in the web interface
 FILE_TO_UPLOAD_KEY = 'fileToUpload'
 
@@ -25,9 +35,11 @@ FILE_TO_UPLOAD_KEY = 'fileToUpload'
 dt = str(datetime.now())
 token = hashlib.md5(dt.encode('utf8')).hexdigest()
 
-# Check the authorisation envvar to see if we're checking auth
-service_mode_ev = os.environ.get(const.SERVICE_MODE_EV)
+# Get the service and production modes from their envvars
+service_mode_ev = os.environ.get(SERVICE_MODE_EV)
 service_mode = (service_mode_ev is not None) and (service_mode_ev.lower() == "true")
+production_mode_ev = os.environ.get(PRODUCTION_EV)
+production_mode = (production_mode_ev is not None) and (production_mode_ev.lower() == "true")
 
 # Get the logging mode and level from their envvars
 ev_log_mode = os.environ.get(const.LOG_MODE_EV)
@@ -54,6 +66,31 @@ else:
 app = Flask(__name__)
 
 
+def get_last_sha() -> str:
+    """Get the SHA of the last commit
+    """
+
+    # First check if the SHA is provided through an environmental variable
+    ev_sha = os.environ.get(SHA_EV)
+    if ev_sha:
+        return ev_sha
+
+    try:
+        # This bash command calls `git log` to get info on the last commit, uses `head` to trim it to one line, then
+        # uses `gawk` to get just the second word of this line, which is the SHA of this commit
+        cmd = "git log -n 1 | head -n 1 | gawk '{print($2)}'"
+
+        out_bytes = run(cmd, shell=True, capture_output=True).stdout
+        out_str = str(out_bytes.decode()).strip()
+
+    except Exception:
+        print("ERROR: Could not determine SHA of most recent commit. Error was:\n" + traceback.format_exc(),
+              file=sys.stderr)
+        out_str = "N/A"
+
+    return out_str
+
+
 @app.route('/')
 def website():
     """Return the web page along with the token
@@ -67,7 +104,9 @@ def website():
 
     data = [{'token': token,
              'max_file_size': max_file_size,
-             'service_mode': service_mode}]
+             'service_mode': service_mode,
+             'production_mode': production_mode,
+             'sha': get_last_sha()}]
     return render_template("index.htm", data=data)
 
 
@@ -153,10 +192,22 @@ def feedback():
 def delete():
     """Delete files in folder 'downloads'
     """
-    os.remove(f"{const.DEFAULT_DOWNLOAD_DIR}/{request.form['filename']}")
-    os.remove(f"{const.DEFAULT_DOWNLOAD_DIR}/{request.form['logname']}")
 
-    return 'okay'
+    realbase = os.path.realpath(const.DEFAULT_DOWNLOAD_DIR)
+
+    realfilename = os.path.realpath(os.path.join(const.DEFAULT_DOWNLOAD_DIR, request.form['filename']))
+    reallogname = os.path.realpath(os.path.join(const.DEFAULT_DOWNLOAD_DIR, request.form['logname']))
+
+    if realfilename.startswith(realbase + os.sep) and reallogname.startswith(realbase + os.sep):
+
+        os.remove(realfilename)
+        os.remove(reallogname)
+
+        return 'okay'
+
+    else:
+
+        return Response(status=400)
 
 
 @app.route('/del/', methods=['POST'])

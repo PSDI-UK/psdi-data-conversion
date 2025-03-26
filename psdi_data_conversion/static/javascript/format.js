@@ -9,6 +9,7 @@ import {
     getInputFormats, getOutputFormats, getOutputFormatsForInputFormat,
     getInputFormatsForOutputFormat, getConverters, getConverterByName, getLevelChemInfo
 } from "./data.js";
+import { loadProductionMode } from "./common.js";
 
 var fromList = new Array(),
     toList = new Array(),
@@ -30,9 +31,13 @@ $(document).ready(function () {
     sessionStorage.setItem("token", token);
     sessionStorage.setItem("max_file_size", max_file_size);
     sessionStorage.setItem("service_mode", service_mode);
+    sessionStorage.setItem("production_mode", production_mode);
     sessionStorage.setItem("in_str", "");
     sessionStorage.setItem("out_str", "");
     sessionStorage.setItem("success", "");
+
+    // Set the production mode variable for this page so that only appropriate elements are shown
+    loadProductionMode();
 
     $("#fromList").click(populateConversionSuccess);
     $("#toList").click(populateConversionSuccess);
@@ -212,7 +217,7 @@ function getQuality(entries, rows) {
         two_dim_out = entries[1].two_dim,
         three_dim_in = entries[0].three_dim,
         three_dim_out = entries[1].three_dim,
-        qualityText = ' very poor';
+        qualityText = ' Conversion quality is very poor.';
 
     qualityCriteriaCount = 0;
     qualityMeasureSum = 0;
@@ -223,7 +228,7 @@ function getQuality(entries, rows) {
         qualityDetail(three_dim_in, three_dim_out, '3D coordinates');
 
     if (qualityCriteriaCount == 0) {
-        qualityText = ' not tested';
+        qualityText = ' Conversion quality not tested.';
     }
     else {
         var percent = qualityMeasureSum * 20 / qualityCriteriaCount;
@@ -231,16 +236,16 @@ function getQuality(entries, rows) {
         percent = (Math.round(percent * 100) / 100);
 
         if (percent >= 80.0) {
-            qualityText = ' very good';
+            qualityText = ' Conversion quality is very good.';
         }
         else if (percent >= 60.0) {
-            qualityText = ' good';
+            qualityText = ' Conversion quality is good.';
         }
         else if (percent >= 40.0) {
-            qualityText = ' okay';
+            qualityText = ' Conversion quality is okay.';
         }
         else if (percent >= 20.0) {
-            qualityText = ' poor';
+            qualityText = ' Conversion quality is poor.';
         }
     }
 
@@ -251,9 +256,9 @@ function getQuality(entries, rows) {
     for (var i = 0; i < rows.length; i++) {
         const support = rows[i].substring(0, 10) == "Open Babel" ||
             rows[i].substring(0, 6) == "Atomsk" ||
-            rows[i].substring(0, 3) == "c2x" ? " (supported)" : " (unsupported)";
+            rows[i].substring(0, 3) == "c2x" ? " supported on this site." : " not supported on this site." //" (supported)" : " (unsupported)";
 
-        $("#success").append($('<option>', { text: rows[i] + qualityText + support }));
+        $("#success").append($('<option>', { text: rows[i] + support + qualityText }));
     }
 }
 

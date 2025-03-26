@@ -13,6 +13,7 @@ from selenium.webdriver.common.alert import Alert
 from selenium.webdriver.common.by import By
 from selenium.webdriver import FirefoxOptions
 from selenium.webdriver.firefox.service import Service as FirefoxService
+from selenium.webdriver.firefox.webdriver import WebDriver
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 from webdriver_manager.firefox import GeckoDriverManager
@@ -29,8 +30,19 @@ if (origin is None):
     print("ORIGIN environment variable must be set.")
     exit(1)
 
-# Loop timeout at 10 seconds
+# Standard timeout at 10 seconds
 TIMEOUT = 10
+
+
+def wait_for_element(driver: WebDriver, xpath: str, by=By.XPATH):
+    """Shortcut for boilerplate to wait until a web element is visible"""
+    WebDriverWait(driver, TIMEOUT).until(EC.visibility_of_element_located((by, xpath)))
+
+
+def wait_and_find_element(driver: WebDriver, xpath: str, by=By.XPATH) -> EC.WebElement:
+    """Finds a web element, after first waiting to ensure it's visible"""
+    wait_for_element(driver, xpath, by=by)
+    return driver.find_element(by, xpath)
 
 
 @pytest.fixture(scope="module")
@@ -44,23 +56,21 @@ def driver():
     ff_driver.quit()
 
 
-def test_initial_frontpage(driver):
+def test_initial_frontpage(driver: WebDriver):
 
     driver.get(f"{origin}/")
 
     # Check that the front page contains the header "Data Conversion Service".
 
-    WebDriverWait(driver, 10).until(EC.visibility_of_element_located((By.XPATH, "//header")))
-    element = driver.find_element(By.XPATH, "//header//h5")
+    element = wait_and_find_element(driver, "//header//h5")
     assert element.text == "Data Conversion Service"
 
     # Check that the 'from' and 'to' lists contains "abinit" and "acesin" respectively.
 
-    WebDriverWait(driver, 10).until(EC.visibility_of_element_located(
-        (By.XPATH, "//select[@id='fromList']/option")))
+    wait_for_element(driver, "//select[@id='fromList']/option")
     driver.find_element(By.XPATH, "//select[@id='fromList']/option[contains(.,'abinit: ABINIT output')]")
 
-    WebDriverWait(driver, 10).until(EC.visibility_of_element_located((By.XPATH, "//select[@id='toList']/option")))
+    wait_for_element(driver, "//select[@id='toList']/option")
     driver.find_element(By.XPATH, "//select[@id='toList']/option[contains(.,'acesin: ACES input')]")
 
     # Check that the available conversions list is empty.
@@ -69,7 +79,7 @@ def test_initial_frontpage(driver):
         driver.find_element(By.XPATH, "//select[@id='success']/option")
 
 
-def test_cdxml_to_inchi_conversion(driver):
+def test_cdxml_to_inchi_conversion(driver: WebDriver):
 
     test_file = "standard_test"
 
@@ -87,42 +97,31 @@ def test_cdxml_to_inchi_conversion(driver):
 
     driver.get(f"{origin}/")
 
-    WebDriverWait(driver, 10).until(EC.visibility_of_element_located(
-        (By.XPATH, "//select[@id='fromList']/option")))
+    wait_for_element(driver, "//select[@id='fromList']/option")
 
     # Select cdxml from the 'from' list.
-
     driver.find_element(By.XPATH, "//select[@id='fromList']/option[contains(.,'cdxml: ChemDraw CDXML')]").click()
 
     # Select InChI from the 'to' list.
-
     driver.find_element(By.XPATH, "//select[@id='toList']/option[contains(.,'inchi: InChI')]").click()
 
     # Select Open Babel from the available conversion options list.
-
     driver.find_element(By.XPATH, "//select[@id='success']/option[contains(.,'Open Babel')]").click()
 
     # Click on the "Yes" button.
-
     driver.find_element(By.XPATH, "//input[@id='yesButton']").click()
 
     # Select the input file.
-
-    WebDriverWait(driver, 10).until(EC.visibility_of_element_located((By.XPATH, "//input[@id='fileToUpload']")))
-    driver.find_element(By.XPATH, "//input[@id='fileToUpload']").send_keys(str(input_file))
+    wait_and_find_element(driver, "//input[@id='fileToUpload']").send_keys(str(input_file))
 
     # Request the log file
-
-    driver.find_element(By.XPATH, "//input[@id='requestLog']").click()
+    wait_and_find_element(driver, "//input[@id='requestLog']").click()
 
     # Click on the "Convert" button.
-
-    WebDriverWait(driver, 10).until(EC.visibility_of_element_located((By.XPATH, "//input[@id='uploadButton']")))
-    driver.find_element(By.XPATH, "//input[@id='uploadButton']").click()
+    wait_and_find_element(driver, "//input[@id='uploadButton']").click()
 
     # Handle alert box.
-
-    WebDriverWait(driver, 10).until(EC.alert_is_present())
+    WebDriverWait(driver, TIMEOUT).until(EC.alert_is_present())
     Alert(driver).dismiss()
 
     # Wait until files exist.

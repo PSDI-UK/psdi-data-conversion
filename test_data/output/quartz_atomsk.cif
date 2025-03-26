@@ -1,0 +1,52 @@
+# Draft CIF file generated with Atomsk
+
+data_I
+
+_audit_creation_date      'March 6, 2025'
+_audit_creation_method    'Draft CIF file generated with Atomsk'
+ 
+_chemical_name_common             ?
+_chemical_melting_point           ?
+_chemical_formula_iupac           'O4 Si3'
+_chemical_formula_moiety          'O4 Si3'
+_chemical_formula_sum             'O4 Si3'
+_chemical_formula_weight          148.251
+_chemical_compound_source         ?
+_chemical_absolute_configuration  ?
+_exptl_crystal_description        'EDIT-ENTRY'
+_diffrn_measurement_device_type   'EDIT-ENTRY'
+ 
+_space_group_IT_number            1
+_space_group_crystal_system       triclinic
+_symmetry_space_group_name_Hall   'P 1'
+_symmetry_space_group_name_H-M    'P 1'
+ 
+loop_
+_space_group_symop_operation_xyz
+'+x,+y,+z'
+ 
+_cell_length_a                    0.0000
+_cell_length_b                    0.0000
+_cell_length_c                    0.0000
+_cell_angle_alpha                 NaN
+_cell_angle_beta                  NaN
+_cell_angle_gamma                 NaN
+_cell_volume                      NaN
+ 
+loop_
+ _atom_site_label
+ _atom_site_type_symbol
+ _atom_site_fract_x
+ _atom_site_fract_y
+ _atom_site_fract_z
+O1  O  NaN       NaN       NaN
+XX0  XX  NaN       NaN       NaN
+O2  O  NaN       NaN       NaN
+O3  O  NaN       NaN       NaN
+O4  O  NaN       NaN       NaN
+Si1  Si  NaN       NaN       NaN
+Si2  Si  NaN       NaN       NaN
+Si3  Si  NaN       NaN       NaN
+XX0  XX  NaN       NaN       NaN
+
+# end of cif file

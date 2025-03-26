@@ -13,6 +13,24 @@ var token = "",
     toList = new Array(),
     formatList = new Array();
 
+const pageURL = new URL(window.location.toLocaleString());
+
+// If coming to this page from a local version of the app, warn if the user clicks a link in the header, which will
+// take them to another page on the public app
+const originUrlParam = pageURL.searchParams.get('origin');
+const localOrigin = (originUrlParam != null && originUrlParam.toLowerCase() == "local") ? true : false;
+let originAlertDisplayed = false;
+
+if (localOrigin) {
+    $("#psdi-header").click(function (e) {
+        if (originAlertDisplayed) return;
+        alert("WARNING: This is the online, public version of the app, which you arrived at from the local " +
+            "app. Press the back button on your browser to return to the local version, or click \"OK\" on this " +
+            "alert to continue to the public app.");
+        originAlertDisplayed = true;
+    });
+}
+
 // Set the service mode variable for this page so that only appropriate elements are shown
 loadServiceMode();
 
@@ -329,24 +347,34 @@ function display(event) {
 
     if (selectedText == "conversion") {
         $("#in_out_formats").css({ display: "block" });
+        $("#message").css({ display: "inline" });
+
+        $("#userInput").css({ display: "block" });
+
         $("#formats").css({ display: "none" });
         $("#missing").css({ display: "none" });
-        $("#message").css({ display: "inline" });
+
         $("#message").html("Explain why the conversion is required and provide a link to appropriate documentation if possible [max 500 characters].");
         $("#message1").html("The displayed 'from' and 'to' formats will be automatically submitted with your message.");
-        $("#userInput").css({ display: "block" });
     }
     else if (selectedText == "format") {
         $("#formats").css({ display: "block" });
-        $("#in_out_formats").css({ display: "none" });
         $("#missing").css({ display: "block" });
-        $("#message").css({ display: "none" });
-        $("#message1").html("Enter details of the file conversions expected for this format and provide a link to appropriate documentation if possible [max 500 characters].");
+
         $("#userInput").css({ display: "block" });
+
+        $("#in_out_formats").css({ display: "none" });
+        $("#message").css({ display: "none" });
+
+        $("#message1").html("Enter details of the file conversions expected for this format and provide a link to appropriate documentation if possible [max 500 characters].");
     }
     else {
+        $("#in_out_formats").css({ display: "none" });
+        $("#message").css({ display: "none" });
+
         $("#formats").css({ display: "none" });
         $("#missing").css({ display: "none" });
+
         $("#userInput").css({ display: "none" });
     }
 }

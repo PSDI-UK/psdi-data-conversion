@@ -45,12 +45,8 @@
         filters the options (case insensitive); for example, typing 'can' or 'NON' reduces the number of options to one:
         'can: Canonical SMILES.' If you change your mind about a conversion, it is advisable to click on the 'Reset'
         button. When both formats have been selected, converters able to carry out this conversion appear in the
-        'Conversion options' box along with an indication of conversion success (many conversions have not yet been
-        tested) and whether or not the converter is supported on this site. Selecting a converter displays information
-        about it, along with a link to a relevant website. Selecting a supported converter affords the opportunity to
-        carry out a conversion on this site. Clicking on the 'Yes' button takes us to the 'Conversion' page. If a
-        file format has not been found, or if there are no converters capable of carrying out a required conversion,
-        please click on 'Report Missing Format/Conversion' in the navigation bar.</p>
+        'Conversion options' box along with an indication of conversion quality (many conversions have not yet been
+        tested) and whether or not the converter is supported on this site.</p>
       <p>
         <label for="searchFrom" id="fromLabel">Convert from:</label><br>
         <input type="text" placeholder="-- type here to filter options --" size="12" id="searchFrom"
@@ -66,6 +62,11 @@
       </p>
       <input type="button" class="button" value=" Reset " name="resetButton" id="resetButton">
       <br><br>
+      <p>Selecting a converter displays information
+        about it, along with a link to a relevant website. Selecting a supported converter affords the opportunity to
+        carry out a conversion on this site. Clicking on the 'Yes' button takes us to the 'Conversion' page. If a
+        file format has not been found, or if there are no converters capable of carrying out a required conversion
+        please click on 'Report Missing Format/Conversion' in the navigation bar.</p>
       <p>
         <label for="success">Select from available conversion
           options:</label><br>
@@ -98,7 +99,11 @@
     const token = "{{item.token}}";
     const max_file_size = "{{item.max_file_size}}";
     const service_mode = "{{item.service_mode}}";
+    const production_mode = "{{item.production_mode}}";
   </script>
+  <div class="secondary prod-only">
+    <div class="max-width-box">SHA: {{item.sha}}</div>
+  </div>
   {% endfor %}
   <script src="{{url_for('static', filename='/javascript/format.js')}}" type="module" language="JavaScript"></script>
 

@@ -1,0 +1,34 @@
+[2025-03-06 11:43:38] WARNING [data-conversion.__init__:350] :
+Potential data loss or extrapolation issues with the conversion from xyz to cif:
+- Potential data loss: 2D atomic coordinates are represented in the input format, but its representation in the output format is unknown
+- Potential data loss: 2D atomic coordinates are represented in the input format, but its representation in the output format is unknown
+- Potential data loss: Atomic composition is represented in the input format, but its representation in the output format is unknown
+- Potential data loss: Atomic connections are represented in the input format, but its representation in the output format is unknown
+
+[2025-03-06 11:43:38] INFO [data-conversion._log_success:576] :
+File name:         quartz
+From:              xyz: XYZ cartesian coordinates
+To:                cif: Crystallographic Information File
+Converter:         Atomsk
+Quality:           not tested
+Success:           Assuming that the data provided was of the correct format, the conversion
+                   was successful (to the best of our knowledge) subject to any warnings below.
+ ___________________________________________________
+|              ___________                          |
+|     o---o    A T O M S K                          |
+|    o---o|    Version Beta 0.13.1                  |
+|    |   |o    (C) 2010 Pierre Hirel                |
+|    o---o     https://atomsk.univ-lille.fr         |
+|___________________________________________________|
+>>> Atomsk is a free, Open Source software.
+    To learn more, enter 'license'.
+>>> Atomsk command-line interpreter:
+..> Type "help" for a summary of commands.
+
+ @atomsk:8dd574d89c8c153> >>> Opening the input file: ./psdi_data_conversion/static/uploads/quartz.xyz
+X!X ERROR while trying to read atom #9
+ @atomsk:8dd574d89c8c153> >>> Writing output file(s) (9 atoms):
+..> Successfully wrote CIF file: ./psdi_data_conversion/static/downloads/quartz.cif
+ @atomsk:8dd574d89c8c153>  @atomsk:8dd574d89c8c153> \o/ Program terminated successfully!
+    Total time: 0.019 s.; CPU time: 0.022 s.
+
