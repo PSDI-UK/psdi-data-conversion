@@ -54,7 +54,9 @@ archive_wrong_format_test = ConversionTestSpec(filename="caffeine-smi.zip",
                                                conversion_kwargs=[{"from_format": "pdb"},
                                                                   {"from_format": "pdb", "strict": True}],
                                                expect_success=[True, False],
-                                               callback=CheckStderrContents([const.ERR_WRONG_EXTENSIONS])
+                                               callback=[CheckStderrContents([const.ERR_WRONG_EXTENSIONS]),
+                                                         CheckException(ex_type=FileConverterInputException,
+                                                                        ex_message=const.ERR_WRONG_EXTENSIONS)]
                                                )
 """A test that if the user provides the wrong input format for files in an archive, and error will be output to stderr
 """
