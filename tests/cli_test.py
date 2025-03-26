@@ -81,6 +81,12 @@ def test_archive_convert():
     run_test_conversion_with_cla(specs.archive_tests)
 
 
+def test_archive_wrong_format():
+    """Run a test that converting an archive but specifying the wrong input format will produce a warning
+    """
+    run_test_conversion_with_cla(specs.archive_wrong_format_test)
+
+
 def test_log_mode():
     """Test that the various log modes result in the expected log files being created
     """

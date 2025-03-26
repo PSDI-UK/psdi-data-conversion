@@ -14,7 +14,7 @@ from psdi_data_conversion.converters.c2x import CONVERTER_C2X
 from psdi_data_conversion.converters.openbabel import CONVERTER_OB
 from psdi_data_conversion.testing.conversion_callbacks import (CheckArchiveContents, CheckException, CheckLogContents,
                                                                CheckLogContentsSuccess, CheckFileStatus,
-                                                               CheckStdoutContents, MultiCallback)
+                                                               CheckStderrContents, CheckStdoutContents, MultiCallback)
 from psdi_data_conversion.testing.utils import ConversionTestSpec
 
 basic_tests = ConversionTestSpec(filename=["1NE6.mmcif", "standard_test.cdxml",
@@ -47,6 +47,15 @@ archive_tests = ConversionTestSpec(filename=["caffeine-smi.zip",
                                    to_format="inchi",
                                    callback=archive_callback)
 """A test of converting a archives of files"""
+
+archive_wrong_format_test = ConversionTestSpec(filename="caffeine-smi.zip",
+                                               to_format="inchi",
+                                               conversion_kwargs={"from_format": "pdb"},
+                                               callback=CheckStderrContents(
+                                                   l_strings_to_find=[f"WARNING: {const.ERR_WRONG_EXTENSIONS}"])
+                                               )
+"""A test that if the user provides the wrong input format for files in an archive, and error will be output to stderr
+"""
 
 log_mode_tests = ConversionTestSpec(conversion_kwargs=[{"log_mode": const.LOG_NONE},
                                                        {"log_mode": const.LOG_STDOUT},
