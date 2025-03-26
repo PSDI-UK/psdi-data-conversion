@@ -60,7 +60,7 @@ Download = "https://github.com/PSDI-UK/psdi-data-conversion/releases/latest"
 source = "vcs"
 
 [tool.hatch.version.raw-options]
-version_scheme = "only-version"
+local_scheme = "no-local-version"
 
 [tool.hatch.build]
 exclude = [
