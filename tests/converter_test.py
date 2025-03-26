@@ -118,6 +118,12 @@ def test_format_args():
     run_test_conversion_with_library(specs.format_args_test)
 
 
+def test_coord_gen():
+    """Run a test that coordinate generation args are processed correctly
+    """
+    run_test_conversion_with_library(specs.coord_gen_test)
+
+
 def test_envvars():
     """Test that setting appropriate envvars will set them for a file converter
     """

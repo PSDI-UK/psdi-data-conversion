@@ -21,6 +21,7 @@ import pytest
 
 from psdi_data_conversion.constants import CONVERTER_DEFAULT, GLOBAL_LOG_FILENAME, LOG_NONE, OUTPUT_LOG_EXT
 from psdi_data_conversion.converter import run_converter
+from psdi_data_conversion.converters.openbabel import COORD_GEN_KEY, COORD_GEN_QUAL_KEY
 from psdi_data_conversion.dist import LINUX_LABEL, get_dist
 from psdi_data_conversion.file_io import is_archive, split_archive_ext
 from psdi_data_conversion.main import main as data_convert_main
@@ -460,6 +461,13 @@ def run_converter_through_cla(filename: str,
                     arg_string += f" --from-options '{subval}'"
                 elif subkey == "to_options":
                     arg_string += f" --to-options '{subval}'"
+                elif subkey == COORD_GEN_KEY:
+                    arg_string += f" --coord-gen {subval}"
+                    if COORD_GEN_QUAL_KEY in val:
+                        arg_string += f" {val[COORD_GEN_QUAL_KEY]}"
+                elif subkey == COORD_GEN_QUAL_KEY:
+                    # Handled alongside COORD_GEN_KEY above
+                    pass
                 else:
                     assert False, (f"The key 'data[\"{subkey}\"]' was passed to `conversion_kwargs` but could not be "
                                    "interpreted")

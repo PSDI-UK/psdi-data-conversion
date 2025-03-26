@@ -20,9 +20,7 @@ from psdi_data_conversion.converters.openbabel import (CONVERTER_OB, COORD_GEN_K
 from psdi_data_conversion.database import (get_conversion_quality, get_converter_info, get_in_format_args,
                                            get_out_format_args, get_possible_converters, get_possible_formats)
 from psdi_data_conversion.main import FileConverterInputException, parse_args
-from psdi_data_conversion.testing.constants import INPUT_TEST_DATA_LOC, OUTPUT_TEST_DATA_LOC
-from psdi_data_conversion.testing.utils import (check_file_match, run_test_conversion_with_cla,
-                                                run_with_arg_string)
+from psdi_data_conversion.testing.utils import run_test_conversion_with_cla, run_with_arg_string
 from psdi_data_conversion.testing import conversion_test_specs as specs
 
 
@@ -137,6 +135,12 @@ def test_format_args():
     """Run a test that format args are processed correctly
     """
     run_test_conversion_with_cla(specs.format_args_test)
+
+
+def test_coord_gen():
+    """Run a test that coordinate generation args are processed correctly
+    """
+    run_test_conversion_with_cla(specs.coord_gen_test)
 
 
 def test_input_validity():
@@ -387,45 +391,3 @@ def test_conversion_info(capsys):
     for option_info in l_in_options + l_out_options:
         info = option_info.info if option_info.info and option_info.info != "N/A" else ""
         assert string_is_present_in_out(f"{option_info.flag}<{option_info.brief}>{option_info.description}{info}")
-
-
-def test_coord_gen(tmp_path_factory):
-    """Test that Open Babel's unique --coord-gen option is processed correctly and results in the right conversions
-    """
-    input_dir = tmp_path_factory.mktemp("input")
-    output_dir = tmp_path_factory.mktemp("output")
-
-    test_filename_base = "caffeine"
-
-    from_format = "inchi"
-    to_format = "xyz"
-
-    input_filename = f"{test_filename_base}.{from_format}"
-    output_filename = f"{test_filename_base}.{to_format}"
-
-    # Symlink the input file from the test_data directory to the input directory
-    os.symlink(os.path.join(INPUT_TEST_DATA_LOC, input_filename),
-               os.path.join(input_dir, input_filename))
-
-    basic_arg_string = f"{input_filename} -t {to_format} -i {input_dir} -o {output_dir}"
-    # Run for each set of coord-gen options
-    for cg_opts, ex_file in ((None, "caffeine.xyz"),
-                             ("Gen2D fastest", "caffeine-2D-fastest.xyz"),
-                             ("Gen3D best", "caffeine-3D-best.xyz"),):
-
-        if cg_opts is None:
-            arg_string = basic_arg_string
-        else:
-            arg_string = f"{basic_arg_string} --coord-gen {cg_opts}"
-
-        # Run the conversion
-        run_with_arg_string(arg_string)
-
-        # Check that the expected output file has been created
-        ex_output_file = os.path.join(output_dir, f"{output_filename}")
-        assert os.path.isfile(ex_output_file), f"Expected output file {ex_output_file} does not exist"
-
-        # Check that the contents of this file match what's expected
-        check_file_match(text=open(ex_output_file, "r").read(),
-                         ex_text=open(os.path.join(OUTPUT_TEST_DATA_LOC, ex_file), "r").read(),
-                         fail_msg=f"Coord Gen test failed for {ex_file}")

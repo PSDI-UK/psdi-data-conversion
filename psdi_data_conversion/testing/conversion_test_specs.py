@@ -11,7 +11,7 @@ from psdi_data_conversion.converters.atomsk import CONVERTER_ATO
 from psdi_data_conversion.converters.base import (FileConverterAbortException, FileConverterHelpException,
                                                   FileConverterInputException, FileConverterSizeException)
 from psdi_data_conversion.converters.c2x import CONVERTER_C2X
-from psdi_data_conversion.converters.openbabel import CONVERTER_OB
+from psdi_data_conversion.converters.openbabel import CONVERTER_OB, COORD_GEN_KEY, COORD_GEN_QUAL_KEY
 from psdi_data_conversion.testing.conversion_callbacks import (CheckArchiveContents, CheckException, CheckLogContents,
                                                                CheckLogContentsSuccess, CheckFileStatus,
                                                                CheckStderrContents, CheckStdoutContents,
@@ -199,3 +199,20 @@ format_args_test = ConversionTestSpec(filename="caffeine.inchi",
                                       )
 """A set of tests which checks that format args (for how to read from and write to specific file formats) are processed
 correctly, by matching tests using them to expected output files"""
+
+
+coord_gen_test = ConversionTestSpec(filename="caffeine.inchi",
+                                    to_format="xyz",
+                                    conversion_kwargs=[{},
+                                                       {"data": {COORD_GEN_KEY: "Gen2D",
+                                                                 COORD_GEN_QUAL_KEY: "fastest"}},
+                                                       {"data": {COORD_GEN_KEY: "Gen3D",
+                                                                 COORD_GEN_QUAL_KEY: "best"}}
+                                                       ],
+                                    callback=[MatchOutputFile("caffeine.xyz"),
+                                              MatchOutputFile("caffeine-2D-fastest.xyz"),
+                                              MatchOutputFile("caffeine-3D-best.xyz"),
+                                              ]
+                                    )
+"""A set of tests which checks that coordinate generation options are processed correctly, by matching tests using them
+to expected output files"""
