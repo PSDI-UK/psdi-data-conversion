@@ -431,35 +431,40 @@ def run_converter_through_cla(filename: str,
     arg_string = f"{filename} -i {input_dir} -t {to_format} -o {output_dir} -w {name} --log-file {log_file}"
 
     # For each argument in the conversion kwargs, convert it to the appropriate argument to be provided to the
-    # argument string. Keep track of all kwargs we've converted, and raise an error if any are left over
-    s_handled_kwargs = set()
+    # argument string
     for key, val in conversion_kwargs.items():
         if key == "from_format":
             arg_string += f" -f {val}"
-            s_handled_kwargs.add(key)
         elif key == "log_mode":
             if val == LOG_NONE:
                 arg_string += " -q"
             else:
                 arg_string += f" --log-mode {val}"
-            s_handled_kwargs.add(key)
         elif key == "delete_input":
             if val:
                 arg_string += " --delete-input"
-            s_handled_kwargs.add(key)
         elif key == "strict":
             if val:
                 arg_string += " --strict"
-            s_handled_kwargs.add(key)
         elif key == "max_file_size":
             if val != 0:
                 assert False, ("Test specification imposes a maximum file size, which isn't compatible with the "
                                "command-line application.")
-
-    if len(conversion_kwargs) > len(s_handled_kwargs):
-        s_unhandled_kwargs = set(conversion_kwargs).difference(s_handled_kwargs)
-        assert False, ("Some values were passed to `conversion_kwargs` which could not be interpreted for the "
-                       f"command-line application: {s_unhandled_kwargs}")
+        elif key == "data":
+            for subkey, subval in val.items():
+                if subkey == "from_flags":
+                    arg_string += f" --from-flags {subval}"
+                elif subkey == "to_flags":
+                    arg_string += f" --to-flags {subval}"
+                elif subkey == "from_options":
+                    arg_string += f" --from-options '{subval}'"
+                elif subkey == "to_options":
+                    arg_string += f" --to-options '{subval}'"
+                else:
+                    assert False, (f"The key 'data[\"{subkey}\"]' was passed to `conversion_kwargs` but could not be "
+                                   "interpreted")
+        else:
+            assert False, f"The key '{key}' was passed to `conversion_kwargs` but could not be interpreted"
 
     run_with_arg_string(arg_string)
 
@@ -472,9 +477,13 @@ def run_with_arg_string(arg_string: str):
         data_convert_main()
 
 
-def check_numerical_text_match(text: str, ex_text: str, fail_msg: str | None = None) -> None:
+def check_file_match(filename: str, ex_filename: str) -> str:
     """Check that the contents of two files match without worrying about whitespace or negligible numerical differences.
     """
+
+    # Read in both files
+    text = open(filename, "r").read()
+    ex_text = open(ex_filename, "r").read()
 
     # We want to check they're the same without worrying about whitespace (which doesn't matter for this format),
     # so we accomplish this by using the string's `split` method, which splits on whitespace by default
@@ -495,7 +504,11 @@ def check_numerical_text_match(text: str, ex_text: str, fail_msg: str | None = N
         try:
             val, ex_val = float(word), float(ex_word)
 
-            assert isclose(val, ex_val, rel_tol=rel_tol, abs_tol=abs_tol), fail_msg
+            if not isclose(val, ex_val, rel_tol=rel_tol, abs_tol=abs_tol):
+                return (f"File comparison failed: {val} != {ex_val} with rel_tol={rel_tol} and abs_tol={abs_tol} "
+                        f"when comparing files {filename} and {ex_filename}")
         except ValueError:
             # If it can't be converted to a float, treat it as a string and require an exact match
-            assert word == ex_word, fail_msg
+            if not word == ex_word:
+                return f"File comparison failed: {word} != {ex_word} when comparing files {filename} and {ex_filename}"
+    return ""

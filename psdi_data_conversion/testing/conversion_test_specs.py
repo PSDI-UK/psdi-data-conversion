@@ -14,7 +14,8 @@ from psdi_data_conversion.converters.c2x import CONVERTER_C2X
 from psdi_data_conversion.converters.openbabel import CONVERTER_OB
 from psdi_data_conversion.testing.conversion_callbacks import (CheckArchiveContents, CheckException, CheckLogContents,
                                                                CheckLogContentsSuccess, CheckFileStatus,
-                                                               CheckStderrContents, CheckStdoutContents, MultiCallback)
+                                                               CheckStderrContents, CheckStdoutContents,
+                                                               MatchOutputFile, MultiCallback)
 from psdi_data_conversion.testing.utils import ConversionTestSpec
 
 basic_tests = ConversionTestSpec(filename=["1NE6.mmcif", "standard_test.cdxml",
@@ -175,3 +176,26 @@ archive is smaller than the maximum size, but the unpacked files in it are great
 
 NOTE: Not compatible with CLA tests, since the CLA doesn't allow the imposition of a maximum size.
 """
+
+
+format_args_test = ConversionTestSpec(filename="caffeine.inchi",
+                                      to_format="smi",
+                                      conversion_kwargs=[{},
+                                                         {"data": {"from_flags": "a"}},
+                                                         {"data": {"from_flags": "a", "to_flags": "x"}},
+                                                         {"data": {"from_flags": "a", "to_flags": "kx"}},
+                                                         {"data": {"from_flags": "a", "to_flags": "kx",
+                                                          "to_options": "f4"}},
+                                                         {"data": {"from_flags": "a", "to_flags": "kx",
+                                                          "to_options": "f4 l5"}}
+                                                         ],
+                                      callback=[MatchOutputFile("caffeine-no-flags.smi"),
+                                                MatchOutputFile("caffeine-ia.smi"),
+                                                MatchOutputFile("caffeine-ia-ox.smi"),
+                                                MatchOutputFile("caffeine-ia-okx.smi"),
+                                                MatchOutputFile("caffeine-ia-okx-oof4.smi"),
+                                                MatchOutputFile("caffeine-ia-okx-oof4l5.smi")
+                                                ]
+                                      )
+"""A set of tests which checks that format args (for how to read from and write to specific file formats) are processed
+correctly, by matching tests using them to expected output files"""

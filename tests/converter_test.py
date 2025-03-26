@@ -112,6 +112,12 @@ def test_failed_conversion():
     run_test_conversion_with_library(specs.failed_conversion_test)
 
 
+def test_format_args():
+    """Run a test that format args are processed correctly
+    """
+    run_test_conversion_with_library(specs.format_args_test)
+
+
 def test_envvars():
     """Test that setting appropriate envvars will set them for a file converter
     """
