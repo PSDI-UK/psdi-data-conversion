@@ -28,8 +28,8 @@ basic_tests = ConversionTestSpec(filename=["1NE6.mmcif", "standard_test.cdxml",
                                        CONVERTER_OB, CONVERTER_OB,
                                        CONVERTER_ATO, CONVERTER_ATO,
                                        CONVERTER_C2X, CONVERTER_C2X],
-                                 post_conversion_callback=MultiCallback([CheckFileStatus(),
-                                                                         CheckLogContentsSuccess()]))
+                                 callback=MultiCallback([CheckFileStatus(),
+                                                         CheckLogContentsSuccess()]))
 """A basic set of test conversions which we expect to succeed without issue, running two conversions with each of the
 Open Babel, Atomsk, and c2x converters"""
 
@@ -38,16 +38,16 @@ log_mode_tests = ConversionTestSpec(conversion_kwargs=[{"log_mode": const.LOG_NO
                                                        {"log_mode": const.LOG_SIMPLE},
                                                        {"log_mode": const.LOG_FULL},
                                                        {"log_mode": const.LOG_FULL_FORCE},],
-                                    post_conversion_callback=[CheckFileStatus(expect_log_exists=False,
-                                                                              expect_global_log_exists=False),
-                                                              CheckFileStatus(expect_log_exists=False,
-                                                                              expect_global_log_exists=False),
-                                                              CheckFileStatus(expect_log_exists=True,
-                                                                              expect_global_log_exists=False),
-                                                              CheckFileStatus(expect_log_exists=True,
-                                                                              expect_global_log_exists=True),
-                                                              CheckFileStatus(expect_log_exists=True,
-                                                                              expect_global_log_exists=True)],
+                                    callback=[CheckFileStatus(expect_log_exists=False,
+                                                              expect_global_log_exists=False),
+                                              CheckFileStatus(expect_log_exists=False,
+                                                              expect_global_log_exists=False),
+                                              CheckFileStatus(expect_log_exists=True,
+                                                              expect_global_log_exists=False),
+                                              CheckFileStatus(expect_log_exists=True,
+                                                              expect_global_log_exists=True),
+                                              CheckFileStatus(expect_log_exists=True,
+                                                              expect_global_log_exists=True)],
                                     )
 """Tests that the different log modes have the desired effects on logs
 
@@ -55,7 +55,7 @@ NOTE: Not compatible with GUI tests, since the GUI requires the log mode to alwa
 """
 
 stdout_test = ConversionTestSpec(conversion_kwargs={"log_mode": const.LOG_STDOUT},
-                                 post_conversion_callback=CheckStdoutContents(l_strings_to_exclude=[
+                                 callback=CheckStdoutContents(l_strings_to_exclude=[
                                      "ERROR", "exception", "Exception"],
                                      l_regex_to_find=[r"File name:\s*nacl",
                                                       const.DATETIME_RE_RAW]
@@ -66,7 +66,7 @@ NOTE: Not compatible with GUI tests, since the GUI requires the log mode to alwa
 """
 
 quiet_test = ConversionTestSpec(conversion_kwargs={"log_mode": const.LOG_NONE},
-                                post_conversion_callback=CheckStdoutContents(l_regex_to_exclude=r"."))
+                                callback=CheckStdoutContents(l_regex_to_exclude=r"."))
 """Test that nothing is output to stdout when quiet mode is enabled
 
 NOTE: Not compatible with GUI tests, since the GUI doesn't support quiet mode
@@ -74,7 +74,7 @@ NOTE: Not compatible with GUI tests, since the GUI doesn't support quiet mode
 
 open_babel_warning_test = ConversionTestSpec(filename="1NE6.mmcif",
                                              to_format="pdb",
-                                             post_conversion_callback=CheckLogContentsSuccess(l_strings_to_find=[
+                                             callback=CheckLogContentsSuccess(l_strings_to_find=[
                                                  "Open Babel Warning",
                                                  "Failed to kekulize aromatic bonds",
                                              ]))
@@ -86,7 +86,7 @@ invalid_converter_callback = MultiCallback([CheckFileStatus(expect_output_exists
                                                            ex_message="Converter {} not recognized")])
 invalid_converter_test = ConversionTestSpec(name="INVALID",
                                             expect_success=False,
-                                            post_conversion_callback=invalid_converter_callback)
+                                            callback=invalid_converter_callback)
 """A test that a proper error is returned if an invalid converter is requested"""
 
 quality_note_callback = CheckLogContentsSuccess(
@@ -96,13 +96,13 @@ quality_note_callback = CheckLogContentsSuccess(
                        const.QUAL_NOTE_IN_MISSING.format(const.QUAL_CONN_LABEL)])
 quality_note_test = ConversionTestSpec(filename="quartz.xyz",
                                        to_format="inchi",
-                                       post_conversion_callback=quality_note_callback)
+                                       callback=quality_note_callback)
 """A test conversion which we expect to produce a warning for conversion quality issues, where the connections property
 isn't present in the input and has to be extrapolated, and the 2D and 3D coordinates properties aren't present in the
 output and will be lost"""
 
 cleanup_input_test = ConversionTestSpec(conversion_kwargs={"delete_input": True},
-                                        post_conversion_callback=CheckFileStatus(expect_input_exists=False))
+                                        callback=CheckFileStatus(expect_input_exists=False))
 """A test that the input file to a conversion is deleted when cleanup is requested"""
 
 cant_read_xyz_callback = MultiCallback([CheckFileStatus(expect_output_exists=False,
@@ -127,9 +127,9 @@ failed_conversion_test = ConversionTestSpec(filename=["quartz_err.xyz",
                                                                {},
                                                                {"from_format": "pdb"}],
                                             expect_success=False,
-                                            post_conversion_callback=[cant_read_xyz_callback,
-                                                                      invalid_conversion_callback,
-                                                                      wrong_type_callback])
+                                            callback=[cant_read_xyz_callback,
+                                                      invalid_conversion_callback,
+                                                      wrong_type_callback])
 """A test that a conversion which fails due to an invalid input file will properly fail"""
 
 max_size_callback = MultiCallback([CheckFileStatus(expect_output_exists=False),
@@ -143,7 +143,7 @@ max_size_test = ConversionTestSpec(filename=["1NE6.mmcif",
                                    conversion_kwargs=[{"max_file_size": 0.0001},
                                                       {"max_file_size": 0.0005}],
                                    expect_success=False,
-                                   post_conversion_callback=max_size_callback)
+                                   callback=max_size_callback)
 """A set of test conversion that the maximum size constraint is properly applied. In the first test, the input file
 will be greater than the maximum size, and the test should fail as soon as it checks it. In the second test, the input
 archive is smaller than the maximum size, but the unpacked files in it are greater, so it should fail midway through.

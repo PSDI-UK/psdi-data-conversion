@@ -115,8 +115,8 @@ class ConversionTestSpec:
     expect_success: bool | Iterable[bool] = True
     """Whether or not to expect the test to succeed"""
 
-    post_conversion_callback: (Callable[[ConversionTestInfo], str] |
-                               Iterable[Callable[[ConversionTestInfo], str]] | None) = None
+    callback: (Callable[[ConversionTestInfo], str] |
+               Iterable[Callable[[ConversionTestInfo], str]] | None) = None
     """Function to be called after the conversion is performed to check in detail whether results are as expected. It
     should take as its only argument a `ConversionTestInfo` and return a string. The string should be empty if the check
     is passed and should explain the failure otherwise."""
@@ -203,7 +203,7 @@ class SingleConversionTestSpec:
     expect_success: bool = True
     """Whether or not to expect the test to succeed"""
 
-    post_conversion_callback: (Callable[[ConversionTestInfo], str] | None) = None
+    callback: (Callable[[ConversionTestInfo], str] | None) = None
     """Function to be called after the conversion is performed to check in detail whether results are as expected. It
     should take as its only argument a `ConversionTestInfo` and return a string. The string should be empty if the check
     is passed and should explain the failure otherwise."""
@@ -297,7 +297,7 @@ def _run_single_test_conversion_with_library(test_spec: SingleConversionTestSpec
         stdouterr.done()
 
     # Compile output info for the test and call the callback function if one is provided
-    if test_spec.post_conversion_callback:
+    if test_spec.callback:
         test_info = LibraryConversionTestInfo(test_spec=test_spec,
                                               input_dir=input_dir,
                                               output_dir=output_dir,
@@ -305,7 +305,7 @@ def _run_single_test_conversion_with_library(test_spec: SingleConversionTestSpec
                                               captured_stdout=stdout,
                                               captured_stderr=stderr,
                                               exc_info=exc_info)
-        callback_msg = test_spec.post_conversion_callback(test_info)
+        callback_msg = test_spec.callback(test_info)
         assert not callback_msg, callback_msg
 
 
@@ -386,14 +386,14 @@ def _run_single_test_conversion_with_cla(test_spec: SingleConversionTestSpec,
         stdouterr.done()
 
     # Compile output info for the test and call the callback function if one is provided
-    if test_spec.post_conversion_callback:
+    if test_spec.callback:
         test_info = CLAConversionTestInfo(test_spec=test_spec,
                                           input_dir=input_dir,
                                           output_dir=output_dir,
                                           success=success,
                                           captured_stdout=stdout,
                                           captured_stderr=stderr)
-        callback_msg = test_spec.post_conversion_callback(test_info)
+        callback_msg = test_spec.callback(test_info)
         assert not callback_msg, callback_msg
 
 
