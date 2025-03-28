@@ -33,6 +33,9 @@ This is the repository for the PSDI PF2 Chemistry File Format Conversion project
   - [Installation and Setup](#installation-and-setup)
   - [Running the App](#running-the-app)
 - [Testing](#testing)
+- [Licencing](#licencing)
+- [Contributors](#contributors)
+- [Funding](#funding)
 
 ## Project Structure
 
@@ -404,6 +407,21 @@ cd tests/selenium
 ./run.sh
 kill %1 # Stop the web server - it may have a different job ID. If you don't know the job ID, you can alternatively call "fg" to bring the job to the foreground, then type CTRL+c to stop it
 ```
+
+## Licencing
+
+This project is provided under the Apache License version 2.0, the terms of which can be found in the file `LICENSE`.
+
+This project redistributes compiled binaries for the Atomsk and c2x converters. These are both licenced under the
+GNU General Public License version 3 and are redistributed per its terms. Any further redistribution of these binaries,
+including redistribution of this project as a whole, including them, must also follow the terms of this licence.
+
+This requires conspicuously displaying notice of this licence, providing the text of of the licence (provided here in
+the files `psdi_data_conversion/bin/LICENSE_C2X` and `psdi_data_conversion/bin/LICENSE_ATOMSK`), and appropriately
+conveying the source code for each of these. Their respective source code may be found at:
+
+- Atomsk: https://github.com/pierrehirel/atomsk/
+- c2x: https://www.c2x.org.uk/downloads/
 
 ## Contributors
 
