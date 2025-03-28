@@ -23,6 +23,9 @@ export function loadServiceMode() {
   document.documentElement.setAttribute("service-mode", getServiceMode());
 }
 
+// Set the service mode variable for each page so that only appropriate elements are shown
+loadServiceMode();
+
 /**
  * Gets whether or not the app is operating in "Production mode"
  * 
@@ -40,3 +43,6 @@ export function getProductionMode() {
 export function loadProductionMode() {
   document.documentElement.setAttribute("production-mode", getProductionMode());
 }
+
+// Set the production mode variable for this page so that only appropriate elements are shown
+loadProductionMode();
