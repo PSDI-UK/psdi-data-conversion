@@ -48,7 +48,7 @@ doc = ["pdoc3"]
 psdi-data-convert = "psdi_data_conversion.main:main"
 
 [project.urls]
-Homepage = "https://psdidev2.azurewebsites.net/"
+Homepage = "https://data-conversion.psdi.ac.uk/"
 Documentation = "https://psdi-uk.github.io/psdi-data-conversion/"
 Repository = "https://github.com/PSDI-UK/psdi-data-conversion"
 Issues = "https://github.com/PSDI-UK/psdi-data-conversion/issues"
@@ -70,7 +70,6 @@ exclude = [
   "scripts/make-index-html.sh",
   "Dockerfile",
   "requirements.txt",
-  "startup.sh",
 ]
 
 # The following lines run a script which excludes binaries for platforms other than the current from the binary.
