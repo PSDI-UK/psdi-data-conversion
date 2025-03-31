@@ -15,7 +15,7 @@ permissions:
 
 jobs:
   test:
-    runs-on: psdi-uk-runners
+    runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v4
