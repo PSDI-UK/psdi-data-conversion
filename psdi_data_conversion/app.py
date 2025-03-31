@@ -132,6 +132,7 @@ def convert():
         try:
             conversion_output = run_converter(name=request.form['converter'],
                                               filename=qualified_filename,
+                                              out_format=request.form['out_format'],
                                               data=request.form,
                                               to_format=request.form['to'],
                                               from_format=request.form['from'],

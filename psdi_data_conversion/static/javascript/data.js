@@ -22,7 +22,7 @@ function compare(...pairs) {
     return 0;
 }
 
-async function getFormatByExtensionAndNote(extension, note) {
+export async function getFormatByExtensionAndNote(extension, note) {
 
     const formats = data.formats.filter(format =>
         (format.extension === extension) && (format.note === note)

@@ -121,6 +121,7 @@ function submitFile() {
     form_data.append("converter", 'Open Babel');
     form_data.append("from", in_ext);
     form_data.append("to", out_ext);
+    form_data.append("out_format", sessionStorage.getItem("out_format"));
     form_data.append("from_full", sessionStorage.getItem("in_str"));
     form_data.append("to_full", sessionStorage.getItem("out_str"));
     form_data.append("success", quality);

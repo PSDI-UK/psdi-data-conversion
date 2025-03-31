@@ -207,6 +207,7 @@ class FileConverter:
     def __init__(self,
                  filename: str,
                  to_format: str,
+                 out_format: str,
                  from_format: str | None = None,
                  data: dict[str, Any] | None = None,
                  abort_callback: Callable[[int], None] = abort_raise,
@@ -228,6 +229,8 @@ class FileConverter:
             The filename of the input file to be converted, either relative to current directory or fully-qualified
         to_format : str
             The desired format to convert to, as the file extension (e.g. "cif")
+        out_format : str
+            The desired format to convert to, specifically for converter c2x (e.g. "shelx")
         from_format : str | None
             The format to convert from, as the file extension (e.g. "pdb"). If None is provided (default), will be
             determined from the extension of `filename`
@@ -279,6 +282,7 @@ class FileConverter:
             # Set member variables directly from input
             self.in_filename = filename
             self.to_format = to_format
+            self.out_format = out_format
             self.upload_dir = upload_dir
             self.download_dir = download_dir
             self.max_file_size = max_file_size*const.MEGABYTE
@@ -704,7 +708,7 @@ class ScriptFileConverter(FileConverter):
         if self.required_bin is not None:
             env["BIN_PATH"] = get_bin_path(self.required_bin)
 
-        process = subprocess.run(['sh', f'psdi_data_conversion/scripts/{self.script}', '--' + self.to_format,
+        process = subprocess.run(['sh', f'psdi_data_conversion/scripts/{self.script}', '--' + self.out_format,
                                   self.in_filename, self.out_filename, from_flags, to_flags, from_options, to_options],
                                  env=env, capture_output=True, text=True)
 

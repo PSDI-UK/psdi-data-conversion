@@ -99,6 +99,8 @@ def get_converter(*args, name=const.CONVERTER_DEFAULT, **converter_kwargs) -> ba
         The filename of the input file to be converted, either relative to current directory or fully-qualified
     to_format : str
         The desired format to convert to, as the file extension (e.g. "cif")
+    out_format : str
+        The desired format to convert to, specifically for converter c2x (e.g. "shelx")
     from_format : str | None
         The format to convert from, as the file extension (e.g. "pdb"). If None is provided (default), will be
         determined from the extension of `filename`
@@ -235,6 +237,7 @@ def check_from_format(filename: str,
 
 def run_converter(filename: str,
                   to_format: str,
+                  out_format: str,
                   *args,
                   from_format: str | None = None,
                   download_dir=const.DEFAULT_DOWNLOAD_DIR,
@@ -254,6 +257,8 @@ def run_converter(filename: str,
         the contents will be converted and then packed into an archive of the same type
     to_format : str
         The desired format to convert to, as the file extension (e.g. "cif")
+    out_format : str
+        The desired format to convert to, specifically for converter c2x (e.g. "shelx")
     from_format : str | None
         The format to convert from, as the file extension (e.g. "pdb"). If None is provided (default), will be
         determined from the extension of `filename` if it's a simple file, or the contained files if `filename` is an
@@ -339,6 +344,7 @@ def run_converter(filename: str,
             check_from_format(filename, from_format, strict=strict)
         l_run_output.append(get_converter(filename,
                                           to_format,
+                                          out_format,
                                           *args,
                                           from_format=from_format,
                                           download_dir=download_dir,
@@ -382,6 +388,7 @@ def run_converter(filename: str,
                 try:
                     individual_run_output = get_converter(extracted_filename,
                                                           to_format,
+                                                          out_format,
                                                           *args,
                                                           from_format=from_format,
                                                           download_dir=download_dir,
