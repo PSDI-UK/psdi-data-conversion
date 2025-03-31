@@ -13,30 +13,43 @@ on:
   workflow_dispatch:
 
 jobs:
+  check-branch:
+    # Check that this job is being run on the release branch
+    runs-on: psdi-uk-runners
+    steps:
+      - name: Check branch (success)
+        if: github.ref == 'refs/heads/release'
+        run: echo "Success - this is being run on the 'release' branch"
+      - name: Check branch (failure)
+        if: github.ref != 'refs/heads/release'
+        run: |
+          echo "ERROR: This workflow can only be run on the 'release' branch"
+          false # Command that always fails, to signal the job to fail
 
   get-latest-release-tag:
     # run on our self hosted github runners enabling access to STFC infrastructure
     runs-on: psdi-uk-runners
+    needs: check-branch
     outputs:
       tag: ${{ steps.get-tag.outputs.TARGET_TAG }}
     steps:
-    - uses: actions/checkout@v4
-    - name: Get latest tag in the relase branch
-      id: get-tag
-      run: |
-        # Use GitHub CR API to get list of all tags
-        GHCR_TOKEN=$(echo -n "${{ secrets.GITHUB_TOKEN }}" | base64 -w 0)
-        echo "Requesting list of tags from GitHub CR for repo..."
-        RESPONSE=$(curl -s -H "Authorization: Bearer $GHCR_TOKEN" "https://ghcr.io/v2/psdi-uk/psdi-data-conversion/data-conversion/tags/list")
-        echo "Response recieved = $RESPONSE"
-        # Extract only the tags corresponding to releases, i.e. of the form 'v*.*.*'
-        echo "Extracting tags from response..."
-        TAGS=$(echo "$RESPONSE" | jq -r '."tags"[]' | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+')
-        echo "Extracted tags = $TAGS"
-        # Find the highest version number
-        TARGET_TAG=$(echo "$TAGS" | sort -V | tail -n 1)
-        echo "TARGET_TAG=$TARGET_TAG" >> "$GITHUB_OUTPUT"
-        echo "Highest version tag found to be = $TARGET_TAG"
+      - uses: actions/checkout@v4
+      - name: Get latest tag in the relase branch
+        id: get-tag
+        run: |
+          # Use GitHub CR API to get list of all tags
+          GHCR_TOKEN=$(echo -n "${{ secrets.GITHUB_TOKEN }}" | base64 -w 0)
+          echo "Requesting list of tags from GitHub CR for repo..."
+          RESPONSE=$(curl -s -H "Authorization: Bearer $GHCR_TOKEN" "https://ghcr.io/v2/psdi-uk/psdi-data-conversion/data-conversion/tags/list")
+          echo "Response recieved = $RESPONSE"
+          # Extract only the tags corresponding to releases, i.e. of the form 'v*.*.*'
+          echo "Extracting tags from response..."
+          TAGS=$(echo "$RESPONSE" | jq -r '."tags"[]' | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+')
+          echo "Extracted tags = $TAGS"
+          # Find the highest version number
+          TARGET_TAG=$(echo "$TAGS" | sort -V | tail -n 1)
+          echo "TARGET_TAG=$TARGET_TAG" >> "$GITHUB_OUTPUT"
+          echo "Highest version tag found to be = $TARGET_TAG"
 
   # Deploy container with tag to production environment
   deploy-stfc-production-k8s:
