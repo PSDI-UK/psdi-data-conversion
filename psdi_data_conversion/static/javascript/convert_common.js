@@ -220,7 +220,8 @@ function checkFile(event) {
         if (message !== "")
             message += "\n\n";
         message += "The file exceeds the maximum size limit of " + (max_file_size / MEGABYTE).toFixed(2) +
-            " MB; its size is " + (file.size / MEGABYTE).toFixed(2) + " MB.";
+            " MB; its size is " + (file.size / MEGABYTE).toFixed(2) + " MB. Please either log in for an increased " +
+            "file size limit, or see the Downloads page to run the app locally with no limit.";
         allGood = false;
     }
 
