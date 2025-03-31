@@ -19,7 +19,7 @@ jobs:
     continue-on-error: ${{ matrix.secondary }}
     strategy:
       matrix:
-        os: [psdi-uk-runners]
+        os: [ubuntu-latest]
         secondary: [false]
         include:
           - os: [macos-latest]
