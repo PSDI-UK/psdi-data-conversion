@@ -85,7 +85,7 @@ jobs:
     name: Publish Python 🐍 distribution 📦 to TestPyPI
     needs:
       - build
-    runs-on: psdi-uk-runners
+    runs-on: ubuntu-latest
 
     environment:
       name: testpypi
@@ -111,7 +111,7 @@ jobs:
       Publish Python 🐍 distribution 📦 to PyPI
     needs:
       - publish-to-testpypi
-    runs-on: psdi-uk-runners
+    runs-on: ubuntu-latest
     environment:
       name: pypi
       url: https://pypi.org/p/psdi-data-conversion
