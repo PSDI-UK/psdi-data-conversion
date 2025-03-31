@@ -16,7 +16,6 @@ jobs:
   check-branch:
     # Check that this job is being run on the release branch
     runs-on: psdi-uk-runners
-    if: github.ref == 'refs/heads/release'
     steps:
       - name: Check branch (success)
         if: github.ref == 'refs/heads/release'
