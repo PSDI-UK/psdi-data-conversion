@@ -352,17 +352,7 @@ The `ci-release.yml` workflow is planned to publish any new releases to PyPI aft
 
 ## Deployment
 
-The project is currently deployed to two locations: An Azure webserver, which was used in development, and the STFC infrastructure, which will be used in production.
-
-### Azure Deployment
-
-Azure deployment is handled automatically by the `ci-release.yml` workflow, which triggers the `job-deploy-azure.yml` reusable workflow to perform the deployment. This should not need to be edited often.
-
-The Azure host starts the server by running the script `startup.sh`. This script can be edited to set any environmental variables which are set up to control the behaviour of the app.
-
-### STFC Deployment
-
-STFC deployment is handled automatically by the `ci-release.yml` workflow, which triggers the `job-deploy-k8s.yml` reusable workflow to perform the deployment.
+Deployment is handled by the `job-deploy-k8s.yml` reusable workflow, which is triggered from `ci-main.yml` to deploy to dev on each push to `main` and `ci-release.yml` to deploy to staging on each push to `release`. When a push to production is desired, it must be triggered manually by calling the `ci-deploy-production.yml` workflow on the `release` branch (it's set up to fail if run on any other branch).
 
 TODO - Describe details of setup
 
