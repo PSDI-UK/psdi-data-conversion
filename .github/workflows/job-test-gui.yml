@@ -19,7 +19,7 @@ jobs:
 
     steps:
       - name: Install xzip
-        run: sudo apt install -y xzip
+        run: sudo apt-get update && sudo apt install -y xzip
       - uses: actions/checkout@v4
       - name: Set up Firefox
         uses: browser-actions/setup-firefox@v1
