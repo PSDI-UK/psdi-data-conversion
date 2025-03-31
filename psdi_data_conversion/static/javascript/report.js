@@ -6,7 +6,6 @@
 */
 
 import { getAllFormats, getConverters } from "./data.js";
-import { loadServiceMode } from "./common.js";
 
 var token = "",
     fromList = new Array(),
@@ -30,9 +29,6 @@ if (localOrigin) {
         originAlertDisplayed = true;
     });
 }
-
-// Set the service mode variable for this page so that only appropriate elements are shown
-loadServiceMode();
 
 $(document).ready(function () {
 

@@ -1,0 +1,105 @@
+<!--
+  download.htm
+  Version 1.0, 28th March 2025
+-->
+
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PSDI Data Conversion Service</title>
+  <link rel="icon" type="image/x-icon" href="../img/psdi-icon-dark.svg">
+  <link href="https://fonts.googleapis.com/css?family=Lato:400" rel="stylesheet" type="text/css">
+  <link href="https://fonts.googleapis.com/css?family=Open+Sans+Condensed:700" rel="stylesheet" type="text/css">
+  <link rel="stylesheet" href="../styles/format.css">
+  <script src="../javascript/load_accessibility.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.3/jquery.min.js"></script>
+  <script src="../javascript/common.js" type="module"></script>
+  <script src="../javascript/psdi-common.js" type="module"></script>
+</head>
+
+<body marginwidth="0">
+
+  <!-- Cover to hide element loading and make page transitions seem smoother -->
+  <div id="cover"></div>
+
+  <header class="header" id="psdi-header"></header>
+
+  <div class="hero">
+    <div class="max-width-box">
+      <h1 class="hero__title marginless_header">Download</h1>
+    </div>
+  </div>
+
+  <form class="body-panel">
+    <div class="max-width-box">
+      <p>
+        The PSDI Data Conversion service can be downloaded for local use. This is recommended when you wish to convert
+        sensitive, convert files exceeding the size limit for the public service, or access it via the command-line or
+        Python library.
+      </p>
+
+      <h3>Install via pip</h3>
+
+      <ul>
+        <li><a href="https://pypi.org/project/psdi-data-conversion/">PSDI Data Conversion Service on PyPI</a></li>
+      </ul>
+
+      <p>
+        The easiest way to install the project is via Python's pip utility. If you do not already have this installed,
+        the readme in the link above provides details on installing Python and pip. If you do, you can install the
+        package via:
+      </p>
+
+      <pre><code class="secondary">pip install psdi-data-conversion[gui]</code></pre>
+
+      <p>
+        The <code class="secondary">[gui]</code> portion installs the optional requirements needed to run a local
+        version of this webpage, and can be excluded if you only intend to use the command-line application and/or
+        Python library.
+      </p>
+
+      <p>
+        If you do wish to run the local version of this webpage, you'll need to create a helper script to set up the
+        proper parameters and start the server. See the README provided on the front page of this project's PyPI page,
+        linked above, for the source of this helper script, which you can paste and use locally.
+      </p>
+
+      <h3>Source Code</h3>
+
+      <ul>
+        <li><a href="https://github.com/PSDI-UK/psdi-data-conversion">PSDI Data Conversion Project on GitHub</a></li>
+      </ul>
+
+      The project's source code is available on GitHub at the link above. If you wish to install it from source, you
+      can clone the repository, and then install it via:
+
+      <pre><code class="secondary">pip install .[gui-test]</code></pre>
+
+      <p>
+        The <code class="secondary">[gui-test]</code> portion installs all optional components for running the local
+        webpage and testing all project components. See the project's <code class="secondary">pyproject.toml</code> file
+        for other possible optional dependencies sets that can be installed.
+      </p>
+
+      <p>When installed in this manner, the helper script to run the local webpage is provided in the root directory
+        of the repository as <code class="secondary">run_local.sh</code>. It can be run from this directory, copied to
+        your <code class="secondary">$PATH</code>, or aliased as desired.
+      </p>
+
+      <h2>Documentation</h2>
+
+      <ul>
+        <li><a href="https://github.com/PSDI-UK/psdi-data-conversion/blob/main/README.md">README</a></li>
+        <li><a href="https://psdi-uk.github.io/psdi-data-conversion/">Code Documentation</a></li>
+      </ul>
+
+    </div>
+  </form>
+
+  <footer class="footer" id="psdi-footer"></footer>
+
+</body>
+
+</html>

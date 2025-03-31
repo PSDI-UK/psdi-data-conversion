@@ -15,6 +15,19 @@
   <link href="https://fonts.googleapis.com/css?family=Open+Sans:400" rel="stylesheet" type="text/css">
   <link href="https://fonts.googleapis.com/css?family=Lexend:400" rel="stylesheet" type="text/css">
   <link rel="stylesheet" href="{{url_for('static', filename='styles/format.css')}}">
+
+  <script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4="
+    crossorigin="anonymous"></script>
+  {% for item in data %}
+  <script>
+    const token = "{{item.token}}";
+    const max_file_size = "{{item.max_file_size}}";
+    const service_mode = "{{item.service_mode}}";
+    const production_mode = "{{item.production_mode}}";
+    document.documentElement.setAttribute("service-mode", service_mode);
+    document.documentElement.setAttribute("production-mode", production_mode);
+  </script>
+
   <script src="static/javascript/load_accessibility.js"></script>
 </head>
 
@@ -92,15 +105,6 @@
     </div>
   </form>
 
-  <script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4="
-    crossorigin="anonymous"></script>
-  {% for item in data %}
-  <script>
-    const token = "{{item.token}}";
-    const max_file_size = "{{item.max_file_size}}";
-    const service_mode = "{{item.service_mode}}";
-    const production_mode = "{{item.production_mode}}";
-  </script>
   <div class="secondary prod-only">
     <div class="max-width-box">SHA: {{item.sha}}</div>
   </div>
