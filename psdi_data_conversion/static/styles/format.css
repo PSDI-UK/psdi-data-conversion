@@ -146,6 +146,12 @@ select#dark-background option {
   display: none;
 }
 
+.footer__hline hr {
+  border-top-style   : none;
+  border-bottom-style: inset;
+  border-bottom-width: 1px;
+}
+
 /* Convert button and loading spinner */
 .convert-button-and-spinner {
   display       : flex;
