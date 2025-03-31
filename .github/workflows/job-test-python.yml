@@ -36,7 +36,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install flake8
           pip install .[test]
-          sudo apt-get update && sudo apt install -y xzip
+          sudo apt-get update && sudo apt install -y xzip xz-utils
       - name: Test with pytest and report coverage
         run: |
           coverage run -m pytest; coverage report
