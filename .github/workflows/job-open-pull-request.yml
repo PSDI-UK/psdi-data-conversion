@@ -33,7 +33,7 @@ env:
 
 jobs:
   create-pr:
-    runs-on: ubuntu-latest
+    runs-on: psdi-uk-runners
     steps:
       - uses: actions/checkout@v4
       - name: create pull request
