@@ -4,7 +4,7 @@ Version: Pre-release 2024-02-27
 
 This is the repository for the PSDI PF2 Chemistry File Format Conversion project. The goal of this project is to provide utilities to assist in converting files between the many different file formats used in chemistry, providing information on what converters are available for a given conversion and the expected quality of it, and providing multiple interfaces to perform these conversions. These interfaces are:
 
-- Online web service, available at https://psdidev2.azurewebsites.net
+- Online web service, available at https://data-conversion.psdi.ac.uk/
 - Version of the web app you can download and run locally (e.g. if you need to convert files which exceed the online app's file size limit)
 - Command-line application, to run conversions from a terminal
 - Python library
@@ -74,9 +74,8 @@ This is the repository for the PSDI PF2 Chemistry File Format Conversion project
 - `LICENSE` (Apache Licence version 2.0)
 - `pyproject.toml` (Python project metadata and settings)
 - `README.md` (This file)
-- `requirements.txt` (Requirements for the Azure web app deployment of this project)
+- `requirements.txt` (Requirements for the web app deployment of this project)
 - `run_local.sh` (Helper script to run the web app locally)
-- `startup.sh` (Startup script for the Azure web app)
 
 ## Requirements
 
@@ -322,7 +321,7 @@ The code documentation for the Python library is published online at https://psd
 
 ## Using the Online Conversion Service
 
-Enter https://psdidev2.azurewebsites.net in a browser. Guidance on usage is given on each page of the website.
+Enter https://data-conversion.psdi.ac.uk/ in a browser. Guidance on usage is given on each page of the website.
 
 ## Running the Python/Flask app locally
 
