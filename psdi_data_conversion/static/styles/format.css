@@ -145,3 +145,16 @@ select#dark-background option {
 [production-mode=False] .dev-only {
   display: none;
 }
+
+/* Convert button and loading spinner */
+.convert-button-and-spinner {
+  display       : flex;
+  flex-direction: row;
+  align-items   : center;
+}
+
+.loading-spinner {
+  display: none;
+  color  : var(--ifm-color-primary);
+  scale  : 75%;
+}

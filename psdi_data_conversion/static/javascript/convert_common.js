@@ -58,6 +58,8 @@ export function commonConvertReady(converter) {
 // Converts user-supplied file to another format and downloads the resulting file
 export function convertFile(form_data, download_fname, fname) {
 
+    showSpinner();
+
     let convertTimedOut = false;
 
     var jqXHR = $.ajax({
@@ -68,6 +70,7 @@ export function convertFile(form_data, download_fname, fname) {
         contentType: false,
         timeout: CONVERT_TIMEOUT,
         success: async function () {
+            hideSpinner();
             if (!convertTimedOut) {
                 await downloadFile(`../downloads/${download_fname}`, download_fname)
 
@@ -105,6 +108,7 @@ export function convertFile(form_data, download_fname, fname) {
                 })
         },
         error: function (xmlhttprequest, textstatus, message) {
+            hideSpinner();
             if (textstatus === "timeout") {
                 convertTimedOut = true;
                 alert("ERROR: Conversion attempt timed out. This may be because the conversion is too complicated, " +
@@ -249,4 +253,19 @@ async function downloadFile(path, filename) {
             a.click();
             a.remove();
         });
+}
+
+
+/**
+ * Show the loading spinner
+ */
+function showSpinner() {
+    $(".loading-spinner").css({ display: "inherit" });
+}
+
+/**
+ * Hide the loading spinner
+ */
+function hideSpinner() {
+    $(".loading-spinner").css({ display: "none" });
 }
