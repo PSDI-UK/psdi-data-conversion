@@ -11,7 +11,9 @@ CONVERTER_C2X = 'c2x'
 
 
 class C2xFileConverter(ScriptFileConverter):
-    """File Converter specialized to use c2x for conversions
+    """File Converter specialized to use c2x for conversions.
+
+    This converter does not yet support any additional configuration options provided at class init to the `data` kwarg.
     """
 
     name = CONVERTER_C2X

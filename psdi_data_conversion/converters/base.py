@@ -236,7 +236,8 @@ class FileConverter:
             The format to convert from, as the file extension (e.g. "pdb"). If None is provided (default), will be
             determined from the extension of `filename`
         data : dict[str | Any] | None
-            A dict of any other data needed by a converter or for extra logging information, default empty dict
+            A dict of any other data needed by a converter or for extra logging information, default empty dict. See the
+            docstring of each converter for supported keys and values that can be passed to `data` here
         abort_callback : Callable[[int], None]
             Function to be called if the conversion hits an error and must be aborted, default `abort_raise`, which
             raises an appropriate exception
