@@ -640,8 +640,11 @@ a svg {
 }
 
 .footer__hline hr {
-  margin: 0.5rem 0;
-  height: 2px;
+  margin             : 0.5rem 0;
+  height             : 2px;
+  border-top-style   : none;
+  border-bottom-style: inset;
+  border-bottom-width: 1px;
 }
 
 .max-width-box .footer__col {
