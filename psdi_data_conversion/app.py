@@ -150,11 +150,23 @@ def convert():
                         fo.write(str(e))
                     abort(const.STATUS_CODE_GENERAL)
 
-            # Failsafe exception message
-            msg = "The following unexpected exception was raised by the converter:\n" + traceback.format_exc()+"\n"
+            # If the exception provides a status code, get it
+            status_code: int
+            if hasattr(e, "status_code"):
+                status_code = e.status_code
+            else:
+                status_code = const.STATUS_CODE_GENERAL
+
+            # If the exception provides a message, report it
+            if hasattr(e, "message"):
+                msg = f"An unexpected exception was raised by the converter, with error message:\n{e.message}\n"
+            else:
+                # Failsafe exception message
+                msg = ("The following unexpected exception was raised by the converter:\n" +
+                       traceback.format_exc()+"\n")
             with open(qualified_output_log, "w") as fo:
                 fo.write(msg)
-            abort(const.STATUS_CODE_GENERAL)
+            abort(status_code)
 
         return repr(conversion_output)
     else:

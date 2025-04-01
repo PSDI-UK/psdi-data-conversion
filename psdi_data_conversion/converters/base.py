@@ -523,12 +523,20 @@ class FileConverter:
             if not isinstance(e, FileConverterHelpException):
                 self.logger.error(message)
 
-        # Call the abort callback function now. We first try to add information to it, but in case that isn't supported,
-        # we fall back to just calling it with the status code
+        # Call the abort callback function now. We first try passing information to the callback function
         try:
             self.abort_callback(status_code, message, e=e, **kwargs)
         except TypeError:
-            self.abort_callback(status_code)
+            # The callback function doesn't support arguments, so we instead call the callback, catch any exception it
+            # raises, monkey-patch on the extra info, and reraise it
+            try:
+                self.abort_callback(status_code)
+            except Exception as ee:
+                ee.status_code = status_code
+                ee.message = message
+                ee.e = e
+                ee.abort_kwargs = kwargs
+                raise ee
 
     def _abort_from_err(self):
         """Call an abort after a call to the converter has completed, but it's returned an error. Create a message for
