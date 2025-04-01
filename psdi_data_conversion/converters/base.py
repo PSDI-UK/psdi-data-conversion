@@ -34,7 +34,12 @@ except ImportError:
 class FileConverterException(RuntimeError):
     """Exception class to represent any runtime error encountered by this package.
     """
-    pass
+
+    def __init__(self,
+                 *args,
+                 logged: bool = False):
+        super().__init__(*args)
+        self.logged = logged
 
 
 class FileConverterAbortException(FileConverterException):
@@ -351,10 +356,13 @@ class FileConverter:
             self.logger.debug("Finished FileConverter initialisation")
 
         except Exception as e:
+            # Don't catch a deliberate abort; let it pass through
             if isinstance(e, l_abort_exceptions):
-                # Don't catch a deliberate abort; let it pass through
-                self.logger.error(f"Unexpected exception raised while initializing the converter, of type '{type(e)}' "
-                                  f"with message: {str(e)}")
+                if not hasattr(e, "logged") or e.logged is False:
+                    self.logger.error(f"Unexpected exception raised while running the converter, of type '{type(e)}' "
+                                      f"with message: {str(e)}")
+                    if e:
+                        e.logged = True
                 raise
             # Try to run the standard abort method. There's a good chance this will fail though depending on what went
             # wrong when during init, so we fallback to printing the exception to stderr
@@ -362,6 +370,8 @@ class FileConverter:
                 if not isinstance(e, FileConverterHelpException):
                     self.logger.error(f"Exception triggering an abort was raised while initializing the converter. "
                                       f"Exception was type '{type(e)}', with message: {str(e)}")
+                    if e:
+                        e.logged = True
                 self._abort(message="The application encountered an error while initializing the converter:\n" +
                             traceback.format_exc(), e=e)
             except Exception as ee:
@@ -451,14 +461,19 @@ class FileConverter:
             self.logger.debug("Finished file conversion; performing cleanup tasks")
             self._finish_convert()
         except Exception as e:
+            # Don't catch a deliberate abort; let it pass through
             if isinstance(e, l_abort_exceptions):
-                # Don't catch a deliberate abort; let it pass through
-                self.logger.error(f"Unexpected exception raised while running the converter, of type '{type(e)}' with "
-                                  f"message: {str(e)}")
+                # Log the error if it hasn't yet been logged
+                if not hasattr(e, "logged") or e.logged is False:
+                    self.logger.error(f"Unexpected exception raised while running the converter, of type '{type(e)}' "
+                                      f"with message: {str(e)}")
+                    e.logged = True
                 raise
             if not isinstance(e, FileConverterHelpException):
                 self.logger.error(f"Exception triggering an abort was raised while running the converter. Exception "
                                   f"was type '{type(e)}', with message: {str(e)}")
+                if e:
+                    e.logged = True
             self._abort(message="The application encountered an error while running the converter:\n" +
                         traceback.format_exc(), e=e)
 
@@ -522,6 +537,8 @@ class FileConverter:
             # Note this message in the dev logger as well
             if not isinstance(e, FileConverterHelpException):
                 self.logger.error(message)
+                if e:
+                    e.logged = True
 
         # Call the abort callback function now. We first try passing information to the callback function
         try:
@@ -546,7 +563,7 @@ class FileConverter:
                           self._create_message() +
                           self.out + '\n' +
                           self.err)
-        self._abort(message=self.err)
+        self._abort(message=self.err, logged=True)
 
     def _create_message(self) -> str:
         """Create a log of options passed to the converter - this method should be overloaded to log any information
