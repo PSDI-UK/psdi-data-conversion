@@ -694,26 +694,34 @@ def run_from_args(args: ConvertArgs):
                                               delete_input=args.delete_input,
                                               refresh_local_log=False)
         except FileConverterHelpException as e:
-            print_wrap(f"ERROR: {e}", err=True)
+            if not e.logged:
+                print_wrap(f"ERROR: {e}", err=True)
+                e.logged = True
             success = False
             continue
         except FileConverterAbortException as e:
-            print_wrap(f"ERROR: Attempt to convert file {filename} aborted with status code {e.status_code} and "
-                       f"message:\n{e}\n", err=True)
+            if not e.logged:
+                print_wrap(f"ERROR: Attempt to convert file {filename} aborted with status code {e.status_code} and "
+                           f"message:\n{e}\n", err=True)
+                e.logged = True
             success = False
             continue
         except FileConverterInputException as e:
             if "Conversion from" in str(e) and "is not supported" in str(e):
-                print_wrap(f"ERROR: {e}", err=True, newline=True)
+                if not e.logged:
+                    print_wrap(f"ERROR: {e}", err=True, newline=True)
                 detail_possible_converters(args.from_format, args.to_format)
-            else:
+            elif not e.logged:
                 print_wrap(f"ERROR: Attempt to convert file {filename} failed at converter initialization with "
                            f"exception type {type(e)} and message: \n{e}\n", err=True)
+            e.logged = True
             success = False
             continue
         except Exception as e:
-            print_wrap(f"ERROR: Attempt to convert file {filename} failed with exception type {type(e)} and message: " +
-                       f"\n{e}\n", err=True)
+            if not hasattr(e, "logged") or e.logged is False:
+                print_wrap(f"ERROR: Attempt to convert file {filename} failed with exception type {type(e)} and "
+                           f"message: \n{e}\n", err=True)
+                e.logged = True
             success = False
             continue
 
