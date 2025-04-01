@@ -76,7 +76,7 @@ def get_coord_gen(l_opts: list[str] | None) -> dict[str, str]:
 
 
 class OBFileConverter(FileConverter):
-    """File Converter specialized to use Open Babel for conversions
+    """File Converter specialized to use Open Babel for conversions.
 
     This converter supports some additional configuration options which can be provided at class init or call to
     `run_converter()` through providing a dict to the `data` kwarg. The supported keys and values are:
