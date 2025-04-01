@@ -77,6 +77,45 @@ def get_coord_gen(l_opts: list[str] | None) -> dict[str, str]:
 
 class OBFileConverter(FileConverter):
     """File Converter specialized to use Open Babel for conversions
+
+    This converter supports some additional configuration options which can be provided at class init or call to
+    `run_converter()` through providing a dict to the `data` kwarg. The supported keys and values are:
+
+    "from_flags": str
+        String of concatenated one-letter flags for how to read the input file. To list the flags supported for a given
+        input format, call ``psdi-data-convert -l -f <format> -w Open Babel`` at the command-line and look for the
+        "Allowed input flags" section, if one exists, or alternatively call the library function
+        ``psdi_data_conversion.database.get_in_format_args("Open Babel", <format>)`` from within Python code.
+
+    "to_flags": str
+        String of concatenated one-letter flags for how to write the output file. To list the flags supported for a
+        given output format, call ``psdi-data-convert -l -f <format> -w Open Babel`` at the command-line and look for
+        the "Allowed output flags" section, if one exists, or alternatively call the library function
+        ``psdi_data_conversion.database.get_out_format_args("Open Babel", <format>)`` from within Python code.
+
+    "from_options": str
+        String of space-separated options for how to read the input file. Each option "word" in this string should start
+        with the letter indicating which option is being used, followed by the value for that option. To list the
+        options supported for a given input format, call ``psdi-data-convert -l -f <format> -w Open Babel`` at the
+        command-line and look for the "Allowed input options" section, if one exists, or alternatively call the library
+        function ``psdi_data_conversion.database.get_in_format_args("Open Babel", <format>)`` from within Python code.
+
+    "to_options": str
+        String of space-separated options for how to write the output file. Each option "word" in this string should
+        start with the letter indicating which option is being used, followed by the value for that option. To list the
+        options supported for a given output format, call ``psdi-data-convert -l -t <format> -w Open Babel`` at the
+        command-line and look for the "Allowed output options" section, if one exists, or alternatively call the library
+        function ``psdi_data_conversion.database.get_out_format_args("Open Babel", <format>)`` from within Python code.
+
+    "coordinates": str
+        One of "Gen2D", "Gen3D", or "neither", specifying how positional coordinates should be generated in the output
+        file. Default "neither"
+
+    "coordOption": str
+        One of "fastest", "fast", "medium", "better", or "best", specifying the quality of the calculation of
+        coordinates. Default "medium"
+
+    Note that some other keys are supported for compatibility purposes, but these may be deprecated in the future.
     """
 
     name = CONVERTER_OB
