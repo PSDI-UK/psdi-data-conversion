@@ -14,6 +14,7 @@ from unittest.mock import patch
 
 from psdi_data_conversion import constants as const
 from psdi_data_conversion.converter import D_CONVERTER_ARGS, L_REGISTERED_CONVERTERS
+from psdi_data_conversion.converters.atomsk import CONVERTER_ATO
 from psdi_data_conversion.converters.c2x import CONVERTER_C2X
 from psdi_data_conversion.converters.openbabel import (CONVERTER_OB, COORD_GEN_KEY, COORD_GEN_QUAL_KEY,
                                                        DEFAULT_COORD_GEN, DEFAULT_COORD_GEN_QUAL)
@@ -391,3 +392,16 @@ def test_conversion_info(capsys):
     for option_info in l_in_options + l_out_options:
         info = option_info.info if option_info.info and option_info.info != "N/A" else ""
         assert string_is_present_in_out(f"{option_info.flag}<{option_info.brief}>{option_info.description}{info}")
+
+    # Now try listing for converters which don't yet allow in/out args
+
+    in_format = "pdb"
+    out_format = "cif"
+    for converter_name in [CONVERTER_C2X, CONVERTER_ATO]:
+        qual = get_conversion_quality(converter_name, in_format, out_format)
+
+        run_with_arg_string(f"-l {converter_name} -f {in_format} -t {out_format}")
+        captured = capsys.readouterr()
+        compressed_out: str = captured.out.replace("\n", "").replace(" ", "")
+
+        assert not captured.err
