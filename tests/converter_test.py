@@ -47,7 +47,8 @@ def base_input():
     """A fixture providing a dict of default input values for the converter which aren't provided in the `data`
     """
     return {'from_format': None,
-            'to_format': 'pdb'}
+            'to_format': 'pdb',
+            'out_format': 'pdb'}
 
 
 @pytest.fixture()
@@ -125,6 +126,7 @@ class TestConverter:
         self.source_filename = os.path.join(self.test_data_loc, filename)
         self.filename_base = split_archive_ext(filename)[0]
         self.to_format = self.input["to_format"]
+        self.out_format = self.input["out_format"]
 
     def get_converter_kwargs(self, **kwargs):
         """Get the keyword arguments to be passed to a FileConverter for testing
@@ -278,7 +280,8 @@ class TestConverter:
         """
 
         self.get_input_info(filename="quartz.xyz",
-                            to_format="inchi")
+                            to_format="inchi",
+                            out_format="inchi")
 
         self.run_converter()
 
@@ -299,7 +302,8 @@ class TestConverter:
         """
 
         self.get_input_info(filename="hemoglobin.pdb",
-                            to_format="cif")
+                            to_format="cif",
+                            out_format="cif")
 
         # Make a copy of the source file in the uploads directory, and point the self.source_filename variable to it
         # so it'll be properly checked to be deleted later
@@ -321,7 +325,8 @@ class TestConverter:
         # pdb to cif
 
         self.get_input_info(filename="hemoglobin.pdb",
-                            to_format="cif")
+                            to_format="cif",
+                            out_format="cif")
 
         self.run_converter(name=CONVERTER_ATO)
 
@@ -331,7 +336,8 @@ class TestConverter:
         # cif to xyz
 
         self.get_input_info(filename="nacl.cif",
-                            to_format="xyz")
+                            to_format="xyz",
+                            out_format="xyz")
         self.run_converter(name=CONVERTER_ATO)
         self.check_file_status(input_exist=True, output_exist=True)
 
@@ -340,7 +346,8 @@ class TestConverter:
         """
 
         self.get_input_info(filename="hemoglobin.pdb",
-                            to_format="cif")
+                            to_format="cif",
+                            out_format="cif")
 
         self.run_converter(name=CONVERTER_C2X)
 
@@ -350,7 +357,8 @@ class TestConverter:
         # cif to cml
 
         self.get_input_info(filename="nacl.cif",
-                            to_format="cml")
+                            to_format="cml",
+                            out_format="cml")
         self.run_converter(name=CONVERTER_C2X)
         self.check_file_status(input_exist=True, output_exist=True)
 
@@ -359,7 +367,8 @@ class TestConverter:
         """
 
         self.get_input_info(filename="quartz_err.xyz",
-                            to_format="inchi")
+                            to_format="inchi",
+                            out_format="inchi")
 
         self.run_converter(expect_code=const.STATUS_CODE_GENERAL)
 
