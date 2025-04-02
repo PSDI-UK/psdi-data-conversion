@@ -13,6 +13,7 @@ import pytest
 
 from psdi_data_conversion import constants as const
 from psdi_data_conversion.converter import L_REGISTERED_CONVERTERS
+from psdi_data_conversion.converters.c2x import C2xFileConverter
 from psdi_data_conversion.converters.openbabel import OBFileConverter
 from psdi_data_conversion.testing.utils import run_test_conversion_with_library
 from psdi_data_conversion.testing import conversion_test_specs as specs
@@ -131,13 +132,25 @@ def test_envvars():
     test_file_size = 1234
     os.environ[const.MAX_FILESIZE_EV] = str(test_file_size)
 
+    converter = C2xFileConverter(filename="1NE6.mmcif",
+                                 to_format="pdb",
+                                 use_envvars=True,)
+    assert math.isclose(converter.max_file_size, test_file_size*const.MEGABYTE)
+
+    # And also check it isn't applied if we don't ask it to use envvars
+    converter_no_ev = C2xFileConverter(filename="1NE6.mmcif",
+                                       to_format="pdb",
+                                       use_envvars=False,)
+    assert not math.isclose(converter_no_ev.max_file_size, test_file_size*const.MEGABYTE)
+
+    # And check that OB uses its own EV
+    converter = OBFileConverter(filename="1NE6.mmcif",
+                                to_format="pdb",
+                                use_envvars=True,)
+    assert not math.isclose(converter.max_file_size, test_file_size*const.MEGABYTE)
+
+    os.environ[const.MAX_FILESIZE_OB_EV] = str(test_file_size)
     converter = OBFileConverter(filename="1NE6.mmcif",
                                 to_format="pdb",
                                 use_envvars=True,)
     assert math.isclose(converter.max_file_size, test_file_size*const.MEGABYTE)
-
-    # And also check it isn't applied if we don't ask it to use envvars
-    converter_no_ev = OBFileConverter(filename="1NE6.mmcif",
-                                      to_format="pdb",
-                                      use_envvars=False,)
-    assert not math.isclose(converter_no_ev.max_file_size, test_file_size*const.MEGABYTE)

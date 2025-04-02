@@ -5,6 +5,13 @@ if [ -z $MAX_FILESIZE ]; then
   export MAX_FILESIZE=0
 fi
 
+# The envvar MAX_FILESIZE_OB can be used to set the maximum allowed filesize in MB for the Open Babel converter - 0
+# indicates no maximum. This is currently set to 1 MB by default as the converter seems to hang above this limit (not
+# even allowing the process to be cancelled). This can be changed in the future if this is patched
+if [ -z $MAX_FILESIZE_OB ]; then
+  export MAX_FILESIZE_OB=1
+fi
+
 # Logging control - "full" sets server-style logging, which is necessary to produce the output logs with the expected
 # names. This should not be changed, or else errors will occur
 export LOG_MODE=full

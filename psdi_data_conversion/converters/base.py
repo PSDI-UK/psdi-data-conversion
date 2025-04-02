@@ -217,7 +217,7 @@ class FileConverter:
                  use_envvars=False,
                  upload_dir=const.DEFAULT_UPLOAD_DIR,
                  download_dir=const.DEFAULT_DOWNLOAD_DIR,
-                 max_file_size=const.DEFAULT_MAX_FILE_SIZE,
+                 max_file_size=None,
                  no_check=False,
                  log_file: str | None = None,
                  log_mode=const.LOG_FULL,
@@ -281,12 +281,32 @@ class FileConverter:
 
         try:
 
+            if max_file_size is None:
+                from psdi_data_conversion.converters.openbabel import CONVERTER_OB
+                if self.name == CONVERTER_OB:
+                    self.max_file_size = const.DEFAULT_MAX_FILE_SIZE_OB*const.MEGABYTE
+                else:
+                    self.max_file_size = const.DEFAULT_MAX_FILE_SIZE*const.MEGABYTE
+            else:
+                self.max_file_size = max_file_size*const.MEGABYTE
+
+            # Set values from envvars if desired
+            if use_envvars:
+                # Get the maximum allowed size from the envvar for it
+                from psdi_data_conversion.converters.openbabel import CONVERTER_OB
+                if self.name == CONVERTER_OB:
+                    ev_max_file_size = os.environ.get(const.MAX_FILESIZE_OB_EV)
+                else:
+                    ev_max_file_size = os.environ.get(const.MAX_FILESIZE_EV)
+
+                if ev_max_file_size is not None:
+                    self.max_file_size = float(ev_max_file_size)*const.MEGABYTE
+
             # Set member variables directly from input
             self.in_filename = filename
             self.to_format = to_format
             self.upload_dir = upload_dir
             self.download_dir = download_dir
-            self.max_file_size = max_file_size*const.MEGABYTE
             self.log_file = log_file
             self.log_mode = log_mode
             self.log_level = log_level
@@ -317,13 +337,6 @@ class FileConverter:
             self.out: str | None = None
             self.err: str | None = None
             self.quality: str | None = None
-
-            # Set values from envvars if desired
-            if use_envvars:
-                # Get the maximum allowed size from the envvar for it
-                ev_max_file_size = os.environ.get(const.MAX_FILESIZE_EV)
-                if ev_max_file_size is not None:
-                    self.max_file_size = float(ev_max_file_size)*const.MEGABYTE
 
             # Create directory 'uploads' if not extant.
             if not os.path.exists(self.upload_dir):
@@ -456,6 +469,9 @@ class FileConverter:
         """
 
         try:
+            self.logger.debug("Checking input file size")
+            self._check_input_file_size_and_status()
+
             self.logger.debug("Starting file conversion")
             self._convert()
 
@@ -604,19 +620,38 @@ class FileConverter:
 
         self.logger.info(message)
 
-    def _check_file_size_and_status(self):
-        """Get file sizes, checking that output file isn't too large
-
-        Returns
-        -------
-        in_size : int
-            Size of input file in bytes
-        out_size : int
-            Size of output file in bytes
+    def _check_input_file_size_and_status(self):
+        """Get input file size and status, checking that the file isn't too large
         """
-        in_size = os.path.getsize(os.path.realpath(self.in_filename))
+
         try:
-            out_size = os.path.getsize(os.path.realpath(self.out_filename))
+            self.in_size = os.path.getsize(os.path.realpath(self.in_filename))
+        except FileNotFoundError:
+            # Something went wrong and the output file doesn't exist
+            err_message = f"Expected output file {self.in_filename} does not exist."
+            self.logger.error(err_message)
+            self.err += f"ERROR: {err_message}\n"
+            self._abort_from_err()
+
+        # Check that the input file doesn't exceed the maximum allowed size
+        if self.max_file_size > 0 and self.in_size > self.max_file_size:
+
+            self._abort(const.STATUS_CODE_SIZE,
+                        f"ERROR converting {os.path.basename(self.in_filename)} to " +
+                        os.path.basename(self.out_filename) + ": "
+                        f"Input file exceeds maximum size.\nInput file size is "
+                        f"{self.in_size/const.MEGABYTE:.2f} MB; maximum input file size is "
+                        f"{self.max_file_size/const.MEGABYTE:.2f} MB.\n",
+                        max_file_size=self.max_file_size,
+                        in_size=self.in_size,
+                        out_size=None)
+
+    def _check_output_file_size_and_status(self):
+        """Get output file size and status, checking that the file isn't too large
+        """
+
+        try:
+            self.out_size = os.path.getsize(os.path.realpath(self.out_filename))
         except FileNotFoundError:
             # Something went wrong and the output file doesn't exist
             err_message = f"Expected output file {self.out_filename} does not exist."
@@ -625,20 +660,19 @@ class FileConverter:
             self._abort_from_err()
 
         # Check that the output file doesn't exceed the maximum allowed size
-        if self.max_file_size > 0 and out_size > self.max_file_size:
+        if self.max_file_size > 0 and self.out_size > self.max_file_size:
 
             self._abort(const.STATUS_CODE_SIZE,
                         f"ERROR converting {os.path.basename(self.in_filename)} to " +
                         os.path.basename(self.out_filename) + ": "
                         f"Output file exceeds maximum size.\nInput file size is "
-                        f"{in_size/const.MEGABYTE:.2f} MB; Output file size is {out_size/const.MEGABYTE:.2f} "
+                        f"{self.in_size/const.MEGABYTE:.2f} MB; Output file size is {self.out_size/const.MEGABYTE:.2f} "
                         f"MB; maximum output file size is {self.max_file_size/const.MEGABYTE:.2f} MB.\n",
-                        in_size=in_size,
-                        out_size=out_size,
-                        max_file_size=self.max_file_size)
-        self.logger.debug(f"Output file found to have size {out_size/const.MEGABYTE:.2f} MB")
+                        max_file_size=self.max_file_size,
+                        in_size=self.in_size,
+                        out_size=self.out_size)
 
-        return in_size, out_size
+        self.logger.debug(f"Output file found to have size {self.out_size/const.MEGABYTE:.2f} MB")
 
     def get_quality(self) -> str:
         """Query the JSON file to obtain conversion quality
@@ -656,7 +690,7 @@ class FileConverter:
         """Run final common steps to clean up a conversion and log success or abort due to an error
         """
 
-        self.in_size, self.out_size = self._check_file_size_and_status()
+        self._check_output_file_size_and_status()
 
         if self.delete_input:
             os.remove(self.in_filename)

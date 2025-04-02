@@ -29,6 +29,7 @@ $(document).ready(function () {
 
     sessionStorage.setItem("token", token);
     sessionStorage.setItem("max_file_size", max_file_size);
+    sessionStorage.setItem("max_file_size_ob", max_file_size_ob);
     sessionStorage.setItem("service_mode", service_mode);
     sessionStorage.setItem("production_mode", production_mode);
     sessionStorage.setItem("in_str", "");

@@ -31,7 +31,18 @@ var token = "",
 
 export function commonConvertReady(converter) {
     token = sessionStorage.getItem("token");
-    max_file_size = sessionStorage.getItem("max_file_size");
+
+    // Open Babel uniquely has its own maximum file size
+    if (converter == "Open Babel") {
+        max_file_size = sessionStorage.getItem("max_file_size_ob");
+    } else {
+        max_file_size = sessionStorage.getItem("max_file_size");
+    }
+
+    // Set the text for displaying the maximum size
+    if (max_file_size > 0) {
+        $(".max-file-size").text(" (max size " + (max_file_size / MEGABYTE).toFixed(2) + " MB)");
+    }
 
     in_str = sessionStorage.getItem("in_str");
     out_str = sessionStorage.getItem("out_str");
@@ -52,7 +63,7 @@ export function commonConvertReady(converter) {
     $("#requestLog").click(setRequestLog);
     $("#fileToUpload").change(checkFile);
 
-    return [token, max_file_size, in_str, in_ext, out_str, out_ext];
+    return [token, in_str, in_ext, out_str, out_ext];
 }
 
 // Converts user-supplied file to another format and downloads the resulting file
