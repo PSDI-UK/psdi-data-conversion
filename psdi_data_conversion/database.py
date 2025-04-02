@@ -284,6 +284,11 @@ class ConverterInfo:
         d_format_args: dict[str | int, set[ArgInfo]] = {}
         l_parent_format_info = self.parent.l_format_info
 
+        # If the converter doesn't provide argument info, set l_arg_info to an empty list so it can be iterated in
+        # the next step, rather than None
+        if not l_arg_info:
+            l_arg_info = []
+
         for arg_info in l_arg_info:
 
             if arg_info is None:
