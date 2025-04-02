@@ -102,8 +102,16 @@ def website():
     else:
         max_file_size = const.DEFAULT_MAX_FILE_SIZE
 
+    # And same for the Open Babel maximum file size
+    ev_max_file_size_ob = os.environ.get(const.MAX_FILESIZE_OB_EV)
+    if ev_max_file_size_ob is not None:
+        max_file_size_ob = float(ev_max_file_size_ob)*const.MEGABYTE
+    else:
+        max_file_size_ob = const.DEFAULT_MAX_FILE_SIZE_OB
+
     data = [{'token': token,
              'max_file_size': max_file_size,
+             'max_file_size_ob': max_file_size_ob,
              'service_mode': service_mode,
              'production_mode': production_mode,
              'sha': get_last_sha()}]

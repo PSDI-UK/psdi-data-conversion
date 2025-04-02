@@ -40,6 +40,7 @@ CL_SCRIPT_NAME = "psdi-data-convert"
 LOG_MODE_EV = "LOG_MODE"
 LOG_LEVEL_EV = "LOG_LEVEL"
 MAX_FILESIZE_EV = "MAX_FILESIZE"
+MAX_FILESIZE_OB_EV = "MAX_FILESIZE_OB"
 
 # Files and Folders
 # -----------------
@@ -47,6 +48,7 @@ MAX_FILESIZE_EV = "MAX_FILESIZE"
 # Maximum output file size in bytes
 MEGABYTE = 1024*1024
 DEFAULT_MAX_FILE_SIZE = 0*MEGABYTE
+DEFAULT_MAX_FILE_SIZE_OB = 1*MEGABYTE
 
 DEFAULT_UPLOAD_DIR = './psdi_data_conversion/static/uploads'
 DEFAULT_DOWNLOAD_DIR = './psdi_data_conversion/static/downloads'
