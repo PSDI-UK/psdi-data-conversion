@@ -151,7 +151,7 @@ failed_conversion_test = ConversionTestSpec(filename=["quartz_err.xyz", "hemoglo
 """A test that a conversion which fails due to an invalid input file will properly fail"""
 
 max_size_callback = MultiCallback(CheckFileStatus(expect_output_exists=False),
-                                  CheckLogContents("Output file exceeds maximum size"),
+                                  CheckLogContents("file exceeds maximum size"),
                                   CheckException(ex_type=FileConverterSizeException,
                                                  ex_message="exceeds maximum size",
                                                  ex_status_code=const.STATUS_CODE_SIZE))
