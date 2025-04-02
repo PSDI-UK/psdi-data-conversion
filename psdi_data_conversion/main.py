@@ -371,7 +371,7 @@ def detail_converter_use(args: ConvertArgs):
             if format_name in l_formats:
                 optional_not: str = ""
             else:
-                optional_not: str = " not"
+                optional_not: str = "not "
             print_wrap(f"Conversion {to_or_from} {format_name} is {optional_not}supported by {args.name}.\n")
 
         # List all possible formats, and which can be used for input and which for output
