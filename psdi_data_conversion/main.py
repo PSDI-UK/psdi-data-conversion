@@ -551,12 +551,12 @@ def detail_possible_converters(from_format: str, to_format: str):
         return
 
     print_wrap(f"The following registered converters can convert from {from_format} to {to_format}:", newline=True)
-    print("\n    ".join(l_possible_registered_converters))
+    print("    " + "\n    ".join(l_possible_registered_converters) + "\n")
     if l_possible_unregistered_converters:
         print("")
         print_wrap("Additionally, the following converters are supported by this package on other platforms and can "
                    "perform this conversion:", newline=True)
-        print("\n    ".join(l_possible_registered_converters))
+        print("    " + "\n    ".join(l_possible_unregistered_converters) + "\n")
 
     print_wrap("For details on input/output flags and options allowed by a converter for this conversion, call:")
     print(f"{CL_SCRIPT_NAME} -l <converter name> -f {from_format} -t {to_format}")
