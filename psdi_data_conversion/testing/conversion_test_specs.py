@@ -41,7 +41,7 @@ l_all_test_specs.append(Spec(name="Basic",
                              callback=MCB(CheckFileStatus(),
                                           CheckLogContentsSuccess()),
                              ))
-"""A basic set of test conversions which we expect to succeed without issue, running two conversions with each of the
+"""A basic set of test conversions which we expect to succeed without issue, running conversions with each of the
 Open Babel, Atomsk, and c2x converters"""
 
 archive_callback = MCB(CheckFileStatus(),
@@ -168,27 +168,39 @@ l_all_test_specs.append(Spec(name="Cleanup input",
                              ))
 """A test that the input file to a conversion is deleted when cleanup is requested"""
 
-cant_read_xyz_callback = MCB(CheckFileStatus(expect_output_exists=False,
-                                             expect_log_exists=None),
-                             CheckException(ex_type=FileConverterAbortException,
-                                            ex_message="Problems reading an XYZ file"))
-invalid_conversion_callback = MCB(CheckFileStatus(expect_output_exists=False,
-                                                  expect_log_exists=None),
-                                  CheckException(ex_type=FileConverterHelpException,
-                                                 ex_message="is not supported"))
-wrong_type_callback = MCB(CheckFileStatus(expect_output_exists=False,
-                                          expect_log_exists=None),
-                          CheckException(ex_type=FileConverterAbortException,
-                                         ex_message="not a valid {} file"))
-l_all_test_specs.append(Spec(name="Failed Conversion",
-                             filename=["quartz_err.xyz", "hemoglobin.pdb", "1NE6.mmcif"],
-                             to_format=["inchi", "pdb", "cif"],
-                             conversion_kwargs=[{}, {}, {"from_format": "pdb"}],
+l_all_test_specs.append(Spec(name="Failed conversion - can't read XYZ",
+                             filename="quartz_err.xyz",
+                             to_format="inchi",
                              expect_success=False,
-                             callback=[cant_read_xyz_callback, invalid_conversion_callback,
-                                       wrong_type_callback],
+                             callback=MCB(CheckFileStatus(expect_output_exists=False,
+                                                          expect_log_exists=None),
+                                          CheckException(ex_type=FileConverterAbortException,
+                                                         ex_message="Problems reading an XYZ file")),
                              ))
-"""A test that a conversion which fails due to an invalid input file will properly fail"""
+"""A test that a conversion that fails due to an unreadable input file will properly fail"""
+
+l_all_test_specs.append(Spec(name="Failed conversion - invalid conversion",
+                             filename="hemoglobin.pdb",
+                             to_format="pdb",
+                             expect_success=False,
+                             callback=MCB(CheckFileStatus(expect_output_exists=False,
+                                                          expect_log_exists=None),
+                                          CheckException(ex_type=FileConverterHelpException,
+                                                         ex_message="is not supported")),
+                             ))
+"""A test that a conversion that fails due an unsupported conversion will properly fail"""
+
+l_all_test_specs.append(Spec(name="Failed Conversion - wrong input type",
+                             filename="1NE6.mmcif",
+                             to_format="cif",
+                             conversion_kwargs={"from_format": "pdb"},
+                             expect_success=False,
+                             callback=MCB(CheckFileStatus(expect_output_exists=False,
+                                          expect_log_exists=None),
+                                          CheckException(ex_type=FileConverterAbortException,
+                                                         ex_message="not a valid {} file")),
+                             ))
+"""A test that a conversion which fails due to the wrong input file type will properly fail"""
 
 l_all_test_specs.append(Spec(name="Large files",
                              filename=["ch3cl-esp.cub", "benzyne.molden", "periodic_dmol3.outmol",
