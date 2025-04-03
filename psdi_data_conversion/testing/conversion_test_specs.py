@@ -211,12 +211,12 @@ l_all_test_specs.append(Spec(name="Format args",
                                                 {"data": {"from_flags": "a", "to_flags": "kx",
                                                                         "to_options": "f4 l5"}}
                                                 ],
-                             callback=[MatchOutputFile("caffeine-no-flags.smi"),
-                                       MatchOutputFile("caffeine-ia.smi"),
-                                       MatchOutputFile("caffeine-ia-ox.smi"),
-                                       MatchOutputFile("caffeine-ia-okx.smi"),
-                                       MatchOutputFile("caffeine-ia-okx-oof4.smi"),
-                                       MatchOutputFile("caffeine-ia-okx-oof4l5.smi")
+                             callback=[MatchOutputFile("caffeine.smi"),
+                                       MatchOutputFile("caffeine_a_in.smi"),
+                                       MatchOutputFile("caffeine_a_in_x_out.smi"),
+                                       MatchOutputFile("caffeine_a_in_kx_out.smi"),
+                                       MatchOutputFile("caffeine_a_in_kx_f4_out.smi"),
+                                       MatchOutputFile("caffeine_a_in_kx_f4_l5_out.smi")
                                        ]
                              ))
 """A set of tests which checks that format args (for how to read from and write to specific file formats) are processed
