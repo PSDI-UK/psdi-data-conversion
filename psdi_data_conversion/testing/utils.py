@@ -205,9 +205,6 @@ class SingleConversionTestSpec:
     `ConversionTestSpec` object
     """
 
-    name: str
-    """The name of this test specification"""
-
     filename: str
     """The name of the input file, relative to the input test data location"""
 
@@ -228,15 +225,6 @@ class SingleConversionTestSpec:
     """Function to be called after the conversion is performed to check in detail whether results are as expected. It
     should take as its only argument a `ConversionTestInfo` and return a string. The string should be empty if the check
     is passed and should explain the failure otherwise."""
-
-    compatible_with_library: bool = True
-    """Whether or not this test spec is compatible with being run through the Python library, default True"""
-
-    compatible_with_cla: bool = True
-    """Whether or not this test spec is compatible with being run through the command-line application, default True"""
-
-    compatible_with_gui: bool = True
-    """Whether or not this test spec is compatible with being run through the GUI, default True"""
 
     @property
     def out_filename(self) -> str:
