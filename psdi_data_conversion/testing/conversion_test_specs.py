@@ -187,8 +187,10 @@ l_all_test_specs.append(Spec(name="Failed Conversion",
 """A test that a conversion which fails due to an invalid input file will properly fail"""
 
 l_all_test_specs.append(Spec(name="Large files",
-                             filename=["ch3cl-esp.cub", "benzyne.molden", "periodic_dmol3.outmol"],
-                             to_format=["cdjson", "dmol", "mol"],
+                             filename=["ch3cl-esp.cub", "benzyne.molden", "periodic_dmol3.outmol",
+                                       "fullRhinovirus.pdb"],
+                             to_format=["cdjson", "dmol", "mol", "cif"],
+                             converter_name=[CONVERTER_OB, CONVERTER_OB, CONVERTER_OB, CONVERTER_C2X],
                              callback=CheckFileStatus(),
                              ))
 
