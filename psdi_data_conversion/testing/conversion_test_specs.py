@@ -186,6 +186,12 @@ l_all_test_specs.append(Spec(name="Failed Conversion",
                              ))
 """A test that a conversion which fails due to an invalid input file will properly fail"""
 
+l_all_test_specs.append(Spec(name="Large files",
+                             filename=["ch3cl-esp.cub", "benzyne.molden", "periodic_dmol3.outmol"],
+                             to_format=["cdjson", "dmol", "mol"],
+                             callback=CheckFileStatus(),
+                             ))
+
 max_size_callback = MCB(CheckFileStatus(expect_output_exists=False),
                         CheckLogContents("file exceeds maximum size"),
                         CheckException(ex_type=FileConverterSizeException,
