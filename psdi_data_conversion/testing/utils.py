@@ -102,13 +102,16 @@ class ConversionTestSpec:
     (as if using zip on the multiple lists) to test each element in turn.
     """
 
+    name: str
+    """The name of this test specification"""
+
     filename: str | Iterable[str] = "nacl.cif"
     """The name of the input file, relative to the input test data location, or a list thereof"""
 
     to_format: str | Iterable[str] = "pdb"
     """The format to test converting the input file to, or a list thereof"""
 
-    name: str | Iterable[str] = CONVERTER_DEFAULT
+    converter_name: str | Iterable[str] = CONVERTER_DEFAULT
     """The name of the converter to be used for the test, or a list thereof"""
 
     conversion_kwargs: dict[str, Any] | Iterable[dict[str, Any]] = field(default_factory=dict)
@@ -124,6 +127,15 @@ class ConversionTestSpec:
     should take as its only argument a `ConversionTestInfo` and return a string. The string should be empty if the check
     is passed and should explain the failure otherwise."""
 
+    compatible_with_library: bool = True
+    """Whether or not this test spec is compatible with being run through the Python library, default True"""
+
+    compatible_with_cla: bool = True
+    """Whether or not this test spec is compatible with being run through the command-line application, default True"""
+
+    compatible_with_gui: bool = True
+    """Whether or not this test spec is compatible with being run through the GUI, default True"""
+
     def __post_init__(self):
         """Regularize the lengths of all attribute lists, in case some were provided as single values and others as
         lists, and set up initial values
@@ -131,7 +143,10 @@ class ConversionTestSpec:
 
         # To ease maintainability, we get the list of this class's attributes automatically from its __dict__, excluding
         # any which start with an underscore
-        self._l_attr_names: list[str] = [attr_name for attr_name in self.__dict__ if not attr_name.startswith("_")]
+        self._l_attr_names: list[str] = [attr_name for attr_name in self.__dict__ if
+                                         not (attr_name.startswith("_") or
+                                              attr_name == "name" or
+                                              attr_name.startswith("compatible"))]
 
         l_single_val_attrs = []
         self._len: int = 1
@@ -190,13 +205,16 @@ class SingleConversionTestSpec:
     `ConversionTestSpec` object
     """
 
+    name: str
+    """The name of this test specification"""
+
     filename: str
     """The name of the input file, relative to the input test data location"""
 
     to_format: str
     """The format to test converting the input file to"""
 
-    name: str | Iterable[str] = CONVERTER_DEFAULT
+    converter_name: str | Iterable[str] = CONVERTER_DEFAULT
     """The name of the converter to be used for the test"""
 
     conversion_kwargs: dict[str, Any] = field(default_factory=dict)
@@ -210,6 +228,15 @@ class SingleConversionTestSpec:
     """Function to be called after the conversion is performed to check in detail whether results are as expected. It
     should take as its only argument a `ConversionTestInfo` and return a string. The string should be empty if the check
     is passed and should explain the failure otherwise."""
+
+    compatible_with_library: bool = True
+    """Whether or not this test spec is compatible with being run through the Python library, default True"""
+
+    compatible_with_cla: bool = True
+    """Whether or not this test spec is compatible with being run through the command-line application, default True"""
+
+    compatible_with_gui: bool = True
+    """Whether or not this test spec is compatible with being run through the GUI, default True"""
 
     @property
     def out_filename(self) -> str:
@@ -279,7 +306,7 @@ def _run_single_test_conversion_with_library(test_spec: SingleConversionTestSpec
         if test_spec.expect_success:
             run_converter(filename=qualified_in_filename,
                           to_format=test_spec.to_format,
-                          name=test_spec.name,
+                          name=test_spec.converter_name,
                           upload_dir=input_dir,
                           download_dir=output_dir,
                           **test_spec.conversion_kwargs)
@@ -288,7 +315,7 @@ def _run_single_test_conversion_with_library(test_spec: SingleConversionTestSpec
             with pytest.raises(Exception) as exc_info:
                 run_converter(filename=qualified_in_filename,
                               to_format=test_spec.to_format,
-                              name=test_spec.name,
+                              name=test_spec.converter_name,
                               upload_dir=input_dir,
                               download_dir=output_dir,
                               **test_spec.conversion_kwargs)
@@ -359,7 +386,7 @@ def _run_single_test_conversion_with_cla(test_spec: SingleConversionTestSpec,
         if test_spec.expect_success:
             run_converter_through_cla(filename=qualified_in_filename,
                                       to_format=test_spec.to_format,
-                                      name=test_spec.name,
+                                      name=test_spec.converter_name,
                                       input_dir=input_dir,
                                       output_dir=output_dir,
                                       log_file=os.path.join(output_dir, test_spec.log_filename),
@@ -369,7 +396,7 @@ def _run_single_test_conversion_with_cla(test_spec: SingleConversionTestSpec,
             with pytest.raises(SystemExit) as exc_info:
                 run_converter_through_cla(filename=qualified_in_filename,
                                           to_format=test_spec.to_format,
-                                          name=test_spec.name,
+                                          name=test_spec.converter_name,
                                           input_dir=input_dir,
                                           output_dir=output_dir,
                                           log_file=os.path.join(output_dir, test_spec.log_filename),
