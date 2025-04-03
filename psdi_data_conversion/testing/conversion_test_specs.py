@@ -137,14 +137,22 @@ l_all_test_specs.append(Spec(name="Invalid Converter",
                              ))
 """A test that a proper error is returned if an invalid converter is requested"""
 
-quality_note_callback = CheckLogContentsSuccess(["WARNING",
-                                                 const.QUAL_NOTE_OUT_MISSING.format(const.QUAL_2D_LABEL),
-                                                 const.QUAL_NOTE_OUT_MISSING.format(const.QUAL_3D_LABEL),
-                                                 const.QUAL_NOTE_IN_MISSING.format(const.QUAL_CONN_LABEL)])
+quartz_quality_note_callback = CheckLogContentsSuccess(["WARNING",
+                                                        const.QUAL_NOTE_OUT_MISSING.format(const.QUAL_2D_LABEL),
+                                                        const.QUAL_NOTE_OUT_MISSING.format(const.QUAL_3D_LABEL),
+                                                        const.QUAL_NOTE_IN_MISSING.format(const.QUAL_CONN_LABEL)])
+ethanol_quality_note_callback = CheckLogContentsSuccess(["WARNING",
+                                                         "Potential data loss or extrapolation",
+                                                         const.QUAL_NOTE_IN_MISSING.format(const.QUAL_CONN_LABEL)])
+hemoglobin_quality_note_callback = CheckLogContentsSuccess(["WARNING",
+                                                            "Potential data loss or extrapolation",
+                                                            const.QUAL_NOTE_OUT_MISSING.format(const.QUAL_CONN_LABEL)])
 l_all_test_specs.append(Spec(name="Quality note",
-                             filename="quartz.xyz",
-                             to_format="inchi",
-                             callback=quality_note_callback,
+                             filename=["quartz.xyz", "ethanol.xyz", "hemoglobin.pdb"],
+                             to_format=["inchi", "cml", "xyz"],
+                             callback=[quartz_quality_note_callback,
+                                       ethanol_quality_note_callback,
+                                       hemoglobin_quality_note_callback],
                              ))
 """A test conversion which we expect to produce a warning for conversion quality issues, where the connections property
 isn't present in the input and has to be extrapolated, and the 2D and 3D coordinates properties aren't present in the
@@ -183,7 +191,7 @@ max_size_callback = MCB(CheckFileStatus(expect_output_exists=False),
                         CheckException(ex_type=FileConverterSizeException,
                                        ex_message="exceeds maximum size",
                                        ex_status_code=const.STATUS_CODE_SIZE))
-l_all_test_specs.append(Spec(name="Max size",
+l_all_test_specs.append(Spec(name="Max size exceeded",
                              filename=["1NE6.mmcif", "caffeine-smi.tar.gz"],
                              to_format="pdb",
                              conversion_kwargs=[{"max_file_size": 0.0001}, {"max_file_size": 0.0005}],
