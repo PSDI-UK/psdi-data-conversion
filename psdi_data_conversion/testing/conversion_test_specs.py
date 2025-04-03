@@ -206,3 +206,18 @@ coord_gen_test = ConversionTestSpec(filename="caffeine.inchi",
                                     )
 """A set of tests which checks that coordinate generation options are processed correctly, by matching tests using them
 to expected output files"""
+
+l_all_test_specs = [basic_tests,
+                    archive_tests,
+                    archive_wrong_format_test,
+                    log_mode_tests,
+                    stdout_test,
+                    quiet_test,
+                    open_babel_warning_test,
+                    invalid_converter_test,
+                    quality_note_test,
+                    cleanup_input_test,
+                    failed_conversion_test,
+                    max_size_test,
+                    format_args_test,
+                    coord_gen_test]

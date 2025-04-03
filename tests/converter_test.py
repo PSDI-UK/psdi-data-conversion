@@ -16,7 +16,7 @@ from psdi_data_conversion.converter import L_REGISTERED_CONVERTERS
 from psdi_data_conversion.converters.c2x import C2xFileConverter
 from psdi_data_conversion.converters.openbabel import OBFileConverter
 from psdi_data_conversion.testing.utils import run_test_conversion_with_library
-from psdi_data_conversion.testing import conversion_test_specs as specs
+from psdi_data_conversion.testing.conversion_test_specs import l_all_test_specs
 
 
 @pytest.fixture(autouse=True)
@@ -39,90 +39,11 @@ def test_default():
     assert const.CONVERTER_DEFAULT in L_REGISTERED_CONVERTERS
 
 
-def test_basic_conversions():
-    """Run a basic set of conversions with various converters and file formats which we expect to succeed without
-    issue.
+@pytest.mark.parametrize("test_spec", l_all_test_specs)
+def test_conversions(test_spec):
+    """Run all conversion tests in the defined list of test specifications
     """
-    run_test_conversion_with_library(specs.basic_tests)
-
-
-def test_archive_convert():
-    """Run a test of converting an archive of files
-    """
-    run_test_conversion_with_library(specs.archive_tests)
-
-
-def test_archive_wrong_format():
-    """Run a test that converting an archive but specifying the wrong input format will produce a warning
-    """
-    run_test_conversion_with_library(specs.archive_wrong_format_test)
-
-
-def test_log_mode():
-    """Test that the various log modes result in the expected log files being created
-    """
-    run_test_conversion_with_library(specs.log_mode_tests)
-
-
-def test_stdout():
-    """Test that the output is sent to stdout when requested
-    """
-    run_test_conversion_with_library(specs.stdout_test)
-
-
-def test_quiet():
-    """Test that quiet mode suppresses all output
-    """
-    run_test_conversion_with_library(specs.quiet_test)
-
-
-def test_open_babel_warning():
-    """Run a test that expected warnings from Open Babel are captured in the log
-    """
-    run_test_conversion_with_library(specs.open_babel_warning_test)
-
-
-def test_exceed_output_file_size():
-    """Run a test of the converter to ensure it reports an error properly if the output file size is too large
-    """
-    run_test_conversion_with_library(specs.max_size_test)
-
-
-def test_invalid_converter():
-    """Run a test of the converter to ensure it reports an error properly if an invalid converter is requested
-    """
-    run_test_conversion_with_library(specs.invalid_converter_test)
-
-
-def test_quality_note():
-    """Run a test of the converter on an `.xyz` to `.inchi` conversion which we expect to have warnings about data
-    loss and extrapolation
-    """
-    run_test_conversion_with_library(specs.quality_note_test)
-
-
-def test_cleanup():
-    """Test that input files are deleted if requested
-    """
-    run_test_conversion_with_library(specs.cleanup_input_test)
-
-
-def test_failed_conversion():
-    """Run a test of the converter on a conversion we expect to fail
-    """
-    run_test_conversion_with_library(specs.failed_conversion_test)
-
-
-def test_format_args():
-    """Run a test that format args are processed correctly
-    """
-    run_test_conversion_with_library(specs.format_args_test)
-
-
-def test_coord_gen():
-    """Run a test that coordinate generation args are processed correctly
-    """
-    run_test_conversion_with_library(specs.coord_gen_test)
+    run_test_conversion_with_library(test_spec)
 
 
 def test_envvars():
