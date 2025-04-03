@@ -24,20 +24,24 @@ l_all_test_specs: list[Spec] = []
 
 l_all_test_specs.append(Spec(name="Basic",
                              filename=["1NE6.mmcif", "standard_test.cdxml",
-                                                     "hemoglobin.pdb", "nacl.cif",
-                                                     "hemoglobin.pdb", "nacl.cif",
-                                                     "hemoglobin.pdb", "nacl.cif"],
-                             to_format=["pdb", "inchi", "cif", "xyz",
-                                        "cif", "xyz",
-                                        "cif", "xyz"],
+                                       "hemoglobin.pdb", "aceticacid.mol", "nacl.cif",
+                                       "hemoglobin.pdb", "hemoglobin.pdb", "nacl.cif",
+                                       "hemoglobin.pdb", "hemoglobin.pdb", "nacl.cif",
+                                       "ethanol.xyz"],
+                             to_format=["pdb", "inchi",
+                                        "cif", "mol2", "xyz",
+                                        "cif", "xyz", "xyz",
+                                        "cif", "xyz", "xyz",
+                                        "cml"],
                              converter_name=[CONVERTER_OB, CONVERTER_OB,
-                                             CONVERTER_OB, CONVERTER_OB,
-                                             CONVERTER_ATO, CONVERTER_ATO,
-                                             CONVERTER_C2X, CONVERTER_C2X],
+                                             CONVERTER_OB, CONVERTER_OB, CONVERTER_OB,
+                                             CONVERTER_ATO, CONVERTER_ATO, CONVERTER_ATO,
+                                             CONVERTER_C2X, CONVERTER_C2X, CONVERTER_C2X,
+                                             CONVERTER_OB],
                              callback=MCB(CheckFileStatus(),
                                           CheckLogContentsSuccess()),
                              ))
-"""A basic set of test conversions which we expect to succeed without issue, running two conversions with each of the
+"""A basic set of test conversions which we expect to succeed without issue, running conversions with each of the
 Open Babel, Atomsk, and c2x converters"""
 
 archive_callback = MCB(CheckFileStatus(),
@@ -137,14 +141,22 @@ l_all_test_specs.append(Spec(name="Invalid Converter",
                              ))
 """A test that a proper error is returned if an invalid converter is requested"""
 
-quality_note_callback = CheckLogContentsSuccess(["WARNING",
-                                                 const.QUAL_NOTE_OUT_MISSING.format(const.QUAL_2D_LABEL),
-                                                 const.QUAL_NOTE_OUT_MISSING.format(const.QUAL_3D_LABEL),
-                                                 const.QUAL_NOTE_IN_MISSING.format(const.QUAL_CONN_LABEL)])
+quartz_quality_note_callback = CheckLogContentsSuccess(["WARNING",
+                                                        const.QUAL_NOTE_OUT_MISSING.format(const.QUAL_2D_LABEL),
+                                                        const.QUAL_NOTE_OUT_MISSING.format(const.QUAL_3D_LABEL),
+                                                        const.QUAL_NOTE_IN_MISSING.format(const.QUAL_CONN_LABEL)])
+ethanol_quality_note_callback = CheckLogContentsSuccess(["WARNING",
+                                                         "Potential data loss or extrapolation",
+                                                         const.QUAL_NOTE_IN_MISSING.format(const.QUAL_CONN_LABEL)])
+hemoglobin_quality_note_callback = CheckLogContentsSuccess(["WARNING",
+                                                            "Potential data loss or extrapolation",
+                                                            const.QUAL_NOTE_OUT_MISSING.format(const.QUAL_CONN_LABEL)])
 l_all_test_specs.append(Spec(name="Quality note",
-                             filename="quartz.xyz",
-                             to_format="inchi",
-                             callback=quality_note_callback,
+                             filename=["quartz.xyz", "ethanol.xyz", "hemoglobin.pdb"],
+                             to_format=["inchi", "cml", "xyz"],
+                             callback=[quartz_quality_note_callback,
+                                       ethanol_quality_note_callback,
+                                       hemoglobin_quality_note_callback],
                              ))
 """A test conversion which we expect to produce a warning for conversion quality issues, where the connections property
 isn't present in the input and has to be extrapolated, and the 2D and 3D coordinates properties aren't present in the
@@ -156,34 +168,71 @@ l_all_test_specs.append(Spec(name="Cleanup input",
                              ))
 """A test that the input file to a conversion is deleted when cleanup is requested"""
 
-cant_read_xyz_callback = MCB(CheckFileStatus(expect_output_exists=False,
-                                             expect_log_exists=None),
-                             CheckException(ex_type=FileConverterAbortException,
-                                            ex_message="Problems reading an XYZ file"))
-invalid_conversion_callback = MCB(CheckFileStatus(expect_output_exists=False,
-                                                  expect_log_exists=None),
-                                  CheckException(ex_type=FileConverterHelpException,
-                                                 ex_message="is not supported"))
-wrong_type_callback = MCB(CheckFileStatus(expect_output_exists=False,
-                                          expect_log_exists=None),
-                          CheckException(ex_type=FileConverterAbortException,
-                                         ex_message="not a valid {} file"))
-l_all_test_specs.append(Spec(name="Failed Conversion",
-                             filename=["quartz_err.xyz", "hemoglobin.pdb", "1NE6.mmcif"],
-                             to_format=["inchi", "pdb", "cif"],
-                             conversion_kwargs=[{}, {}, {"from_format": "pdb"}],
+l_all_test_specs.append(Spec(name="Failed conversion - bad input file",
+                             filename=["quartz_err.xyz", "cyclopropane_err.mol"],
+                             to_format=["inchi", "xyz"],
                              expect_success=False,
-                             callback=[cant_read_xyz_callback, invalid_conversion_callback,
-                                       wrong_type_callback],
+                             converter_name=[CONVERTER_OB, CONVERTER_C2X],
+                             callback=[MCB(CheckFileStatus(expect_output_exists=False,
+                                                           expect_log_exists=None),
+                                           CheckException(ex_type=FileConverterAbortException,
+                                                          ex_message="Problems reading an XYZ file")),
+                                       MCB(CheckFileStatus(expect_output_exists=False,
+                                                           expect_log_exists=None),
+                                           CheckException(ex_type=FileConverterAbortException,
+                                                          ex_message="Aborting: mol file contains no atoms"))],
                              ))
-"""A test that a conversion which fails due to an invalid input file will properly fail"""
+"""A test that a conversion that fails due to an unreadable input file will properly fail"""
+
+quartz_error_ob_callback = CheckLogContents(["ERROR",
+                                             "Problems reading an XYZ file: Could not read line #11, file error"])
+l_all_test_specs.append(Spec(name="Errors in logs",
+                             filename="quartz_err.xyz",
+                             to_format="inchi",
+                             converter_name=CONVERTER_OB,
+                             expect_success=False,
+                             callback=quartz_error_ob_callback,
+                             ))
+"""A test that when a conversion fails, logs are still produced and contain the expected error message"""
+
+l_all_test_specs.append(Spec(name="Failed conversion - invalid conversion",
+                             filename=["Fapatite.ins", "nacl.mol"],
+                             to_format=["cml", "xyz"],
+                             expect_success=False,
+                             converter_name=[CONVERTER_OB, CONVERTER_ATO],
+                             callback=MCB(CheckFileStatus(expect_output_exists=False,
+                                                          expect_log_exists=None),
+                                          CheckException(ex_type=FileConverterHelpException,
+                                                         ex_message="is not supported")),
+                             ))
+"""A test that a conversion that fails due an unsupported conversion will properly fail"""
+
+l_all_test_specs.append(Spec(name="Failed Conversion - wrong input type",
+                             filename="1NE6.mmcif",
+                             to_format="cif",
+                             conversion_kwargs={"from_format": "pdb"},
+                             expect_success=False,
+                             callback=MCB(CheckFileStatus(expect_output_exists=False,
+                                          expect_log_exists=None),
+                                          CheckException(ex_type=FileConverterAbortException,
+                                                         ex_message="not a valid {} file")),
+                             ))
+"""A test that a conversion which fails due to the wrong input file type will properly fail"""
+
+l_all_test_specs.append(Spec(name="Large files",
+                             filename=["ch3cl-esp.cub", "benzyne.molden", "periodic_dmol3.outmol",
+                                       "fullRhinovirus.pdb"],
+                             to_format=["cdjson", "dmol", "mol", "cif"],
+                             converter_name=[CONVERTER_OB, CONVERTER_OB, CONVERTER_OB, CONVERTER_C2X],
+                             callback=CheckFileStatus(),
+                             ))
 
 max_size_callback = MCB(CheckFileStatus(expect_output_exists=False),
                         CheckLogContents("file exceeds maximum size"),
                         CheckException(ex_type=FileConverterSizeException,
                                        ex_message="exceeds maximum size",
                                        ex_status_code=const.STATUS_CODE_SIZE))
-l_all_test_specs.append(Spec(name="Max size",
+l_all_test_specs.append(Spec(name="Max size exceeded",
                              filename=["1NE6.mmcif", "caffeine-smi.tar.gz"],
                              to_format="pdb",
                              conversion_kwargs=[{"max_file_size": 0.0001}, {"max_file_size": 0.0005}],
@@ -211,12 +260,12 @@ l_all_test_specs.append(Spec(name="Format args",
                                                 {"data": {"from_flags": "a", "to_flags": "kx",
                                                                         "to_options": "f4 l5"}}
                                                 ],
-                             callback=[MatchOutputFile("caffeine-no-flags.smi"),
-                                       MatchOutputFile("caffeine-ia.smi"),
-                                       MatchOutputFile("caffeine-ia-ox.smi"),
-                                       MatchOutputFile("caffeine-ia-okx.smi"),
-                                       MatchOutputFile("caffeine-ia-okx-oof4.smi"),
-                                       MatchOutputFile("caffeine-ia-okx-oof4l5.smi")
+                             callback=[MatchOutputFile("caffeine.smi"),
+                                       MatchOutputFile("caffeine_a_in.smi"),
+                                       MatchOutputFile("caffeine_a_in_x_out.smi"),
+                                       MatchOutputFile("caffeine_a_in_kx_out.smi"),
+                                       MatchOutputFile("caffeine_a_in_kx_f4_out.smi"),
+                                       MatchOutputFile("caffeine_a_in_kx_f4_l5_out.smi")
                                        ]
                              ))
 """A set of tests which checks that format args (for how to read from and write to specific file formats) are processed
