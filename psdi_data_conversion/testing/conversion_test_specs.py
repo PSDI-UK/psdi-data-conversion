@@ -24,12 +24,12 @@ l_all_test_specs: list[Spec] = []
 
 l_all_test_specs.append(Spec(name="Basic",
                              filename=["1NE6.mmcif", "standard_test.cdxml",
-                                       "hemoglobin.pdb", "hemoglobin.pdb", "nacl.cif",
+                                       "hemoglobin.pdb", "aceticacid.mol", "nacl.cif",
                                        "hemoglobin.pdb", "hemoglobin.pdb", "nacl.cif",
                                        "hemoglobin.pdb", "hemoglobin.pdb", "nacl.cif",
                                        "ethanol.xyz"],
                              to_format=["pdb", "inchi",
-                                        "cif", "xyz", "xyz",
+                                        "cif", "mol2", "xyz",
                                         "cif", "xyz", "xyz",
                                         "cif", "xyz", "xyz",
                                         "cml"],
@@ -183,6 +183,17 @@ l_all_test_specs.append(Spec(name="Failed conversion - bad input file",
                                                           ex_message="Aborting: mol file contains no atoms"))],
                              ))
 """A test that a conversion that fails due to an unreadable input file will properly fail"""
+
+quartz_error_ob_callback = CheckLogContents(["ERROR",
+                                             "Problems reading an XYZ file: Could not read line #11, file error"])
+l_all_test_specs.append(Spec(name="Errors in logs",
+                             filename="quartz_err.xyz",
+                             to_format="inchi",
+                             converter_name=CONVERTER_OB,
+                             expect_success=False,
+                             callback=quartz_error_ob_callback,
+                             ))
+"""A test that when a conversion fails, logs are still produced and contain the expected error message"""
 
 l_all_test_specs.append(Spec(name="Failed conversion - invalid conversion",
                              filename=["Fapatite.ins", "nacl.mol"],
