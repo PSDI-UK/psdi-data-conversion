@@ -5,6 +5,7 @@
   This is the JavaScript which makes the Format and Converter Selection gui work.
 */
 
+import { disableDirtyForms, cleanDirtyForms, initDirtyForms } from "./common.js";
 import {
     getInputFormats, getOutputFormats, getOutputFormatsForInputFormat,
     getInputFormatsForOutputFormat, getConverters, getConverterByName, getLevelChemInfo
@@ -44,6 +45,8 @@ $(document).ready(function () {
     $("#success").click(showConverterDetails);
     $("#resetButton").click(resetAll);
     $("#showButton").click(showQualityDetails);
+
+    initDirtyForms();
 });
 
 /**
@@ -513,6 +516,9 @@ function getFormat(str) {
 
 // Stores chosen formats and switches to the Conversion page
 function goToConversionPage(event) {
+
+    disableDirtyForms();
+
     var path = ``;
 
     if ($("#name").html() == "Open Babel") {
@@ -605,4 +611,6 @@ function resetAll() {
 
     // Populates the "Convert to" selection list
     getOutputFormats().then(formats => populateList(formats, "to"));
+
+    cleanDirtyForms();
 }

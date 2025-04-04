@@ -3,6 +3,8 @@
   Version 1.0, 17th December 2024
 */
 
+import { disableDirtyForms, enableDirtyForms, initDirtyForms } from "./common.js";
+
 const SECOND = 1000; // Milliseconds
 const CONVERT_TIMEOUT = 60 * SECOND;
 const MEGABYTE = 1024 * 1024;
@@ -68,6 +70,8 @@ export function commonConvertReady(converter) {
     $("#fileToUpload").change(checkFile);
     limitFileType();
 
+    initDirtyForms();
+
     return [token, in_str, in_ext, out_str, out_ext];
 }
 
@@ -91,6 +95,7 @@ export function convertFile(form_data, download_fname, fname) {
             hideSpinner();
             enableConvertButton();
             clearUploadedFile();
+            disableDirtyForms();
 
             if (!convertTimedOut) {
                 await downloadFile(`../downloads/${download_fname}`, download_fname)
@@ -223,6 +228,9 @@ export function isArchiveExt(ext) {
 
 // Check that the file meets requirements for upload
 function checkFile(event) {
+
+    // Enable dirty form checking whenever a file is uploaded
+    enableDirtyForms();
 
     let allGood = true;
     let file = this.files[0];
