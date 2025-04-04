@@ -4,6 +4,26 @@
  * @author Bryan Gillis
  */
 
+export function initDirtyForms() {
+  $("form.gui").dirtyForms();
+}
+
+export function cleanDirtyForms() {
+  $('form.gui').dirtyForms('setClean');
+}
+
+export function dirtyDirtyForms() {
+  $('form.gui').dirtyForms('setDirty');
+}
+
+export function enableDirtyForms() {
+  $('form.gui').removeClass($.DirtyForms.ignoreClass);
+}
+
+export function disableDirtyForms() {
+  $('form.gui').addClass($.DirtyForms.ignoreClass);
+}
+
 
 /**
  * Gets whether or not the app is operating in "Service mode"

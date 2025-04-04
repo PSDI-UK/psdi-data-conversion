@@ -3,6 +3,8 @@
   Version 1.0, 17th December 2024
 */
 
+import { disableDirtyForms, enableDirtyForms, initDirtyForms } from "./common.js";
+
 const SECOND = 1000; // Milliseconds
 const CONVERT_TIMEOUT = 60 * SECOND;
 const MEGABYTE = 1024 * 1024;
@@ -59,9 +61,16 @@ export function commonConvertReady(converter) {
     $("#heading").html("Convert from \'" + in_ext + "\' (" + in_note + ") to \'" + out_ext + "\' (" + out_note +
         ") using " + converter);
 
+    // Connect the buttons to events
     $("#extCheck").click(setExtCheck);
     $("#requestLog").click(setRequestLog);
+    $("#clearUpload").click(clearUploadedFile);
+
+    // Connect the file upload to event and limit the types it can accept
     $("#fileToUpload").change(checkFile);
+    limitFileType();
+
+    initDirtyForms();
 
     return [token, in_str, in_ext, out_str, out_ext];
 }
@@ -70,6 +79,7 @@ export function commonConvertReady(converter) {
 export function convertFile(form_data, download_fname, fname) {
 
     showSpinner();
+    disableConvertButton();
 
     let convertTimedOut = false;
 
@@ -81,7 +91,12 @@ export function convertFile(form_data, download_fname, fname) {
         contentType: false,
         timeout: CONVERT_TIMEOUT,
         success: async function () {
+
             hideSpinner();
+            enableConvertButton();
+            clearUploadedFile();
+            disableDirtyForms();
+
             if (!convertTimedOut) {
                 await downloadFile(`../downloads/${download_fname}`, download_fname)
 
@@ -120,6 +135,7 @@ export function convertFile(form_data, download_fname, fname) {
         },
         error: function (xmlhttprequest, textstatus, message) {
             hideSpinner();
+            enableConvertButton();
             if (textstatus === "timeout") {
                 convertTimedOut = true;
                 alert("ERROR: Conversion attempt timed out. This may be because the conversion is too complicated, " +
@@ -160,6 +176,13 @@ export function convertFile(form_data, download_fname, fname) {
 
 function setExtCheck(event) {
     extCheck = this.checked;
+
+    // Toggle whether or not the file upload limits uploaded type based on whether or not this box is ticked
+    if (extCheck) {
+        limitFileType();
+    } else {
+        unlimitFileType();
+    }
 }
 
 export function getExtCheck() {
@@ -206,6 +229,9 @@ export function isArchiveExt(ext) {
 // Check that the file meets requirements for upload
 function checkFile(event) {
 
+    // Enable dirty form checking whenever a file is uploaded
+    enableDirtyForms();
+
     let allGood = true;
     let file = this.files[0];
     let message = "";
@@ -237,13 +263,50 @@ function checkFile(event) {
     }
 
     if (allGood) {
-        $("#uploadButton").css({ "background-color": "var(--ifm-color-primary)", "color": "var(--ifm-hero-text-color)" });
-        $("#uploadButton").prop({ disabled: false });
+        enableConvertButton();
     } else {
-        $("#uploadButton").css({ "background-color": "var(--psdi-bg-color-secondary)", "color": "gray" });
-        $("#uploadButton").prop({ disabled: true });
+        disableConvertButton();
         alert(message);
     }
+}
+
+/**
+ * Allow the file upload to only accept the expected type of file
+ */
+function limitFileType() {
+    $("#fileToUpload")[0].accept = "." + in_ext;
+}
+
+/**
+ * Allow the file upload to accept any type of file
+ */
+function unlimitFileType() {
+    $("#fileToUpload")[0].accept = "*";
+}
+
+/**
+ * Clear any uploaded file
+ */
+function clearUploadedFile() {
+    $("#fileToUpload").val('');
+    disableConvertButton();
+}
+
+/**
+ * Enable the "Convert" button
+ */
+function enableConvertButton() {
+    $("#uploadButton").css({ "background-color": "var(--ifm-color-primary)", "color": "var(--ifm-hero-text-color)" });
+    $("#uploadButton").prop({ disabled: false });
+}
+
+
+/**
+ * Disable the "Convert" button
+ */
+function disableConvertButton() {
+    $("#uploadButton").css({ "background-color": "var(--psdi-bg-color-secondary)", "color": "gray" });
+    $("#uploadButton").prop({ disabled: true });
 }
 
 /**
@@ -266,7 +329,6 @@ async function downloadFile(path, filename) {
             a.remove();
         });
 }
-
 
 /**
  * Show the loading spinner
