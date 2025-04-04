@@ -256,6 +256,7 @@ function checkFile(event) {
  */
 function clearUploadedfile() {
     $("#fileToUpload").val('');
+    disableConvertButton();
 }
 
 /**
