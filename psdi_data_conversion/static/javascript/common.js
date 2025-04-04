@@ -12,6 +12,10 @@ export function cleanDirtyForms() {
   $('form.gui').dirtyForms('setClean');
 }
 
+export function dirtyDirtyForms() {
+  $('form.gui').dirtyForms('setDirty');
+}
+
 export function enableDirtyForms() {
   $('form.gui').removeClass($.DirtyForms.ignoreClass);
 }
