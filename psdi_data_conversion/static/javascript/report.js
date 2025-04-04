@@ -5,6 +5,7 @@
   This is the JavaScript which makes the report.htm gui work.
 */
 
+import { disableDirtyForms, cleanDirtyForms, initDirtyForms, loadServiceMode, loadProductionMode } from "./common.js";
 import { getAllFormats, getConverters } from "./data.js";
 
 var token = "",
@@ -53,6 +54,8 @@ $(document).ready(function () {
     $("#resetButton").click(resetAll);
     $("#resetButton2").click(resetAll);
     $("#reportButton").click(submitUserInput);
+
+    initDirtyForms();
 });
 
 // Included in this file for convenience. When the 'Report' button is clicked, a user's missing conversion report
@@ -131,6 +134,8 @@ function hideConverterDetails() {
 
 // Submits user input
 function submitUserInput() {
+    disableDirtyForms();
+
     const from = $("#searchFrom").val(),
         to = $("#searchTo").val();
 
