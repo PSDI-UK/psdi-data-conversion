@@ -70,6 +70,7 @@ export function commonConvertReady(converter) {
 export function convertFile(form_data, download_fname, fname) {
 
     showSpinner();
+    disableConvertButton();
 
     let convertTimedOut = false;
 
@@ -82,6 +83,7 @@ export function convertFile(form_data, download_fname, fname) {
         timeout: CONVERT_TIMEOUT,
         success: async function () {
             hideSpinner();
+            enableConvertButton();
             if (!convertTimedOut) {
                 await downloadFile(`../downloads/${download_fname}`, download_fname)
 
@@ -120,6 +122,7 @@ export function convertFile(form_data, download_fname, fname) {
         },
         error: function (xmlhttprequest, textstatus, message) {
             hideSpinner();
+            enableConvertButton();
             if (textstatus === "timeout") {
                 convertTimedOut = true;
                 alert("ERROR: Conversion attempt timed out. This may be because the conversion is too complicated, " +
@@ -237,13 +240,21 @@ function checkFile(event) {
     }
 
     if (allGood) {
-        $("#uploadButton").css({ "background-color": "var(--ifm-color-primary)", "color": "var(--ifm-hero-text-color)" });
-        $("#uploadButton").prop({ disabled: false });
+        enableConvertButton();
     } else {
-        $("#uploadButton").css({ "background-color": "var(--psdi-bg-color-secondary)", "color": "gray" });
-        $("#uploadButton").prop({ disabled: true });
+        disableConvertButton();
         alert(message);
     }
+}
+
+function enableConvertButton() {
+    $("#uploadButton").css({ "background-color": "var(--ifm-color-primary)", "color": "var(--ifm-hero-text-color)" });
+    $("#uploadButton").prop({ disabled: false });
+}
+
+function disableConvertButton() {
+    $("#uploadButton").css({ "background-color": "var(--psdi-bg-color-secondary)", "color": "gray" });
+    $("#uploadButton").prop({ disabled: true });
 }
 
 /**
