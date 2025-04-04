@@ -42,35 +42,41 @@
   </div>
 
   <form name="gui">
-    <div>
-      <p>
-        Click on 'Choose file' and then select an input file of the correct format (and extension). Clicking on
-        'Convert'
-        uploads and converts the file. The output file is automatically downloaded, along with a log file. If any issues
-        are
-        encountered (e.g., the output file does not download), please click on 'Provide Feedback' in the navigation bar.
-      </p>
-      <h6 id="heading"></h6>
-      <p id="convertFile">
-        <input type="checkbox" checked id="extCheck"> Enforce file naming checking to ensure uploaded files (and files
-        contained in archives) all have the correct extension<br>
-        <input type="checkbox" id="requestLog"> Also download log file for the conversion<br>
-        Select file to convert<span class="max-file-size"></span>:
+    <div class="max-width-box">
+      <div>
+        <a href="../../">
+          <input type="button" class="button" value=" ← Return to Format Selection " name="returnHome" id="returnHome">
+        </a>
         <br>
-        <input type="file" name="fileToUpload" id="fileToUpload">
-        <input type="button" class="button" value=" Clear Uploaded File " name="clearUpload" id="clearUpload">
         <br>
-        If you have sensitive data you might prefer to use
-        <a href="download.htm">one of our downloadable tools or Python library</a> rather than uploading your data to
-        our service.<br>
-        <span class="convert-button-and-spinner">
-          <input type="button" class="button init-disabled" value=" Convert " name="uploadButton" id="uploadButton"
-            disabled=true>
-          <span class="loading-spinner spinner-border"></span>
-        </span>
-      </p>
+        <p>
+          Click on 'Choose file' and then select an input file of the correct format (and extension). Clicking on
+          'Convert' uploads and converts the file. The output file is automatically downloaded, along with a log file.
+          If any issues are encountered (e.g., the output file does not download), please click on 'Provide Feedback' in
+          the navigation bar.
+        </p>
+        <h6 id="heading"></h6>
+        <p id="convertFile">
+          <input type="checkbox" checked id="extCheck"> Enforce file naming checking to ensure uploaded files (and files
+          contained in archives) all have the correct extension<br>
+          <input type="checkbox" id="requestLog"> Also download log file for the conversion<br>
+          Select file to convert<span class="max-file-size"></span>:
+          <br>
+          <input type="file" name="fileToUpload" id="fileToUpload">
+          <input type="button" class="button" value=" Clear Uploaded File " name="clearUpload" id="clearUpload">
+          <br>
+          If you have sensitive data you might prefer to use
+          <a href="download.htm">one of our downloadable tools or Python library</a> rather than uploading your data to
+          our service.<br>
+          <span class="convert-button-and-spinner">
+            <input type="button" class="button init-disabled" value=" Convert " name="uploadButton" id="uploadButton"
+              disabled=true>
+            <span class="loading-spinner spinner-border"></span>
+          </span>
+        </p>
+      </div>
+      <div class="largeGap"></div>
     </div>
-    <div class="largeGap"></div>
   </form>
 
   <script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4="
