@@ -59,10 +59,14 @@ export function commonConvertReady(converter) {
     $("#heading").html("Convert from \'" + in_ext + "\' (" + in_note + ") to \'" + out_ext + "\' (" + out_note +
         ") using " + converter);
 
+    // Connect the buttons to events
     $("#extCheck").click(setExtCheck);
     $("#requestLog").click(setRequestLog);
+    $("#clearUpload").click(clearUploadedFile);
+
+    // Connect the file upload to event and limit the types it can accept
     $("#fileToUpload").change(checkFile);
-    $("#clearUpload").click(clearUploadedfile);
+    limitFileType();
 
     return [token, in_str, in_ext, out_str, out_ext];
 }
@@ -86,7 +90,7 @@ export function convertFile(form_data, download_fname, fname) {
 
             hideSpinner();
             enableConvertButton();
-            clearUploadedfile();
+            clearUploadedFile();
 
             if (!convertTimedOut) {
                 await downloadFile(`../downloads/${download_fname}`, download_fname)
@@ -167,6 +171,13 @@ export function convertFile(form_data, download_fname, fname) {
 
 function setExtCheck(event) {
     extCheck = this.checked;
+
+    // Toggle whether or not the file upload limits uploaded type based on whether or not this box is ticked
+    if (extCheck) {
+        limitFileType();
+    } else {
+        unlimitFileType();
+    }
 }
 
 export function getExtCheck() {
@@ -252,9 +263,23 @@ function checkFile(event) {
 }
 
 /**
+ * Allow the file upload to only accept the expected type of file
+ */
+function limitFileType() {
+    $("#fileToUpload")[0].accept = "." + in_ext;
+}
+
+/**
+ * Allow the file upload to accept any type of file
+ */
+function unlimitFileType() {
+    $("#fileToUpload")[0].accept = "*";
+}
+
+/**
  * Clear any uploaded file
  */
-function clearUploadedfile() {
+function clearUploadedFile() {
     $("#fileToUpload").val('');
     disableConvertButton();
 }
@@ -296,7 +321,6 @@ async function downloadFile(path, filename) {
             a.remove();
         });
 }
-
 
 /**
  * Show the loading spinner
