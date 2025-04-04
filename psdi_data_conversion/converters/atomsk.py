@@ -11,7 +11,9 @@ CONVERTER_ATO = 'Atomsk'
 
 
 class AtoFileConverter(ScriptFileConverter):
-    """File Converter specialized to use Atomsk for conversions
+    """File Converter specialized to use Atomsk for conversions.
+
+    This converter does not yet support any additional configuration options provided at class init to the `data` kwarg.
     """
 
     name = CONVERTER_ATO

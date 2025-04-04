@@ -158,13 +158,21 @@ In addition to the dependencies listed above, this project uses the assets made 
 
 ### Installation
 
-The CLA and Python library are installed together. This package is not yet available on PyPI, and so must be installed locally. This can be done most easily with:
+The CLA and Python library are installed together. This project is available on PyPI, and so can be installed via pip with:
+
+```bash
+pip install psdi-data-conversion
+```
+
+If you wish to install from source, this can be done most easily by cloning the project and then executing:
 
 ```bash
 pip install .
 ```
 
-executed from this project's directory. You can also replace the '.' in this command with the path to this project's directory to install it from elsewhere.
+from this project's directory. You can also replace the '.' in this command with the path to this project's directory to install it from elsewhere.
+
+**Note:** This project uses git to determine the version number. If you clone the repository, you won't have to do anything special here, but if you get the source e.g. by extracting a release archive, you'll have to do one additional step before running the command above. If you have git installed, simply run `git init` in the project directory and it will be able to install. Otherwise, edit the project's `pyproject.toml` file to uncomment the line that sets a fixed version, and comment out the lines that set it up to determine the version from git - these are pointed out in the comments there.
 
 Depending on your system, it may not be possible to install packages in this manner without creating a virtual environment to do so in. You can do this by first installing the `venv` module for Python3 with e.g.:
 
@@ -327,15 +335,23 @@ Enter https://data-conversion.psdi.ac.uk/ in a browser. Guidance on usage is giv
 
 ### Installation and Setup
 
-Install the package and its requirements, including the optional requirements used to run the GUI locally, by executing the following command from this project's directory:
+This project is available on PyPI, and so can be installed via pip, including the necessary dependencies for the GUI, with:
+
+```bash
+pip install psdi-data-conversion'[gui]'
+```
+
+If you wish to install the project locally from source, this can be done most easily by cloning the project and then executing:
 
 ```bash
 pip install .'[gui]'
 ```
 
-If your system does not allow installs in this manner, it may be necessary to set up a virtual environment. See the instructions in the [command-line application installation](#installation) section above for how to do that, and then try to install again once you've set one up and activated it.
+**Note:** This project uses git to determine the version number. If you clone the repository, you won't have to do anything special here, but if you get the source e.g. by extracting a release archive, you'll have to do one additional step before running the command above. If you have git installed, simply run `git init` in the project directory and it will be able to install. Otherwise, edit the project's `pyproject.toml` file to uncomment the line that sets a fixed version, and comment out the lines that set it up to determine the version from git - these are pointed out in the comments there.
 
-If you've cloned this repository, you can use the `run_local.sh` bash script to run the application. Otherwise (e.g. if you've installed from a wheel or PyPI), copy and paste the following into a script:
+If your system does not allow installation in this manner, it may be necessary to set up a virtual environment. See the instructions in the [command-line application installation](#installation) section above for how to do that, and then try to install again once you've set one up and activated it.
+
+If you've installed this repository from source, you can use the provided `run_local.sh` bash script to run the application. Otherwise (e.g. if you've installed from a wheel or PyPI), copy and paste the following into a script:
 
 ```bash
 #!/bin/bash
@@ -343,6 +359,13 @@ If you've cloned this repository, you can use the `run_local.sh` bash script to 
 # The envvar MAX_FILESIZE can be used to set the maximum allowed filesize in MB - 0 indicates no maximum
 if [ -z $MAX_FILESIZE ]; then
   export MAX_FILESIZE=0
+fi
+
+# The envvar MAX_FILESIZE_OB can be used to set the maximum allowed filesize in MB for the Open Babel converter - 0
+# indicates no maximum. This is currently set to 1 MB by default as the converter seems to hang above this limit (not
+# even allowing the process to be cancelled). This can be changed in the future if this is patched
+if [ -z $MAX_FILESIZE_OB ]; then
+  export MAX_FILESIZE_OB=1
 fi
 
 # Logging control - "full" sets server-style logging, which is necessary to produce the output logs with the expected

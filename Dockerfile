@@ -43,6 +43,7 @@ RUN pip install -r requirements.txt
 ENV PYTHONPATH="."
 ENV SERVICE_MODE=true
 ENV MAX_FILESIZE=50
+ENV MAX_FILESIZE_OB=1
 ENV LOG_MODE=full
 ARG SHA
 ENV SHA=$SHA
@@ -60,4 +61,7 @@ EXPOSE 8000
 RUN mkdir /app/psdi_data_conversion/static/uploads
 RUN mkdir /app/psdi_data_conversion/static/downloads
 
-CMD ["gunicorn", "-b", "0.0.0.0:8000", "psdi_data_conversion.app:app"]
+#set web server timout to more than application default (60)
+ENV TIMEOUT=90
+
+CMD ["sh", "-c", "gunicorn -b 0.0.0.0:8000 psdi_data_conversion.app:app --timeout $TIMEOUT"]

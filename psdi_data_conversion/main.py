@@ -371,7 +371,7 @@ def detail_converter_use(args: ConvertArgs):
             if format_name in l_formats:
                 optional_not: str = ""
             else:
-                optional_not: str = " not"
+                optional_not: str = "not "
             print_wrap(f"Conversion {to_or_from} {format_name} is {optional_not}supported by {args.name}.\n")
 
         # List all possible formats, and which can be used for input and which for output
@@ -551,12 +551,12 @@ def detail_possible_converters(from_format: str, to_format: str):
         return
 
     print_wrap(f"The following registered converters can convert from {from_format} to {to_format}:", newline=True)
-    print("\n    ".join(l_possible_registered_converters))
+    print("    " + "\n    ".join(l_possible_registered_converters) + "\n")
     if l_possible_unregistered_converters:
         print("")
         print_wrap("Additionally, the following converters are supported by this package on other platforms and can "
                    "perform this conversion:", newline=True)
-        print("\n    ".join(l_possible_registered_converters))
+        print("    " + "\n    ".join(l_possible_unregistered_converters) + "\n")
 
     print_wrap("For details on input/output flags and options allowed by a converter for this conversion, call:")
     print(f"{CL_SCRIPT_NAME} -l <converter name> -f {from_format} -t {to_format}")
@@ -694,26 +694,34 @@ def run_from_args(args: ConvertArgs):
                                               delete_input=args.delete_input,
                                               refresh_local_log=False)
         except FileConverterHelpException as e:
-            print_wrap(f"ERROR: {e}", err=True)
+            if not e.logged:
+                print_wrap(f"ERROR: {e}", err=True)
+                e.logged = True
             success = False
             continue
         except FileConverterAbortException as e:
-            print_wrap(f"ERROR: Attempt to convert file {filename} aborted with status code {e.status_code} and "
-                       f"message:\n{e}\n", err=True)
+            if not e.logged:
+                print_wrap(f"ERROR: Attempt to convert file {filename} aborted with status code {e.status_code} and "
+                           f"message:\n{e}\n", err=True)
+                e.logged = True
             success = False
             continue
         except FileConverterInputException as e:
             if "Conversion from" in str(e) and "is not supported" in str(e):
-                print_wrap(f"ERROR: {e}", err=True, newline=True)
+                if not e.logged:
+                    print_wrap(f"ERROR: {e}", err=True, newline=True)
                 detail_possible_converters(args.from_format, args.to_format)
-            else:
+            elif not e.logged:
                 print_wrap(f"ERROR: Attempt to convert file {filename} failed at converter initialization with "
                            f"exception type {type(e)} and message: \n{e}\n", err=True)
+            e.logged = True
             success = False
             continue
         except Exception as e:
-            print_wrap(f"ERROR: Attempt to convert file {filename} failed with exception type {type(e)} and message: " +
-                       f"\n{e}\n", err=True)
+            if not hasattr(e, "logged") or e.logged is False:
+                print_wrap(f"ERROR: Attempt to convert file {filename} failed with exception type {type(e)} and "
+                           f"message: \n{e}\n", err=True)
+                e.logged = True
             success = False
             continue
 

@@ -17,6 +17,7 @@ from psdi_data_conversion.converters import base
 
 import glob
 
+from psdi_data_conversion.converters.openbabel import CONVERTER_OB
 from psdi_data_conversion.file_io import (is_archive, is_supported_archive, pack_zip_or_tar, split_archive_ext,
                                           unpack_zip_or_tar)
 
@@ -105,7 +106,8 @@ def get_converter(*args, name=const.CONVERTER_DEFAULT, **converter_kwargs) -> ba
     name : str
         The desired converter type, by default 'Open Babel'
     data : dict[str | Any] | None
-        A dict of any other data needed by a converter or for extra logging information, default empty dict
+        A dict of any other data needed by a converter or for extra logging information, default empty dict. See the
+        docstring of each converter for supported keys and values that can be passed to `data` here
     abort_callback : Callable[[int], None]
         Function to be called if the conversion hits an error and must be aborted, default `abort_raise`, which
         raises an appropriate exception
@@ -117,7 +119,9 @@ def get_converter(*args, name=const.CONVERTER_DEFAULT, **converter_kwargs) -> ba
     download_dir : str
         The location of output files relative to the current directory
     max_file_size : float
-        The maximum allowed file size for input/output files, in MB, default 1 MB. If 0, will be unlimited
+        The maximum allowed file size for input/output files, in MB, default 1 MB for Open Babel, unlimited for other
+        converters. If 0, will be unlimited. If an archive of files is provided, this will apply to the total of all
+        files contained in it
     no_check : bool
         If False (default), will check at setup whether or not a conversion between the desired file formats is
         supported with the specified converter
@@ -238,7 +242,7 @@ def run_converter(filename: str,
                   *args,
                   from_format: str | None = None,
                   download_dir=const.DEFAULT_DOWNLOAD_DIR,
-                  max_file_size=const.DEFAULT_MAX_FILE_SIZE,
+                  max_file_size=None,
                   log_file: str | None = None,
                   log_mode=const.LOG_SIMPLE,
                   strict=False,
@@ -261,7 +265,8 @@ def run_converter(filename: str,
     name : str
         The desired converter type, by default 'Open Babel'
     data : dict[str | Any] | None
-        A dict of any other data needed by a converter or for extra logging information, default empty dict
+        A dict of any other data needed by a converter or for extra logging information, default empty dict. See the
+        docstring of each converter for supported keys and values that can be passed to `data` here
     abort_callback : Callable[[int], None]
         Function to be called if the conversion hits an error and must be aborted, default `abort_raise`, which
         raises an appropriate exception
@@ -280,8 +285,9 @@ def run_converter(filename: str,
         into a file of the same format, their logs will be combined into a single log, and the converted files and
         individual logs will be deleted
     max_file_size : float
-        The maximum allowed file size for input/output files, in MB, default 1 MB. If 0, will be unlimited. If an
-        archive of files is provided, this will apply to the total of all files contained in it
+        The maximum allowed file size for input/output files, in MB, default 1 MB for Open Babel, unlimited for other
+        converters. If 0, will be unlimited. If an archive of files is provided, this will apply to the total of all
+        files contained in it
     no_check : bool
         If False (default), will check at setup whether or not a conversion between the desired file formats is
         supported with the specified converter
@@ -317,6 +323,10 @@ def run_converter(filename: str,
     FileConverterAbortException
         If something goes wrong during the conversion process
     """
+
+    # Set the maximum file size based on which converter is being used if using the default
+    if max_file_size is None:
+        max_file_size = const.DEFAULT_MAX_FILE_SIZE_OB if name == CONVERTER_OB else const.DEFAULT_MAX_FILE_SIZE
 
     # Set the log file if it was unset - note that in server logging mode, this value won't be used within the
     # converter class, so it needs to be set up here to match what will be set up there

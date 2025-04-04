@@ -18,10 +18,13 @@
 
   <script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4="
     crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/jquery.dirtyforms/2.0.0/jquery.dirtyforms.min.js"></script>
+
   {% for item in data %}
   <script>
     const token = "{{item.token}}";
     const max_file_size = "{{item.max_file_size}}";
+    const max_file_size_ob = "{{item.max_file_size_ob}}";
     const service_mode = "{{item.service_mode}}";
     const production_mode = "{{item.production_mode}}";
     document.documentElement.setAttribute("service-mode", service_mode);
@@ -52,7 +55,7 @@
     </div>
   </div>
 
-  <form name="gui">
+  <form name="gui" class="gui">
     <div class="max-width-box">
       <p>Select 'from' and 'to' file formats in the 'Convert from/to' boxes, in either order. Typing where indicated
         filters the options (case insensitive); for example, typing 'can' or 'NON' reduces the number of options to one:

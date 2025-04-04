@@ -14,6 +14,7 @@ from unittest.mock import patch
 
 from psdi_data_conversion import constants as const
 from psdi_data_conversion.converter import D_CONVERTER_ARGS, L_REGISTERED_CONVERTERS
+from psdi_data_conversion.converters.atomsk import CONVERTER_ATO
 from psdi_data_conversion.converters.c2x import CONVERTER_C2X
 from psdi_data_conversion.converters.openbabel import (CONVERTER_OB, COORD_GEN_KEY, COORD_GEN_QUAL_KEY,
                                                        DEFAULT_COORD_GEN, DEFAULT_COORD_GEN_QUAL)
@@ -21,7 +22,7 @@ from psdi_data_conversion.database import (get_conversion_quality, get_converter
                                            get_out_format_args, get_possible_converters, get_possible_formats)
 from psdi_data_conversion.main import FileConverterInputException, parse_args
 from psdi_data_conversion.testing.utils import run_test_conversion_with_cla, run_with_arg_string
-from psdi_data_conversion.testing import conversion_test_specs as specs
+from psdi_data_conversion.testing.conversion_test_specs import l_cla_test_specs
 
 
 def test_unique_args():
@@ -57,90 +58,12 @@ def setup_test() -> None:
     logging.Logger.manager.loggerDict.clear()
 
 
-def test_default():
-    """Test that the default converter is registered.
+@pytest.mark.parametrize("test_spec", l_cla_test_specs,
+                         ids=lambda x: x.name)
+def test_conversions(test_spec):
+    """Run all conversion tests in the defined list of test specifications
     """
-    assert const.CONVERTER_DEFAULT in L_REGISTERED_CONVERTERS
-
-
-def test_basic_conversions():
-    """Run a basic set of conversions with various converters and file formats which we expect to succeed without
-    issue
-    """
-    run_test_conversion_with_cla(specs.basic_tests)
-
-
-def test_archive_convert():
-    """Run a test of converting an archive of files
-    """
-    run_test_conversion_with_cla(specs.archive_tests)
-
-
-def test_archive_wrong_format():
-    """Run a test that converting an archive but specifying the wrong input format will produce a warning
-    """
-    run_test_conversion_with_cla(specs.archive_wrong_format_test)
-
-
-def test_log_mode():
-    """Test that the various log modes result in the expected log files being created
-    """
-    run_test_conversion_with_cla(specs.log_mode_tests)
-
-
-def test_stdout():
-    """Test that the output is sent to stdout when requested
-    """
-    run_test_conversion_with_cla(specs.stdout_test)
-
-
-def test_quiet():
-    """Test that quiet mode suppresses all output
-    """
-    run_test_conversion_with_cla(specs.quiet_test)
-
-
-def test_open_babel_warning():
-    """Run a test that expected warnings from Open Babel are captured in the log
-    """
-    run_test_conversion_with_cla(specs.open_babel_warning_test)
-
-
-def test_invalid_converter():
-    """Run a test of the converter to ensure it reports an error properly if an invalid converter is requested
-    """
-    run_test_conversion_with_cla(specs.invalid_converter_test)
-
-
-def test_quality_note():
-    """Run a test of the converter on an `.xyz` to `.inchi` conversion which we expect to have warnings about data
-    loss and extrapolation
-    """
-    run_test_conversion_with_cla(specs.quality_note_test)
-
-
-def test_cleanup():
-    """Test that input files are deleted if requested
-    """
-    run_test_conversion_with_cla(specs.cleanup_input_test)
-
-
-def test_failed_conversion():
-    """Run a test of the converter on a conversion we expect to fail
-    """
-    run_test_conversion_with_cla(specs.failed_conversion_test)
-
-
-def test_format_args():
-    """Run a test that format args are processed correctly
-    """
-    run_test_conversion_with_cla(specs.format_args_test)
-
-
-def test_coord_gen():
-    """Run a test that coordinate generation args are processed correctly
-    """
-    run_test_conversion_with_cla(specs.coord_gen_test)
+    run_test_conversion_with_cla(test_spec)
 
 
 def test_input_validity():
@@ -391,3 +314,16 @@ def test_conversion_info(capsys):
     for option_info in l_in_options + l_out_options:
         info = option_info.info if option_info.info and option_info.info != "N/A" else ""
         assert string_is_present_in_out(f"{option_info.flag}<{option_info.brief}>{option_info.description}{info}")
+
+    # Now try listing for converters which don't yet allow in/out args
+
+    in_format = "pdb"
+    out_format = "cif"
+    for converter_name in [CONVERTER_C2X, CONVERTER_ATO]:
+        qual = get_conversion_quality(converter_name, in_format, out_format)
+
+        run_with_arg_string(f"-l {converter_name} -f {in_format} -t {out_format}")
+        captured = capsys.readouterr()
+        compressed_out: str = captured.out.replace("\n", "").replace(" ", "")
+
+        assert not captured.err

@@ -29,7 +29,22 @@ classifiers = [
 ]
 dependencies = ["openbabel-wheel", "py"]
 requires-python = ">= 3.12"
+
+# Version specification - we determine the version through git. If you wish to install this without it being in a git
+# repository, you can do so by uncommenting the next line, then commenting out the block below which specifies how to
+# determine the version from git
+
+# version = "0.0.1"
+
+# If using a fixed version, start commenting out from here
 dynamic = ["version"]
+
+[tool.hatch.version]
+source = "vcs"
+
+[tool.hatch.version.raw-options]
+local_scheme = "no-local-version"
+# If using a fixed version, stop commenting out here
 
 [project.optional-dependencies]
 test = ["pytest", "coverage"]
@@ -54,13 +69,6 @@ Repository = "https://github.com/PSDI-UK/psdi-data-conversion"
 Issues = "https://github.com/PSDI-UK/psdi-data-conversion/issues"
 Changelog = "https://github.com/PSDI-UK/psdi-data-conversion/blob/main/CHANGELOG.md"
 Download = "https://github.com/PSDI-UK/psdi-data-conversion/releases/latest"
-
-# Hatch-specific configuration
-[tool.hatch.version]
-source = "vcs"
-
-[tool.hatch.version.raw-options]
-local_scheme = "no-local-version"
 
 [tool.hatch.build]
 exclude = [

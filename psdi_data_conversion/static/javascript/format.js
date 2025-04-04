@@ -5,6 +5,7 @@
   This is the JavaScript which makes the Format and Converter Selection gui work.
 */
 
+import { disableDirtyForms, cleanDirtyForms, initDirtyForms, loadServiceMode, loadProductionMode } from "./common.js";
 import {
     getInputFormats, getOutputFormats, getOutputFormatsForInputFormat,
     getInputFormatsForOutputFormat, getConverters, getConverterByName, getLevelChemInfo
@@ -29,11 +30,15 @@ $(document).ready(function () {
 
     sessionStorage.setItem("token", token);
     sessionStorage.setItem("max_file_size", max_file_size);
+    sessionStorage.setItem("max_file_size_ob", max_file_size_ob);
     sessionStorage.setItem("service_mode", service_mode);
     sessionStorage.setItem("production_mode", production_mode);
     sessionStorage.setItem("in_str", "");
     sessionStorage.setItem("out_str", "");
     sessionStorage.setItem("success", "");
+
+    loadServiceMode();
+    loadProductionMode();
 
     $("#fromList").click(populateConversionSuccess);
     $("#toList").click(populateConversionSuccess);
@@ -43,6 +48,8 @@ $(document).ready(function () {
     $("#success").click(showConverterDetails);
     $("#resetButton").click(resetAll);
     $("#showButton").click(showQualityDetails);
+
+    initDirtyForms();
 });
 
 /**
@@ -512,6 +519,9 @@ function getFormat(str) {
 
 // Stores chosen formats and switches to the Conversion page
 function goToConversionPage(event) {
+
+    disableDirtyForms();
+
     var path = ``;
 
     if ($("#name").html() == "Open Babel") {
@@ -604,4 +614,6 @@ function resetAll() {
 
     // Populates the "Convert to" selection list
     getOutputFormats().then(formats => populateList(formats, "to"));
+
+    cleanDirtyForms();
 }
