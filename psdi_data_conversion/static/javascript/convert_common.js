@@ -62,6 +62,7 @@ export function commonConvertReady(converter) {
     $("#extCheck").click(setExtCheck);
     $("#requestLog").click(setRequestLog);
     $("#fileToUpload").change(checkFile);
+    $("#clearUpload").click(clearUploadedfile);
 
     return [token, in_str, in_ext, out_str, out_ext];
 }
@@ -82,8 +83,11 @@ export function convertFile(form_data, download_fname, fname) {
         contentType: false,
         timeout: CONVERT_TIMEOUT,
         success: async function () {
+
             hideSpinner();
             enableConvertButton();
+            clearUploadedfile();
+
             if (!convertTimedOut) {
                 await downloadFile(`../downloads/${download_fname}`, download_fname)
 
@@ -247,11 +251,25 @@ function checkFile(event) {
     }
 }
 
+/**
+ * Clear any uploaded file
+ */
+function clearUploadedfile() {
+    $("#fileToUpload").val('');
+}
+
+/**
+ * Enable the "Convert" button
+ */
 function enableConvertButton() {
     $("#uploadButton").css({ "background-color": "var(--ifm-color-primary)", "color": "var(--ifm-hero-text-color)" });
     $("#uploadButton").prop({ disabled: false });
 }
 
+
+/**
+ * Disable the "Convert" button
+ */
 function disableConvertButton() {
     $("#uploadButton").css({ "background-color": "var(--psdi-bg-color-secondary)", "color": "gray" });
     $("#uploadButton").prop({ disabled: true });
