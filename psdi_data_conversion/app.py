@@ -64,6 +64,20 @@ else:
         print(f"ERROR: {str(e)}")
         exit(1)
 
+# Get the maximum allowed size from the envvar for it
+ev_max_file_size = os.environ.get(const.MAX_FILESIZE_EV)
+if ev_max_file_size is not None:
+    max_file_size = float(ev_max_file_size)*const.MEGABYTE
+else:
+    max_file_size = const.DEFAULT_MAX_FILE_SIZE
+
+# And same for the Open Babel maximum file size
+ev_max_file_size_ob = os.environ.get(const.MAX_FILESIZE_OB_EV)
+if ev_max_file_size_ob is not None:
+    max_file_size_ob = float(ev_max_file_size_ob)*const.MEGABYTE
+else:
+    max_file_size_ob = const.DEFAULT_MAX_FILE_SIZE_OB
+
 app = Flask(__name__)
 
 
@@ -96,19 +110,9 @@ def get_last_sha() -> str:
 def website():
     """Return the web page along with the token
     """
-    # Get the maximum allowed size from the envvar for it
-    ev_max_file_size = os.environ.get(const.MAX_FILESIZE_EV)
-    if ev_max_file_size is not None:
-        max_file_size = float(ev_max_file_size)*const.MEGABYTE
-    else:
-        max_file_size = const.DEFAULT_MAX_FILE_SIZE
 
-    # And same for the Open Babel maximum file size
-    ev_max_file_size_ob = os.environ.get(const.MAX_FILESIZE_OB_EV)
-    if ev_max_file_size_ob is not None:
-        max_file_size_ob = float(ev_max_file_size_ob)*const.MEGABYTE
-    else:
-        max_file_size_ob = const.DEFAULT_MAX_FILE_SIZE_OB
+    import pdb
+    pdb.set_trace()
 
     data = [{'token': token,
              'max_file_size': max_file_size,
@@ -274,6 +278,13 @@ def main():
                         "variables and their defaults will instead control execution. These defaults will result in "
                         "the app running in production server mode.")
 
+    parser.add_argument("--max-file-size", type=float, default=const.DEFAULT_MAX_FILE_SIZE,
+                        help="The maximum allowed filesize in MB - 0 (default) indicates no maximum")
+
+    parser.add_argument("--max-file-size-ob", type=float, default=const.DEFAULT_MAX_FILE_SIZE_OB,
+                        help="The maximum allowed filesize in MB for the Open Babel converter, taking precendence over "
+                        "the general maximum file size when Open Babel is used - 0 indicates no maximum. Default 1 MB.")
+
     parser.add_argument("--service-mode", action="store_true",
                         help="If set, will run as if deploying a service rather than the local GUI")
 
@@ -296,6 +307,12 @@ def main():
     args = parser.parse_args()
 
     if not args.use_env_vars:
+
+        global max_file_size
+        max_file_size = args.max_file_size*const.MEGABYTE
+
+        global max_file_size_ob
+        max_file_size_ob = args.max_file_size_ob*const.MEGABYTE
 
         global service_mode
         service_mode = args.service_mode
