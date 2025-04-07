@@ -260,3 +260,8 @@ def data():
     else:
         # return http status code 405
         abort(405)
+
+
+if __name__ == "__main__":
+
+    app.run()
