@@ -269,15 +269,15 @@ def main():
 
     parser = ArgumentParser()
 
-    parser.add_argument("--use_env_vars", action="store_true",
+    parser.add_argument("--use-env-vars", action="store_true",
                         help="If set, all other arguments and defaults for this script are ignored, and environmental "
                         "variables and their defaults will instead control execution. These defaults will result in "
                         "the app running in production server mode.")
 
-    parser.add_argument("--service_mode", action="store_true",
+    parser.add_argument("--service-mode", action="store_true",
                         help="If set, will run as if deploying a service rather than the local GUI")
 
-    parser.add_argument("--dev_mode", action="store_true",
+    parser.add_argument("--dev-mode", action="store_true",
                         help="If set, will expose development elements")
 
     parser.add_argument("--log-mode", type=str, default=const.LOG_FULL,
