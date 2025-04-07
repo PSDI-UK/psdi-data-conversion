@@ -36,7 +36,7 @@ TIMEOUT = 10
 
 def wait_for_element(driver: WebDriver, xpath: str, by=By.XPATH):
     """Shortcut for boilerplate to wait until a web element is visible"""
-    WebDriverWait(driver, TIMEOUT).until(EC.visibility_of_element_located((by, xpath)))
+    WebDriverWait(driver, TIMEOUT).until(EC.element_to_be_clickable((by, xpath)))
 
 
 def wait_and_find_element(driver: WebDriver, xpath: str, by=By.XPATH) -> EC.WebElement:
@@ -56,9 +56,14 @@ def driver():
     ff_driver.quit()
 
 
-def test_initial_frontpage(driver: WebDriver):
+@pytest.fixture(scope="module", autouse=True)
+def setup(driver: WebDriver):
+    """Run common tasks for each test"""
 
     driver.get(f"{origin}/")
+
+
+def test_initial_frontpage(driver: WebDriver):
 
     # Check that the front page contains the header "Data Conversion Service".
 
@@ -95,8 +100,6 @@ def test_cdxml_to_inchi_conversion(driver: WebDriver):
     if (Path.is_file(output_file)):
         Path.unlink(output_file)
 
-    driver.get(f"{origin}/")
-
     wait_for_element(driver, "//select[@id='fromList']/option")
 
     # Select cdxml from the 'from' list.
@@ -108,7 +111,7 @@ def test_cdxml_to_inchi_conversion(driver: WebDriver):
     # Select Open Babel from the available conversion options list.
     driver.find_element(By.XPATH, "//select[@id='success']/option[contains(.,'Open Babel')]").click()
 
-    # Click on the "Yes" button.
+    # Click on the "Yes" button to accept the converter and go to the conversion page
     driver.find_element(By.XPATH, "//input[@id='yesButton']").click()
 
     # Select the input file.
