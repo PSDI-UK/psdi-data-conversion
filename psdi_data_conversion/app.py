@@ -15,6 +15,7 @@ import sys
 import traceback
 from flask import Flask, request, render_template, abort, Response
 
+import psdi_data_conversion
 from psdi_data_conversion import log_utility
 from psdi_data_conversion import constants as const
 from psdi_data_conversion.converter import run_converter
@@ -323,6 +324,10 @@ def main():
         global log_level
         log_level = args.log_level
 
+    # Change directory to the base of the project
+    os.chdir(os.path.join(psdi_data_conversion.__path__[0], ".."))
+
+    # Run the app
     app.run()
 
 
