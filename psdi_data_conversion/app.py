@@ -5,6 +5,7 @@ Version 1.0, 8th November 2024
 This script acts as a server for the PSDI Data Conversion Service website.
 """
 
+from argparse import ArgumentParser
 import hashlib
 import os
 import json
@@ -265,6 +266,56 @@ def data():
 def main():
     """Standard entry-point function for this script.
     """
+
+    parser = ArgumentParser()
+
+    parser.add_argument("--use_env_vars", action="store_true",
+                        help="If set, all other arguments and defaults for this script are ignored, and environmental "
+                        "variables and their defaults will instead control execution. These defaults will result in "
+                        "the app running in production server mode.")
+
+    parser.add_argument("--service_mode", action="store_true",
+                        help="If set, will run as if deploying a service rather than the local GUI")
+
+    parser.add_argument("--dev_mode", action="store_true",
+                        help="If set, will expose development elements")
+
+    parser.add_argument("--log-mode", type=str, default=const.LOG_FULL,
+                        help="How logs should be stored. Allowed values are: \n"
+                        "- 'full' - Multi-file logging, not recommended for the CLI, but allowed for a compatible "
+                        "interface with the public web app"
+                        "- 'simple' - Logs saved to one file"
+                        "- 'stdout' - Output logs and errors only to stdout"
+                        "- 'none' - Output only errors to stdout")
+
+    parser.add_argument("-q", "--quiet", action="store_true",
+                        help="If set, all terminal output aside from errors will be suppressed and no log file will be "
+                        "generated.")
+
+    parser.add_argument("--log-level", type=str, default=None,
+                        help="The desired level to log at. Allowed values are: 'DEBUG', 'INFO', 'WARNING', 'ERROR, "
+                             "'CRITICAL'. Default: 'INFO' for logging to file, 'WARNING' for logging to stdout")
+
+    # Set global variables for settings based on parsed arguments, unless it's set to use env vars
+    args = parser.parse_args()
+
+    if not args.use_env_vars:
+
+        global service_mode
+        service_mode = args.service_mode
+
+        global production_mode
+        production_mode = not args.dev_mode
+
+        global log_mode
+        if args.quiet:
+            log_mode = const.LOG_NONE
+        else:
+            log_mode = args.log_mode
+
+        global log_level
+        log_level = args.log_level
+
     app.run()
 
 
