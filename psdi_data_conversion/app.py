@@ -111,9 +111,6 @@ def website():
     """Return the web page along with the token
     """
 
-    import pdb
-    pdb.set_trace()
-
     data = [{'token': token,
              'max_file_size': max_file_size,
              'max_file_size_ob': max_file_size_ob,
