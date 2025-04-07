@@ -288,10 +288,6 @@ def main():
                         "- 'stdout' - Output logs and errors only to stdout"
                         "- 'none' - Output only errors to stdout")
 
-    parser.add_argument("-q", "--quiet", action="store_true",
-                        help="If set, all terminal output aside from errors will be suppressed and no log file will be "
-                        "generated.")
-
     parser.add_argument("--log-level", type=str, default=None,
                         help="The desired level to log at. Allowed values are: 'DEBUG', 'INFO', 'WARNING', 'ERROR, "
                              "'CRITICAL'. Default: 'INFO' for logging to file, 'WARNING' for logging to stdout")
@@ -308,10 +304,7 @@ def main():
         production_mode = not args.dev_mode
 
         global log_mode
-        if args.quiet:
-            log_mode = const.LOG_NONE
-        else:
-            log_mode = args.log_mode
+        log_mode = args.log_mode
 
         global log_level
         log_level = args.log_level
