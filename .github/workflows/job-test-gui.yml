@@ -31,6 +31,6 @@ jobs:
           pip install .[gui-test]
       - name: Run Selenium tests
         run: |
-          ./run_local.sh &
+          psdi-data-convert-gui &
           cd tests/selenium
           ./run.sh

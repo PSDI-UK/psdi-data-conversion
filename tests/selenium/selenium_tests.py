@@ -134,10 +134,9 @@ def test_cdxml_to_inchi_conversion(driver: WebDriver):
         time.sleep(1)
         time_elapsed += 1
         if time_elapsed > TIMEOUT:
-            assert False, f"Download of {output_file} and {log_file} timed out"
+            pytest.fail(f"Download of {output_file} and {log_file} timed out")
 
     time.sleep(1)
 
     # Verify that the InChI file is correct.
-
     assert output_file.read_text().strip() == "InChI=1S/C12NO/c1-12(2)6-7-13-11-5-4-9(14-3)8-10(11)12"
