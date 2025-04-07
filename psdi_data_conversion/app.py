@@ -262,6 +262,12 @@ def data():
         abort(405)
 
 
+def main():
+    """Standard entry-point function for this script.
+    """
+    app.run()
+
+
 if __name__ == "__main__":
 
-    app.run()
+    main()

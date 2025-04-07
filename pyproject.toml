@@ -61,6 +61,7 @@ doc = ["pdoc3"]
 
 [project.scripts]
 psdi-data-convert = "psdi_data_conversion.main:main"
+psdi-data-convert-gui = "psdi_data_conversion.app:main"
 
 [project.urls]
 Homepage = "https://data-conversion.psdi.ac.uk/"
