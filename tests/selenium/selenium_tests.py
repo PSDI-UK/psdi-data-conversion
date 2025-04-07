@@ -56,9 +56,21 @@ def driver():
     ff_driver.quit()
 
 
-def test_initial_frontpage(driver: WebDriver):
+def wait_for_cover_cleared(driver: WebDriver):
+    """Wait for the page cover to be cleared, making thigns interactable"""
+    WebDriverWait(driver, TIMEOUT).until(EC.invisibility_of_element_located((By.XPATH, "//select[@id='cover']")))
+
+
+@pytest.fixture(scope="module", autouse=True)
+def setup(driver: WebDriver):
+    """Run common tasks for each test"""
 
     driver.get(f"{origin}/")
+
+    wait_for_cover_cleared(driver)
+
+
+def test_initial_frontpage(driver: WebDriver):
 
     # Check that the front page contains the header "Data Conversion Service".
 
@@ -95,8 +107,6 @@ def test_cdxml_to_inchi_conversion(driver: WebDriver):
     if (Path.is_file(output_file)):
         Path.unlink(output_file)
 
-    driver.get(f"{origin}/")
-
     wait_for_element(driver, "//select[@id='fromList']/option")
 
     # Select cdxml from the 'from' list.
@@ -108,8 +118,11 @@ def test_cdxml_to_inchi_conversion(driver: WebDriver):
     # Select Open Babel from the available conversion options list.
     driver.find_element(By.XPATH, "//select[@id='success']/option[contains(.,'Open Babel')]").click()
 
-    # Click on the "Yes" button.
+    # Click on the "Yes" button to accept the converter and go to the conversion page
     driver.find_element(By.XPATH, "//input[@id='yesButton']").click()
+
+    # This will load a new page, so wait again for the cover to be cleared
+    wait_for_cover_cleared(driver)
 
     # Select the input file.
     wait_and_find_element(driver, "//input[@id='fileToUpload']").send_keys(str(input_file))
