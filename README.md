@@ -75,7 +75,6 @@ This is the repository for the PSDI PF2 Chemistry File Format Conversion project
 - `pyproject.toml` (Python project metadata and settings)
 - `README.md` (This file)
 - `requirements.txt` (Requirements for the web app deployment of this project)
-- `run_local.sh` (Helper script to run the web app locally)
 
 ## Requirements
 
@@ -351,50 +350,9 @@ pip install .'[gui]'
 
 If your system does not allow installation in this manner, it may be necessary to set up a virtual environment. See the instructions in the [command-line application installation](#installation) section above for how to do that, and then try to install again once you've set one up and activated it.
 
-If you've installed this repository from source, you can use the provided `run_local.sh` bash script to run the application. Otherwise (e.g. if you've installed from a wheel or PyPI), copy and paste the following into a script:
-
-```bash
-#!/bin/bash
-
-# The envvar MAX_FILESIZE can be used to set the maximum allowed filesize in MB - 0 indicates no maximum
-if [ -z $MAX_FILESIZE ]; then
-  export MAX_FILESIZE=0
-fi
-
-# The envvar MAX_FILESIZE_OB can be used to set the maximum allowed filesize in MB for the Open Babel converter - 0
-# indicates no maximum. This is currently set to 1 MB by default as the converter seems to hang above this limit (not
-# even allowing the process to be cancelled). This can be changed in the future if this is patched
-if [ -z $MAX_FILESIZE_OB ]; then
-  export MAX_FILESIZE_OB=1
-fi
-
-# Logging control - "full" sets server-style logging, which is necessary to produce the output logs with the expected
-# names. This should not be changed, or else errors will occur
-export LOG_MODE=full
-
-# The level to log at. Leave blank for defaults, which logs at INFO level for user output and ERROR level for the server
-# log and stdout. If set to a different value here (e.g. DEBUG), all these channels will be set to that level
-export LOG_LEVEL=
-
-# The envvar SERVICE_MODE can be set to "true" to make this behave as if it's running as the public web service -
-# uncomment the following line to enable that
-# export SERVICE_MODE=true
-
-# Uncomment the following line to enable debug mode
-# export FLASK_ENV=development
-
-# Execute a local run of the application from the proper path
-
-PACKAGE_PATH=`python -c "import psdi_data_conversion; print(psdi_data_conversion.__path__[0])"`
-cd $PACKAGE_PATH/..
-python -m flask --app psdi_data_conversion/app.py run
-```
-
-If desired, you can modify the environmental variables set in this script to modify the operation - see the comments on each for details.
-
 ### Running the App
 
-Run the `run_local.sh` script to start the server. You can then access the website by going to <http://127.0.0.1:5000> in a browser (this will also be printed in the terminal, and you can CTRL+click it there to open it in your default browser). Guidance for using the app is given on each page of it.
+Once installed, the command-line script `psdi-data-convert-gui` will be made available, which can be called to start the server. You can then access the website by going to <http://127.0.0.1:5000> in a browser (this will also be printed in the terminal, and you can CTRL+click it there to open it in your default browser). Guidance for using the app is given on each page of it. When you're finished with the app, key CTRL+C in the terminal where you called the script to shut down the server, or, if the process was backgrounded, kill the appropriate process.
 
 In case of problems when using Chrome, try opening Chrome from the command line:
 open -a "Google Chrome.app" --args --allow-file-access-from-files
