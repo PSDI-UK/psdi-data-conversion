@@ -36,7 +36,7 @@ TIMEOUT = 10
 
 def wait_for_element(driver: WebDriver, xpath: str, by=By.XPATH):
     """Shortcut for boilerplate to wait until a web element is visible"""
-    WebDriverWait(driver, TIMEOUT).until(EC.visibility_of_element_located((by, xpath)))
+    WebDriverWait(driver, TIMEOUT).until(EC.element_to_be_clickable((by, xpath)))
 
 
 def wait_and_find_element(driver: WebDriver, xpath: str, by=By.XPATH) -> EC.WebElement:
@@ -56,18 +56,11 @@ def driver():
     ff_driver.quit()
 
 
-def wait_for_cover_cleared(driver: WebDriver):
-    """Wait for the page cover to be cleared, making thigns interactable"""
-    WebDriverWait(driver, TIMEOUT).until(EC.invisibility_of_element_located((By.XPATH, "//select[@id='cover']")))
-
-
 @pytest.fixture(scope="module", autouse=True)
 def setup(driver: WebDriver):
     """Run common tasks for each test"""
 
     driver.get(f"{origin}/")
-
-    wait_for_cover_cleared(driver)
 
 
 def test_initial_frontpage(driver: WebDriver):
@@ -120,9 +113,6 @@ def test_cdxml_to_inchi_conversion(driver: WebDriver):
 
     # Click on the "Yes" button to accept the converter and go to the conversion page
     driver.find_element(By.XPATH, "//input[@id='yesButton']").click()
-
-    # This will load a new page, so wait again for the cover to be cleared
-    wait_for_cover_cleared(driver)
 
     # Select the input file.
     wait_and_find_element(driver, "//input[@id='fileToUpload']").send_keys(str(input_file))
