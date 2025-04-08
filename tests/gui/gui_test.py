@@ -8,19 +8,32 @@ from multiprocessing import Process
 
 from pathlib import Path
 import pytest
-from selenium.common.exceptions import NoSuchElementException
-from selenium import webdriver
-from selenium.webdriver.common.alert import Alert
-from selenium.webdriver.common.by import By
-from selenium.webdriver import FirefoxOptions
-from selenium.webdriver.firefox.service import Service as FirefoxService
-from selenium.webdriver.firefox.webdriver import WebDriver
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.support.ui import WebDriverWait
-from webdriver_manager.firefox import GeckoDriverManager
+
+# Skip all tests in this module if required packages for GUI testing aren't installed
+try:
+    from selenium.common.exceptions import NoSuchElementException
+    from selenium import webdriver
+    from selenium.webdriver.common.alert import Alert
+    from selenium.webdriver.common.by import By
+    from selenium.webdriver import FirefoxOptions
+    from selenium.webdriver.firefox.service import Service as FirefoxService
+    from selenium.webdriver.firefox.webdriver import WebDriver
+    from selenium.webdriver.support import expected_conditions as EC
+    from selenium.webdriver.support.ui import WebDriverWait
+    from webdriver_manager.firefox import GeckoDriverManager
+
+    from psdi_data_conversion.app import start_app
+
+except ImportError:
+    # We put the importorskip commands here rather than above so that standard imports can be used by static analysis
+    # tools where possible, and the importorskip is used here so pytest will stop processing immediately if things can't
+    # be imported - pytest.mark.skip won't do that
+    pytest.importorskip("Flask")
+    pytest.importorskip("selenium")
+    pytest.importorskip("webdriver_manager.firefox")
+
 
 import psdi_data_conversion
-from psdi_data_conversion.app import start_app
 from psdi_data_conversion.testing.utils import get_input_test_data_loc
 
 driver_path = os.environ.get("DRIVER")
