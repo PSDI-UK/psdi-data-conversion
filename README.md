@@ -33,7 +33,7 @@ This is the repository for the PSDI PF2 Chemistry File Format Conversion project
   - [Installation and Setup](#installation-and-setup)
   - [Running the App](#running-the-app)
 - [Testing](#testing)
-- [Licencing](#licencing)
+- [Licensing](#licensing)
 - [Contributors](#contributors)
 - [Funding](#funding)
 
@@ -74,7 +74,7 @@ This is the repository for the PSDI PF2 Chemistry File Format Conversion project
 - `CHANGELOG.md` (Updates since initial public release)
 - `CONTRIBUTING.md` (Guidelines and information for contributors to the project)
 - `DOCKERFILE` (Dockerfile for image containerising PSDI's data conversion service)
-- `LICENSE` (Apache Licence version 2.0)
+- `LICENSE` (Apache License version 2.0)
 - `pyproject.toml` (Python project metadata and settings)
 - `README.md` (This file)
 - `requirements.txt` (Requirements for the web app deployment of this project)
@@ -395,15 +395,15 @@ pip install .'[gui-test]'
 pytest
 ```
 
-## Licencing
+## Licensing
 
 This project is provided under the Apache License version 2.0, the terms of which can be found in the file `LICENSE`.
 
-This project redistributes compiled binaries for the Atomsk and c2x converters. These are both licenced under the
+This project redistributes compiled binaries for the Atomsk and c2x converters. These are both licensed under the
 GNU General Public License version 3 and are redistributed per its terms. Any further redistribution of these binaries,
-including redistribution of this project as a whole, including them, must also follow the terms of this licence.
+including redistribution of this project as a whole, including them, must also follow the terms of this license.
 
-This requires conspicuously displaying notice of this licence, providing the text of of the licence (provided here in
+This requires conspicuously displaying notice of this license, providing the text of of the license (provided here in
 the files `psdi_data_conversion/bin/LICENSE_C2X` and `psdi_data_conversion/bin/LICENSE_ATOMSK`), and appropriately
 conveying the source code for each of these. Their respective source code may be found at:
 
