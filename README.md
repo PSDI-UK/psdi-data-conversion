@@ -436,6 +436,12 @@ Look through the error message you received for messages such as "Library not lo
 sudo apt install libquadmath0
 ```
 
+or through brew via:
+
+```bash
+brew install gcc
+```
+
 Alternatively, you can run your own versions of the `c2x` and `atomsk` binaries with this project. Compile them yourself however you wish - see the projects at https://github.com/codenrx/c2x and https://github.com/pierrehirel/atomsk and follow their instructions to build a binary on your system. Once you've done so, add the binary to your `$PATH`, and this project will pick that up and use it in preference to the prepackaged binary.
 
 On the other hand, it's possible that an error of this sort will occur if you have a non-working binary of one of these converters in your `$PATH`. If this might be the case, you can try removing it and see if the prepackaged binary works for you, or else recompile it to try to fix errors.
