@@ -33,6 +33,8 @@ This is the repository for the PSDI PF2 Chemistry File Format Conversion project
   - [Installation and Setup](#installation-and-setup)
   - [Running the App](#running-the-app)
 - [Testing](#testing)
+- [Troubleshooting](#troubleshooting)
+  - [OSError: [Errno 24] Too many open files](#oserror-errno-24-too-many-open-files)
 - [Licensing](#licensing)
 - [Contributors](#contributors)
 - [Funding](#funding)
@@ -394,6 +396,34 @@ Both of these sets of tests can also be run together if desired through:
 pip install .'[gui-test]'
 pytest
 ```
+
+## Troubleshooting
+
+This section presents solutions for commonly-encountered issues.
+
+### OSError: [Errno 24] Too many open files
+
+You may see the error:
+
+```
+OSError: [Errno 24] Too many open files
+```
+
+while running the command-line application, using the Python library, or running tests This error is caused by a program hitting the limit of the number of open filehandles allowed by the OS. This limit is typically set to 1024 on Linux systems and 256 on MacOS systems, and thus this issue occurs much more often on the latter. You can see what your current limit is by running the command:
+
+```bash
+ulimit -a | grep "open files"
+```
+
+This limit can be temporarily increased for the current terminal session by running the command:
+
+```bash
+ulimit -n 1024 # Or another, higher number
+```
+
+First, try increasing the limit and then redo the operation which caused this error to see if this resolves it. If this does, you can make this change permanent in a few ways, the easiest of which is to add this command to your `.bashrc` file so it will be set for every new terminal session.
+
+If you see this error when the filehandle limit is already set to a high value such as 1024, this may indicate the presence of a bug in the project which causes a leaking of filehandles, so please open an issue about it, pasting the error you get and the details of your system, particularly including your current filehandle limit.
 
 ## Licensing
 
