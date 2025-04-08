@@ -6,6 +6,7 @@ This script acts as a server for the PSDI Data Conversion Service website.
 """
 
 from argparse import ArgumentParser
+from collections.abc import Callable
 import hashlib
 import os
 import json
@@ -265,6 +266,32 @@ def data():
         abort(405)
 
 
+def start_app():
+    """Start the Flask app"""
+
+    app.run()
+
+
+def stop_app():
+    """Stop the Flask app"""
+
+    call_shutdown: Callable | None = request.environ.get('werkzeug.server.shutdown')
+
+    if not call_shutdown:
+        raise RuntimeError("Flask app is not currently running, so cannot be stopped")
+
+    call_shutdown()
+
+
+@app.get('/shutdown')
+def shutdown():
+    """Stop the Flask app via API call"""
+
+    stop_app()
+
+    return 'Shutting down Flask app'
+
+
 def main():
     """Standard entry-point function for this script.
     """
@@ -327,8 +354,7 @@ def main():
     # Change directory to the base of the project
     os.chdir(os.path.join(psdi_data_conversion.__path__[0], ".."))
 
-    # Run the app
-    app.run()
+    start_app()
 
 
 if __name__ == "__main__":
