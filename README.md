@@ -67,7 +67,10 @@ This is the repository for the PSDI PF2 Chemistry File Format Conversion project
 - `test_data`
   - (Files used for testing the project)
 - `tests`
-  - (Unit tests for the project)
+  - `gui`
+    - (Unit tests for the GUI, aka the local version of the web app)
+  - `python`
+    - (Unit tests for the Python library and command-line application)
 - `CHANGELOG.md` (Updates since initial public release)
 - `CONTRIBUTING.md` (Guidelines and information for contributors to the project)
 - `DOCKERFILE` (Dockerfile for image containerising PSDI's data conversion service)
