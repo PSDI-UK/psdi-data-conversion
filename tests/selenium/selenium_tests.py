@@ -19,7 +19,9 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 from webdriver_manager.firefox import GeckoDriverManager
 
+import psdi_data_conversion
 from psdi_data_conversion.app import start_app
+from psdi_data_conversion.testing.constants import INPUT_TEST_DATA_LOC
 
 driver_path = os.environ.get("DRIVER")
 
@@ -44,16 +46,23 @@ def wait_and_find_element(driver: WebDriver, xpath: str, by=By.XPATH) -> EC.WebE
 
 
 @pytest.fixture(scope="module", autouse=True)
-def run_app():
+def common_setup():
     """Autouse fixture which starts the app before tests and stops it afterwards"""
 
     server = Process(target=start_app)
     server.start()
 
+    # Change to the root dir of the project for running the tests, in case this was invoked elsewhere
+    old_cwd = os.getcwd()
+    os.chdir(os.path.join(psdi_data_conversion.__path__[0], ".."))
+
     yield
 
     server.terminate()
     server.join()
+
+    # Change back to the previous directory
+    os.chdir(old_cwd)
 
 
 @pytest.fixture(scope="module")
@@ -99,7 +108,7 @@ def test_cdxml_to_inchi_conversion(driver: WebDriver):
 
     test_file = "standard_test"
 
-    input_file = Path.cwd().joinpath("files", f"{test_file}.cdxml")
+    input_file = os.path.realpath(os.path.join(INPUT_TEST_DATA_LOC, f"{test_file}.cdxml"))
     output_file = Path.home().joinpath("Downloads", f"{test_file}.inchi")
     log_file = Path.home().joinpath("Downloads", f"{test_file}.log.txt")
 
