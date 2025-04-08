@@ -19,13 +19,46 @@ from unittest.mock import patch
 import py
 import pytest
 
+import psdi_data_conversion
 from psdi_data_conversion.constants import CONVERTER_DEFAULT, GLOBAL_LOG_FILENAME, LOG_NONE, OUTPUT_LOG_EXT
 from psdi_data_conversion.converter import run_converter
 from psdi_data_conversion.converters.openbabel import COORD_GEN_KEY, COORD_GEN_QUAL_KEY
 from psdi_data_conversion.dist import LINUX_LABEL, get_dist
 from psdi_data_conversion.file_io import is_archive, split_archive_ext
 from psdi_data_conversion.main import main as data_convert_main
-from psdi_data_conversion.testing.constants import INPUT_TEST_DATA_LOC
+from psdi_data_conversion.testing.constants import (INPUT_TEST_DATA_LOC_IN_PROJECT, OUTPUT_TEST_DATA_LOC_IN_PROJECT,
+                                                    TEST_DATA_LOC_IN_PROJECT)
+
+
+def get_path_in_project(filename):
+    """Get the realpath to a file contained within the project, given its project-relative path"""
+
+    old_cwd = os.getcwd()
+
+    try:
+        os.chdir(os.path.join(psdi_data_conversion.__path__[0], ".."))
+        realpath = os.path.realpath(filename)
+
+    finally:
+        # Change back to the previous directory
+        os.chdir(old_cwd)
+
+    return realpath
+
+
+def get_test_data_loc():
+    """Get the realpath of the base directory containing all data for tests"""
+    return get_path_in_project(TEST_DATA_LOC_IN_PROJECT)
+
+
+def get_input_test_data_loc():
+    """Get the realpath of the base directory containing input data for tests"""
+    return get_path_in_project(INPUT_TEST_DATA_LOC_IN_PROJECT)
+
+
+def get_output_test_data_loc():
+    """Get the realpath of the base directory containing expected output data for tests"""
+    return get_path_in_project(OUTPUT_TEST_DATA_LOC_IN_PROJECT)
 
 
 @dataclass
@@ -53,17 +86,17 @@ class ConversionTestInfo:
     @property
     def qualified_in_filename(self):
         """Get the fully-qualified name of the input file"""
-        return os.path.join(self.input_dir, self.test_spec.filename)
+        return os.path.realpath(os.path.join(self.input_dir, self.test_spec.filename))
 
     @property
     def qualified_out_filename(self):
         """Get the fully-qualified name of the output file"""
-        return os.path.join(self.output_dir, self.test_spec.out_filename)
+        return os.path.realpath(os.path.join(self.output_dir, self.test_spec.out_filename))
 
     @property
     def qualified_log_filename(self):
         """Get the fully-qualified name of the log file"""
-        return os.path.join(self.output_dir, self.test_spec.log_filename)
+        return os.path.realpath(os.path.join(self.output_dir, self.test_spec.log_filename))
 
     @property
     def qualified_global_log_filename(self):
@@ -279,9 +312,9 @@ def _run_single_test_conversion_with_library(test_spec: SingleConversionTestSpec
     """
 
     # Symlink the input file to the input directory
-    qualified_in_filename = os.path.join(input_dir, test_spec.filename)
+    qualified_in_filename = os.path.realpath(os.path.join(input_dir, test_spec.filename))
     try:
-        os.symlink(os.path.join(INPUT_TEST_DATA_LOC, test_spec.filename),
+        os.symlink(os.path.join(get_input_test_data_loc(), test_spec.filename),
                    qualified_in_filename)
     except FileExistsError:
         pass
@@ -360,9 +393,9 @@ def _run_single_test_conversion_with_cla(test_spec: SingleConversionTestSpec,
     """
 
     # Symlink the input file to the input directory
-    qualified_in_filename = os.path.join(input_dir, test_spec.filename)
+    qualified_in_filename = os.path.realpath(os.path.join(input_dir, test_spec.filename))
     try:
-        os.symlink(os.path.join(INPUT_TEST_DATA_LOC, test_spec.filename),
+        os.symlink(os.path.join(get_input_test_data_loc(), test_spec.filename),
                    qualified_in_filename)
     except FileExistsError:
         pass
@@ -392,7 +425,7 @@ def _run_single_test_conversion_with_cla(test_spec: SingleConversionTestSpec,
             # Get the success from whether or not the exit code is 0
             success = not exc_info.value.code
 
-        qualified_out_filename = os.path.join(output_dir, test_spec.out_filename)
+        qualified_out_filename = os.path.realpath(os.path.join(output_dir, test_spec.out_filename))
 
         # Determine success based on whether or not the output file exists with non-zero size
         if not os.path.isfile(qualified_out_filename) or os.path.getsize(qualified_out_filename) == 0:

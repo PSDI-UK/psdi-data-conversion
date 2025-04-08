@@ -6,7 +6,10 @@ Constants related to unit testing
 
 import os
 
-TEST_DATA_LOC = os.path.abspath("./test_data")
+# Locations relative to the root directory of the project - to ensure the files are found, tests should chdir to this
+# directory before searching for files
 
-INPUT_TEST_DATA_LOC = TEST_DATA_LOC
-OUTPUT_TEST_DATA_LOC = os.path.join(TEST_DATA_LOC, "output")
+TEST_DATA_LOC_IN_PROJECT = "./test_data"
+
+INPUT_TEST_DATA_LOC_IN_PROJECT = TEST_DATA_LOC_IN_PROJECT
+OUTPUT_TEST_DATA_LOC_IN_PROJECT = os.path.join(TEST_DATA_LOC_IN_PROJECT, "output")

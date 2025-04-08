@@ -375,17 +375,21 @@ To test the CLA and Python library, install the optional testing requirements lo
 
 ```bash
 pip install .'[test]'
-pytest
+pytest tests/python
 ```
 
 To test the local version of the web app, install the GUI testing requirements locally (which also include the standard GUI requirements and standard testing requirements), start the server, and test by executing the GUI test script:
 
 ```bash
 pip install .'[gui-test]'
-./run_local.sh & # Start the server for the web app in the background
-cd tests/selenium
-./run.sh
-kill %1 # Stop the web server - it may have a different job ID. If you don't know the job ID, you can alternatively call "fg" to bring the job to the foreground, then type CTRL+c to stop it
+pytest tests/gui
+```
+
+Both of these sets of tests can also be run together if desired through:
+
+```bash
+pip install .'[gui-test]'
+pytest
 ```
 
 ## Licencing
