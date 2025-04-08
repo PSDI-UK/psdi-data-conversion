@@ -29,5 +29,5 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install .[gui-test]
-      - name: Run Selenium tests
-        run: pytest selenium_tests.py
+      - name: Run GUI tests
+        run: pytest tests/gui

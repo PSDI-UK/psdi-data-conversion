@@ -38,7 +38,7 @@ jobs:
           pip install .[test]
       - name: Test with pytest and report coverage
         run: |
-          coverage run -m pytest; coverage report
+          coverage run -m pytest tests/python; coverage report
       - name: Lint with flake8
         run: |
           # stop the build if there are Python syntax errors or undefined names
