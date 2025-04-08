@@ -4,6 +4,7 @@
 
 import os
 import time
+from multiprocessing import Process
 
 from pathlib import Path
 import pytest
@@ -18,7 +19,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 from webdriver_manager.firefox import GeckoDriverManager
 
-from psdi_data_conversion.app import start_app, stop_app
+from psdi_data_conversion.app import start_app
 
 driver_path = os.environ.get("DRIVER")
 
@@ -46,11 +47,13 @@ def wait_and_find_element(driver: WebDriver, xpath: str, by=By.XPATH) -> EC.WebE
 def run_app():
     """Autouse fixture which starts the app before tests and stops it afterwards"""
 
-    start_app()
+    server = Process(target=start_app)
+    server.start()
 
     yield
 
-    stop_app()
+    server.terminate()
+    server.join()
 
 
 @pytest.fixture(scope="module")
