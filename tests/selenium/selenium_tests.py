@@ -18,17 +18,12 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 from webdriver_manager.firefox import GeckoDriverManager
 
-env_driver = os.environ.get("DRIVER")
-origin = os.environ.get("ORIGIN")
+driver_path = os.environ.get("DRIVER")
 
-if (env_driver is None):
+if not driver_path:
     driver_path = GeckoDriverManager().install()
-else:
-    driver_path = env_driver
 
-if (origin is None):
-    print("ORIGIN environment variable must be set.")
-    exit(1)
+origin = os.environ.get("ORIGIN", "http://127.0.0.1:5000")
 
 # Standard timeout at 10 seconds
 TIMEOUT = 10
