@@ -15,7 +15,7 @@ from tempfile import TemporaryDirectory
 from psdi_data_conversion.constants import DATETIME_RE_RAW
 from psdi_data_conversion.file_io import unpack_zip_or_tar
 from psdi_data_conversion.log_utility import string_with_placeholders_matches
-from psdi_data_conversion.testing.constants import OUTPUT_TEST_DATA_LOC
+from psdi_data_conversion.testing.constants import OUTPUT_TEST_DATA_LOC_IN_PROJECT
 from psdi_data_conversion.testing.utils import ConversionTestInfo, LibraryConversionTestInfo, check_file_match
 
 
@@ -389,6 +389,6 @@ class MatchOutputFile:
     def __call__(self, test_info: ConversionTestInfo):
         """Run the check comparing the two files"""
 
-        qualified_ex_output_filename = os.path.join(OUTPUT_TEST_DATA_LOC, self.ex_output_filename)
+        qualified_ex_output_filename = os.path.join(OUTPUT_TEST_DATA_LOC_IN_PROJECT, self.ex_output_filename)
 
         return check_file_match(test_info.qualified_out_filename, qualified_ex_output_filename)

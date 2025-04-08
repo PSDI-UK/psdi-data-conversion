@@ -21,7 +21,7 @@ from webdriver_manager.firefox import GeckoDriverManager
 
 import psdi_data_conversion
 from psdi_data_conversion.app import start_app
-from psdi_data_conversion.testing.constants import INPUT_TEST_DATA_LOC
+from psdi_data_conversion.testing.utils import get_input_test_data_loc
 
 driver_path = os.environ.get("DRIVER")
 
@@ -108,7 +108,7 @@ def test_cdxml_to_inchi_conversion(driver: WebDriver):
 
     test_file = "standard_test"
 
-    input_file = os.path.realpath(os.path.join(INPUT_TEST_DATA_LOC, f"{test_file}.cdxml"))
+    input_file = os.path.realpath(os.path.join(get_input_test_data_loc(), f"{test_file}.cdxml"))
     output_file = Path.home().joinpath("Downloads", f"{test_file}.inchi")
     log_file = Path.home().joinpath("Downloads", f"{test_file}.log.txt")
 

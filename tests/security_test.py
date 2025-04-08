@@ -13,7 +13,7 @@ from unittest.mock import patch
 import pytest
 from psdi_data_conversion.main import main
 from psdi_data_conversion.security import char_is_safe, string_is_safe
-from psdi_data_conversion.testing.constants import INPUT_TEST_DATA_LOC
+from psdi_data_conversion.testing.utils import get_input_test_data_loc
 
 
 def run_with_arg_string(s):
@@ -89,7 +89,7 @@ def test_format_arg_security(tmp_path_factory, capsys):
     input_filename = f"{test_filename_base}.{from_format}"
 
     # Symlink the input file from the test_data directory to the input directory
-    os.symlink(os.path.join(INPUT_TEST_DATA_LOC, input_filename),
+    os.symlink(os.path.join(get_input_test_data_loc(), input_filename),
                os.path.join(input_dir, input_filename))
 
     basic_arg_string = f"{input_filename} -t {to_format} -i {input_dir} -o {output_dir}"
