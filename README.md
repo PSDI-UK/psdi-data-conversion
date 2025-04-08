@@ -35,6 +35,7 @@ This is the repository for the PSDI PF2 Chemistry File Format Conversion project
 - [Testing](#testing)
 - [Troubleshooting](#troubleshooting)
   - [OSError: [Errno 24] Too many open files](#oserror-errno-24-too-many-open-files)
+  - [Errors running c2x or Atomsk converters](#errors-running-c2x-or-atomsk-converters)
 - [Licensing](#licensing)
 - [Contributors](#contributors)
 - [Funding](#funding)
@@ -424,6 +425,26 @@ ulimit -n 1024 # Or another, higher number
 First, try increasing the limit and then redo the operation which caused this error to see if this resolves it. If this does, you can make this change permanent in a few ways, the easiest of which is to add this command to your `.bashrc` file so it will be set for every new terminal session.
 
 If you see this error when the filehandle limit is already set to a high value such as 1024, this may indicate the presence of a bug in the project which causes a leaking of filehandles, so please open an issue about it, pasting the error you get and the details of your system, particularly including your current filehandle limit.
+
+### Errors running c2x or Atomsk converters
+
+We provide support for the c2x and Atomsk converters by packing binaries which support common Linux and MacOS platforms with this project, but we cannot guarantee universal support for these binaries. In particular, they may rely on dynamically-linked libraries which aren't installed on your system.
+
+Look through the error message you received for messages such as "Library not loaded" or "no such file", and see if they point to the name of a library which you can try installing. For instance, if you see that it's searching for `libquadmath.0.dylib` but not finding it, you can try installing this library. In this case, this library can be installed through apt with:
+
+```bash
+sudo apt install libquadmath0
+```
+
+or through brew via:
+
+```bash
+brew install gcc
+```
+
+Alternatively, you can run your own versions of the `c2x` and `atomsk` binaries with this project. Compile them yourself however you wish - see the projects at https://github.com/codenrx/c2x and https://github.com/pierrehirel/atomsk and follow their instructions to build a binary on your system. Once you've done so, add the binary to your `$PATH`, and this project will pick that up and use it in preference to the prepackaged binary.
+
+On the other hand, it's possible that an error of this sort will occur if you have a non-working binary of one of these converters in your `$PATH`. If this might be the case, you can try removing it and see if the prepackaged binary works for you, or else recompile it to try to fix errors.
 
 ## Licensing
 
