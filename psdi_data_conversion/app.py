@@ -267,8 +267,12 @@ def data():
 
 
 def start_app():
-    """Start the Flask app"""
+    """Start the Flask app - this requires being run from the base directory of the project, so this changes the
+    current directory to there. Anything else which changes it while the app is running may interfere with its proper
+    execution.
+    """
 
+    os.chdir(os.path.join(psdi_data_conversion.__path__[0], ".."))
     app.run()
 
 
@@ -350,9 +354,6 @@ def main():
 
         global log_level
         log_level = args.log_level
-
-    # Change directory to the base of the project
-    os.chdir(os.path.join(psdi_data_conversion.__path__[0], ".."))
 
     start_app()
 

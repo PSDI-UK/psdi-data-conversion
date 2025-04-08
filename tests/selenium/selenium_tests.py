@@ -18,6 +18,8 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 from webdriver_manager.firefox import GeckoDriverManager
 
+from psdi_data_conversion.app import start_app, stop_app
+
 driver_path = os.environ.get("DRIVER")
 
 if not driver_path:
@@ -38,6 +40,17 @@ def wait_and_find_element(driver: WebDriver, xpath: str, by=By.XPATH) -> EC.WebE
     """Finds a web element, after first waiting to ensure it's visible"""
     wait_for_element(driver, xpath, by=by)
     return driver.find_element(by, xpath)
+
+
+@pytest.fixture(scope="module", autouse=True)
+def run_app():
+    """Autouse fixture which starts the app before tests and stops it afterwards"""
+
+    start_app()
+
+    yield
+
+    stop_app()
 
 
 @pytest.fixture(scope="module")
