@@ -138,8 +138,12 @@ l_all_test_specs.append(Spec(name="Invalid Converter",
                              converter_name="INVALID",
                              expect_success=False,
                              callback=invalid_converter_callback,
+                             compatible_with_gui=False,
                              ))
-"""A test that a proper error is returned if an invalid converter is requested"""
+"""A test that a proper error is returned if an invalid converter is requested
+
+Not compatible with GUI tests, since the GUI only offers valid converters to choose from
+"""
 
 quartz_quality_note_callback = CheckLogContentsSuccess(["WARNING",
                                                         const.QUAL_NOTE_OUT_MISSING.format(const.QUAL_2D_LABEL),
@@ -165,8 +169,12 @@ output and will be lost"""
 l_all_test_specs.append(Spec(name="Cleanup input",
                              conversion_kwargs={"delete_input": True},
                              callback=CheckFileStatus(expect_input_exists=False),
+                             compatible_with_gui=False,
                              ))
-"""A test that the input file to a conversion is deleted when cleanup is requested"""
+"""A test that the input file to a conversion is deleted when cleanup is requested.
+
+Not compatible with the GUI, since the GUI can't forcibly delete files uploaded from the user's computer
+"""
 
 l_all_test_specs.append(Spec(name="Failed conversion - bad input file",
                              filename=["quartz_err.xyz", "cyclopropane_err.mol"],
@@ -204,8 +212,12 @@ l_all_test_specs.append(Spec(name="Failed conversion - invalid conversion",
                                                           expect_log_exists=None),
                                           CheckException(ex_type=FileConverterHelpException,
                                                          ex_message="is not supported")),
+                             compatible_with_gui=False,
                              ))
-"""A test that a conversion that fails due an unsupported conversion will properly fail"""
+"""A test that a conversion that fails due an unsupported conversion will properly fail.
+
+Not compatible with the GUI, since the GUI only offers valid conversions.
+"""
 
 l_all_test_specs.append(Spec(name="Failed Conversion - wrong input type",
                              filename="1NE6.mmcif",
@@ -239,12 +251,16 @@ l_all_test_specs.append(Spec(name="Max size exceeded",
                              expect_success=False,
                              callback=max_size_callback,
                              compatible_with_cla=False,
+                             compatible_with_gui=False,
                              ))
 """A set of test conversion that the maximum size constraint is properly applied. In the first test, the input file
 will be greater than the maximum size, and the test should fail as soon as it checks it. In the second test, the input
 archive is smaller than the maximum size, but the unpacked files in it are greater, so it should fail midway through.
 
 Not compatible with CLA tests, since the CLA doesn't allow the imposition of a maximum size.
+
+Not compatible with GUI tests in current setup of test implementation, which doesn't let us set env vars to control
+things like maximum size on a per-test basis. May be possible to set up in the future though
 """
 
 
