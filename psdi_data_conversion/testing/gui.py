@@ -7,14 +7,37 @@ Utilities to aid in testing of the GUI
 
 from dataclasses import dataclass
 import os
+import shutil
 from tempfile import TemporaryDirectory
 
+from pathlib import Path
+import time
 import pytest
-from psdi_data_conversion.constants import LOG_FULL
+from selenium.webdriver.common.alert import Alert
+from selenium.webdriver.common.by import By
+from selenium.webdriver.firefox.webdriver import WebDriver
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.ui import WebDriverWait
+
 from psdi_data_conversion.converters.openbabel import (COORD_GEN_KEY, COORD_GEN_QUAL_KEY, DEFAULT_COORD_GEN,
                                                        DEFAULT_COORD_GEN_QUAL)
+from psdi_data_conversion.file_io import split_archive_ext
 from psdi_data_conversion.testing.utils import (ConversionTestInfo, ConversionTestSpec, SingleConversionTestSpec,
                                                 get_input_test_data_loc)
+
+# Standard timeout at 10 seconds
+TIMEOUT = 10
+
+
+def wait_for_element(driver: WebDriver, xpath: str, by=By.XPATH):
+    """Shortcut for boilerplate to wait until a web element is visible"""
+    WebDriverWait(driver, TIMEOUT).until(EC.element_to_be_clickable((by, xpath)))
+
+
+def wait_and_find_element(driver: WebDriver, xpath: str, by=By.XPATH) -> EC.WebElement:
+    """Finds a web element, after first waiting to ensure it's visible"""
+    wait_for_element(driver, xpath, by=by)
+    return driver.find_element(by, xpath)
 
 
 @dataclass
@@ -24,7 +47,8 @@ class GuiConversionTestInfo(ConversionTestInfo):
     """
 
 
-def run_test_conversion_with_gui(test_spec: ConversionTestSpec):
+def run_test_conversion_with_gui(test_spec: ConversionTestSpec,
+                                 driver: WebDriver):
     """Runs a test conversion or series thereof through the GUI. Note that this requires the server to be started before
     this is called.
 
@@ -32,6 +56,8 @@ def run_test_conversion_with_gui(test_spec: ConversionTestSpec):
     ----------
     test_spec : ConversionTestSpec
         The specification for the test or series of tests to be run
+    driver : WebDriver
+        WebDriver to use to run the test conversion
     """
     # Make temporary directories for the input and output files to be stored in
     with TemporaryDirectory("_input") as input_dir, TemporaryDirectory("_output") as output_dir:
@@ -39,12 +65,14 @@ def run_test_conversion_with_gui(test_spec: ConversionTestSpec):
         for single_test_spec in test_spec:
             _run_single_test_conversion_with_gui(test_spec=single_test_spec,
                                                  input_dir=input_dir,
-                                                 output_dir=output_dir)
+                                                 output_dir=output_dir,
+                                                 driver=driver)
 
 
 def _run_single_test_conversion_with_gui(test_spec: SingleConversionTestSpec,
                                          input_dir: str,
-                                         output_dir: str):
+                                         output_dir: str,
+                                         driver: WebDriver):
     """Runs a single test conversion through the GUI.
 
     Parameters
@@ -55,6 +83,8 @@ def _run_single_test_conversion_with_gui(test_spec: SingleConversionTestSpec,
         A directory which can be used to store input data before uploading
     output_dir : str
         A directory which can be used to create output data after downloading
+    driver : WebDriver
+        WebDriver to use to run the test conversion
     """
 
     # Symlink the input file to the input directory
@@ -71,6 +101,7 @@ def _run_single_test_conversion_with_gui(test_spec: SingleConversionTestSpec,
                                         input_dir=input_dir,
                                         output_dir=output_dir,
                                         log_file=os.path.join(output_dir, test_spec.log_filename),
+                                        driver=driver,
                                         **test_spec.conversion_kwargs)
 
     # Compile output info for the test and call the callback function if one is provided
@@ -89,6 +120,7 @@ def run_converter_through_gui(filename: str,
                               input_dir: str,
                               output_dir: str,
                               log_file: str,
+                              driver: WebDriver,
                               **conversion_kwargs):
     """_summary_
 
@@ -109,7 +141,7 @@ def run_converter_through_gui(filename: str,
     """
 
     # Default options for conversion
-    from_format = os.path.splitext(filename)[1]
+    base_filename, from_format = split_archive_ext(filename)
     strict = True
     from_flags = None
     to_flags = None
@@ -158,4 +190,66 @@ def run_converter_through_gui(filename: str,
     if from_format.startswith("."):
         from_format = from_format[1:]
 
-    return True
+    input_file = os.path.realpath(os.path.join(input_dir, filename))
+    output_file = Path.home().joinpath("Downloads", f"{base_filename}.{to_format}")
+    log_file = Path.home().joinpath("Downloads", f"{base_filename}.log.txt")
+
+    # Remove test files from Downloads directory if they exist.
+
+    if (Path.is_file(log_file)):
+        Path.unlink(log_file)
+
+    if (Path.is_file(output_file)):
+        Path.unlink(output_file)
+
+    wait_for_element(driver, "//select[@id='fromList']/option")
+
+    # Select cdxml from the 'from' list.
+    driver.find_element(By.XPATH, f"//select[@id='fromList']/option[contains(.,'{from_format}:')]").click()
+
+    # Select InChI from the 'to' list.
+    driver.find_element(By.XPATH, f"//select[@id='toList']/option[contains(.,'{to_format}:')]").click()
+
+    # Select Open Babel from the available conversion options list.
+    driver.find_element(By.XPATH, f"//select[@id='success']/option[contains(.,'{name}')]").click()
+
+    # Click on the "Yes" button to accept the converter and go to the conversion page
+    driver.find_element(By.XPATH, "//input[@id='yesButton']").click()
+
+    # Select the input file.
+    wait_and_find_element(driver, "//input[@id='fileToUpload']").send_keys(str(input_file))
+
+    # Request the log file
+    wait_and_find_element(driver, "//input[@id='requestLog']").click()
+
+    # Request non-strict filename checking if desired
+    if not strict:
+        wait_and_find_element(driver, "//input[@id='extCheck']").click()
+
+    # Click on the "Convert" button.
+    wait_and_find_element(driver, "//input[@id='uploadButton']").click()
+
+    # Handle alert box.
+    WebDriverWait(driver, TIMEOUT).until(EC.alert_is_present())
+    Alert(driver).dismiss()
+
+    # Wait until the log file exists - on failure, the output file won't exist, but the log file always will
+    time_elapsed = 0
+    while not Path.is_file(log_file):
+        time.sleep(1)
+        time_elapsed += 1
+        if time_elapsed > TIMEOUT:
+            pytest.fail(f"Download of {output_file} and {log_file} timed out")
+
+    time.sleep(1)
+
+    if not Path.is_file(output_file):
+        success = False
+    else:
+        success = True
+
+    # Move the output file and log file to the expected locations
+    shutil.move(output_file, output_dir)
+    shutil.move(log_file, output_dir)
+
+    return success
