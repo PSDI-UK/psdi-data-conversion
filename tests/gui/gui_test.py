@@ -9,6 +9,10 @@ from multiprocessing import Process
 from pathlib import Path
 import pytest
 
+from psdi_data_conversion.testing.gui import (TIMEOUT, run_test_conversion_with_gui, wait_and_find_element,
+                                              wait_for_element)
+from psdi_data_conversion.testing.conversion_test_specs import l_gui_test_specs
+
 # Skip all tests in this module if required packages for GUI testing aren't installed
 try:
     from selenium.common.exceptions import NoSuchElementException
@@ -42,20 +46,6 @@ if not driver_path:
     driver_path = GeckoDriverManager().install()
 
 origin = os.environ.get("ORIGIN", "http://127.0.0.1:5000")
-
-# Standard timeout at 10 seconds
-TIMEOUT = 10
-
-
-def wait_for_element(driver: WebDriver, xpath: str, by=By.XPATH):
-    """Shortcut for boilerplate to wait until a web element is visible"""
-    WebDriverWait(driver, TIMEOUT).until(EC.element_to_be_clickable((by, xpath)))
-
-
-def wait_and_find_element(driver: WebDriver, xpath: str, by=By.XPATH) -> EC.WebElement:
-    """Finds a web element, after first waiting to ensure it's visible"""
-    wait_for_element(driver, xpath, by=by)
-    return driver.find_element(by, xpath)
 
 
 @pytest.fixture(scope="module", autouse=True)
@@ -173,3 +163,12 @@ def test_cdxml_to_inchi_conversion(driver: WebDriver):
 
     # Verify that the InChI file is correct.
     assert output_file.read_text().strip() == "InChI=1S/C12NO/c1-12(2)6-7-13-11-5-4-9(14-3)8-10(11)12"
+
+
+@pytest.mark.parametrize("test_spec", l_gui_test_specs,
+                         ids=lambda x: x.name)
+def test_conversions(driver, test_spec):
+    """Run all conversion tests in the defined list of test specifications
+    """
+    run_test_conversion_with_gui(test_spec=test_spec,
+                                 driver=driver)
