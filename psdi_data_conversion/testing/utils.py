@@ -120,13 +120,6 @@ class CLAConversionTestInfo(ConversionTestInfo):
 
 
 @dataclass
-class GUIConversionTestInfo(ConversionTestInfo):
-    """Information about a tested conversion, specifically for when it was tested through the GUI (the local version of
-    the web app)
-    """
-
-
-@dataclass
 class ConversionTestSpec:
     """Class providing a specification for a test file conversion.
 
@@ -474,6 +467,8 @@ def run_converter_through_cla(filename: str,
         The directory which contains the output file
     log_file : str
         The desired name of the log file
+    conversion_kwargs : Any
+        Additional arguments describing the conversion
     """
 
     # Start the argument string with the arguments we will always include
