@@ -297,6 +297,22 @@ For debugging python issues, it's recommended to install the package in editable
 pip install --editable .'[gui-test]'
 ```
 
+### Running Unit Tests
+
+The GUI unit tests require a web driver to be installed, and will install one if one isn't. To avoid repeated unnecessary API calls for the installation, you can set the environmental variable `DRIVER` when running tests to the location of your driver. This can be set to be automatically picked up by many IDEs by setting this in a `.env` file in the root of your project, e.g.:
+
+```
+DRIVER=~/.wdm/drivers/geckodriver/linux64/v0.36.0/geckodriver
+```
+
+To get the address of your driver, you can run the following in a Python terminal from within this projects virtual environment (after installing the `[gui-test]` optional dependencies):
+
+```python
+from webdriver_manager.firefox import GeckoDriverManager
+driver_path = GeckoDriverManager().install()
+print(f"Gecko driver installed to: {driver_path}")
+```
+
 ## Continuous Integration
 
 This project uses various GitHub workflows to perform Continuous Integration tasks. These can be found in the `.github/workflows` folder. The files which start with "ci-" are the directly-triggered workflows, and the files which start with "job-" are reusable workflows called by the former. These workflows handle the following tasks:
