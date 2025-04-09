@@ -40,11 +40,6 @@ except ImportError:
 import psdi_data_conversion
 from psdi_data_conversion.testing.utils import get_input_test_data_loc
 
-driver_path = os.environ.get("DRIVER")
-
-if not driver_path:
-    driver_path = GeckoDriverManager().install()
-
 origin = os.environ.get("ORIGIN", "http://127.0.0.1:5000")
 
 
@@ -71,6 +66,13 @@ def common_setup():
 @pytest.fixture(scope="module")
 def driver():
     """Get a headless Firefox web driver"""
+
+    driver_path = os.environ.get("DRIVER")
+
+    if not driver_path:
+        driver_path = GeckoDriverManager().install()
+        print(f"Gecko driver installed to {driver_path}")
+
     opts = FirefoxOptions()
     opts.add_argument("--headless")
     ff_driver = webdriver.Firefox(service=FirefoxService(driver_path),
