@@ -140,6 +140,9 @@ def run_converter_through_gui(filename: str,
         The desired name of the log file
     """
 
+    # Get just the local filename
+    filename = os.path.split(filename)[1]
+
     # Default options for conversion
     base_filename, from_format = split_archive_ext(filename)
     strict = True
