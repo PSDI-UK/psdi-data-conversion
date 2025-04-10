@@ -262,11 +262,13 @@ def run_converter_through_gui(test_spec: SingleConversionTestSpec,
     # Handle alert box.
     WebDriverWait(driver, TIMEOUT).until(EC.alert_is_present())
     alert = Alert(driver)
+    alert_text = alert.text
+    alert.dismiss()
 
-    if alert.text.startswith("ERROR:"):
-        raise FailedConversionError(alert.text)
+    if alert_text.startswith("ERROR:"):
+        raise FailedConversionError(alert_text)
 
-    Alert(driver).dismiss()
+    alert.dismiss()
 
     # Wait until the log file exists, since it's downloaded second
     time_elapsed = 0
