@@ -6,7 +6,6 @@ checked. These test specs can be used to test the same conversion in each of the
 application, and GUI.
 """
 
-from copy import deepcopy
 from psdi_data_conversion import constants as const
 from psdi_data_conversion.converters.atomsk import CONVERTER_ATO
 from psdi_data_conversion.converters.base import (FileConverterAbortException, FileConverterHelpException,
@@ -92,7 +91,8 @@ l_all_test_specs.append(Spec(name="Archive (wrong format) - GUI",
                              conversion_kwargs=[{"from_format": "pdb"},
                                                 {"from_format": "pdb", "strict": True}],
                              expect_success=[False, False],
-                             callback=CheckException(ex_message=const.ERR_WRONG_EXTENSIONS),
+                             callback=CheckException(ex_type=FileConverterInputException,
+                                                     ex_message=const.ERR_WRONG_EXTENSIONS),
                              compatible_with_library=False,
                              compatible_with_cla=False,
                              ))

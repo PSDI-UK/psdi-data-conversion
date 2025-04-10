@@ -18,6 +18,9 @@ from selenium.webdriver.firefox.webdriver import WebDriver
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 
+from psdi_data_conversion.constants import STATUS_CODE_GENERAL
+from psdi_data_conversion.converters.base import (FileConverterAbortException, FileConverterException,
+                                                  FileConverterInputException)
 from psdi_data_conversion.converters.openbabel import (COORD_GEN_KEY, COORD_GEN_QUAL_KEY, DEFAULT_COORD_GEN,
                                                        DEFAULT_COORD_GEN_QUAL)
 from psdi_data_conversion.file_io import split_archive_ext
@@ -77,11 +80,6 @@ def run_test_conversion_with_gui(test_spec: ConversionTestSpec,
             print(f"Success for test spec: {single_test_spec}")
 
 
-class FailedConversionError(RuntimeError):
-    """Class for exceptions we'll raise if we detect a failed conversion"""
-    pass
-
-
 def _run_single_test_conversion_with_gui(test_spec: SingleConversionTestSpec,
                                          input_dir: str,
                                          output_dir: str,
@@ -117,7 +115,7 @@ def _run_single_test_conversion_with_gui(test_spec: SingleConversionTestSpec,
             print(f"Unexpected exception raised for single test spec {test_spec}")
             raise
     else:
-        with pytest.raises(FailedConversionError) as exc_info:
+        with pytest.raises(FileConverterException) as exc_info:
             run_converter_through_gui(test_spec=test_spec,
                                       input_dir=input_dir,
                                       output_dir=output_dir,
@@ -266,7 +264,10 @@ def run_converter_through_gui(test_spec: SingleConversionTestSpec,
     alert.dismiss()
 
     if alert_text.startswith("ERROR:"):
-        raise FailedConversionError(alert_text)
+        # Raise an appropriate exception type depending on if it's a recognised input issue or not
+        if "unexpected exception" in alert_text:
+            raise FileConverterAbortException(STATUS_CODE_GENERAL, alert_text)
+        raise FileConverterInputException(alert_text)
 
     # Wait until the log file exists, since it's downloaded second
     time_elapsed = 0
@@ -279,8 +280,8 @@ def run_converter_through_gui(test_spec: SingleConversionTestSpec,
     time.sleep(1)
 
     if not os.path.isfile(output_file):
-        raise FailedConversionError("ERROR: No output file was produced. Log contents:\n" +
-                                    open(log_file, "r").read())
+        raise FileConverterAbortException("ERROR: No output file was produced. Log contents:\n" +
+                                          open(log_file, "r").read())
 
     # Move the output file and log file to the expected locations
     for qual_filename in output_file, log_file:
