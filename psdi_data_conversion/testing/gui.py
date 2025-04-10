@@ -268,8 +268,6 @@ def run_converter_through_gui(test_spec: SingleConversionTestSpec,
     if alert_text.startswith("ERROR:"):
         raise FailedConversionError(alert_text)
 
-    alert.dismiss()
-
     # Wait until the log file exists, since it's downloaded second
     time_elapsed = 0
     while not os.path.isfile(log_file):
