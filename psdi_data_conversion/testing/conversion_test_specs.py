@@ -22,18 +22,26 @@ from psdi_data_conversion.testing.utils import ConversionTestSpec as Spec
 l_all_test_specs: list[Spec] = []
 """All test specs defined in this file"""
 
-l_all_test_specs.append(Spec(name="Basic",
-                             filename=["1NE6.mmcif", "standard_test.cdxml",
+l_all_test_specs.append(Spec(name="Standard Single Test",
+                             filename="standard_test.cdxml",
+                             to_format="inchi",
+                             callback=MCB(CheckFileStatus(),
+                                          CheckLogContentsSuccess(),
+                                          MatchOutputFile("standard_test.inchi")),
+                             ))
+
+l_all_test_specs.append(Spec(name="Standard Multiple Tests",
+                             filename=["1NE6.mmcif",
                                        "hemoglobin.pdb", "aceticacid.mol", "nacl.cif",
                                        "hemoglobin.pdb", "hemoglobin.pdb", "nacl.cif",
                                        "hemoglobin.pdb", "hemoglobin.pdb", "nacl.cif",
                                        "ethanol.xyz"],
-                             to_format=["pdb", "inchi",
+                             to_format=["pdb",
                                         "cif", "mol2", "xyz",
                                         "cif", "xyz", "xyz",
                                         "cif", "xyz", "xyz",
                                         "cml"],
-                             converter_name=[CONVERTER_OB, CONVERTER_OB,
+                             converter_name=[CONVERTER_OB,
                                              CONVERTER_OB, CONVERTER_OB, CONVERTER_OB,
                                              CONVERTER_ATO, CONVERTER_ATO, CONVERTER_ATO,
                                              CONVERTER_C2X, CONVERTER_C2X, CONVERTER_C2X,
