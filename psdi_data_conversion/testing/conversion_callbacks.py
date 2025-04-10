@@ -16,6 +16,7 @@ from psdi_data_conversion.constants import DATETIME_RE_RAW
 from psdi_data_conversion.file_io import unpack_zip_or_tar
 from psdi_data_conversion.log_utility import string_with_placeholders_matches
 from psdi_data_conversion.testing.constants import OUTPUT_TEST_DATA_LOC_IN_PROJECT
+from psdi_data_conversion.testing.gui import GuiConversionTestInfo
 from psdi_data_conversion.testing.utils import ConversionTestInfo, LibraryConversionTestInfo, check_file_match
 
 
@@ -326,7 +327,7 @@ class CheckException:
     """Callable class which checks an exception raised for its type, status code, and message. Tests will only be
     run on tests with the python library, as that's the only route that provides exceptions."""
 
-    ex_type: type[Exception]
+    ex_type: type[Exception] | None = None
     """The expected type of the raised exception (subclasses of it will also be allowed)"""
 
     ex_message: str | None = None
@@ -339,7 +340,7 @@ class CheckException:
     def __call__(self, test_info: ConversionTestInfo) -> str:
         """Perform the check on the exception"""
 
-        if not isinstance(test_info, LibraryConversionTestInfo):
+        if not isinstance(test_info, (LibraryConversionTestInfo, GuiConversionTestInfo)):
             return ""
 
         # Confirm that an exception was indeed raised
@@ -350,7 +351,7 @@ class CheckException:
         l_errors: list[str] = []
 
         # Check the exception type
-        if not issubclass(exc_info.type, self.ex_type):
+        if self.ex_type and not issubclass(exc_info.type, self.ex_type):
             l_errors.append(f"ERROR: Raised exception is of type '{exc_info.type}', but expected '{self.ex_type}'")
 
         exc = exc_info.value

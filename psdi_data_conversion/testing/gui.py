@@ -77,6 +77,11 @@ def run_test_conversion_with_gui(test_spec: ConversionTestSpec,
             print(f"Success for test spec: {single_test_spec}")
 
 
+class FailedConversionError(RuntimeError):
+    """Class for exceptions we'll raise if we detect a failed conversion"""
+    pass
+
+
 def _run_single_test_conversion_with_gui(test_spec: SingleConversionTestSpec,
                                          input_dir: str,
                                          output_dir: str,
@@ -98,23 +103,36 @@ def _run_single_test_conversion_with_gui(test_spec: SingleConversionTestSpec,
         The address of the homepage of the testing server
     """
 
-    try:
-        success = run_converter_through_gui(test_spec=test_spec,
-                                            input_dir=input_dir,
-                                            output_dir=output_dir,
-                                            driver=driver,
-                                            origin=origin,
-                                            **test_spec.conversion_kwargs)
-    except Exception:
-        print(f"Unexpected exception raised for single test spec {test_spec}")
-        raise
+    exc_info: pytest.ExceptionInfo | None = None
+    if test_spec.expect_success:
+        try:
+            run_converter_through_gui(test_spec=test_spec,
+                                      input_dir=input_dir,
+                                      output_dir=output_dir,
+                                      driver=driver,
+                                      origin=origin,
+                                      **test_spec.conversion_kwargs)
+            success = True
+        except Exception:
+            print(f"Unexpected exception raised for single test spec {test_spec}")
+            raise
+    else:
+        with pytest.raises(FailedConversionError) as exc_info:
+            run_converter_through_gui(test_spec=test_spec,
+                                      input_dir=input_dir,
+                                      output_dir=output_dir,
+                                      driver=driver,
+                                      origin=origin,
+                                      **test_spec.conversion_kwargs)
+        success = False
 
     # Compile output info for the test and call the callback function if one is provided
     if test_spec.callback:
         test_info = GuiConversionTestInfo(test_spec=test_spec,
                                           input_dir=input_dir,
                                           output_dir=output_dir,
-                                          success=success)
+                                          success=success,
+                                          exc_info=exc_info)
         callback_msg = test_spec.callback(test_info)
         assert not callback_msg, callback_msg
 
@@ -243,9 +261,14 @@ def run_converter_through_gui(test_spec: SingleConversionTestSpec,
 
     # Handle alert box.
     WebDriverWait(driver, TIMEOUT).until(EC.alert_is_present())
+    alert = Alert(driver)
+
+    if alert.text.startswith("ERROR:"):
+        raise FailedConversionError(alert.text)
+
     Alert(driver).dismiss()
 
-    # Wait until the log file exists - on failure, the output file won't exist, but the log file always will
+    # Wait until the log file exists, since it's downloaded second
     time_elapsed = 0
     while not os.path.isfile(log_file):
         time.sleep(1)
@@ -256,9 +279,8 @@ def run_converter_through_gui(test_spec: SingleConversionTestSpec,
     time.sleep(1)
 
     if not os.path.isfile(output_file):
-        success = False
-    else:
-        success = True
+        raise FailedConversionError("ERROR: No output file was produced. Log contents:\n" +
+                                    open(log_file, "r").read())
 
     # Move the output file and log file to the expected locations
     for qual_filename in output_file, log_file:
@@ -266,6 +288,5 @@ def run_converter_through_gui(test_spec: SingleConversionTestSpec,
         target_filename = os.path.join(output_dir, base_filename)
         if os.path.isfile(target_filename):
             os.remove(target_filename)
-        shutil.move(qual_filename, target_filename)
-
-    return success
+        if os.path.isfile(qual_filename):
+            shutil.move(qual_filename, target_filename)

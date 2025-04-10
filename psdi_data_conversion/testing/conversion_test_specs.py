@@ -72,31 +72,33 @@ l_all_test_specs.append(Spec(name="Archive",
                              ))
 """A test of converting a archives of files"""
 
-wrong_format_spec = Spec(name="Archive (wrong format)",
-                         filename="caffeine-smi.zip",
-                         to_format="inchi",
-                         conversion_kwargs=[{"from_format": "pdb"},
-                                            {"from_format": "pdb", "strict": True}],
-                         expect_success=[True, False],
-                         callback=[CheckStderrContents(const.ERR_WRONG_EXTENSIONS),
-                                   CheckException(ex_type=FileConverterInputException,
-                                                  ex_message=const.ERR_WRONG_EXTENSIONS)],
-                         compatible_with_gui=False,
-                         )
+l_all_test_specs.append(Spec(name="Archive (wrong format) - Library and CLA",
+                             filename="caffeine-smi.zip",
+                             to_format="inchi",
+                             conversion_kwargs=[{"from_format": "pdb"},
+                                                {"from_format": "pdb", "strict": True}],
+                             expect_success=[True, False],
+                             callback=[CheckStderrContents(const.ERR_WRONG_EXTENSIONS),
+                                       CheckException(ex_type=FileConverterInputException,
+                                                      ex_message=const.ERR_WRONG_EXTENSIONS)],
+                             compatible_with_gui=False,
+                             ))
 """A test that if the user provides the wrong input format for files in an archive, and error will be output to stderr
 """
-l_all_test_specs.append(wrong_format_spec)
 
-wrong_format_spec_gui = deepcopy(wrong_format_spec)
+l_all_test_specs.append(Spec(name="Archive (wrong format) - GUI",
+                             filename="caffeine-smi.zip",
+                             to_format="inchi",
+                             conversion_kwargs=[{"from_format": "pdb"},
+                                                {"from_format": "pdb", "strict": True}],
+                             expect_success=[False, False],
+                             callback=CheckException(ex_message=const.ERR_WRONG_EXTENSIONS),
+                             compatible_with_library=False,
+                             compatible_with_cla=False,
+                             ))
 """A test that if the user provides the wrong input format for files in an archive - variant for the GUI test, which is
 more strict
 """
-
-wrong_format_spec_gui.expect_success = [False, False]
-wrong_format_spec_gui.compatible_with_library = False
-wrong_format_spec_gui.compatible_with_cla = False
-wrong_format_spec_gui.compatible_with_gui = True
-l_all_test_specs.append(wrong_format_spec_gui)
 
 
 l_all_test_specs.append(Spec(name="Log mode",

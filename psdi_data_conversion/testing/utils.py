@@ -83,6 +83,9 @@ class ConversionTestInfo:
     captured_stderr: str | None = None
     """Any output to stderr while the test was run"""
 
+    exc_info: pytest.ExceptionInfo | None = None
+    """If the test conversion raised an exception, that exception's info, otherwise None"""
+
     @property
     def qualified_in_filename(self):
         """Get the fully-qualified name of the input file"""
@@ -107,9 +110,6 @@ class ConversionTestInfo:
 @dataclass
 class LibraryConversionTestInfo(ConversionTestInfo):
     """Information about a tested conversion, specifically for when it was tested through a call to the library"""
-
-    exc_info: pytest.ExceptionInfo | None = None
-    """If the test conversion raised an exception, that exception's info, otherwise None"""
 
 
 @dataclass
