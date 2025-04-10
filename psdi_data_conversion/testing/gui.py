@@ -6,6 +6,7 @@ Utilities to aid in testing of the GUI
 
 
 from dataclasses import dataclass
+from itertools import product
 import os
 import shutil
 from tempfile import TemporaryDirectory
@@ -17,6 +18,7 @@ from selenium.webdriver.common.alert import Alert
 from selenium.webdriver.common.by import By
 from selenium.webdriver.firefox.webdriver import WebDriver
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.select import Select
 from selenium.webdriver.support.ui import WebDriverWait
 
 from psdi_data_conversion.constants import STATUS_CODE_GENERAL
@@ -249,7 +251,7 @@ def run_converter_through_gui(test_spec: SingleConversionTestSpec,
     if not strict:
         wait_and_find_element(driver, "//input[@id='extCheck']").click()
 
-    # Select the input file.
+    # Select the input file
     wait_and_find_element(driver, "//input[@id='fileToUpload']").send_keys(str(input_file))
 
     # An alert may be present here, which we check for using a try block
@@ -264,6 +266,33 @@ def run_converter_through_gui(test_spec: SingleConversionTestSpec,
 
     # Request the log file
     wait_and_find_element(driver, "//input[@id='requestLog']").click()
+
+    # Select appropriate format args. The args only have a text attribute, so we need to find the one that starts with
+    # each flag - since we don't have too many, iterating over all possible combinations is the easiest way
+    if from_flags:
+        e_from_flags = Select(wait_and_find_element(driver, "//select[@id='inFlags']"))
+        for flag, option in product(from_flags, e_from_flags.options):
+            if option.text.startswith(f"{flag}:"):
+                e_from_flags.select_by_visible_text(option.text)
+    if to_flags:
+        e_to_flags = Select(wait_and_find_element(driver, "//select[@id='outFlags']"))
+        for flag, option in product(to_flags, e_to_flags.options):
+            if option.text.startswith(f"{flag}:"):
+                e_to_flags.select_by_visible_text(option.text)
+    if from_options:
+        e_from_options = wait_and_find_element(driver, "//table[@id='in_argFlags']")
+        l_rows = e_from_options.find_elements(By.XPATH, "//tr")
+        for row in l_rows:
+            l_items = row.find_elements(By.XPATH, "//td")
+            cbox = l_items[0]
+            label = l_items[1]
+    if to_options:
+        e_to_options = wait_and_find_element(driver, "//table[@id='out_argFlags']")
+        l_rows = e_to_options.find_elements(By.XPATH, "//tr")
+        for row in l_rows:
+            l_items = row.find_elements(By.XPATH, "//td")
+            cbox = l_items[0]
+            label = l_items[1]
 
     # Click on the "Convert" button.
     wait_and_find_element(driver, "//input[@id='uploadButton']").click()
