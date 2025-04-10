@@ -263,7 +263,7 @@ Not compatible with the GUI, since the GUI only offers valid conversions.
 l_all_test_specs.append(Spec(name="Failed Conversion - wrong input type",
                              filename="1NE6.mmcif",
                              to_format="cif",
-                             conversion_kwargs={"from_format": "pdb"},
+                             conversion_kwargs={"from_format": "pdb", "strict": False},
                              expect_success=False,
                              callback=MCB(CheckFileStatus(expect_output_exists=False,
                                           expect_log_exists=None),
