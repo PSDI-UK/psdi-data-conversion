@@ -6,6 +6,7 @@ checked. These test specs can be used to test the same conversion in each of the
 application, and GUI.
 """
 
+from copy import deepcopy
 from psdi_data_conversion import constants as const
 from psdi_data_conversion.converters.atomsk import CONVERTER_ATO
 from psdi_data_conversion.converters.base import (FileConverterAbortException, FileConverterHelpException,
@@ -71,18 +72,33 @@ l_all_test_specs.append(Spec(name="Archive",
                              ))
 """A test of converting a archives of files"""
 
-l_all_test_specs.append(Spec(name="Archive (wrong format)",
-                             filename="caffeine-smi.zip",
-                             to_format="inchi",
-                             conversion_kwargs=[{"from_format": "pdb"},
-                                                {"from_format": "pdb", "strict": True}],
-                             expect_success=[True, False],
-                             callback=[CheckStderrContents(const.ERR_WRONG_EXTENSIONS),
-                                       CheckException(ex_type=FileConverterInputException,
-                                                      ex_message=const.ERR_WRONG_EXTENSIONS)],
-                             ))
+wrong_format_spec = Spec(name="Archive (wrong format)",
+                         filename="caffeine-smi.zip",
+                         to_format="inchi",
+                         conversion_kwargs=[{"from_format": "pdb"},
+                                            {"from_format": "pdb", "strict": True}],
+                         expect_success=[True, False],
+                         callback=[CheckStderrContents(const.ERR_WRONG_EXTENSIONS),
+                                   CheckException(ex_type=FileConverterInputException,
+                                                  ex_message=const.ERR_WRONG_EXTENSIONS)],
+                         compatible_with_gui=False,
+                         )
 """A test that if the user provides the wrong input format for files in an archive, and error will be output to stderr
 """
+l_all_test_specs.append(wrong_format_spec)
+
+# Mak
+wrong_format_spec_gui = deepcopy(wrong_format_spec)
+"""A test that if the user provides the wrong input format for files in an archive - variant for the GUI test, which is
+more strict
+"""
+
+wrong_format_spec_gui.expect_success = [False, False]
+wrong_format_spec_gui.compatible_with_library = False
+wrong_format_spec_gui.compatible_with_cla = False
+wrong_format_spec_gui.compatible_with_gui = True
+l_all_test_specs.append(wrong_format_spec_gui)
+
 
 l_all_test_specs.append(Spec(name="Log mode",
                              conversion_kwargs=[{"log_mode": const.LOG_NONE},
