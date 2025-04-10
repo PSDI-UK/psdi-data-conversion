@@ -277,7 +277,11 @@ def run_converter_through_gui(filename: str,
         success = True
 
     # Move the output file and log file to the expected locations
-    shutil.move(output_file, output_dir)
-    shutil.move(log_file, output_dir)
+    for qual_filename in output_file, log_file:
+        base_filename = os.path.split(qual_filename)[1]
+        target_filename = os.path.join(output_dir, base_filename)
+        if os.path.isfile(target_filename):
+            os.remove(target_filename)
+        shutil.move(qual_filename, target_filename)
 
     return success
