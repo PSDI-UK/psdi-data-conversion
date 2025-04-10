@@ -220,14 +220,29 @@ l_all_test_specs.append(Spec(name="Failed conversion - bad input file",
 
 quartz_error_ob_callback = CheckLogContents(["ERROR",
                                              "Problems reading an XYZ file: Could not read line #11, file error"])
-l_all_test_specs.append(Spec(name="Errors in logs",
+l_all_test_specs.append(Spec(name="Errors in logs - Library and CLA",
                              filename="quartz_err.xyz",
                              to_format="inchi",
                              converter_name=CONVERTER_OB,
                              expect_success=False,
                              callback=quartz_error_ob_callback,
+                             compatible_with_gui=False,
                              ))
-"""A test that when a conversion fails, logs are still produced and contain the expected error message"""
+"""A test that when a conversion fails in the library or CLA, logs are still produced and contain the expected error
+message"""
+
+l_all_test_specs.append(Spec(name="Errors in logs - GUI",
+                             filename="quartz_err.xyz",
+                             to_format="inchi",
+                             converter_name=CONVERTER_OB,
+                             expect_success=False,
+                             callback=CheckException(ex_type=FileConverterAbortException,
+                                                     ex_message=("Problems reading an XYZ file: Could not read line "
+                                                                 "#11, file error")),
+                             compatible_with_library=False,
+                             compatible_with_cla=False,
+                             ))
+"""A test that when a conversion fails in the GUI, the log message is output to the alert box"""
 
 l_all_test_specs.append(Spec(name="Failed conversion - invalid conversion",
                              filename=["Fapatite.ins", "nacl.mol"],
