@@ -232,13 +232,13 @@ def run_converter_through_gui(filename: str,
 
     wait_for_element(driver, "//select[@id='fromList']/option")
 
-    # Select cdxml from the 'from' list.
-    driver.find_element(By.XPATH, f"//select[@id='fromList']/option[contains(.,'{from_format}:')]").click()
+    # Select from_format from the 'from' list.
+    driver.find_element(By.XPATH, f"//select[@id='fromList']/option[starts-with(.,'{from_format}:')]").click()
 
-    # Select InChI from the 'to' list.
-    driver.find_element(By.XPATH, f"//select[@id='toList']/option[contains(.,'{to_format}:')]").click()
+    # Select to_format from the 'to' list.
+    driver.find_element(By.XPATH, f"//select[@id='toList']/option[starts-with(.,'{to_format}:')]").click()
 
-    # Select Open Babel from the available conversion options list.
+    # Select converter from the available conversion options list.
     driver.find_element(By.XPATH, f"//select[@id='success']/option[contains(.,'{name}')]").click()
 
     # Click on the "Yes" button to accept the converter and go to the conversion page
