@@ -65,6 +65,7 @@ l_all_test_specs.append(Spec(name="Archive",
                              filename=["caffeine-smi.zip",
                                        "caffeine-smi.tar",
                                        "caffeine-smi.tar.gz"],
+                             conversion_kwargs={"from_format": "pdb"},
                              to_format="inchi",
                              callback=archive_callback,
                              ))

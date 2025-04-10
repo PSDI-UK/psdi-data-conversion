@@ -10,7 +10,6 @@ import os
 import shutil
 from tempfile import TemporaryDirectory
 
-from pathlib import Path
 import time
 import pytest
 from selenium.webdriver.common.alert import Alert
@@ -87,7 +86,7 @@ def _run_single_test_conversion_with_gui(test_spec: SingleConversionTestSpec,
 
     Parameters
     ----------
-    test_spec : _SingleConversionTestSpec
+    test_spec : SingleConversionTestSpec
         The specification for the test to be run
     input_dir : str
         A directory which can be used to store input data before uploading
@@ -99,21 +98,10 @@ def _run_single_test_conversion_with_gui(test_spec: SingleConversionTestSpec,
         The address of the homepage of the testing server
     """
 
-    # Symlink the input file to the input directory
-    qualified_in_filename = os.path.realpath(os.path.join(input_dir, test_spec.filename))
     try:
-        os.symlink(os.path.join(get_input_test_data_loc(), test_spec.filename),
-                   qualified_in_filename)
-    except FileExistsError:
-        pass
-
-    try:
-        success = run_converter_through_gui(filename=qualified_in_filename,
-                                            to_format=test_spec.to_format,
-                                            name=test_spec.converter_name,
+        success = run_converter_through_gui(test_spec=test_spec,
                                             input_dir=input_dir,
                                             output_dir=output_dir,
-                                            log_file=os.path.join(output_dir, test_spec.log_filename),
                                             driver=driver,
                                             origin=origin,
                                             **test_spec.conversion_kwargs)
@@ -131,12 +119,9 @@ def _run_single_test_conversion_with_gui(test_spec: SingleConversionTestSpec,
         assert not callback_msg, callback_msg
 
 
-def run_converter_through_gui(filename: str,
-                              to_format: str,
-                              name: str,
+def run_converter_through_gui(test_spec: SingleConversionTestSpec,
                               input_dir: str,
                               output_dir: str,
-                              log_file: str,
                               driver: WebDriver,
                               origin: str,
                               **conversion_kwargs):
@@ -144,18 +129,12 @@ def run_converter_through_gui(filename: str,
 
     Parameters
     ----------
-    filename : str
-        The (unqualified) name of the input file to be converted
-    to_format : str
-        The format to convert the input file to
-    name : str
-        The name of the converter to use
+    test_spec : SingleConversionTestSpec
+        The specification for the test to be run
     input_dir : str
         The directory which contains the input file
     output_dir : str
         The directory which contains the output file
-    log_file : str
-        The desired name of the log file
     driver : WebDriver
         The WebDriver to be used for testing
     origin : str
@@ -163,7 +142,7 @@ def run_converter_through_gui(filename: str,
     """
 
     # Get just the local filename
-    filename = os.path.split(filename)[1]
+    filename = os.path.split(test_spec.filename)[1]
 
     # Default options for conversion
     base_filename, from_format = split_archive_ext(filename)
@@ -215,17 +194,22 @@ def run_converter_through_gui(filename: str,
     if from_format.startswith("."):
         from_format = from_format[1:]
 
-    input_file = os.path.realpath(os.path.join(input_dir, filename))
-    output_file = Path.home().joinpath("Downloads", f"{base_filename}.{to_format}")
-    log_file = Path.home().joinpath("Downloads", f"{base_filename}.log.txt")
+    # Set up the input file where we expect it to be
+    source_input_file = os.path.realpath(os.path.join(get_input_test_data_loc(), test_spec.filename))
+    input_file = os.path.realpath(os.path.join(input_dir, test_spec.filename))
+    if (os.path.isfile(input_file)):
+        os.remove(input_file)
+    os.symlink(source_input_file, input_file)
 
     # Remove test files from Downloads directory if they exist.
 
-    if (Path.is_file(log_file)):
-        Path.unlink(log_file)
+    log_file = os.path.realpath(os.path.join(os.path.expanduser("~/Downloads"), test_spec.log_filename))
+    if (os.path.isfile(log_file)):
+        os.remove(log_file)
 
-    if (Path.is_file(output_file)):
-        Path.unlink(output_file)
+    output_file = os.path.realpath(os.path.join(os.path.expanduser("~/Downloads"), test_spec.out_filename))
+    if (os.path.isfile(output_file)):
+        os.remove(output_file)
 
     # Get the homepage
     driver.get(f"{origin}/")
@@ -236,10 +220,10 @@ def run_converter_through_gui(filename: str,
     driver.find_element(By.XPATH, f"//select[@id='fromList']/option[starts-with(.,'{from_format}:')]").click()
 
     # Select to_format from the 'to' list.
-    driver.find_element(By.XPATH, f"//select[@id='toList']/option[starts-with(.,'{to_format}:')]").click()
+    driver.find_element(By.XPATH, f"//select[@id='toList']/option[starts-with(.,'{test_spec.to_format}:')]").click()
 
     # Select converter from the available conversion options list.
-    driver.find_element(By.XPATH, f"//select[@id='success']/option[contains(.,'{name}')]").click()
+    driver.find_element(By.XPATH, f"//select[@id='success']/option[contains(.,'{test_spec.converter_name}')]").click()
 
     # Click on the "Yes" button to accept the converter and go to the conversion page
     driver.find_element(By.XPATH, "//input[@id='yesButton']").click()
@@ -263,7 +247,7 @@ def run_converter_through_gui(filename: str,
 
     # Wait until the log file exists - on failure, the output file won't exist, but the log file always will
     time_elapsed = 0
-    while not Path.is_file(log_file):
+    while not os.path.isfile(log_file):
         time.sleep(1)
         time_elapsed += 1
         if time_elapsed > TIMEOUT:
@@ -271,7 +255,7 @@ def run_converter_through_gui(filename: str,
 
     time.sleep(1)
 
-    if not Path.is_file(output_file):
+    if not os.path.isfile(output_file):
         success = False
     else:
         success = True
