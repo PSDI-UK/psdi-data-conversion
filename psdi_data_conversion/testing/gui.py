@@ -12,6 +12,7 @@ from tempfile import TemporaryDirectory
 
 import time
 import pytest
+from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.common.alert import Alert
 from selenium.webdriver.common.by import By
 from selenium.webdriver.firefox.webdriver import WebDriver
@@ -250,6 +251,16 @@ def run_converter_through_gui(test_spec: SingleConversionTestSpec,
 
     # Select the input file.
     wait_and_find_element(driver, "//input[@id='fileToUpload']").send_keys(str(input_file))
+
+    # An alert may be present here, which we check for using a try block
+    try:
+        WebDriverWait(driver, 0.1).until(EC.alert_is_present())
+        alert = Alert(driver)
+        alert_text = alert.text
+        alert.dismiss()
+        raise FileConverterInputException(alert_text)
+    except TimeoutException:
+        pass
 
     # Request the log file
     wait_and_find_element(driver, "//input[@id='requestLog']").click()

@@ -272,13 +272,30 @@ l_all_test_specs.append(Spec(name="Failed Conversion - wrong input type",
                              ))
 """A test that a conversion which fails due to the wrong input file type will properly fail"""
 
-l_all_test_specs.append(Spec(name="Large files",
+l_all_test_specs.append(Spec(name="Large files - Library and CLA",
                              filename=["ch3cl-esp.cub", "benzyne.molden", "periodic_dmol3.outmol",
                                        "fullRhinovirus.pdb"],
                              to_format=["cdjson", "dmol", "mol", "cif"],
                              converter_name=[CONVERTER_OB, CONVERTER_OB, CONVERTER_OB, CONVERTER_C2X],
                              callback=CheckFileStatus(),
+                             compatible_with_gui=False,
                              ))
+"""Test that the library and CLA can process large files properly"""
+
+l_all_test_specs.append(Spec(name="Large files - GUI",
+                             filename=["ch3cl-esp.cub", "benzyne.molden",
+                                       "periodic_dmol3.outmol", "fullRhinovirus.pdb"],
+                             to_format=["cdjson", "dmol", "mol", "cif"],
+                             converter_name=[CONVERTER_OB, CONVERTER_OB, CONVERTER_OB, CONVERTER_C2X],
+                             expect_success=[False, False, False, True],
+                             callback=[CheckException(ex_type=FileConverterInputException),
+                                       CheckException(ex_type=FileConverterInputException),
+                                       CheckException(ex_type=FileConverterInputException),
+                                       CheckFileStatus()],
+                             compatible_with_library=False,
+                             compatible_with_cla=False,
+                             ))
+"""Test that the GUI will refuse to process large files with OB, but will with other converters"""
 
 max_size_callback = MCB(CheckFileStatus(expect_output_exists=False),
                         CheckLogContents("file exceeds maximum size"),
