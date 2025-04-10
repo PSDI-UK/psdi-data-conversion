@@ -1,3 +1,6 @@
+# WARNING: Renaming this file will cause the deployment to PyPI and TestPyPI to fail until the new name is added to both
+# in their Trusted Publisher Management (available in the in the Publishing section of the project management page)
+#
 # Workflow for continuous integration tasks triggered on push to release
 
 name: CI - Release
