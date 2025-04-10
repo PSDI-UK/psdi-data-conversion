@@ -63,10 +63,12 @@ def run_test_conversion_with_gui(test_spec: ConversionTestSpec,
     with TemporaryDirectory("_input") as input_dir, TemporaryDirectory("_output") as output_dir:
         # Iterate over the test spec to run each individual test it defines
         for single_test_spec in test_spec:
+            print(f"Running single test spec: {single_test_spec}")
             _run_single_test_conversion_with_gui(test_spec=single_test_spec,
                                                  input_dir=input_dir,
                                                  output_dir=output_dir,
                                                  driver=driver)
+            print(f"Success for test spec: {single_test_spec}")
 
 
 def _run_single_test_conversion_with_gui(test_spec: SingleConversionTestSpec,
@@ -95,14 +97,18 @@ def _run_single_test_conversion_with_gui(test_spec: SingleConversionTestSpec,
     except FileExistsError:
         pass
 
-    success = run_converter_through_gui(filename=qualified_in_filename,
-                                        to_format=test_spec.to_format,
-                                        name=test_spec.converter_name,
-                                        input_dir=input_dir,
-                                        output_dir=output_dir,
-                                        log_file=os.path.join(output_dir, test_spec.log_filename),
-                                        driver=driver,
-                                        **test_spec.conversion_kwargs)
+    try:
+        success = run_converter_through_gui(filename=qualified_in_filename,
+                                            to_format=test_spec.to_format,
+                                            name=test_spec.converter_name,
+                                            input_dir=input_dir,
+                                            output_dir=output_dir,
+                                            log_file=os.path.join(output_dir, test_spec.log_filename),
+                                            driver=driver,
+                                            **test_spec.conversion_kwargs)
+    except Exception:
+        print(f"Unexpected exception raised for single test spec {test_spec}")
+        raise
 
     # Compile output info for the test and call the callback function if one is provided
     if test_spec.callback:
