@@ -680,6 +680,7 @@ def run_from_args(args: ConvertArgs):
         try:
             conversion_result = run_converter(filename=qualified_filename,
                                               to_format=args.to_format,
+                                              out_format=args.to_format, # Temporary fix
                                               from_format=args.from_format,
                                               name=args.name,
                                               data=data,

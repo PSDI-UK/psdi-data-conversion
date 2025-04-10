@@ -8,7 +8,8 @@
 import { disableDirtyForms, cleanDirtyForms, initDirtyForms, loadServiceMode, loadProductionMode } from "./common.js";
 import {
     getInputFormats, getOutputFormats, getOutputFormatsForInputFormat,
-    getInputFormatsForOutputFormat, getConverters, getConverterByName, getLevelChemInfo
+    getInputFormatsForOutputFormat, getConverters, getConverterByName,
+    getLevelChemInfo, getFormatByExtensionAndNote
 } from "./data.js";
 
 var fromList = new Array(),
@@ -36,6 +37,7 @@ $(document).ready(function () {
     sessionStorage.setItem("in_str", "");
     sessionStorage.setItem("out_str", "");
     sessionStorage.setItem("success", "");
+    sessionStorage.setItem("out_format", "");
 
     loadServiceMode();
     loadProductionMode();
@@ -110,6 +112,9 @@ function populateConversionSuccess(event) {
             fromList = [];
             $("#fromList").children().remove();
             getInputFormatsForOutputFormat(out_ext, out_note).then(formats => populateList(formats, "from"));
+            getFormatByExtensionAndNote(out_ext, out_note).then((outFormat) => {
+                sessionStorage.setItem("out_format", `${outFormat.format}`);
+            });
         }
 
         getConverters(in_ext, in_note, out_ext, out_note).then((converters) => {
@@ -259,7 +264,7 @@ function getQuality(entries, rows) {
     for (var i = 0; i < rows.length; i++) {
         const support = rows[i].substring(0, 10) == "Open Babel" ||
             rows[i].substring(0, 6) == "Atomsk" ||
-            rows[i].substring(0, 3) == "c2x" ? " supported on this site." : " not supported on this site." //" (supported)" : " (unsupported)";
+            rows[i].substring(0, 3) == "c2x" ? " supported on this site." : " not supported on this site.";
 
         $("#success").append($('<option>', { text: rows[i] + support + qualityText }));
     }

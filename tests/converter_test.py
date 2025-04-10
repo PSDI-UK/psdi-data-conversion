@@ -56,23 +56,27 @@ def test_envvars():
 
     converter = C2xFileConverter(filename="1NE6.mmcif",
                                  to_format="pdb",
+                                 out_format="pdb",
                                  use_envvars=True,)
     assert math.isclose(converter.max_file_size, test_file_size*const.MEGABYTE)
 
     # And also check it isn't applied if we don't ask it to use envvars
     converter_no_ev = C2xFileConverter(filename="1NE6.mmcif",
                                        to_format="pdb",
+                                       out_format="pdb",
                                        use_envvars=False,)
     assert not math.isclose(converter_no_ev.max_file_size, test_file_size*const.MEGABYTE)
 
     # And check that OB uses its own EV
     converter = OBFileConverter(filename="1NE6.mmcif",
                                 to_format="pdb",
+                                out_format="pdb",
                                 use_envvars=True,)
     assert not math.isclose(converter.max_file_size, test_file_size*const.MEGABYTE)
 
     os.environ[const.MAX_FILESIZE_OB_EV] = str(test_file_size)
     converter = OBFileConverter(filename="1NE6.mmcif",
                                 to_format="pdb",
+                                out_format="pdb",
                                 use_envvars=True,)
     assert math.isclose(converter.max_file_size, test_file_size*const.MEGABYTE)

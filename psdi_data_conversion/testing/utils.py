@@ -109,6 +109,9 @@ class ConversionTestSpec:
     """The name of the input file, relative to the input test data location, or a list thereof"""
 
     to_format: str | Iterable[str] = "pdb"
+    """The extension to test converting the input file to, or a list thereof"""
+
+    out_format: str | Iterable[str] = "pdb"
     """The format to test converting the input file to, or a list thereof"""
 
     converter_name: str | Iterable[str] = CONVERTER_DEFAULT
@@ -209,6 +212,9 @@ class SingleConversionTestSpec:
     """The name of the input file, relative to the input test data location"""
 
     to_format: str
+    """The extension to test converting the input file to"""
+
+    out_format: str
     """The format to test converting the input file to"""
 
     converter_name: str | Iterable[str] = CONVERTER_DEFAULT
@@ -294,6 +300,7 @@ def _run_single_test_conversion_with_library(test_spec: SingleConversionTestSpec
         if test_spec.expect_success:
             run_converter(filename=qualified_in_filename,
                           to_format=test_spec.to_format,
+                          out_format=test_spec.out_format,
                           name=test_spec.converter_name,
                           upload_dir=input_dir,
                           download_dir=output_dir,
@@ -303,6 +310,7 @@ def _run_single_test_conversion_with_library(test_spec: SingleConversionTestSpec
             with pytest.raises(Exception) as exc_info:
                 run_converter(filename=qualified_in_filename,
                               to_format=test_spec.to_format,
+                              out_format=test_spec.out_format,
                               name=test_spec.converter_name,
                               upload_dir=input_dir,
                               download_dir=output_dir,
@@ -374,6 +382,7 @@ def _run_single_test_conversion_with_cla(test_spec: SingleConversionTestSpec,
         if test_spec.expect_success:
             run_converter_through_cla(filename=qualified_in_filename,
                                       to_format=test_spec.to_format,
+                                      out_format=test_spec.out_format,
                                       name=test_spec.converter_name,
                                       input_dir=input_dir,
                                       output_dir=output_dir,
@@ -384,6 +393,7 @@ def _run_single_test_conversion_with_cla(test_spec: SingleConversionTestSpec,
             with pytest.raises(SystemExit) as exc_info:
                 run_converter_through_cla(filename=qualified_in_filename,
                                           to_format=test_spec.to_format,
+                                          out_format=test_spec.out_format,
                                           name=test_spec.converter_name,
                                           input_dir=input_dir,
                                           output_dir=output_dir,
@@ -417,6 +427,7 @@ def _run_single_test_conversion_with_cla(test_spec: SingleConversionTestSpec,
 
 def run_converter_through_cla(filename: str,
                               to_format: str,
+                              out_format: str,
                               name: str,
                               input_dir: str,
                               output_dir: str,
@@ -432,6 +443,8 @@ def run_converter_through_cla(filename: str,
     filename : str
         The (unqualified) name of the input file to be converted
     to_format : str
+        The extension to convert the input file to
+    out_format : str
         The format to convert the input file to
     name : str
         The name of the converter to use

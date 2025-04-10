@@ -3,6 +3,7 @@
         {
             "id": 1,
             "extension": "cif",
+            "format": "cif",
             "note": "Crystallographic Information File",
             "composition": null,
             "connections": null,
@@ -12,6 +13,7 @@
         {
             "id": 2,
             "extension": "ins",
+            "format": "ins",
             "note": "RIETAN-FP",
             "composition": null,
             "connections": null,
@@ -21,6 +23,7 @@
         {
             "id": 3,
             "extension": "ins",
+            "format": "ins",
             "note": "ShelX",
             "composition": true,
             "connections": true,
@@ -30,7 +33,8 @@
         {
             "id": 4,
             "extension": "res",
-            "note": "ShelX",
+            "format": "shelx",
+            "note": "ShelX (specifically ShelX-97 for c2x)",
             "composition": null,
             "connections": null,
             "two_dim": null,
@@ -39,6 +43,7 @@
         {
             "id": 5,
             "extension": "png",
+            "format": "png",
             "note": "Portable Network Graphics",
             "composition": null,
             "connections": null,
@@ -48,6 +53,7 @@
         {
             "id": 6,
             "extension": "sdf",
+            "format": "mol",
             "note": "MDL MOL",
             "composition": true,
             "connections": true,
@@ -57,6 +63,7 @@
         {
             "id": 7,
             "extension": "cml",
+            "format": "cml",
             "note": "Chemical Markup Language",
             "composition": true,
             "connections": true,
@@ -66,6 +73,7 @@
         {
             "id": 8,
             "extension": "inchi",
+            "format": "inchi",
             "note": "InChI",
             "composition": true,
             "connections": true,
@@ -75,6 +83,7 @@
         {
             "id": 9,
             "extension": "pdb",
+            "format": "pdb",
             "note": "Protein Data Bank",
             "composition": true,
             "connections": true,
@@ -84,6 +93,7 @@
         {
             "id": 10,
             "extension": "RAW",
+            "format": "RAW",
             "note": "Thermo MSD",
             "composition": null,
             "connections": null,
@@ -93,6 +103,7 @@
         {
             "id": 11,
             "extension": "ocb",
+            "format": "ocb",
             "note": "Open Chromatography Binary",
             "composition": null,
             "connections": null,
@@ -102,6 +113,7 @@
         {
             "id": 12,
             "extension": "CDF",
+            "format": "CDF",
             "note": "ANDI/AIA Chromatogram",
             "composition": null,
             "connections": null,
@@ -111,6 +123,7 @@
         {
             "id": 13,
             "extension": "animl",
+            "format": "animl",
             "note": "AnIML MSD Chromatogram",
             "composition": null,
             "connections": null,
@@ -120,6 +133,7 @@
         {
             "id": 14,
             "extension": "JDX",
+            "format": "JDX",
             "note": "JCAMP-DX MSD Chromatogram",
             "composition": null,
             "connections": null,
@@ -129,6 +143,7 @@
         {
             "id": 15,
             "extension": "mgf",
+            "format": "mgf",
             "note": "MGF Chromatogram",
             "composition": null,
             "connections": null,
@@ -138,6 +153,7 @@
         {
             "id": 16,
             "extension": "mzML",
+            "format": "mzML",
             "note": "Chromatogram",
             "composition": null,
             "connections": null,
@@ -147,6 +163,7 @@
         {
             "id": 17,
             "extension": "gamin",
+            "format": "gamin",
             "note": "GAMESS Input",
             "composition": true,
             "connections": false,
@@ -156,6 +173,7 @@
         {
             "id": 18,
             "extension": "mol",
+            "format": "mol",
             "note": "MDL MOL",
             "composition": true,
             "connections": true,
@@ -165,6 +183,7 @@
         {
             "id": 19,
             "extension": "smi",
+            "format": "smi",
             "note": "SMILES",
             "composition": true,
             "connections": true,
@@ -174,6 +193,7 @@
         {
             "id": 20,
             "extension": "xyz",
+            "format": "xyz",
             "note": "XYZ cartesian coordinates",
             "composition": true,
             "connections": false,
@@ -183,6 +203,7 @@
         {
             "id": 21,
             "extension": "mol2",
+            "format": "mol2",
             "note": "Sybyl Mol2",
             "composition": true,
             "connections": true,
@@ -192,6 +213,7 @@
         {
             "id": 22,
             "extension": "castep",
+            "format": "castep",
             "note": "CASTEP",
             "composition": true,
             "connections": true,
@@ -201,6 +223,7 @@
         {
             "id": 23,
             "extension": "adf",
+            "format": "adf",
             "note": "ADF cartesian input",
             "composition": true,
             "connections": false,
@@ -210,6 +233,7 @@
         {
             "id": 24,
             "extension": "csr",
+            "format": "csr",
             "note": "Accelrys/MSI Quanta CSR",
             "composition": null,
             "connections": null,
@@ -219,6 +243,7 @@
         {
             "id": 25,
             "extension": "mcdl",
+            "format": "mcdl",
             "note": "MCDL",
             "composition": null,
             "connections": null,
@@ -228,6 +253,7 @@
         {
             "id": 26,
             "extension": "pc",
+            "format": "pc",
             "note": "PubChem",
             "composition": null,
             "connections": null,
@@ -237,6 +263,7 @@
         {
             "id": 27,
             "extension": "wln",
+            "format": "wln",
             "note": "Wiswesser Line Notation",
             "composition": true,
             "connections": true,
@@ -246,6 +273,7 @@
         {
             "id": 28,
             "extension": "abinit",
+            "format": "abinit",
             "note": "ABINIT output",
             "composition": false,
             "connections": false,
@@ -255,6 +283,7 @@
         {
             "id": 29,
             "extension": "acesin",
+            "format": "acesin",
             "note": "ACES input",
             "composition": null,
             "connections": null,
@@ -264,6 +293,7 @@
         {
             "id": 30,
             "extension": "acesout",
+            "format": "acesout",
             "note": "ACES output",
             "composition": true,
             "connections": true,
@@ -273,6 +303,7 @@
         {
             "id": 31,
             "extension": "adfband",
+            "format": "adfband",
             "note": "ADF Band output",
             "composition": null,
             "connections": null,
@@ -282,6 +313,7 @@
         {
             "id": 32,
             "extension": "adfdftb",
+            "format": "adfdftb",
             "note": "ADF DFTB output",
             "composition": null,
             "connections": null,
@@ -291,6 +323,7 @@
         {
             "id": 33,
             "extension": "msi",
+            "format": "msi",
             "note": "Accelrys/MSI Cerius II MSI",
             "composition": null,
             "connections": null,
@@ -300,6 +333,7 @@
         {
             "id": 34,
             "extension": "adfout",
+            "format": "adfout",
             "note": "ADF output",
             "composition": null,
             "connections": null,
@@ -309,6 +343,7 @@
         {
             "id": 35,
             "extension": "smy",
+            "format": "smy",
             "note": "SMILES using Smiley parser",
             "composition": true,
             "connections": true,
@@ -318,6 +353,7 @@
         {
             "id": 36,
             "extension": "c09out",
+            "format": "c09out",
             "note": "Crystal 09 output",
             "composition": null,
             "connections": null,
@@ -327,6 +363,7 @@
         {
             "id": 37,
             "extension": "dalmol",
+            "format": "dalmol",
             "note": "DALTON input",
             "composition": true,
             "connections": false,
@@ -336,6 +373,7 @@
         {
             "id": 38,
             "extension": "dallog",
+            "format": "dallog",
             "note": "DALTON output",
             "composition": null,
             "connections": null,
@@ -345,6 +383,7 @@
         {
             "id": 39,
             "extension": "dmol",
+            "format": "dmol",
             "note": "DMol3 coordinates",
             "composition": true,
             "connections": false,
@@ -354,6 +393,7 @@
         {
             "id": 40,
             "extension": "exyz",
+            "format": "exyz",
             "note": "Extended XYZ cartesian coordinates",
             "composition": true,
             "connections": false,
@@ -363,6 +403,7 @@
         {
             "id": 41,
             "extension": "fhiaims",
+            "format": "fhiaims",
             "note": "FHIaims XYZ",
             "composition": true,
             "connections": false,
@@ -372,6 +413,7 @@
         {
             "id": 42,
             "extension": "fh",
+            "format": "fh",
             "note": "Fenske-Hall Z-Matrix",
             "composition": true,
             "connections": false,
@@ -381,6 +423,7 @@
         {
             "id": 43,
             "extension": "c3d2",
+            "format": "c3d2",
             "note": "Chem3D Cartesian 2",
             "composition": true,
             "connections": true,
@@ -390,6 +433,7 @@
         {
             "id": 44,
             "extension": "gam",
+            "format": "gam",
             "note": "GAMESS Output",
             "composition": true,
             "connections": true,
@@ -399,6 +443,7 @@
         {
             "id": 45,
             "extension": "gukin",
+            "format": "gukin",
             "note": "GAMESS-UK Input",
             "composition": true,
             "connections": false,
@@ -408,6 +453,7 @@
         {
             "id": 46,
             "extension": "gukout",
+            "format": "gukout",
             "note": "GAMESS-UK Output",
             "composition": true,
             "connections": true,
@@ -417,6 +463,7 @@
         {
             "id": 47,
             "extension": "got",
+            "format": "got",
             "note": "General Utility Lattice Package (GULP)",
             "composition": null,
             "connections": null,
@@ -426,6 +473,7 @@
         {
             "id": 48,
             "extension": "gau",
+            "format": "gau",
             "note": "Gaussian Input",
             "composition": true,
             "connections": false,
@@ -435,6 +483,7 @@
         {
             "id": 49,
             "extension": "gal",
+            "format": "gal",
             "note": "Gaussian Output",
             "composition": true,
             "connections": false,
@@ -444,6 +493,7 @@
         {
             "id": 50,
             "extension": "gzmat",
+            "format": "gzmat",
             "note": "Gaussian Z-Matrix Input",
             "composition": true,
             "connections": false,
@@ -453,6 +503,7 @@
         {
             "id": 51,
             "extension": "fch",
+            "format": "fch",
             "note": "Gaussian formatted checkpoint file",
             "composition": true,
             "connections": false,
@@ -462,6 +513,7 @@
         {
             "id": 52,
             "extension": "cof",
+            "format": "cof",
             "note": "Culgi object file",
             "composition": true,
             "connections": true,
@@ -471,6 +523,7 @@
         {
             "id": 53,
             "extension": "hin",
+            "format": "hin",
             "note": "HyperChem HIN",
             "composition": true,
             "connections": true,
@@ -480,6 +533,7 @@
         {
             "id": 54,
             "extension": "jin",
+            "format": "jin",
             "note": "Jaguar input",
             "composition": true,
             "connections": false,
@@ -489,6 +543,7 @@
         {
             "id": 55,
             "extension": "jout",
+            "format": "jout",
             "note": "Jaguar output",
             "composition": null,
             "connections": null,
@@ -498,6 +553,7 @@
         {
             "id": 56,
             "extension": "mop",
+            "format": "mop",
             "note": "MOPAC Cartesian",
             "composition": true,
             "connections": false,
@@ -507,6 +563,7 @@
         {
             "id": 57,
             "extension": "mopin",
+            "format": "mopin",
             "note": "MOPAC Internal",
             "composition": null,
             "connections": null,
@@ -516,6 +573,7 @@
         {
             "id": 58,
             "extension": "moo",
+            "format": "moo",
             "note": "MOPAC Output",
             "composition": null,
             "connections": null,
@@ -525,6 +583,7 @@
         {
             "id": 59,
             "extension": "mpqc",
+            "format": "mpqc",
             "note": "MPQC output",
             "composition": null,
             "connections": null,
@@ -534,6 +593,7 @@
         {
             "id": 60,
             "extension": "mpqcin",
+            "format": "mpqcin",
             "note": "MPQC simplified input",
             "composition": null,
             "connections": null,
@@ -543,6 +603,7 @@
         {
             "id": 61,
             "extension": "mp",
+            "format": "mp",
             "note": "Molpro input",
             "composition": true,
             "connections": false,
@@ -552,6 +613,7 @@
         {
             "id": 62,
             "extension": "mpo",
+            "format": "mpo",
             "note": "Molpro output",
             "composition": null,
             "connections": null,
@@ -561,6 +623,7 @@
         {
             "id": 63,
             "extension": "nw",
+            "format": "nw",
             "note": "NWChem input",
             "composition": true,
             "connections": false,
@@ -570,6 +633,7 @@
         {
             "id": 64,
             "extension": "nwo",
+            "format": "nwo",
             "note": "NWChem output",
             "composition": true,
             "connections": false,
@@ -579,6 +643,7 @@
         {
             "id": 65,
             "extension": "orcainp",
+            "format": "orcainp",
             "note": "ORCA input",
             "composition": true,
             "connections": false,
@@ -588,6 +653,7 @@
         {
             "id": 66,
             "extension": "orca",
+            "format": "orca",
             "note": "ORCA output",
             "composition": null,
             "connections": null,
@@ -597,6 +663,7 @@
         {
             "id": 67,
             "extension": "pwscf",
+            "format": "pwscf",
             "note": "PWscf",
             "composition": null,
             "connections": null,
@@ -606,6 +673,7 @@
         {
             "id": 68,
             "extension": "pqs",
+            "format": "pqs",
             "note": "Parallel Quantum Solutions",
             "composition": null,
             "connections": null,
@@ -615,6 +683,7 @@
         {
             "id": 69,
             "extension": "qcin",
+            "format": "qcin",
             "note": "Q-Chem input",
             "composition": true,
             "connections": false,
@@ -624,6 +693,7 @@
         {
             "id": 70,
             "extension": "qcout",
+            "format": "qcout",
             "note": "Q-Chem output",
             "composition": null,
             "connections": null,
@@ -633,6 +703,7 @@
         {
             "id": 71,
             "extension": "tmol",
+            "format": "tmol",
             "note": "TurboMole Coordinate",
             "composition": true,
             "connections": false,
@@ -642,6 +713,7 @@
         {
             "id": 72,
             "extension": "aoforce",
+            "format": "aoforce",
             "note": "TurboMole AOFORCE output",
             "composition": null,
             "connections": null,
@@ -651,6 +723,7 @@
         {
             "id": 73,
             "extension": "POSCAR",
+            "format": "vasp",
             "note": "VASP atomic positions",
             "composition": true,
             "connections": false,
@@ -660,6 +733,7 @@
         {
             "id": 74,
             "extension": "zin",
+            "format": "zin",
             "note": "ZINDO input",
             "composition": true,
             "connections": false,
@@ -669,6 +743,7 @@
         {
             "id": 75,
             "extension": "fps",
+            "format": "fps",
             "note": "FPS text fingerprint (Dalke)",
             "composition": null,
             "connections": null,
@@ -678,6 +753,7 @@
         {
             "id": 76,
             "extension": "fs",
+            "format": "fs",
             "note": "Fastsearch",
             "composition": null,
             "connections": null,
@@ -687,6 +763,7 @@
         {
             "id": 77,
             "extension": "fpt",
+            "format": "fpt",
             "note": "Fingerprint",
             "composition": null,
             "connections": null,
@@ -696,6 +773,7 @@
         {
             "id": 78,
             "extension": "acr",
+            "format": "acr",
             "note": "CaRIne ASCII Crystal (ACR)",
             "composition": null,
             "connections": null,
@@ -705,6 +783,7 @@
         {
             "id": 79,
             "extension": "cssr",
+            "format": "cssr",
             "note": "CSD CSSR",
             "composition": true,
             "connections": true,
@@ -714,6 +793,7 @@
         {
             "id": 80,
             "extension": "alc",
+            "format": "alc",
             "note": "Alchemy",
             "composition": null,
             "connections": null,
@@ -723,6 +803,7 @@
         {
             "id": 81,
             "extension": "fract",
+            "format": "fract",
             "note": "Free Form Fractional",
             "composition": true,
             "connections": false,
@@ -732,6 +813,7 @@
         {
             "id": 82,
             "extension": "mcif",
+            "format": "mcif",
             "note": "Macromolecular Crystallography Info",
             "composition": true,
             "connections": false,
@@ -741,6 +823,7 @@
         {
             "id": 83,
             "extension": "pos",
+            "format": "pos",
             "note": "POS cartesian coordinates",
             "composition": true,
             "connections": false,
@@ -750,6 +833,7 @@
         {
             "id": 84,
             "extension": "box",
+            "format": "box",
             "note": "Dock 3.5 Box",
             "composition": false,
             "connections": true,
@@ -759,6 +843,7 @@
         {
             "id": 85,
             "extension": "bs",
+            "format": "bs",
             "note": "Ball and Stick",
             "composition": true,
             "connections": true,
@@ -768,6 +853,7 @@
         {
             "id": 86,
             "extension": "cmlr",
+            "format": "cmlr",
             "note": "CML Reaction",
             "composition": true,
             "connections": true,
@@ -777,6 +863,7 @@
         {
             "id": 87,
             "extension": "rxn",
+            "format": "rxn",
             "note": "MDL RXN",
             "composition": true,
             "connections": true,
@@ -786,6 +873,7 @@
         {
             "id": 88,
             "extension": "rinchi",
+            "format": "rinchi",
             "note": "RInChI",
             "composition": true,
             "connections": true,
@@ -795,6 +883,7 @@
         {
             "id": 89,
             "extension": "rsmi",
+            "format": "rsmi",
             "note": "Reaction SMILES",
             "composition": true,
             "connections": true,
@@ -804,6 +893,7 @@
         {
             "id": 90,
             "extension": "ascii",
+            "format": "ascii",
             "note": "ASCII",
             "composition": null,
             "connections": null,
@@ -813,6 +903,7 @@
         {
             "id": 91,
             "extension": "c3d1",
+            "format": "c3d1",
             "note": "Chem3D Cartesian 1",
             "composition": true,
             "connections": true,
@@ -822,6 +913,7 @@
         {
             "id": 92,
             "extension": "pov",
+            "format": "pov",
             "note": "POV-Ray input",
             "composition": true,
             "connections": true,
@@ -831,6 +923,7 @@
         {
             "id": 93,
             "extension": "paint",
+            "format": "paint",
             "note": "Painter",
             "composition": null,
             "connections": null,
@@ -840,6 +933,7 @@
         {
             "id": 94,
             "extension": "svg",
+            "format": "svg",
             "note": "Scalable Vector Graphics",
             "composition": null,
             "connections": null,
@@ -849,6 +943,7 @@
         {
             "id": 95,
             "extension": "cdxml",
+            "format": "cdxml",
             "note": "ChemDraw CDXML",
             "composition": null,
             "connections": null,
@@ -858,6 +953,7 @@
         {
             "id": 96,
             "extension": "ct",
+            "format": "ct",
             "note": "ChemDraw Connection Table",
             "composition": true,
             "connections": true,
@@ -867,6 +963,7 @@
         {
             "id": 97,
             "extension": "crk2d",
+            "format": "crk2d",
             "note": "Chemical Resource Kit diagram (2D)",
             "composition": null,
             "connections": null,
@@ -876,6 +973,7 @@
         {
             "id": 98,
             "extension": "crk3d",
+            "format": "crk3d",
             "note": "Chemical Resource Kit diagram (3D)",
             "composition": null,
             "connections": null,
@@ -885,6 +983,7 @@
         {
             "id": 99,
             "extension": "gpr",
+            "format": "gpr",
             "note": "Ghemical",
             "composition": null,
             "connections": null,
@@ -894,6 +993,7 @@
         {
             "id": 100,
             "extension": "mae",
+            "format": "mae",
             "note": "Maestro (Schr\u00f6dinger Software)",
             "composition": null,
             "connections": null,
@@ -903,6 +1003,7 @@
         {
             "id": 101,
             "extension": "mold",
+            "format": "mold",
             "note": "Molden",
             "composition": null,
             "connections": null,
@@ -912,6 +1013,7 @@
         {
             "id": 102,
             "extension": "pcm",
+            "format": "pcm",
             "note": "PCModel",
             "composition": null,
             "connections": null,
@@ -921,6 +1023,7 @@
         {
             "id": 103,
             "extension": "unixyz",
+            "format": "unixyz",
             "note": "UniChem XYZ",
             "composition": true,
             "connections": false,
@@ -930,6 +1033,7 @@
         {
             "id": 104,
             "extension": "vmol",
+            "format": "vmol",
             "note": "ViewMol",
             "composition": null,
             "connections": null,
@@ -939,6 +1043,7 @@
         {
             "id": 105,
             "extension": "xsf",
+            "format": "xsf",
             "note": "XCrySDen Structure Format",
             "composition": true,
             "connections": false,
@@ -948,6 +1053,7 @@
         {
             "id": 106,
             "extension": "yob",
+            "format": "yob",
             "note": "YASARA.org YOB",
             "composition": null,
             "connections": null,
@@ -957,6 +1063,7 @@
         {
             "id": 107,
             "extension": "ck",
+            "format": "ck",
             "note": "ChemKin",
             "composition": null,
             "connections": null,
@@ -966,6 +1073,7 @@
         {
             "id": 108,
             "extension": "tdd",
+            "format": "tdd",
             "note": "Thermo (NASA polynomials)",
             "composition": null,
             "connections": null,
@@ -975,6 +1083,7 @@
         {
             "id": 109,
             "extension": "prep",
+            "format": "prep",
             "note": "Amber Prep",
             "composition": null,
             "connections": null,
@@ -984,6 +1093,7 @@
         {
             "id": 110,
             "extension": "pdbqt",
+            "format": "pdbqt",
             "note": "AutoDock PDBQT",
             "composition": null,
             "connections": null,
@@ -993,6 +1103,7 @@
         {
             "id": 111,
             "extension": "CONFIG",
+            "format": "CONFIG",
             "note": "DL-POLY CONFIG",
             "composition": null,
             "connections": null,
@@ -1002,6 +1113,7 @@
         {
             "id": 112,
             "extension": "HISTORY",
+            "format": "HISTORY",
             "note": "DL-POLY HISTORY",
             "composition": null,
             "connections": null,
@@ -1011,6 +1123,7 @@
         {
             "id": 113,
             "extension": "gro",
+            "format": "gro",
             "note": "GRO (Gromacs)",
             "composition": null,
             "connections": null,
@@ -1020,6 +1133,7 @@
         {
             "id": 114,
             "extension": "gr96",
+            "format": "gr96",
             "note": "GROMOS96",
             "composition": null,
             "connections": null,
@@ -1029,6 +1143,7 @@
         {
             "id": 115,
             "extension": "lpmd",
+            "format": "lpmd",
             "note": "LPMD (atomic configuration)",
             "composition": null,
             "connections": null,
@@ -1038,6 +1153,7 @@
         {
             "id": 116,
             "extension": "POSFF",
+            "format": "POSFF",
             "note": "MDFF",
             "composition": null,
             "connections": null,
@@ -1047,6 +1163,7 @@
         {
             "id": 117,
             "extension": "mmd",
+            "format": "mmd",
             "note": "MacroModel",
             "composition": null,
             "connections": null,
@@ -1056,6 +1173,7 @@
         {
             "id": 118,
             "extension": "siesta",
+            "format": "siesta",
             "note": "SIESTA",
             "composition": null,
             "connections": null,
@@ -1065,6 +1183,7 @@
         {
             "id": 119,
             "extension": "lmpdat",
+            "format": "lmpdat",
             "note": "LAMMPS data",
             "composition": null,
             "connections": null,
@@ -1074,6 +1193,7 @@
         {
             "id": 120,
             "extension": "txyz",
+            "format": "txyz",
             "note": "TINKER XYZ (molecular mechanics)",
             "composition": null,
             "connections": null,
@@ -1083,6 +1203,7 @@
         {
             "id": 121,
             "extension": "xtc",
+            "format": "xtc",
             "note": "XTC (GROMACS trajectories)",
             "composition": false,
             "connections": false,
@@ -1092,6 +1213,7 @@
         {
             "id": 122,
             "extension": "t41",
+            "format": "t41",
             "note": "ADF TAPE41 text files",
             "composition": null,
             "connections": null,
@@ -1101,6 +1223,7 @@
         {
             "id": 123,
             "extension": "cub",
+            "format": "cube",
             "note": "Gaussian cube",
             "composition": null,
             "connections": null,
@@ -1110,6 +1233,7 @@
         {
             "id": 124,
             "extension": "dx",
+            "format": "dx",
             "note": "APBS OpenDX cube (IBM)",
             "composition": null,
             "connections": null,
@@ -1119,6 +1243,7 @@
         {
             "id": 125,
             "extension": "pointcloud",
+            "format": "pointcloud",
             "note": "Point cloud on VDW surface",
             "composition": null,
             "connections": null,
@@ -1128,6 +1253,7 @@
         {
             "id": 126,
             "extension": "stl",
+            "format": "stl",
             "note": "STL 3D-printing (STereoLithography)",
             "composition": null,
             "connections": null,
@@ -1137,6 +1263,7 @@
         {
             "id": 127,
             "extension": "cdjson",
+            "format": "cdjson",
             "note": "ChemDoodle JSON",
             "composition": true,
             "connections": true,
@@ -1146,6 +1273,7 @@
         {
             "id": 128,
             "extension": "pcjson",
+            "format": "pcjson",
             "note": "PubChem JSON (PUG REST service)",
             "composition": null,
             "connections": null,
@@ -1155,6 +1283,7 @@
         {
             "id": 129,
             "extension": "msms",
+            "format": "msms",
             "note": "M.F. Sanner's MSMS input",
             "composition": null,
             "connections": null,
@@ -1164,6 +1293,7 @@
         {
             "id": 130,
             "extension": "fa",
+            "format": "fa",
             "note": "FASTA (genetic sequences)",
             "composition": null,
             "connections": null,
@@ -1173,6 +1303,7 @@
         {
             "id": 131,
             "extension": "pqr",
+            "format": "pqr",
             "note": "PQR",
             "composition": null,
             "connections": null,
@@ -1182,6 +1313,7 @@
         {
             "id": 132,
             "extension": "feat",
+            "format": "feat",
             "note": "Feature",
             "composition": null,
             "connections": null,
@@ -1191,6 +1323,7 @@
         {
             "id": 133,
             "extension": "fix",
+            "format": "fix",
             "note": "SMILES FIX",
             "composition": true,
             "connections": true,
@@ -1200,6 +1333,7 @@
         {
             "id": 134,
             "extension": "xed",
+            "format": "xed",
             "note": "XED",
             "composition": null,
             "connections": null,
@@ -1209,6 +1343,7 @@
         {
             "id": 135,
             "extension": "copy",
+            "format": "copy",
             "note": "Copy raw text",
             "composition": null,
             "connections": null,
@@ -1218,6 +1353,7 @@
         {
             "id": 136,
             "extension": "xml",
+            "format": "xml",
             "note": "General XML",
             "composition": true,
             "connections": true,
@@ -1227,6 +1363,7 @@
         {
             "id": 137,
             "extension": "dat",
+            "format": "dat",
             "note": "Generic Output file",
             "composition": null,
             "connections": null,
@@ -1236,6 +1373,7 @@
         {
             "id": 138,
             "extension": "mpd",
+            "format": "mpd",
             "note": "MolPrint2D",
             "composition": null,
             "connections": null,
@@ -1245,6 +1383,7 @@
         {
             "id": 139,
             "extension": "mna",
+            "format": "mna",
             "note": "Multilevel Neighborhoods of Atoms (MNA)",
             "composition": null,
             "connections": null,
@@ -1254,6 +1393,7 @@
         {
             "id": 140,
             "extension": "molreport",
+            "format": "molreport",
             "note": "Open Babel molecule report",
             "composition": true,
             "connections": true,
@@ -1263,6 +1403,7 @@
         {
             "id": 141,
             "extension": "report",
+            "format": "report",
             "note": "Open Babel report",
             "composition": true,
             "connections": true,
@@ -1272,6 +1413,7 @@
         {
             "id": 142,
             "extension": "fsa",
+            "format": "fsa",
             "note": "FASTA (genetic sequences)",
             "composition": null,
             "connections": null,
@@ -1281,6 +1423,7 @@
         {
             "id": 143,
             "extension": "text",
+            "format": "text",
             "note": "Read and write raw text",
             "composition": null,
             "connections": null,
@@ -1290,6 +1433,7 @@
         {
             "id": 144,
             "extension": "txt",
+            "format": "txt",
             "note": "Title",
             "composition": null,
             "connections": null,
@@ -1299,6 +1443,7 @@
         {
             "id": 145,
             "extension": "cacint",
+            "format": "cacint",
             "note": "Cacao Internal",
             "composition": null,
             "connections": null,
@@ -1308,6 +1453,7 @@
         {
             "id": 146,
             "extension": "mrv",
+            "format": "cml",
             "note": "Chemical Markup Language",
             "composition": true,
             "connections": true,
@@ -1317,6 +1463,7 @@
         {
             "id": 147,
             "extension": "mdl",
+            "format": "mol",
             "note": "MDL MOL",
             "composition": true,
             "connections": true,
@@ -1326,6 +1473,7 @@
         {
             "id": 148,
             "extension": "sd",
+            "format": "mol",
             "note": "MDL MOL",
             "composition": true,
             "connections": true,
@@ -1335,6 +1483,7 @@
         {
             "id": 149,
             "extension": "ent",
+            "format": "pdb",
             "note": "Protein Data Bank",
             "composition": true,
             "connections": true,
@@ -1344,6 +1493,7 @@
         {
             "id": 150,
             "extension": "smiles",
+            "format": "smiles",
             "note": "SMILES",
             "composition": true,
             "connections": true,
@@ -1353,6 +1503,7 @@
         {
             "id": 151,
             "extension": "ml2",
+            "format": "ml2",
             "note": "Sybyl Mol2",
             "composition": true,
             "connections": true,
@@ -1362,6 +1513,7 @@
         {
             "id": 152,
             "extension": "sy2",
+            "format": "sy2",
             "note": "Sybyl Mol2",
             "composition": true,
             "connections": true,
@@ -1371,6 +1523,7 @@
         {
             "id": 153,
             "extension": "log",
+            "format": "log",
             "note": "Generic Output file",
             "composition": null,
             "connections": null,
@@ -1380,6 +1533,7 @@
         {
             "id": 154,
             "extension": "out",
+            "format": "out",
             "note": "Generic Output file",
             "composition": null,
             "connections": null,
@@ -1389,6 +1543,7 @@
         {
             "id": 155,
             "extension": "output",
+            "format": "output",
             "note": "Generic Output file",
             "composition": null,
             "connections": null,
@@ -1398,6 +1553,7 @@
         {
             "id": 156,
             "extension": "arc",
+            "format": "arc",
             "note": "Accelrys/MSI Biosym/Insight II CAR",
             "composition": true,
             "connections": true,
@@ -1407,6 +1563,7 @@
         {
             "id": 157,
             "extension": "cac",
+            "format": "cac",
             "note": "CAChe MolStruct",
             "composition": true,
             "connections": true,
@@ -1416,6 +1573,7 @@
         {
             "id": 158,
             "extension": "outmol",
+            "format": "outmol",
             "note": "DMol3 coordinates",
             "composition": true,
             "connections": false,
@@ -1425,6 +1583,7 @@
         {
             "id": 159,
             "extension": "inp",
+            "format": "inp",
             "note": "GAMESS Input",
             "composition": true,
             "connections": false,
@@ -1434,6 +1593,7 @@
         {
             "id": 160,
             "extension": "gamess",
+            "format": "gamess",
             "note": "GAMESS Output",
             "composition": true,
             "connections": true,
@@ -1443,6 +1603,7 @@
         {
             "id": 161,
             "extension": "gamout",
+            "format": "gamout",
             "note": "GAMESS Output",
             "composition": true,
             "connections": true,
@@ -1452,6 +1613,7 @@
         {
             "id": 162,
             "extension": "com",
+            "format": "com",
             "note": "Gaussian Input",
             "composition": true,
             "connections": false,
@@ -1461,6 +1623,7 @@
         {
             "id": 163,
             "extension": "gjc",
+            "format": "gjc",
             "note": "Gaussian Input",
             "composition": true,
             "connections": false,
@@ -1470,6 +1633,7 @@
         {
             "id": 164,
             "extension": "gjf",
+            "format": "gjf",
             "note": "Gaussian Input",
             "composition": true,
             "connections": false,
@@ -1479,6 +1643,7 @@
         {
             "id": 165,
             "extension": "g03",
+            "format": "g03",
             "note": "Gaussian Output",
             "composition": true,
             "connections": false,
@@ -1488,6 +1653,7 @@
         {
             "id": 166,
             "extension": "g09",
+            "format": "g09",
             "note": "Gaussian Output",
             "composition": true,
             "connections": false,
@@ -1497,6 +1663,7 @@
         {
             "id": 167,
             "extension": "g16",
+            "format": "g16",
             "note": "Gaussian Output",
             "composition": true,
             "connections": false,
@@ -1506,6 +1673,7 @@
         {
             "id": 168,
             "extension": "g92",
+            "format": "g92",
             "note": "Gaussian Output",
             "composition": true,
             "connections": false,
@@ -1515,6 +1683,7 @@
         {
             "id": 169,
             "extension": "g94",
+            "format": "g94",
             "note": "Gaussian Output",
             "composition": true,
             "connections": false,
@@ -1524,6 +1693,7 @@
         {
             "id": 170,
             "extension": "g98",
+            "format": "g98",
             "note": "Gaussian Output",
             "composition": true,
             "connections": false,
@@ -1533,6 +1703,7 @@
         {
             "id": 171,
             "extension": "fchk",
+            "format": "fchk",
             "note": "Gaussian formatted checkpoint file",
             "composition": true,
             "connections": false,
@@ -1542,6 +1713,7 @@
         {
             "id": 172,
             "extension": "fck",
+            "format": "fck",
             "note": "Gaussian formatted checkpoint file",
             "composition": true,
             "connections": false,
@@ -1551,6 +1723,7 @@
         {
             "id": 173,
             "extension": "mopcrt",
+            "format": "mopcrt",
             "note": "MOPAC Cartesian",
             "composition": true,
             "connections": false,
@@ -1560,6 +1733,7 @@
         {
             "id": 174,
             "extension": "mpc",
+            "format": "mpc",
             "note": "MOPAC Cartesian",
             "composition": true,
             "connections": false,
@@ -1569,6 +1743,7 @@
         {
             "id": 175,
             "extension": "mopout",
+            "format": "mopout",
             "note": "MOPAC Output",
             "composition": null,
             "connections": null,
@@ -1578,6 +1753,7 @@
         {
             "id": 176,
             "extension": "CONTCAR",
+            "format": "CONTCAR",
             "note": "VASP",
             "composition": true,
             "connections": false,
@@ -1587,6 +1763,7 @@
         {
             "id": 177,
             "extension": "VASP",
+            "format": "VASP",
             "note": "VASP",
             "composition": true,
             "connections": false,
@@ -1596,6 +1773,7 @@
         {
             "id": 178,
             "extension": "mmcif",
+            "format": "mmcif",
             "note": "Macromolecular Crystallographic Info",
             "composition": true,
             "connections": false,
@@ -1605,6 +1783,7 @@
         {
             "id": 179,
             "extension": "maegz",
+            "format": "maegz",
             "note": "Maestro (Schr\u00f6dinger Software)",
             "composition": null,
             "connections": null,
@@ -1614,6 +1793,7 @@
         {
             "id": 180,
             "extension": "molden",
+            "format": "molden",
             "note": "Molden",
             "composition": null,
             "connections": null,
@@ -1623,6 +1803,7 @@
         {
             "id": 181,
             "extension": "molf",
+            "format": "molf",
             "note": "Molden",
             "composition": null,
             "connections": null,
@@ -1632,6 +1813,7 @@
         {
             "id": 182,
             "extension": "axsf",
+            "format": "axsf",
             "note": "XCrySDen Structure Format",
             "composition": true,
             "connections": false,
@@ -1641,6 +1823,7 @@
         {
             "id": 183,
             "extension": "therm",
+            "format": "therm",
             "note": "Thermo (NASA polynomials)",
             "composition": null,
             "connections": null,
@@ -1650,6 +1833,7 @@
         {
             "id": 184,
             "extension": "CONTFF",
+            "format": "CONTFF",
             "note": "MDFF",
             "composition": null,
             "connections": null,
@@ -1659,6 +1843,7 @@
         {
             "id": 185,
             "extension": "MDFF",
+            "format": "MDFF",
             "note": "MDFF",
             "composition": null,
             "connections": null,
@@ -1668,6 +1853,7 @@
         {
             "id": 186,
             "extension": "mmod",
+            "format": "mmod",
             "note": "MacroModel",
             "composition": null,
             "connections": null,
@@ -1677,6 +1863,7 @@
         {
             "id": 187,
             "extension": "cube",
+            "format": "cube",
             "note": "Gaussian cube",
             "composition": null,
             "connections": null,
@@ -1686,6 +1873,7 @@
         {
             "id": 188,
             "extension": "fasta",
+            "format": "fasta",
             "note": "FASTA (genetic sequences)",
             "composition": null,
             "connections": null,
@@ -1695,6 +1883,7 @@
         {
             "id": 189,
             "extension": "bgf",
+            "format": "bgf",
             "note": "MSI BGF",
             "composition": true,
             "connections": true,
@@ -1704,6 +1893,7 @@
         {
             "id": 190,
             "extension": "car",
+            "format": "car",
             "note": "Accelrys/MSI Biosym/Insight II CAR",
             "composition": true,
             "connections": true,
@@ -1713,6 +1903,7 @@
         {
             "id": 191,
             "extension": "ccc",
+            "format": "ccc",
             "note": "CCC",
             "composition": null,
             "connections": null,
@@ -1722,6 +1913,7 @@
         {
             "id": 192,
             "extension": "cht",
+            "format": "cht",
             "note": "Chemtool",
             "composition": null,
             "connections": null,
@@ -1731,6 +1923,7 @@
         {
             "id": 193,
             "extension": "caccrt",
+            "format": "caccrt",
             "note": "Cacao Cartesian",
             "composition": true,
             "connections": true,
@@ -1740,6 +1933,7 @@
         {
             "id": 194,
             "extension": "can",
+            "format": "can",
             "note": "Canonical SMILES",
             "composition": true,
             "connections": true,
@@ -1749,6 +1943,7 @@
         {
             "id": 195,
             "extension": "cache",
+            "format": "cache",
             "note": "CAChe MolStruct",
             "composition": true,
             "connections": true,
@@ -1758,6 +1953,7 @@
         {
             "id": 196,
             "extension": "inchikey",
+            "format": "inchikey",
             "note": "InChIKey",
             "composition": false,
             "connections": false,
@@ -1767,6 +1963,7 @@
         {
             "id": 197,
             "extension": "cfg",
+            "format": "cfg",
             "note": "AtomEye configuration (and QSTEM input)",
             "composition": null,
             "connections": null,
@@ -1776,6 +1973,7 @@
         {
             "id": 198,
             "extension": "dd",
+            "format": "dd",
             "note": "ddplot",
             "composition": null,
             "connections": null,
@@ -1785,6 +1983,7 @@
         {
             "id": 199,
             "extension": "vesta",
+            "format": "vesta",
             "note": "VESTA",
             "composition": null,
             "connections": null,
@@ -1794,6 +1993,7 @@
         {
             "id": 200,
             "extension": "in",
+            "format": "abinit",
             "note": "ABINIT Input",
             "composition": null,
             "connections": null,
@@ -1803,6 +2003,7 @@
         {
             "id": 201,
             "extension": "COORAT",
+            "format": "COORAT",
             "note": "Mixed-Basis Pseudopotential (MBPP)",
             "composition": null,
             "connections": null,
@@ -1812,6 +2013,7 @@
         {
             "id": 202,
             "extension": "d12",
+            "format": "d12",
             "note": "CRYSTAL input",
             "composition": null,
             "connections": null,
@@ -1821,6 +2023,7 @@
         {
             "id": 203,
             "extension": "OUTCAR",
+            "format": "OUTCAR",
             "note": "VASP output",
             "composition": null,
             "connections": null,
@@ -1830,6 +2033,7 @@
         {
             "id": 204,
             "extension": "pw",
+            "format": "pw",
             "note": "Quantum Espresso PWscf input",
             "composition": null,
             "connections": null,
@@ -1839,6 +2043,7 @@
         {
             "id": 205,
             "extension": "out",
+            "format": "out",
             "note": "Quantum Espresso PWscf output",
             "composition": null,
             "connections": null,
@@ -1848,6 +2053,7 @@
         {
             "id": 206,
             "extension": "fdf",
+            "format": "fdf",
             "note": "SIESTA Flexible Data Format",
             "composition": null,
             "connections": null,
@@ -1857,6 +2063,7 @@
         {
             "id": 207,
             "extension": "xv",
+            "format": "xv",
             "note": "SIESTA XV",
             "composition": null,
             "connections": null,
@@ -1866,6 +2073,7 @@
         {
             "id": 208,
             "extension": "bop",
+            "format": "bop",
             "note": "Bond-Order Potential (BOP)",
             "composition": null,
             "connections": null,
@@ -1875,6 +2083,7 @@
         {
             "id": 209,
             "extension": "bx",
+            "format": "bx",
             "note": "BOPfox",
             "composition": null,
             "connections": null,
@@ -1884,6 +2093,7 @@
         {
             "id": 210,
             "extension": "gin",
+            "format": "gin",
             "note": "General Utility Lattice Package (GULP) input",
             "composition": null,
             "connections": null,
@@ -1893,6 +2103,7 @@
         {
             "id": 211,
             "extension": "grs",
+            "format": "grs",
             "note": "General Utility Lattice Package (GULP) input",
             "composition": null,
             "connections": null,
@@ -1902,6 +2113,7 @@
         {
             "id": 212,
             "extension": "res",
+            "format": "res",
             "note": "General Utility Lattice Package (GULP) input",
             "composition": null,
             "connections": null,
@@ -1911,6 +2123,7 @@
         {
             "id": 213,
             "extension": "imd",
+            "format": "imd",
             "note": "IMD (Molecular Dynamics configuration)",
             "composition": null,
             "connections": null,
@@ -1920,6 +2133,7 @@
         {
             "id": 214,
             "extension": "lmc",
+            "format": "lmc",
             "note": "LAMMPS custom dump",
             "composition": null,
             "connections": null,
@@ -1929,6 +2143,7 @@
         {
             "id": 215,
             "extension": "lmp",
+            "format": "lmp",
             "note": "LAMMPS data",
             "composition": null,
             "connections": null,
@@ -1938,6 +2153,7 @@
         {
             "id": 216,
             "extension": "mol",
+            "format": "mol",
             "note": "MOLDY",
             "composition": null,
             "connections": null,
@@ -1947,6 +2163,7 @@
         {
             "id": 217,
             "extension": "xmd",
+            "format": "xmd",
             "note": "XMD",
             "composition": null,
             "connections": null,
@@ -1956,6 +2173,7 @@
         {
             "id": 218,
             "extension": "cel",
+            "format": "cel",
             "note": "Dr Probe Cell",
             "composition": null,
             "connections": null,
@@ -1965,6 +2183,7 @@
         {
             "id": 219,
             "extension": "txt",
+            "format": "txt",
             "note": "JEMS",
             "composition": null,
             "connections": null,
@@ -1974,6 +2193,7 @@
         {
             "id": 220,
             "extension": "atsk",
+            "format": "atsk",
             "note": "Atomsk binary",
             "composition": null,
             "connections": null,
@@ -1983,6 +2203,7 @@
         {
             "id": 221,
             "extension": "csv",
+            "format": "csv",
             "note": "Comma-separated values",
             "composition": null,
             "connections": null,
@@ -1992,6 +2213,7 @@
         {
             "id": 222,
             "extension": "dat",
+            "format": "dat",
             "note": "Data columns",
             "composition": null,
             "connections": null,
@@ -2001,6 +2223,7 @@
         {
             "id": 223,
             "extension": "str",
+            "format": "str",
             "note": "PDFFIT structure",
             "composition": null,
             "connections": null,
@@ -2010,6 +2233,7 @@
         {
             "id": 224,
             "extension": "stru",
+            "format": "stru",
             "note": "PDFFIT structure",
             "composition": null,
             "connections": null,
@@ -2019,6 +2243,7 @@
         {
             "id": 225,
             "extension": "sxyz",
+            "format": "sxyz",
             "note": "Special XYZ cartesian coordinates",
             "composition": null,
             "connections": null,
@@ -2028,6 +2253,7 @@
         {
             "id": 226,
             "extension": "abi",
+            "format": "abinit",
             "note": "ABINIT input",
             "composition": null,
             "connections": null,
@@ -2037,6 +2263,7 @@
         {
             "id": 227,
             "extension": "bands",
+            "format": "bands",
             "note": "CASTEP",
             "composition": null,
             "connections": null,
@@ -2046,6 +2273,7 @@
         {
             "id": 228,
             "extension": "cst_esp",
+            "format": "cst_esp",
             "note": "CASTEP potential",
             "composition": null,
             "connections": null,
@@ -2055,6 +2283,7 @@
         {
             "id": 229,
             "extension": "dat",
+            "format": "one",
             "note": "Onetep cartesian and fractional",
             "composition": null,
             "connections": null,
@@ -2064,6 +2293,7 @@
         {
             "id": 230,
             "extension": "den_fmt",
+            "format": "den_fmt",
             "note": "CASTEP formatted density",
             "composition": null,
             "connections": null,
@@ -2073,6 +2303,7 @@
         {
             "id": 231,
             "extension": "EIG",
+            "format": "EIG",
             "note": "ABINIT eigenvalues",
             "composition": null,
             "connections": null,
@@ -2082,6 +2313,7 @@
         {
             "id": 232,
             "extension": "EIG",
+            "format": "EIG",
             "note": "SIESTA eigenvalues",
             "composition": null,
             "connections": null,
@@ -2091,6 +2323,7 @@
         {
             "id": 233,
             "extension": "elf",
+            "format": "elf",
             "note": "CASTEP ELF",
             "composition": null,
             "connections": null,
@@ -2100,6 +2333,7 @@
         {
             "id": 234,
             "extension": "elf_fmt",
+            "format": "elf_fmt",
             "note": "CASTEP ELF",
             "composition": null,
             "connections": null,
@@ -2109,6 +2343,7 @@
         {
             "id": 235,
             "extension": "geom",
+            "format": "geom",
             "note": "CASTEP",
             "composition": null,
             "connections": null,
@@ -2118,6 +2353,7 @@
         {
             "id": 236,
             "extension": "in",
+            "format": "qe",
             "note": "Quantum Espresso input",
             "composition": null,
             "connections": null,
@@ -2127,6 +2363,7 @@
         {
             "id": 237,
             "extension": "kp",
+            "format": "kp",
             "note": "SIESTA kpoints",
             "composition": null,
             "connections": null,
@@ -2136,6 +2373,7 @@
         {
             "id": 238,
             "extension": "KP",
+            "format": "KP",
             "note": "SIESTA kpoints",
             "composition": null,
             "connections": null,
@@ -2145,7 +2383,8 @@
         {
             "id": 239,
             "extension": "pdbx",
-            "note": "PDBX (mmCIF)",
+            "format": "pdbx",
+            "note": "PDBx",
             "composition": null,
             "connections": null,
             "two_dim": null,
@@ -2154,6 +2393,7 @@
         {
             "id": 240,
             "extension": "pot_fmt",
+            "format": "pot_fmt",
             "note": "CASTEP",
             "composition": null,
             "connections": null,
@@ -2163,6 +2403,7 @@
         {
             "id": 241,
             "extension": "rho",
+            "format": "rho",
             "note": "SIESTA RHO",
             "composition": null,
             "connections": null,
@@ -2172,6 +2413,7 @@
         {
             "id": 242,
             "extension": "RHO",
+            "format": "RHO",
             "note": "SIESTA RHO",
             "composition": null,
             "connections": null,
@@ -2181,6 +2423,7 @@
         {
             "id": 243,
             "extension": "vh",
+            "format": "vh",
             "note": "SIESTA potential",
             "composition": null,
             "connections": null,
@@ -2190,6 +2433,7 @@
         {
             "id": 244,
             "extension": "VH",
+            "format": "VH",
             "note": "SIESTA potential",
             "composition": null,
             "connections": null,
@@ -2199,6 +2443,7 @@
         {
             "id": 245,
             "extension": "vt",
+            "format": "vt",
             "note": "SIESTA potential",
             "composition": null,
             "connections": null,
@@ -2208,6 +2453,7 @@
         {
             "id": 246,
             "extension": "VT",
+            "format": "VT",
             "note": "SIESTA potential",
             "composition": null,
             "connections": null,
@@ -2217,6 +2463,7 @@
         {
             "id": 247,
             "extension": "xml",
+            "format": "xml",
             "note": "Quantum Espresso PWscf output",
             "composition": null,
             "connections": null,
@@ -2226,6 +2473,7 @@
         {
             "id": 248,
             "extension": "XV",
+            "format": "XV",
             "note": "SIESTA XV",
             "composition": null,
             "connections": null,
@@ -2235,6 +2483,7 @@
         {
             "id": 249,
             "extension": "in",
+            "format": "abinit8",
             "note": "Abinit version 8",
             "composition": null,
             "connections": null,
@@ -2244,6 +2493,7 @@
         {
             "id": 250,
             "extension": "cell",
+            "format": "cell",
             "note": "CASTEP cartesian and fractional",
             "composition": null,
             "connections": null,
@@ -2253,6 +2503,7 @@
         {
             "id": 251,
             "extension": "cell",
+            "format": "cell_abc",
             "note": "CASTEP abc and fractional",
             "composition": null,
             "connections": null,
@@ -2262,6 +2513,7 @@
         {
             "id": 252,
             "extension": "cell",
+            "format": "cell_abs",
             "note": "CASTEP cartesian and absolute",
             "composition": null,
             "connections": null,
@@ -2271,6 +2523,7 @@
         {
             "id": 253,
             "extension": "cell",
+            "format": "cell_abc_abs",
             "note": "CASTEP abc and absolute",
             "composition": null,
             "connections": null,
@@ -2280,6 +2533,7 @@
         {
             "id": 254,
             "extension": "mocube",
+            "format": "mocube",
             "note": "Gaussian molecular orbital cube, single dataset",
             "composition": null,
             "connections": null,
@@ -2289,6 +2543,7 @@
         {
             "id": 255,
             "extension": "npy",
+            "format": "npy",
             "note": "NumPy array, single dataset as doubles with -15",
             "composition": null,
             "connections": null,
@@ -2298,6 +2553,7 @@
         {
             "id": 256,
             "extension": "dat",
+            "format": "one_abc",
             "note": "Onetep abc and fractional",
             "composition": null,
             "connections": null,
@@ -2307,6 +2563,7 @@
         {
             "id": 257,
             "extension": "dat",
+            "format": "one_abs",
             "note": "Onetep cartesian and absolute",
             "composition": null,
             "connections": null,
@@ -2316,6 +2573,7 @@
         {
             "id": 258,
             "extension": "dat",
+            "format": "one_abc_abs",
             "note": "Onetep abc and absolute",
             "composition": null,
             "connections": null,
@@ -2325,6 +2583,7 @@
         {
             "id": 259,
             "extension": "pdb",
+            "format": "pdbn",
             "note": "Protein Data Bank with atoms numbered",
             "composition": null,
             "connections": null,
@@ -2334,6 +2593,7 @@
         {
             "id": 260,
             "extension": "py",
+            "format": "py",
             "note": "Python dictionary",
             "composition": null,
             "connections": null,
@@ -2343,6 +2603,7 @@
         {
             "id": 261,
             "extension": "py",
+            "format": "pya",
             "note": "Python ASE Atoms",
             "composition": null,
             "connections": null,
@@ -2352,6 +2613,7 @@
         {
             "id": 262,
             "extension": "in",
+            "format": "qef",
             "note": "Quantum Espresso input, fractional atomic coords",
             "composition": null,
             "connections": null,
@@ -2361,6 +2623,7 @@
         {
             "id": 263,
             "extension": "CHG",
+            "format": "vasp",
             "note": "VASP atomic positions",
             "composition": true,
             "connections": false,
@@ -2370,6 +2633,7 @@
         {
             "id": 264,
             "extension": "CHGCAR",
+            "format": "chgcar",
             "note": "VASP",
             "composition": null,
             "connections": null,
@@ -2379,6 +2643,7 @@
         {
             "id": 265,
             "extension": "verts",
+            "format": "verts",
             "note": "Vertices of FBZ/IBZ, cartesian coords",
             "composition": null,
             "connections": null,
@@ -2388,6 +2653,7 @@
         {
             "id": 266,
             "extension": "verts",
+            "format": "verts_frac",
             "note": "Vertices of FBZ/IBZ, fractional coords",
             "composition": null,
             "connections": null,
@@ -2397,6 +2663,7 @@
         {
             "id": 267,
             "extension": "WAVECAR",
+            "format": "wavecar",
             "note": "VASP WAVECAR output",
             "composition": null,
             "connections": null,
@@ -2406,6 +2673,7 @@
         {
             "id": 268,
             "extension": "WAVECAR",
+            "format": "wavecar45",
             "note": "VASP WAVECAR output, VASP 4.5-compatible",
             "composition": null,
             "connections": null,
@@ -2415,6 +2683,7 @@
         {
             "id": 269,
             "extension": "xplor",
+            "format": "xplor",
             "note": "Xplor",
             "composition": null,
             "connections": null,
@@ -2424,6 +2693,7 @@
         {
             "id": 270,
             "extension": "INCAR",
+            "format": "incar",
             "note": "VASP INCAR, spin and magmom only",
             "composition": null,
             "connections": null,
@@ -2433,6 +2703,7 @@
         {
             "id": 271,
             "extension": "gnu",
+            "format": "gnu",
             "note": "Gnuplot",
             "composition": null,
             "connections": null,
@@ -2442,6 +2713,7 @@
         {
             "id": 272,
             "extension": "ccp4",
+            "format": "ccp4",
             "note": "CCP4 electron density (grid data only, no atoms)",
             "composition": null,
             "connections": null,
@@ -2451,6 +2723,7 @@
         {
             "id": 273,
             "extension": "dat",
+            "format": "dat",
             "note": "Onetep",
             "composition": null,
             "connections": null,
@@ -2460,6 +2733,7 @@
         {
             "id": 274,
             "extension": "DEN",
+            "format": "DEN",
             "note": "ABINIT binary",
             "composition": null,
             "connections": null,
@@ -2469,6 +2743,7 @@
         {
             "id": 275,
             "extension": "POT",
+            "format": "POT",
             "note": "ABINIT binary",
             "composition": null,
             "connections": null,
@@ -2478,6 +2753,7 @@
         {
             "id": 276,
             "extension": "VCLMB",
+            "format": "VCLMB",
             "note": "ABINIT binary",
             "composition": null,
             "connections": null,
@@ -2487,6 +2763,7 @@
         {
             "id": 277,
             "extension": "WFK",
+            "format": "WFK",
             "note": "ABINIT binary",
             "composition": null,
             "connections": null,
@@ -2496,6 +2773,7 @@
         {
             "id": 278,
             "extension": "LOCPOT",
+            "format": "LOCPOT",
             "note": "VASP",
             "composition": null,
             "connections": null,
@@ -2505,6 +2783,7 @@
         {
             "id": 279,
             "extension": "EIGENVAL",
+            "format": "EIGENVAL",
             "note": "VASP",
             "composition": null,
             "connections": null,
@@ -2514,7 +2793,48 @@
         {
             "id": 280,
             "extension": "12",
+            "format": "12",
             "note": "Crystal",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 281,
+            "extension": "bxsf",
+            "format": "bxsf",
+            "note": "XCrySDen Structure Format",
+            "composition": true,
+            "connections": false,
+            "two_dim": true,
+            "three_dim": true
+        },
+        {
+            "id": 282,
+            "extension": "in",
+            "format": "qef",
+            "note": "Quantum Espresso input (fractional atomic coords)",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 283,
+            "extension": "vmd_recip",
+            "format": "vmd_recip",
+            "note": "VMD output of reciprocal cell, BZs etc.",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 284,
+            "extension": "xyz",
+            "format": "xyze",
+            "note": "Extended XYZ (adds lattice vectors)",
             "composition": null,
             "connections": null,
             "two_dim": null,
@@ -129606,6 +129926,12 @@
         },
         {
             "converters_id": 9,
+            "in_id": 1,
+            "out_id": 284,
+            "degree_of_success": "not tested"
+        },
+        {
+            "converters_id": 9,
             "in_id": 4,
             "out_id": 1,
             "degree_of_success": "not tested"
@@ -129884,6 +130210,12 @@
             "converters_id": 9,
             "in_id": 4,
             "out_id": 272,
+            "degree_of_success": "not tested"
+        },
+        {
+            "converters_id": 9,
+            "in_id": 4,
+            "out_id": 284,
             "degree_of_success": "not tested"
         },
         {
@@ -130170,6 +130502,12 @@
         },
         {
             "converters_id": 9,
+            "in_id": 6,
+            "out_id": 284,
+            "degree_of_success": "not tested"
+        },
+        {
+            "converters_id": 9,
             "in_id": 9,
             "out_id": 1,
             "degree_of_success": "not tested"
@@ -130448,6 +130786,12 @@
             "converters_id": 9,
             "in_id": 9,
             "out_id": 272,
+            "degree_of_success": "not tested"
+        },
+        {
+            "converters_id": 9,
+            "in_id": 9,
+            "out_id": 284,
             "degree_of_success": "not tested"
         },
         {
@@ -130734,6 +131078,12 @@
         },
         {
             "converters_id": 9,
+            "in_id": 18,
+            "out_id": 284,
+            "degree_of_success": "not tested"
+        },
+        {
+            "converters_id": 9,
             "in_id": 73,
             "out_id": 1,
             "degree_of_success": "not tested"
@@ -131012,6 +131362,12 @@
             "converters_id": 9,
             "in_id": 73,
             "out_id": 272,
+            "degree_of_success": "not tested"
+        },
+        {
+            "converters_id": 9,
+            "in_id": 73,
+            "out_id": 284,
             "degree_of_success": "not tested"
         },
         {
@@ -131298,6 +131654,12 @@
         },
         {
             "converters_id": 9,
+            "in_id": 105,
+            "out_id": 284,
+            "degree_of_success": "not tested"
+        },
+        {
+            "converters_id": 9,
             "in_id": 123,
             "out_id": 1,
             "degree_of_success": "not tested"
@@ -131576,6 +131938,12 @@
             "converters_id": 9,
             "in_id": 123,
             "out_id": 272,
+            "degree_of_success": "not tested"
+        },
+        {
+            "converters_id": 9,
+            "in_id": 123,
+            "out_id": 284,
             "degree_of_success": "not tested"
         },
         {
@@ -131862,6 +132230,12 @@
         },
         {
             "converters_id": 9,
+            "in_id": 147,
+            "out_id": 284,
+            "degree_of_success": "not tested"
+        },
+        {
+            "converters_id": 9,
             "in_id": 176,
             "out_id": 1,
             "degree_of_success": "not tested"
@@ -132144,6 +132518,12 @@
         },
         {
             "converters_id": 9,
+            "in_id": 176,
+            "out_id": 284,
+            "degree_of_success": "not tested"
+        },
+        {
+            "converters_id": 9,
             "in_id": 178,
             "out_id": 1,
             "degree_of_success": "not tested"
@@ -132422,6 +132802,12 @@
             "converters_id": 9,
             "in_id": 178,
             "out_id": 272,
+            "degree_of_success": "not tested"
+        },
+        {
+            "converters_id": 9,
+            "in_id": 178,
+            "out_id": 284,
             "degree_of_success": "not tested"
         },
         {
@@ -132708,6 +133094,12 @@
         },
         {
             "converters_id": 9,
+            "in_id": 187,
+            "out_id": 284,
+            "degree_of_success": "not tested"
+        },
+        {
+            "converters_id": 9,
             "in_id": 200,
             "out_id": 1,
             "degree_of_success": "not tested"
@@ -132986,6 +133378,12 @@
             "converters_id": 9,
             "in_id": 200,
             "out_id": 272,
+            "degree_of_success": "not tested"
+        },
+        {
+            "converters_id": 9,
+            "in_id": 200,
+            "out_id": 284,
             "degree_of_success": "not tested"
         },
         {
@@ -133272,6 +133670,12 @@
         },
         {
             "converters_id": 9,
+            "in_id": 206,
+            "out_id": 284,
+            "degree_of_success": "not tested"
+        },
+        {
+            "converters_id": 9,
             "in_id": 207,
             "out_id": 1,
             "degree_of_success": "not tested"
@@ -133550,6 +133954,12 @@
             "converters_id": 9,
             "in_id": 207,
             "out_id": 272,
+            "degree_of_success": "not tested"
+        },
+        {
+            "converters_id": 9,
+            "in_id": 207,
+            "out_id": 284,
             "degree_of_success": "not tested"
         },
         {
@@ -133836,6 +134246,12 @@
         },
         {
             "converters_id": 9,
+            "in_id": 226,
+            "out_id": 284,
+            "degree_of_success": "not tested"
+        },
+        {
+            "converters_id": 9,
             "in_id": 227,
             "out_id": 1,
             "degree_of_success": "not tested"
@@ -134114,6 +134530,12 @@
             "converters_id": 9,
             "in_id": 227,
             "out_id": 272,
+            "degree_of_success": "not tested"
+        },
+        {
+            "converters_id": 9,
+            "in_id": 227,
+            "out_id": 284,
             "degree_of_success": "not tested"
         },
         {
@@ -134406,6 +134828,12 @@
         },
         {
             "converters_id": 9,
+            "in_id": 228,
+            "out_id": 284,
+            "degree_of_success": "not tested"
+        },
+        {
+            "converters_id": 9,
             "in_id": 230,
             "out_id": 1,
             "degree_of_success": "not tested"
@@ -134684,6 +135112,12 @@
             "converters_id": 9,
             "in_id": 230,
             "out_id": 272,
+            "degree_of_success": "not tested"
+        },
+        {
+            "converters_id": 9,
+            "in_id": 230,
+            "out_id": 284,
             "degree_of_success": "not tested"
         },
         {
@@ -134976,6 +135410,12 @@
         },
         {
             "converters_id": 9,
+            "in_id": 231,
+            "out_id": 284,
+            "degree_of_success": "not tested"
+        },
+        {
+            "converters_id": 9,
             "in_id": 232,
             "out_id": 1,
             "degree_of_success": "not tested"
@@ -135264,6 +135704,12 @@
         },
         {
             "converters_id": 9,
+            "in_id": 232,
+            "out_id": 284,
+            "degree_of_success": "not tested"
+        },
+        {
+            "converters_id": 9,
             "in_id": 233,
             "out_id": 1,
             "degree_of_success": "not tested"
@@ -135552,6 +135998,12 @@
         },
         {
             "converters_id": 9,
+            "in_id": 233,
+            "out_id": 284,
+            "degree_of_success": "not tested"
+        },
+        {
+            "converters_id": 9,
             "in_id": 234,
             "out_id": 1,
             "degree_of_success": "not tested"
@@ -135840,6 +136292,12 @@
         },
         {
             "converters_id": 9,
+            "in_id": 234,
+            "out_id": 284,
+            "degree_of_success": "not tested"
+        },
+        {
+            "converters_id": 9,
             "in_id": 235,
             "out_id": 1,
             "degree_of_success": "not tested"
@@ -136118,6 +136576,12 @@
             "converters_id": 9,
             "in_id": 235,
             "out_id": 272,
+            "degree_of_success": "not tested"
+        },
+        {
+            "converters_id": 9,
+            "in_id": 235,
+            "out_id": 284,
             "degree_of_success": "not tested"
         },
         {
@@ -136404,6 +136868,12 @@
         },
         {
             "converters_id": 9,
+            "in_id": 236,
+            "out_id": 284,
+            "degree_of_success": "not tested"
+        },
+        {
+            "converters_id": 9,
             "in_id": 237,
             "out_id": 1,
             "degree_of_success": "not tested"
@@ -136692,6 +137162,12 @@
         },
         {
             "converters_id": 9,
+            "in_id": 237,
+            "out_id": 284,
+            "degree_of_success": "not tested"
+        },
+        {
+            "converters_id": 9,
             "in_id": 238,
             "out_id": 1,
             "degree_of_success": "not tested"
@@ -136980,6 +137456,12 @@
         },
         {
             "converters_id": 9,
+            "in_id": 238,
+            "out_id": 284,
+            "degree_of_success": "not tested"
+        },
+        {
+            "converters_id": 9,
             "in_id": 239,
             "out_id": 1,
             "degree_of_success": "not tested"
@@ -137258,6 +137740,12 @@
             "converters_id": 9,
             "in_id": 239,
             "out_id": 272,
+            "degree_of_success": "not tested"
+        },
+        {
+            "converters_id": 9,
+            "in_id": 239,
+            "out_id": 284,
             "degree_of_success": "not tested"
         },
         {
@@ -137550,6 +138038,12 @@
         },
         {
             "converters_id": 9,
+            "in_id": 240,
+            "out_id": 284,
+            "degree_of_success": "not tested"
+        },
+        {
+            "converters_id": 9,
             "in_id": 241,
             "out_id": 1,
             "degree_of_success": "not tested"
@@ -137838,6 +138332,12 @@
         },
         {
             "converters_id": 9,
+            "in_id": 241,
+            "out_id": 284,
+            "degree_of_success": "not tested"
+        },
+        {
+            "converters_id": 9,
             "in_id": 242,
             "out_id": 1,
             "degree_of_success": "not tested"
@@ -138126,6 +138626,12 @@
         },
         {
             "converters_id": 9,
+            "in_id": 242,
+            "out_id": 284,
+            "degree_of_success": "not tested"
+        },
+        {
+            "converters_id": 9,
             "in_id": 243,
             "out_id": 1,
             "degree_of_success": "not tested"
@@ -138414,6 +138920,12 @@
         },
         {
             "converters_id": 9,
+            "in_id": 243,
+            "out_id": 284,
+            "degree_of_success": "not tested"
+        },
+        {
+            "converters_id": 9,
             "in_id": 244,
             "out_id": 1,
             "degree_of_success": "not tested"
@@ -138702,6 +139214,12 @@
         },
         {
             "converters_id": 9,
+            "in_id": 244,
+            "out_id": 284,
+            "degree_of_success": "not tested"
+        },
+        {
+            "converters_id": 9,
             "in_id": 245,
             "out_id": 1,
             "degree_of_success": "not tested"
@@ -138990,6 +139508,12 @@
         },
         {
             "converters_id": 9,
+            "in_id": 245,
+            "out_id": 284,
+            "degree_of_success": "not tested"
+        },
+        {
+            "converters_id": 9,
             "in_id": 246,
             "out_id": 1,
             "degree_of_success": "not tested"
@@ -139278,6 +139802,12 @@
         },
         {
             "converters_id": 9,
+            "in_id": 246,
+            "out_id": 284,
+            "degree_of_success": "not tested"
+        },
+        {
+            "converters_id": 9,
             "in_id": 247,
             "out_id": 1,
             "degree_of_success": "not tested"
@@ -139566,6 +140096,12 @@
         },
         {
             "converters_id": 9,
+            "in_id": 247,
+            "out_id": 284,
+            "degree_of_success": "not tested"
+        },
+        {
+            "converters_id": 9,
             "in_id": 248,
             "out_id": 1,
             "degree_of_success": "not tested"
@@ -139854,6 +140390,12 @@
         },
         {
             "converters_id": 9,
+            "in_id": 248,
+            "out_id": 284,
+            "degree_of_success": "not tested"
+        },
+        {
+            "converters_id": 9,
             "in_id": 249,
             "out_id": 1,
             "degree_of_success": "not tested"
@@ -140132,6 +140674,12 @@
             "converters_id": 9,
             "in_id": 249,
             "out_id": 272,
+            "degree_of_success": "not tested"
+        },
+        {
+            "converters_id": 9,
+            "in_id": 249,
+            "out_id": 284,
             "degree_of_success": "not tested"
         },
         {
@@ -140418,6 +140966,12 @@
         },
         {
             "converters_id": 9,
+            "in_id": 263,
+            "out_id": 284,
+            "degree_of_success": "not tested"
+        },
+        {
+            "converters_id": 9,
             "in_id": 264,
             "out_id": 1,
             "degree_of_success": "not tested"
@@ -140696,6 +141250,12 @@
             "converters_id": 9,
             "in_id": 264,
             "out_id": 272,
+            "degree_of_success": "not tested"
+        },
+        {
+            "converters_id": 9,
+            "in_id": 264,
+            "out_id": 284,
             "degree_of_success": "not tested"
         },
         {
@@ -140982,6 +141542,12 @@
         },
         {
             "converters_id": 9,
+            "in_id": 267,
+            "out_id": 284,
+            "degree_of_success": "not tested"
+        },
+        {
+            "converters_id": 9,
             "in_id": 273,
             "out_id": 1,
             "degree_of_success": "not tested"
@@ -141270,6 +141836,12 @@
         },
         {
             "converters_id": 9,
+            "in_id": 273,
+            "out_id": 284,
+            "degree_of_success": "not tested"
+        },
+        {
+            "converters_id": 9,
             "in_id": 274,
             "out_id": 1,
             "degree_of_success": "not tested"
@@ -141558,6 +142130,12 @@
         },
         {
             "converters_id": 9,
+            "in_id": 274,
+            "out_id": 284,
+            "degree_of_success": "not tested"
+        },
+        {
+            "converters_id": 9,
             "in_id": 275,
             "out_id": 1,
             "degree_of_success": "not tested"
@@ -141846,6 +142424,12 @@
         },
         {
             "converters_id": 9,
+            "in_id": 275,
+            "out_id": 284,
+            "degree_of_success": "not tested"
+        },
+        {
+            "converters_id": 9,
             "in_id": 276,
             "out_id": 1,
             "degree_of_success": "not tested"
@@ -142134,6 +142718,12 @@
         },
         {
             "converters_id": 9,
+            "in_id": 276,
+            "out_id": 284,
+            "degree_of_success": "not tested"
+        },
+        {
+            "converters_id": 9,
             "in_id": 277,
             "out_id": 1,
             "degree_of_success": "not tested"
@@ -142422,6 +143012,12 @@
         },
         {
             "converters_id": 9,
+            "in_id": 277,
+            "out_id": 284,
+            "degree_of_success": "not tested"
+        },
+        {
+            "converters_id": 9,
             "in_id": 278,
             "out_id": 1,
             "degree_of_success": "not tested"
@@ -142710,6 +143306,12 @@
         },
         {
             "converters_id": 9,
+            "in_id": 278,
+            "out_id": 284,
+            "degree_of_success": "not tested"
+        },
+        {
+            "converters_id": 9,
             "in_id": 279,
             "out_id": 1,
             "degree_of_success": "not tested"
@@ -142998,6 +143600,12 @@
         },
         {
             "converters_id": 9,
+            "in_id": 279,
+            "out_id": 284,
+            "degree_of_success": "not tested"
+        },
+        {
+            "converters_id": 9,
             "in_id": 280,
             "out_id": 1,
             "degree_of_success": "not tested"
@@ -143282,6 +143890,12 @@
             "converters_id": 9,
             "in_id": 280,
             "out_id": 272,
+            "degree_of_success": "not tested"
+        },
+        {
+            "converters_id": 9,
+            "in_id": 280,
+            "out_id": 284,
             "degree_of_success": "not tested"
         }
     ],
