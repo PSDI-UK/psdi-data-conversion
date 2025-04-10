@@ -218,6 +218,9 @@ class ConversionTestSpec:
             if attr_name in l_single_val_attrs:
                 setattr(self, attr_name, [getattr(self, attr_name)]*self._len)
 
+        # Check if all tests should be skipped
+        self.skip_all = all(self.skip)
+
     def __len__(self):
         """Get the length from the member - valid only after `__post_init__` has been called"""
         return self._len
