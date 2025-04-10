@@ -147,6 +147,11 @@ class ConversionTestSpec:
     expect_success: bool | Iterable[bool] = True
     """Whether or not to expect the test to succeed"""
 
+    skip: bool | Iterable[bool] = False
+    """If set to true, this test will be skipped and not run. Can also be set individually for certain tests within an
+    array. This should typically only be used when debugging to skip working tests to more easily focus on non-working
+    tests"""
+
     callback: (Callable[[ConversionTestInfo], str] |
                Iterable[Callable[[ConversionTestInfo], str]] | None) = None
     """Function to be called after the conversion is performed to check in detail whether results are as expected. It
@@ -247,6 +252,9 @@ class SingleConversionTestSpec:
     expect_success: bool = True
     """Whether or not to expect the test to succeed"""
 
+    skip: bool = False
+    """If set to True, this test will be skipped, always returning success"""
+
     callback: (Callable[[ConversionTestInfo], str] | None) = None
     """Function to be called after the conversion is performed to check in detail whether results are as expected. It
     should take as its only argument a `ConversionTestInfo` and return a string. The string should be empty if the check
@@ -284,9 +292,14 @@ def run_test_conversion_with_library(test_spec: ConversionTestSpec):
     with TemporaryDirectory("_input") as input_dir, TemporaryDirectory("_output") as output_dir:
         # Iterate over the test spec to run each individual test it defines
         for single_test_spec in test_spec:
+            if single_test_spec.skip:
+                print(f"Skipping single test spec {single_test_spec}")
+                continue
+            print(f"Running single test spec: {single_test_spec}")
             _run_single_test_conversion_with_library(test_spec=single_test_spec,
                                                      input_dir=input_dir,
                                                      output_dir=output_dir)
+            print(f"Success for test spec: {single_test_spec}")
 
 
 def _run_single_test_conversion_with_library(test_spec: SingleConversionTestSpec,
@@ -365,9 +378,14 @@ def run_test_conversion_with_cla(test_spec: ConversionTestSpec):
     with TemporaryDirectory("_input") as input_dir, TemporaryDirectory("_output") as output_dir:
         # Iterate over the test spec to run each individual test it defines
         for single_test_spec in test_spec:
+            if single_test_spec.skip:
+                print(f"Skipping single test spec {single_test_spec}")
+                continue
+            print(f"Running single test spec: {single_test_spec}")
             _run_single_test_conversion_with_cla(test_spec=single_test_spec,
                                                  input_dir=input_dir,
                                                  output_dir=output_dir)
+            print(f"Success for test spec: {single_test_spec}")
 
 
 def _run_single_test_conversion_with_cla(test_spec: SingleConversionTestSpec,

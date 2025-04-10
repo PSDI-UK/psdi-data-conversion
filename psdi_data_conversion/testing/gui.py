@@ -63,6 +63,9 @@ def run_test_conversion_with_gui(test_spec: ConversionTestSpec,
     with TemporaryDirectory("_input") as input_dir, TemporaryDirectory("_output") as output_dir:
         # Iterate over the test spec to run each individual test it defines
         for single_test_spec in test_spec:
+            if single_test_spec.skip:
+                print(f"Skipping single test spec {single_test_spec}")
+                continue
             print(f"Running single test spec: {single_test_spec}")
             _run_single_test_conversion_with_gui(test_spec=single_test_spec,
                                                  input_dir=input_dir,
