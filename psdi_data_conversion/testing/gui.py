@@ -48,7 +48,8 @@ class GuiConversionTestInfo(ConversionTestInfo):
 
 
 def run_test_conversion_with_gui(test_spec: ConversionTestSpec,
-                                 driver: WebDriver):
+                                 driver: WebDriver,
+                                 origin: str):
     """Runs a test conversion or series thereof through the GUI. Note that this requires the server to be started before
     this is called.
 
@@ -57,7 +58,9 @@ def run_test_conversion_with_gui(test_spec: ConversionTestSpec,
     test_spec : ConversionTestSpec
         The specification for the test or series of tests to be run
     driver : WebDriver
-        WebDriver to use to run the test conversion
+        The WebDriver to be used for testing
+    origin : str
+        The address of the homepage of the testing server
     """
     # Make temporary directories for the input and output files to be stored in
     with TemporaryDirectory("_input") as input_dir, TemporaryDirectory("_output") as output_dir:
@@ -70,14 +73,16 @@ def run_test_conversion_with_gui(test_spec: ConversionTestSpec,
             _run_single_test_conversion_with_gui(test_spec=single_test_spec,
                                                  input_dir=input_dir,
                                                  output_dir=output_dir,
-                                                 driver=driver)
+                                                 driver=driver,
+                                                 origin=origin)
             print(f"Success for test spec: {single_test_spec}")
 
 
 def _run_single_test_conversion_with_gui(test_spec: SingleConversionTestSpec,
                                          input_dir: str,
                                          output_dir: str,
-                                         driver: WebDriver):
+                                         driver: WebDriver,
+                                         origin: str):
     """Runs a single test conversion through the GUI.
 
     Parameters
@@ -89,7 +94,9 @@ def _run_single_test_conversion_with_gui(test_spec: SingleConversionTestSpec,
     output_dir : str
         A directory which can be used to create output data after downloading
     driver : WebDriver
-        WebDriver to use to run the test conversion
+        The WebDriver to be used for testing
+    origin : str
+        The address of the homepage of the testing server
     """
 
     # Symlink the input file to the input directory
@@ -108,6 +115,7 @@ def _run_single_test_conversion_with_gui(test_spec: SingleConversionTestSpec,
                                             output_dir=output_dir,
                                             log_file=os.path.join(output_dir, test_spec.log_filename),
                                             driver=driver,
+                                            origin=origin,
                                             **test_spec.conversion_kwargs)
     except Exception:
         print(f"Unexpected exception raised for single test spec {test_spec}")
@@ -130,6 +138,7 @@ def run_converter_through_gui(filename: str,
                               output_dir: str,
                               log_file: str,
                               driver: WebDriver,
+                              origin: str,
                               **conversion_kwargs):
     """_summary_
 
@@ -147,6 +156,10 @@ def run_converter_through_gui(filename: str,
         The directory which contains the output file
     log_file : str
         The desired name of the log file
+    driver : WebDriver
+        The WebDriver to be used for testing
+    origin : str
+        The address of the homepage of the testing server
     """
 
     # Get just the local filename
@@ -213,6 +226,9 @@ def run_converter_through_gui(filename: str,
 
     if (Path.is_file(output_file)):
         Path.unlink(output_file)
+
+    # Get the homepage
+    driver.get(f"{origin}/")
 
     wait_for_element(driver, "//select[@id='fromList']/option")
 

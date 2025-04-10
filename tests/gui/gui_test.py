@@ -75,14 +75,10 @@ def driver():
     ff_driver.quit()
 
 
-@pytest.fixture(scope="module", autouse=True)
-def setup(driver: WebDriver):
-    """Run common tasks for each test"""
-
-    driver.get(f"{origin}/")
-
-
 def test_initial_frontpage(driver: WebDriver):
+
+    # Load the home page
+    driver.get(f"{origin}/")
 
     # Check that the front page contains the header "Data Conversion Service".
 
@@ -109,4 +105,5 @@ def test_conversions(driver, test_spec):
     """Run all conversion tests in the defined list of test specifications
     """
     run_test_conversion_with_gui(test_spec=test_spec,
-                                 driver=driver)
+                                 driver=driver,
+                                 origin=origin)
