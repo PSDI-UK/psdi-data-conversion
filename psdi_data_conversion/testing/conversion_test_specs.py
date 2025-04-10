@@ -260,15 +260,30 @@ l_all_test_specs.append(Spec(name="Failed conversion - invalid conversion",
 Not compatible with the GUI, since the GUI only offers valid conversions.
 """
 
-l_all_test_specs.append(Spec(name="Failed Conversion - wrong input type",
+l_all_test_specs.append(Spec(name="Blocked conversion - wrong input type",
+                             filename="1NE6.mmcif",
+                             to_format="cif",
+                             conversion_kwargs={"from_format": "pdb", "strict": True},
+                             expect_success=False,
+                             callback=MCB(CheckFileStatus(expect_output_exists=False,
+                                                          expect_log_exists=None),
+                                          CheckException(ex_type=FileConverterInputException,
+                                                         ex_message=("The file extension is not {} or a zip or tar "
+                                                                     "archive extension"))),
+                             compatible_with_library=False,
+                             compatible_with_cla=False,
+                             ))
+"""A test that a conversion which is blocked in the GUI"""
+
+l_all_test_specs.append(Spec(name="Failed conversion - wrong input type",
                              filename="1NE6.mmcif",
                              to_format="cif",
                              conversion_kwargs={"from_format": "pdb", "strict": False},
                              expect_success=False,
                              callback=MCB(CheckFileStatus(expect_output_exists=False,
-                                          expect_log_exists=None),
+                                                          expect_log_exists=None),
                                           CheckException(ex_type=FileConverterAbortException,
-                                                         ex_message="not a valid {} file")),
+                                                         ex_message=("not a valid {} file"))),
                              ))
 """A test that a conversion which fails due to the wrong input file type will properly fail"""
 
