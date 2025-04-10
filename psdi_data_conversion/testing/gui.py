@@ -196,7 +196,7 @@ def run_converter_through_gui(test_spec: SingleConversionTestSpec,
 
     # Set up the input file where we expect it to be
     source_input_file = os.path.realpath(os.path.join(get_input_test_data_loc(), test_spec.filename))
-    input_file = os.path.realpath(os.path.join(input_dir, test_spec.filename))
+    input_file = os.path.join(input_dir, test_spec.filename)
     if (os.path.isfile(input_file)):
         os.unlink(input_file)
     os.symlink(source_input_file, input_file)
