@@ -87,7 +87,6 @@ wrong_format_spec = Spec(name="Archive (wrong format)",
 """
 l_all_test_specs.append(wrong_format_spec)
 
-# Mak
 wrong_format_spec_gui = deepcopy(wrong_format_spec)
 """A test that if the user provides the wrong input format for files in an archive - variant for the GUI test, which is
 more strict
