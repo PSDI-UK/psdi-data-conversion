@@ -244,15 +244,15 @@ def run_converter_through_gui(test_spec: SingleConversionTestSpec,
     # Click on the "Yes" button to accept the converter and go to the conversion page
     driver.find_element(By.XPATH, "//input[@id='yesButton']").click()
 
+    # Request non-strict filename checking if desired
+    if not strict:
+        wait_and_find_element(driver, "//input[@id='extCheck']").click()
+
     # Select the input file.
     wait_and_find_element(driver, "//input[@id='fileToUpload']").send_keys(str(input_file))
 
     # Request the log file
     wait_and_find_element(driver, "//input[@id='requestLog']").click()
-
-    # Request non-strict filename checking if desired
-    if not strict:
-        wait_and_find_element(driver, "//input[@id='extCheck']").click()
 
     # Click on the "Convert" button.
     wait_and_find_element(driver, "//input[@id='uploadButton']").click()
