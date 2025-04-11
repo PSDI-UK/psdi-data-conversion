@@ -146,7 +146,7 @@ def convert():
                                               data=request.form,
                                               to_format=request.form['to'],
                                               from_format=request.form['from'],
-                                              strict=request.form['check_ext'],
+                                              strict=(request.form['check_ext'] != "false"),
                                               log_mode=log_mode,
                                               log_level=log_level,
                                               delete_input=True,
