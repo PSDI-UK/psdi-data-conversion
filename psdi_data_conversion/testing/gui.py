@@ -34,15 +34,15 @@ from psdi_data_conversion.testing.utils import (ConversionTestInfo, ConversionTe
 TIMEOUT = 10
 
 
-def wait_for_element(driver: WebDriver, xpath: str, by=By.XPATH):
+def wait_for_element(root: WebDriver | EC.WebElement, xpath: str, by=By.XPATH):
     """Shortcut for boilerplate to wait until a web element is visible"""
-    WebDriverWait(driver, TIMEOUT).until(EC.element_to_be_clickable((by, xpath)))
+    WebDriverWait(root, TIMEOUT).until(EC.element_to_be_clickable((by, xpath)))
 
 
-def wait_and_find_element(driver: WebDriver, xpath: str, by=By.XPATH) -> EC.WebElement:
+def wait_and_find_element(root: WebDriver | EC.WebElement, xpath: str, by=By.XPATH) -> EC.WebElement:
     """Finds a web element, after first waiting to ensure it's visible"""
-    wait_for_element(driver, xpath, by=by)
-    return driver.find_element(by, xpath)
+    wait_for_element(root, xpath, by=by)
+    return root.find_element(by, xpath)
 
 
 @dataclass
@@ -166,10 +166,10 @@ def run_converter_through_gui(test_spec: SingleConversionTestSpec,
     # Default options for conversion
     base_filename, from_format = split_archive_ext(filename)
     strict = True
-    from_flags = None
-    to_flags = None
-    from_options = None
-    to_options = None
+    from_flags: str | None = None
+    to_flags: str | None = None
+    from_options: str | None = None
+    to_options: str | None = None
     coord_gen = DEFAULT_COORD_GEN
     coord_gen_qual = DEFAULT_COORD_GEN_QUAL
 
@@ -269,30 +269,53 @@ def run_converter_through_gui(test_spec: SingleConversionTestSpec,
 
     # Select appropriate format args. The args only have a text attribute, so we need to find the one that starts with
     # each flag - since we don't have too many, iterating over all possible combinations is the easiest way
-    if from_flags:
-        e_from_flags = Select(wait_and_find_element(driver, "//select[@id='inFlags']"))
-        for flag, option in product(from_flags, e_from_flags.options):
-            if option.text.startswith(f"{flag}:"):
-                e_from_flags.select_by_visible_text(option.text)
-    if to_flags:
-        e_to_flags = Select(wait_and_find_element(driver, "//select[@id='outFlags']"))
-        for flag, option in product(to_flags, e_to_flags.options):
-            if option.text.startswith(f"{flag}:"):
-                e_to_flags.select_by_visible_text(option.text)
-    if from_options:
-        e_from_options = wait_and_find_element(driver, "//table[@id='in_argFlags']")
-        l_rows = e_from_options.find_elements(By.XPATH, "//tr")
-        for row in l_rows:
-            l_items = row.find_elements(By.XPATH, "//td")
-            cbox = l_items[0]
-            label = l_items[1]
-    if to_options:
-        e_to_options = wait_and_find_element(driver, "//table[@id='out_argFlags']")
-        l_rows = e_to_options.find_elements(By.XPATH, "//tr")
-        for row in l_rows:
-            l_items = row.find_elements(By.XPATH, "//td")
-            cbox = l_items[0]
-            label = l_items[1]
+    for (l_flags, select_id) in ((from_flags, "inFlags"),
+                                 (to_flags, "outFlags")):
+        if not l_flags:
+            continue
+        flags_select = Select(wait_and_find_element(driver, f"//select[@id='{select_id}']"))
+        for flag in l_flags:
+            found = False
+            for option in flags_select.options:
+                if option.text.startswith(f"{flag}:"):
+                    flags_select.select_by_visible_text(option.text)
+                    found = True
+                    break
+            if not found:
+                raise ValueError(f"Flag {flag} was not found in {select_id} selection box for conversion from "
+                                 f"{from_format} to {test_spec.to_format} with converter {test_spec.converter_name}")
+
+    for (options_string, table_id) in ((from_options, "in_argFlags"),
+                                       (to_options, "out_argFlags")):
+        if not options_string:
+            continue
+
+        # Split each option into words, of which the first letter of each is the key and the remainder is the value
+        l_options = options_string.split()
+
+        # Get the rows in the options table
+        options_table = wait_and_find_element(driver, f"//table[@id='{table_id}']")
+        l_rows = options_table.find_elements(By.XPATH, "//tr")
+
+        # Look for and set each option
+        for option in l_options:
+            found = False
+            for row in l_rows:
+                l_items = row.find_elements(By.XPATH, "//td")
+                label = l_items[1]
+                if not label.text.startswith(f"{option[0]}:"):
+                    continue
+
+                # Select the option by clicking the box at the first element in the row to make the input appear
+                l_items[0].click()
+
+                # Input the option in the input box that appears
+                input_box = wait_and_find_element(row, "//td/input")
+                input_box.send_keys(option[1:])
+
+            if not found:
+                raise ValueError(f"Option {option} was not found in {table_id} options table for conversion from "
+                                 f"{from_format} to {test_spec.to_format} with converter {test_spec.converter_name}")
 
     # Click on the "Convert" button.
     wait_and_find_element(driver, "//input[@id='uploadButton']").click()
