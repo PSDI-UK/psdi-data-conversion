@@ -16,8 +16,7 @@ from psdi_data_conversion.constants import DATETIME_RE_RAW
 from psdi_data_conversion.file_io import unpack_zip_or_tar
 from psdi_data_conversion.log_utility import string_with_placeholders_matches
 from psdi_data_conversion.testing.constants import OUTPUT_TEST_DATA_LOC_IN_PROJECT
-from psdi_data_conversion.testing.gui import GuiConversionTestInfo
-from psdi_data_conversion.testing.utils import ConversionTestInfo, LibraryConversionTestInfo, check_file_match
+from psdi_data_conversion.testing.utils import ConversionTestInfo, check_file_match
 
 
 class MultiCallback:
@@ -340,7 +339,8 @@ class CheckException:
     def __call__(self, test_info: ConversionTestInfo) -> str:
         """Perform the check on the exception"""
 
-        if not isinstance(test_info, (LibraryConversionTestInfo, GuiConversionTestInfo)):
+        # Skip check on CLA, since this won't catch any exceptions
+        if test_info.run_type == "cla":
             return ""
 
         # Confirm that an exception was indeed raised

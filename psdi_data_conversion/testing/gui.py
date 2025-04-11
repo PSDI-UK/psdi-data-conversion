@@ -5,7 +5,6 @@ Utilities to aid in testing of the GUI
 """
 
 
-from dataclasses import dataclass
 import os
 import shutil
 from tempfile import TemporaryDirectory
@@ -42,13 +41,6 @@ def wait_and_find_element(root: WebDriver | EC.WebElement, xpath: str, by=By.XPA
     """Finds a web element, after first waiting to ensure it's visible"""
     wait_for_element(root, xpath, by=by)
     return root.find_element(by, xpath)
-
-
-@dataclass
-class GuiConversionTestInfo(ConversionTestInfo):
-    """Information about a tested conversion, specifically for when it was tested through the GUI (the local version of
-    the web app)
-    """
 
 
 def run_test_conversion_with_gui(test_spec: ConversionTestSpec,
@@ -128,11 +120,12 @@ def _run_single_test_conversion_with_gui(test_spec: SingleConversionTestSpec,
 
     # Compile output info for the test and call the callback function if one is provided
     if test_spec.callback:
-        test_info = GuiConversionTestInfo(test_spec=test_spec,
-                                          input_dir=input_dir,
-                                          output_dir=output_dir,
-                                          success=success,
-                                          exc_info=exc_info)
+        test_info = ConversionTestInfo(run_type="gui",
+                                       test_spec=test_spec,
+                                       input_dir=input_dir,
+                                       output_dir=output_dir,
+                                       success=success,
+                                       exc_info=exc_info)
         callback_msg = test_spec.callback(test_info)
         assert not callback_msg, callback_msg
 
