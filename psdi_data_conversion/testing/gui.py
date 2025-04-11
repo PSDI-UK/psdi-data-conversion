@@ -23,8 +23,8 @@ from selenium.webdriver.support.ui import WebDriverWait
 from psdi_data_conversion.constants import STATUS_CODE_GENERAL
 from psdi_data_conversion.converters.base import (FileConverterAbortException, FileConverterException,
                                                   FileConverterInputException)
-from psdi_data_conversion.converters.openbabel import (COORD_GEN_KEY, COORD_GEN_QUAL_KEY, DEFAULT_COORD_GEN,
-                                                       DEFAULT_COORD_GEN_QUAL)
+from psdi_data_conversion.converters.openbabel import (COORD_GEN_KEY, COORD_GEN_QUAL_KEY, DEFAULT_COORD_GEN_QUAL,
+                                                       L_ALLOWED_COORD_GEN_QUALS, L_ALLOWED_COORD_GENS)
 from psdi_data_conversion.file_io import split_archive_ext
 from psdi_data_conversion.testing.utils import (ConversionTestInfo, ConversionTestSpec, SingleConversionTestSpec,
                                                 get_input_test_data_loc)
@@ -169,8 +169,8 @@ def run_converter_through_gui(test_spec: SingleConversionTestSpec,
     to_flags: str | None = None
     from_options: str | None = None
     to_options: str | None = None
-    coord_gen = DEFAULT_COORD_GEN
-    coord_gen_qual = DEFAULT_COORD_GEN_QUAL
+    coord_gen = None
+    coord_gen_qual = None
 
     # For each argument in the conversion kwargs, interpret it as the appropriate option for this conversion, overriding
     # defaults set above
@@ -199,6 +199,8 @@ def run_converter_through_gui(test_spec: SingleConversionTestSpec,
                     coord_gen = subval
                     if COORD_GEN_QUAL_KEY in val:
                         coord_gen_qual = val[COORD_GEN_QUAL_KEY]
+                    else:
+                        coord_gen_qual = DEFAULT_COORD_GEN_QUAL
                 elif subkey == COORD_GEN_QUAL_KEY:
                     # Handled alongside COORD_GEN_KEY above
                     pass
@@ -318,6 +320,19 @@ def run_converter_through_gui(test_spec: SingleConversionTestSpec,
             if not found:
                 raise ValueError(f"Option {option} was not found in {table_id} options table for conversion from "
                                  f"{from_format} to {test_spec.to_format} with converter {test_spec.converter_name}")
+
+    # If radio-button settings are supplied, apply them now
+    for setting, name, l_allowed in ((coord_gen, "coord_gen", L_ALLOWED_COORD_GENS),
+                                     (coord_gen_qual, "coord_gen_qual", L_ALLOWED_COORD_GEN_QUALS)):
+        if not setting:
+            continue
+
+        if setting not in l_allowed:
+            raise ValueError(f"Invalid {name} value supplied: {setting}. Allowed values are: " +
+                             str(l_allowed))
+
+        setting_radio = wait_and_find_element(driver, f"//input[@value='{setting}']")
+        setting_radio.click()
 
     # Click on the "Convert" button.
     wait_and_find_element(driver, "//input[@id='uploadButton']").click()
