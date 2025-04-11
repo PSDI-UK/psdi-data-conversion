@@ -6,7 +6,6 @@ Utilities to aid in testing of the GUI
 
 
 from dataclasses import dataclass
-from itertools import product
 import os
 import shutil
 from tempfile import TemporaryDirectory
@@ -295,23 +294,26 @@ def run_converter_through_gui(test_spec: SingleConversionTestSpec,
 
         # Get the rows in the options table
         options_table = wait_and_find_element(driver, f"//table[@id='{table_id}']")
-        l_rows = options_table.find_elements(By.XPATH, "//tr")
+        l_rows = options_table.find_elements(By.XPATH, "./tr")
 
         # Look for and set each option
         for option in l_options:
             found = False
             for row in l_rows:
-                l_items = row.find_elements(By.XPATH, "//td")
+                l_items = row.find_elements(By.XPATH, "./td")
                 label = l_items[1]
-                if not label.text.startswith(f"{option[0]}:"):
+                if not label.text.startswith(option[0]):
                     continue
 
                 # Select the option by clicking the box at the first element in the row to make the input appear
                 l_items[0].click()
 
-                # Input the option in the input box that appears
-                input_box = wait_and_find_element(row, "//td/input")
+                # Input the option in the input box that appears in the third position in the row
+                input_box = wait_and_find_element(l_items[2], "./input")
                 input_box.send_keys(option[1:])
+
+                found = True
+                break
 
             if not found:
                 raise ValueError(f"Option {option} was not found in {table_id} options table for conversion from "
