@@ -255,7 +255,7 @@ def run_converter_through_gui(test_spec: SingleConversionTestSpec,
 
     # An alert may be present here, which we check for using a try block
     try:
-        WebDriverWait(driver, 0.1).until(EC.alert_is_present())
+        WebDriverWait(driver, 0.2).until(EC.alert_is_present())
         alert = Alert(driver)
         alert_text = alert.text
         alert.dismiss()
