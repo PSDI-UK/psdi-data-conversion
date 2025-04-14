@@ -284,9 +284,9 @@ class FileConverter:
             if max_file_size is None:
                 from psdi_data_conversion.converters.openbabel import CONVERTER_OB
                 if self.name == CONVERTER_OB:
-                    self.max_file_size = const.DEFAULT_MAX_FILE_SIZE_OB*const.MEGABYTE
+                    self.max_file_size = const.DEFAULT_MAX_FILE_SIZE_OB
                 else:
-                    self.max_file_size = const.DEFAULT_MAX_FILE_SIZE*const.MEGABYTE
+                    self.max_file_size = const.DEFAULT_MAX_FILE_SIZE
             else:
                 self.max_file_size = max_file_size*const.MEGABYTE
 
