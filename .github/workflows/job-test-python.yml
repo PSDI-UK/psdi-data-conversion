@@ -28,7 +28,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Set up Python 3.12
-        uses: actions/setup-python@v3
+        uses: actions/setup-python@v5
         with:
           python-version: "3.12"
       - name: Install dependencies
@@ -38,7 +38,7 @@ jobs:
           pip install .[test]
       - name: Test with pytest and report coverage
         run: |
-          coverage run -m pytest; coverage report
+          coverage run -m pytest tests/python; coverage report
       - name: Lint with flake8
         run: |
           # stop the build if there are Python syntax errors or undefined names

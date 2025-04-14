@@ -297,6 +297,22 @@ For debugging python issues, it's recommended to install the package in editable
 pip install --editable .'[gui-test]'
 ```
 
+### Running Unit Tests
+
+The GUI unit tests require a web driver to be installed, and will install one if one isn't. To avoid repeated unnecessary API calls for the installation, you can set the environmental variable `DRIVER` when running tests to the location of your driver. This can be set to be automatically picked up by many IDEs by setting this in a `.env` file in the root of your project, e.g.:
+
+```
+DRIVER=~/.wdm/drivers/geckodriver/linux64/v0.36.0/geckodriver
+```
+
+To get the address of your driver, you can run the following in a Python terminal from within this projects virtual environment (after installing the `[gui-test]` optional dependencies):
+
+```python
+from webdriver_manager.firefox import GeckoDriverManager
+driver_path = GeckoDriverManager().install()
+print(f"Gecko driver installed to: {driver_path}")
+```
+
 ## Continuous Integration
 
 This project uses various GitHub workflows to perform Continuous Integration tasks. These can be found in the `.github/workflows` folder. The files which start with "ci-" are the directly-triggered workflows, and the files which start with "job-" are reusable workflows called by the former. These workflows handle the following tasks:
@@ -310,7 +326,7 @@ See the commons within the files for further details.
 
 ## Publishing
 
-The Python library, CLA, and local GUI are (planned to be) published as a Python package via PyPI. This section describes how the package is set up and how it's published.
+The Python library, CLA, and local GUI are published as a Python package via PyPI. This section describes how the package is set up and how it's published.
 
 ### Package Setup
 
@@ -318,11 +334,11 @@ The package's setup is defined in the `pyproject.toml` file. This defines the pr
 
 The package uses [Hatch](https://hatch.pypa.io/latest/) for its build backend, as it is simpler to configure than the classic [Setuptools](https://setuptools.pypa.io/en/latest/userguide/) and provides some useful extensibility.
 
-The version of the package is set to be determined from the version control system, meaning on the release branch, the version will always match the latest tag.
+The version of the package is set to be determined from the version control system, meaning on the release branch, the version will always match the latest tag. This alleviates us of having to manually maintain the version for the package to keep it correct, but does result in some quirks. It's a bit fussier to set up (though that's done now), and it makes the user take an extra step if they want to install from source but haven't cloned the repository - this is noted in the installation instructions in the README.
 
 ### Initial Publication
 
-This section details the plan for the initial publication of this package - after this is complete, this section will be left in for reference in case of future need.
+This section details the proceduce for the initial publication of this package - now that this is complete, this section is left in for reference in case of future need.
 
 First, it's necessary to install a couple required packages in order to build a Python package: `build` to build it and `twine` to upload it. These can be installed with pip via:
 
@@ -349,6 +365,14 @@ To upload, follow [this tutorial](https://packaging.python.org/en/latest/tutoria
 ### Publishing Updates
 
 The `ci-release.yml` workflow is planned to publish any new releases to PyPI after the initial publication. This can be set up by uncommenting the relevant lines in this file, possibly updating the `job-publish-pypi.yml` to enable this (testing will be necessary), and setting up Trusted Publishing for the project on PyPI (see [guide](https://docs.github.com/en/actions/security-for-github-actions/security-hardening-your-deployments/configuring-openid-connect-in-pypi))
+
+### Project Management
+
+This project is published on PyPI at https://pypi.org/project/psdi-data-conversion/ and on TestPyPI at https://test.pypi.org/project/psdi-data-conversion/. Maintainers can manage the project through the "Manage" link on that page or from their own projects page.
+
+The most important setting to be aware of here is Publishing -> Trusted Publisher Management. This is the system used to allow automatic publishing of releases from GitHub. It's set up so that the current project, organisation, environment, and workflow for publishing are approved. If any of these change, this will need to be updated by adding a new trusted publisher with the new settings (on both PyPI and TestPyPI) and removing the old one.
+
+The management page can also be used to add or remove collaborators through the Collaborators tab. Generally the project on these sites doesn't require much maintenance, but at least a few active collaborators should be on it at all times to avoid getting locked out if someone is suddenly unavailable.
 
 ## Deployment
 

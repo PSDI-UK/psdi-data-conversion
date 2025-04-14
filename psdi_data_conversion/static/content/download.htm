@@ -43,6 +43,8 @@
         Python library.
       </p>
 
+      <h2>Installation</h2>
+
       <h3>Install via pip</h3>
 
       <ul>
@@ -63,12 +65,6 @@
         Python library.
       </p>
 
-      <p>
-        If you do wish to run the local version of this webpage, you'll need to create a helper script to set up the
-        proper parameters and start the server. See the README provided on the front page of this project's PyPI page,
-        linked above, for the source of this helper script, which you can paste and use locally.
-      </p>
-
       <h3>Source Code</h3>
 
       <ul>
@@ -86,10 +82,27 @@
         for other possible optional dependencies sets that can be installed.
       </p>
 
-      <p>When installed in this manner, the helper script to run the local webpage is provided in the root directory
-        of the repository as <code class="secondary">run_local.sh</code>. It can be run from this directory, copied to
-        your <code class="secondary">$PATH</code>, or aliased as desired.
+      <h2>Use</h2>
+
+      <p>
+        Once installed, the project can be used in one of three ways:
       </p>
+
+      <ul>
+        <li><strong>Local Gui:</strong> Run the script <code class="secondary">psdi-data-convert-gui</code> to start the
+          server. Append the <code class="secondary">--help</code> option for to see optional arguments (generally not
+          required for end-users)
+        </li>
+        <li><strong>Command-Line Application:</strong> Run the script <code class="secondary">psdi-data-convert</code>
+          to use the application at the command-line. Append the <code class="secondary">--help</code> option to see
+          arguments for it, and/or find documentation in the project's README.
+        </li>
+        <li><strong>Python Library:</strong> Within a Python script, library, or terminal, the project can be imported
+          via <code class="secondary">import psdi_data_conversion</code>, with the most useful function being <code
+            class="secondary">psdi_data_conversion.converter.run_converter</code> - see the <code
+            class="secondary">help()</code> of this function and/or find documentation in the project's README.
+        </li>
+      </ul>
 
       <h2>Documentation</h2>
 

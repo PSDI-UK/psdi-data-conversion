@@ -5,6 +5,7 @@ Version 1.0, 8th November 2024
 This script acts as a server for the PSDI Data Conversion Service website.
 """
 
+from argparse import ArgumentParser
 import hashlib
 import os
 import json
@@ -14,6 +15,7 @@ import sys
 import traceback
 from flask import Flask, request, render_template, abort, Response
 
+import psdi_data_conversion
 from psdi_data_conversion import log_utility
 from psdi_data_conversion import constants as const
 from psdi_data_conversion.converter import run_converter
@@ -63,6 +65,20 @@ else:
         print(f"ERROR: {str(e)}")
         exit(1)
 
+# Get the maximum allowed size from the envvar for it
+ev_max_file_size = os.environ.get(const.MAX_FILESIZE_EV)
+if ev_max_file_size is not None:
+    max_file_size = float(ev_max_file_size)*const.MEGABYTE
+else:
+    max_file_size = const.DEFAULT_MAX_FILE_SIZE
+
+# And same for the Open Babel maximum file size
+ev_max_file_size_ob = os.environ.get(const.MAX_FILESIZE_OB_EV)
+if ev_max_file_size_ob is not None:
+    max_file_size_ob = float(ev_max_file_size_ob)*const.MEGABYTE
+else:
+    max_file_size_ob = const.DEFAULT_MAX_FILE_SIZE_OB
+
 app = Flask(__name__)
 
 
@@ -95,19 +111,6 @@ def get_last_sha() -> str:
 def website():
     """Return the web page along with the token
     """
-    # Get the maximum allowed size from the envvar for it
-    ev_max_file_size = os.environ.get(const.MAX_FILESIZE_EV)
-    if ev_max_file_size is not None:
-        max_file_size = float(ev_max_file_size)*const.MEGABYTE
-    else:
-        max_file_size = const.DEFAULT_MAX_FILE_SIZE
-
-    # And same for the Open Babel maximum file size
-    ev_max_file_size_ob = os.environ.get(const.MAX_FILESIZE_OB_EV)
-    if ev_max_file_size_ob is not None:
-        max_file_size_ob = float(ev_max_file_size_ob)*const.MEGABYTE
-    else:
-        max_file_size_ob = const.DEFAULT_MAX_FILE_SIZE_OB
 
     data = [{'token': token,
              'max_file_size': max_file_size,
@@ -143,7 +146,7 @@ def convert():
                                               data=request.form,
                                               to_format=request.form['to'],
                                               from_format=request.form['from'],
-                                              strict=request.form['check_ext'],
+                                              strict=(request.form['check_ext'] != "false"),
                                               log_mode=log_mode,
                                               log_level=log_level,
                                               delete_input=True,
@@ -260,3 +263,80 @@ def data():
     else:
         # return http status code 405
         abort(405)
+
+
+def start_app():
+    """Start the Flask app - this requires being run from the base directory of the project, so this changes the
+    current directory to there. Anything else which changes it while the app is running may interfere with its proper
+    execution.
+    """
+
+    os.chdir(os.path.join(psdi_data_conversion.__path__[0], ".."))
+    app.run()
+
+
+def main():
+    """Standard entry-point function for this script.
+    """
+
+    parser = ArgumentParser()
+
+    parser.add_argument("--use-env-vars", action="store_true",
+                        help="If set, all other arguments and defaults for this script are ignored, and environmental "
+                        "variables and their defaults will instead control execution. These defaults will result in "
+                        "the app running in production server mode.")
+
+    parser.add_argument("--max-file-size", type=float, default=const.DEFAULT_MAX_FILE_SIZE,
+                        help="The maximum allowed filesize in MB - 0 (default) indicates no maximum")
+
+    parser.add_argument("--max-file-size-ob", type=float, default=const.DEFAULT_MAX_FILE_SIZE_OB,
+                        help="The maximum allowed filesize in MB for the Open Babel converter, taking precendence over "
+                        "the general maximum file size when Open Babel is used - 0 indicates no maximum. Default 1 MB.")
+
+    parser.add_argument("--service-mode", action="store_true",
+                        help="If set, will run as if deploying a service rather than the local GUI")
+
+    parser.add_argument("--dev-mode", action="store_true",
+                        help="If set, will expose development elements")
+
+    parser.add_argument("--log-mode", type=str, default=const.LOG_FULL,
+                        help="How logs should be stored. Allowed values are: \n"
+                        "- 'full' - Multi-file logging, not recommended for the CLI, but allowed for a compatible "
+                        "interface with the public web app"
+                        "- 'simple' - Logs saved to one file"
+                        "- 'stdout' - Output logs and errors only to stdout"
+                        "- 'none' - Output only errors to stdout")
+
+    parser.add_argument("--log-level", type=str, default=None,
+                        help="The desired level to log at. Allowed values are: 'DEBUG', 'INFO', 'WARNING', 'ERROR, "
+                             "'CRITICAL'. Default: 'INFO' for logging to file, 'WARNING' for logging to stdout")
+
+    # Set global variables for settings based on parsed arguments, unless it's set to use env vars
+    args = parser.parse_args()
+
+    if not args.use_env_vars:
+
+        global max_file_size
+        max_file_size = args.max_file_size*const.MEGABYTE
+
+        global max_file_size_ob
+        max_file_size_ob = args.max_file_size_ob*const.MEGABYTE
+
+        global service_mode
+        service_mode = args.service_mode
+
+        global production_mode
+        production_mode = not args.dev_mode
+
+        global log_mode
+        log_mode = args.log_mode
+
+        global log_level
+        log_level = args.log_level
+
+    start_app()
+
+
+if __name__ == "__main__":
+
+    main()

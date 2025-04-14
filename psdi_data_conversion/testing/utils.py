@@ -19,18 +19,54 @@ from unittest.mock import patch
 import py
 import pytest
 
+import psdi_data_conversion
 from psdi_data_conversion.constants import CONVERTER_DEFAULT, GLOBAL_LOG_FILENAME, LOG_NONE, OUTPUT_LOG_EXT
 from psdi_data_conversion.converter import run_converter
 from psdi_data_conversion.converters.openbabel import COORD_GEN_KEY, COORD_GEN_QUAL_KEY
 from psdi_data_conversion.dist import LINUX_LABEL, get_dist
 from psdi_data_conversion.file_io import is_archive, split_archive_ext
 from psdi_data_conversion.main import main as data_convert_main
-from psdi_data_conversion.testing.constants import INPUT_TEST_DATA_LOC
+from psdi_data_conversion.testing.constants import (INPUT_TEST_DATA_LOC_IN_PROJECT, OUTPUT_TEST_DATA_LOC_IN_PROJECT,
+                                                    TEST_DATA_LOC_IN_PROJECT)
+
+
+def get_path_in_project(filename):
+    """Get the realpath to a file contained within the project, given its project-relative path"""
+
+    old_cwd = os.getcwd()
+
+    try:
+        os.chdir(os.path.join(psdi_data_conversion.__path__[0], ".."))
+        realpath = os.path.realpath(filename)
+
+    finally:
+        # Change back to the previous directory
+        os.chdir(old_cwd)
+
+    return realpath
+
+
+def get_test_data_loc():
+    """Get the realpath of the base directory containing all data for tests"""
+    return get_path_in_project(TEST_DATA_LOC_IN_PROJECT)
+
+
+def get_input_test_data_loc():
+    """Get the realpath of the base directory containing input data for tests"""
+    return get_path_in_project(INPUT_TEST_DATA_LOC_IN_PROJECT)
+
+
+def get_output_test_data_loc():
+    """Get the realpath of the base directory containing expected output data for tests"""
+    return get_path_in_project(OUTPUT_TEST_DATA_LOC_IN_PROJECT)
 
 
 @dataclass
 class ConversionTestInfo:
     """Information about a tested conversion."""
+
+    run_type: str
+    """One of "library", "cla", or "gui", describing which type of test run was performed"""
 
     test_spec: SingleConversionTestSpec
     """The specification of the test conversion which was run to produce this"""
@@ -50,47 +86,28 @@ class ConversionTestInfo:
     captured_stderr: str | None = None
     """Any output to stderr while the test was run"""
 
+    exc_info: pytest.ExceptionInfo | None = None
+    """If the test conversion raised an exception, that exception's info, otherwise None"""
+
     @property
     def qualified_in_filename(self):
         """Get the fully-qualified name of the input file"""
-        return os.path.join(self.input_dir, self.test_spec.filename)
+        return os.path.realpath(os.path.join(self.input_dir, self.test_spec.filename))
 
     @property
     def qualified_out_filename(self):
         """Get the fully-qualified name of the output file"""
-        return os.path.join(self.output_dir, self.test_spec.out_filename)
+        return os.path.realpath(os.path.join(self.output_dir, self.test_spec.out_filename))
 
     @property
     def qualified_log_filename(self):
         """Get the fully-qualified name of the log file"""
-        return os.path.join(self.output_dir, self.test_spec.log_filename)
+        return os.path.realpath(os.path.join(self.output_dir, self.test_spec.log_filename))
 
     @property
     def qualified_global_log_filename(self):
         """Get the fully-qualified name of the log file"""
         return self.test_spec.global_log_filename
-
-
-@dataclass
-class LibraryConversionTestInfo(ConversionTestInfo):
-    """Information about a tested conversion, specifically for when it was tested through a call to the library"""
-
-    exc_info: pytest.ExceptionInfo | None = None
-    """If the test conversion raised an exception, that exception's info, otherwise None"""
-
-
-@dataclass
-class CLAConversionTestInfo(ConversionTestInfo):
-    """Information about a tested conversion, specifically for when it was tested through a the command-line
-    application (CLA)
-    """
-
-
-@dataclass
-class GUIConversionTestInfo(ConversionTestInfo):
-    """Information about a tested conversion, specifically for when it was tested through the GUI (the local version of
-    the web app)
-    """
 
 
 @dataclass
@@ -120,6 +137,11 @@ class ConversionTestSpec:
 
     expect_success: bool | Iterable[bool] = True
     """Whether or not to expect the test to succeed"""
+
+    skip: bool | Iterable[bool] = False
+    """If set to true, this test will be skipped and not run. Can also be set individually for certain tests within an
+    array. This should typically only be used when debugging to skip working tests to more easily focus on non-working
+    tests"""
 
     callback: (Callable[[ConversionTestInfo], str] |
                Iterable[Callable[[ConversionTestInfo], str]] | None) = None
@@ -187,6 +209,9 @@ class ConversionTestSpec:
             if attr_name in l_single_val_attrs:
                 setattr(self, attr_name, [getattr(self, attr_name)]*self._len)
 
+        # Check if all tests should be skipped
+        self.skip_all = all(self.skip)
+
     def __len__(self):
         """Get the length from the member - valid only after `__post_init__` has been called"""
         return self._len
@@ -220,6 +245,9 @@ class SingleConversionTestSpec:
 
     expect_success: bool = True
     """Whether or not to expect the test to succeed"""
+
+    skip: bool = False
+    """If set to True, this test will be skipped, always returning success"""
 
     callback: (Callable[[ConversionTestInfo], str] | None) = None
     """Function to be called after the conversion is performed to check in detail whether results are as expected. It
@@ -258,9 +286,14 @@ def run_test_conversion_with_library(test_spec: ConversionTestSpec):
     with TemporaryDirectory("_input") as input_dir, TemporaryDirectory("_output") as output_dir:
         # Iterate over the test spec to run each individual test it defines
         for single_test_spec in test_spec:
+            if single_test_spec.skip:
+                print(f"Skipping single test spec {single_test_spec}")
+                continue
+            print(f"Running single test spec: {single_test_spec}")
             _run_single_test_conversion_with_library(test_spec=single_test_spec,
                                                      input_dir=input_dir,
                                                      output_dir=output_dir)
+            print(f"Success for test spec: {single_test_spec}")
 
 
 def _run_single_test_conversion_with_library(test_spec: SingleConversionTestSpec,
@@ -279,9 +312,9 @@ def _run_single_test_conversion_with_library(test_spec: SingleConversionTestSpec
     """
 
     # Symlink the input file to the input directory
-    qualified_in_filename = os.path.join(input_dir, test_spec.filename)
+    qualified_in_filename = os.path.realpath(os.path.join(input_dir, test_spec.filename))
     try:
-        os.symlink(os.path.join(INPUT_TEST_DATA_LOC, test_spec.filename),
+        os.symlink(os.path.join(get_input_test_data_loc(), test_spec.filename),
                    qualified_in_filename)
     except FileExistsError:
         pass
@@ -316,13 +349,14 @@ def _run_single_test_conversion_with_library(test_spec: SingleConversionTestSpec
 
     # Compile output info for the test and call the callback function if one is provided
     if test_spec.callback:
-        test_info = LibraryConversionTestInfo(test_spec=test_spec,
-                                              input_dir=input_dir,
-                                              output_dir=output_dir,
-                                              success=success,
-                                              captured_stdout=stdout,
-                                              captured_stderr=stderr,
-                                              exc_info=exc_info)
+        test_info = ConversionTestInfo(run_type="library",
+                                       test_spec=test_spec,
+                                       input_dir=input_dir,
+                                       output_dir=output_dir,
+                                       success=success,
+                                       captured_stdout=stdout,
+                                       captured_stderr=stderr,
+                                       exc_info=exc_info)
         callback_msg = test_spec.callback(test_info)
         assert not callback_msg, callback_msg
 
@@ -339,9 +373,14 @@ def run_test_conversion_with_cla(test_spec: ConversionTestSpec):
     with TemporaryDirectory("_input") as input_dir, TemporaryDirectory("_output") as output_dir:
         # Iterate over the test spec to run each individual test it defines
         for single_test_spec in test_spec:
+            if single_test_spec.skip:
+                print(f"Skipping single test spec {single_test_spec}")
+                continue
+            print(f"Running single test spec: {single_test_spec}")
             _run_single_test_conversion_with_cla(test_spec=single_test_spec,
                                                  input_dir=input_dir,
                                                  output_dir=output_dir)
+            print(f"Success for test spec: {single_test_spec}")
 
 
 def _run_single_test_conversion_with_cla(test_spec: SingleConversionTestSpec,
@@ -360,9 +399,9 @@ def _run_single_test_conversion_with_cla(test_spec: SingleConversionTestSpec,
     """
 
     # Symlink the input file to the input directory
-    qualified_in_filename = os.path.join(input_dir, test_spec.filename)
+    qualified_in_filename = os.path.realpath(os.path.join(input_dir, test_spec.filename))
     try:
-        os.symlink(os.path.join(INPUT_TEST_DATA_LOC, test_spec.filename),
+        os.symlink(os.path.join(get_input_test_data_loc(), test_spec.filename),
                    qualified_in_filename)
     except FileExistsError:
         pass
@@ -392,7 +431,7 @@ def _run_single_test_conversion_with_cla(test_spec: SingleConversionTestSpec,
             # Get the success from whether or not the exit code is 0
             success = not exc_info.value.code
 
-        qualified_out_filename = os.path.join(output_dir, test_spec.out_filename)
+        qualified_out_filename = os.path.realpath(os.path.join(output_dir, test_spec.out_filename))
 
         # Determine success based on whether or not the output file exists with non-zero size
         if not os.path.isfile(qualified_out_filename) or os.path.getsize(qualified_out_filename) == 0:
@@ -405,12 +444,13 @@ def _run_single_test_conversion_with_cla(test_spec: SingleConversionTestSpec,
 
     # Compile output info for the test and call the callback function if one is provided
     if test_spec.callback:
-        test_info = CLAConversionTestInfo(test_spec=test_spec,
-                                          input_dir=input_dir,
-                                          output_dir=output_dir,
-                                          success=success,
-                                          captured_stdout=stdout,
-                                          captured_stderr=stderr)
+        test_info = ConversionTestInfo(run_type="cla",
+                                       test_spec=test_spec,
+                                       input_dir=input_dir,
+                                       output_dir=output_dir,
+                                       success=success,
+                                       captured_stdout=stdout,
+                                       captured_stderr=stderr)
         callback_msg = test_spec.callback(test_info)
         assert not callback_msg, callback_msg
 
@@ -441,6 +481,8 @@ def run_converter_through_cla(filename: str,
         The directory which contains the output file
     log_file : str
         The desired name of the log file
+    conversion_kwargs : Any
+        Additional arguments describing the conversion
     """
 
     # Start the argument string with the arguments we will always include

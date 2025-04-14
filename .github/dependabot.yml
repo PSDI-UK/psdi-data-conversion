@@ -1,0 +1,14 @@
+# Use Dependabot to track updates for github actions and pip dependencies
+
+version: 2
+updates:
+  - package-ecosystem: "github-actions"
+    # We place our actions in .github/workflows, the default
+    directory: "/"
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "pip"
+    # We use pyproject.toml in the root directory, the default
+    directory: "/"
+    schedule:
+      interval: "weekly"

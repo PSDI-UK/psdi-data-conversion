@@ -1,5 +1,5 @@
 [build-system]
-requires = ["hatchling==1.21.1", "hatch-vcs"]
+requires = ["hatchling==1.27.0", "hatch-vcs"]
 build-backend = "hatchling.build"
 
 [project]
@@ -61,6 +61,7 @@ doc = ["pdoc3"]
 
 [project.scripts]
 psdi-data-convert = "psdi_data_conversion.main:main"
+psdi-data-convert-gui = "psdi_data_conversion.app:main"
 
 [project.urls]
 Homepage = "https://data-conversion.psdi.ac.uk/"

@@ -33,7 +33,10 @@ This is the repository for the PSDI PF2 Chemistry File Format Conversion project
   - [Installation and Setup](#installation-and-setup)
   - [Running the App](#running-the-app)
 - [Testing](#testing)
-- [Licencing](#licencing)
+- [Troubleshooting](#troubleshooting)
+  - [OSError: [Errno 24] Too many open files](#oserror-errno-24-too-many-open-files)
+  - [Errors running c2x or Atomsk converters](#errors-running-c2x-or-atomsk-converters)
+- [Licensing](#licensing)
 - [Contributors](#contributors)
 - [Funding](#funding)
 
@@ -67,15 +70,17 @@ This is the repository for the PSDI PF2 Chemistry File Format Conversion project
 - `test_data`
   - (Files used for testing the project)
 - `tests`
-  - (Unit tests for the project)
+  - `gui`
+    - (Unit tests for the GUI, aka the local version of the web app)
+  - `python`
+    - (Unit tests for the Python library and command-line application)
 - `CHANGELOG.md` (Updates since initial public release)
 - `CONTRIBUTING.md` (Guidelines and information for contributors to the project)
 - `DOCKERFILE` (Dockerfile for image containerising PSDI's data conversion service)
-- `LICENSE` (Apache Licence version 2.0)
+- `LICENSE` (Apache License version 2.0)
 - `pyproject.toml` (Python project metadata and settings)
 - `README.md` (This file)
 - `requirements.txt` (Requirements for the web app deployment of this project)
-- `run_local.sh` (Helper script to run the web app locally)
 
 ## Requirements
 
@@ -351,50 +356,9 @@ pip install .'[gui]'
 
 If your system does not allow installation in this manner, it may be necessary to set up a virtual environment. See the instructions in the [command-line application installation](#installation) section above for how to do that, and then try to install again once you've set one up and activated it.
 
-If you've installed this repository from source, you can use the provided `run_local.sh` bash script to run the application. Otherwise (e.g. if you've installed from a wheel or PyPI), copy and paste the following into a script:
-
-```bash
-#!/bin/bash
-
-# The envvar MAX_FILESIZE can be used to set the maximum allowed filesize in MB - 0 indicates no maximum
-if [ -z $MAX_FILESIZE ]; then
-  export MAX_FILESIZE=0
-fi
-
-# The envvar MAX_FILESIZE_OB can be used to set the maximum allowed filesize in MB for the Open Babel converter - 0
-# indicates no maximum. This is currently set to 1 MB by default as the converter seems to hang above this limit (not
-# even allowing the process to be cancelled). This can be changed in the future if this is patched
-if [ -z $MAX_FILESIZE_OB ]; then
-  export MAX_FILESIZE_OB=1
-fi
-
-# Logging control - "full" sets server-style logging, which is necessary to produce the output logs with the expected
-# names. This should not be changed, or else errors will occur
-export LOG_MODE=full
-
-# The level to log at. Leave blank for defaults, which logs at INFO level for user output and ERROR level for the server
-# log and stdout. If set to a different value here (e.g. DEBUG), all these channels will be set to that level
-export LOG_LEVEL=
-
-# The envvar SERVICE_MODE can be set to "true" to make this behave as if it's running as the public web service -
-# uncomment the following line to enable that
-# export SERVICE_MODE=true
-
-# Uncomment the following line to enable debug mode
-# export FLASK_ENV=development
-
-# Execute a local run of the application from the proper path
-
-PACKAGE_PATH=`python -c "import psdi_data_conversion; print(psdi_data_conversion.__path__[0])"`
-cd $PACKAGE_PATH/..
-python -m flask --app psdi_data_conversion/app.py run
-```
-
-If desired, you can modify the environmental variables set in this script to modify the operation - see the comments on each for details.
-
 ### Running the App
 
-Run the `run_local.sh` script to start the server. You can then access the website by going to <http://127.0.0.1:5000> in a browser (this will also be printed in the terminal, and you can CTRL+click it there to open it in your default browser). Guidance for using the app is given on each page of it.
+Once installed, the command-line script `psdi-data-convert-gui` will be made available, which can be called to start the server. You can then access the website by going to <http://127.0.0.1:5000> in a browser (this will also be printed in the terminal, and you can CTRL+click it there to open it in your default browser). Guidance for using the app is given on each page of it. When you're finished with the app, key CTRL+C in the terminal where you called the script to shut down the server, or, if the process was backgrounded, kill the appropriate process.
 
 In case of problems when using Chrome, try opening Chrome from the command line:
 open -a "Google Chrome.app" --args --allow-file-access-from-files
@@ -417,28 +381,80 @@ To test the CLA and Python library, install the optional testing requirements lo
 
 ```bash
 pip install .'[test]'
-pytest
+pytest tests/python
 ```
 
 To test the local version of the web app, install the GUI testing requirements locally (which also include the standard GUI requirements and standard testing requirements), start the server, and test by executing the GUI test script:
 
 ```bash
 pip install .'[gui-test]'
-./run_local.sh & # Start the server for the web app in the background
-cd tests/selenium
-./run.sh
-kill %1 # Stop the web server - it may have a different job ID. If you don't know the job ID, you can alternatively call "fg" to bring the job to the foreground, then type CTRL+c to stop it
+pytest tests/gui
 ```
 
-## Licencing
+Both of these sets of tests can also be run together if desired through:
+
+```bash
+pip install .'[gui-test]'
+pytest
+```
+
+## Troubleshooting
+
+This section presents solutions for commonly-encountered issues.
+
+### OSError: [Errno 24] Too many open files
+
+You may see the error:
+
+```
+OSError: [Errno 24] Too many open files
+```
+
+while running the command-line application, using the Python library, or running tests This error is caused by a program hitting the limit of the number of open filehandles allowed by the OS. This limit is typically set to 1024 on Linux systems and 256 on MacOS systems, and thus this issue occurs much more often on the latter. You can see what your current limit is by running the command:
+
+```bash
+ulimit -a | grep "open files"
+```
+
+This limit can be temporarily increased for the current terminal session by running the command:
+
+```bash
+ulimit -n 1024 # Or another, higher number
+```
+
+First, try increasing the limit and then redo the operation which caused this error to see if this resolves it. If this does, you can make this change permanent in a few ways, the easiest of which is to add this command to your `.bashrc` file so it will be set for every new terminal session.
+
+If you see this error when the filehandle limit is already set to a high value such as 1024, this may indicate the presence of a bug in the project which causes a leaking of filehandles, so please open an issue about it, pasting the error you get and the details of your system, particularly including your current filehandle limit.
+
+### Errors running c2x or Atomsk converters
+
+We provide support for the c2x and Atomsk converters by packing binaries which support common Linux and MacOS platforms with this project, but we cannot guarantee universal support for these binaries. In particular, they may rely on dynamically-linked libraries which aren't installed on your system.
+
+Look through the error message you received for messages such as "Library not loaded" or "no such file", and see if they point to the name of a library which you can try installing. For instance, if you see that it's searching for `libquadmath.0.dylib` but not finding it, you can try installing this library. In this case, this library can be installed through apt with:
+
+```bash
+sudo apt install libquadmath0
+```
+
+or through brew via:
+
+```bash
+brew install gcc
+```
+
+Alternatively, you can run your own versions of the `c2x` and `atomsk` binaries with this project. Compile them yourself however you wish - see the projects at https://github.com/codenrx/c2x and https://github.com/pierrehirel/atomsk and follow their instructions to build a binary on your system. Once you've done so, add the binary to your `$PATH`, and this project will pick that up and use it in preference to the prepackaged binary.
+
+On the other hand, it's possible that an error of this sort will occur if you have a non-working binary of one of these converters in your `$PATH`. If this might be the case, you can try removing it and see if the prepackaged binary works for you, or else recompile it to try to fix errors.
+
+## Licensing
 
 This project is provided under the Apache License version 2.0, the terms of which can be found in the file `LICENSE`.
 
-This project redistributes compiled binaries for the Atomsk and c2x converters. These are both licenced under the
+This project redistributes compiled binaries for the Atomsk and c2x converters. These are both licensed under the
 GNU General Public License version 3 and are redistributed per its terms. Any further redistribution of these binaries,
-including redistribution of this project as a whole, including them, must also follow the terms of this licence.
+including redistribution of this project as a whole, including them, must also follow the terms of this license.
 
-This requires conspicuously displaying notice of this licence, providing the text of of the licence (provided here in
+This requires conspicuously displaying notice of this license, providing the text of of the license (provided here in
 the files `psdi_data_conversion/bin/LICENSE_C2X` and `psdi_data_conversion/bin/LICENSE_ATOMSK`), and appropriately
 conveying the source code for each of these. Their respective source code may be found at:
 
