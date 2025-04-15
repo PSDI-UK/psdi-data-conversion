@@ -329,11 +329,11 @@ class FileConverter:
             else:
                 self.from_format = from_format
 
-            # Remove any leading periods from to/from_format
-            if self.to_format.startswith("."):
-                self.to_format = self.to_format[1:]
-            if self.from_format.startswith("."):
-                self.from_format = self.from_format[1:]
+            # Convert in and out formats to FormatInfo, and raise an exception if one is ambiguous
+            from psdi_data_conversion.database import get_format_info, FormatInfo
+            which_format = None if self.supports_ambiguous_extensions else 0
+            self.from_format_info: FormatInfo = get_format_info(self.from_format, which_format)
+            self.to_format_info: FormatInfo = get_format_info(self.from_format, which_format)
 
             # Set placeholders for member variables which will be set when conversion is run
             self.in_size: int | None = None
@@ -360,13 +360,16 @@ class FileConverter:
             # Check that the requested conversion is valid and warn of any issues unless suppressed
             if not no_check:
                 from psdi_data_conversion.database import get_conversion_quality
-                qual = get_conversion_quality(self.name, self.from_format, self.to_format)
+                qual = get_conversion_quality(self.name,
+                                              self.from_format_info.id,
+                                              self.to_format_info.id)
                 if not qual:
-                    raise FileConverterHelpException(f"Conversion from {self.from_format} to {self.to_format} "
+                    raise FileConverterHelpException(f"Conversion from {self.from_format_info.name} to "
+                                                     f"{self.to_format_info.name} "
                                                      f"with {self.name} is not supported.")
                 if qual.details:
                     msg = (":\nPotential data loss or extrapolation issues with the conversion from "
-                           f"{self.from_format} to {self.to_format}:\n")
+                           f"{self.from_format_info.name} to {self.to_format_info.name}:\n")
                     for detail_line in qual.details.split("\n"):
                         msg += f"- {detail_line}\n"
                     self.logger.warning(msg)
@@ -608,8 +611,8 @@ class FileConverter:
         # empty or whitespace will be stripped by the logger, so we use a lone colon, which looks least obtrusive
         return (":\n"
                 f"File name:         {self.filename_base}\n"
-                f"From:              {self.from_format}\n"
-                f"To:                {self.to_format}\n"
+                f"From:              {self.from_format_info.name} ({self.from_format_info.note})\n"
+                f"To:                {self.to_format} ({self.to_format_info.note})\n"
                 f"Converter:         {self.name}\n")
 
     def _log_success(self):
@@ -684,8 +687,8 @@ class FileConverter:
         from psdi_data_conversion.database import get_conversion_quality
 
         conversion_quality = get_conversion_quality(converter_name=self.name,
-                                                    in_format=self.from_format,
-                                                    out_format=self.to_format)
+                                                    in_format=self.from_format_info.id,
+                                                    out_format=self.to_format_info.id)
         if not conversion_quality:
             return "unknown"
         return conversion_quality.qual_str
@@ -698,10 +701,6 @@ class FileConverter:
 
         if self.delete_input:
             os.remove(self.in_filename)
-        if "from_full" in self.data:
-            self.from_format = self.data["from_full"]
-        if "to_full" in self.data:
-            self.to_format = self.data["to_full"]
         if "success" in self.data:
             self.quality = self.data["success"]
         else:
@@ -752,8 +751,9 @@ class ScriptFileConverter(FileConverter):
         if self.required_bin is not None:
             env["BIN_PATH"] = get_bin_path(self.required_bin)
 
-        process = subprocess.run(['sh', f'psdi_data_conversion/scripts/{self.script}', '--' + self.to_format,
-                                  self.in_filename, self.out_filename, from_flags, to_flags, from_options, to_options],
+        process = subprocess.run(['sh', f'psdi_data_conversion/scripts/{self.script}',
+                                  '--' + self.to_format_info.name, self.in_filename, self.out_filename, from_flags,
+                                  to_flags, from_options, to_options],
                                  env=env, capture_output=True, text=True)
 
         self.out = process.stdout

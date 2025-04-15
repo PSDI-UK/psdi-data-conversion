@@ -879,6 +879,10 @@ class DataConversionDatabase:
         """Get a format's ID info from either its name or ID
         """
         if isinstance(format_name_or_id, str):
+            # Silently strip leading .
+            if format_name_or_id.startswith("."):
+                format_name_or_id = format_name_or_id[1:]
+
             l_possible_format_info = self.d_format_info.get(format_name_or_id, [])
             if which == "all":
                 return l_possible_format_info
@@ -894,8 +898,10 @@ class DataConversionDatabase:
                 for possible_format_info in l_possible_format_info:
                     msg += f"\n{possible_format_info.id}: {possible_format_info.note}"
                 raise FileConverterDatabaseException(msg)
+
         elif isinstance(format_name_or_id, int):
             return self.l_format_info[format_name_or_id]
+
         else:
             raise FileConverterDatabaseException(f"Invalid key passed to `get_format_info`: '{format_name_or_id}'"
                                                  f" of type '{type(format_name_or_id)}'. Type must be `str` or "

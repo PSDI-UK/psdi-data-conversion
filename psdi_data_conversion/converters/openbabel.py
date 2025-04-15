@@ -148,7 +148,7 @@ class OBFileConverter(FileConverter):
             stdouterr_ob = py.io.StdCaptureFD(in_=False)
 
             ob_conversion = openbabel.OBConversion()
-            ob_conversion.SetInAndOutFormats(self.from_format, self.to_format)
+            ob_conversion.SetInAndOutFormats(self.from_format_info.name, self.to_format_info.name)
 
             # Retrieve 'from' and 'to' option flags and arguments
             from_flags = self.data.get("from_flags", "")
