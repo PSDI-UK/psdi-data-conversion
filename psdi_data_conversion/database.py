@@ -418,15 +418,29 @@ class FormatInfo:
 
         # Load attributes from input
         self.name = name
+        """The name of this format"""
+
         self.parent = parent
+        """The database which this format belongs to"""
 
         # Load attributes from the database
         self.id: int = d_single_format_info.get(DB_ID_KEY, -1)
+        """The ID of this format"""
+
         self.note: str = d_single_format_info.get(DB_FORMAT_NOTE_KEY, "")
+        """The description of this format"""
+
         self.composition = d_single_format_info.get(DB_FORMAT_COMP_KEY)
+        """Whether or not this format stores composition information"""
+
         self.connections = d_single_format_info.get(DB_FORMAT_CONN_KEY)
+        """Whether or not this format stores connections information"""
+
         self.two_dim = d_single_format_info.get(DB_FORMAT_2D_KEY)
+        """Whether or not this format stores 2D structural information"""
+
         self.three_dim = d_single_format_info.get(DB_FORMAT_3D_KEY)
+        """Whether or not this format stores 3D structural information"""
 
 
 @dataclass
