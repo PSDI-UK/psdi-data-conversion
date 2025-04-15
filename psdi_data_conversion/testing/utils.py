@@ -125,8 +125,11 @@ class ConversionTestSpec:
     filename: str | Iterable[str] = "nacl.cif"
     """The name of the input file, relative to the input test data location, or a list thereof"""
 
-    to_format: str | Iterable[str] = "pdb"
+    to_format: str | int | Iterable[str | int] = "pdb"
     """The format to test converting the input file to, or a list thereof"""
+
+    from_format: str | int | Iterable[str | int] | None = None
+    """The format of the input file, when it needs to be explicitly specified"""
 
     converter_name: str | Iterable[str] = CONVERTER_DEFAULT
     """The name of the converter to be used for the test, or a list thereof"""
@@ -233,8 +236,11 @@ class SingleConversionTestSpec:
     filename: str
     """The name of the input file, relative to the input test data location"""
 
-    to_format: str
+    to_format: str | int
     """The format to test converting the input file to"""
+
+    from_format: str | int | None = None
+    """The format of the input file, when it needs to be explicitly specified"""
 
     converter_name: str | Iterable[str] = CONVERTER_DEFAULT
     """The name of the converter to be used for the test"""
@@ -327,6 +333,7 @@ def _run_single_test_conversion_with_library(test_spec: SingleConversionTestSpec
         if test_spec.expect_success:
             run_converter(filename=qualified_in_filename,
                           to_format=test_spec.to_format,
+                          from_format=test_spec.from_format,
                           name=test_spec.converter_name,
                           upload_dir=input_dir,
                           download_dir=output_dir,
@@ -336,6 +343,7 @@ def _run_single_test_conversion_with_library(test_spec: SingleConversionTestSpec
             with pytest.raises(Exception) as exc_info:
                 run_converter(filename=qualified_in_filename,
                               to_format=test_spec.to_format,
+                              from_format=test_spec.from_format,
                               name=test_spec.converter_name,
                               upload_dir=input_dir,
                               download_dir=output_dir,
