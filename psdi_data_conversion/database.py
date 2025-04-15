@@ -11,7 +11,7 @@ from dataclasses import dataclass, field
 import json
 from logging import getLogger
 import os
-from typing import Any
+from typing import Any, Literal
 
 from psdi_data_conversion import constants as const
 from psdi_data_conversion.converter import D_REGISTERED_CONVERTERS
@@ -666,17 +666,17 @@ class ConversionsTable:
                                      d_prop_conversion_info=d_prop_conversion_info)
 
     def get_possible_converters(self,
-                                in_format: str,
-                                out_format: str) -> list[str]:
+                                in_format: str | int,
+                                out_format: str | int) -> list[str]:
         """Get a list of converters which can perform a conversion from one format to another and the degree of success
         with each of these converters
 
         Parameters
         ----------
-        in_format : str
-            The extension of the input file format
-        out_format : str
-            The extension of the output file format
+        in_format : str | int
+            The extension or ID of the input file format
+        out_format : str | int
+            The extension or ID of the output file format
 
         Returns
         -------
@@ -862,12 +862,16 @@ class DataConversionDatabase:
                                                  f" of type '{type(converter_name_or_id)}'. Type must be `str` or "
                                                  "`int`")
 
-    def get_format_info(self, format_name_or_id: str | int, which: int | None = None) -> FormatInfo:
+    def get_format_info(self,
+                        format_name_or_id: str | int,
+                        which: int | Literal["all"] | None = None) -> FormatInfo | list[FormatInfo]:
         """Get a format's ID info from either its name or ID
         """
         if isinstance(format_name_or_id, str):
             l_possible_format_info = self.d_format_info.get(format_name_or_id, [])
-            if len(l_possible_format_info) == 1:
+            if which == "all":
+                return l_possible_format_info
+            elif len(l_possible_format_info) == 1:
                 return l_possible_format_info[0]
             elif len(l_possible_format_info) == 0:
                 raise FileConverterDatabaseException(f"Format name '{format_name_or_id}' not recognised")
@@ -944,7 +948,8 @@ def get_converter_info(name: str) -> ConverterInfo:
     return get_database().d_converter_info[name]
 
 
-def get_format_info(format_name_or_id: str | int, which: int | None = None) -> FormatInfo:
+def get_format_info(format_name_or_id: str | int,
+                    which: int | Literal["all"] | None = None) -> FormatInfo | list[FormatInfo]:
     """Gets the information on a given file format stored in the database
 
     Parameters
@@ -955,7 +960,9 @@ def get_format_info(format_name_or_id: str | int, which: int | None = None) -> F
     which : int | None
         In the case that an extension string is provided which turns out to be ambiguous, which of the listed
         possibilities to use from the zero-indexed list. Default None, which raises an exception for an ambiguous
-        format. 0 may be used to select the first in the database, which is often a good default choice
+        format. 0 may be used to select the first in the database, which is often a good default choice. The literal
+        string "all" may be used to request all possibilites, in which case this method will return a list (even if
+        there are zero or one possibilities)
 
     Returns
     -------
@@ -991,17 +998,17 @@ def get_conversion_quality(converter_name: str,
                                                                    out_format=out_format)
 
 
-def get_possible_converters(in_format: str,
-                            out_format: str) -> list[str]:
+def get_possible_converters(in_format: str | int,
+                            out_format: str | int) -> list[str]:
     """Get a list of converters which can perform a conversion from one format to another and the degree of success
     with each of these converters
 
     Parameters
     ----------
-    in_format : str
-        The extension of the input file format
-    out_format : str
-        The extension of the output file format
+    in_format : str | int
+        The extension or ID of the input file format
+    out_format : str | int
+        The extension or ID of the output file format
 
     Returns
     -------

@@ -10,9 +10,9 @@ from psdi_data_conversion import constants as const
 from psdi_data_conversion.converter import L_REGISTERED_CONVERTERS
 from psdi_data_conversion.converters.atomsk import CONVERTER_ATO
 from psdi_data_conversion.converters.openbabel import CONVERTER_OB
-from psdi_data_conversion.database import (FileConverterDatabaseException, get_conversion_quality, get_converter_info, get_database, get_format_info,
-                                           get_in_format_args, get_out_format_args, get_possible_converters,
-                                           get_possible_formats)
+from psdi_data_conversion.database import (FileConverterDatabaseException, get_conversion_quality, get_converter_info,
+                                           get_database, get_format_info, get_in_format_args, get_out_format_args,
+                                           get_possible_converters, get_possible_formats)
 
 
 def test_load():
@@ -121,8 +121,12 @@ def test_format_info():
 
     # Check that we get an exception for an ambiguous format if we don't request which
     with pytest.raises(FileConverterDatabaseException):
-
         format_info = get_format_info("pdb")
+
+    # Check that requesting all possibilities works as expected
+    l_pdb_infos = get_format_info("pdb", which="all")
+    assert l_pdb_infos[0] == get_format_info("pdb", which=0)
+    assert l_pdb_infos[1] == get_format_info("pdb", which=1)
 
 
 def test_conversion_table():
