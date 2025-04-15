@@ -55,7 +55,7 @@ def test_envvars():
     test_file_size = 1234
     os.environ[const.MAX_FILESIZE_EV] = str(test_file_size)
 
-    pdb_format_id = get_format_info("pdb", which=0)
+    pdb_format_id = get_format_info("pdb", which=0).id
 
     converter = C2xFileConverter(filename="1NE6.mmcif",
                                  to_format=pdb_format_id,

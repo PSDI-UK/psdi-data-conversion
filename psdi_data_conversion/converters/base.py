@@ -333,7 +333,7 @@ class FileConverter:
             from psdi_data_conversion.database import get_format_info, FormatInfo
             which_format = None if self.supports_ambiguous_extensions else 0
             self.from_format_info: FormatInfo = get_format_info(self.from_format, which_format)
-            self.to_format_info: FormatInfo = get_format_info(self.from_format, which_format)
+            self.to_format_info: FormatInfo = get_format_info(self.to_format, which_format)
 
             # Set placeholders for member variables which will be set when conversion is run
             self.in_size: int | None = None
