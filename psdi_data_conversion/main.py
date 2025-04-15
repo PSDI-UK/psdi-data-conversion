@@ -20,7 +20,7 @@ from psdi_data_conversion.converter import (D_CONVERTER_ARGS, D_SUPPORTED_CONVER
 from psdi_data_conversion.converters.base import (FileConverterAbortException, FileConverterInputException,
                                                   FileConverterHelpException)
 from psdi_data_conversion.database import (get_conversion_quality, get_converter_info, get_format_info,
-                                           get_in_format_args, get_out_format_args, get_possible_converters,
+                                           get_in_format_args, get_out_format_args, get_possible_conversions,
                                            get_possible_formats)
 from psdi_data_conversion.file_io import split_archive_ext
 from psdi_data_conversion.log_utility import get_log_level_from_str
@@ -534,7 +534,7 @@ def detail_possible_converters(from_format: str, to_format: str):
         list_supported_formats(err=True)
         exit(1)
 
-    l_possible_converters = get_possible_converters(from_format, to_format)
+    l_possible_converters = get_possible_conversions(from_format, to_format)
 
     l_possible_registered_converters = [x for x in l_possible_converters if x in L_REGISTERED_CONVERTERS]
     l_possible_unregistered_converters = [x for x in l_possible_converters if

@@ -19,7 +19,7 @@ from psdi_data_conversion.converters.c2x import CONVERTER_C2X
 from psdi_data_conversion.converters.openbabel import (CONVERTER_OB, COORD_GEN_KEY, COORD_GEN_QUAL_KEY,
                                                        DEFAULT_COORD_GEN, DEFAULT_COORD_GEN_QUAL)
 from psdi_data_conversion.database import (get_conversion_quality, get_converter_info, get_in_format_args,
-                                           get_out_format_args, get_possible_converters, get_possible_formats)
+                                           get_out_format_args, get_possible_conversions, get_possible_formats)
 from psdi_data_conversion.main import FileConverterInputException, parse_args
 from psdi_data_conversion.testing.utils import run_test_conversion_with_cla, run_with_arg_string
 from psdi_data_conversion.testing.conversion_test_specs import l_cla_test_specs
@@ -249,7 +249,7 @@ def test_get_converters(capsys):
     """
     in_format = "xyz"
     out_format = "inchi"
-    l_converters = get_possible_converters(in_format, out_format)
+    l_converters = get_possible_conversions(in_format, out_format)
 
     run_with_arg_string(f"-l -f {in_format} -t {out_format}")
     captured = capsys.readouterr()

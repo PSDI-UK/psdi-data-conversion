@@ -8,6 +8,7 @@ Python module provide utilities for accessing the converter database
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from itertools import product
 import json
 from logging import getLogger
 import os
@@ -665,11 +666,11 @@ class ConversionsTable:
                                      details=details,
                                      d_prop_conversion_info=d_prop_conversion_info)
 
-    def get_possible_converters(self,
-                                in_format: str | int,
-                                out_format: str | int) -> list[str]:
-        """Get a list of converters which can perform a conversion from one format to another and the degree of success
-        with each of these converters
+    def get_possible_conversions(self,
+                                 in_format_info: str | int,
+                                 out_format_info: str | int) -> list[tuple[str, FormatInfo, FormatInfo]]:
+        """Get a list of converters which can perform a conversion from one format to another, disambiguating in the
+        case of ambiguous formats and providing IDs for input/output formats for possible conversions
 
         Parameters
         ----------
@@ -680,23 +681,33 @@ class ConversionsTable:
 
         Returns
         -------
-        list[tuple[str, str]]
-            A list of tuples, where each tuple's first item is the name of a converter which can perform this
-            conversion, and the second item is the degree of success for the conversion
+        list[tuple[str, FormatInfo, FormatInfo]]
+            A list of tuples, where each tuple's first item is the name of a converter which can perform a matching
+            conversion, the second is the info of the input format for this conversion, and the third is the info of the
+            output format
         """
-        in_id: int = self.parent.get_format_info(in_format).id
-        out_id: int = self.parent.get_format_info(out_format).id
+        l_in_format_infos: list[FormatInfo] = self.parent.get_format_info(in_format_info, which="all")
+        l_out_format_infos: list[FormatInfo] = self.parent.get_format_info(out_format_info, which="all")
 
-        # Slice the table to get a list of the success for this conversion for each converter
-        l_converter_success = [x[in_id][out_id] for x in self._table]
+        # Start a list of all possible conversions
+        l_possible_conversions = []
 
-        # Filter for possible conversions and get the converter name and degree-of-success string
-        # for each possible conversion
-        l_possible_converters = [self.parent.get_converter_info(converter_id).name
+        # Iterate over all possible combinations of input and output formats
+        for in_format_info, out_format_info in product(l_in_format_infos, l_out_format_infos):
+
+            # Slice the table to get a list of the success for this conversion for each converter
+            l_converter_success = [x[in_format_info.id][out_format_info.id] for x in self._table]
+
+            # Filter for possible conversions and get the converter name and degree-of-success string
+            # for each possible conversion
+            l_converter_names = [self.parent.get_converter_info(converter_id).name
                                  for converter_id, possible_flag
                                  in enumerate(l_converter_success) if possible_flag > 0]
 
-        return l_possible_converters
+            for converter_name in l_converter_names:
+                l_possible_conversions.append((converter_name, in_format_info, out_format_info))
+
+        return l_possible_conversions
 
     def get_possible_formats(self, converter_name: str) -> tuple[list[str], list[str]]:
         """Get a list of input and output formats that a given converter supports
@@ -998,10 +1009,10 @@ def get_conversion_quality(converter_name: str,
                                                                    out_format=out_format)
 
 
-def get_possible_converters(in_format: str | int,
-                            out_format: str | int) -> list[str]:
-    """Get a list of converters which can perform a conversion from one format to another and the degree of success
-    with each of these converters
+def get_possible_conversions(in_format: str | int,
+                             out_format: str | int) -> list[tuple[str, FormatInfo, FormatInfo]]:
+    """Get a list of converters which can perform a conversion from one format to another and disambiguate in the case
+    of ambiguous input/output formats
 
     Parameters
     ----------
@@ -1012,13 +1023,14 @@ def get_possible_converters(in_format: str | int,
 
     Returns
     -------
-    list[tuple[str, str]]
-        A list of tuples, where each tuple's first item is the name of a converter which can perform this
-        conversion, and the second item is the degree of success for the conversion
+    list[tuple[str, FormatInfo, FormatInfo]]
+        A list of tuples, where each tuple's first item is the name of a converter which can perform a matching
+        conversion, the second is the info of the input format for this conversion, and the third is the info of the
+        output format
     """
 
-    return get_database().conversions_table.get_possible_converters(in_format=in_format,
-                                                                    out_format=out_format)
+    return get_database().conversions_table.get_possible_conversions(in_format_info=in_format,
+                                                                     out_format_info=out_format)
 
 
 def get_possible_formats(converter_name: str) -> tuple[list[str], list[str]]:

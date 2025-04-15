@@ -12,7 +12,7 @@ from psdi_data_conversion.converters.atomsk import CONVERTER_ATO
 from psdi_data_conversion.converters.openbabel import CONVERTER_OB
 from psdi_data_conversion.database import (FileConverterDatabaseException, get_conversion_quality, get_converter_info,
                                            get_database, get_format_info, get_in_format_args, get_out_format_args,
-                                           get_possible_converters, get_possible_formats)
+                                           get_possible_conversions, get_possible_formats)
 
 
 def test_load():
@@ -169,8 +169,8 @@ def test_conversion_table():
     assert comp_prop_info.note == ""
 
     # Check we can get a list of possible converters for a given conversion
-    l_possible_converters = get_possible_converters("pdb", "cif")
-    assert CONVERTER_OB in [name for name in l_possible_converters]
+    l_possible_conversions = get_possible_conversions("pdb", "cif")
+    assert (CONVERTER_OB, get_format_info("pdb", which=0), get_format_info("cif", which=0)) in l_possible_conversions
 
     # Check that we can get a list of possible input/outpat formats for a given converter
     l_in_formats, l_out_formats = get_possible_formats(CONVERTER_OB)
