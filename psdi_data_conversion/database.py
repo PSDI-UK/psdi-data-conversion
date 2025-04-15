@@ -443,6 +443,14 @@ class FormatInfo:
         self.three_dim = d_single_format_info.get(DB_FORMAT_3D_KEY)
         """Whether or not this format stores 3D structural information"""
 
+    def __str__(self):
+        """When cast to string, convert to the name (extension) of the format"""
+        return self.name
+
+    def __int__(self):
+        """When cast to int, return the ID of the format"""
+        return self.id
+
 
 @dataclass
 class PropertyConversionInfo:
