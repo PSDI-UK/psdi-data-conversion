@@ -157,6 +157,10 @@ class FileConverter:
     database_key_prefix: str | None = None
     """The prefix used in the database for keys related to this converter"""
 
+    supports_ambiguous_extensions: bool = False
+    """Whether or not this converter supports formats which share the same extension. This is used to enforce stricter
+    but less user-friendly requirements on format specification"""
+
     @abc.abstractmethod
     def _convert(self):
         """Run the conversion with the desired converter. This must be implemented for each converter class.
