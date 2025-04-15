@@ -12,12 +12,14 @@ from psdi_data_conversion.converters.base import (FileConverterAbortException, F
                                                   FileConverterInputException, FileConverterSizeException)
 from psdi_data_conversion.converters.c2x import CONVERTER_C2X
 from psdi_data_conversion.converters.openbabel import CONVERTER_OB, COORD_GEN_KEY, COORD_GEN_QUAL_KEY
+from psdi_data_conversion.database import get_format_info
 from psdi_data_conversion.testing.conversion_callbacks import (CheckArchiveContents, CheckException, CheckLogContents,
                                                                CheckLogContentsSuccess, CheckFileStatus,
                                                                CheckStderrContents, CheckStdoutContents,
                                                                MatchOutputFile, MultiCallback as MCB)
 from psdi_data_conversion.testing.utils import ConversionTestSpec as Spec
 
+pdb_id = get_format_info("pdb", which=0).id
 
 l_all_test_specs: list[Spec] = []
 """All test specs defined in this file"""
@@ -36,11 +38,16 @@ l_all_test_specs.append(Spec(name="Standard Multiple Tests",
                                        "hemoglobin.pdb", "hemoglobin.pdb", "nacl.cif",
                                        "hemoglobin.pdb", "hemoglobin.pdb", "nacl.cif",
                                        "ethanol.xyz"],
-                             to_format=["pdb",
+                             to_format=[pdb_id,
                                         "cif", "mol2", "xyz",
                                         "cif", "xyz", "xyz",
                                         "cif", "xyz", "xyz",
                                         "cml"],
+                             conversion_kwargs=[{},
+                                                {"from_format": pdb_id}, {}, {},
+                                                {"from_format": pdb_id}, {"from_format": pdb_id}, {},
+                                                {"from_format": pdb_id}, {"from_format": pdb_id}, {},
+                                                {}],
                              converter_name=[CONVERTER_OB,
                                              CONVERTER_OB, CONVERTER_OB, CONVERTER_OB,
                                              CONVERTER_ATO, CONVERTER_ATO, CONVERTER_ATO,
@@ -74,8 +81,8 @@ l_all_test_specs.append(Spec(name="Archive",
 l_all_test_specs.append(Spec(name="Archive (wrong format) - Library and CLA",
                              filename="caffeine-smi.zip",
                              to_format="inchi",
-                             conversion_kwargs=[{"from_format": "pdb"},
-                                                {"from_format": "pdb", "strict": True}],
+                             conversion_kwargs=[{"from_format": pdb_id},
+                                                {"from_format": pdb_id, "strict": True}],
                              expect_success=[True, False],
                              callback=[CheckStderrContents(const.ERR_WRONG_EXTENSIONS),
                                        CheckException(ex_type=FileConverterInputException,
@@ -88,8 +95,8 @@ l_all_test_specs.append(Spec(name="Archive (wrong format) - Library and CLA",
 l_all_test_specs.append(Spec(name="Archive (wrong format) - GUI",
                              filename="caffeine-smi.zip",
                              to_format="inchi",
-                             conversion_kwargs=[{"from_format": "pdb"},
-                                                {"from_format": "pdb", "strict": True}],
+                             conversion_kwargs=[{"from_format": pdb_id},
+                                                {"from_format": pdb_id, "strict": True}],
                              expect_success=[False, False],
                              callback=CheckException(ex_type=FileConverterInputException,
                                                      ex_message=const.ERR_WRONG_EXTENSIONS),
@@ -150,7 +157,7 @@ Not compatible with GUI tests, since the GUI doesn't support quiet mode
 
 l_all_test_specs.append(Spec(name="Open Babel Warning",
                              filename="1NE6.mmcif",
-                             to_format="pdb",
+                             to_format=pdb_id,
                              callback=CheckLogContentsSuccess(["Open Babel Warning",
                                                                "Failed to kekulize aromatic bonds",])
                              ))
@@ -263,7 +270,7 @@ Not compatible with the GUI, since the GUI only offers valid conversions.
 l_all_test_specs.append(Spec(name="Blocked conversion - wrong input type",
                              filename="1NE6.mmcif",
                              to_format="cif",
-                             conversion_kwargs={"from_format": "pdb", "strict": True},
+                             conversion_kwargs={"from_format": pdb_id, "strict": True},
                              expect_success=False,
                              callback=MCB(CheckFileStatus(expect_output_exists=False,
                                                           expect_log_exists=None),
@@ -278,7 +285,7 @@ l_all_test_specs.append(Spec(name="Blocked conversion - wrong input type",
 l_all_test_specs.append(Spec(name="Failed conversion - wrong input type",
                              filename="1NE6.mmcif",
                              to_format="cif",
-                             conversion_kwargs={"from_format": "pdb", "strict": False},
+                             conversion_kwargs={"from_format": pdb_id, "strict": False},
                              expect_success=False,
                              callback=MCB(CheckFileStatus(expect_output_exists=False,
                                                           expect_log_exists=None),
@@ -319,7 +326,7 @@ max_size_callback = MCB(CheckFileStatus(expect_output_exists=False),
                                        ex_status_code=const.STATUS_CODE_SIZE))
 l_all_test_specs.append(Spec(name="Max size exceeded",
                              filename=["1NE6.mmcif", "caffeine-smi.tar.gz"],
-                             to_format="pdb",
+                             to_format=pdb_id,
                              conversion_kwargs=[{"max_file_size": 0.0001}, {"max_file_size": 0.0005}],
                              expect_success=False,
                              callback=max_size_callback,
