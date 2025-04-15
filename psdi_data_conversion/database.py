@@ -874,12 +874,30 @@ class DataConversionDatabase:
                                                  "`int`")
 
     def get_format_info(self,
-                        format_name_or_id: str | int,
+                        format_name_or_id: str | int | FormatInfo,
                         which: int | Literal["all"] | None = None) -> FormatInfo | list[FormatInfo]:
-        """Get a format's ID info from either its name or ID
+        """Gets the information on a given file format stored in the database
+
+        Parameters
+        ----------
+        format_name_or_id : str | int | FormatInfo
+            The name (extension) of the format, or its ID. In the case of ambiguous extensions which could apply to
+            multiple formats, the ID must be used here or a FileConverterDatabaseException will be raised. This also
+            allows passing a FormatInfo to this, in which case that object will be silently returned, to allow
+            normalising the input to always be a FormatInfo when output from this
+        which : int | None
+            In the case that an extension string is provided which turns out to be ambiguous, which of the listed
+            possibilities to use from the zero-indexed list. Default None, which raises an exception for an ambiguous
+            format. 0 may be used to select the first in the database, which is often a good default choice. The literal
+            string "all" may be used to request all possibilites, in which case this method will return a list (even if
+            there are zero or one possibilities)
+
+        Returns
+        -------
+        FormatInfo | list[FormatInfo]
         """
         if isinstance(format_name_or_id, str):
-            # Silently strip leading .
+            # Silently strip leading period
             if format_name_or_id.startswith("."):
                 format_name_or_id = format_name_or_id[1:]
 
@@ -901,6 +919,10 @@ class DataConversionDatabase:
 
         elif isinstance(format_name_or_id, int):
             return self.l_format_info[format_name_or_id]
+
+        elif isinstance(format_name_or_id, FormatInfo):
+            # Silently return the FormatInfo if it was used as a key here
+            return format_name_or_id
 
         else:
             raise FileConverterDatabaseException(f"Invalid key passed to `get_format_info`: '{format_name_or_id}'"
@@ -965,15 +987,17 @@ def get_converter_info(name: str) -> ConverterInfo:
     return get_database().d_converter_info[name]
 
 
-def get_format_info(format_name_or_id: str | int,
+def get_format_info(format_name_or_id: str | int | FormatInfo,
                     which: int | Literal["all"] | None = None) -> FormatInfo | list[FormatInfo]:
     """Gets the information on a given file format stored in the database
 
     Parameters
     ----------
-    format_name_or_id : str | int
+    format_name_or_id : str | int | FormatInfo
         The name (extension) of the format, or its ID. In the case of ambiguous extensions which could apply to multiple
-        formats, the ID must be used here or a FileConverterDatabaseException will be raised
+        formats, the ID must be used here or a FileConverterDatabaseException will be raised. This also allows passing a
+        FormatInfo to this, in which case that object will be silently returned, to allow normalising the input to
+        always be a FormatInfo when output from this
     which : int | None
         In the case that an extension string is provided which turns out to be ambiguous, which of the listed
         possibilities to use from the zero-indexed list. Default None, which raises an exception for an ambiguous
@@ -983,7 +1007,7 @@ def get_format_info(format_name_or_id: str | int,
 
     Returns
     -------
-    FormatInfo
+    FormatInfo | list[FormatInfo]
     """
 
     return get_database().get_format_info(format_name_or_id, which)
