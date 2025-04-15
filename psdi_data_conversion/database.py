@@ -709,7 +709,7 @@ class ConversionsTable:
 
         return l_possible_conversions
 
-    def get_possible_formats(self, converter_name: str) -> tuple[list[str], list[str]]:
+    def get_possible_formats(self, converter_name: str) -> tuple[list[FormatInfo], list[FormatInfo]]:
         """Get a list of input and output formats that a given converter supports
 
         Parameters
@@ -719,7 +719,7 @@ class ConversionsTable:
 
         Returns
         -------
-        tuple[list[str], list[str]]
+        tuple[list[FormatInfo], list[FormatInfo]]
             A tuple of a list of the supported input formats and a list of the supported output formats
         """
         conv_id: int = self.parent.get_converter_info(converter_name).id
@@ -740,8 +740,8 @@ class ConversionsTable:
                                      sum([x[j] for x in ll_filtered_in_out_format_success]) > 0]
 
         # Get the name for each format ID, and return lists of the names
-        return ([self.parent.get_format_info(x).name for x in l_possible_in_format_ids],
-                [self.parent.get_format_info(x).name for x in l_possible_out_format_ids])
+        return ([self.parent.get_format_info(x) for x in l_possible_in_format_ids],
+                [self.parent.get_format_info(x) for x in l_possible_out_format_ids])
 
 
 class DataConversionDatabase:
@@ -1033,7 +1033,7 @@ def get_possible_conversions(in_format: str | int,
                                                                      out_format_info=out_format)
 
 
-def get_possible_formats(converter_name: str) -> tuple[list[str], list[str]]:
+def get_possible_formats(converter_name: str) -> tuple[list[FormatInfo], list[FormatInfo]]:
     """Get a list of input and output formats that a given converter supports
 
     Parameters
@@ -1043,7 +1043,7 @@ def get_possible_formats(converter_name: str) -> tuple[list[str], list[str]]:
 
     Returns
     -------
-    tuple[list[str], list[str]]
+    tuple[list[FormatInfo], list[FormatInfo]]
         A tuple of a list of the supported input formats and a list of the supported output formats
     """
     return get_database().conversions_table.get_possible_formats(converter_name=converter_name)

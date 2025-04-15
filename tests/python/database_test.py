@@ -174,5 +174,5 @@ def test_conversion_table():
 
     # Check that we can get a list of possible input/outpat formats for a given converter
     l_in_formats, l_out_formats = get_possible_formats(CONVERTER_OB)
-    assert "pdb" in l_in_formats
-    assert "cif" in l_out_formats
+    assert get_format_info("pdb", which=0) in l_in_formats
+    assert get_format_info("cif", which=0) in l_out_formats
