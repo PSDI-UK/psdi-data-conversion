@@ -909,6 +909,18 @@ class DataConversionDatabase:
             if format_name_or_id.startswith("."):
                 format_name_or_id = format_name_or_id[1:]
 
+            # Check for a hyphen in the format, which indicates a preference from the user as to which, overriding the
+            # `which` kwarg
+            if "-" in format_name_or_id:
+                l_name_segments = format_name_or_id.split("-")
+                if len(l_name_segments) > 2:
+                    raise FileConverterDatabaseException(f"Format name '{format_name_or_id} is improperly formatted - "
+                                                         "It may contain at most one hyphen, separating the extension "
+                                                         "from an index indicating which of the formats with that "
+                                                         "extension to use, e.g. 'pdb-0', 'pdb-1', etc.")
+                format_name_or_id = l_name_segments[0]
+                which = int(l_name_segments[1])
+
             l_possible_format_info = self.d_format_info.get(format_name_or_id, [])
             if which == "all":
                 return l_possible_format_info

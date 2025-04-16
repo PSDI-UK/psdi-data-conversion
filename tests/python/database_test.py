@@ -125,8 +125,13 @@ def test_format_info():
 
     # Check that requesting all possibilities works as expected
     l_pdb_infos = get_format_info("pdb", which="all")
+    assert l_pdb_infos[0] != l_pdb_infos[1]
     assert l_pdb_infos[0] == get_format_info("pdb", which=0)
     assert l_pdb_infos[1] == get_format_info("pdb", which=1)
+
+    # Check that the shortcut for which format works
+    assert get_format_info("pdb-0") == l_pdb_infos[0]
+    assert get_format_info("pdb-1") == l_pdb_infos[1]
 
 
 def test_conversion_table():
