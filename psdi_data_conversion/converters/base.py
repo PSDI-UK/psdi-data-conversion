@@ -339,7 +339,7 @@ class FileConverter:
 
             self.local_filename = os.path.split(self.in_filename)[1]
             self.filename_base = os.path.splitext(self.local_filename)[0]
-            self.out_filename = f"{self.download_dir}/{self.filename_base}.{self.to_format}"
+            self.out_filename = f"{self.download_dir}/{self.filename_base}.{self.to_format_info.name}"
 
             # Set up files to log to
             self._setup_loggers()
