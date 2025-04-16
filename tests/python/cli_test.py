@@ -220,10 +220,10 @@ def test_detail_converter(capsys):
         l_allowed_in_formats, l_allowed_out_formats = get_possible_formats(converter_name)
         for in_format in l_allowed_in_formats:
             output_allowed = "yes" if in_format in l_allowed_out_formats else "no"
-            assert string_is_present_in_out(f"{in_format}yes{output_allowed}")
+            assert string_is_present_in_out(f"{in_format.disambiguated_name}yes{output_allowed}")
         for out_format in l_allowed_out_formats:
             input_allowed = "yes" if out_format in l_allowed_in_formats else "no"
-            assert string_is_present_in_out(f"{out_format}{input_allowed}yes")
+            assert string_is_present_in_out(f"{out_format.disambiguated_name}{input_allowed}yes")
 
         # Check that no errors were produced
         assert not captured.err

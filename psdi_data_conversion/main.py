@@ -374,19 +374,19 @@ def detail_converter_use(args: ConvertArgs):
             print_wrap(f"Conversion {to_or_from} {format_name} is {optional_not}supported by {args.name}.\n")
 
         # List all possible formats, and which can be used for input and which for output
-        s_all_formats: set[str] = set(l_input_formats)
+        s_all_formats: set[FormatInfo] = set(l_input_formats)
         s_all_formats.update(l_output_formats)
-        l_all_formats: list[str] = list(s_all_formats)
-        l_all_formats.sort(key=lambda s: s.lower())
+        l_all_formats: list[FormatInfo] = list(s_all_formats)
+        l_all_formats.sort(key=lambda x: x.disambiguated_name.lower())
 
         print_wrap(f"File formats supported by {args.name}:", newline=True)
-        max_format_length = max([len(x) for x in l_all_formats])
+        max_format_length = max([len(x.disambiguated_name) for x in l_all_formats])
         print(" "*(max_format_length+4) + "   INPUT  OUTPUT")
         print(" "*(max_format_length+4) + "   -----  ------")
         for file_format in l_all_formats:
             in_yes_or_no = "yes" if file_format in l_input_formats else "no"
             out_yes_or_no = "yes" if file_format in l_output_formats else "no"
-            print(f"    {file_format:>{max_format_length}}{in_yes_or_no:>8}{out_yes_or_no:>8}")
+            print(f"    {file_format.disambiguated_name:>{max_format_length}}{in_yes_or_no:>8}{out_yes_or_no:>8}")
         print("")
 
     if converter_class.allowed_flags is None:
