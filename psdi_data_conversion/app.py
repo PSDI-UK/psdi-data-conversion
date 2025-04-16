@@ -161,7 +161,9 @@ def convert():
                 found = True
                 break
         if not found:
-            raise ValueError(f"Format '{name}' with full description '{full_note}' could not be found in database.")
+            print(f"Format '{name}' with full description '{full_note}' could not be found in database.",
+                  file=sys.stderr)
+            abort(const.STATUS_CODE_GENERAL)
 
     if (not service_mode) or (request.form['token'] == token and token != ''):
         try:
