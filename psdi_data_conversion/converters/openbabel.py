@@ -9,7 +9,7 @@ from copy import deepcopy
 from openbabel import openbabel
 import py
 
-from psdi_data_conversion.converters.base import FileConverter, FileConverterHelpException
+from psdi_data_conversion.converters.base import FileConverter, FileConverterInputException
 from psdi_data_conversion.security import SAFE_STRING_RE, string_is_safe
 
 CONVERTER_OB = 'Open Babel'
@@ -30,8 +30,8 @@ def check_string_security(s: str):
     """Checks that a string is secure and raises an exception if it isn't.
     """
     if not string_is_safe(s):
-        raise FileConverterHelpException(f"Format option '{s}' does not pass security checks. It must pass the regex "
-                                         f"/{SAFE_STRING_RE.pattern}/.")
+        raise FileConverterInputException(f"Format option '{s}' does not pass security checks. It must pass the regex "
+                                          f"/{SAFE_STRING_RE.pattern}/.", help=True)
 
 
 def get_option_and_value(s: str):
@@ -60,16 +60,16 @@ def get_coord_gen(l_opts: list[str] | None) -> dict[str, str]:
 
     # No more than two arguments supplied to --coord-gen
     if l_opts is not None and len(l_opts) > 2:
-        raise FileConverterHelpException("At most two arguments may be provided to --coord-gen, the mode and "
-                                         "quality, e.g. '--coord-gen Gen3D best'")
+        raise FileConverterInputException("At most two arguments may be provided to --coord-gen, the mode and "
+                                          "quality, e.g. '--coord-gen Gen3D best'", help=True)
 
     # Coordinate generation options are valid
     if coord_gen not in L_ALLOWED_COORD_GENS:
-        raise FileConverterHelpException(f"Coordinate generation type '{coord_gen}' not recognised. Allowed "
-                                         f"types are: {L_ALLOWED_COORD_GENS}")
+        raise FileConverterInputException(f"Coordinate generation type '{coord_gen}' not recognised. Allowed "
+                                          f"types are: {L_ALLOWED_COORD_GENS}", help=True)
     if coord_gen_qual not in L_ALLOWED_COORD_GEN_QUALS:
-        raise FileConverterHelpException(f"Coordinate generation quality '{coord_gen_qual}' not recognised. "
-                                         f"Allowed qualities are: {L_ALLOWED_COORD_GEN_QUALS}")
+        raise FileConverterInputException(f"Coordinate generation quality '{coord_gen_qual}' not recognised. "
+                                          f"Allowed qualities are: {L_ALLOWED_COORD_GEN_QUALS}", help=True)
 
     return {COORD_GEN_KEY: coord_gen,
             COORD_GEN_QUAL_KEY: coord_gen_qual}

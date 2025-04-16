@@ -119,9 +119,14 @@ def test_format_info():
         else:
             assert not format_info.three_dim, name
 
+
+def test_format_info_options():
+    """Test that we can get the expected information on a few test formats
+    """
+
     # Check that we get an exception for an ambiguous format if we don't request which
     with pytest.raises(FileConverterDatabaseException):
-        format_info = get_format_info("pdb")
+        get_format_info("pdb")
 
     # Check that requesting all possibilities works as expected
     l_pdb_infos = get_format_info("pdb", which="all")
@@ -132,6 +137,9 @@ def test_format_info():
     # Check that the shortcut for which format works
     assert get_format_info("pdb-0") == l_pdb_infos[0]
     assert get_format_info("pdb-1") == l_pdb_infos[1]
+
+    # Check that the shortcut doesn't cause any problems even if the format is unambiguous
+    assert get_format_info("cif-0") == get_format_info("cif")
 
 
 def test_conversion_table():

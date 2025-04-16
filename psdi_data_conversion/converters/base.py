@@ -37,9 +37,13 @@ class FileConverterException(RuntimeError):
 
     def __init__(self,
                  *args,
-                 logged: bool = False):
+                 logged: bool = False,
+                 help: bool = False,
+                 msg_preformatted: bool = False):
         super().__init__(*args)
         self.logged = logged
+        self.help = help
+        self.msg_preformatted = msg_preformatted
 
 
 class FileConverterAbortException(FileConverterException):
@@ -74,23 +78,6 @@ class FileConverterInputException(FileConverterException):
     """Exception class to represent errors encountered with input parameters for the data conversion script.
     """
     pass
-
-
-class FileConverterHelpException(FileConverterInputException):
-    """An exception class which indicates an error where we will likely want to help the user figure out how to
-    correctly use the CLI instead of simply printing a traceback
-    """
-
-    def __init__(self, *args, msg_preformatted=False):
-        """Init the exception, noting if the message should be treated as preformatted or not
-
-        Parameters
-        ----------
-        msg_preformatted : bool, optional
-            If True, indicates that the message of the exception has already been formatted. Default False
-        """
-        super().__init__(*args)
-        self.msg_preformatted = msg_preformatted
 
 
 if HTTPException is not None:
@@ -364,9 +351,9 @@ class FileConverter:
                                               self.from_format_info.id,
                                               self.to_format_info.id)
                 if not qual:
-                    raise FileConverterHelpException(f"Conversion from {self.from_format_info.name} to "
-                                                     f"{self.to_format_info.name} "
-                                                     f"with {self.name} is not supported.")
+                    raise FileConverterInputException(f"Conversion from {self.from_format_info.name} to "
+                                                      f"{self.to_format_info.name} "
+                                                      f"with {self.name} is not supported.", help=True)
                 if qual.details:
                     msg = (":\nPotential data loss or extrapolation issues with the conversion from "
                            f"{self.from_format_info.name} to {self.to_format_info.name}:\n")
@@ -388,7 +375,7 @@ class FileConverter:
             # Try to run the standard abort method. There's a good chance this will fail though depending on what went
             # wrong when during init, so we fallback to printing the exception to stderr
             try:
-                if not isinstance(e, FileConverterHelpException):
+                if not (isinstance(e, FileConverterException) and e.help):
                     self.logger.error(f"Exception triggering an abort was raised while initializing the converter. "
                                       f"Exception was type '{type(e)}', with message: {str(e)}")
                     if e:
@@ -396,7 +383,7 @@ class FileConverter:
                 self._abort(message="The application encountered an error while initializing the converter:\n" +
                             traceback.format_exc(), e=e)
             except Exception as ee:
-                if isinstance(ee, (l_abort_exceptions, FileConverterHelpException)):
+                if isinstance(ee, l_abort_exceptions) or (isinstance(ee, FileConverterException) and ee.help):
                     # Don't catch a deliberate abort or help exception; let it pass through
                     raise
                 message = ("ERROR: The application encounted an error during initialization of the converter and "
@@ -493,7 +480,7 @@ class FileConverter:
                                       f"with message: {str(e)}")
                     e.logged = True
                 raise
-            if not isinstance(e, FileConverterHelpException):
+            if not (isinstance(e, FileConverterException) and e.help):
                 self.logger.error(f"Exception triggering an abort was raised while running the converter. Exception "
                                   f"was type '{type(e)}', with message: {str(e)}")
                 if e:
@@ -542,7 +529,7 @@ class FileConverter:
             self.logger.debug(f"Application aborting, so cleaning up output file {self.out_filename}")
 
         # If we have a Help exception, override the message with its message
-        if isinstance(e, FileConverterHelpException):
+        if isinstance(e, FileConverterException) and e.help:
             self.logger.debug("Help exception triggered, so only using its message for output")
             message = str(e)
 
@@ -559,7 +546,7 @@ class FileConverter:
                     fo.write(prior_output_log)
 
             # Note this message in the dev logger as well
-            if not isinstance(e, FileConverterHelpException):
+            if not (isinstance(e, FileConverterException) and e.help):
                 self.logger.error(message)
                 if e:
                     e.logged = True
@@ -744,8 +731,8 @@ class ScriptFileConverter(FileConverter):
         # Check that all user-provided input passes security checks
         for user_args in [from_flags, to_flags, from_options, to_options]:
             if not string_is_safe(user_args):
-                raise FileConverterHelpException(f"Provided argument '{user_args}' does not pass security check - it "
-                                                 f"must match the regex {SAFE_STRING_RE.pattern}.")
+                raise FileConverterInputException(f"Provided argument '{user_args}' does not pass security check - it "
+                                                  f"must match the regex {SAFE_STRING_RE.pattern}.", help=True)
 
         env = {"DIST": get_dist()}
         if self.required_bin is not None:

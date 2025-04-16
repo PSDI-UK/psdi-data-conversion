@@ -553,7 +553,6 @@ class ConversionsTable:
         Raises
         ------
         FileConverterDatabaseException
-            _description_
         """
 
         self.parent = parent
@@ -873,7 +872,8 @@ class DataConversionDatabase:
             try:
                 return self.d_converter_info[converter_name_or_id]
             except KeyError:
-                raise FileConverterDatabaseException(f"Converter name '{converter_name_or_id}' not recognised")
+                raise FileConverterDatabaseException(f"Converter name '{converter_name_or_id}' not recognised",
+                                                     help=True)
         elif isinstance(converter_name_or_id, int):
             return self.l_converter_info[converter_name_or_id]
         else:
@@ -917,7 +917,8 @@ class DataConversionDatabase:
                     raise FileConverterDatabaseException(f"Format name '{format_name_or_id} is improperly formatted - "
                                                          "It may contain at most one hyphen, separating the extension "
                                                          "from an index indicating which of the formats with that "
-                                                         "extension to use, e.g. 'pdb-0', 'pdb-1', etc.")
+                                                         "extension to use, e.g. 'pdb-0', 'pdb-1', etc.",
+                                                         help=True)
                 format_name_or_id = l_name_segments[0]
                 which = int(l_name_segments[1])
 
@@ -927,7 +928,8 @@ class DataConversionDatabase:
             elif len(l_possible_format_info) == 1:
                 return l_possible_format_info[0]
             elif len(l_possible_format_info) == 0:
-                raise FileConverterDatabaseException(f"Format name '{format_name_or_id}' not recognised")
+                raise FileConverterDatabaseException(f"Format name '{format_name_or_id}' not recognised",
+                                                     help=True)
             elif which is not None and which < len(l_possible_format_info):
                 return l_possible_format_info[which]
             else:
@@ -935,7 +937,7 @@ class DataConversionDatabase:
                        "and their IDs are:")
                 for possible_format_info in l_possible_format_info:
                     msg += f"\n{possible_format_info.id}: {possible_format_info.note}"
-                raise FileConverterDatabaseException(msg)
+                raise FileConverterDatabaseException(msg, help=True)
 
         elif isinstance(format_name_or_id, int):
             return self.l_format_info[format_name_or_id]
@@ -1108,7 +1110,7 @@ def _find_arg(tl_args: tuple[list[FlagInfo], list[OptionInfo]],
         if len(l_found) > 0:
             return l_found[0]
     # If we get here, it wasn't found in either list
-    raise FileConverterDatabaseException(f"Argument {arg} was not found in the list of allowed arguments for this "
+    raise FileConverterDatabaseException(f"Argument '{arg}' was not found in the list of allowed arguments for this "
                                          "conversion")
 
 

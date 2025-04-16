@@ -8,8 +8,8 @@ application, and GUI.
 
 from psdi_data_conversion import constants as const
 from psdi_data_conversion.converters.atomsk import CONVERTER_ATO
-from psdi_data_conversion.converters.base import (FileConverterAbortException, FileConverterHelpException,
-                                                  FileConverterInputException, FileConverterSizeException)
+from psdi_data_conversion.converters.base import (FileConverterAbortException, FileConverterInputException,
+                                                  FileConverterSizeException)
 from psdi_data_conversion.converters.c2x import CONVERTER_C2X
 from psdi_data_conversion.converters.openbabel import CONVERTER_OB, COORD_GEN_KEY, COORD_GEN_QUAL_KEY
 from psdi_data_conversion.database import get_format_info
@@ -259,7 +259,7 @@ l_all_test_specs.append(Spec(name="Failed conversion - invalid conversion",
                              converter_name=[CONVERTER_OB, CONVERTER_ATO],
                              callback=MCB(CheckFileStatus(expect_output_exists=False,
                                                           expect_log_exists=None),
-                                          CheckException(ex_type=FileConverterHelpException,
+                                          CheckException(ex_type=FileConverterInputException,
                                                          ex_message="is not supported")),
                              compatible_with_gui=False,
                              ))

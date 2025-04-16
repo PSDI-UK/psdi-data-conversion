@@ -17,8 +17,7 @@ from psdi_data_conversion import constants as const
 from psdi_data_conversion.constants import CL_SCRIPT_NAME, CONVERTER_DEFAULT, TERM_WIDTH
 from psdi_data_conversion.converter import (D_CONVERTER_ARGS, D_SUPPORTED_CONVERTERS, L_REGISTERED_CONVERTERS,
                                             L_SUPPORTED_CONVERTERS, run_converter)
-from psdi_data_conversion.converters.base import (FileConverterAbortException, FileConverterInputException,
-                                                  FileConverterHelpException)
+from psdi_data_conversion.converters.base import FileConverterAbortException, FileConverterInputException
 from psdi_data_conversion.database import (get_conversion_quality, get_converter_info, get_format_info,
                                            get_in_format_args, get_out_format_args, get_possible_conversions,
                                            get_possible_formats)
@@ -84,9 +83,9 @@ class ConvertArgs:
             try:
                 self.log_level = get_log_level_from_str(args.log_level)
             except ValueError as e:
-                # A ValueError indicates an unrecognised logging level, so we reraise this as a help exception to
+                # A ValueError indicates an unrecognised logging level, so we reraise this with the help flag to
                 # indicate we want to provide this as feedback to the user so they can correct their command
-                raise FileConverterHelpException(str(e))
+                raise FileConverterInputException(str(e), help=True)
 
         # Special handling for listing converters
         if self.list:
@@ -114,40 +113,40 @@ class ConvertArgs:
         # Check validity of input
 
         if len(self.l_args) == 0:
-            raise FileConverterHelpException("One or more names of files to convert must be provided")
+            raise FileConverterInputException("One or more names of files to convert must be provided", help=True)
 
         if self._input_dir is not None and not os.path.isdir(self._input_dir):
-            raise FileConverterHelpException(f"The provided input directory '{self._input_dir}' does not exist as a "
-                                             "directory")
+            raise FileConverterInputException(f"The provided input directory '{self._input_dir}' does not exist as a "
+                                              "directory", help=True)
 
         if self.to_format is None:
             msg = textwrap.fill("ERROR Output format (-t or --to) must be provided. For information on supported "
                                 "formats and converters, call:\n")
             msg += f"{CL_SCRIPT_NAME} -l"
-            raise FileConverterHelpException(msg, msg_preformatted=True)
+            raise FileConverterInputException(msg, msg_preformatted=True, help=True)
 
         # If the output directory doesn't exist, silently create it
         if self._output_dir is not None and not os.path.isdir(self._output_dir):
             if os.path.exists(self._output_dir):
-                raise FileConverterHelpException(f"Output directory '{self._output_dir}' exists but is not a "
-                                                 "directory")
+                raise FileConverterInputException(f"Output directory '{self._output_dir}' exists but is not a "
+                                                  "directory", help=True)
             os.makedirs(self._output_dir, exist_ok=True)
 
         # Check the converter is recognized
         if self.name not in L_SUPPORTED_CONVERTERS:
             msg = textwrap.fill(f"ERROR: Converter '{self.name}' not recognised", width=TERM_WIDTH)
             msg += f"\n\n{get_supported_converters()}"
-            raise FileConverterHelpException(msg, msg_preformatted=True)
+            raise FileConverterInputException(msg, help=True, msg_preformatted=True)
         elif self.name not in L_REGISTERED_CONVERTERS:
             msg = textwrap.fill(f"ERROR: Converter '{self.name}' is not registered. It may be possible to register "
                                 "it by installing an appropriate binary for your platform.", width=TERM_WIDTH)
             msg += f"\n\n{get_supported_converters()}"
-            raise FileConverterHelpException(msg, msg_preformatted=True)
+            raise FileConverterInputException(msg, help=True, msg_preformatted=True)
 
         # Logging mode is valid
         if self.log_mode not in const.L_ALLOWED_LOG_MODES:
-            raise FileConverterHelpException(f"Unrecognised logging mode: {self.log_mode}. Allowed "
-                                             f"modes are: {const.L_ALLOWED_LOG_MODES}")
+            raise FileConverterInputException(f"Unrecognised logging mode: {self.log_mode}. Allowed "
+                                              f"modes are: {const.L_ALLOWED_LOG_MODES}", help=True)
 
         # Arguments specific to this converter
         self.d_converter_args = {}
@@ -194,10 +193,10 @@ class ConvertArgs:
                         if os.path.isfile(test_filename):
                             first_filename = test_filename
                         else:
-                            raise FileConverterHelpException(f"Input file {first_filename} cannot be found. Also "
-                                                             f"checked for {test_filename}.")
+                            raise FileConverterInputException(f"Input file {first_filename} cannot be found. Also "
+                                                              f"checked for {test_filename}.", help=True)
                     else:
-                        raise FileConverterHelpException(f"Input file {first_filename} cannot be found.")
+                        raise FileConverterInputException(f"Input file {first_filename} cannot be found.", help=True)
 
                 filename_base = os.path.split(split_archive_ext(first_filename)[0])[1]
                 if self.log_mode == const.LOG_FULL:
@@ -693,12 +692,6 @@ def run_from_args(args: ConvertArgs):
                                               log_level=args.log_level,
                                               delete_input=args.delete_input,
                                               refresh_local_log=False)
-        except FileConverterHelpException as e:
-            if not e.logged:
-                print_wrap(f"ERROR: {e}", err=True)
-                e.logged = True
-            success = False
-            continue
         except FileConverterAbortException as e:
             if not e.logged:
                 print_wrap(f"ERROR: Attempt to convert file {filename} aborted with status code {e.status_code} and "
@@ -707,10 +700,18 @@ def run_from_args(args: ConvertArgs):
             success = False
             continue
         except FileConverterInputException as e:
-            if "Conversion from" in str(e) and "is not supported" in str(e):
+            if e.help and not e.logged:
+                print_wrap(f"ERROR: {e}", err=True)
+                e.logged = True
+            elif "Conversion from" in str(e) and "is not supported" in str(e):
                 if not e.logged:
                     print_wrap(f"ERROR: {e}", err=True, newline=True)
                 detail_possible_converters(args.from_format, args.to_format)
+            elif e.help and not e.logged:
+                if e.msg_preformatted:
+                    print(e, file=sys.stderr)
+                else:
+                    print_wrap(f"ERROR: {e}", err=True)
             elif not e.logged:
                 print_wrap(f"ERROR: Attempt to convert file {filename} failed at converter initialization with "
                            f"exception type {type(e)} and message: \n{e}\n", err=True)
@@ -748,9 +749,11 @@ def main():
 
     try:
         args = parse_args()
-    except FileConverterHelpException as e:
-        # If we get a Help exception, it's likely due to user error, so don't bother them with a traceback and simply
-        # print the message to stderr
+    except FileConverterInputException as e:
+        if not e.help:
+            raise
+        # If we get an exception with the help flag set, it's likely due to user error, so don't bother them with a
+        # traceback and simply print the message to stderr
         if e.msg_preformatted:
             print(e, file=sys.stderr)
         else:
