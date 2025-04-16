@@ -24,6 +24,7 @@ from psdi_data_conversion.converters.base import (FileConverterAbortException, F
                                                   FileConverterInputException)
 from psdi_data_conversion.converters.openbabel import (COORD_GEN_KEY, COORD_GEN_QUAL_KEY, DEFAULT_COORD_GEN_QUAL,
                                                        L_ALLOWED_COORD_GEN_QUALS, L_ALLOWED_COORD_GENS)
+from psdi_data_conversion.database import get_format_info
 from psdi_data_conversion.file_io import split_archive_ext
 from psdi_data_conversion.testing.utils import (ConversionTestInfo, ConversionTestSpec, SingleConversionTestSpec,
                                                 get_input_test_data_loc)
@@ -156,7 +157,7 @@ def run_converter_through_gui(test_spec: SingleConversionTestSpec,
     filename = os.path.split(test_spec.filename)[1]
 
     # Default options for conversion
-    base_filename, from_format = split_archive_ext(filename)
+    base_filename, ext = split_archive_ext(filename)
     strict = True
     from_flags: str | None = None
     to_flags: str | None = None
@@ -164,6 +165,15 @@ def run_converter_through_gui(test_spec: SingleConversionTestSpec,
     to_options: str | None = None
     coord_gen = None
     coord_gen_qual = None
+
+    # Get the from_format from the extension if not provided
+    from_format = test_spec.from_format
+    if not from_format:
+        from_format = ext
+
+    # Get the format info for each format, which we'll use to get the name and note of each
+    from_format_info = get_format_info(from_format, which=0)
+    to_format_info = get_format_info(test_spec.to_format, which=0)
 
     # For each argument in the conversion kwargs, interpret it as the appropriate option for this conversion, overriding
     # defaults set above
@@ -203,10 +213,6 @@ def run_converter_through_gui(test_spec: SingleConversionTestSpec,
         else:
             pytest.fail(f"The key '{key}' was passed to `conversion_kwargs` but could not be interpreted")
 
-    # Cleanup of arguments
-    if from_format.startswith("."):
-        from_format = from_format[1:]
-
     # Set up the input file where we expect it to be
     source_input_file = os.path.realpath(os.path.join(get_input_test_data_loc(), test_spec.filename))
     input_file = os.path.join(input_dir, test_spec.filename)
@@ -230,10 +236,12 @@ def run_converter_through_gui(test_spec: SingleConversionTestSpec,
     wait_for_element(driver, "//select[@id='fromList']/option")
 
     # Select from_format from the 'from' list.
-    driver.find_element(By.XPATH, f"//select[@id='fromList']/option[starts-with(.,'{from_format}:')]").click()
+    driver.find_element(By.XPATH, f"//select[@id='fromList']/option[starts-with(.,'{from_format_info.name}:')]"
+                        ).click()
 
     # Select to_format from the 'to' list.
-    driver.find_element(By.XPATH, f"//select[@id='toList']/option[starts-with(.,'{test_spec.to_format}:')]").click()
+    driver.find_element(By.XPATH, f"//select[@id='toList']/option[starts-with(.,'{to_format_info.name}:')]"
+                        ).click()
 
     # Select converter from the available conversion options list.
     driver.find_element(By.XPATH, f"//select[@id='success']/option[contains(.,'{test_spec.converter_name}')]").click()

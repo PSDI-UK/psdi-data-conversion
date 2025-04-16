@@ -23,6 +23,7 @@ import psdi_data_conversion
 from psdi_data_conversion.constants import CONVERTER_DEFAULT, GLOBAL_LOG_FILENAME, LOG_NONE, OUTPUT_LOG_EXT
 from psdi_data_conversion.converter import run_converter
 from psdi_data_conversion.converters.openbabel import COORD_GEN_KEY, COORD_GEN_QUAL_KEY
+from psdi_data_conversion.database import get_format_info
 from psdi_data_conversion.dist import LINUX_LABEL, get_dist
 from psdi_data_conversion.file_io import is_archive, split_archive_ext
 from psdi_data_conversion.main import main as data_convert_main
@@ -263,11 +264,12 @@ class SingleConversionTestSpec:
     @property
     def out_filename(self) -> str:
         """The unqualified name of the output file which should have been created by the conversion."""
+        to_format_name = get_format_info(self.to_format).name
         if not is_archive(self.filename):
-            return f"{os.path.splitext(self.filename)[0]}.{self.to_format}"
+            return f"{os.path.splitext(self.filename)[0]}.{to_format_name}"
         else:
             filename_base, ext = split_archive_ext(os.path.basename(self.filename))
-            return f"{filename_base}-{self.to_format}{ext}"
+            return f"{filename_base}-{to_format_name}{ext}"
 
     @property
     def log_filename(self) -> str:
