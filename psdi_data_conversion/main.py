@@ -18,7 +18,7 @@ from psdi_data_conversion.constants import CL_SCRIPT_NAME, CONVERTER_DEFAULT, TE
 from psdi_data_conversion.converter import (D_CONVERTER_ARGS, D_SUPPORTED_CONVERTERS, L_REGISTERED_CONVERTERS,
                                             L_SUPPORTED_CONVERTERS, run_converter)
 from psdi_data_conversion.converters.base import FileConverterAbortException, FileConverterInputException
-from psdi_data_conversion.database import (get_conversion_quality, get_converter_info, get_format_info,
+from psdi_data_conversion.database import (FormatInfo, get_conversion_quality, get_converter_info, get_format_info,
                                            get_in_format_args, get_out_format_args, get_possible_conversions,
                                            get_possible_formats)
 from psdi_data_conversion.file_io import split_archive_ext
@@ -471,10 +471,16 @@ def list_supported_formats(err=False):
     """Prints a list of all formats recognised by at least one registered converter
     """
     # Make a list of all formats recognised by at least one registered converter
-    s_all_formats: set[str] = set()
-    s_registered_formats: set[str] = set()
+    s_all_formats: set[FormatInfo] = set()
+    s_registered_formats: set[FormatInfo] = set()
     for converter_name in L_SUPPORTED_CONVERTERS:
         l_in_formats, l_out_formats = get_possible_formats(converter_name)
+
+        # To make sure we don't see any unexpected duplicates in the set due to cached/uncached values, get the
+        # disambiguated name of each format first
+        [x.disambiguated_name for x in l_in_formats]
+        [x.disambiguated_name for x in l_out_formats]
+
         s_all_formats.update(l_in_formats)
         s_all_formats.update(l_out_formats)
         if converter_name in L_REGISTERED_CONVERTERS:
@@ -485,14 +491,14 @@ def list_supported_formats(err=False):
 
     # Convert the sets to lists and alphabetise them
     l_registered_formats = list(s_registered_formats)
-    l_registered_formats.sort(key=lambda s: s.lower())
+    l_registered_formats.sort(key=lambda x: x.disambiguated_name.lower())
     l_unregistered_formats = list(s_unregistered_formats)
-    l_unregistered_formats.sort(key=lambda s: s.lower())
+    l_unregistered_formats.sort(key=lambda x: x.disambiguated_name.lower())
 
     # Pad the format strings to all be the same length. To keep columns aligned, all padding is done with non-
     # breaking spaces (\xa0), and each format is followed by a single normal space
-    longest_format_len = max([len(x) for x in l_registered_formats])
-    l_padded_formats = [f"{x:\xa0<{longest_format_len}} " for x in l_registered_formats]
+    longest_format_len = max([len(x.disambiguated_name) for x in l_registered_formats])
+    l_padded_formats = [f"{x.disambiguated_name:\xa0<{longest_format_len}} " for x in l_registered_formats]
 
     print_wrap("Formats supported by registered converters: ", err=err, newline=True)
     print_wrap("".join(l_padded_formats), err=err, initial_indent="  ", subsequent_indent="  ", newline=True)
