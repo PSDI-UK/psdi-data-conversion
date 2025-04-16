@@ -317,7 +317,7 @@ def test_conversion_info(capsys):
 
     # Now try listing for converters which don't yet allow in/out args
 
-    in_format = "pdb"
+    in_format = "pdb-0"
     out_format = "cif"
     for converter_name in [CONVERTER_C2X, CONVERTER_ATO]:
         qual = get_conversion_quality(converter_name, in_format, out_format)
