@@ -689,8 +689,8 @@ class ConversionsTable:
                                      d_prop_conversion_info=d_prop_conversion_info)
 
     def get_possible_conversions(self,
-                                 in_format_info: str | int,
-                                 out_format_info: str | int) -> list[tuple[str, FormatInfo, FormatInfo]]:
+                                 in_format: str | int,
+                                 out_format: str | int) -> list[tuple[str, FormatInfo, FormatInfo]]:
         """Get a list of converters which can perform a conversion from one format to another, disambiguating in the
         case of ambiguous formats and providing IDs for input/output formats for possible conversions
 
@@ -708,8 +708,8 @@ class ConversionsTable:
             conversion, the second is the info of the input format for this conversion, and the third is the info of the
             output format
         """
-        l_in_format_infos: list[FormatInfo] = self.parent.get_format_info(in_format_info, which="all")
-        l_out_format_infos: list[FormatInfo] = self.parent.get_format_info(out_format_info, which="all")
+        l_in_format_infos: list[FormatInfo] = self.parent.get_format_info(in_format, which="all")
+        l_out_format_infos: list[FormatInfo] = self.parent.get_format_info(out_format, which="all")
 
         # Start a list of all possible conversions
         l_possible_conversions = []
@@ -1096,8 +1096,8 @@ def get_possible_conversions(in_format: str | int,
         output format
     """
 
-    return get_database().conversions_table.get_possible_conversions(in_format_info=in_format,
-                                                                     out_format_info=out_format)
+    return get_database().conversions_table.get_possible_conversions(in_format=in_format,
+                                                                     out_format=out_format)
 
 
 def get_possible_formats(converter_name: str) -> tuple[list[FormatInfo], list[FormatInfo]]:

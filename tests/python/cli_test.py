@@ -244,12 +244,12 @@ def test_detail_converter(capsys):
     assert const.CONVERTER_DEFAULT not in captured.out
 
 
-def test_get_converters(capsys):
+def test_get_conversions(capsys):
     """Test the option to get information on converters which can perform a desired conversion
     """
     in_format = "xyz"
     out_format = "inchi"
-    l_converters = get_possible_conversions(in_format, out_format)
+    l_conversions = get_possible_conversions(in_format, out_format)
 
     run_with_arg_string(f"-l -f {in_format} -t {out_format}")
     captured = capsys.readouterr()
@@ -260,14 +260,14 @@ def test_get_converters(capsys):
 
     assert not captured.err
 
-    assert bool(l_converters) == string_is_present_in_out("The following registered converters can convert from "
-                                                          f"{in_format} to {out_format}:")
+    assert bool(l_conversions) == string_is_present_in_out("The following registered converters can convert from "
+                                                           f"{in_format} to {out_format}:")
 
-    for converter_name in l_converters:
+    for converter_name, _, _ in l_conversions:
         if converter_name in L_REGISTERED_CONVERTERS:
             assert string_is_present_in_out(converter_name)
     for converter_name in L_REGISTERED_CONVERTERS:
-        if converter_name not in l_converters:
+        if converter_name not in [x[0] for x in l_conversions]:
             assert not string_is_present_in_out(converter_name)
 
 

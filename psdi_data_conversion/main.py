@@ -7,6 +7,7 @@ Created 2025-01-14 by Bryan Gillis.
 Entry-point file for the command-line interface for data conversion.
 """
 
+from itertools import product
 import logging
 from argparse import ArgumentParser
 import os
@@ -539,32 +540,51 @@ def detail_possible_converters(from_format: str, to_format: str):
         list_supported_formats(err=True)
         exit(1)
 
-    l_possible_converters = get_possible_conversions(from_format, to_format)
+    l_possible_conversions = get_possible_conversions(from_format, to_format)
 
-    l_possible_registered_converters = [x for x in l_possible_converters if x in L_REGISTERED_CONVERTERS]
-    l_possible_unregistered_converters = [x for x in l_possible_converters if
-                                          x in L_SUPPORTED_CONVERTERS and x not in L_REGISTERED_CONVERTERS]
+    # Get a list of all different formats which share the provided name, cutting out duplicates
+    l_from_formats = list(set([x[1] for x in l_possible_conversions]))
+    l_from_formats.sort(key=lambda x: x.disambiguated_name)
+    l_to_formats = list(set([x[2] for x in l_possible_conversions]))
+    l_to_formats.sort(key=lambda x: x.disambiguated_name)
 
-    if len(l_possible_registered_converters)+len(l_possible_unregistered_converters) == 0:
-        print_wrap(f"No converters are available which can perform a conversion from {from_format} to {to_format}")
-        return
-    elif len(l_possible_registered_converters) == 0:
-        print_wrap(f"No registered converters can perform a conversion from {from_format} to {to_format}, however "
-                   "the following converters are supported by this package on other platforms and can perform this "
-                   "conversion:", newline=True)
-        print("\n    ".join(l_possible_unregistered_converters))
-        return
+    # Loop over all possible combinations of formats
 
-    print_wrap(f"The following registered converters can convert from {from_format} to {to_format}:", newline=True)
-    print("    " + "\n    ".join(l_possible_registered_converters) + "\n")
-    if l_possible_unregistered_converters:
-        print("")
-        print_wrap("Additionally, the following converters are supported by this package on other platforms and can "
-                   "perform this conversion:", newline=True)
-        print("    " + "\n    ".join(l_possible_unregistered_converters) + "\n")
+    for possible_from_format, possible_to_format in product(l_from_formats, l_to_formats):
 
-    print_wrap("For details on input/output flags and options allowed by a converter for this conversion, call:")
-    print(f"{CL_SCRIPT_NAME} -l <converter name> -f {from_format} -t {to_format}")
+        from_name = possible_from_format.disambiguated_name
+        to_name = possible_to_format.disambiguated_name
+
+        l_conversions_matching_formats = [x for x in l_possible_conversions
+                                          if x[1] == possible_from_format and x[2] == possible_to_format]
+
+        l_possible_registered_converters = [x[0] for x in l_conversions_matching_formats
+                                            if x[0] in L_REGISTERED_CONVERTERS]
+        l_possible_unregistered_converters = [x[0] for x in l_conversions_matching_formats
+                                              if x[0] in L_SUPPORTED_CONVERTERS and x[0] not in L_REGISTERED_CONVERTERS]
+
+        if len(l_possible_registered_converters)+len(l_possible_unregistered_converters) == 0:
+            print_wrap(f"No converters are available which can perform a conversion from {from_name} to "
+                       f"{to_name}")
+            continue
+        elif len(l_possible_registered_converters) == 0:
+            print_wrap(f"No registered converters can perform a conversion from {from_name} to "
+                       f"{to_name}, however the following converters are supported by this package on other "
+                       "platforms and can perform this conversion:", newline=True)
+            print("\n    ".join(l_possible_unregistered_converters))
+            continue
+
+        print_wrap(f"The following registered converters can convert from {from_name} to "
+                   f"{to_name}:", newline=True)
+        print("    " + "\n    ".join(l_possible_registered_converters) + "\n")
+        if l_possible_unregistered_converters:
+            print("")
+            print_wrap("Additionally, the following converters are supported by this package on other platforms and "
+                       "can perform this conversion:", newline=True)
+            print("    " + "\n    ".join(l_possible_unregistered_converters) + "\n")
+
+        print_wrap("For details on input/output flags and options allowed by a converter for this conversion, call:")
+        print(f"{CL_SCRIPT_NAME} -l <converter name> -f {from_name} -t {to_name}")
 
 
 def get_supported_converters():
