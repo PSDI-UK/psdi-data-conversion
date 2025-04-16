@@ -12,7 +12,7 @@ spec:
       labels:
         app: data-conversion
       annotations:
-        elastic.co/dataset: kubernetes.container_logs.data-conversion
+        elastic.co/dataset: kubernetes.container_logs.data_conversion
     spec:
       affinity:
         podAntiAffinity:
