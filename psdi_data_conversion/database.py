@@ -443,6 +443,21 @@ class FormatInfo:
         self.three_dim = d_single_format_info.get(DB_FORMAT_3D_KEY)
         """Whether or not this format stores 3D structural information"""
 
+        self._disambiguated_name: str | None = None
+
+    @property
+    def disambiguated_name(self) -> str:
+        """A unique name for this format which can be used to distinguish it from others which share the same extension,
+        by appending the name of each with a unique index"""
+        if self._disambiguated_name is None:
+            l_formats_with_same_name = [x for x in self.parent.l_format_info if x and x.name == self.name]
+            if len(l_formats_with_same_name) == 1:
+                self._disambiguated_name = self.name
+            else:
+                index_of_this = [i for i, x in enumerate(l_formats_with_same_name) if self is x][0]
+                self._disambiguated_name = f"{self.name}-{index_of_this}"
+        return self._disambiguated_name
+
     def __str__(self):
         """When cast to string, convert to the name (extension) of the format"""
         return self.name

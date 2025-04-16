@@ -141,6 +141,11 @@ def test_format_info_options():
     # Check that the shortcut doesn't cause any problems even if the format is unambiguous
     assert get_format_info("cif-0") == get_format_info("cif")
 
+    # Check that the format info provides the right disambiguated name
+    assert get_format_info("cif").disambiguated_name == "cif"
+    assert get_format_info("pdb-0").disambiguated_name == "pdb-0"
+    assert get_format_info("pdb-1").disambiguated_name == "pdb-1"
+
 
 def test_conversion_table():
     """Test that we can access data from the conversions table properly
