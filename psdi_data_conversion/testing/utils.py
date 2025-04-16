@@ -421,6 +421,7 @@ def _run_single_test_conversion_with_cla(test_spec: SingleConversionTestSpec,
         if test_spec.expect_success:
             run_converter_through_cla(filename=qualified_in_filename,
                                       to_format=test_spec.to_format,
+                                      from_format=test_spec.from_format,
                                       name=test_spec.converter_name,
                                       input_dir=input_dir,
                                       output_dir=output_dir,
@@ -431,6 +432,7 @@ def _run_single_test_conversion_with_cla(test_spec: SingleConversionTestSpec,
             with pytest.raises(SystemExit) as exc_info:
                 run_converter_through_cla(filename=qualified_in_filename,
                                           to_format=test_spec.to_format,
+                                          from_format=test_spec.from_format,
                                           name=test_spec.converter_name,
                                           input_dir=input_dir,
                                           output_dir=output_dir,
@@ -469,6 +471,7 @@ def run_converter_through_cla(filename: str,
                               input_dir: str,
                               output_dir: str,
                               log_file: str,
+                              from_format: str | None = None,
                               **conversion_kwargs):
     """Runs a test conversion through the command-line interface
 
@@ -491,17 +494,21 @@ def run_converter_through_cla(filename: str,
         The desired name of the log file
     conversion_kwargs : Any
         Additional arguments describing the conversion
+    from_format : str | None
+        The format of the input file, when it needs to be explicitly specified, otherwise None
     """
 
     # Start the argument string with the arguments we will always include
     arg_string = f"{filename} -i {input_dir} -t {to_format} -o {output_dir} -w {name} --log-file {log_file}"
 
-    # For each argument in the conversion kwargs, convert it to the appropriate argument to be provided to the
-    # argument string
+    # For from_format and each argument in the conversion kwargs, convert it to the appropriate argument to be provided
+    # to the argument string
+
+    if from_format:
+        arg_string += f" -f {from_format}"
+
     for key, val in conversion_kwargs.items():
-        if key == "from_format":
-            arg_string += f" -f {val}"
-        elif key == "log_mode":
+        if key == "log_mode":
             if val == LOG_NONE:
                 arg_string += " -q"
             else:
