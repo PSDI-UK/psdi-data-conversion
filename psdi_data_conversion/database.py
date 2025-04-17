@@ -15,7 +15,7 @@ import os
 from typing import Any, Literal
 
 from psdi_data_conversion import constants as const
-from psdi_data_conversion.converter import D_REGISTERED_CONVERTERS
+from psdi_data_conversion.converter import D_REGISTERED_CONVERTERS, D_SUPPORTED_CONVERTERS
 from psdi_data_conversion.converters.base import FileConverterException
 
 # Keys for top-level and general items in the database
@@ -580,8 +580,8 @@ class ConversionsTable:
         num_converters = len(parent.converters)
         num_formats = len(parent.formats)
 
-        self._table = [[[0 for k in range(num_formats+1)] for j in range(num_formats+1)]
-                       for i in range(num_converters+1)]
+        self.table = [[[0 for k in range(num_formats+1)] for j in range(num_formats+1)]
+                      for i in range(num_converters+1)]
 
         for possible_conversion in l_converts_to:
 
@@ -593,7 +593,7 @@ class ConversionsTable:
                 raise FileConverterDatabaseException(
                     f"Malformed 'converts_to' entry in database: {possible_conversion}")
 
-            self._table[conv_id][in_id][out_id] = 1
+            self.table[conv_id][in_id][out_id] = 1
 
     def get_conversion_quality(self,
                                converter_name: str,
@@ -630,7 +630,7 @@ class ConversionsTable:
         out_info: int = self.parent.get_format_info(out_format, which_format)
 
         # First check if the conversion is possible
-        success_flag = self._table[conv_id][in_info.id][out_info.id]
+        success_flag = self.table[conv_id][in_info.id][out_info.id]
         if not success_flag:
             return None
 
@@ -718,7 +718,7 @@ class ConversionsTable:
         for in_format_info, out_format_info in product(l_in_format_infos, l_out_format_infos):
 
             # Slice the table to get a list of the success for this conversion for each converter
-            l_converter_success = [x[in_format_info.id][out_format_info.id] for x in self._table]
+            l_converter_success = [x[in_format_info.id][out_format_info.id] for x in self.table]
 
             # Filter for possible conversions and get the converter name and degree-of-success string
             # for each possible conversion
@@ -745,7 +745,7 @@ class ConversionsTable:
             A tuple of a list of the supported input formats and a list of the supported output formats
         """
         conv_id: int = self.parent.get_converter_info(converter_name).id
-        ll_in_out_format_success = self._table[conv_id]
+        ll_in_out_format_success = self.table[conv_id]
 
         # Filter for possible input formats by checking if at least one output format for each has a degree of success
         # index greater than 0, and stored the filtered lists where the input format is possible so we only need to
@@ -833,21 +833,7 @@ class DataConversionDatabase:
         """Generate the format info dict when needed
         """
         if self._d_format_info is None:
-            self._d_format_info: dict[str, list[FormatInfo]] = {}
-
-            for format_info in self.l_format_info:
-
-                if not format_info:
-                    continue
-
-                name = format_info.name
-
-                # Each name may correspond to multiple formats, so we use a list for each entry to list all possible
-                # formats for each name
-                if name not in self._d_format_info:
-                    self._d_format_info[name] = []
-
-                self._d_format_info[name].append(format_info)
+            self._init_formats_and_conversions()
 
         return self._d_format_info
 
@@ -856,18 +842,7 @@ class DataConversionDatabase:
         """Generate the format info list (indexed by ID) when needed
         """
         if self._l_format_info is None:
-            # Pre-size a list based on the maximum ID plus 1 (since IDs are 1-indexed)
-            max_id: int = max([x[DB_ID_KEY] for x in self.formats])
-            self._l_format_info: list[FormatInfo | None] = [None] * (max_id+1)
-
-            for d_single_format_info in self.formats:
-                name: str = d_single_format_info[DB_FORMAT_EXT_KEY]
-
-                format_info = FormatInfo(name=name,
-                                         parent=self,
-                                         d_single_format_info=d_single_format_info)
-
-                self._l_format_info[format_info.id] = format_info
+            self._init_formats_and_conversions()
 
         return self._l_format_info
 
@@ -875,10 +850,73 @@ class DataConversionDatabase:
     def conversions_table(self) -> ConversionsTable:
         """Generates the conversions table when needed
         """
+
         if self._conversions_table is None:
-            self._conversions_table = ConversionsTable(l_converts_to=self.converts_to,
-                                                       parent=self)
+            self._init_formats_and_conversions()
+
         return self._conversions_table
+
+    def _init_formats_and_conversions(self):
+        """Initializes the format list and dict and the conversions table"""
+
+        # Start by initializing the list of conversions
+
+        # Pre-size a list based on the maximum ID plus 1 (since IDs are 1-indexed)
+        max_id: int = max([x[DB_ID_KEY] for x in self.formats])
+        self._l_format_info: list[FormatInfo | None] = [None] * (max_id+1)
+
+        for d_single_format_info in self.formats:
+            name: str = d_single_format_info[DB_FORMAT_EXT_KEY]
+
+            format_info = FormatInfo(name=name,
+                                     parent=self,
+                                     d_single_format_info=d_single_format_info)
+
+            self._l_format_info[format_info.id] = format_info
+
+        # Initialize the conversions table now
+        self._conversions_table = ConversionsTable(l_converts_to=self.converts_to,
+                                                   parent=self)
+
+        # Use the conversions table to prune any formats which have no valid conversions
+
+        # Get a slice of the table which only includes supported converters
+        l_supported_converter_ids = [self.get_converter_info(x).id for x in D_SUPPORTED_CONVERTERS]
+        supported_table = [self._conversions_table.table[x] for x in l_supported_converter_ids]
+
+        for format_id, format_info in enumerate(self._l_format_info):
+            if not format_info:
+                continue
+
+            # Check if the format is supported as the input format for any conversion
+            ll_possible_from_conversions = [x[format_id] for x in supported_table]
+            if sum([sum(x) for x in ll_possible_from_conversions]) > 0:
+                continue
+
+            # Check if the format is supported as the output format for any conversion
+            ll_possible_to_conversions = [[y[format_id] for y in x] for x in supported_table]
+            if sum([sum(x) for x in ll_possible_to_conversions]) > 0:
+                continue
+
+            # If we get here, the format isn't supported for any conversions, so remove it from our list
+            self._l_format_info[format_id] = None
+
+        # Now create the formats dict, with only the pruned list of formats
+        self._d_format_info: dict[str, list[FormatInfo]] = {}
+
+        for format_info in self.l_format_info:
+
+            if not format_info:
+                continue
+
+            name = format_info.name
+
+            # Each name may correspond to multiple formats, so we use a list for each entry to list all possible
+            # formats for each name
+            if name not in self._d_format_info:
+                self._d_format_info[name] = []
+
+            self._d_format_info[name].append(format_info)
 
     def get_converter_info(self, converter_name_or_id: str | int) -> ConverterInfo:
         """Get a converter's info from either its name or ID
