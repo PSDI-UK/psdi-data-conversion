@@ -345,7 +345,7 @@ def detail_converter_use(args: ConvertArgs):
         print_wrap(converter_class.info, break_long_words=False, break_on_hyphens=False, newline=True)
 
     # If both an input and output format are specified, provide the degree of success for this conversion. Otherwise
-    # list possible input output formats
+    # list possible input/output formats
     if args.from_format is not None and args.to_format is not None:
         qual = get_conversion_quality(args.name, args.from_format, args.to_format)
         if qual is None:

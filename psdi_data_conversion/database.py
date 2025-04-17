@@ -1138,6 +1138,50 @@ def get_possible_conversions(in_format: str | int,
                                                                      out_format=out_format)
 
 
+def disambiguate_formats(converter_name: str,
+                         in_format: str | int | FormatInfo,
+                         out_format: str | int | FormatInfo) -> tuple[FormatInfo, FormatInfo]:
+    """Try to disambiguate formats by seeing if there's only one possible conversion between formats matching those
+    provided.
+
+    Parameters
+    ----------
+    converter_name : str
+        The name of the converter
+    in_format : str | int
+        The extension or ID of the input file format
+    out_format : str | int
+        The extension or ID of the output file format
+
+    Returns
+    -------
+    tuple[FormatInfo, FormatInfo]
+        The input and output format for this conversion, if only one combination is possible
+
+    Raises
+    ------
+    FileConverterDatabaseException
+        If more than one format combination is possible for this conversion, or no conversion is possible
+    """
+
+    # Get all possible conversions, and see if we only have one for this converter
+    l_possible_conversions = [x for x in get_possible_conversions(in_format, out_format)
+                              if x[0] == converter_name]
+
+    if len(l_possible_conversions) == 1:
+        return l_possible_conversions[0][1], l_possible_conversions[0][2]
+    elif len(l_possible_conversions) == 0:
+        raise FileConverterDatabaseException(f"Conversion from {in_format} to {out_format} with converter "
+                                             f"{converter_name} is not supported", help=True)
+    else:
+        msg = (f"Conversion from {in_format} to {out_format} with converter {converter_name} is ambiguous. "
+               "Possible matching conversions are: ")
+        for _, possible_in_format, possible_out_format in l_possible_conversions:
+            msg += (f"{possible_in_format.disambiguated_name} ({possible_in_format.note}) to "
+                    f"{possible_out_format.disambiguated_name} ({possible_out_format.note})")
+        raise FileConverterDatabaseException(msg, help=True)
+
+
 def get_possible_formats(converter_name: str) -> tuple[list[FormatInfo], list[FormatInfo]]:
     """Get a list of input and output formats that a given converter supports
 
