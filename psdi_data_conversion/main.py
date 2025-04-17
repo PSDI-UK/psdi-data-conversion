@@ -524,13 +524,13 @@ def detail_possible_converters(from_format: str, to_format: str):
     either_format_failed = False
 
     try:
-        get_format_info(from_format)
+        get_format_info(from_format, which=0)
     except KeyError:
         either_format_failed = True
         print_wrap(f"ERROR: Input format '{from_format}' not recognised", newline=True, err=True)
 
     try:
-        get_format_info(to_format)
+        get_format_info(to_format, which=0)
     except KeyError:
         either_format_failed = True
         print_wrap(f"ERROR: Output format '{from_format}' not recognised", newline=True, err=True)
