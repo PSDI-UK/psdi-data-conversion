@@ -9,10 +9,11 @@ import pytest
 from psdi_data_conversion import constants as const
 from psdi_data_conversion.converter import L_REGISTERED_CONVERTERS
 from psdi_data_conversion.converters.atomsk import CONVERTER_ATO
+from psdi_data_conversion.converters.c2x import CONVERTER_C2X
 from psdi_data_conversion.converters.openbabel import CONVERTER_OB
-from psdi_data_conversion.database import (FileConverterDatabaseException, get_conversion_quality, get_converter_info,
-                                           get_database, get_format_info, get_in_format_args, get_out_format_args,
-                                           get_possible_conversions, get_possible_formats)
+from psdi_data_conversion.database import (FileConverterDatabaseException, disambiguate_formats, get_conversion_quality,
+                                           get_converter_info, get_database, get_format_info, get_in_format_args,
+                                           get_out_format_args, get_possible_conversions, get_possible_formats)
 
 
 def test_load():
@@ -145,6 +146,24 @@ def test_format_info_options():
     assert get_format_info("cif").disambiguated_name == "cif"
     assert get_format_info("pdb-0").disambiguated_name == "pdb-0"
     assert get_format_info("pdb-1").disambiguated_name == "pdb-1"
+
+
+def test_disambiguate_format():
+    """Test that we can disambiguate formats when only one combination is possible for a conversion
+    """
+
+    # Test that we can disambiguate the right pdb format
+    in_format, out_format = disambiguate_formats(CONVERTER_OB, "pdb", "cif")
+    assert in_format == get_format_info("pdb-0")
+    assert out_format == get_format_info("cif")
+
+    # Test we get the expected exception if no conversion is possible
+    with pytest.raises(FileConverterDatabaseException, match="is not supported"):
+        disambiguate_formats(CONVERTER_C2X, "ins", "cml")
+
+    # Test we get the expected exception if multiple conversions are possible
+    with pytest.raises(FileConverterDatabaseException, match="is ambiguous"):
+        disambiguate_formats(CONVERTER_C2X, "cif", "pdb")
 
 
 def test_conversion_table():
