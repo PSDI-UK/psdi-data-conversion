@@ -516,7 +516,26 @@ def list_supported_formats(err=False):
     print_wrap("Note that not all formats are supported with all converters, or both as input and as output.")
 
 
-def detail_possible_converters(from_format: str, to_format: str):
+def detail_format(format_name: str):
+    """Prints details on a format
+    """
+
+    l_format_info: list[FormatInfo] = get_format_info(format_name, which="all")
+
+    if len(l_format_info) == 0:
+        print_wrap(f"ERROR: Format '{format_name}' not recognised", newline=True, err=True)
+        return
+
+    if len(l_format_info) > 1:
+        print_wrap(f"WARNING: Format '{format_name}' is ambiguous and could refer to multiple formats. It may be "
+                   "necessary to explicitly specify which you want to use when calling this script, e.g. with "
+                   f"'-f {format_name}-0' - see the disambiguated names in the list below:", newline=True)
+
+    for format_info in l_format_info:
+        print_wrap(f"{format_info.disambiguated_name}: {format_info.note}")
+
+
+def detail_formats_and_possible_converters(from_format: str, to_format: str):
     """Prints details on converters that can perform a conversion from one format to another
     """
 
@@ -539,6 +558,12 @@ def detail_possible_converters(from_format: str, to_format: str):
         # Let the user know about formats which are allowed
         list_supported_formats(err=True)
         exit(1)
+
+    # Provide details on both the input and output formats
+    detail_format(from_format)
+    print()
+    detail_format(to_format)
+    print()
 
     l_possible_conversions = get_possible_conversions(from_format, to_format)
 
@@ -637,7 +662,13 @@ def detail_converters_and_formats(args: ConvertArgs):
         list_supported_converters(err=True)
         exit(1)
     elif args.from_format and args.to_format:
-        detail_possible_converters(args.from_format, args.to_format)
+        detail_formats_and_possible_converters(args.from_format, args.to_format)
+        return
+    elif args.from_format:
+        detail_format(args.from_format)
+        return
+    elif args.from_format:
+        detail_format(args.to_format)
         return
 
     list_supported_converters()
@@ -732,7 +763,7 @@ def run_from_args(args: ConvertArgs):
             elif "Conversion from" in str(e) and "is not supported" in str(e):
                 if not e.logged:
                     print_wrap(f"ERROR: {e}", err=True, newline=True)
-                detail_possible_converters(args.from_format, args.to_format)
+                detail_formats_and_possible_converters(args.from_format, args.to_format)
             elif e.help and not e.logged:
                 if e.msg_preformatted:
                     print(e, file=sys.stderr)
