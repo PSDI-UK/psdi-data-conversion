@@ -18,7 +18,8 @@ from psdi_data_conversion import constants as const
 from psdi_data_conversion.constants import CL_SCRIPT_NAME, CONVERTER_DEFAULT, TERM_WIDTH
 from psdi_data_conversion.converter import (D_CONVERTER_ARGS, D_SUPPORTED_CONVERTERS, L_REGISTERED_CONVERTERS,
                                             L_SUPPORTED_CONVERTERS, run_converter)
-from psdi_data_conversion.converters.base import FileConverterAbortException, FileConverterInputException
+from psdi_data_conversion.converters.base import (FileConverterAbortException, FileConverterException,
+                                                  FileConverterInputException)
 from psdi_data_conversion.database import (FormatInfo, get_conversion_quality, get_converter_info, get_format_info,
                                            get_in_format_args, get_out_format_args, get_possible_conversions,
                                            get_possible_formats)
@@ -756,7 +757,7 @@ def run_from_args(args: ConvertArgs):
                 e.logged = True
             success = False
             continue
-        except FileConverterInputException as e:
+        except FileConverterException as e:
             if e.help and not e.logged:
                 print_wrap(f"ERROR: {e}", err=True)
                 e.logged = True

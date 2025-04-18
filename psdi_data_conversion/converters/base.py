@@ -514,6 +514,18 @@ class FileConverter:
 
         """
 
+        def try_debug_log(msg, *args, **kwargs):
+            try:
+                self.logger.debug(msg, *args, **kwargs)
+            except AttributeError:
+                pass
+
+        def error_log(msg, *args, **kwargs):
+            try:
+                self.logger.error(msg, *args, **kwargs)
+            except AttributeError:
+                print(msg, file=sys.stderr)
+
         # Remove the input and output files if they exist
         if self.delete_input:
             self.logger.debug(f"Cleaning up input file {self.in_filename}")
@@ -521,33 +533,34 @@ class FileConverter:
                 os.remove(self.in_filename)
             except FileNotFoundError:
                 pass
+
         try:
             os.remove(self.out_filename)
-        except FileNotFoundError:
-            self.logger.debug("Application aborting; no output file found to clean up")
+        except (FileNotFoundError, AttributeError):
+            try_debug_log("Application aborting; no output file found to clean up")
         else:
-            self.logger.debug(f"Application aborting, so cleaning up output file {self.out_filename}")
+            try_debug_log(f"Application aborting, so cleaning up output file {self.out_filename}")
 
         # If we have a Help exception, override the message with its message
         if isinstance(e, FileConverterException) and e.help:
-            self.logger.debug("Help exception triggered, so only using its message for output")
+            try_debug_log("Help exception triggered, so only using its message for output")
             message = str(e)
 
         if message:
             # If we're adding a message in server mode, read in any prior logs, clear the log, write the message, then
             # write the prior logs
             if self.log_file is None:
-                self.logger.debug("Adding abort message to the top of the output log so it will be the first thing "
-                                  "read by the user")
+                try_debug_log("Adding abort message to the top of the output log so it will be the first thing "
+                              "read by the user")
                 prior_output_log = open(self.output_log, "r").read()
                 os.remove(self.output_log)
                 with open(self.output_log, "w") as fo:
                     fo.write(message + "\n")
                     fo.write(prior_output_log)
 
-            # Note this message in the dev logger as well
+            # Note this message in the error logger as well
             if not (isinstance(e, FileConverterException) and e.help):
-                self.logger.error(message)
+                error_log(message)
                 if e:
                     e.logged = True
 

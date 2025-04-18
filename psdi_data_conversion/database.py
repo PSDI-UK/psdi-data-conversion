@@ -989,7 +989,8 @@ class DataConversionDatabase:
                 msg = (f"Extension '{format_name_or_id}' is ambiguous and must be defined by ID. Possible formats "
                        "and their IDs are:")
                 for possible_format_info in l_possible_format_info:
-                    msg += f"\n{possible_format_info.id}: {possible_format_info.note}"
+                    msg += (f"\n{possible_format_info.id}: {possible_format_info.disambiguated_name} "
+                            f"({possible_format_info.note})")
                 raise FileConverterDatabaseException(msg, help=True)
 
         elif isinstance(format_name_or_id, int):

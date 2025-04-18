@@ -228,6 +228,12 @@ options] [-s/--strict] [--nc/--no-check] [-q/--quiet] [-g/--log-file <log file n
 
 Call `psdi-data-convert -h` for details on each of these options.
 
+Note that some requested conversions may involve ambiguous formats which share the same extension. In this case, the application will print a warning and list possible matching formats, with a disambiguating name that can be used to specify which one. For instance, the `c2x` converter can convert into two variants of the `pdb` format, and if you ask it to convert to `pdb` without specifying which one, you'll see:
+
+```
+
+```
+
 #### Requesting Information on Possible Conversions
 
 The script can also be used to get information on possible conversions by providing the `-l/--list` argument:
