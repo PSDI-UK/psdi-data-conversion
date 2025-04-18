@@ -526,7 +526,9 @@ def list_supported_formats(err=False):
         print_wrap("".join(l_padded_unregistered_formats), err=err,
                    initial_indent="  ", subsequent_indent="  ", newline=True)
 
-    print_wrap("Note that not all formats are supported with all converters, or both as input and as output.")
+    print_wrap("Note that not all formats are supported with all converters, or both as input and as output.",
+               newline=True)
+    print_wrap("To see the description of a format, call this script with `-l -f <format>`")
 
 
 def detail_format(format_name: str):
@@ -536,8 +538,9 @@ def detail_format(format_name: str):
     l_format_info: list[FormatInfo] = get_format_info(format_name, which="all")
 
     if len(l_format_info) == 0:
-        print_wrap(f"ERROR: Format '{format_name}' not recognised", err=True)
-        return
+        print_wrap(f"ERROR: Format '{format_name}' not recognised", err=True, newline=True)
+        list_supported_formats(err=True)
+        exit(1)
 
     if len(l_format_info) > 1:
         print_wrap(f"WARNING: Format '{format_name}' is ambiguous and could refer to multiple formats. It may be "

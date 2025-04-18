@@ -371,7 +371,8 @@ def test_format_info(capsys):
     # Test we get expected errors for unrecognised formats
 
     in_format = 99999
-    run_with_arg_string(f"-l -f {in_format}")
+    with pytest.raises(SystemExit):
+        run_with_arg_string(f"-l -f {in_format}")
 
     captured = capsys.readouterr()
     compressed_err: str = captured.err.replace("\n", "").replace(" ", "")
@@ -382,7 +383,9 @@ def test_format_info(capsys):
     assert string_is_present_in_err(f"ERROR: Format '{in_format}' not recognised")
 
     out_format = "not_a_format"
-    run_with_arg_string(f"-l -t {out_format}")
+
+    with pytest.raises(SystemExit):
+        run_with_arg_string(f"-l -t {out_format}")
 
     captured = capsys.readouterr()
     compressed_err: str = captured.err.replace("\n", "").replace(" ", "")
