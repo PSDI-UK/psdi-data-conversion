@@ -526,9 +526,11 @@ def list_supported_formats(err=False):
         print_wrap("".join(l_padded_unregistered_formats), err=err,
                    initial_indent="  ", subsequent_indent="  ", newline=True)
 
-    print_wrap("Note that not all formats are supported with all converters, or both as input and as output.",
-               newline=True)
-    print_wrap("To see the description of a format, call this script with `-l -f <format>`")
+    print_wrap("Note that not all formats are supported with all converters, or both as input and as output.")
+    if err:
+        print("")
+        print_wrap("For more details on a format, call:")
+        print(f"{CL_SCRIPT_NAME} -l -f <format>")
 
 
 def detail_format(format_name: str):
@@ -694,6 +696,9 @@ def detail_converters_and_formats(args: ConvertArgs):
 
     print_wrap("For more details on a converter, call:")
     print(f"{CL_SCRIPT_NAME} -l <converter name>\n")
+
+    print_wrap("For more details on a format, call:")
+    print(f"{CL_SCRIPT_NAME} -l -f <format>\n")
 
     print_wrap("For a list of converters that can perform a desired conversion, call:")
     print(f"{CL_SCRIPT_NAME} -l -f <input format> -t <output format>\n")
