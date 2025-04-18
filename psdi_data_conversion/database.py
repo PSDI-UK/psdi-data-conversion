@@ -957,6 +957,12 @@ class DataConversionDatabase:
         -------
         FormatInfo | list[FormatInfo]
         """
+
+        if which == "all":
+            return_as_list = True
+        else:
+            return_as_list = False
+
         if isinstance(format_name_or_id, str):
             # Silently strip leading period
             if format_name_or_id.startswith("."):
@@ -976,15 +982,20 @@ class DataConversionDatabase:
                 which = int(l_name_segments[1])
 
             l_possible_format_info = self.d_format_info.get(format_name_or_id, [])
+
             if which == "all":
                 return l_possible_format_info
+
             elif len(l_possible_format_info) == 1:
-                return l_possible_format_info[0]
+                format_info = l_possible_format_info[0]
+
             elif len(l_possible_format_info) == 0:
                 raise FileConverterDatabaseException(f"Format name '{format_name_or_id}' not recognised",
                                                      help=True)
+
             elif which is not None and which < len(l_possible_format_info):
-                return l_possible_format_info[which]
+                format_info = l_possible_format_info[which]
+
             else:
                 msg = (f"Extension '{format_name_or_id}' is ambiguous and must be defined by ID. Possible formats "
                        "and their IDs are:")
@@ -994,16 +1005,20 @@ class DataConversionDatabase:
                 raise FileConverterDatabaseException(msg, help=True)
 
         elif isinstance(format_name_or_id, int):
-            return self.l_format_info[format_name_or_id]
+            format_info = self.l_format_info[format_name_or_id]
 
         elif isinstance(format_name_or_id, FormatInfo):
             # Silently return the FormatInfo if it was used as a key here
-            return format_name_or_id
+            format_info = format_name_or_id
 
         else:
             raise FileConverterDatabaseException(f"Invalid key passed to `get_format_info`: '{format_name_or_id}'"
                                                  f" of type '{type(format_name_or_id)}'. Type must be `str` or "
                                                  "`int`")
+        if return_as_list:
+            return [format_info]
+
+        return format_info
 
 
 # The database will be loaded on demand when `get_database()` is called

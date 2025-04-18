@@ -89,6 +89,18 @@ class ConvertArgs:
                 # indicate we want to provide this as feedback to the user so they can correct their command
                 raise FileConverterInputException(str(e), help=True)
 
+        # If formats were provided as ints, convert them to the int type now
+        try:
+            if self.from_format:
+                self.from_format = int(self.from_format)
+        except ValueError:
+            pass
+        try:
+            if self.to_format:
+                self.to_format = int(self.to_format)
+        except ValueError:
+            pass
+
         # Special handling for listing converters
         if self.list:
             # Force log mode to stdout and turn off quiet
