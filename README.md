@@ -231,8 +231,20 @@ Call `psdi-data-convert -h` for details on each of these options.
 Note that some requested conversions may involve ambiguous formats which share the same extension. In this case, the application will print a warning and list possible matching formats, with a disambiguating name that can be used to specify which one. For instance, the `c2x` converter can convert into two variants of the `pdb` format, and if you ask it to convert to `pdb` without specifying which one, you'll see:
 
 ```
-
+ERROR: Extension 'pdb' is ambiguous and must be defined by ID. Possible formats and their IDs are:
+9: pdb-0 (Protein Data Bank)
+259: pdb-1 (Protein Data Bank with atoms numbered)
 ```
+
+This provides the IDs ("9" and "259") and disambiguating names ("pdb-0" and "pdb-1") for the matching formats. Either can be used in the call to the converter, e.g.:
+
+```bash
+psdi-data-conversion nacl.cif -t 9 -w c2x
+# Or equivalently:
+psdi-data-conversion nacl.cif -t pdb-0 -w c2x
+```
+
+The "<format>-0" pattern can be used with any format, even if it's unambiguous, and will be interpreted as the first instance of the format in the database with valid conversions. Note that as the database expands in future versions and more valid conversions are added, these disambiguated names may change, so it is recommended to use the format's ID in scripts and with the library to ensure consistency between versions of this package.
 
 #### Requesting Information on Possible Conversions
 
@@ -307,6 +319,8 @@ run_converter(filename, to_format, name=name, data=data)
 Where `filename` is the name of the file to convert (either fully-qualified or relative to the current directory), `to_format` is the desired format to convert to (e.g. `"pdb"`), `name` is the name of the converter to use (default "Open Babel"), and `data` is a dict of any extra information required by the specific converter being used, such as flags for how to read/write input/output files (default empty dict).
 
 See the method's documentation via `help(run_converter)` after importing it for further details on usage.
+
+Note that as with running the application through the command-line, some extra care may be needed in the case that the input or output format is ambiguous - see the [Data Conversion](#data-conversion) section above for more details on this. As with running through the command-line, a format's ID or disambiguated name must be used in the case of ambiguity.
 
 #### `constants`
 
