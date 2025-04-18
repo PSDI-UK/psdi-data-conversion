@@ -12,6 +12,7 @@ from psdi_data_conversion.converters.base import (FileConverterAbortException, F
                                                   FileConverterSizeException)
 from psdi_data_conversion.converters.c2x import CONVERTER_C2X
 from psdi_data_conversion.converters.openbabel import CONVERTER_OB, COORD_GEN_KEY, COORD_GEN_QUAL_KEY
+from psdi_data_conversion.database import FileConverterDatabaseException
 from psdi_data_conversion.testing.conversion_callbacks import (CheckArchiveContents, CheckException, CheckLogContents,
                                                                CheckLogContentsSuccess, CheckFileStatus,
                                                                CheckStderrContents, CheckStdoutContents,
@@ -251,12 +252,13 @@ l_all_test_specs.append(Spec(name="Errors in logs - GUI",
 
 l_all_test_specs.append(Spec(name="Failed conversion - invalid conversion",
                              filename=["Fapatite.ins", "nacl.mol"],
+                             from_format=["ins", "mol-0"],
                              to_format=["cml", "xyz"],
                              expect_success=False,
                              converter_name=[CONVERTER_C2X, CONVERTER_ATO],
                              callback=MCB(CheckFileStatus(expect_output_exists=False,
                                                           expect_log_exists=None),
-                                          CheckException(ex_type=FileConverterInputException,
+                                          CheckException(ex_type=FileConverterDatabaseException,
                                                          ex_message="is not supported")),
                              compatible_with_gui=False,
                              ))
