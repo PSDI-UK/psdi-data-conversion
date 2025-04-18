@@ -360,9 +360,6 @@ def test_format_info(capsys):
     captured = capsys.readouterr()
     compressed_out: str = captured.out.replace("\n", "").replace(" ", "")
 
-    def string_is_present_in_out(s: str) -> bool:
-        return s.replace("\n", " ").replace(" ", "") in compressed_out
-
     assert not captured.err
 
     assert string_is_present_in_out(f"WARNING: Format '{out_format}' is ambiguous")
@@ -370,3 +367,24 @@ def test_format_info(capsys):
     for out_format_info in l_out_format_info:
         assert string_is_present_in_out(f"{out_format_info.id}: {out_format_info.disambiguated_name} "
                                         f"({out_format_info.note})")
+
+    # Test we get expected errors for unrecognised formats
+
+    in_format = 99999
+    run_with_arg_string(f"-l -f {in_format}")
+
+    captured = capsys.readouterr()
+    compressed_err: str = captured.err.replace("\n", "").replace(" ", "")
+
+    def string_is_present_in_err(s: str) -> bool:
+        return s.replace("\n", " ").replace(" ", "") in compressed_err
+
+    assert string_is_present_in_err(f"ERROR: Format '{in_format}' not recognised")
+
+    out_format = "not_a_format"
+    run_with_arg_string(f"-l -t {out_format}")
+
+    captured = capsys.readouterr()
+    compressed_err: str = captured.err.replace("\n", "").replace(" ", "")
+
+    assert string_is_present_in_err(f"ERROR: Format '{out_format}' not recognised")
