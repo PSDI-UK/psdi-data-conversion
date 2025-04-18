@@ -317,10 +317,9 @@ class FileConverter:
                 self.from_format = from_format
 
             # Convert in and out formats to FormatInfo, and raise an exception if one is ambiguous
-            from psdi_data_conversion.database import get_format_info, FormatInfo
-            which_format = None if self.supports_ambiguous_extensions else 0
-            self.from_format_info: FormatInfo = get_format_info(self.from_format, which_format)
-            self.to_format_info: FormatInfo = get_format_info(self.to_format, which_format)
+            from psdi_data_conversion.database import disambiguate_formats
+            (self.from_format_info,
+             self.to_format_info) = disambiguate_formats(self.name, self.from_format, self.to_format)
 
             # Set placeholders for member variables which will be set when conversion is run
             self.in_size: int | None = None

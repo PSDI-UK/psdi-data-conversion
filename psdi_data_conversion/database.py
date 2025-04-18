@@ -1196,11 +1196,13 @@ def disambiguate_formats(converter_name: str,
         raise FileConverterDatabaseException(f"Conversion from {in_format} to {out_format} with converter "
                                              f"{converter_name} is not supported", help=True)
     else:
-        msg = (f"Conversion from {in_format} to {out_format} with converter {converter_name} is ambiguous. "
-               "Possible matching conversions are: ")
+        msg = (f"Conversion from {in_format} to {out_format} with converter {converter_name} is ambiguous.\n"
+               "Possible matching conversions are:\n")
         for _, possible_in_format, possible_out_format in l_possible_conversions:
             msg += (f"{possible_in_format.disambiguated_name} ({possible_in_format.note}) to "
-                    f"{possible_out_format.disambiguated_name} ({possible_out_format.note})")
+                    f"{possible_out_format.disambiguated_name} ({possible_out_format.note})\n")
+        # Trim the final newline from the message
+        msg = msg[:-1]
         raise FileConverterDatabaseException(msg, help=True)
 
 
