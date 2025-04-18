@@ -18,8 +18,9 @@ from psdi_data_conversion.converters.atomsk import CONVERTER_ATO
 from psdi_data_conversion.converters.c2x import CONVERTER_C2X
 from psdi_data_conversion.converters.openbabel import (CONVERTER_OB, COORD_GEN_KEY, COORD_GEN_QUAL_KEY,
                                                        DEFAULT_COORD_GEN, DEFAULT_COORD_GEN_QUAL)
-from psdi_data_conversion.database import (get_conversion_quality, get_converter_info, get_in_format_args,
-                                           get_out_format_args, get_possible_conversions, get_possible_formats)
+from psdi_data_conversion.database import (FormatInfo, get_conversion_quality, get_converter_info, get_format_info,
+                                           get_in_format_args, get_out_format_args, get_possible_conversions,
+                                           get_possible_formats)
 from psdi_data_conversion.main import FileConverterInputException, parse_args
 from psdi_data_conversion.testing.utils import run_test_conversion_with_cla, run_with_arg_string
 from psdi_data_conversion.testing.conversion_test_specs import l_cla_test_specs
@@ -327,3 +328,45 @@ def test_conversion_info(capsys):
         compressed_out: str = captured.out.replace("\n", "").replace(" ", "")
 
         assert not captured.err
+
+
+def test_format_info(capsys):
+    """Test that we can get information on formats
+    """
+
+    # Try to get info on an unambiguous format
+
+    in_format = "cif"
+    in_format_info: FormatInfo = get_format_info(in_format)
+    run_with_arg_string(f"-l -f {in_format}")
+
+    captured = capsys.readouterr()
+    compressed_out: str = captured.out.replace("\n", "").replace(" ", "")
+
+    def string_is_present_in_out(s: str) -> bool:
+        return s.replace("\n", " ").replace(" ", "") in compressed_out
+
+    assert not captured.err
+
+    assert string_is_present_in_out(f"{in_format_info.id}: {in_format_info.name} "
+                                    f"({in_format_info.note})")
+
+    # Try to get info on an ambiguous format
+
+    out_format = "pdb"
+    l_out_format_info: list[FormatInfo] = get_format_info(out_format, which="all")
+    run_with_arg_string(f"-l -t {out_format}")
+
+    captured = capsys.readouterr()
+    compressed_out: str = captured.out.replace("\n", "").replace(" ", "")
+
+    def string_is_present_in_out(s: str) -> bool:
+        return s.replace("\n", " ").replace(" ", "") in compressed_out
+
+    assert not captured.err
+
+    assert string_is_present_in_out(f"WARNING: Format '{out_format}' is ambiguous")
+
+    for out_format_info in l_out_format_info:
+        assert string_is_present_in_out(f"{out_format_info.id}: {out_format_info.disambiguated_name} "
+                                        f"({out_format_info.note})")

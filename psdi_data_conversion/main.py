@@ -533,7 +533,7 @@ def detail_format(format_name: str):
                    f"'-f {format_name}-0' - see the disambiguated names in the list below:", newline=True)
 
     for format_info in l_format_info:
-        print_wrap(f"{format_info.disambiguated_name}: {format_info.note}")
+        print_wrap(f"{format_info.id}: {format_info.disambiguated_name} ({format_info.note})")
 
 
 def detail_formats_and_possible_converters(from_format: str, to_format: str):
@@ -668,7 +668,7 @@ def detail_converters_and_formats(args: ConvertArgs):
     elif args.from_format:
         detail_format(args.from_format)
         return
-    elif args.from_format:
+    elif args.to_format:
         detail_format(args.to_format)
         return
 
