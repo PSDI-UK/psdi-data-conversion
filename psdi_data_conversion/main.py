@@ -536,7 +536,7 @@ def detail_format(format_name: str):
     l_format_info: list[FormatInfo] = get_format_info(format_name, which="all")
 
     if len(l_format_info) == 0:
-        print_wrap(f"ERROR: Format '{format_name}' not recognised", newline=True, err=True)
+        print_wrap(f"ERROR: Format '{format_name}' not recognised", err=True)
         return
 
     if len(l_format_info) > 1:
