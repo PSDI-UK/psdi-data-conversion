@@ -7,7 +7,8 @@ from multiprocessing import Process
 
 import pytest
 
-from psdi_data_conversion.testing.gui import (run_test_conversion_with_gui, wait_and_find_element,
+from psdi_data_conversion.testing.constants import DEFAULT_ORIGIN
+from psdi_data_conversion.testing.gui import (GuiTestSpecRunner, wait_and_find_element,
                                               wait_for_element)
 from psdi_data_conversion.testing.conversion_test_specs import l_gui_test_specs
 
@@ -34,7 +35,7 @@ except ImportError:
 
 import psdi_data_conversion
 
-origin = os.environ.get("ORIGIN", "http://127.0.0.1:5000")
+origin = os.environ.get("ORIGIN", DEFAULT_ORIGIN)
 
 
 @pytest.fixture(scope="module", autouse=True)
@@ -104,6 +105,4 @@ def test_initial_frontpage(driver: WebDriver):
 def test_conversions(driver, test_spec):
     """Run all conversion tests in the defined list of test specifications
     """
-    run_test_conversion_with_gui(test_spec=test_spec,
-                                 driver=driver,
-                                 origin=origin)
+    GuiTestSpecRunner(driver=driver, origin=origin).run(test_spec)

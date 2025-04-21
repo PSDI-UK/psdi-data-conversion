@@ -1,7 +1,21 @@
 // data.js
 
 const response = await fetch("/static/data/data.json");
-const data = JSON.parse(await response.text());
+
+let data = null;
+try {
+    data = JSON.parse(await response.text());
+} catch (err) {
+    console.log("ERROR: Database could not be loaded, error: " + err)
+}
+
+/**
+ * Indicates whether or not the database was successfully loaded
+ * @returns {boolean}
+ */
+export function databaseLoaded() {
+    return data !== null;
+}
 
 const collator = new Intl.Collator();
 
@@ -84,7 +98,7 @@ export async function getConverters(inExtension, inNote, outExtension, outNote) 
     const inputFormat = (data.formats.filter(format => (format.extension === inExtension) && (format.note === inNote)))[0];
     const outputFormat = (data.formats.filter(format => (format.extension === outExtension) && (format.note === outNote)))[0];
 
-    if ((inputFormat === undefined) || (outputFormat === undefined))  {
+    if ((inputFormat === undefined) || (outputFormat === undefined)) {
         return [];
     }
 
@@ -96,7 +110,7 @@ export async function getConverters(inExtension, inNote, outExtension, outNote) 
         name: convertersById.get(conversion.converters_id).name
     }));
 
-    return convertersWithDegreeOfSuccess.sort((a, b) => compare(a.name, b.name ));
+    return convertersWithDegreeOfSuccess.sort((a, b) => compare(a.name, b.name));
 }
 
 export async function getConverterByName(name) {
@@ -170,7 +184,7 @@ export async function getOutputArgFlags(extension, note) {
 export async function getLevelChemInfo(inExtension, inNote, outExtension, outNote) {
 
     const inputFormat = (data.formats.filter(format => (format.extension === inExtension) && (format.note === inNote)))[0],
-          outputFormat = (data.formats.filter(format => (format.extension === outExtension) && (format.note === outNote)))[0];
+        outputFormat = (data.formats.filter(format => (format.extension === outExtension) && (format.note === outNote)))[0];
 
     return [inputFormat, outputFormat];
 }

@@ -368,7 +368,8 @@ def _run_single_test_conversion_with_library(test_spec: SingleConversionTestSpec
                                        captured_stderr=stderr,
                                        exc_info=exc_info)
         callback_msg = test_spec.callback(test_info)
-        assert not callback_msg, callback_msg
+        if callback_msg:
+            pytest.fail(callback_msg)
 
 
 def run_test_conversion_with_cla(test_spec: ConversionTestSpec):
@@ -464,7 +465,8 @@ def _run_single_test_conversion_with_cla(test_spec: SingleConversionTestSpec,
                                        captured_stdout=stdout,
                                        captured_stderr=stderr)
         callback_msg = test_spec.callback(test_info)
-        assert not callback_msg, callback_msg
+        if callback_msg:
+            pytest.fail(callback_msg)
 
 
 def run_converter_through_cla(filename: str,
@@ -523,8 +525,8 @@ def run_converter_through_cla(filename: str,
                 arg_string += " --strict"
         elif key == "max_file_size":
             if val != 0:
-                assert False, ("Test specification imposes a maximum file size, which isn't compatible with the "
-                               "command-line application.")
+                pytest.fail("Test specification imposes a maximum file size, which isn't compatible with the "
+                            "command-line application.")
         elif key == "data":
             for subkey, subval in val.items():
                 if subkey == "from_flags":
@@ -543,10 +545,10 @@ def run_converter_through_cla(filename: str,
                     # Handled alongside COORD_GEN_KEY above
                     pass
                 else:
-                    assert False, (f"The key 'data[\"{subkey}\"]' was passed to `conversion_kwargs` but could not be "
-                                   "interpreted")
+                    pytest.fail(f"The key 'data[\"{subkey}\"]' was passed to `conversion_kwargs` but could not be "
+                                "interpreted")
         else:
-            assert False, f"The key '{key}' was passed to `conversion_kwargs` but could not be interpreted"
+            pytest.fail(f"The key '{key}' was passed to `conversion_kwargs` but could not be interpreted")
 
     run_with_arg_string(arg_string)
 
