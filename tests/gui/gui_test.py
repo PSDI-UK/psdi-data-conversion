@@ -8,7 +8,7 @@ from multiprocessing import Process
 import pytest
 
 from psdi_data_conversion.testing.constants import DEFAULT_ORIGIN
-from psdi_data_conversion.testing.gui import (GuiTestRunner, wait_and_find_element,
+from psdi_data_conversion.testing.gui import (GuiTestSpecRunner, wait_and_find_element,
                                               wait_for_element)
 from psdi_data_conversion.testing.conversion_test_specs import l_gui_test_specs
 
@@ -105,4 +105,4 @@ def test_initial_frontpage(driver: WebDriver):
 def test_conversions(driver, test_spec):
     """Run all conversion tests in the defined list of test specifications
     """
-    GuiTestRunner(driver=driver, origin=origin).run(test_spec)
+    GuiTestSpecRunner(driver=driver, origin=origin).run(test_spec)

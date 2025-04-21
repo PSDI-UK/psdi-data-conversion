@@ -4,8 +4,6 @@
 Utilities to aid in testing of the GUI
 """
 
-
-from dataclasses import field
 import os
 import shutil
 from tempfile import TemporaryDirectory
@@ -47,7 +45,7 @@ def wait_and_find_element(root: WebDriver | EC.WebElement, xpath: str, by=By.XPA
 
 
 @dataclass
-class GuiTestRunner():
+class GuiTestSpecRunner():
     """Class which provides an interface to run test conversions through the GUI
     """
 
@@ -57,25 +55,13 @@ class GuiTestRunner():
     origin: str = DEFAULT_ORIGIN
     """The address of the homepage of the testing server"""
 
-    _input_dir: str | None = field(default=None, init=False)
-    """The temporary directory currently being used for input data"""
-
-    _output_dir: str | None = field(default=None, init=False)
-    """The temporary directory currently being used for output data"""
-
-    _test_spec: ConversionTestSpec | None = field(default=None, init=False)
-    """The test spec that is currently being tested"""
-
-    _single_test_spec: SingleConversionTestSpec | None = field(default=None, init=False)
-    """The single test spec that is currently being tested"""
-
     def run(self, test_spec: ConversionTestSpec):
         """Run the test conversions outlined in a test spec"""
 
         self._test_spec = test_spec
 
         # Make temporary directories for the input and output files to be stored in
-        with TemporaryDirectory("_input") as self._input_dir, TemporaryDirectory("_output") as self._output_dir:
+        with TemporaryDirectory("_input") as input_dir, TemporaryDirectory("_output") as output_dir:
 
             # Iterate over the test spec to run each individual test it defines
             for single_test_spec in test_spec:
@@ -85,22 +71,59 @@ class GuiTestRunner():
 
                 print(f"Running single test spec: {single_test_spec}")
 
-                self._run_single_test_conversion(single_test_spec)
+                GuiSingleTestSpecRunner(parent=self,
+                                        input_dir=input_dir,
+                                        output_dir=output_dir,
+                                        single_test_spec=single_test_spec).run()
 
                 print(f"Success for test spec: {single_test_spec}")
 
-    def _run_single_test_conversion(self, single_test_spec: SingleConversionTestSpec):
-        """Run the test conversions outlined in a test spec"""
 
-        self._single_test_spec = single_test_spec
+class GuiSingleTestSpecRunner:
+    """Class which handles running an individual test conversion
+    """
+
+    def __init__(self,
+                 parent: GuiTestSpecRunner,
+                 input_dir: str,
+                 output_dir: str,
+                 single_test_spec: SingleConversionTestSpec):
+        """
+
+        Parameters
+        ----------
+        parent : GuiTestSpecRunner
+            The GuiTestSpecRunner which created this and is running it
+        input_dir : str
+            The temporary directory to be used for input data
+        output_dir : str
+            The temporary directory to be used for output data
+        single_test_spec : SingleConversionTestSpec
+            The test spec that is currently being tested
+        """
+
+        self.input_dir: str = input_dir
+        self.output_dir: str = output_dir
+        self.single_test_spec: SingleConversionTestSpec = single_test_spec
+
+        # Inherit data from the parent class
+
+        self.driver: WebDriver = parent.driver
+        """The WebDriver to be used for testing"""
+
+        self.origin: str = parent.origin
+        """The address of the homepage of the testing server"""
+
+    def run(self):
+        """Run the conversion outlined in the test spec"""
 
         exc_info: pytest.ExceptionInfo | None = None
-        if self._single_test_spec.expect_success:
+        if self.single_test_spec.expect_success:
             try:
                 self._run_conversion()
                 success = False
             except Exception:
-                print(f"Unexpected exception raised for single test spec {self._single_test_spec}")
+                print(f"Unexpected exception raised for single test spec {self.single_test_spec}")
                 raise
         else:
             with pytest.raises(FileConverterException) as exc_info:
@@ -108,14 +131,14 @@ class GuiTestRunner():
             success = False
 
         # Compile output info for the test and call the callback function if one is provided
-        if self._single_test_spec.callback:
+        if self.single_test_spec.callback:
             test_info = ConversionTestInfo(run_type="gui",
-                                           test_spec=self._single_test_spec,
-                                           input_dir=self._input_dir,
-                                           output_dir=self._output_dir,
+                                           test_spec=self.single_test_spec,
+                                           input_dir=self.input_dir,
+                                           output_dir=self.output_dir,
                                            success=success,
                                            exc_info=exc_info)
-            callback_msg = self._single_test_spec.callback(test_info)
+            callback_msg = self.single_test_spec.callback(test_info)
             assert not callback_msg, callback_msg
 
     def _run_conversion(self):
@@ -123,7 +146,7 @@ class GuiTestRunner():
         """
 
         # Get just the local filename
-        filename = os.path.split(self._single_test_spec.filename)[1]
+        filename = os.path.split(self.single_test_spec.filename)[1]
 
         # Default options for conversion
         base_filename, from_format = split_archive_ext(filename)
@@ -137,7 +160,7 @@ class GuiTestRunner():
 
         # For each argument in the conversion kwargs, interpret it as the appropriate option for this conversion,
         # overriding defaults set above
-        for key, val in self._single_test_spec.conversion_kwargs.items():
+        for key, val in self.single_test_spec.conversion_kwargs.items():
             if key == "from_format":
                 from_format = val
             elif key == "log_mode":
@@ -178,8 +201,8 @@ class GuiTestRunner():
             from_format = from_format[1:]
 
         # Set up the input file where we expect it to be
-        source_input_file = os.path.realpath(os.path.join(get_input_test_data_loc(), self._single_test_spec.filename))
-        input_file = os.path.join(self._input_dir, self._single_test_spec.filename)
+        source_input_file = os.path.realpath(os.path.join(get_input_test_data_loc(), self.single_test_spec.filename))
+        input_file = os.path.join(self.input_dir, self.single_test_spec.filename)
         if (os.path.isfile(input_file)):
             os.unlink(input_file)
         os.symlink(source_input_file, input_file)
@@ -187,12 +210,12 @@ class GuiTestRunner():
         # Remove test files from Downloads directory if they exist.
 
         log_file = os.path.realpath(os.path.join(os.path.expanduser("~/Downloads"),
-                                                 self._single_test_spec.log_filename))
+                                                 self.single_test_spec.log_filename))
         if (os.path.isfile(log_file)):
             os.remove(log_file)
 
         output_file = os.path.realpath(os.path.join(os.path.expanduser("~/Downloads"),
-                                                    self._single_test_spec.out_filename))
+                                                    self.single_test_spec.out_filename))
         if (os.path.isfile(output_file)):
             os.remove(output_file)
 
@@ -206,11 +229,11 @@ class GuiTestRunner():
 
         # Select to_format from the 'to' list.
         self.driver.find_element(
-            By.XPATH, f"//select[@id='toList']/option[starts-with(.,'{self._single_test_spec.to_format}:')]").click()
+            By.XPATH, f"//select[@id='toList']/option[starts-with(.,'{self.single_test_spec.to_format}:')]").click()
 
         # Select converter from the available conversion options list.
         self.driver.find_element(
-            By.XPATH, f"//select[@id='success']/option[contains(.,'{self._single_test_spec.converter_name}')]").click()
+            By.XPATH, f"//select[@id='success']/option[contains(.,'{self.single_test_spec.converter_name}')]").click()
 
         # Click on the "Yes" button to accept the converter and go to the conversion page
         self.driver.find_element(By.XPATH, "//input[@id='yesButton']").click()
@@ -251,8 +274,8 @@ class GuiTestRunner():
                         break
                 if not found:
                     raise ValueError(f"Flag {flag} was not found in {select_id} selection box for conversion from "
-                                     f"{from_format} to {self._single_test_spec.to_format} with converter "
-                                     f"{self._single_test_spec.converter_name}")
+                                     f"{from_format} to {self.single_test_spec.to_format} with converter "
+                                     f"{self.single_test_spec.converter_name}")
 
         for (options_string, table_id) in ((from_options, "in_argFlags"),
                                            (to_options, "out_argFlags")):
@@ -287,8 +310,8 @@ class GuiTestRunner():
 
                 if not found:
                     raise ValueError(f"Option {option} was not found in {table_id} options table for conversion from "
-                                     f"{from_format} to {self._single_test_spec.to_format} with converter "
-                                     f"{self._single_test_spec.converter_name}")
+                                     f"{from_format} to {self.single_test_spec.to_format} with converter "
+                                     f"{self.single_test_spec.converter_name}")
 
         # If radio-button settings are supplied, apply them now
         for setting, name, l_allowed in ((coord_gen, "coord_gen", L_ALLOWED_COORD_GENS),
@@ -335,7 +358,7 @@ class GuiTestRunner():
         # Move the output file and log file to the expected locations
         for qual_filename in output_file, log_file:
             base_filename = os.path.split(qual_filename)[1]
-            target_filename = os.path.join(self._output_dir, base_filename)
+            target_filename = os.path.join(self.output_dir, base_filename)
             if os.path.isfile(target_filename):
                 os.remove(target_filename)
             if os.path.isfile(qual_filename):
