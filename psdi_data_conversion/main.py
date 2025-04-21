@@ -581,7 +581,6 @@ def detail_formats_and_possible_converters(from_format: str, to_format: str):
     detail_format(from_format)
     print()
     detail_format(to_format)
-    print()
 
     l_possible_conversions = get_possible_conversions(from_format, to_format)
 
@@ -605,6 +604,8 @@ def detail_formats_and_possible_converters(from_format: str, to_format: str):
                                             if x[0] in L_REGISTERED_CONVERTERS]
         l_possible_unregistered_converters = [x[0] for x in l_conversions_matching_formats
                                               if x[0] in L_SUPPORTED_CONVERTERS and x[0] not in L_REGISTERED_CONVERTERS]
+
+        print()
 
         if len(l_possible_registered_converters)+len(l_possible_unregistered_converters) == 0:
             print_wrap(f"No converters are available which can perform a conversion from {from_name} to "
