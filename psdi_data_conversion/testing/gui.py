@@ -114,6 +114,63 @@ class GuiSingleTestSpecRunner:
         self.origin: str = parent.origin
         """The address of the homepage of the testing server"""
 
+        # Interpret information from the test spec that we'll need for testing
+
+        # Get just the local filename
+        self._filename = os.path.split(self.single_test_spec.filename)[1]
+
+        # Default options for conversion
+        self._base_filename, self._from_format = split_archive_ext(self._filename)
+        self._strict = True
+        self._from_flags: str | None = None
+        self._to_flags: str | None = None
+        self._from_options: str | None = None
+        self._to_options: str | None = None
+        self._coord_gen = None
+        self._coord_gen_qual = None
+
+        # For each argument in the conversion kwargs, interpret it as the appropriate option for this conversion,
+        # overriding defaults set above
+        for key, val in self.single_test_spec.conversion_kwargs.items():
+            if key == "from_format":
+                self._from_format = val
+            elif key == "log_mode":
+                raise ValueError(f"The conversion kwarg {key} is not valid with conversions through the GUI")
+            elif key == "delete_input":
+                raise ValueError(f"The conversion kwarg {key} is not valid with conversions through the GUI")
+            elif key == "strict":
+                self._strict = val
+            elif key == "max_file_size":
+                raise ValueError(f"The conversion kwarg {key} is not valid with conversions through the GUI")
+            elif key == "data":
+                for subkey, subval in val.items():
+                    if subkey == "from_flags":
+                        self._from_flags = subval
+                    elif subkey == "to_flags":
+                        self._to_flags = subval
+                    elif subkey == "from_options":
+                        self._from_options = subval
+                    elif subkey == "to_options":
+                        self._to_options = subval
+                    elif subkey == COORD_GEN_KEY:
+                        self._coord_gen = subval
+                        if COORD_GEN_QUAL_KEY in val:
+                            self._coord_gen_qual = val[COORD_GEN_QUAL_KEY]
+                        else:
+                            self._coord_gen_qual = DEFAULT_COORD_GEN_QUAL
+                    elif subkey == COORD_GEN_QUAL_KEY:
+                        # Handled alongside COORD_GEN_KEY above
+                        pass
+                    else:
+                        pytest.fail(f"The key 'data[\"{subkey}\"]' was passed to `conversion_kwargs` but could not be "
+                                    "interpreted")
+            else:
+                pytest.fail(f"The key '{key}' was passed to `conversion_kwargs` but could not be interpreted")
+
+        # Cleanup of arguments
+        if self._from_format.startswith("."):
+            self._from_format = self._from_format[1:]
+
     def run(self):
         """Run the conversion outlined in the test spec"""
 
@@ -145,61 +202,6 @@ class GuiSingleTestSpecRunner:
         """Run a conversion through the GUI
         """
 
-        # Get just the local filename
-        filename = os.path.split(self.single_test_spec.filename)[1]
-
-        # Default options for conversion
-        base_filename, from_format = split_archive_ext(filename)
-        strict = True
-        from_flags: str | None = None
-        to_flags: str | None = None
-        from_options: str | None = None
-        to_options: str | None = None
-        coord_gen = None
-        coord_gen_qual = None
-
-        # For each argument in the conversion kwargs, interpret it as the appropriate option for this conversion,
-        # overriding defaults set above
-        for key, val in self.single_test_spec.conversion_kwargs.items():
-            if key == "from_format":
-                from_format = val
-            elif key == "log_mode":
-                raise ValueError(f"The conversion kwarg {key} is not valid with conversions through the GUI")
-            elif key == "delete_input":
-                raise ValueError(f"The conversion kwarg {key} is not valid with conversions through the GUI")
-            elif key == "strict":
-                strict = val
-            elif key == "max_file_size":
-                raise ValueError(f"The conversion kwarg {key} is not valid with conversions through the GUI")
-            elif key == "data":
-                for subkey, subval in val.items():
-                    if subkey == "from_flags":
-                        from_flags = subval
-                    elif subkey == "to_flags":
-                        to_flags = subval
-                    elif subkey == "from_options":
-                        from_options = subval
-                    elif subkey == "to_options":
-                        to_options = subval
-                    elif subkey == COORD_GEN_KEY:
-                        coord_gen = subval
-                        if COORD_GEN_QUAL_KEY in val:
-                            coord_gen_qual = val[COORD_GEN_QUAL_KEY]
-                        else:
-                            coord_gen_qual = DEFAULT_COORD_GEN_QUAL
-                    elif subkey == COORD_GEN_QUAL_KEY:
-                        # Handled alongside COORD_GEN_KEY above
-                        pass
-                    else:
-                        pytest.fail(f"The key 'data[\"{subkey}\"]' was passed to `conversion_kwargs` but could not be "
-                                    "interpreted")
-            else:
-                pytest.fail(f"The key '{key}' was passed to `conversion_kwargs` but could not be interpreted")
-
-        # Cleanup of arguments
-        if from_format.startswith("."):
-            from_format = from_format[1:]
-
         # Set up the input file where we expect it to be
         source_input_file = os.path.realpath(os.path.join(get_input_test_data_loc(), self.single_test_spec.filename))
         input_file = os.path.join(self.input_dir, self.single_test_spec.filename)
@@ -225,7 +227,8 @@ class GuiSingleTestSpecRunner:
         wait_for_element(self.driver, "//select[@id='fromList']/option")
 
         # Select from_format from the 'from' list.
-        self.driver.find_element(By.XPATH, f"//select[@id='fromList']/option[starts-with(.,'{from_format}:')]").click()
+        self.driver.find_element(
+            By.XPATH, f"//select[@id='fromList']/option[starts-with(.,'{self._from_format}:')]").click()
 
         # Select to_format from the 'to' list.
         self.driver.find_element(
@@ -239,7 +242,7 @@ class GuiSingleTestSpecRunner:
         self.driver.find_element(By.XPATH, "//input[@id='yesButton']").click()
 
         # Request non-strict filename checking if desired
-        if not strict:
+        if not self._strict:
             wait_and_find_element(self.driver, "//input[@id='extCheck']").click()
 
         # Select the input file
@@ -260,8 +263,8 @@ class GuiSingleTestSpecRunner:
 
         # Select appropriate format args. The args only have a text attribute, so we need to find the one that starts
         # with each flag - since we don't have too many, iterating over all possible combinations is the easiest way
-        for (l_flags, select_id) in ((from_flags, "inFlags"),
-                                     (to_flags, "outFlags")):
+        for (l_flags, select_id) in ((self._from_flags, "inFlags"),
+                                     (self._to_flags, "outFlags")):
             if not l_flags:
                 continue
             flags_select = Select(wait_and_find_element(self.driver, f"//select[@id='{select_id}']"))
@@ -274,11 +277,11 @@ class GuiSingleTestSpecRunner:
                         break
                 if not found:
                     raise ValueError(f"Flag {flag} was not found in {select_id} selection box for conversion from "
-                                     f"{from_format} to {self.single_test_spec.to_format} with converter "
+                                     f"{self._from_format} to {self.single_test_spec.to_format} with converter "
                                      f"{self.single_test_spec.converter_name}")
 
-        for (options_string, table_id) in ((from_options, "in_argFlags"),
-                                           (to_options, "out_argFlags")):
+        for (options_string, table_id) in ((self._from_options, "in_argFlags"),
+                                           (self._to_options, "out_argFlags")):
             if not options_string:
                 continue
 
@@ -310,12 +313,12 @@ class GuiSingleTestSpecRunner:
 
                 if not found:
                     raise ValueError(f"Option {option} was not found in {table_id} options table for conversion from "
-                                     f"{from_format} to {self.single_test_spec.to_format} with converter "
+                                     f"{self._from_format} to {self.single_test_spec.to_format} with converter "
                                      f"{self.single_test_spec.converter_name}")
 
         # If radio-button settings are supplied, apply them now
-        for setting, name, l_allowed in ((coord_gen, "coord_gen", L_ALLOWED_COORD_GENS),
-                                         (coord_gen_qual, "coord_gen_qual", L_ALLOWED_COORD_GEN_QUALS)):
+        for setting, name, l_allowed in ((self._coord_gen, "coord_gen", L_ALLOWED_COORD_GENS),
+                                         (self._coord_gen_qual, "coord_gen_qual", L_ALLOWED_COORD_GEN_QUALS)):
             if not setting:
                 continue
 
@@ -357,8 +360,8 @@ class GuiSingleTestSpecRunner:
 
         # Move the output file and log file to the expected locations
         for qual_filename in output_file, log_file:
-            base_filename = os.path.split(qual_filename)[1]
-            target_filename = os.path.join(self.output_dir, base_filename)
+            self._base_filename = os.path.split(qual_filename)[1]
+            target_filename = os.path.join(self.output_dir, self._base_filename)
             if os.path.isfile(target_filename):
                 os.remove(target_filename)
             if os.path.isfile(qual_filename):
