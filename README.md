@@ -39,6 +39,7 @@ This is the repository for the PSDI PF2 Chemistry File Format Conversion project
   - [A supported conversion fails](#a-supported-conversion-fails)
     - [Input file is malformatted or corrupt](#input-file-is-malformatted-or-corrupt)
     - [Input file's format is misidentified](#input-files-format-is-misidentified)
+    - [Other known issues](#other-known-issues)
 - [Licensing](#licensing)
 - [Contributors](#contributors)
 - [Funding](#funding)
@@ -522,6 +523,12 @@ The program then lists converters which can handle the requested conversion, rev
 Since in this example you have an MDL MOL file, you would use `-f 18` or `-f mol-0` to explicitly specify it in the command-line, or similarly provide one of these to the `from_format` argument of `run_converter` within Python. The application will then properly handle it, including alerting you if you request a conversion that isn't supported by your requested converter (e.g. if you request a conversion of this MDL MOL file to XYZ with Atomsk).
 
 Important note: The disambiguated name is generated dynamically and isn't stored in the database, and in rare cases may change for some formats in future versions of this application which expand support to more formats and conversions. For uses which require forward-compatibility with future versions of this application, the ID should be used instead.
+
+#### Other known issues
+
+Through testing, we've identified some other conversion issues, which we list here:
+
+- Open Babel will indefinitely hang when attempting to convert large files (more than ~1 MB) of certain types (such as `mmcif`). This is an issue with the converter itself and not our application, which we hope will be fixed in a future version. If this occurs, the job will have to be forcibly terminated. CTRL+C will fail to terminate it, but it can be stopped with CTRL+Z, then terminated with `kill %N`, where N is the number listed beside the job when it is stopped (usually 1). The conversion should then be attempted with another supported converter.
 
 ## Licensing
 
