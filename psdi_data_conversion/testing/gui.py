@@ -202,24 +202,51 @@ class GuiSingleTestSpecRunner:
         """Run a conversion through the GUI
         """
 
-        # Set up the input file where we expect it to be
+        self._set_up_files()
+
+        self._select_formats_and_converter()
+
+        self._set_conversion_settings()
+
+        self._provide_input_file()
+
+        self._request_conversion()
+
+        self._move_output()
+
+    def _set_up_files(self):
+        """Set up the filenames we expect and initialize them - delete any leftover files and symlink the input file
+        to the desired location
+        """
+        # Set up the expected filenames
         source_input_file = os.path.realpath(os.path.join(get_input_test_data_loc(), self.single_test_spec.filename))
-        input_file = os.path.join(self.input_dir, self.single_test_spec.filename)
-        if (os.path.isfile(input_file)):
-            os.unlink(input_file)
-        os.symlink(source_input_file, input_file)
+        self._input_file = os.path.join(self.input_dir, self.single_test_spec.filename)
 
-        # Remove test files from Downloads directory if they exist.
+        self._log_file = os.path.realpath(os.path.join(os.path.expanduser("~/Downloads"),
+                                                       self.single_test_spec.log_filename))
 
-        log_file = os.path.realpath(os.path.join(os.path.expanduser("~/Downloads"),
-                                                 self.single_test_spec.log_filename))
-        if (os.path.isfile(log_file)):
-            os.remove(log_file)
+        self._output_file = os.path.realpath(os.path.join(os.path.expanduser("~/Downloads"),
+                                                          self.single_test_spec.out_filename))
 
-        output_file = os.path.realpath(os.path.join(os.path.expanduser("~/Downloads"),
-                                                    self.single_test_spec.out_filename))
-        if (os.path.isfile(output_file)):
-            os.remove(output_file)
+        # Clean up any leftover files
+        if (os.path.isfile(self._input_file)):
+            os.unlink(self._input_file)
+        if (os.path.isfile(self._log_file)):
+            os.remove(self._log_file)
+        if (os.path.isfile(self._output_file)):
+            os.remove(self._output_file)
+
+        # Symlink the input file to the desired location
+        os.symlink(source_input_file, self._input_file)
+
+    def _select_formats_and_converter(self):
+        """Handle the tasks on the format and converter selection page when running a test:
+
+        1. Load the main page (waiting for it to fully load)
+        2. Select the input and output formats
+        3. Select the converter
+        4. Click the "Yes" button to confirm and go to the convert page
+        """
 
         # Get the homepage
         self.driver.get(f"{self.origin}/")
@@ -241,12 +268,26 @@ class GuiSingleTestSpecRunner:
         # Click on the "Yes" button to accept the converter and go to the conversion page
         self.driver.find_element(By.XPATH, "//input[@id='yesButton']").click()
 
+    def _set_conversion_settings(self):
+        """Set settings on the convert page appropriately for the desired conversion
+        """
         # Request non-strict filename checking if desired
         if not self._strict:
             wait_and_find_element(self.driver, "//input[@id='extCheck']").click()
 
+        # Request the log file
+        wait_and_find_element(self.driver, "//input[@id='requestLog']").click()
+
+        # Set appropriate format and converter settings for this conversion
+        self._select_format_flags()
+        self._set_format_options()
+        self._apply_radio_settings()
+
+    def _provide_input_file(self):
+        """Provide the input file for the conversion, checking if any alert is raised in response
+        """
         # Select the input file
-        wait_and_find_element(self.driver, "//input[@id='fileToUpload']").send_keys(str(input_file))
+        wait_and_find_element(self.driver, "//input[@id='fileToUpload']").send_keys(str(self._input_file))
 
         # An alert may be present here, which we check for using a try block
         try:
@@ -258,11 +299,11 @@ class GuiSingleTestSpecRunner:
         except TimeoutException:
             pass
 
-        # Request the log file
-        wait_and_find_element(self.driver, "//input[@id='requestLog']").click()
-
-        # Select appropriate format args. The args only have a text attribute, so we need to find the one that starts
-        # with each flag - since we don't have too many, iterating over all possible combinations is the easiest way
+    def _select_format_flags(self):
+        """Select desired format flags. The options in the select box only have a text attribute, so we need to find
+        the one that starts with each flag - since we don't have too many, iterating over all possible combinations is
+        the easiest way
+        """
         for (l_flags, select_id) in ((self._from_flags, "inFlags"),
                                      (self._to_flags, "outFlags")):
             if not l_flags:
@@ -280,6 +321,9 @@ class GuiSingleTestSpecRunner:
                                      f"{self._from_format} to {self.single_test_spec.to_format} with converter "
                                      f"{self.single_test_spec.converter_name}")
 
+    def _set_format_options(self):
+        """Set desired format options
+        """
         for (options_string, table_id) in ((self._from_options, "in_argFlags"),
                                            (self._to_options, "out_argFlags")):
             if not options_string:
@@ -316,7 +360,10 @@ class GuiSingleTestSpecRunner:
                                      f"{self._from_format} to {self.single_test_spec.to_format} with converter "
                                      f"{self.single_test_spec.converter_name}")
 
-        # If radio-button settings are supplied, apply them now
+    def _apply_radio_settings(self):
+        """Apply any radio-button settings desired for this conversion by clicking the appropriate radio buttons
+        """
+
         for setting, name, l_allowed in ((self._coord_gen, "coord_gen", L_ALLOWED_COORD_GENS),
                                          (self._coord_gen_qual, "coord_gen_qual", L_ALLOWED_COORD_GEN_QUALS)):
             if not setting:
@@ -329,6 +376,9 @@ class GuiSingleTestSpecRunner:
             setting_radio = wait_and_find_element(self.driver, f"//input[@value='{setting}']")
             setting_radio.click()
 
+    def _request_conversion(self):
+        """Request the conversion, handle the alert box that appears, and wait for the files to be downloaded
+        """
         # Click on the "Convert" button.
         wait_and_find_element(self.driver, "//input[@id='uploadButton']").click()
 
@@ -346,20 +396,25 @@ class GuiSingleTestSpecRunner:
 
         # Wait until the log file exists, since it's downloaded second
         time_elapsed = 0
-        while not os.path.isfile(log_file):
+        while not os.path.isfile(self._log_file):
             time.sleep(1)
             time_elapsed += 1
             if time_elapsed > TIMEOUT:
-                pytest.fail(f"Download of {output_file} and {log_file} timed out")
+                pytest.fail(f"Download of {self._output_file} and {self._log_file} timed out")
 
         time.sleep(1)
 
-        if not os.path.isfile(output_file):
+    def _move_output(self):
+        """Move the created output files out of the default Downloads directory and into the desired output files
+        directory.
+        """
+        # Check for the presence of the output file
+        if not os.path.isfile(self._output_file):
             raise FileConverterAbortException("ERROR: No output file was produced. Log contents:\n" +
-                                              open(log_file, "r").read())
+                                              open(self._log_file, "r").read())
 
         # Move the output file and log file to the expected locations
-        for qual_filename in output_file, log_file:
+        for qual_filename in self._output_file, self._log_file:
             self._base_filename = os.path.split(qual_filename)[1]
             target_filename = os.path.join(self.output_dir, self._base_filename)
             if os.path.isfile(target_filename):
