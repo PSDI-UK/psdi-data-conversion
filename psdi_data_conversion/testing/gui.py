@@ -323,8 +323,8 @@ class GuiSingleTestSpecRunner:
                         break
                 if not found:
                     raise ValueError(f"Flag {flag} was not found in {select_id} selection box for conversion from "
-                                     f"{self._from_format} to {self.single_test_spec.to_format} with converter "
-                                     f"{self.single_test_spec.converter_name}")
+                                     f"{self._from_format_info.name} to {self._to_format_info.name} with "
+                                     f"converter {self.single_test_spec.converter_name}")
 
     def _set_format_options(self):
         """Set desired format options
@@ -362,8 +362,8 @@ class GuiSingleTestSpecRunner:
 
                 if not found:
                     raise ValueError(f"Option {option} was not found in {table_id} options table for conversion from "
-                                     f"{self._from_format} to {self.single_test_spec.to_format} with converter "
-                                     f"{self.single_test_spec.converter_name}")
+                                     f"{self._from_format_info.name} to {self._to_format_info.name} with "
+                                     f"converter {self.single_test_spec.converter_name}")
 
     def _apply_radio_settings(self):
         """Apply any radio-button settings desired for this conversion by clicking the appropriate radio buttons
