@@ -9,7 +9,7 @@ import shutil
 from tempfile import TemporaryDirectory
 
 import time
-from attr import dataclass
+from dataclasses import dataclass
 import pytest
 from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.common.alert import Alert
