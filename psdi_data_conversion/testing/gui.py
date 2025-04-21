@@ -196,7 +196,8 @@ class GuiSingleTestSpecRunner:
                                            success=success,
                                            exc_info=exc_info)
             callback_msg = self.single_test_spec.callback(test_info)
-            assert not callback_msg, callback_msg
+            if callback_msg:
+                pytest.fail(callback_msg)
 
     def _run_conversion(self):
         """Run a conversion through the GUI
