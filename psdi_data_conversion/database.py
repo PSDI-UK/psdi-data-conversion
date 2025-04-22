@@ -8,13 +8,14 @@ Python module provide utilities for accessing the converter database
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from itertools import product
 import json
 from logging import getLogger
 import os
-from typing import Any
+from typing import Any, Literal
 
 from psdi_data_conversion import constants as const
-from psdi_data_conversion.converter import D_REGISTERED_CONVERTERS
+from psdi_data_conversion.converter import D_REGISTERED_CONVERTERS, D_SUPPORTED_CONVERTERS
 from psdi_data_conversion.converters.base import FileConverterException
 
 # Keys for top-level and general items in the database
@@ -418,15 +419,52 @@ class FormatInfo:
 
         # Load attributes from input
         self.name = name
+        """The name of this format"""
+
         self.parent = parent
+        """The database which this format belongs to"""
 
         # Load attributes from the database
         self.id: int = d_single_format_info.get(DB_ID_KEY, -1)
+        """The ID of this format"""
+
         self.note: str = d_single_format_info.get(DB_FORMAT_NOTE_KEY, "")
+        """The description of this format"""
+
         self.composition = d_single_format_info.get(DB_FORMAT_COMP_KEY)
+        """Whether or not this format stores composition information"""
+
         self.connections = d_single_format_info.get(DB_FORMAT_CONN_KEY)
+        """Whether or not this format stores connections information"""
+
         self.two_dim = d_single_format_info.get(DB_FORMAT_2D_KEY)
+        """Whether or not this format stores 2D structural information"""
+
         self.three_dim = d_single_format_info.get(DB_FORMAT_3D_KEY)
+        """Whether or not this format stores 3D structural information"""
+
+        self._disambiguated_name: str | None = None
+
+    @property
+    def disambiguated_name(self) -> str:
+        """A unique name for this format which can be used to distinguish it from others which share the same extension,
+        by appending the name of each with a unique index"""
+        if self._disambiguated_name is None:
+            l_formats_with_same_name = [x for x in self.parent.l_format_info if x and x.name == self.name]
+            if len(l_formats_with_same_name) == 1:
+                self._disambiguated_name = self.name
+            else:
+                index_of_this = [i for i, x in enumerate(l_formats_with_same_name) if self is x][0]
+                self._disambiguated_name = f"{self.name}-{index_of_this}"
+        return self._disambiguated_name
+
+    def __str__(self):
+        """When cast to string, convert to the name (extension) of the format"""
+        return self.name
+
+    def __int__(self):
+        """When cast to int, return the ID of the format"""
+        return self.id
 
 
 @dataclass
@@ -530,7 +568,6 @@ class ConversionsTable:
         Raises
         ------
         FileConverterDatabaseException
-            _description_
         """
 
         self.parent = parent
@@ -543,8 +580,8 @@ class ConversionsTable:
         num_converters = len(parent.converters)
         num_formats = len(parent.formats)
 
-        self._table = [[[0 for k in range(num_formats+1)] for j in range(num_formats+1)]
-                       for i in range(num_converters+1)]
+        self.table = [[[0 for k in range(num_formats+1)] for j in range(num_formats+1)]
+                      for i in range(num_converters+1)]
 
         for possible_conversion in l_converts_to:
 
@@ -556,22 +593,22 @@ class ConversionsTable:
                 raise FileConverterDatabaseException(
                     f"Malformed 'converts_to' entry in database: {possible_conversion}")
 
-            self._table[conv_id][in_id][out_id] = 1
+            self.table[conv_id][in_id][out_id] = 1
 
     def get_conversion_quality(self,
                                converter_name: str,
-                               in_format: str,
-                               out_format: str) -> ConversionQualityInfo | None:
+                               in_format: str | int,
+                               out_format: str | int) -> ConversionQualityInfo | None:
         """Get an indication of the quality of a conversion from one format to another, or if it's not possible
 
         Parameters
         ----------
         converter_name : str
             The name of the converter
-        in_format : str
-            The extension of the input file format
-        out_format : str
-            The extension of the output file format
+        in_format : str | int
+            The extension or ID of the input file format
+        out_format : str | int
+            The extension or ID of the output file format
 
         Returns
         -------
@@ -580,12 +617,20 @@ class ConversionsTable:
             `ConversionQualityInfo` object with info on the conversion
         """
 
-        conv_id: int = self.parent.get_converter_info(converter_name).id
-        in_info = self.parent.get_format_info(in_format)
-        out_info: int = self.parent.get_format_info(out_format)
+        # Check if this converter deals with ambiguous formats, so we know if we need to be strict about getting format
+        # info
+        if D_REGISTERED_CONVERTERS[converter_name].supports_ambiguous_extensions:
+            which_format = None
+        else:
+            which_format = 0
+
+        # Get info about the converter and formats
+        conv_id = self.parent.get_converter_info(converter_name).id
+        in_info = self.parent.get_format_info(in_format, which_format)
+        out_info: int = self.parent.get_format_info(out_format, which_format)
 
         # First check if the conversion is possible
-        success_flag = self._table[conv_id][in_info.id][out_info.id]
+        success_flag = self.table[conv_id][in_info.id][out_info.id]
         if not success_flag:
             return None
 
@@ -643,40 +688,50 @@ class ConversionsTable:
                                      details=details,
                                      d_prop_conversion_info=d_prop_conversion_info)
 
-    def get_possible_converters(self,
-                                in_format: str,
-                                out_format: str) -> list[str]:
-        """Get a list of converters which can perform a conversion from one format to another and the degree of success
-        with each of these converters
+    def get_possible_conversions(self,
+                                 in_format: str | int,
+                                 out_format: str | int) -> list[tuple[str, FormatInfo, FormatInfo]]:
+        """Get a list of converters which can perform a conversion from one format to another, disambiguating in the
+        case of ambiguous formats and providing IDs for input/output formats for possible conversions
 
         Parameters
         ----------
-        in_format : str
-            The extension of the input file format
-        out_format : str
-            The extension of the output file format
+        in_format : str | int
+            The extension or ID of the input file format
+        out_format : str | int
+            The extension or ID of the output file format
 
         Returns
         -------
-        list[tuple[str, str]]
-            A list of tuples, where each tuple's first item is the name of a converter which can perform this
-            conversion, and the second item is the degree of success for the conversion
+        list[tuple[str, FormatInfo, FormatInfo]]
+            A list of tuples, where each tuple's first item is the name of a converter which can perform a matching
+            conversion, the second is the info of the input format for this conversion, and the third is the info of the
+            output format
         """
-        in_id: int = self.parent.get_format_info(in_format).id
-        out_id: int = self.parent.get_format_info(out_format).id
+        l_in_format_infos: list[FormatInfo] = self.parent.get_format_info(in_format, which="all")
+        l_out_format_infos: list[FormatInfo] = self.parent.get_format_info(out_format, which="all")
 
-        # Slice the table to get a list of the success for this conversion for each converter
-        l_converter_success = [x[in_id][out_id] for x in self._table]
+        # Start a list of all possible conversions
+        l_possible_conversions = []
 
-        # Filter for possible conversions and get the converter name and degree-of-success string
-        # for each possible conversion
-        l_possible_converters = [self.parent.get_converter_info(converter_id).name
+        # Iterate over all possible combinations of input and output formats
+        for in_format_info, out_format_info in product(l_in_format_infos, l_out_format_infos):
+
+            # Slice the table to get a list of the success for this conversion for each converter
+            l_converter_success = [x[in_format_info.id][out_format_info.id] for x in self.table]
+
+            # Filter for possible conversions and get the converter name and degree-of-success string
+            # for each possible conversion
+            l_converter_names = [self.parent.get_converter_info(converter_id).name
                                  for converter_id, possible_flag
                                  in enumerate(l_converter_success) if possible_flag > 0]
 
-        return l_possible_converters
+            for converter_name in l_converter_names:
+                l_possible_conversions.append((converter_name, in_format_info, out_format_info))
 
-    def get_possible_formats(self, converter_name: str) -> tuple[list[str], list[str]]:
+        return l_possible_conversions
+
+    def get_possible_formats(self, converter_name: str) -> tuple[list[FormatInfo], list[FormatInfo]]:
         """Get a list of input and output formats that a given converter supports
 
         Parameters
@@ -686,11 +741,11 @@ class ConversionsTable:
 
         Returns
         -------
-        tuple[list[str], list[str]]
+        tuple[list[FormatInfo], list[FormatInfo]]
             A tuple of a list of the supported input formats and a list of the supported output formats
         """
         conv_id: int = self.parent.get_converter_info(converter_name).id
-        ll_in_out_format_success = self._table[conv_id]
+        ll_in_out_format_success = self.table[conv_id]
 
         # Filter for possible input formats by checking if at least one output format for each has a degree of success
         # index greater than 0, and stored the filtered lists where the input format is possible so we only need to
@@ -707,8 +762,8 @@ class ConversionsTable:
                                      sum([x[j] for x in ll_filtered_in_out_format_success]) > 0]
 
         # Get the name for each format ID, and return lists of the names
-        return ([self.parent.get_format_info(x).name for x in l_possible_in_format_ids],
-                [self.parent.get_format_info(x).name for x in l_possible_out_format_ids])
+        return ([self.parent.get_format_info(x) for x in l_possible_in_format_ids],
+                [self.parent.get_format_info(x) for x in l_possible_out_format_ids])
 
 
 class DataConversionDatabase:
@@ -774,37 +829,12 @@ class DataConversionDatabase:
         return self._l_converter_info
 
     @property
-    def d_format_info(self) -> dict[str, FormatInfo]:
+    def d_format_info(self) -> dict[str, list[FormatInfo]]:
         """Generate the format info dict when needed
         """
         if self._d_format_info is None:
-            self._d_format_info: dict[str, FormatInfo] = {}
+            self._init_formats_and_conversions()
 
-            for d_single_format_info in self.formats:
-                name: str = d_single_format_info[DB_FORMAT_EXT_KEY]
-
-                format_info = FormatInfo(name=name,
-                                         parent=self,
-                                         d_single_format_info=d_single_format_info)
-
-                if name in self._d_format_info:
-                    logger.debug(f"File extension '{name}' appears more than once in the database. Duplicates will use "
-                                 "a key appended with an index")
-                    loop_concluded = False
-                    for i in range(97):
-                        test_name = f"{name}-{i+2}"
-                        if test_name in self._d_format_info:
-                            continue
-                        else:
-                            self._d_format_info[test_name] = format_info
-                            loop_concluded = True
-                            break
-                    if not loop_concluded:
-                        logger.warning("Loop counter exceeded when searching for valid new name for file extension "
-                                       f"'{name}'. New entry will not be added to the database to avoid possibility of "
-                                       "an infinite loop")
-                else:
-                    self._d_format_info[name] = format_info
         return self._d_format_info
 
     @property
@@ -812,13 +842,7 @@ class DataConversionDatabase:
         """Generate the format info list (indexed by ID) when needed
         """
         if self._l_format_info is None:
-            # Pre-size a list based on the maximum ID plus 1 (since IDs are 1-indexed)
-            max_id: int = max([x[DB_ID_KEY] for x in self.formats])
-            self._l_format_info: list[FormatInfo | None] = [None] * (max_id+1)
-
-            # Fill the list with all formats in the dict
-            for single_format_info in self.d_format_info.values():
-                self._l_format_info[single_format_info.id] = single_format_info
+            self._init_formats_and_conversions()
 
         return self._l_format_info
 
@@ -826,10 +850,73 @@ class DataConversionDatabase:
     def conversions_table(self) -> ConversionsTable:
         """Generates the conversions table when needed
         """
+
         if self._conversions_table is None:
-            self._conversions_table = ConversionsTable(l_converts_to=self.converts_to,
-                                                       parent=self)
+            self._init_formats_and_conversions()
+
         return self._conversions_table
+
+    def _init_formats_and_conversions(self):
+        """Initializes the format list and dict and the conversions table"""
+
+        # Start by initializing the list of conversions
+
+        # Pre-size a list based on the maximum ID plus 1 (since IDs are 1-indexed)
+        max_id: int = max([x[DB_ID_KEY] for x in self.formats])
+        self._l_format_info: list[FormatInfo | None] = [None] * (max_id+1)
+
+        for d_single_format_info in self.formats:
+            name: str = d_single_format_info[DB_FORMAT_EXT_KEY]
+
+            format_info = FormatInfo(name=name,
+                                     parent=self,
+                                     d_single_format_info=d_single_format_info)
+
+            self._l_format_info[format_info.id] = format_info
+
+        # Initialize the conversions table now
+        self._conversions_table = ConversionsTable(l_converts_to=self.converts_to,
+                                                   parent=self)
+
+        # Use the conversions table to prune any formats which have no valid conversions
+
+        # Get a slice of the table which only includes supported converters
+        l_supported_converter_ids = [self.get_converter_info(x).id for x in D_SUPPORTED_CONVERTERS]
+        supported_table = [self._conversions_table.table[x] for x in l_supported_converter_ids]
+
+        for format_id, format_info in enumerate(self._l_format_info):
+            if not format_info:
+                continue
+
+            # Check if the format is supported as the input format for any conversion
+            ll_possible_from_conversions = [x[format_id] for x in supported_table]
+            if sum([sum(x) for x in ll_possible_from_conversions]) > 0:
+                continue
+
+            # Check if the format is supported as the output format for any conversion
+            ll_possible_to_conversions = [[y[format_id] for y in x] for x in supported_table]
+            if sum([sum(x) for x in ll_possible_to_conversions]) > 0:
+                continue
+
+            # If we get here, the format isn't supported for any conversions, so remove it from our list
+            self._l_format_info[format_id] = None
+
+        # Now create the formats dict, with only the pruned list of formats
+        self._d_format_info: dict[str, list[FormatInfo]] = {}
+
+        for format_info in self.l_format_info:
+
+            if not format_info:
+                continue
+
+            name = format_info.name
+
+            # Each name may correspond to multiple formats, so we use a list for each entry to list all possible
+            # formats for each name
+            if name not in self._d_format_info:
+                self._d_format_info[name] = []
+
+            self._d_format_info[name].append(format_info)
 
     def get_converter_info(self, converter_name_or_id: str | int) -> ConverterInfo:
         """Get a converter's info from either its name or ID
@@ -838,7 +925,8 @@ class DataConversionDatabase:
             try:
                 return self.d_converter_info[converter_name_or_id]
             except KeyError:
-                raise FileConverterDatabaseException(f"Converter name '{converter_name_or_id}' not recognised")
+                raise FileConverterDatabaseException(f"Converter name '{converter_name_or_id}' not recognised",
+                                                     help=True)
         elif isinstance(converter_name_or_id, int):
             return self.l_converter_info[converter_name_or_id]
         else:
@@ -846,20 +934,97 @@ class DataConversionDatabase:
                                                  f" of type '{type(converter_name_or_id)}'. Type must be `str` or "
                                                  "`int`")
 
-    def get_format_info(self, format_name_or_id: str | int) -> FormatInfo:
-        """Get a format's ID info from either its name or ID
+    def get_format_info(self,
+                        format_name_or_id: str | int | FormatInfo,
+                        which: int | Literal["all"] | None = None) -> FormatInfo | list[FormatInfo]:
+        """Gets the information on a given file format stored in the database
+
+        Parameters
+        ----------
+        format_name_or_id : str | int | FormatInfo
+            The name (extension) of the format, or its ID. In the case of ambiguous extensions which could apply to
+            multiple formats, the ID must be used here or a FileConverterDatabaseException will be raised. This also
+            allows passing a FormatInfo to this, in which case that object will be silently returned, to allow
+            normalising the input to always be a FormatInfo when output from this
+        which : int | None
+            In the case that an extension string is provided which turns out to be ambiguous, which of the listed
+            possibilities to use from the zero-indexed list. Default None, which raises an exception for an ambiguous
+            format. 0 may be used to select the first in the database, which is often a good default choice. The literal
+            string "all" may be used to request all possibilites, in which case this method will return a list (even if
+            there are zero or one possibilities)
+
+        Returns
+        -------
+        FormatInfo | list[FormatInfo]
         """
+
+        if which == "all":
+            return_as_list = True
+        else:
+            return_as_list = False
+
         if isinstance(format_name_or_id, str):
-            try:
-                return self.d_format_info[format_name_or_id]
-            except KeyError:
-                raise FileConverterDatabaseException(f"Format name '{format_name_or_id}' not recognised")
+            # Silently strip leading period
+            if format_name_or_id.startswith("."):
+                format_name_or_id = format_name_or_id[1:]
+
+            # Check for a hyphen in the format, which indicates a preference from the user as to which, overriding the
+            # `which` kwarg
+            if "-" in format_name_or_id:
+                l_name_segments = format_name_or_id.split("-")
+                if len(l_name_segments) > 2:
+                    raise FileConverterDatabaseException(f"Format name '{format_name_or_id} is improperly formatted - "
+                                                         "It may contain at most one hyphen, separating the extension "
+                                                         "from an index indicating which of the formats with that "
+                                                         "extension to use, e.g. 'pdb-0', 'pdb-1', etc.",
+                                                         help=True)
+                format_name_or_id = l_name_segments[0]
+                which = int(l_name_segments[1])
+
+            l_possible_format_info = self.d_format_info.get(format_name_or_id, [])
+
+            if which == "all":
+                return l_possible_format_info
+
+            elif len(l_possible_format_info) == 1:
+                format_info = l_possible_format_info[0]
+
+            elif len(l_possible_format_info) == 0:
+                raise FileConverterDatabaseException(f"Format name '{format_name_or_id}' not recognised",
+                                                     help=True)
+
+            elif which is not None and which < len(l_possible_format_info):
+                format_info = l_possible_format_info[which]
+
+            else:
+                msg = (f"Extension '{format_name_or_id}' is ambiguous and must be defined by ID. Possible formats "
+                       "and their IDs are:")
+                for possible_format_info in l_possible_format_info:
+                    msg += (f"\n{possible_format_info.id}: {possible_format_info.disambiguated_name} "
+                            f"({possible_format_info.note})")
+                raise FileConverterDatabaseException(msg, help=True)
+
         elif isinstance(format_name_or_id, int):
-            return self.l_format_info[format_name_or_id]
+            try:
+                format_info = self.l_format_info[format_name_or_id]
+            except IndexError:
+                if return_as_list:
+                    return []
+                raise FileConverterDatabaseException(f"Format ID '{format_name_or_id}' not recognised",
+                                                     help=True)
+
+        elif isinstance(format_name_or_id, FormatInfo):
+            # Silently return the FormatInfo if it was used as a key here
+            format_info = format_name_or_id
+
         else:
             raise FileConverterDatabaseException(f"Invalid key passed to `get_format_info`: '{format_name_or_id}'"
                                                  f" of type '{type(format_name_or_id)}'. Type must be `str` or "
                                                  "`int`")
+        if return_as_list:
+            return [format_info]
+
+        return format_info
 
 
 # The database will be loaded on demand when `get_database()` is called
@@ -919,35 +1084,45 @@ def get_converter_info(name: str) -> ConverterInfo:
     return get_database().d_converter_info[name]
 
 
-def get_format_info(name: str) -> FormatInfo:
+def get_format_info(format_name_or_id: str | int | FormatInfo,
+                    which: int | Literal["all"] | None = None) -> FormatInfo | list[FormatInfo]:
     """Gets the information on a given file format stored in the database
 
     Parameters
     ----------
-    name : str
-        The name (extension) of the form
+    format_name_or_id : str | int | FormatInfo
+        The name (extension) of the format, or its ID. In the case of ambiguous extensions which could apply to multiple
+        formats, the ID must be used here or a FileConverterDatabaseException will be raised. This also allows passing a
+        FormatInfo to this, in which case that object will be silently returned, to allow normalising the input to
+        always be a FormatInfo when output from this
+    which : int | None
+        In the case that an extension string is provided which turns out to be ambiguous, which of the listed
+        possibilities to use from the zero-indexed list. Default None, which raises an exception for an ambiguous
+        format. 0 may be used to select the first in the database, which is often a good default choice. The literal
+        string "all" may be used to request all possibilites, in which case this method will return a list (even if
+        there are zero or one possibilities)
 
     Returns
     -------
-    FormatInfo
+    FormatInfo | list[FormatInfo]
     """
 
-    return get_database().d_format_info[name]
+    return get_database().get_format_info(format_name_or_id, which)
 
 
 def get_conversion_quality(converter_name: str,
-                           in_format: str,
-                           out_format: str) -> ConversionQualityInfo | None:
+                           in_format: str | int,
+                           out_format: str | int) -> ConversionQualityInfo | None:
     """Get an indication of the quality of a conversion from one format to another, or if it's not possible
 
     Parameters
     ----------
     converter_name : str
         The name of the converter
-    in_format : str
-        The extension of the input file format
-    out_format : str
-        The extension of the output file format
+    in_format : str | int
+        The extension or ID of the input file format
+    out_format : str | int
+        The extension or ID of the output file format
 
     Returns
     -------
@@ -961,30 +1136,77 @@ def get_conversion_quality(converter_name: str,
                                                                    out_format=out_format)
 
 
-def get_possible_converters(in_format: str,
-                            out_format: str) -> list[str]:
-    """Get a list of converters which can perform a conversion from one format to another and the degree of success
-    with each of these converters
+def get_possible_conversions(in_format: str | int,
+                             out_format: str | int) -> list[tuple[str, FormatInfo, FormatInfo]]:
+    """Get a list of converters which can perform a conversion from one format to another and disambiguate in the case
+    of ambiguous input/output formats
 
     Parameters
     ----------
-    in_format : str
-        The extension of the input file format
-    out_format : str
-        The extension of the output file format
+    in_format : str | int
+        The extension or ID of the input file format
+    out_format : str | int
+        The extension or ID of the output file format
 
     Returns
     -------
-    list[tuple[str, str]]
-        A list of tuples, where each tuple's first item is the name of a converter which can perform this
-        conversion, and the second item is the degree of success for the conversion
+    list[tuple[str, FormatInfo, FormatInfo]]
+        A list of tuples, where each tuple's first item is the name of a converter which can perform a matching
+        conversion, the second is the info of the input format for this conversion, and the third is the info of the
+        output format
     """
 
-    return get_database().conversions_table.get_possible_converters(in_format=in_format,
-                                                                    out_format=out_format)
+    return get_database().conversions_table.get_possible_conversions(in_format=in_format,
+                                                                     out_format=out_format)
 
 
-def get_possible_formats(converter_name: str) -> tuple[list[str], list[str]]:
+def disambiguate_formats(converter_name: str,
+                         in_format: str | int | FormatInfo,
+                         out_format: str | int | FormatInfo) -> tuple[FormatInfo, FormatInfo]:
+    """Try to disambiguate formats by seeing if there's only one possible conversion between formats matching those
+    provided.
+
+    Parameters
+    ----------
+    converter_name : str
+        The name of the converter
+    in_format : str | int
+        The extension or ID of the input file format
+    out_format : str | int
+        The extension or ID of the output file format
+
+    Returns
+    -------
+    tuple[FormatInfo, FormatInfo]
+        The input and output format for this conversion, if only one combination is possible
+
+    Raises
+    ------
+    FileConverterDatabaseException
+        If more than one format combination is possible for this conversion, or no conversion is possible
+    """
+
+    # Get all possible conversions, and see if we only have one for this converter
+    l_possible_conversions = [x for x in get_possible_conversions(in_format, out_format)
+                              if x[0] == converter_name]
+
+    if len(l_possible_conversions) == 1:
+        return l_possible_conversions[0][1], l_possible_conversions[0][2]
+    elif len(l_possible_conversions) == 0:
+        raise FileConverterDatabaseException(f"Conversion from {in_format} to {out_format} with converter "
+                                             f"{converter_name} is not supported", help=True)
+    else:
+        msg = (f"Conversion from {in_format} to {out_format} with converter {converter_name} is ambiguous.\n"
+               "Possible matching conversions are:\n")
+        for _, possible_in_format, possible_out_format in l_possible_conversions:
+            msg += (f"{possible_in_format.disambiguated_name} ({possible_in_format.note}) to "
+                    f"{possible_out_format.disambiguated_name} ({possible_out_format.note})\n")
+        # Trim the final newline from the message
+        msg = msg[:-1]
+        raise FileConverterDatabaseException(msg, help=True)
+
+
+def get_possible_formats(converter_name: str) -> tuple[list[FormatInfo], list[FormatInfo]]:
     """Get a list of input and output formats that a given converter supports
 
     Parameters
@@ -994,7 +1216,7 @@ def get_possible_formats(converter_name: str) -> tuple[list[str], list[str]]:
 
     Returns
     -------
-    tuple[list[str], list[str]]
+    tuple[list[FormatInfo], list[FormatInfo]]
         A tuple of a list of the supported input formats and a list of the supported output formats
     """
     return get_database().conversions_table.get_possible_formats(converter_name=converter_name)
@@ -1009,7 +1231,7 @@ def _find_arg(tl_args: tuple[list[FlagInfo], list[OptionInfo]],
         if len(l_found) > 0:
             return l_found[0]
     # If we get here, it wasn't found in either list
-    raise FileConverterDatabaseException(f"Argument {arg} was not found in the list of allowed arguments for this "
+    raise FileConverterDatabaseException(f"Argument '{arg}' was not found in the list of allowed arguments for this "
                                          "conversion")
 
 

@@ -18,8 +18,9 @@ from psdi_data_conversion.converters.atomsk import CONVERTER_ATO
 from psdi_data_conversion.converters.c2x import CONVERTER_C2X
 from psdi_data_conversion.converters.openbabel import (CONVERTER_OB, COORD_GEN_KEY, COORD_GEN_QUAL_KEY,
                                                        DEFAULT_COORD_GEN, DEFAULT_COORD_GEN_QUAL)
-from psdi_data_conversion.database import (get_conversion_quality, get_converter_info, get_in_format_args,
-                                           get_out_format_args, get_possible_converters, get_possible_formats)
+from psdi_data_conversion.database import (FormatInfo, get_conversion_quality, get_converter_info, get_format_info,
+                                           get_in_format_args, get_out_format_args, get_possible_conversions,
+                                           get_possible_formats)
 from psdi_data_conversion.main import FileConverterInputException, parse_args
 from psdi_data_conversion.testing.utils import run_test_conversion_with_cla, run_with_arg_string
 from psdi_data_conversion.testing.conversion_test_specs import l_cla_test_specs
@@ -220,10 +221,10 @@ def test_detail_converter(capsys):
         l_allowed_in_formats, l_allowed_out_formats = get_possible_formats(converter_name)
         for in_format in l_allowed_in_formats:
             output_allowed = "yes" if in_format in l_allowed_out_formats else "no"
-            assert string_is_present_in_out(f"{in_format}yes{output_allowed}")
+            assert string_is_present_in_out(f"{in_format.disambiguated_name}yes{output_allowed}")
         for out_format in l_allowed_out_formats:
             input_allowed = "yes" if out_format in l_allowed_in_formats else "no"
-            assert string_is_present_in_out(f"{out_format}{input_allowed}yes")
+            assert string_is_present_in_out(f"{out_format.disambiguated_name}{input_allowed}yes")
 
         # Check that no errors were produced
         assert not captured.err
@@ -244,12 +245,12 @@ def test_detail_converter(capsys):
     assert const.CONVERTER_DEFAULT not in captured.out
 
 
-def test_get_converters(capsys):
+def test_get_conversions(capsys):
     """Test the option to get information on converters which can perform a desired conversion
     """
     in_format = "xyz"
     out_format = "inchi"
-    l_converters = get_possible_converters(in_format, out_format)
+    l_conversions = get_possible_conversions(in_format, out_format)
 
     run_with_arg_string(f"-l -f {in_format} -t {out_format}")
     captured = capsys.readouterr()
@@ -260,14 +261,14 @@ def test_get_converters(capsys):
 
     assert not captured.err
 
-    assert bool(l_converters) == string_is_present_in_out("The following registered converters can convert from "
-                                                          f"{in_format} to {out_format}:")
+    assert bool(l_conversions) == string_is_present_in_out("The following registered converters can convert from "
+                                                           f"{in_format} to {out_format}:")
 
-    for converter_name in l_converters:
+    for converter_name, _, _ in l_conversions:
         if converter_name in L_REGISTERED_CONVERTERS:
             assert string_is_present_in_out(converter_name)
     for converter_name in L_REGISTERED_CONVERTERS:
-        if converter_name not in l_converters:
+        if converter_name not in [x[0] for x in l_conversions]:
             assert not string_is_present_in_out(converter_name)
 
 
@@ -317,7 +318,7 @@ def test_conversion_info(capsys):
 
     # Now try listing for converters which don't yet allow in/out args
 
-    in_format = "pdb"
+    in_format = "pdb-0"
     out_format = "cif"
     for converter_name in [CONVERTER_C2X, CONVERTER_ATO]:
         qual = get_conversion_quality(converter_name, in_format, out_format)
@@ -327,3 +328,66 @@ def test_conversion_info(capsys):
         compressed_out: str = captured.out.replace("\n", "").replace(" ", "")
 
         assert not captured.err
+
+
+def test_format_info(capsys):
+    """Test that we can get information on formats
+    """
+
+    # Try to get info on an unambiguous format
+
+    in_format = "cif"
+    in_format_info: FormatInfo = get_format_info(in_format)
+    run_with_arg_string(f"-l -f {in_format}")
+
+    captured = capsys.readouterr()
+    compressed_out: str = captured.out.replace("\n", "").replace(" ", "")
+
+    def string_is_present_in_out(s: str) -> bool:
+        return s.replace("\n", " ").replace(" ", "") in compressed_out
+
+    assert not captured.err
+
+    assert string_is_present_in_out(f"{in_format_info.id}: {in_format_info.name} "
+                                    f"({in_format_info.note})")
+
+    # Try to get info on an ambiguous format
+
+    out_format = "pdb"
+    l_out_format_info: list[FormatInfo] = get_format_info(out_format, which="all")
+    run_with_arg_string(f"-l -t {out_format}")
+
+    captured = capsys.readouterr()
+    compressed_out: str = captured.out.replace("\n", "").replace(" ", "")
+
+    assert not captured.err
+
+    assert string_is_present_in_out(f"WARNING: Format '{out_format}' is ambiguous")
+
+    for out_format_info in l_out_format_info:
+        assert string_is_present_in_out(f"{out_format_info.id}: {out_format_info.disambiguated_name} "
+                                        f"({out_format_info.note})")
+
+    # Test we get expected errors for unrecognised formats
+
+    in_format = 99999
+    with pytest.raises(SystemExit):
+        run_with_arg_string(f"-l -f {in_format}")
+
+    captured = capsys.readouterr()
+    compressed_err: str = captured.err.replace("\n", "").replace(" ", "")
+
+    def string_is_present_in_err(s: str) -> bool:
+        return s.replace("\n", " ").replace(" ", "") in compressed_err
+
+    assert string_is_present_in_err(f"ERROR: Format '{in_format}' not recognised")
+
+    out_format = "not_a_format"
+
+    with pytest.raises(SystemExit):
+        run_with_arg_string(f"-l -t {out_format}")
+
+    captured = capsys.readouterr()
+    compressed_err: str = captured.err.replace("\n", "").replace(" ", "")
+
+    assert string_is_present_in_err(f"ERROR: Format '{out_format}' not recognised")

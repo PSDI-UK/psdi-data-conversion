@@ -5,13 +5,15 @@ Created 2025-02-03 by Bryan Gillis.
 Unit tests relating to using the database
 """
 
+import pytest
 from psdi_data_conversion import constants as const
 from psdi_data_conversion.converter import L_REGISTERED_CONVERTERS
 from psdi_data_conversion.converters.atomsk import CONVERTER_ATO
+from psdi_data_conversion.converters.c2x import CONVERTER_C2X
 from psdi_data_conversion.converters.openbabel import CONVERTER_OB
-from psdi_data_conversion.database import (get_conversion_quality, get_converter_info, get_database, get_format_info,
-                                           get_in_format_args, get_out_format_args, get_possible_converters,
-                                           get_possible_formats)
+from psdi_data_conversion.database import (FileConverterDatabaseException, disambiguate_formats, get_conversion_quality,
+                                           get_converter_info, get_database, get_format_info, get_in_format_args,
+                                           get_out_format_args, get_possible_conversions, get_possible_formats)
 
 
 def test_load():
@@ -88,7 +90,7 @@ def test_format_info():
 
     for name in ("pdb", "cif", "mmcif", "inchi", "molreport"):
 
-        format_info = get_format_info(name)
+        format_info = get_format_info(name, which=0)
 
         # Check database is properly set as parent
         assert format_info.parent == database
@@ -117,6 +119,51 @@ def test_format_info():
             assert format_info.three_dim, name
         else:
             assert not format_info.three_dim, name
+
+
+def test_format_info_options():
+    """Test that we can get the expected information on a few test formats
+    """
+
+    # Check that we get an exception for an ambiguous format if we don't request which
+    with pytest.raises(FileConverterDatabaseException):
+        get_format_info("pdb")
+
+    # Check that requesting all possibilities works as expected
+    l_pdb_infos = get_format_info("pdb", which="all")
+    assert l_pdb_infos[0] != l_pdb_infos[1]
+    assert l_pdb_infos[0] == get_format_info("pdb", which=0)
+    assert l_pdb_infos[1] == get_format_info("pdb", which=1)
+
+    # Check that the shortcut for which format works
+    assert get_format_info("pdb-0") == l_pdb_infos[0]
+    assert get_format_info("pdb-1") == l_pdb_infos[1]
+
+    # Check that the shortcut doesn't cause any problems even if the format is unambiguous
+    assert get_format_info("cif-0") == get_format_info("cif")
+
+    # Check that the format info provides the right disambiguated name
+    assert get_format_info("cif").disambiguated_name == "cif"
+    assert get_format_info("pdb-0").disambiguated_name == "pdb-0"
+    assert get_format_info("pdb-1").disambiguated_name == "pdb-1"
+
+
+def test_disambiguate_format():
+    """Test that we can disambiguate formats when only one combination is possible for a conversion
+    """
+
+    # Test that we can disambiguate the right pdb format
+    in_format, out_format = disambiguate_formats(CONVERTER_OB, "pdb", "cif")
+    assert in_format == get_format_info("pdb-0")
+    assert out_format == get_format_info("cif")
+
+    # Test we get the expected exception if no conversion is possible
+    with pytest.raises(FileConverterDatabaseException, match="is not supported"):
+        disambiguate_formats(CONVERTER_C2X, "ins", "cml")
+
+    # Test we get the expected exception if multiple conversions are possible
+    with pytest.raises(FileConverterDatabaseException, match="is ambiguous"):
+        disambiguate_formats(CONVERTER_C2X, "cif", "pdb")
 
 
 def test_conversion_table():
@@ -159,10 +206,10 @@ def test_conversion_table():
     assert comp_prop_info.note == ""
 
     # Check we can get a list of possible converters for a given conversion
-    l_possible_converters = get_possible_converters("pdb", "cif")
-    assert CONVERTER_OB in [name for name in l_possible_converters]
+    l_possible_conversions = get_possible_conversions("pdb", "cif")
+    assert (CONVERTER_OB, get_format_info("pdb", which=0), get_format_info("cif", which=0)) in l_possible_conversions
 
     # Check that we can get a list of possible input/outpat formats for a given converter
     l_in_formats, l_out_formats = get_possible_formats(CONVERTER_OB)
-    assert "pdb" in l_in_formats
-    assert "cif" in l_out_formats
+    assert get_format_info("pdb", which=0) in l_in_formats
+    assert get_format_info("cif", which=0) in l_out_formats

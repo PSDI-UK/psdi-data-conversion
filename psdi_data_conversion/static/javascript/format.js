@@ -7,7 +7,7 @@
 
 import { disableDirtyForms, cleanDirtyForms, initDirtyForms, loadServiceMode, loadProductionMode } from "./common.js";
 import {
-    getInputFormats, getOutputFormats, getOutputFormatsForInputFormat,
+    databaseLoaded, getInputFormats, getOutputFormats, getOutputFormatsForInputFormat,
     getInputFormatsForOutputFormat, getConverters, getConverterByName, getLevelChemInfo
 } from "./data.js";
 
@@ -18,15 +18,20 @@ var fromList = new Array(),
 
 $(document).ready(function () {
 
-    // Populates the "Convert from" selection list
-    getInputFormats().then((formats) => {
-        populateList(formats, "from");
-    });
+    // Populate the available formats if the database successfully loaded, otherwise display an error message
+    if (databaseLoaded()) {
+        // Populates the "Convert from" selection list
+        getInputFormats().then((formats) => {
+            populateList(formats, "from");
+        });
 
-    // Populates the "Convert to" selection list
-    getOutputFormats().then((formats) => {
-        populateList(formats, "to");
-    });
+        // Populates the "Convert to" selection list
+        getOutputFormats().then((formats) => {
+            populateList(formats, "to");
+        });
+    } else {
+        displayDatabaseLoadError();;
+    }
 
     sessionStorage.setItem("token", token);
     sessionStorage.setItem("max_file_size", max_file_size);
@@ -51,6 +56,14 @@ $(document).ready(function () {
 
     initDirtyForms();
 });
+
+/**
+ * Hides the format and converter selection and displays an error message that the database could not be loaded.
+ */
+function displayDatabaseLoadError() {
+    $("#format-selection").css({ display: "none" });
+    $("#database-error").css({ display: "block" });
+}
 
 /**
  * Gets the input and output extensions and their notes from what's currently selected in the search boxes.

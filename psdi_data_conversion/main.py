@@ -7,6 +7,7 @@ Created 2025-01-14 by Bryan Gillis.
 Entry-point file for the command-line interface for data conversion.
 """
 
+from itertools import product
 import logging
 from argparse import ArgumentParser
 import os
@@ -17,10 +18,10 @@ from psdi_data_conversion import constants as const
 from psdi_data_conversion.constants import CL_SCRIPT_NAME, CONVERTER_DEFAULT, TERM_WIDTH
 from psdi_data_conversion.converter import (D_CONVERTER_ARGS, D_SUPPORTED_CONVERTERS, L_REGISTERED_CONVERTERS,
                                             L_SUPPORTED_CONVERTERS, run_converter)
-from psdi_data_conversion.converters.base import (FileConverterAbortException, FileConverterInputException,
-                                                  FileConverterHelpException)
-from psdi_data_conversion.database import (get_conversion_quality, get_converter_info, get_format_info,
-                                           get_in_format_args, get_out_format_args, get_possible_converters,
+from psdi_data_conversion.converters.base import (FileConverterAbortException, FileConverterException,
+                                                  FileConverterInputException)
+from psdi_data_conversion.database import (FormatInfo, get_conversion_quality, get_converter_info, get_format_info,
+                                           get_in_format_args, get_out_format_args, get_possible_conversions,
                                            get_possible_formats)
 from psdi_data_conversion.file_io import split_archive_ext
 from psdi_data_conversion.log_utility import get_log_level_from_str
@@ -84,9 +85,21 @@ class ConvertArgs:
             try:
                 self.log_level = get_log_level_from_str(args.log_level)
             except ValueError as e:
-                # A ValueError indicates an unrecognised logging level, so we reraise this as a help exception to
+                # A ValueError indicates an unrecognised logging level, so we reraise this with the help flag to
                 # indicate we want to provide this as feedback to the user so they can correct their command
-                raise FileConverterHelpException(str(e))
+                raise FileConverterInputException(str(e), help=True)
+
+        # If formats were provided as ints, convert them to the int type now
+        try:
+            if self.from_format:
+                self.from_format = int(self.from_format)
+        except ValueError:
+            pass
+        try:
+            if self.to_format:
+                self.to_format = int(self.to_format)
+        except ValueError:
+            pass
 
         # Special handling for listing converters
         if self.list:
@@ -114,40 +127,40 @@ class ConvertArgs:
         # Check validity of input
 
         if len(self.l_args) == 0:
-            raise FileConverterHelpException("One or more names of files to convert must be provided")
+            raise FileConverterInputException("One or more names of files to convert must be provided", help=True)
 
         if self._input_dir is not None and not os.path.isdir(self._input_dir):
-            raise FileConverterHelpException(f"The provided input directory '{self._input_dir}' does not exist as a "
-                                             "directory")
+            raise FileConverterInputException(f"The provided input directory '{self._input_dir}' does not exist as a "
+                                              "directory", help=True)
 
         if self.to_format is None:
             msg = textwrap.fill("ERROR Output format (-t or --to) must be provided. For information on supported "
                                 "formats and converters, call:\n")
             msg += f"{CL_SCRIPT_NAME} -l"
-            raise FileConverterHelpException(msg, msg_preformatted=True)
+            raise FileConverterInputException(msg, msg_preformatted=True, help=True)
 
         # If the output directory doesn't exist, silently create it
         if self._output_dir is not None and not os.path.isdir(self._output_dir):
             if os.path.exists(self._output_dir):
-                raise FileConverterHelpException(f"Output directory '{self._output_dir}' exists but is not a "
-                                                 "directory")
+                raise FileConverterInputException(f"Output directory '{self._output_dir}' exists but is not a "
+                                                  "directory", help=True)
             os.makedirs(self._output_dir, exist_ok=True)
 
         # Check the converter is recognized
         if self.name not in L_SUPPORTED_CONVERTERS:
             msg = textwrap.fill(f"ERROR: Converter '{self.name}' not recognised", width=TERM_WIDTH)
             msg += f"\n\n{get_supported_converters()}"
-            raise FileConverterHelpException(msg, msg_preformatted=True)
+            raise FileConverterInputException(msg, help=True, msg_preformatted=True)
         elif self.name not in L_REGISTERED_CONVERTERS:
             msg = textwrap.fill(f"ERROR: Converter '{self.name}' is not registered. It may be possible to register "
                                 "it by installing an appropriate binary for your platform.", width=TERM_WIDTH)
             msg += f"\n\n{get_supported_converters()}"
-            raise FileConverterHelpException(msg, msg_preformatted=True)
+            raise FileConverterInputException(msg, help=True, msg_preformatted=True)
 
         # Logging mode is valid
         if self.log_mode not in const.L_ALLOWED_LOG_MODES:
-            raise FileConverterHelpException(f"Unrecognised logging mode: {self.log_mode}. Allowed "
-                                             f"modes are: {const.L_ALLOWED_LOG_MODES}")
+            raise FileConverterInputException(f"Unrecognised logging mode: {self.log_mode}. Allowed "
+                                              f"modes are: {const.L_ALLOWED_LOG_MODES}", help=True)
 
         # Arguments specific to this converter
         self.d_converter_args = {}
@@ -194,10 +207,10 @@ class ConvertArgs:
                         if os.path.isfile(test_filename):
                             first_filename = test_filename
                         else:
-                            raise FileConverterHelpException(f"Input file {first_filename} cannot be found. Also "
-                                                             f"checked for {test_filename}.")
+                            raise FileConverterInputException(f"Input file {first_filename} cannot be found. Also "
+                                                              f"checked for {test_filename}.", help=True)
                     else:
-                        raise FileConverterHelpException(f"Input file {first_filename} cannot be found.")
+                        raise FileConverterInputException(f"Input file {first_filename} cannot be found.", help=True)
 
                 filename_base = os.path.split(split_archive_ext(first_filename)[0])[1]
                 if self.log_mode == const.LOG_FULL:
@@ -345,7 +358,7 @@ def detail_converter_use(args: ConvertArgs):
         print_wrap(converter_class.info, break_long_words=False, break_on_hyphens=False, newline=True)
 
     # If both an input and output format are specified, provide the degree of success for this conversion. Otherwise
-    # list possible input output formats
+    # list possible input/output formats
     if args.from_format is not None and args.to_format is not None:
         qual = get_conversion_quality(args.name, args.from_format, args.to_format)
         if qual is None:
@@ -375,19 +388,19 @@ def detail_converter_use(args: ConvertArgs):
             print_wrap(f"Conversion {to_or_from} {format_name} is {optional_not}supported by {args.name}.\n")
 
         # List all possible formats, and which can be used for input and which for output
-        s_all_formats: set[str] = set(l_input_formats)
+        s_all_formats: set[FormatInfo] = set(l_input_formats)
         s_all_formats.update(l_output_formats)
-        l_all_formats: list[str] = list(s_all_formats)
-        l_all_formats.sort(key=lambda s: s.lower())
+        l_all_formats: list[FormatInfo] = list(s_all_formats)
+        l_all_formats.sort(key=lambda x: x.disambiguated_name.lower())
 
         print_wrap(f"File formats supported by {args.name}:", newline=True)
-        max_format_length = max([len(x) for x in l_all_formats])
+        max_format_length = max([len(x.disambiguated_name) for x in l_all_formats])
         print(" "*(max_format_length+4) + "   INPUT  OUTPUT")
         print(" "*(max_format_length+4) + "   -----  ------")
         for file_format in l_all_formats:
             in_yes_or_no = "yes" if file_format in l_input_formats else "no"
             out_yes_or_no = "yes" if file_format in l_output_formats else "no"
-            print(f"    {file_format:>{max_format_length}}{in_yes_or_no:>8}{out_yes_or_no:>8}")
+            print(f"    {file_format.disambiguated_name:>{max_format_length}}{in_yes_or_no:>8}{out_yes_or_no:>8}")
         print("")
 
     if converter_class.allowed_flags is None:
@@ -472,10 +485,16 @@ def list_supported_formats(err=False):
     """Prints a list of all formats recognised by at least one registered converter
     """
     # Make a list of all formats recognised by at least one registered converter
-    s_all_formats: set[str] = set()
-    s_registered_formats: set[str] = set()
+    s_all_formats: set[FormatInfo] = set()
+    s_registered_formats: set[FormatInfo] = set()
     for converter_name in L_SUPPORTED_CONVERTERS:
         l_in_formats, l_out_formats = get_possible_formats(converter_name)
+
+        # To make sure we don't see any unexpected duplicates in the set due to cached/uncached values, get the
+        # disambiguated name of each format first
+        [x.disambiguated_name for x in l_in_formats]
+        [x.disambiguated_name for x in l_out_formats]
+
         s_all_formats.update(l_in_formats)
         s_all_formats.update(l_out_formats)
         if converter_name in L_REGISTERED_CONVERTERS:
@@ -486,14 +505,14 @@ def list_supported_formats(err=False):
 
     # Convert the sets to lists and alphabetise them
     l_registered_formats = list(s_registered_formats)
-    l_registered_formats.sort(key=lambda s: s.lower())
+    l_registered_formats.sort(key=lambda x: x.disambiguated_name.lower())
     l_unregistered_formats = list(s_unregistered_formats)
-    l_unregistered_formats.sort(key=lambda s: s.lower())
+    l_unregistered_formats.sort(key=lambda x: x.disambiguated_name.lower())
 
     # Pad the format strings to all be the same length. To keep columns aligned, all padding is done with non-
     # breaking spaces (\xa0), and each format is followed by a single normal space
-    longest_format_len = max([len(x) for x in l_registered_formats])
-    l_padded_formats = [f"{x:\xa0<{longest_format_len}} " for x in l_registered_formats]
+    longest_format_len = max([len(x.disambiguated_name) for x in l_registered_formats])
+    l_padded_formats = [f"{x.disambiguated_name:\xa0<{longest_format_len}} " for x in l_registered_formats]
 
     print_wrap("Formats supported by registered converters: ", err=err, newline=True)
     print_wrap("".join(l_padded_formats), err=err, initial_indent="  ", subsequent_indent="  ", newline=True)
@@ -508,9 +527,33 @@ def list_supported_formats(err=False):
                    initial_indent="  ", subsequent_indent="  ", newline=True)
 
     print_wrap("Note that not all formats are supported with all converters, or both as input and as output.")
+    if err:
+        print("")
+        print_wrap("For more details on a format, call:")
+        print(f"{CL_SCRIPT_NAME} -l -f <format>")
 
 
-def detail_possible_converters(from_format: str, to_format: str):
+def detail_format(format_name: str):
+    """Prints details on a format
+    """
+
+    l_format_info: list[FormatInfo] = get_format_info(format_name, which="all")
+
+    if len(l_format_info) == 0:
+        print_wrap(f"ERROR: Format '{format_name}' not recognised", err=True, newline=True)
+        list_supported_formats(err=True)
+        exit(1)
+
+    if len(l_format_info) > 1:
+        print_wrap(f"WARNING: Format '{format_name}' is ambiguous and could refer to multiple formats. It may be "
+                   "necessary to explicitly specify which you want to use when calling this script, e.g. with "
+                   f"'-f {format_name}-0' - see the disambiguated names in the list below:", newline=True)
+
+    for format_info in l_format_info:
+        print_wrap(f"{format_info.id}: {format_info.disambiguated_name} ({format_info.note})")
+
+
+def detail_formats_and_possible_converters(from_format: str, to_format: str):
     """Prints details on converters that can perform a conversion from one format to another
     """
 
@@ -518,13 +561,13 @@ def detail_possible_converters(from_format: str, to_format: str):
     either_format_failed = False
 
     try:
-        get_format_info(from_format)
+        get_format_info(from_format, which=0)
     except KeyError:
         either_format_failed = True
         print_wrap(f"ERROR: Input format '{from_format}' not recognised", newline=True, err=True)
 
     try:
-        get_format_info(to_format)
+        get_format_info(to_format, which=0)
     except KeyError:
         either_format_failed = True
         print_wrap(f"ERROR: Output format '{from_format}' not recognised", newline=True, err=True)
@@ -534,32 +577,58 @@ def detail_possible_converters(from_format: str, to_format: str):
         list_supported_formats(err=True)
         exit(1)
 
-    l_possible_converters = get_possible_converters(from_format, to_format)
+    # Provide details on both the input and output formats
+    detail_format(from_format)
+    print()
+    detail_format(to_format)
 
-    l_possible_registered_converters = [x for x in l_possible_converters if x in L_REGISTERED_CONVERTERS]
-    l_possible_unregistered_converters = [x for x in l_possible_converters if
-                                          x in L_SUPPORTED_CONVERTERS and x not in L_REGISTERED_CONVERTERS]
+    l_possible_conversions = get_possible_conversions(from_format, to_format)
 
-    if len(l_possible_registered_converters)+len(l_possible_unregistered_converters) == 0:
-        print_wrap(f"No converters are available which can perform a conversion from {from_format} to {to_format}")
-        return
-    elif len(l_possible_registered_converters) == 0:
-        print_wrap(f"No registered converters can perform a conversion from {from_format} to {to_format}, however "
-                   "the following converters are supported by this package on other platforms and can perform this "
-                   "conversion:", newline=True)
-        print("\n    ".join(l_possible_unregistered_converters))
-        return
+    # Get a list of all different formats which share the provided name, cutting out duplicates
+    l_from_formats = list(set([x[1] for x in l_possible_conversions]))
+    l_from_formats.sort(key=lambda x: x.disambiguated_name)
+    l_to_formats = list(set([x[2] for x in l_possible_conversions]))
+    l_to_formats.sort(key=lambda x: x.disambiguated_name)
 
-    print_wrap(f"The following registered converters can convert from {from_format} to {to_format}:", newline=True)
-    print("    " + "\n    ".join(l_possible_registered_converters) + "\n")
-    if l_possible_unregistered_converters:
-        print("")
-        print_wrap("Additionally, the following converters are supported by this package on other platforms and can "
-                   "perform this conversion:", newline=True)
-        print("    " + "\n    ".join(l_possible_unregistered_converters) + "\n")
+    # Loop over all possible combinations of formats
 
-    print_wrap("For details on input/output flags and options allowed by a converter for this conversion, call:")
-    print(f"{CL_SCRIPT_NAME} -l <converter name> -f {from_format} -t {to_format}")
+    for possible_from_format, possible_to_format in product(l_from_formats, l_to_formats):
+
+        from_name = possible_from_format.disambiguated_name
+        to_name = possible_to_format.disambiguated_name
+
+        l_conversions_matching_formats = [x for x in l_possible_conversions
+                                          if x[1] == possible_from_format and x[2] == possible_to_format]
+
+        l_possible_registered_converters = [x[0] for x in l_conversions_matching_formats
+                                            if x[0] in L_REGISTERED_CONVERTERS]
+        l_possible_unregistered_converters = [x[0] for x in l_conversions_matching_formats
+                                              if x[0] in L_SUPPORTED_CONVERTERS and x[0] not in L_REGISTERED_CONVERTERS]
+
+        print()
+
+        if len(l_possible_registered_converters)+len(l_possible_unregistered_converters) == 0:
+            print_wrap(f"No converters are available which can perform a conversion from {from_name} to "
+                       f"{to_name}")
+            continue
+        elif len(l_possible_registered_converters) == 0:
+            print_wrap(f"No registered converters can perform a conversion from {from_name} to "
+                       f"{to_name}, however the following converters are supported by this package on other "
+                       "platforms and can perform this conversion:", newline=True)
+            print("\n    ".join(l_possible_unregistered_converters))
+            continue
+
+        print_wrap(f"The following registered converters can convert from {from_name} to "
+                   f"{to_name}:", newline=True)
+        print("    " + "\n    ".join(l_possible_registered_converters) + "\n")
+        if l_possible_unregistered_converters:
+            print("")
+            print_wrap("Additionally, the following converters are supported by this package on other platforms and "
+                       "can perform this conversion:", newline=True)
+            print("    " + "\n    ".join(l_possible_unregistered_converters) + "\n")
+
+        print_wrap("For details on input/output flags and options allowed by a converter for this conversion, call:")
+        print(f"{CL_SCRIPT_NAME} -l <converter name> -f {from_name} -t {to_name}")
 
 
 def get_supported_converters():
@@ -612,7 +681,13 @@ def detail_converters_and_formats(args: ConvertArgs):
         list_supported_converters(err=True)
         exit(1)
     elif args.from_format and args.to_format:
-        detail_possible_converters(args.from_format, args.to_format)
+        detail_formats_and_possible_converters(args.from_format, args.to_format)
+        return
+    elif args.from_format:
+        detail_format(args.from_format)
+        return
+    elif args.to_format:
+        detail_format(args.to_format)
         return
 
     list_supported_converters()
@@ -622,6 +697,9 @@ def detail_converters_and_formats(args: ConvertArgs):
 
     print_wrap("For more details on a converter, call:")
     print(f"{CL_SCRIPT_NAME} -l <converter name>\n")
+
+    print_wrap("For more details on a format, call:")
+    print(f"{CL_SCRIPT_NAME} -l -f <format>\n")
 
     print_wrap("For a list of converters that can perform a desired conversion, call:")
     print(f"{CL_SCRIPT_NAME} -l -f <input format> -t <output format>\n")
@@ -693,12 +771,6 @@ def run_from_args(args: ConvertArgs):
                                               log_level=args.log_level,
                                               delete_input=args.delete_input,
                                               refresh_local_log=False)
-        except FileConverterHelpException as e:
-            if not e.logged:
-                print_wrap(f"ERROR: {e}", err=True)
-                e.logged = True
-            success = False
-            continue
         except FileConverterAbortException as e:
             if not e.logged:
                 print_wrap(f"ERROR: Attempt to convert file {filename} aborted with status code {e.status_code} and "
@@ -706,11 +778,19 @@ def run_from_args(args: ConvertArgs):
                 e.logged = True
             success = False
             continue
-        except FileConverterInputException as e:
-            if "Conversion from" in str(e) and "is not supported" in str(e):
+        except FileConverterException as e:
+            if e.help and not e.logged:
+                print_wrap(f"ERROR: {e}", err=True)
+                e.logged = True
+            elif "Conversion from" in str(e) and "is not supported" in str(e):
                 if not e.logged:
                     print_wrap(f"ERROR: {e}", err=True, newline=True)
-                detail_possible_converters(args.from_format, args.to_format)
+                detail_formats_and_possible_converters(args.from_format, args.to_format)
+            elif e.help and not e.logged:
+                if e.msg_preformatted:
+                    print(e, file=sys.stderr)
+                else:
+                    print_wrap(f"ERROR: {e}", err=True)
             elif not e.logged:
                 print_wrap(f"ERROR: Attempt to convert file {filename} failed at converter initialization with "
                            f"exception type {type(e)} and message: \n{e}\n", err=True)
@@ -748,9 +828,11 @@ def main():
 
     try:
         args = parse_args()
-    except FileConverterHelpException as e:
-        # If we get a Help exception, it's likely due to user error, so don't bother them with a traceback and simply
-        # print the message to stderr
+    except FileConverterInputException as e:
+        if not e.help:
+            raise
+        # If we get an exception with the help flag set, it's likely due to user error, so don't bother them with a
+        # traceback and simply print the message to stderr
         if e.msg_preformatted:
             print(e, file=sys.stderr)
         else:

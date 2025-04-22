@@ -352,7 +352,8 @@ class CheckException:
 
         # Check the exception type
         if self.ex_type and not issubclass(exc_info.type, self.ex_type):
-            l_errors.append(f"ERROR: Raised exception is of type '{exc_info.type}', but expected '{self.ex_type}'")
+            l_errors.append(f"ERROR: Raised exception is of type '{exc_info.type}', but expected '{self.ex_type}'. "
+                            f"Raised exception's message was: {str(exc_info)}")
 
         exc = exc_info.value
 

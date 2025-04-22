@@ -27,6 +27,7 @@ class C2xFileConverter(ScriptFileConverter):
             "https://www.gnu.org/licenses/gpl-3.0.en.html. Its binaries are redistributed here under the terms of this "
             "license, and any further redistribution must also follow these terms. Its corresponding source code "
             "may be downloaded from https://www.c2x.org.uk/downloads/")
+    supports_ambiguous_extensions = True
 
 
 # Assign this converter to the `converter` variable - this lets the psdi_data_conversion.converter module detect and

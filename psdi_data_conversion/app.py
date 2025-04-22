@@ -19,6 +19,7 @@ import psdi_data_conversion
 from psdi_data_conversion import log_utility
 from psdi_data_conversion import constants as const
 from psdi_data_conversion.converter import run_converter
+from psdi_data_conversion.database import FormatInfo, get_format_info
 from psdi_data_conversion.file_io import split_archive_ext
 
 # Env var for the SHA of the latest commit
@@ -139,13 +140,38 @@ def convert():
     qualified_output_log = os.path.join(const.DEFAULT_DOWNLOAD_DIR,
                                         split_archive_ext(filename)[0] + const.OUTPUT_LOG_EXT)
 
+    # Determine the input and output formats
+    d_formats = {}
+    for format_label in "to", "from":
+        name = request.form[format_label]
+        full_note = request.form[format_label+"_full"]
+
+        l_possible_formats: list[FormatInfo] = get_format_info(name, which="all")
+
+        # If there's only one possible format, use that
+        if len(l_possible_formats) == 1:
+            d_formats[format_label] = l_possible_formats[0]
+            continue
+
+        # Otherwise, find the format with the matching note
+        found = False
+        for possible_format in l_possible_formats:
+            if possible_format.note in full_note:
+                d_formats[format_label] = possible_format
+                found = True
+                break
+        if not found:
+            print(f"Format '{name}' with full description '{full_note}' could not be found in database.",
+                  file=sys.stderr)
+            abort(const.STATUS_CODE_GENERAL)
+
     if (not service_mode) or (request.form['token'] == token and token != ''):
         try:
             conversion_output = run_converter(name=request.form['converter'],
                                               filename=qualified_filename,
                                               data=request.form,
-                                              to_format=request.form['to'],
-                                              from_format=request.form['from'],
+                                              to_format=d_formats["to"],
+                                              from_format=d_formats["from"],
                                               strict=(request.form['check_ext'] != "false"),
                                               log_mode=log_mode,
                                               log_level=log_level,
@@ -286,10 +312,10 @@ def main():
                         "variables and their defaults will instead control execution. These defaults will result in "
                         "the app running in production server mode.")
 
-    parser.add_argument("--max-file-size", type=float, default=const.DEFAULT_MAX_FILE_SIZE,
+    parser.add_argument("--max-file-size", type=float, default=const.DEFAULT_MAX_FILE_SIZE/const.MEGABYTE,
                         help="The maximum allowed filesize in MB - 0 (default) indicates no maximum")
 
-    parser.add_argument("--max-file-size-ob", type=float, default=const.DEFAULT_MAX_FILE_SIZE_OB,
+    parser.add_argument("--max-file-size-ob", type=float, default=const.DEFAULT_MAX_FILE_SIZE_OB/const.MEGABYTE,
                         help="The maximum allowed filesize in MB for the Open Babel converter, taking precendence over "
                         "the general maximum file size when Open Babel is used - 0 indicates no maximum. Default 1 MB.")
 
