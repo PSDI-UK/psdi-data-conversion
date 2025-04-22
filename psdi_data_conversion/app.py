@@ -312,10 +312,10 @@ def main():
                         "variables and their defaults will instead control execution. These defaults will result in "
                         "the app running in production server mode.")
 
-    parser.add_argument("--max-file-size", type=float, default=const.DEFAULT_MAX_FILE_SIZE,
+    parser.add_argument("--max-file-size", type=float, default=const.DEFAULT_MAX_FILE_SIZE/const.MEGABYTE,
                         help="The maximum allowed filesize in MB - 0 (default) indicates no maximum")
 
-    parser.add_argument("--max-file-size-ob", type=float, default=const.DEFAULT_MAX_FILE_SIZE_OB,
+    parser.add_argument("--max-file-size-ob", type=float, default=const.DEFAULT_MAX_FILE_SIZE_OB/const.MEGABYTE,
                         help="The maximum allowed filesize in MB for the Open Babel converter, taking precendence over "
                         "the general maximum file size when Open Babel is used - 0 indicates no maximum. Default 1 MB.")
 

@@ -47,9 +47,9 @@ MAX_FILESIZE_OB_EV = "MAX_FILESIZE_OB"
 
 MEGABYTE = 1024*1024
 
-# Maximum output file size in megabytes
-DEFAULT_MAX_FILE_SIZE = 0
-DEFAULT_MAX_FILE_SIZE_OB = 1
+# Maximum output file size in bytes
+DEFAULT_MAX_FILE_SIZE = 0 * MEGABYTE
+DEFAULT_MAX_FILE_SIZE_OB = 1 * MEGABYTE
 
 DEFAULT_UPLOAD_DIR = './psdi_data_conversion/static/uploads'
 DEFAULT_DOWNLOAD_DIR = './psdi_data_conversion/static/downloads'
