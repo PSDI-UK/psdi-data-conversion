@@ -98,7 +98,7 @@ branch = true
 omit = []
 
 [tool.coverage.paths]
-tests = ["tests"]
+tests = ["tests/python"]
 
 [tool.coverage.report]
 exclude_lines = ["no cov", "if __name__ == .__main__.:", "if TYPE_CHECKING:"]
