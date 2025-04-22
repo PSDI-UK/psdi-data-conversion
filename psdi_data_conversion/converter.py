@@ -196,7 +196,7 @@ class FileConversionRunResult:
 
 
 def check_from_format(filename: str,
-                      from_format: str,
+                      from_format: str | int,
                       strict=False) -> bool:
     """Check that the filename for an input file ends with the expected extension
 
@@ -204,7 +204,7 @@ def check_from_format(filename: str,
     ----------
     filename : str
         The filename
-    from_format : str
+    from_format : str | int
         The expected format (extension)
     strict : bool, optional
         If True, will raise an exception on failure. Otherwise will print a warning and return False
@@ -220,14 +220,21 @@ def check_from_format(filename: str,
         If `strict` is True and the the file does not end with the expected exception
     """
 
-    # Silently make sure `from_format` starts with a dot
-    if not from_format.startswith("."):
-        from_format = f".{from_format}"
+    # Get the name of the format
+    if isinstance(from_format, str):
+        from_format_name = from_format
+    else:
+        from psdi_data_conversion.database import get_format_info
+        from_format_name = get_format_info(from_format).name
 
-    if filename.endswith(from_format):
+    # Silently make sure `from_format` starts with a dot
+    if not from_format_name.startswith("."):
+        from_format_name = f".{from_format}"
+
+    if filename.endswith(from_format_name):
         return True
 
-    msg = const.ERR_WRONG_EXTENSIONS.format(file=os.path.basename(filename), ext=from_format)
+    msg = const.ERR_WRONG_EXTENSIONS.format(file=os.path.basename(filename), ext=from_format_name)
 
     if strict:
         raise base.FileConverterInputException(msg)

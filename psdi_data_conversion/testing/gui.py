@@ -9,7 +9,7 @@ import shutil
 from tempfile import TemporaryDirectory
 
 import time
-from attr import dataclass
+from dataclasses import dataclass
 import pytest
 from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.common.alert import Alert
@@ -24,6 +24,7 @@ from psdi_data_conversion.converters.base import (FileConverterAbortException, F
                                                   FileConverterInputException)
 from psdi_data_conversion.converters.openbabel import (COORD_GEN_KEY, COORD_GEN_QUAL_KEY, DEFAULT_COORD_GEN_QUAL,
                                                        L_ALLOWED_COORD_GEN_QUALS, L_ALLOWED_COORD_GENS)
+from psdi_data_conversion.database import get_format_info
 from psdi_data_conversion.file_io import split_archive_ext
 from psdi_data_conversion.testing.constants import DEFAULT_ORIGIN
 from psdi_data_conversion.testing.utils import (ConversionTestInfo, ConversionTestSpec, SingleConversionTestSpec,
@@ -120,7 +121,7 @@ class GuiSingleTestSpecRunner:
         self._filename = os.path.split(self.single_test_spec.filename)[1]
 
         # Default options for conversion
-        self._base_filename, self._from_format = split_archive_ext(self._filename)
+        self._base_filename, ext = split_archive_ext(self._filename)
         self._strict = True
         self._from_flags: str | None = None
         self._to_flags: str | None = None
@@ -129,12 +130,19 @@ class GuiSingleTestSpecRunner:
         self._coord_gen = None
         self._coord_gen_qual = None
 
+        # Get the from_format from the extension if not provided
+        from_format = single_test_spec.from_format
+        if not from_format:
+            from_format = ext
+
+        # Get the format info for each format, which we'll use to get the name and note of each
+        self._from_format_info = get_format_info(from_format, which=0)
+        self._to_format_info = get_format_info(single_test_spec.to_format, which=0)
+
         # For each argument in the conversion kwargs, interpret it as the appropriate option for this conversion,
         # overriding defaults set above
         for key, val in self.single_test_spec.conversion_kwargs.items():
-            if key == "from_format":
-                self._from_format = val
-            elif key == "log_mode":
+            if key == "log_mode":
                 raise ValueError(f"The conversion kwarg {key} is not valid with conversions through the GUI")
             elif key == "delete_input":
                 raise ValueError(f"The conversion kwarg {key} is not valid with conversions through the GUI")
@@ -166,10 +174,6 @@ class GuiSingleTestSpecRunner:
                                     "interpreted")
             else:
                 pytest.fail(f"The key '{key}' was passed to `conversion_kwargs` but could not be interpreted")
-
-        # Cleanup of arguments
-        if self._from_format.startswith("."):
-            self._from_format = self._from_format[1:]
 
     def run(self):
         """Run the conversion outlined in the test spec"""
@@ -256,11 +260,11 @@ class GuiSingleTestSpecRunner:
 
         # Select from_format from the 'from' list.
         self.driver.find_element(
-            By.XPATH, f"//select[@id='fromList']/option[starts-with(.,'{self._from_format}:')]").click()
+            By.XPATH, f"//select[@id='fromList']/option[starts-with(.,'{self._from_format_info.name}:')]").click()
 
         # Select to_format from the 'to' list.
         self.driver.find_element(
-            By.XPATH, f"//select[@id='toList']/option[starts-with(.,'{self.single_test_spec.to_format}:')]").click()
+            By.XPATH, f"//select[@id='toList']/option[starts-with(.,'{self._to_format_info.name}:')]").click()
 
         # Select converter from the available conversion options list.
         self.driver.find_element(
@@ -319,8 +323,8 @@ class GuiSingleTestSpecRunner:
                         break
                 if not found:
                     raise ValueError(f"Flag {flag} was not found in {select_id} selection box for conversion from "
-                                     f"{self._from_format} to {self.single_test_spec.to_format} with converter "
-                                     f"{self.single_test_spec.converter_name}")
+                                     f"{self._from_format_info.name} to {self._to_format_info.name} with "
+                                     f"converter {self.single_test_spec.converter_name}")
 
     def _set_format_options(self):
         """Set desired format options
@@ -358,8 +362,8 @@ class GuiSingleTestSpecRunner:
 
                 if not found:
                     raise ValueError(f"Option {option} was not found in {table_id} options table for conversion from "
-                                     f"{self._from_format} to {self.single_test_spec.to_format} with converter "
-                                     f"{self.single_test_spec.converter_name}")
+                                     f"{self._from_format_info.name} to {self._to_format_info.name} with "
+                                     f"converter {self.single_test_spec.converter_name}")
 
     def _apply_radio_settings(self):
         """Apply any radio-button settings desired for this conversion by clicking the appropriate radio buttons

@@ -23,6 +23,7 @@ import psdi_data_conversion
 from psdi_data_conversion.constants import CONVERTER_DEFAULT, GLOBAL_LOG_FILENAME, LOG_NONE, OUTPUT_LOG_EXT
 from psdi_data_conversion.converter import run_converter
 from psdi_data_conversion.converters.openbabel import COORD_GEN_KEY, COORD_GEN_QUAL_KEY
+from psdi_data_conversion.database import get_format_info
 from psdi_data_conversion.dist import LINUX_LABEL, get_dist
 from psdi_data_conversion.file_io import is_archive, split_archive_ext
 from psdi_data_conversion.main import main as data_convert_main
@@ -125,8 +126,11 @@ class ConversionTestSpec:
     filename: str | Iterable[str] = "nacl.cif"
     """The name of the input file, relative to the input test data location, or a list thereof"""
 
-    to_format: str | Iterable[str] = "pdb"
+    to_format: str | int | Iterable[str | int] = "pdb"
     """The format to test converting the input file to, or a list thereof"""
+
+    from_format: str | int | Iterable[str | int] | None = None
+    """The format of the input file, when it needs to be explicitly specified"""
 
     converter_name: str | Iterable[str] = CONVERTER_DEFAULT
     """The name of the converter to be used for the test, or a list thereof"""
@@ -233,8 +237,11 @@ class SingleConversionTestSpec:
     filename: str
     """The name of the input file, relative to the input test data location"""
 
-    to_format: str
+    to_format: str | int
     """The format to test converting the input file to"""
+
+    from_format: str | int | None = None
+    """The format of the input file, when it needs to be explicitly specified"""
 
     converter_name: str | Iterable[str] = CONVERTER_DEFAULT
     """The name of the converter to be used for the test"""
@@ -257,11 +264,12 @@ class SingleConversionTestSpec:
     @property
     def out_filename(self) -> str:
         """The unqualified name of the output file which should have been created by the conversion."""
+        to_format_name = get_format_info(self.to_format, which=0).name
         if not is_archive(self.filename):
-            return f"{os.path.splitext(self.filename)[0]}.{self.to_format}"
+            return f"{os.path.splitext(self.filename)[0]}.{to_format_name}"
         else:
             filename_base, ext = split_archive_ext(os.path.basename(self.filename))
-            return f"{filename_base}-{self.to_format}{ext}"
+            return f"{filename_base}-{to_format_name}{ext}"
 
     @property
     def log_filename(self) -> str:
@@ -327,6 +335,7 @@ def _run_single_test_conversion_with_library(test_spec: SingleConversionTestSpec
         if test_spec.expect_success:
             run_converter(filename=qualified_in_filename,
                           to_format=test_spec.to_format,
+                          from_format=test_spec.from_format,
                           name=test_spec.converter_name,
                           upload_dir=input_dir,
                           download_dir=output_dir,
@@ -336,6 +345,7 @@ def _run_single_test_conversion_with_library(test_spec: SingleConversionTestSpec
             with pytest.raises(Exception) as exc_info:
                 run_converter(filename=qualified_in_filename,
                               to_format=test_spec.to_format,
+                              from_format=test_spec.from_format,
                               name=test_spec.converter_name,
                               upload_dir=input_dir,
                               download_dir=output_dir,
@@ -414,6 +424,7 @@ def _run_single_test_conversion_with_cla(test_spec: SingleConversionTestSpec,
         if test_spec.expect_success:
             run_converter_through_cla(filename=qualified_in_filename,
                                       to_format=test_spec.to_format,
+                                      from_format=test_spec.from_format,
                                       name=test_spec.converter_name,
                                       input_dir=input_dir,
                                       output_dir=output_dir,
@@ -424,6 +435,7 @@ def _run_single_test_conversion_with_cla(test_spec: SingleConversionTestSpec,
             with pytest.raises(SystemExit) as exc_info:
                 run_converter_through_cla(filename=qualified_in_filename,
                                           to_format=test_spec.to_format,
+                                          from_format=test_spec.from_format,
                                           name=test_spec.converter_name,
                                           input_dir=input_dir,
                                           output_dir=output_dir,
@@ -463,6 +475,7 @@ def run_converter_through_cla(filename: str,
                               input_dir: str,
                               output_dir: str,
                               log_file: str,
+                              from_format: str | None = None,
                               **conversion_kwargs):
     """Runs a test conversion through the command-line interface
 
@@ -485,17 +498,21 @@ def run_converter_through_cla(filename: str,
         The desired name of the log file
     conversion_kwargs : Any
         Additional arguments describing the conversion
+    from_format : str | None
+        The format of the input file, when it needs to be explicitly specified, otherwise None
     """
 
     # Start the argument string with the arguments we will always include
     arg_string = f"{filename} -i {input_dir} -t {to_format} -o {output_dir} -w {name} --log-file {log_file}"
 
-    # For each argument in the conversion kwargs, convert it to the appropriate argument to be provided to the
-    # argument string
+    # For from_format and each argument in the conversion kwargs, convert it to the appropriate argument to be provided
+    # to the argument string
+
+    if from_format:
+        arg_string += f" -f {from_format}"
+
     for key, val in conversion_kwargs.items():
-        if key == "from_format":
-            arg_string += f" -f {val}"
-        elif key == "log_mode":
+        if key == "log_mode":
             if val == LOG_NONE:
                 arg_string += " -q"
             else:

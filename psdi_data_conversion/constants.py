@@ -45,10 +45,11 @@ MAX_FILESIZE_OB_EV = "MAX_FILESIZE_OB"
 # Files and Folders
 # -----------------
 
-# Maximum output file size in bytes
 MEGABYTE = 1024*1024
-DEFAULT_MAX_FILE_SIZE = 0*MEGABYTE
-DEFAULT_MAX_FILE_SIZE_OB = 1*MEGABYTE
+
+# Maximum output file size in bytes
+DEFAULT_MAX_FILE_SIZE = 0 * MEGABYTE
+DEFAULT_MAX_FILE_SIZE_OB = 1 * MEGABYTE
 
 DEFAULT_UPLOAD_DIR = './psdi_data_conversion/static/uploads'
 DEFAULT_DOWNLOAD_DIR = './psdi_data_conversion/static/downloads'
@@ -75,7 +76,7 @@ XZTAR_FORMAT = "xztar"
 D_TAR_FORMATS = {TAR_EXTENSION: TAR_FORMAT,
                  GZTAR_EXTENSION: GZTAR_FORMAT,
                  BZTAR_EXTENSION: BZTAR_FORMAT,
-                 XZTAR_EXTENSION: BZTAR_FORMAT}
+                 XZTAR_EXTENSION: XZTAR_FORMAT}
 
 # A list of specifically the extensions that are combinations of multiple different extensions
 L_COMPOUND_EXTENSIONS = [GZTAR_EXTENSION, BZTAR_EXTENSION, XZTAR_EXTENSION]
@@ -93,7 +94,7 @@ L_ALL_ARCHIVE_EXTENSIONS = [*D_SUPPORTED_ARCHIVE_FORMATS.keys(), *L_UNSUPPORTED_
 
 # Number of character spaces allocated for flags/options
 
-# Get the terminal width so we can prettily print help text
+# Get the terminal width so we can prettily print help text - default to 80 chars by 20 lines
 TERM_WIDTH, _ = shutil.get_terminal_size((80, 20))
 
 # Log formatting
