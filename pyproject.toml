@@ -66,10 +66,12 @@ psdi-data-convert-gui = "psdi_data_conversion.app:main"
 [project.urls]
 Homepage = "https://data-conversion.psdi.ac.uk/"
 Documentation = "https://psdi-uk.github.io/psdi-data-conversion/"
-Repository = "https://github.com/PSDI-UK/psdi-data-conversion"
 Issues = "https://github.com/PSDI-UK/psdi-data-conversion/issues"
 Changelog = "https://github.com/PSDI-UK/psdi-data-conversion/blob/main/CHANGELOG.md"
-Download = "https://github.com/PSDI-UK/psdi-data-conversion/releases/latest"
+
+# Repository currently isn't public - when it goes public, uncomment the below
+# Repository = "https://github.com/PSDI-UK/psdi-data-conversion"
+# Download = "https://github.com/PSDI-UK/psdi-data-conversion/releases/latest"
 
 [tool.hatch.build]
 exclude = [
