@@ -387,6 +387,8 @@ Once installed, the command-line script `psdi-data-convert-gui` will be made ava
 In case of problems when using Chrome, try opening Chrome from the command line:
 open -a "Google Chrome.app" --args --allow-file-access-from-files
 
+The local version has some customisable options for running it, which can can be seen by running `psdi-data-convert-gui --help`. Most of these are only useful for development, but one notable setting is `--max-file-size-ob`, which sets the maximum allowed filesize for conversions with the Open Babel converter in megabytes. This is set to 1 MB by default, since Open Babel has a known bug which causes it to hang indefinitely for some conversions over this size (such as from large `mmcif` files). This can be set to a higher value (or to 0 to disable the limit) if the user wishes to disable this safeguard.
+
 ## Extending Functionality
 
 The Python library and CLA are written to make it easy to extend the functionality of this package to use other file format converters. This can be done by downloading or cloning the project's source from it's GitHub Repository (https://github.com/PSDI-UK/psdi-data-conversion), editing the code to add your converter following the guidance in the "[Adding File Format Converters](https://github.com/PSDI-UK/psdi-data-conversion/blob/main/CONTRIBUTING.md#adding-file-format-converters)" section of CONTRIBUTING.md to integrate it with the Python code, and installing the modified package on your system via:
