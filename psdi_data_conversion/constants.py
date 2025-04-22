@@ -94,7 +94,7 @@ L_ALL_ARCHIVE_EXTENSIONS = [*D_SUPPORTED_ARCHIVE_FORMATS.keys(), *L_UNSUPPORTED_
 
 # Number of character spaces allocated for flags/options
 
-# Get the terminal width so we can prettily print help text
+# Get the terminal width so we can prettily print help text - default to 80 chars by 20 lines
 TERM_WIDTH, _ = shutil.get_terminal_size((80, 20))
 
 # Log formatting
