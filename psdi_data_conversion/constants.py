@@ -45,10 +45,11 @@ MAX_FILESIZE_OB_EV = "MAX_FILESIZE_OB"
 # Files and Folders
 # -----------------
 
-# Maximum output file size in bytes
 MEGABYTE = 1024*1024
-DEFAULT_MAX_FILE_SIZE = 0*MEGABYTE
-DEFAULT_MAX_FILE_SIZE_OB = 1*MEGABYTE
+
+# Maximum output file size in megabytes
+DEFAULT_MAX_FILE_SIZE = 0
+DEFAULT_MAX_FILE_SIZE_OB = 1
 
 DEFAULT_UPLOAD_DIR = './psdi_data_conversion/static/uploads'
 DEFAULT_DOWNLOAD_DIR = './psdi_data_conversion/static/downloads'
@@ -75,7 +76,7 @@ XZTAR_FORMAT = "xztar"
 D_TAR_FORMATS = {TAR_EXTENSION: TAR_FORMAT,
                  GZTAR_EXTENSION: GZTAR_FORMAT,
                  BZTAR_EXTENSION: BZTAR_FORMAT,
-                 XZTAR_EXTENSION: BZTAR_FORMAT}
+                 XZTAR_EXTENSION: XZTAR_FORMAT}
 
 # A list of specifically the extensions that are combinations of multiple different extensions
 L_COMPOUND_EXTENSIONS = [GZTAR_EXTENSION, BZTAR_EXTENSION, XZTAR_EXTENSION]
