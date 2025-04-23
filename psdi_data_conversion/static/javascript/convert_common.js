@@ -30,7 +30,7 @@ const TARXZ_EXT = "tar.xz"
 // $: Dollar sign
 // /: Forward-slash
 // \\: Backslash
-export const SAFE_CHARS = "[\\w\\s.\\-:+*=$/\\\\]"
+export const SAFE_CHARS = "[\\w\\s.\\-:+*=$\\/\\\\]"
 
 // Whether or not file extensions will be checked
 let extCheck = true;
