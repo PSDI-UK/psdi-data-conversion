@@ -8,7 +8,7 @@
 
 import { getInputFlags, getOutputFlags, getInputArgFlags, getOutputArgFlags } from "./data.js";
 import {
-    SAFE_CHARS, commonConvertReady, convertFile, getExtCheck, splitArchiveExt, isArchiveExt
+    SAFE_CHAR_REGEX, commonConvertReady, convertFile, getExtCheck, splitArchiveExt, isArchiveExt
 } from "./convert_common.js"
 
 var token = "",
@@ -50,6 +50,21 @@ function enterArgument(event) {
         // Hide appropriate text box (empty) and its label
         $('#' + arg_id).val('').hide();
         $('#' + arg_label_id).hide();
+    }
+}
+
+
+/**
+ * Validate the input for a format option - if invalid, display the error message, if valid, hide it
+ *
+ * @param {*} event 
+ */
+function validateInput(event) {
+    var err_id = this.id.replace('text', 'err')
+    if (this.validity.patternMismatch) {
+        $('#' + err_id).css({ display: "block" })
+    } else {
+        $('#' + err_id).css({ display: "none" })
     }
 }
 
@@ -218,12 +233,17 @@ function addCheckboxes(argFlags, type) {
                 <tr>
                     <td><input type='checkbox' id="${type}_check${flagCount}" name=${type}_check value="${flag}"></input></td>
                     <td><label for="${type}_check${flagCount}">${flag} [${brief}]: ${description}<label></td>
-                    <td><input type='text' id=${type}_text${flagCount} placeholder='-- type info. here --'
-                         pattern='` + SAFE_CHARS + `*'></input></td>
+                    <td><input type='text' id="${type}_text${flagCount}" placeholder='-- type info. here --'
+                         pattern='` + SAFE_CHAR_REGEX + `'></input>
+                         <p class="init-hidden" id="${type}_err${flagCount}"><strong>ERROR:</strong> Input contains
+                         invalid characters; it must match the regex 
+                         <code class="secondary">/` + SAFE_CHAR_REGEX + `/</code></p>
+                    </td>
                     <td><span id= ${type}_label${flagCount}>${furtherInfo}</span></td>
                 </tr>`);
 
             $(`#${type}_text${flagCount}`).hide();
+            $(`#${type}_text${flagCount}`).on('input', validateInput);
             $(`#${type}_label${flagCount}`).hide();
             $(`#${type}_check${flagCount}`).change(enterArgument);
 
