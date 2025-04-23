@@ -45,6 +45,11 @@ def wait_and_find_element(root: WebDriver | EC.WebElement, xpath: str, by=By.XPA
     return root.find_element(by, xpath)
 
 
+def wait_for_cover_hidden(root: WebDriver):
+    """Wait until the page cover is removed"""
+    WebDriverWait(root, TIMEOUT).until(EC.invisibility_of_element((By.XPATH, "//select[@id='cover']")))
+
+
 @dataclass
 class GuiTestSpecRunner():
     """Class which provides an interface to run test conversions through the GUI
@@ -253,8 +258,9 @@ class GuiSingleTestSpecRunner:
         4. Click the "Yes" button to confirm and go to the convert page
         """
 
-        # Get the homepage
+        # Get the homepage and wait for the cover to be removed
         self.driver.get(f"{self.origin}/")
+        wait_for_cover_hidden(self.driver)
 
         wait_for_element(self.driver, "//select[@id='fromList']/option")
 
@@ -270,8 +276,10 @@ class GuiSingleTestSpecRunner:
         self.driver.find_element(
             By.XPATH, f"//select[@id='success']/option[contains(.,'{self.single_test_spec.converter_name}')]").click()
 
-        # Click on the "Yes" button to accept the converter and go to the conversion page
+        # Click on the "Yes" button to accept the converter and go to the conversion page, and wait for the cover to be
+        # removed there
         self.driver.find_element(By.XPATH, "//input[@id='yesButton']").click()
+        wait_for_cover_hidden(self.driver)
 
     def _set_conversion_settings(self):
         """Set settings on the convert page appropriately for the desired conversion
