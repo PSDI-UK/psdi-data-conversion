@@ -70,6 +70,7 @@ function validateInput(event) {
 
 // Uploads a user-supplied file
 function submitFile() {
+
     const file = $("#fileToUpload")[0].files[0],
         [fname, ext] = splitArchiveExt(file.name);
 
@@ -95,9 +96,16 @@ function submitFile() {
     const checked_in = $('input[name=in_arg_check]:checked'),
         checked_out = $('input[name=out_arg_check]:checked');
 
+    let security_passed = true;
+
     checked_in.each(function () {
         read_arg_flags += $("#" + this.id).val()[0];
-        const arg = $("#in_arg_text" + this.id.substring(this.id.length - 1, this.id.length)).val();
+        const e = $("#in_arg_text" + this.id.substring(this.id.length - 1, this.id.length));
+        const arg = e.val();
+
+        if (e[0].validity.patternMismatch) {
+            security_passed = false;
+        }
 
         if (/\S/.test(arg)) {
             read_args += arg.trim() + '£';
@@ -109,7 +117,12 @@ function submitFile() {
 
     checked_out.each(function () {
         write_arg_flags += $("#" + this.id).val()[0];
-        const arg = $("#out_arg_text" + this.id.substring(this.id.length - 1, this.id.length)).val();
+        const e = $("#out_arg_text" + this.id.substring(this.id.length - 1, this.id.length));
+        const arg = e.val();
+
+        if (e[0].validity.patternMismatch) {
+            security_passed = false;
+        }
 
         if (/\S/.test(arg)) {
             write_args += arg.trim() + '£';
@@ -119,9 +132,21 @@ function submitFile() {
         }
     })
 
+    let alert_msg = '';
+
+    if (!security_passed) {
+        alert_msg += 'ERROR: One or more ticked options contains invalid characters. They must match the regex /' +
+            SAFE_CHAR_REGEX + '/ .\n';
+    }
+
     if (!all_args_entered) {
-        alert('All ticked option flags need additional information to be entered into the associated text box.');
-        return;
+        alert_msg += 'ERROR: All ticked options need additional information to be entered into the associated ' +
+            'text box.\n';
+    }
+
+    if (alert_msg) {
+        alert(alert_msg);
+        return
     }
 
     const coordinates = $('input[name="coordinates"]:checked').val(),
