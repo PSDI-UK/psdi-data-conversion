@@ -154,13 +154,11 @@ def convert():
             continue
 
         # Otherwise, find the format with the matching note
-        found = False
         for possible_format in l_possible_formats:
             if possible_format.note in full_note:
                 d_formats[format_label] = possible_format
-                found = True
                 break
-        if not found:
+        else:
             print(f"Format '{name}' with full description '{full_note}' could not be found in database.",
                   file=sys.stderr)
             abort(const.STATUS_CODE_GENERAL)

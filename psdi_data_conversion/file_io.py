@@ -149,8 +149,7 @@ def pack_zip_or_tar(archive_filename: str,
                 archive_format = _format
                 archive_root_filename = split_archive_ext(archive_filename)[0]
                 break
-        # Check that the format was found
-        if archive_format is None:
+        else:
             raise AssertionError("Invalid execution path entered - filename wasn't found with a valid archive "
                                  "extension, but it did pass the `is_supported_archive` check")
     else:
