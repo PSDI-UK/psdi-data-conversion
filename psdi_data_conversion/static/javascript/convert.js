@@ -7,7 +7,9 @@
 
 
 import { getInputFlags, getOutputFlags, getInputArgFlags, getOutputArgFlags } from "./data.js";
-import { commonConvertReady, convertFile, getExtCheck, splitArchiveExt, isArchiveExt } from "./convert_common.js"
+import {
+    SAFE_CHARS, commonConvertReady, convertFile, getExtCheck, splitArchiveExt, isArchiveExt
+} from "./convert_common.js"
 
 var token = "",
     in_ext = "",
@@ -216,7 +218,8 @@ function addCheckboxes(argFlags, type) {
                 <tr>
                     <td><input type='checkbox' id="${type}_check${flagCount}" name=${type}_check value="${flag}"></input></td>
                     <td><label for="${type}_check${flagCount}">${flag} [${brief}]: ${description}<label></td>
-                    <td><input type='text' id=${type}_text${flagCount} placeholder='-- type info. here --'></input></td>
+                    <td><input type='text' id=${type}_text${flagCount} placeholder='-- type info. here --'
+                         pattern='` + SAFE_CHARS + `*'></input></td>
                     <td><span id= ${type}_label${flagCount}>${furtherInfo}</span></td>
                 </tr>`);
 
