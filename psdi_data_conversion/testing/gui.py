@@ -315,13 +315,11 @@ class GuiSingleTestSpecRunner:
                 continue
             flags_select = Select(wait_and_find_element(self.driver, f"//select[@id='{select_id}']"))
             for flag in l_flags:
-                found = False
                 for option in flags_select.options:
                     if option.text.startswith(f"{flag}:"):
                         flags_select.select_by_visible_text(option.text)
-                        found = True
                         break
-                if not found:
+                else:
                     raise ValueError(f"Flag {flag} was not found in {select_id} selection box for conversion from "
                                      f"{self._from_format_info.name} to {self._to_format_info.name} with "
                                      f"converter {self.single_test_spec.converter_name}")
@@ -343,7 +341,6 @@ class GuiSingleTestSpecRunner:
 
             # Look for and set each option
             for option in l_options:
-                found = False
                 for row in l_rows:
                     l_items = row.find_elements(By.XPATH, "./td")
                     label = l_items[1]
@@ -357,10 +354,9 @@ class GuiSingleTestSpecRunner:
                     input_box = wait_and_find_element(l_items[2], "./input")
                     input_box.send_keys(option[1:])
 
-                    found = True
                     break
 
-                if not found:
+                else:
                     raise ValueError(f"Option {option} was not found in {table_id} options table for conversion from "
                                      f"{self._from_format_info.name} to {self._to_format_info.name} with "
                                      f"converter {self.single_test_spec.converter_name}")

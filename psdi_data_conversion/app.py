@@ -19,7 +19,7 @@ import psdi_data_conversion
 from psdi_data_conversion import log_utility
 from psdi_data_conversion import constants as const
 from psdi_data_conversion.converter import run_converter
-from psdi_data_conversion.database import FormatInfo, get_format_info
+from psdi_data_conversion.database import get_format_info
 from psdi_data_conversion.file_io import split_archive_ext
 
 # Env var for the SHA of the latest commit
@@ -146,7 +146,7 @@ def convert():
         name = request.form[format_label]
         full_note = request.form[format_label+"_full"]
 
-        l_possible_formats: list[FormatInfo] = get_format_info(name, which="all")
+        l_possible_formats = get_format_info(name, which="all")
 
         # If there's only one possible format, use that
         if len(l_possible_formats) == 1:
@@ -154,13 +154,11 @@ def convert():
             continue
 
         # Otherwise, find the format with the matching note
-        found = False
         for possible_format in l_possible_formats:
             if possible_format.note in full_note:
                 d_formats[format_label] = possible_format
-                found = True
                 break
-        if not found:
+        else:
             print(f"Format '{name}' with full description '{full_note}' could not be found in database.",
                   file=sys.stderr)
             abort(const.STATUS_CODE_GENERAL)
