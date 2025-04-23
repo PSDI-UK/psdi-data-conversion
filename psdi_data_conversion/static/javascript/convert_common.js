@@ -18,6 +18,20 @@ const TARGZ_EXT = "tar.gz"
 const TARBZ_EXT = "tar.bz"
 const TARXZ_EXT = "tar.xz"
 
+// Short list of safe allowed characters:
+// \w: All letters and digits
+// \s: All whitespace characters
+// .: Period
+// \-: Hyphen
+// :: Colon
+// +: Plus symbol
+// *: Asterisk
+// =: Equals sign
+// $: Dollar sign
+// /: Forward-slash
+// \\: Backslash
+export const SAFE_CHAR_REGEX = "[\\w\\s.\\-:+*=$\\/\\\\]*"
+
 // Whether or not file extensions will be checked
 let extCheck = true;
 

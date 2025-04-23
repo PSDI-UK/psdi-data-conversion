@@ -44,6 +44,13 @@ form {
   }
 }
 
+/* Invalid input fields switch to alternate background */
+
+input:invalid {
+  background-color: var(--ifm-color-primary);
+  color           : var(--ifm-hero-text-color);
+}
+
 /* Converter details, user input and file conversion initially not displayed. */
 .init-hidden {
   display: none
