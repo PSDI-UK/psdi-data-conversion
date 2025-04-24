@@ -5,6 +5,11 @@ Version 1.0, 8th November 2024
 This script acts as a server for the PSDI Data Conversion Service website.
 """
 
+import flask.cli
+import werkzeug.serving
+from collections.abc import Callable
+from typing import Any
+import functools
 from argparse import ArgumentParser
 import hashlib
 import os
@@ -79,6 +84,22 @@ if ev_max_file_size_ob is not None:
     max_file_size_ob = float(ev_max_file_size_ob)*const.MEGABYTE
 else:
     max_file_size_ob = const.DEFAULT_MAX_FILE_SIZE_OB
+
+# Since we're using the development server as the user GUI, we monkey-patch Flask to disable the warnings that would
+# otherwise appear for this so they don't confuse the user
+
+
+def suppress_warning(func: Callable[..., Any]) -> Callable[..., Any]:
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs) -> Any:
+        if args and isinstance(args[0], str) and args[0].startswith('WARNING: This is a development server.'):
+            return ''
+        return func(*args, **kwargs)
+    return wrapper
+
+
+werkzeug.serving._ansi_style = suppress_warning(werkzeug.serving._ansi_style)
+flask.cli.show_server_banner = lambda *_: None
 
 app = Flask(__name__)
 
