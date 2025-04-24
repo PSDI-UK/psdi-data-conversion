@@ -210,7 +210,7 @@ Not compatible with the GUI, since the GUI can't forcibly delete files uploaded 
 
 l_all_test_specs.append(Spec(name="Failed conversion - bad input file",
                              filename=["quartz_err.xyz", "cyclopropane_err.mol"],
-                             to_format=["inchi", "xyz"],
+                             to_format=["inchi", "xyz-0"],
                              from_format=[None, "mol-0"],
                              expect_success=False,
                              converter_name=[CONVERTER_OB, CONVERTER_C2X],
