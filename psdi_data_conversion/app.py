@@ -26,6 +26,7 @@ from psdi_data_conversion import constants as const
 from psdi_data_conversion.converter import run_converter
 from psdi_data_conversion.database import get_format_info
 from psdi_data_conversion.file_io import split_archive_ext
+from psdi_data_conversion.main import print_wrap
 
 # Env var for the SHA of the latest commit
 SHA_EV = "SHA"
@@ -378,6 +379,10 @@ def main():
 
         global log_level
         log_level = args.log_level
+
+    print_wrap("Starting the PSDI Data Conversion GUI. This GUI is run as a webpage, which you can open by "
+               "right-clicking the link below to open it in your default browser, or by copy-and-pasting it into your "
+               "browser of choice.")
 
     start_app()
 
