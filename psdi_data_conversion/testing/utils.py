@@ -6,12 +6,12 @@ This module defines general classes and methods used for unit tests.
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
-from collections.abc import Callable, Iterable
-from math import isclose
 import os
 import shlex
 import sys
+from collections.abc import Callable, Iterable
+from dataclasses import dataclass, field
+from math import isclose
 from tempfile import TemporaryDirectory
 from typing import Any
 from unittest.mock import patch

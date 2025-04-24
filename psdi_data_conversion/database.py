@@ -7,11 +7,11 @@ Python module provide utilities for accessing the converter database
 
 from __future__ import annotations
 
+import json
+import os
 from dataclasses import dataclass, field
 from itertools import product
-import json
 from logging import getLogger
-import os
 from typing import Any, Literal, overload
 
 from psdi_data_conversion import constants as const

@@ -6,19 +6,19 @@ Base class and information for file format converters
 """
 
 
-from copy import deepcopy
-from dataclasses import dataclass
+import abc
 import logging
-from collections.abc import Callable
 import os
 import subprocess
-import abc
-
 import sys
 import traceback
+from collections.abc import Callable
+from copy import deepcopy
+from dataclasses import dataclass
 from typing import Any
 
-from psdi_data_conversion import constants as const, log_utility
+from psdi_data_conversion import constants as const
+from psdi_data_conversion import log_utility
 from psdi_data_conversion.dist import bin_exists, get_bin_path, get_dist
 from psdi_data_conversion.security import SAFE_STRING_RE, string_is_safe
 

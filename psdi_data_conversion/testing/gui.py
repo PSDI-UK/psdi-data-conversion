@@ -6,10 +6,10 @@ Utilities to aid in testing of the GUI
 
 import os
 import shutil
-from tempfile import TemporaryDirectory
-
 import time
 from dataclasses import dataclass
+from tempfile import TemporaryDirectory
+
 import pytest
 from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.common.alert import Alert
