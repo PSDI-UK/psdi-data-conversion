@@ -735,6 +735,25 @@ class ScriptFileConverter(FileConverter):
 
         self.logger.debug(f"Performing conversion with ScriptFileConverter using script '{self.script}'")
 
+        env = {"DIST": get_dist()}
+        if self.required_bin is not None:
+            env["BIN_PATH"] = get_bin_path(self.required_bin)
+
+        process = subprocess.run(['sh', f'psdi_data_conversion/scripts/{self.script}', *self._get_script_args()],
+                                 env=env, capture_output=True, text=True)
+
+        self.out = process.stdout
+        self.err = process.stderr
+
+        if process.returncode != 0:
+            self.logger.error(f"Conversion process completed with non-zero returncode {process.returncode}; aborting")
+            self._abort_from_err()
+        else:
+            self.logger.debug("Conversion process completed successfully")
+
+    def _get_script_args(self):
+        """Get the list of arguments which will be passed to the script"""
+
         from_flags = self.data.get("from_flags", "")
         to_flags = self.data.get("from_flags", "")
         from_options = self.data.get("from_options", "")
@@ -746,20 +765,5 @@ class ScriptFileConverter(FileConverter):
                 raise FileConverterInputException(f"Provided argument '{user_args}' does not pass security check - it "
                                                   f"must match the regex {SAFE_STRING_RE.pattern}.", help=True)
 
-        env = {"DIST": get_dist()}
-        if self.required_bin is not None:
-            env["BIN_PATH"] = get_bin_path(self.required_bin)
-
-        process = subprocess.run(['sh', f'psdi_data_conversion/scripts/{self.script}',
-                                  '--' + self.to_format_info.name, self.in_filename, self.out_filename, from_flags,
-                                  to_flags, from_options, to_options],
-                                 env=env, capture_output=True, text=True)
-
-        self.out = process.stdout
-        self.err = process.stderr
-
-        if process.returncode != 0:
-            self.logger.error(f"Conversion process completed with non-zero returncode {process.returncode}; aborting")
-            self._abort_from_err()
-        else:
-            self.logger.debug("Conversion process completed successfully")
+        return ['--' + self.to_format_info.name, self.in_filename, self.out_filename, from_flags, to_flags,
+                from_options, to_options]
