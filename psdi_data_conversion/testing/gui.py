@@ -47,7 +47,7 @@ def wait_and_find_element(root: WebDriver | EC.WebElement, xpath: str, by=By.XPA
 
 def wait_for_cover_hidden(root: WebDriver):
     """Wait until the page cover is removed"""
-    WebDriverWait(root, TIMEOUT).until(EC.invisibility_of_element((By.XPATH, "//select[@id='cover']")))
+    WebDriverWait(root, TIMEOUT).until(EC.invisibility_of_element((By.XPATH, "//div[@id='cover']")))
 
 
 @dataclass
