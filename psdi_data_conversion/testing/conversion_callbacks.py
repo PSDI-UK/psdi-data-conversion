@@ -6,10 +6,10 @@ conversion test, run with the functions and classes defined in the `utils.py` mo
 """
 
 import abc
-from collections.abc import Callable, Iterable
-from dataclasses import dataclass, field
 import os
 import re
+from collections.abc import Callable, Iterable
+from dataclasses import dataclass, field
 from tempfile import TemporaryDirectory
 
 from psdi_data_conversion.constants import DATETIME_RE_RAW

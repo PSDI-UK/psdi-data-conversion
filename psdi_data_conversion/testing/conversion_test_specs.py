@@ -13,10 +13,11 @@ from psdi_data_conversion.converters.base import (FileConverterAbortException, F
 from psdi_data_conversion.converters.c2x import CONVERTER_C2X
 from psdi_data_conversion.converters.openbabel import CONVERTER_OB, COORD_GEN_KEY, COORD_GEN_QUAL_KEY
 from psdi_data_conversion.database import FileConverterDatabaseException
-from psdi_data_conversion.testing.conversion_callbacks import (CheckArchiveContents, CheckException, CheckLogContents,
-                                                               CheckLogContentsSuccess, CheckFileStatus,
+from psdi_data_conversion.testing.conversion_callbacks import (CheckArchiveContents, CheckException, CheckFileStatus,
+                                                               CheckLogContents, CheckLogContentsSuccess,
                                                                CheckStderrContents, CheckStdoutContents,
-                                                               MatchOutputFile, MultiCallback as MCB)
+                                                               MatchOutputFile)
+from psdi_data_conversion.testing.conversion_callbacks import MultiCallback as MCB
 from psdi_data_conversion.testing.utils import ConversionTestSpec as Spec
 
 l_all_test_specs: list[Spec] = []

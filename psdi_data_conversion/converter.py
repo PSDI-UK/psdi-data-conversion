@@ -5,18 +5,18 @@ Created 2024-12-10 by Bryan Gillis.
 Class and functions to perform file conversion
 """
 
-from dataclasses import dataclass, field
-import os
+import glob
 import importlib
+import os
 import sys
-from tempfile import TemporaryDirectory
 import traceback
-from typing import Any, Callable, NamedTuple
+from collections.abc import Callable
+from dataclasses import dataclass, field
+from tempfile import TemporaryDirectory
+from typing import Any, NamedTuple
+
 from psdi_data_conversion import constants as const
 from psdi_data_conversion.converters import base
-
-import glob
-
 from psdi_data_conversion.converters.openbabel import CONVERTER_OB
 from psdi_data_conversion.file_io import (is_archive, is_supported_archive, pack_zip_or_tar, split_archive_ext,
                                           unpack_zip_or_tar)

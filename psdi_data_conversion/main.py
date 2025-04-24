@@ -7,12 +7,12 @@ Created 2025-01-14 by Bryan Gillis.
 Entry-point file for the command-line interface for data conversion.
 """
 
-from itertools import product
 import logging
-from argparse import ArgumentParser
 import os
 import sys
 import textwrap
+from argparse import ArgumentParser
+from itertools import product
 
 from psdi_data_conversion import constants as const
 from psdi_data_conversion.constants import CL_SCRIPT_NAME, CONVERTER_DEFAULT, TERM_WIDTH
