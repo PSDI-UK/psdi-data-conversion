@@ -5,24 +5,24 @@ Version 1.0, 8th November 2024
 This script acts as a server for the PSDI Data Conversion Service website.
 """
 
-import flask.cli
-import werkzeug.serving
-from collections.abc import Callable
-from typing import Any
-import functools
-from argparse import ArgumentParser
-import hashlib
-import os
 import json
-from datetime import datetime
-from subprocess import run
+import os
 import sys
-import traceback
-from flask import Flask, request, render_template, abort, Response
+from argparse import ArgumentParser
+from collections.abc import Callable
+from datetime import datetime
+from functools import wraps
+from hashlib import md5
+from subprocess import run
+from traceback import format_exc
+from typing import Any
+
+import werkzeug.serving
+from flask import Flask, Response, abort, cli, render_template, request
 
 import psdi_data_conversion
-from psdi_data_conversion import log_utility
 from psdi_data_conversion import constants as const
+from psdi_data_conversion import log_utility
 from psdi_data_conversion.converter import run_converter
 from psdi_data_conversion.database import get_format_info
 from psdi_data_conversion.file_io import split_archive_ext
@@ -42,7 +42,7 @@ FILE_TO_UPLOAD_KEY = 'fileToUpload'
 
 # Create a token by hashing the current date and time.
 dt = str(datetime.now())
-token = hashlib.md5(dt.encode('utf8')).hexdigest()
+token = md5(dt.encode('utf8')).hexdigest()
 
 # Get the service and production modes from their envvars
 service_mode_ev = os.environ.get(SERVICE_MODE_EV)
@@ -91,7 +91,7 @@ else:
 
 
 def suppress_warning(func: Callable[..., Any]) -> Callable[..., Any]:
-    @functools.wraps(func)
+    @wraps(func)
     def wrapper(*args, **kwargs) -> Any:
         if args and isinstance(args[0], str) and args[0].startswith('WARNING: This is a development server.'):
             return ''
@@ -100,7 +100,7 @@ def suppress_warning(func: Callable[..., Any]) -> Callable[..., Any]:
 
 
 werkzeug.serving._ansi_style = suppress_warning(werkzeug.serving._ansi_style)
-flask.cli.show_server_banner = lambda *_: None
+cli.show_server_banner = lambda *_: None
 
 app = Flask(__name__)
 
@@ -123,7 +123,7 @@ def get_last_sha() -> str:
         out_str = str(out_bytes.decode()).strip()
 
     except Exception:
-        print("ERROR: Could not determine SHA of most recent commit. Error was:\n" + traceback.format_exc(),
+        print("ERROR: Could not determine SHA of most recent commit. Error was:\n" + format_exc(),
               file=sys.stderr)
         out_str = "N/A"
 
@@ -220,7 +220,7 @@ def convert():
             else:
                 # Failsafe exception message
                 msg = ("The following unexpected exception was raised by the converter:\n" +
-                       traceback.format_exc()+"\n")
+                       format_exc()+"\n")
             with open(qualified_output_log, "w") as fo:
                 fo.write(msg)
             abort(status_code)
