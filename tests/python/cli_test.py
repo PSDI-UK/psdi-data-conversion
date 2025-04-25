@@ -197,11 +197,12 @@ def test_detail_converter(capsys):
     """
 
     # Test all converters are recognised, don't raise an error, and we get info on them
-    for converter_name in L_REGISTERED_CONVERTERS:
+    for name in L_REGISTERED_CONVERTERS:
 
-        converter_info = get_converter_info(converter_name)
+        converter_info = get_converter_info(name)
+        converter_name = get_registered_converter_class(name).name
 
-        run_with_arg_string(f"--list {converter_name}")
+        run_with_arg_string(f"--list {name}")
         captured = capsys.readouterr()
         compressed_out: str = captured.out.replace("\n", "").replace(" ", "")
 
@@ -221,7 +222,7 @@ def test_detail_converter(capsys):
         # Check for list of allowed input/output formats
         assert "   INPUT  OUTPUT" in captured.out
 
-        l_allowed_in_formats, l_allowed_out_formats = get_possible_formats(converter_name)
+        l_allowed_in_formats, l_allowed_out_formats = get_possible_formats(name)
         for in_format in l_allowed_in_formats:
             output_allowed = "yes" if in_format in l_allowed_out_formats else "no"
             assert string_is_present_in_out(f"{in_format.disambiguated_name}yes{output_allowed}")
@@ -267,12 +268,12 @@ def test_get_conversions(capsys):
     assert bool(l_conversions) == string_is_present_in_out("The following registered converters can convert from "
                                                            f"{in_format} to {out_format}:")
 
-    for converter_name, _, _ in l_conversions:
-        if converter_name in L_REGISTERED_CONVERTERS:
-            assert string_is_present_in_out(converter_name)
-    for converter_name in L_REGISTERED_CONVERTERS:
-        if converter_name not in [x[0] for x in l_conversions]:
-            assert not string_is_present_in_out(converter_name)
+    for name, _, _ in l_conversions:
+        if name in L_REGISTERED_CONVERTERS:
+            assert string_is_present_in_out(get_registered_converter_class(name).name)
+    for name in L_REGISTERED_CONVERTERS:
+        if name not in [x[0] for x in l_conversions]:
+            assert not string_is_present_in_out(get_registered_converter_class(name).name)
 
 
 def test_conversion_info(capsys):
