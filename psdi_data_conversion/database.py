@@ -32,6 +32,7 @@ DB_URL_KEY = "url"
 
 # Keys for format general info in the database
 DB_FORMAT_EXT_KEY = "extension"
+DB_FORMAT_C2X_KEY = "format"
 DB_FORMAT_NOTE_KEY = "note"
 DB_FORMAT_COMP_KEY = "composition"
 DB_FORMAT_CONN_KEY = "connections"
@@ -427,6 +428,9 @@ class FormatInfo:
         # Load attributes from the database
         self.id: int = d_single_format_info.get(DB_ID_KEY, -1)
         """The ID of this format"""
+
+        self.c2x_format: str = d_single_format_info.get(DB_FORMAT_C2X_KEY)
+        """The name of this format as the c2x converter expects it"""
 
         self.note: str = d_single_format_info.get(DB_FORMAT_NOTE_KEY, "")
         """The description of this format"""
