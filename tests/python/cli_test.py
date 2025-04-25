@@ -7,10 +7,11 @@ Tests of the command-line interface
 
 import logging
 import os
-import pytest
 import shlex
 import sys
 from unittest.mock import patch
+
+import pytest
 
 from psdi_data_conversion import constants as const
 from psdi_data_conversion.converter import D_CONVERTER_ARGS, L_REGISTERED_CONVERTERS
@@ -18,12 +19,12 @@ from psdi_data_conversion.converters.atomsk import CONVERTER_ATO
 from psdi_data_conversion.converters.c2x import CONVERTER_C2X
 from psdi_data_conversion.converters.openbabel import (CONVERTER_OB, COORD_GEN_KEY, COORD_GEN_QUAL_KEY,
                                                        DEFAULT_COORD_GEN, DEFAULT_COORD_GEN_QUAL)
-from psdi_data_conversion.database import (FormatInfo, get_conversion_quality, get_converter_info, get_format_info,
+from psdi_data_conversion.database import (get_conversion_quality, get_converter_info, get_format_info,
                                            get_in_format_args, get_out_format_args, get_possible_conversions,
                                            get_possible_formats)
 from psdi_data_conversion.main import FileConverterInputException, parse_args
-from psdi_data_conversion.testing.utils import run_test_conversion_with_cla, run_with_arg_string
 from psdi_data_conversion.testing.conversion_test_specs import l_cla_test_specs
+from psdi_data_conversion.testing.utils import run_test_conversion_with_cla, run_with_arg_string
 
 
 def test_unique_args():
@@ -248,7 +249,7 @@ def test_detail_converter(capsys):
 def test_get_conversions(capsys):
     """Test the option to get information on converters which can perform a desired conversion
     """
-    in_format = "xyz"
+    in_format = "xyz-0"
     out_format = "inchi"
     l_conversions = get_possible_conversions(in_format, out_format)
 
@@ -337,7 +338,7 @@ def test_format_info(capsys):
     # Try to get info on an unambiguous format
 
     in_format = "cif"
-    in_format_info: FormatInfo = get_format_info(in_format)
+    in_format_info = get_format_info(in_format)
     run_with_arg_string(f"-l -f {in_format}")
 
     captured = capsys.readouterr()
@@ -354,7 +355,7 @@ def test_format_info(capsys):
     # Try to get info on an ambiguous format
 
     out_format = "pdb"
-    l_out_format_info: list[FormatInfo] = get_format_info(out_format, which="all")
+    l_out_format_info = get_format_info(out_format, which="all")
     run_with_arg_string(f"-l -t {out_format}")
 
     captured = capsys.readouterr()

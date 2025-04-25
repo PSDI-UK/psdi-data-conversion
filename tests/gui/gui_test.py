@@ -8,7 +8,7 @@ from multiprocessing import Process
 import pytest
 
 from psdi_data_conversion.testing.constants import DEFAULT_ORIGIN
-from psdi_data_conversion.testing.gui import (GuiTestSpecRunner, wait_and_find_element,
+from psdi_data_conversion.testing.gui import (GuiTestSpecRunner, wait_and_find_element, wait_for_cover_hidden,
                                               wait_for_element)
 from psdi_data_conversion.testing.conversion_test_specs import l_gui_test_specs
 
@@ -78,8 +78,9 @@ def driver():
 
 def test_initial_frontpage(driver: WebDriver):
 
-    # Load the home page
+    # Load the home page and wait for the page cover to be removed
     driver.get(f"{origin}/")
+    wait_for_cover_hidden(driver)
 
     # Check that the front page contains the header "Data Conversion Service".
 

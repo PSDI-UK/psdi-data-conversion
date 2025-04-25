@@ -63,6 +63,24 @@ export async function getOutputFormats() {
     return outFormats.sort((a, b) => compare([a.extension, b.extension], [a.note, b.note]))
 }
 
+/**
+ * Gets the ID for a format, given its extension and note
+ * 
+ * @param {string} extension - The extension of the format, e.g. 'pdb'
+ * @param {string} note - The note of the format, e.g. 'Protein Databank'
+ * @returns {(int|null)} - The ID of the format if found, or else null
+ */
+export async function getFormatId(extension, note) {
+
+    var format = (data.formats.filter(format => (format.extension === extension) && (format.note === note)));
+
+    if (format === undefined) {
+        return null;
+    }
+
+    return format[0].id;
+}
+
 export async function getOutputFormatsForInputFormat(inExtension, inNote) {
 
     const inputFormat = (data.formats.filter(format => (format.extension === inExtension) && (format.note === inNote)))[0];

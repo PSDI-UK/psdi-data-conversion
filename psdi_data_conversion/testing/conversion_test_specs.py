@@ -13,10 +13,11 @@ from psdi_data_conversion.converters.base import (FileConverterAbortException, F
 from psdi_data_conversion.converters.c2x import CONVERTER_C2X
 from psdi_data_conversion.converters.openbabel import CONVERTER_OB, COORD_GEN_KEY, COORD_GEN_QUAL_KEY
 from psdi_data_conversion.database import FileConverterDatabaseException
-from psdi_data_conversion.testing.conversion_callbacks import (CheckArchiveContents, CheckException, CheckLogContents,
-                                                               CheckLogContentsSuccess, CheckFileStatus,
+from psdi_data_conversion.testing.conversion_callbacks import (CheckArchiveContents, CheckException, CheckFileStatus,
+                                                               CheckLogContents, CheckLogContentsSuccess,
                                                                CheckStderrContents, CheckStdoutContents,
-                                                               MatchOutputFile, MultiCallback as MCB)
+                                                               MatchOutputFile)
+from psdi_data_conversion.testing.conversion_callbacks import MultiCallback as MCB
 from psdi_data_conversion.testing.utils import ConversionTestSpec as Spec
 
 l_all_test_specs: list[Spec] = []
@@ -39,7 +40,7 @@ l_all_test_specs.append(Spec(name="Standard Multiple Tests",
                              to_format=["pdb-0",
                                         "cif", "mol2", "xyz",
                                         "cif", "xyz", "xyz",
-                                        "cif", "xyz", "xyz",
+                                        "cif", "xyz-0", "xyz-0",
                                         "cml"],
                              from_format=[None,
                                           None, None, None,
@@ -56,6 +57,17 @@ l_all_test_specs.append(Spec(name="Standard Multiple Tests",
                              ))
 """A basic set of test conversions which we expect to succeed without issue, running conversions with each of the
 Open Babel, Atomsk, and c2x converters"""
+
+l_all_test_specs.append(Spec(name="c2x Formats Tests",
+                             to_format=["res", "abi", "POSCAR", "cml"],
+                             converter_name=CONVERTER_C2X,
+                             callback=MCB(CheckFileStatus(),
+                                          CheckLogContentsSuccess()),
+                             compatible_with_gui=False,
+                             ))
+"""Test converting with c2x to a few different formats which require special input. This test isn't run in the GUI
+solely to save on resources, since there are unlikely to be an GUI-specific issues raised by this test that aren't
+caught in others."""
 
 archive_callback = MCB(CheckFileStatus(),
                        CheckArchiveContents(l_filename_bases=["caffeine-no-flags",
@@ -209,7 +221,7 @@ Not compatible with the GUI, since the GUI can't forcibly delete files uploaded 
 
 l_all_test_specs.append(Spec(name="Failed conversion - bad input file",
                              filename=["quartz_err.xyz", "cyclopropane_err.mol"],
-                             to_format=["inchi", "xyz"],
+                             to_format=["inchi", "xyz-0"],
                              from_format=[None, "mol-0"],
                              expect_success=False,
                              converter_name=[CONVERTER_OB, CONVERTER_C2X],

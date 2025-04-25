@@ -7,12 +7,12 @@ Python module provide utilities for accessing the converter database
 
 from __future__ import annotations
 
+import json
+import os
 from dataclasses import dataclass, field
 from itertools import product
-import json
 from logging import getLogger
-import os
-from typing import Any, Literal
+from typing import Any, Literal, overload
 
 from psdi_data_conversion import constants as const
 from psdi_data_conversion.converter import D_REGISTERED_CONVERTERS, D_SUPPORTED_CONVERTERS
@@ -32,6 +32,7 @@ DB_URL_KEY = "url"
 
 # Keys for format general info in the database
 DB_FORMAT_EXT_KEY = "extension"
+DB_FORMAT_C2X_KEY = "format"
 DB_FORMAT_NOTE_KEY = "note"
 DB_FORMAT_COMP_KEY = "composition"
 DB_FORMAT_CONN_KEY = "connections"
@@ -428,6 +429,9 @@ class FormatInfo:
         self.id: int = d_single_format_info.get(DB_ID_KEY, -1)
         """The ID of this format"""
 
+        self.c2x_format: str = d_single_format_info.get(DB_FORMAT_C2X_KEY)
+        """The name of this format as the c2x converter expects it"""
+
         self.note: str = d_single_format_info.get(DB_FORMAT_NOTE_KEY, "")
         """The description of this format"""
 
@@ -708,8 +712,8 @@ class ConversionsTable:
             conversion, the second is the info of the input format for this conversion, and the third is the info of the
             output format
         """
-        l_in_format_infos: list[FormatInfo] = self.parent.get_format_info(in_format, which="all")
-        l_out_format_infos: list[FormatInfo] = self.parent.get_format_info(out_format, which="all")
+        l_in_format_infos = self.parent.get_format_info(in_format, which="all")
+        l_out_format_infos = self.parent.get_format_info(out_format, which="all")
 
         # Start a list of all possible conversions
         l_possible_conversions = []
@@ -934,6 +938,16 @@ class DataConversionDatabase:
                                                  f" of type '{type(converter_name_or_id)}'. Type must be `str` or "
                                                  "`int`")
 
+    @overload
+    def get_format_info(self,
+                        format_name_or_id: str | int | FormatInfo,
+                        which: int | None = None) -> FormatInfo: ...
+
+    @overload
+    def get_format_info(self,
+                        format_name_or_id: str | int | FormatInfo,
+                        which: Literal["all"]) -> list[FormatInfo]: ...
+
     def get_format_info(self,
                         format_name_or_id: str | int | FormatInfo,
                         which: int | Literal["all"] | None = None) -> FormatInfo | list[FormatInfo]:
@@ -1082,6 +1096,16 @@ def get_converter_info(name: str) -> ConverterInfo:
     """
 
     return get_database().d_converter_info[name]
+
+
+@overload
+def get_format_info(format_name_or_id: str | int | FormatInfo,
+                    which: int | None = None) -> FormatInfo: ...
+
+
+@overload
+def get_format_info(format_name_or_id: str | int | FormatInfo,
+                    which: Literal["all"]) -> list[FormatInfo]: ...
 
 
 def get_format_info(format_name_or_id: str | int | FormatInfo,

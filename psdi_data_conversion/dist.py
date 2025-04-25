@@ -7,8 +7,9 @@ Functions and utilities related to handling multiple user OSes and distributions
 
 import os
 import shutil
-import psdi_data_conversion
 import sys
+
+import psdi_data_conversion
 
 # Labels for each platform (which we use for the folder in this project), and the head of the name each platform will
 # have in `sys.platform`

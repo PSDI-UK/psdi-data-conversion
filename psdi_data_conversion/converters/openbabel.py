@@ -6,8 +6,9 @@ Open Babel FileConverter
 """
 
 from copy import deepcopy
-from openbabel import openbabel
+
 import py
+from openbabel import openbabel
 
 from psdi_data_conversion.converters.base import FileConverter, FileConverterInputException
 from psdi_data_conversion.security import SAFE_STRING_RE, string_is_safe

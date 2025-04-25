@@ -29,6 +29,19 @@ class C2xFileConverter(ScriptFileConverter):
             "may be downloaded from https://www.c2x.org.uk/downloads/")
     supports_ambiguous_extensions = True
 
+    def _get_script_args(self):
+        """Override the standard script arguments so we can set the different format names expected by c2x
+        """
+        l_script_args = super()._get_script_args()
+
+        # Update the output format to c2x style
+        l_script_args[0] = "--" + self.to_format_info.c2x_format
+
+        # TODO - check if the input file has an extension which will be accepted by c2x for its format, and handle if
+        # not
+
+        return l_script_args
+
 
 # Assign this converter to the `converter` variable - this lets the psdi_data_conversion.converter module detect and
 # register it, making it available for use by the command-line script, python library, and web app

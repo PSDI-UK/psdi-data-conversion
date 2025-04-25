@@ -6,10 +6,10 @@ Utilities to aid in testing of the GUI
 
 import os
 import shutil
-from tempfile import TemporaryDirectory
-
 import time
 from dataclasses import dataclass
+from tempfile import TemporaryDirectory
+
 import pytest
 from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.common.alert import Alert
@@ -43,6 +43,11 @@ def wait_and_find_element(root: WebDriver | EC.WebElement, xpath: str, by=By.XPA
     """Finds a web element, after first waiting to ensure it's visible"""
     wait_for_element(root, xpath, by=by)
     return root.find_element(by, xpath)
+
+
+def wait_for_cover_hidden(root: WebDriver):
+    """Wait until the page cover is removed"""
+    WebDriverWait(root, TIMEOUT).until(EC.invisibility_of_element((By.XPATH, "//div[@id='cover']")))
 
 
 @dataclass
@@ -253,25 +258,30 @@ class GuiSingleTestSpecRunner:
         4. Click the "Yes" button to confirm and go to the convert page
         """
 
-        # Get the homepage
+        # Get the homepage and wait for the cover to be removed
         self.driver.get(f"{self.origin}/")
+        wait_for_cover_hidden(self.driver)
 
         wait_for_element(self.driver, "//select[@id='fromList']/option")
 
         # Select from_format from the 'from' list.
+        full_from_format = f"{self._from_format_info.name}: {self._from_format_info.note}"
         self.driver.find_element(
-            By.XPATH, f"//select[@id='fromList']/option[starts-with(.,'{self._from_format_info.name}:')]").click()
+            By.XPATH, f"//select[@id='fromList']/option[starts-with(.,'{full_from_format}')]").click()
 
         # Select to_format from the 'to' list.
+        full_to_format = f"{self._to_format_info.name}: {self._to_format_info.note}"
         self.driver.find_element(
-            By.XPATH, f"//select[@id='toList']/option[starts-with(.,'{self._to_format_info.name}:')]").click()
+            By.XPATH, f"//select[@id='toList']/option[starts-with(.,'{full_to_format}')]").click()
 
         # Select converter from the available conversion options list.
         self.driver.find_element(
             By.XPATH, f"//select[@id='success']/option[contains(.,'{self.single_test_spec.converter_name}')]").click()
 
-        # Click on the "Yes" button to accept the converter and go to the conversion page
+        # Click on the "Yes" button to accept the converter and go to the conversion page, and wait for the cover to be
+        # removed there
         self.driver.find_element(By.XPATH, "//input[@id='yesButton']").click()
+        wait_for_cover_hidden(self.driver)
 
     def _set_conversion_settings(self):
         """Set settings on the convert page appropriately for the desired conversion
@@ -315,13 +325,11 @@ class GuiSingleTestSpecRunner:
                 continue
             flags_select = Select(wait_and_find_element(self.driver, f"//select[@id='{select_id}']"))
             for flag in l_flags:
-                found = False
                 for option in flags_select.options:
                     if option.text.startswith(f"{flag}:"):
                         flags_select.select_by_visible_text(option.text)
-                        found = True
                         break
-                if not found:
+                else:
                     raise ValueError(f"Flag {flag} was not found in {select_id} selection box for conversion from "
                                      f"{self._from_format_info.name} to {self._to_format_info.name} with "
                                      f"converter {self.single_test_spec.converter_name}")
@@ -343,7 +351,6 @@ class GuiSingleTestSpecRunner:
 
             # Look for and set each option
             for option in l_options:
-                found = False
                 for row in l_rows:
                     l_items = row.find_elements(By.XPATH, "./td")
                     label = l_items[1]
@@ -357,10 +364,9 @@ class GuiSingleTestSpecRunner:
                     input_box = wait_and_find_element(l_items[2], "./input")
                     input_box.send_keys(option[1:])
 
-                    found = True
                     break
 
-                if not found:
+                else:
                     raise ValueError(f"Option {option} was not found in {table_id} options table for conversion from "
                                      f"{self._from_format_info.name} to {self._to_format_info.name} with "
                                      f"converter {self.single_test_spec.converter_name}")

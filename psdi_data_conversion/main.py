@@ -7,12 +7,12 @@ Created 2025-01-14 by Bryan Gillis.
 Entry-point file for the command-line interface for data conversion.
 """
 
-from itertools import product
 import logging
-from argparse import ArgumentParser
 import os
 import sys
 import textwrap
+from argparse import ArgumentParser
+from itertools import product
 
 from psdi_data_conversion import constants as const
 from psdi_data_conversion.constants import CL_SCRIPT_NAME, CONVERTER_DEFAULT, TERM_WIDTH
@@ -537,7 +537,7 @@ def detail_format(format_name: str):
     """Prints details on a format
     """
 
-    l_format_info: list[FormatInfo] = get_format_info(format_name, which="all")
+    l_format_info = get_format_info(format_name, which="all")
 
     if len(l_format_info) == 0:
         print_wrap(f"ERROR: Format '{format_name}' not recognised", err=True, newline=True)
