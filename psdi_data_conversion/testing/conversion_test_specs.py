@@ -58,6 +58,17 @@ l_all_test_specs.append(Spec(name="Standard Multiple Tests",
 """A basic set of test conversions which we expect to succeed without issue, running conversions with each of the
 Open Babel, Atomsk, and c2x converters"""
 
+l_all_test_specs.append(Spec(name="c2x Formats Tests",
+                             to_format=["res", "abi", "POSCAR", "cml"],
+                             converter_name=CONVERTER_C2X,
+                             callback=MCB(CheckFileStatus(),
+                                          CheckLogContentsSuccess()),
+                             compatible_with_gui=False,
+                             ))
+"""Test converting with c2x to a few different formats which require special input. This test isn't run in the GUI
+solely to save on resources, since there are unlikely to be an GUI-specific issues raised by this test that aren't
+caught in others."""
+
 archive_callback = MCB(CheckFileStatus(),
                        CheckArchiveContents(l_filename_bases=["caffeine-no-flags",
                                                               "caffeine-ia",
