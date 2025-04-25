@@ -14,7 +14,7 @@ from unittest.mock import patch
 import pytest
 
 from psdi_data_conversion import constants as const
-from psdi_data_conversion.converter import D_CONVERTER_ARGS, L_REGISTERED_CONVERTERS
+from psdi_data_conversion.converter import D_CONVERTER_ARGS, L_REGISTERED_CONVERTERS, get_registered_converter_class
 from psdi_data_conversion.converters.atomsk import CONVERTER_ATO
 from psdi_data_conversion.converters.c2x import CONVERTER_C2X
 from psdi_data_conversion.converters.openbabel import (CONVERTER_OB, COORD_GEN_KEY, COORD_GEN_QUAL_KEY,
@@ -25,6 +25,7 @@ from psdi_data_conversion.database import (get_conversion_quality, get_converter
 from psdi_data_conversion.main import FileConverterInputException, parse_args
 from psdi_data_conversion.testing.conversion_test_specs import l_cla_test_specs
 from psdi_data_conversion.testing.utils import run_test_conversion_with_cla, run_with_arg_string
+from psdi_data_conversion.utils import regularize_name
 
 
 def test_unique_args():
@@ -135,11 +136,11 @@ def test_input_validity():
 
     # We should also be able to ask for info on a specific converter
     args = get_parsed_args("-l Open Babel")
-    assert args.name == "Open Babel"
+    assert args.name == regularize_name("Open Babel")
     args = get_parsed_args("--list 'Open Babel'")
-    assert args.name == "Open Babel"
+    assert args.name == regularize_name("Open Babel")
     args = get_parsed_args("-l Atomsk")
-    assert args.name == "Atomsk"
+    assert args.name == regularize_name("Atomsk")
 
 
 def test_input_processing():
@@ -150,9 +151,9 @@ def test_input_processing():
     # Check that different ways of specifying converter are all processed correctly
     converter_name = "Open Babel"
     args = get_parsed_args(f"file1.mmcif -t pdb -w {converter_name}")
-    assert args.name == converter_name
+    assert args.name == regularize_name(converter_name)
     args = get_parsed_args(f"file1.mmcif -t pdb -w '{converter_name}'")
-    assert args.name == converter_name
+    assert args.name == regularize_name(converter_name)
 
     # Check that input dir defaults to the current directory
     cwd = os.getcwd()
@@ -183,7 +184,8 @@ def test_list_converters(capsys):
     run_with_arg_string("--list")
     captured = capsys.readouterr()
     assert "Available converters:" in captured.out
-    for converter_name in L_REGISTERED_CONVERTERS:
+    for converter_rname in L_REGISTERED_CONVERTERS:
+        converter_name = get_registered_converter_class(converter_rname).name
         assert converter_name in captured.out, converter_name
 
     # Check that no errors were produced
