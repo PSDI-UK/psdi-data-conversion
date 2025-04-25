@@ -285,10 +285,10 @@ function checkFile(event) {
 }
 
 /**
- * Allow the file upload to only accept the expected type of file
+ * Allow the file upload to only accept the expected type of file, plus archives
  */
 function limitFileType() {
-    $("#fileToUpload")[0].accept = "." + in_ext;
+    $("#fileToUpload")[0].accept = "." + in_ext + ", .zip, .tar, .tar.gz, .tar.xz, .tar.bz";
 }
 
 /**
