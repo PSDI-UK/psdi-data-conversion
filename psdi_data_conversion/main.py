@@ -18,7 +18,8 @@ from psdi_data_conversion import constants as const
 from psdi_data_conversion.constants import CL_SCRIPT_NAME, CONVERTER_DEFAULT, TERM_WIDTH
 from psdi_data_conversion.converter import (D_CONVERTER_ARGS, L_REGISTERED_CONVERTERS, L_SUPPORTED_CONVERTERS,
                                             converter_is_registered, converter_is_supported,
-                                            get_supported_converter_class, run_converter)
+                                            get_registered_converter_class, get_supported_converter_class,
+                                            run_converter)
 from psdi_data_conversion.converters.base import (FileConverterAbortException, FileConverterException,
                                                   FileConverterInputException)
 from psdi_data_conversion.database import (FormatInfo, get_conversion_quality, get_converter_info, get_format_info,
@@ -154,8 +155,9 @@ class ConvertArgs:
             msg += f"\n\n{get_supported_converters()}"
             raise FileConverterInputException(msg, help=True, msg_preformatted=True)
         elif not converter_is_registered(self.name):
-            msg = textwrap.fill(f"ERROR: Converter '{self.name}' is not registered. It may be possible to register "
-                                "it by installing an appropriate binary for your platform.", width=TERM_WIDTH)
+            converter_name = get_supported_converter_class(self.name).name
+            msg = textwrap.fill(f"ERROR: Converter '{converter_name}' is not registered. It may be possible to "
+                                "register it by installing an appropriate binary for your platform.", width=TERM_WIDTH)
             msg += f"\n\n{get_supported_converters()}"
             raise FileConverterInputException(msg, help=True, msg_preformatted=True)
 
@@ -354,7 +356,7 @@ def detail_converter_use(args: ConvertArgs):
     converter_class = get_supported_converter_class(args.name)
     converter_name = converter_class.name
 
-    print_wrap(f"{converter_info.name}: {converter_info.description} ({converter_info.url})", break_long_words=False,
+    print_wrap(f"{converter_name}: {converter_info.description} ({converter_info.url})", break_long_words=False,
                break_on_hyphens=False, newline=True)
 
     if converter_class.info:
@@ -603,9 +605,11 @@ def detail_formats_and_possible_converters(from_format: str, to_format: str):
         l_conversions_matching_formats = [x for x in l_possible_conversions
                                           if x[1] == possible_from_format and x[2] == possible_to_format]
 
-        l_possible_registered_converters = [x[0] for x in l_conversions_matching_formats
+        l_possible_registered_converters = [get_registered_converter_class(x[0]).name
+                                            for x in l_conversions_matching_formats
                                             if x[0] in L_REGISTERED_CONVERTERS]
-        l_possible_unregistered_converters = [x[0] for x in l_conversions_matching_formats
+        l_possible_unregistered_converters = [get_supported_converter_class(x[0]).name
+                                              for x in l_conversions_matching_formats
                                               if x[0] in L_SUPPORTED_CONVERTERS and x[0] not in L_REGISTERED_CONVERTERS]
 
         print()
