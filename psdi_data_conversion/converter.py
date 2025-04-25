@@ -20,6 +20,7 @@ from psdi_data_conversion.converters import base
 from psdi_data_conversion.converters.openbabel import CONVERTER_OB
 from psdi_data_conversion.file_io import (is_archive, is_supported_archive, pack_zip_or_tar, split_archive_ext,
                                           unpack_zip_or_tar)
+from psdi_data_conversion.utils import regularize_name
 
 # Find all modules for specific converters
 l_converter_modules = glob.glob(os.path.dirname(base.__file__) + "/*.py")
@@ -49,7 +50,8 @@ try:
 
         converter_class = module.converter
 
-        name = converter_class.name
+        # To make querying case/space-insensitive, we store all names in lowercase with spaces stripped
+        name = converter_class.name.lower().replace(" ", "")
 
         return NameAndClass(name, converter_class)
 
@@ -89,6 +91,66 @@ except Exception:
     D_CONVERTER_FLAGS = {}
     D_CONVERTER_OPTIONS = {}
     D_CONVERTER_ARGS = {}
+
+
+def get_supported_converter_class(name: str):
+    """Get the appropriate converter class matching the provided name from the dict of supported converters
+
+    Parameters
+    ----------
+    name : str
+        Converter name (case- and space-insensitive)
+
+    Returns
+    -------
+    type[base.FileConverter]
+    """
+    return D_SUPPORTED_CONVERTERS[regularize_name(name)]
+
+
+def get_registered_converter_class(name: str):
+    """Get the appropriate converter class matching the provided name from the dict of supported converters
+
+    Parameters
+    ----------
+    name : str
+        Converter name (case- and space-insensitive)
+
+    Returns
+    -------
+    type[base.FileConverter]
+    """
+    return D_REGISTERED_CONVERTERS[regularize_name(name)]
+
+
+def converter_is_supported(name: str):
+    """Checks if a converter is supported in principle by this project
+
+    Parameters
+    ----------
+    name : str
+        Converter name (case- and space-insensitive)
+
+    Returns
+    -------
+    bool
+    """
+    return regularize_name(name) in L_SUPPORTED_CONVERTERS
+
+
+def converter_is_registered(name: str):
+    """Checks if a converter is registered (usable)
+
+    Parameters
+    ----------
+    name : str
+        Converter name (case- and space-insensitive)
+
+    Returns
+    -------
+    bool
+    """
+    return regularize_name(name) in L_REGISTERED_CONVERTERS
 
 
 def get_converter(*args, name=const.CONVERTER_DEFAULT, **converter_kwargs) -> base.FileConverter:
@@ -155,10 +217,11 @@ def get_converter(*args, name=const.CONVERTER_DEFAULT, **converter_kwargs) -> ba
     FileConverterInputException
         If the converter isn't recognized or there's some other issue with the input
     """
+    name = regularize_name(name)
     if name not in L_REGISTERED_CONVERTERS:
         raise base.FileConverterInputException(const.ERR_CONVERTER_NOT_RECOGNISED.format(name) +
                                                f"{L_REGISTERED_CONVERTERS}")
-    converter_class = D_REGISTERED_CONVERTERS[name]
+    converter_class = get_registered_converter_class(name)
 
     return converter_class(*args, **converter_kwargs)
 

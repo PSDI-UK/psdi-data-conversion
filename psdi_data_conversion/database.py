@@ -15,8 +15,9 @@ from logging import getLogger
 from typing import Any, Literal, overload
 
 from psdi_data_conversion import constants as const
-from psdi_data_conversion.converter import D_REGISTERED_CONVERTERS, D_SUPPORTED_CONVERTERS
+from psdi_data_conversion.converter import D_SUPPORTED_CONVERTERS, get_registered_converter_class
 from psdi_data_conversion.converters.base import FileConverterException
+from psdi_data_conversion.utils import regularize_name
 
 # Keys for top-level and general items in the database
 DB_FORMATS_KEY = "formats"
@@ -117,14 +118,14 @@ class ConverterInfo:
         Parameters
         ----------
         name : str
-            The name of the converter
+            The regularized name of the converter
         parent : DataConversionDatabase
             The database which this belongs to
         d_data : dict[str, Any]
             The loaded database dict
         """
 
-        self.name = name
+        self.name = regularize_name(name)
         self.parent = parent
 
         # Get info about the converter from the database
@@ -134,7 +135,7 @@ class ConverterInfo:
 
         # Get necessary info about the converter from the class
         try:
-            self._key_prefix = D_REGISTERED_CONVERTERS[name].database_key_prefix
+            self._key_prefix = get_registered_converter_class(name).database_key_prefix
         except KeyError:
             # We'll get a KeyError for converters in the database that don't yet have their own class, which we can
             # safely ignore
@@ -529,6 +530,10 @@ class ConversionQualityInfo:
     input and output file formats and a note on the implications
     """
 
+    def __post_init__(self):
+        """Regularize the converter name"""
+        self.converter_name = regularize_name(self.converter_name)
+
 
 class ConversionsTable:
     """Class providing information on available file format conversions.
@@ -623,7 +628,7 @@ class ConversionsTable:
 
         # Check if this converter deals with ambiguous formats, so we know if we need to be strict about getting format
         # info
-        if D_REGISTERED_CONVERTERS[converter_name].supports_ambiguous_extensions:
+        if get_registered_converter_class(converter_name).supports_ambiguous_extensions:
             which_format = None
         else:
             which_format = 0
@@ -805,7 +810,7 @@ class DataConversionDatabase:
         if self._d_converter_info is None:
             self._d_converter_info: dict[str, ConverterInfo] = {}
             for d_single_converter_info in self.converters:
-                name: str = d_single_converter_info[DB_NAME_KEY]
+                name: str = regularize_name(d_single_converter_info[DB_NAME_KEY])
                 if name in self._d_converter_info:
                     logger.warning(f"Converter '{name}' appears more than once in the database. Only the first instance"
                                    " will be used.")
@@ -1095,7 +1100,7 @@ def get_converter_info(name: str) -> ConverterInfo:
     ConverterInfo
     """
 
-    return get_database().d_converter_info[name]
+    return get_database().d_converter_info[regularize_name(name)]
 
 
 @overload
@@ -1155,7 +1160,7 @@ def get_conversion_quality(converter_name: str,
         `ConversionQualityInfo` object with info on the conversion
     """
 
-    return get_database().conversions_table.get_conversion_quality(converter_name=converter_name,
+    return get_database().conversions_table.get_conversion_quality(converter_name=regularize_name(converter_name),
                                                                    in_format=in_format,
                                                                    out_format=out_format)
 
@@ -1210,6 +1215,9 @@ def disambiguate_formats(converter_name: str,
         If more than one format combination is possible for this conversion, or no conversion is possible
     """
 
+    # Regularize the converter name so we don't worry about case/spacing mismatches
+    converter_name = regularize_name(converter_name)
+
     # Get all possible conversions, and see if we only have one for this converter
     l_possible_conversions = [x for x in get_possible_conversions(in_format, out_format)
                               if x[0] == converter_name]
@@ -1243,7 +1251,7 @@ def get_possible_formats(converter_name: str) -> tuple[list[FormatInfo], list[Fo
     tuple[list[FormatInfo], list[FormatInfo]]
         A tuple of a list of the supported input formats and a list of the supported output formats
     """
-    return get_database().conversions_table.get_possible_formats(converter_name=converter_name)
+    return get_database().conversions_table.get_possible_formats(converter_name=regularize_name(converter_name))
 
 
 def _find_arg(tl_args: tuple[list[FlagInfo], list[OptionInfo]],

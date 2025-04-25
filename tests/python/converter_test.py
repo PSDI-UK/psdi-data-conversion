@@ -9,6 +9,7 @@ the Python library (this module), the command-line application, and the GUI.
 import logging
 import math
 import os
+
 import pytest
 
 from psdi_data_conversion import constants as const
@@ -16,8 +17,9 @@ from psdi_data_conversion.converter import L_REGISTERED_CONVERTERS
 from psdi_data_conversion.converters.c2x import C2xFileConverter
 from psdi_data_conversion.converters.openbabel import OBFileConverter
 from psdi_data_conversion.database import get_format_info
-from psdi_data_conversion.testing.utils import run_test_conversion_with_library
 from psdi_data_conversion.testing.conversion_test_specs import l_library_test_specs
+from psdi_data_conversion.testing.utils import run_test_conversion_with_library
+from psdi_data_conversion.utils import regularize_name
 
 
 @pytest.fixture(autouse=True)
@@ -37,7 +39,7 @@ def setup_test() -> None:
 def test_default():
     """Test that the default converter is registered.
     """
-    assert const.CONVERTER_DEFAULT in L_REGISTERED_CONVERTERS
+    assert regularize_name(const.CONVERTER_DEFAULT) in L_REGISTERED_CONVERTERS
 
 
 @pytest.mark.parametrize("test_spec", l_library_test_specs,

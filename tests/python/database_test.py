@@ -6,14 +6,17 @@ Unit tests relating to using the database
 """
 
 import pytest
+
 from psdi_data_conversion import constants as const
 from psdi_data_conversion.converter import L_REGISTERED_CONVERTERS
 from psdi_data_conversion.converters.atomsk import CONVERTER_ATO
 from psdi_data_conversion.converters.c2x import CONVERTER_C2X
 from psdi_data_conversion.converters.openbabel import CONVERTER_OB
-from psdi_data_conversion.database import (FileConverterDatabaseException, disambiguate_formats, get_conversion_quality,
-                                           get_converter_info, get_database, get_format_info, get_in_format_args,
-                                           get_out_format_args, get_possible_conversions, get_possible_formats)
+from psdi_data_conversion.database import (FileConverterDatabaseException, disambiguate_formats,
+                                           get_conversion_quality, get_converter_info, get_database, get_format_info,
+                                           get_in_format_args, get_out_format_args, get_possible_conversions,
+                                           get_possible_formats)
+from psdi_data_conversion.utils import regularize_name
 
 
 def test_load():
@@ -207,7 +210,8 @@ def test_conversion_table():
 
     # Check we can get a list of possible converters for a given conversion
     l_possible_conversions = get_possible_conversions("pdb", "cif")
-    assert (CONVERTER_OB, get_format_info("pdb", which=0), get_format_info("cif", which=0)) in l_possible_conversions
+    assert (regularize_name(CONVERTER_OB), get_format_info("pdb", which=0),
+            get_format_info("cif", which=0)) in l_possible_conversions
 
     # Check that we can get a list of possible input/outpat formats for a given converter
     l_in_formats, l_out_formats = get_possible_formats(CONVERTER_OB)

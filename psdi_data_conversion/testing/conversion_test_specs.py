@@ -30,7 +30,9 @@ l_all_test_specs.append(Spec(name="Standard Single Test",
                                           CheckLogContentsSuccess(),
                                           MatchOutputFile("standard_test.inchi")),
                              ))
+"""A quick single test, functioning mostly as a smoke test for things going right in the simplest case"""
 
+simple_success_callback = MCB(CheckFileStatus(), CheckLogContentsSuccess())
 l_all_test_specs.append(Spec(name="Standard Multiple Tests",
                              filename=["1NE6.mmcif",
                                        "hemoglobin.pdb", "aceticacid.mol", "nacl.cif",
@@ -52,8 +54,7 @@ l_all_test_specs.append(Spec(name="Standard Multiple Tests",
                                              CONVERTER_ATO, CONVERTER_ATO, CONVERTER_ATO,
                                              CONVERTER_C2X, CONVERTER_C2X, CONVERTER_C2X,
                                              CONVERTER_OB],
-                             callback=MCB(CheckFileStatus(),
-                                          CheckLogContentsSuccess()),
+                             callback=simple_success_callback,
                              ))
 """A basic set of test conversions which we expect to succeed without issue, running conversions with each of the
 Open Babel, Atomsk, and c2x converters"""
@@ -61,13 +62,20 @@ Open Babel, Atomsk, and c2x converters"""
 l_all_test_specs.append(Spec(name="c2x Formats Tests",
                              to_format=["res", "abi", "POSCAR", "cml"],
                              converter_name=CONVERTER_C2X,
-                             callback=MCB(CheckFileStatus(),
-                                          CheckLogContentsSuccess()),
+                             callback=simple_success_callback,
                              compatible_with_gui=False,
                              ))
 """Test converting with c2x to a few different formats which require special input. This test isn't run in the GUI
 solely to save on resources, since there are unlikely to be an GUI-specific issues raised by this test that aren't
 caught in others."""
+
+l_all_test_specs.append(Spec(name="Converter Name Sensitivity Tests",
+                             converter_name=["open babel", "oPeNbaBEL", "C2X", "atomsk"],
+                             to_format="xyz-0",
+                             callback=simple_success_callback,
+                             compatible_with_gui=False,
+                             ))
+"""Tests that converters can be specified case- and space-insensitively in the library and CLI"""
 
 archive_callback = MCB(CheckFileStatus(),
                        CheckArchiveContents(l_filename_bases=["caffeine-no-flags",
