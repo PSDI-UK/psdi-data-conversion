@@ -202,7 +202,7 @@ def test_detail_converter(capsys):
         converter_info = get_converter_info(name)
         converter_name = get_registered_converter_class(name).name
 
-        run_with_arg_string(f"--list {name}")
+        run_with_arg_string(f"--list {converter_name}")
         captured = capsys.readouterr()
         compressed_out: str = captured.out.replace("\n", "").replace(" ", "")
 
@@ -281,12 +281,13 @@ def test_conversion_info(capsys):
     """
 
     converter_name = CONVERTER_OB
+
     in_format = "xyz"
     out_format = "inchi"
     qual = get_conversion_quality(converter_name, in_format, out_format)
 
-    # Test a basic listing of arguments
-    run_with_arg_string(f"-l {converter_name} -f {in_format} -t {out_format}")
+    # Test a basic listing of arguments, checking with the converter name in lowercase to be sure that works
+    run_with_arg_string(f"-l {converter_name.lower()} -f {in_format} -t {out_format}")
     captured = capsys.readouterr()
     compressed_out: str = captured.out.replace("\n", "").replace(" ", "")
 
