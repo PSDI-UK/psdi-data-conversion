@@ -37,6 +37,9 @@ SERVICE_MODE_EV = "SERVICE_MODE"
 # Env var for whether this is a production release or development
 PRODUCTION_EV = "PRODUCTION_MODE"
 
+# Env var for whether this is a production release or development
+DEBUG_EV = "DEBUG_MODE"
+
 # Key for the label given to the file uploaded in the web interface
 FILE_TO_UPLOAD_KEY = 'fileToUpload'
 
@@ -44,11 +47,13 @@ FILE_TO_UPLOAD_KEY = 'fileToUpload'
 dt = str(datetime.now())
 token = md5(dt.encode('utf8')).hexdigest()
 
-# Get the service and production modes from their envvars
+# Get the debug, service, and production modes from their envvars
 service_mode_ev = os.environ.get(SERVICE_MODE_EV)
 service_mode = (service_mode_ev is not None) and (service_mode_ev.lower() == "true")
 production_mode_ev = os.environ.get(PRODUCTION_EV)
 production_mode = (production_mode_ev is not None) and (production_mode_ev.lower() == "true")
+debug_mode_ev = os.environ.get(DEBUG_EV)
+debug_mode = (debug_mode_ev is not None) and (debug_mode_ev.lower() == "true")
 
 # Get the logging mode and level from their envvars
 ev_log_mode = os.environ.get(const.LOG_MODE_EV)
@@ -318,7 +323,7 @@ def start_app():
     """
 
     os.chdir(os.path.join(psdi_data_conversion.__path__[0], ".."))
-    app.run()
+    app.run(debug=debug_mode)
 
 
 def main():
@@ -343,7 +348,11 @@ def main():
                         help="If set, will run as if deploying a service rather than the local GUI")
 
     parser.add_argument("--dev-mode", action="store_true",
-                        help="If set, will expose development elements")
+                        help="If set, will expose development elements, such as the SHA of the latest commit")
+
+    parser.add_argument("--debug", action="store_true",
+                        help="If set, will run the Flask server in debug mode, which will cause it to automatically "
+                        "reload if code changes and show an interactive debugger in the case of errors")
 
     parser.add_argument("--log-mode", type=str, default=const.LOG_FULL,
                         help="How logs should be stored. Allowed values are: \n"
@@ -370,6 +379,9 @@ def main():
 
         global service_mode
         service_mode = args.service_mode
+
+        global debug_mode
+        debug_mode = args.debug_mode
 
         global production_mode
         production_mode = not args.dev_mode
