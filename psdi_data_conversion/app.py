@@ -19,6 +19,7 @@ from typing import Any
 
 import werkzeug.serving
 from flask import Flask, Response, abort, cli, render_template, request
+from werkzeug.utils import secure_filename
 
 import psdi_data_conversion
 from psdi_data_conversion import constants as const
@@ -157,9 +158,8 @@ def convert():
     # Make sure the upload directory exists
     os.makedirs(const.DEFAULT_UPLOAD_DIR, exist_ok=True)
 
-    # Save the file in the upload directory
     file = request.files[FILE_TO_UPLOAD_KEY]
-    filename = filename = file.filename
+    filename = secure_filename(file.filename)
 
     qualified_filename = os.path.join(const.DEFAULT_UPLOAD_DIR, filename)
     file.save(qualified_filename)
