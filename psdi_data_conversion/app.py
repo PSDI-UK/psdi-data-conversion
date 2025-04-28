@@ -19,6 +19,7 @@ from typing import Any
 
 import werkzeug.serving
 from flask import Flask, Response, abort, cli, render_template, request
+from werkzeug.utils import secure_filename
 
 import psdi_data_conversion
 from psdi_data_conversion import constants as const
@@ -91,11 +92,11 @@ if ev_max_file_size_ob is not None:
 else:
     max_file_size_ob = const.DEFAULT_MAX_FILE_SIZE_OB
 
-# Since we're using the development server as the user GUI, we monkey-patch Flask to disable the warnings that would
-# otherwise appear for this so they don't confuse the user
-
 
 def suppress_warning(func: Callable[..., Any]) -> Callable[..., Any]:
+    """Since we're using the development server as the user GUI, we monkey-patch Flask to disable the warnings that
+    would otherwise appear for this so they don't confuse the user
+    """
     @wraps(func)
     def wrapper(*args, **kwargs) -> Any:
         if args and isinstance(args[0], str) and args[0].startswith('WARNING: This is a development server.'):
@@ -108,6 +109,24 @@ werkzeug.serving._ansi_style = suppress_warning(werkzeug.serving._ansi_style)
 cli.show_server_banner = lambda *_: None
 
 app = Flask(__name__)
+
+
+def limit_upload_size():
+    """Impose a limit on the maximum file that can be uploaded before Flask will raise an error"""
+
+    # Determine the largest possible file size that can be uploaded, keeping in mind that 0 indicates unlimited
+    larger_max_file_size = max_file_size
+    if (max_file_size > 0) and (max_file_size_ob > max_file_size):
+        larger_max_file_size = max_file_size_ob
+
+    if larger_max_file_size > 0:
+        app.config['MAX_CONTENT_LENGTH'] = larger_max_file_size
+    else:
+        app.config['MAX_CONTENT_LENGTH'] = None
+
+
+# Set the upload limit based on env vars to start with
+limit_upload_size()
 
 
 def get_last_sha() -> str:
@@ -157,9 +176,8 @@ def convert():
     # Make sure the upload directory exists
     os.makedirs(const.DEFAULT_UPLOAD_DIR, exist_ok=True)
 
-    # Save the file in the upload directory
     file = request.files[FILE_TO_UPLOAD_KEY]
-    filename = filename = file.filename
+    filename = secure_filename(file.filename)
 
     qualified_filename = os.path.join(const.DEFAULT_UPLOAD_DIR, filename)
     file.save(qualified_filename)
@@ -390,6 +408,9 @@ def main():
 
         global log_level
         log_level = args.log_level
+
+    # Set the upload limit based on provided arguments now
+    limit_upload_size()
 
     print_wrap("Starting the PSDI Data Conversion GUI. This GUI is run as a webpage, which you can open by "
                "right-clicking the link below to open it in your default browser, or by copy-and-pasting it into your "
