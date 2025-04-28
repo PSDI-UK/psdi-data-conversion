@@ -381,7 +381,7 @@ def main():
         service_mode = args.service_mode
 
         global debug_mode
-        debug_mode = args.debug_mode
+        debug_mode = args.debug
 
         global production_mode
         production_mode = not args.dev_mode
