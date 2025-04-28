@@ -320,9 +320,9 @@ This project uses various GitHub workflows to perform Continuous Integration tas
 - Testing and scanning (triggered by pushes to `main`, `release`, `feature*`, and `rc*` branches)
 - Periodic checks for updates to common assets
 - Automatic creation of pull requests for `feature*` and `rc*` branches
-- Automatic tagging, publishing, and deployment of the `release` branch
+- Automatic tagging, publishing, and deployment of the `main` and `release` branches to the development, staging and production environments
 
-See the commons within the files for further details.
+See the comments within the files for further details. See also the [section on deployment](#deployment) for details specific to deployment tasks.
 
 ## Publishing
 
@@ -376,7 +376,68 @@ The management page can also be used to add or remove collaborators through the 
 
 ## Deployment
 
-Deployment is handled by the `job-deploy-k8s.yml` reusable workflow, which is triggered from `ci-main.yml` to deploy to dev on each push to `main` and `ci-release.yml` to deploy to staging on each push to `release`. When a push to production is desired, it must be triggered manually by calling the `ci-deploy-production.yml` workflow on the `release` branch (it's set up to fail if run on any other branch).
+The `ci-main.yml`, `ci-release.yml` and `ci-deploy-production.yml` files in the `.github/workflows` directory house workflows which deploy
+the data conversion service to [Kubernetes](https://kubernetes.io/) clusters hosted in STFC.  There are three clusters, each of which correspond
+to a different deployment _environment_ for the data conversion service. The three environments are `development`, `staging` and `production`.
+Deployment to `development`, `staging` and `production` is done from either the `main` or `release` branch. The table below indicates which
+branch deploys to which environment. The table also shows, for each environment:
+- the URL on which the service is exposed once it is successfully deployed
+- the accessibility of the service. Depending on the environment the service is either accessible to the _public_ at the specified URL,
+  or accessible only to IP addresses within the _STFC and University of Southampton VPNs_
+- the trigger used to invoke the workflow which deploys the deploys the service from the source branch. Deployment is either _automatic_
+  upon a commit to the source branch which passes the unit-tests job; or results from a _manual_ invokation of a workflow by a
+  developer.
+
+| Environment      | URL                                        | Accessibility                           | Source branch  | Deployment trigger    |
+|------------------|--------------------------------------------|-----------------------------------------|----------------|-----------------------|
+| `development`    | https://data-conversion-dev.psdi.ac.uk     | STFC and University of Southampton VPNs | `main`         | Automatic             |
+| `staging`        | https://data-conversion-staging.psdi.ac.uk | STFC and University of Southampton VPNs | `release`      | Automatic             |
+| `production`     | https://data-conversion.psdi.ac.uk         | public                                  | `release`      | Manual                |
+
+Thus the `main` is automatically deployed to the `deployment` environment, and the `release` branch is automatically deployed to the `staging`
+environment. However deployment from the `release` branch to the `production` environment is a manual process. This is to allow developers to
+manually check that the `release` version works correctly in the `staging` environment before deploying it to the `production` environment.
+The checks to `staging` before deployment to `production` should echo those described in the above
+section [Release Checklist and Procedure](#release-checklist-and-procedure).
+
+### How to deploy to the `production` environment
+
+To trigger the workflow which deploys the service to the `production` environment, from the [main page of the repo](https://github.com/PSDI-UK/psdi-data-conversion)
+navigate to [Actions](https://github.com/PSDI-UK/psdi-data-conversion/actions). Here you should see on the right a list of recent workflow
+runs, including whether or not they are successful (as indicated by a green tick); and on the left you should see a list of all workflows.
+
+The workflow which deploys the `release` branch to the `staging` environment is named `CI - Release`. As mentioned above, you should verify
+that this workflow successfully deployed the `release` version to `staging` before considering deploying to `production`. If you click on the
+latest workflow run of `CI - Release` then you can see a breakdown of the workflow into its consitutent workflows. Note the `deploy-stfc-staging-k8s`
+job. If this job is successful then the `release` version has been successfully deployed to `staging`.
+
+Assuming this is the case, navigating back to [Actions](https://github.com/PSDI-UK/psdi-data-conversion/actions), note that there is a workflow
+listed on the left named `CI - Deploy to production cluster`. This is the workflow which must be invoked manually to deploy the `release`
+version to the `production` environment. Clicking on the link to this workflow gives
+[a list of recent invocations](https://github.com/PSDI-UK/psdi-data-conversion/actions/workflows/ci-deploy-production.yml) of the workflow.
+Moreover, a light blue banner appears which says `This workflow has a workflow_dispatch event trigger` on the left and has a `Run workflow` button
+on the right. To invoke the workflow, press this button, *select the `release` branch* as the option for `Use workflow from` dropdown menu, and
+then finally click the green `Run workflow` button. Once the workflow has been invoked you should be able to see its progress in real time on the
+same page.
+
+### Further technical details
+
+The `ci-main.yml`, `ci-release.yml` and `ci-deploy-production.yml` workflows leverage the `job-deploy-k8s.yml` callable workflow to do the heavy
+lifting with regards to deployment to STFC Kubernetes environments. The `job-deploy-k8s.yml` workflow is coded to be invoked on PSDI's GitHub
+runners. These runners are hosted within STFC's network, providing a means to access to the three STFC Kubernetes clusters corresponding to the
+`development`, `staging` and `production` environments. The environment to be targeted for deployment is passed to the `job-deploy-k8s.yml`
+workflow as an input parameter. Given a target environment `<env>`, the `job-deploy-k8s.yml` workflow will deploy the service to the
+the `<env>` environment using the Kubernetes manifests stored in the `deploy`/<env>` directory of this repository.
+
+The workflow relies on several repository secrets, namely `KUBECONF`, `IMAGEPULLSECRET`, `CERTIFICATE_PRIVATE_KEY` and `CERTIFICATE_PEM` for
+various purposes.
+- `KUBECONF` provides Kubernetes-specific information pertaining to the the Kubernetes cluster for the target environment. Note that
+  `KUBECONF` is an _environment_-dependent secret, taking different values for each of the environments. 
+- `IMAGEPULLSECRET` enables the container image housing the data conversion service to be pulled from this GitHub repo to the PSDI runner
+- `CERTIFICATE_PRIVATE_KEY` and `CERTIFICATE_PEM` pertain to the TLS certificates for the service
+For further information see the `job-deploy-k8s.yml` file and aforementioned Kubernetes manifests.
+
+
 
 TODO - Describe details of setup
 
