@@ -139,14 +139,13 @@ def get_last_sha() -> str:
 def website():
     """Return the web page along with the token
     """
-
-    data = [{'token': token,
-             'max_file_size': max_file_size,
-             'max_file_size_ob': max_file_size_ob,
-             'service_mode': service_mode,
-             'production_mode': production_mode,
-             'sha': get_last_sha()}]
-    return render_template("index.htm", data=data)
+    return render_template("index.htm",
+                           token=token,
+                           max_file_size=max_file_size,
+                           max_file_size_ob=max_file_size_ob,
+                           service_mode=service_mode,
+                           production_mode=production_mode,
+                           sha=get_last_sha())
 
 
 @app.route('/convert/', methods=['POST'])
