@@ -15,7 +15,7 @@ This project uses a version of [GitLab Flow](https://about.gitlab.com/topics/ver
 
 The following tasks should be completed before merging a release candidate branch to `release`:
 
-- Detemine the target version based on the changes made:
+- Determine the target version based on the changes made:
 
   - If any breaking changes have been made (after version 1.0.0), the version will advance to the next major version - `X.Y.Z` to `(X+1).0.0`
   - Otherwise, if any features are added, or any breaking changes are made before version 1.0.0, the version will advance to the next minor version - `X.Y.Z` to `X.(Y+1).0`.
@@ -193,13 +193,13 @@ class MyFileConverter(FileConverter):
 converter = MyFileConverter
 ```
 
-That's all you need to do! The `psdi_data_conversion.converter` module parses all modules in the `converters` package to find converters, so if you've done everything correctly, it will find the new converter and register it for you. You can test that it is properly registered by using the CLA to run:
+That's all you need to do! The `psdi_data_conversion.converter` module parses all modules in the `converters` package to find converters, so if you've done everything correctly, it will find the new converter and register it for you. You can test that it is properly registered by using the CLI to run:
 
 ```bash
 psdi-data-convert -l
 ```
 
-Your new converter should appear, or else you will probably see an error message which will detail an exception raised when trying to register it. Note that until the converter's information is added to the database (the file `psdi_data_conversion/static/data/data.json`), the CLA will show that it is unable to perform any conversions, and it will fail on any conversion (believing it to be impossible) unless you provide the `--nc/--no-check` command-line flag.
+Your new converter should appear, or else you will probably see an error message which will detail an exception raised when trying to register it. Note that until the converter's information is added to the database (the file `psdi_data_conversion/static/data/data.json`), the CLI will show that it is unable to perform any conversions, and it will fail on any conversion (believing it to be impossible) unless you provide the `--nc/--no-check` command-line flag.
 
 For file converters which can be run with a call to a script, this can be streamlined even further by taking advantage of the `ScriptFileConverter` subclass. With this, the converter's subclass can be defined even more succinctly:
 
@@ -273,7 +273,7 @@ pip install --editable .[test]
 pytest
 ```
 
-This installs the project in a virtual environment in "editable" mode (which means the source files will be used from where they are rather than being copied, so any changes to them will be directly reflected in tests and uses of the CLA) and then calls `pytest` to run the unit tests in the project. `pytest` will automatically pick up any extra tests you add and run them as well.
+This installs the project in a virtual environment in "editable" mode (which means the source files will be used from where they are rather than being copied, so any changes to them will be directly reflected in tests and uses of the CLI) and then calls `pytest` to run the unit tests in the project. `pytest` will automatically pick up any extra tests you add and run them as well.
 
 #### Web App Integration
 
@@ -326,7 +326,7 @@ See the comments within the files for further details. See also the [section on 
 
 ## Publishing
 
-The Python library, CLA, and local GUI are published as a Python package via PyPI. This section describes how the package is set up and how it's published.
+The Python library, CLI, and local GUI are published as a Python package via PyPI. This section describes how the package is set up and how it's published.
 
 ### Package Setup
 
@@ -338,7 +338,7 @@ The version of the package is set to be determined from the version control syst
 
 ### Initial Publication
 
-This section details the proceduce for the initial publication of this package - now that this is complete, this section is left in for reference in case of future need.
+This section details the procedure for the initial publication of this package - now that this is complete, this section is left in for reference in case of future need.
 
 First, it's necessary to install a couple required packages in order to build a Python package: `build` to build it and `twine` to upload it. These can be installed with pip via:
 
@@ -385,7 +385,7 @@ branch deploys to which environment. The table also shows, for each environment:
 - the accessibility of the service. Depending on the environment the service is either accessible to the _public_ at the specified URL,
   or accessible only to IP addresses within the _STFC and University of Southampton VPNs_
 - the trigger used to invoke the workflow which deploys the deploys the service from the source branch. Deployment is either _automatic_
-  upon a commit to the source branch which passes the unit-tests job; or results from a _manual_ invokation of a workflow by a
+  upon a commit to the source branch which passes the unit-tests job; or results from a _manual_ invocation of a workflow by a
   developer.
 
 | Environment      | URL                                        | Accessibility                           | Source branch  | Deployment trigger    |
@@ -408,7 +408,7 @@ runs, including whether or not they are successful (as indicated by a green tick
 
 The workflow which deploys the `release` branch to the `staging` environment is named `CI - Release`. As mentioned above, you should verify
 that this workflow successfully deployed the `release` version to `staging` before considering deploying to `production`. If you click on the
-latest workflow run of `CI - Release` then you can see a breakdown of the workflow into its consitutent workflows. Note the `deploy-stfc-staging-k8s`
+latest workflow run of `CI - Release` then you can see a breakdown of the workflow into its constituent workflows. Note the `deploy-stfc-staging-k8s`
 job. If this job is successful then the `release` version has been successfully deployed to `staging`.
 
 Assuming this is the case, navigating back to [Actions](https://github.com/PSDI-UK/psdi-data-conversion/actions), note that there is a workflow
