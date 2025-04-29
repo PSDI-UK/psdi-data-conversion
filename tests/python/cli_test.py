@@ -7,22 +7,25 @@ Tests of the command-line interface
 
 import logging
 import os
-import pytest
 import shlex
 import sys
 from unittest.mock import patch
 
+import pytest
+
 from psdi_data_conversion import constants as const
-from psdi_data_conversion.converter import D_CONVERTER_ARGS, L_REGISTERED_CONVERTERS
+from psdi_data_conversion.converter import D_CONVERTER_ARGS, L_REGISTERED_CONVERTERS, get_registered_converter_class
 from psdi_data_conversion.converters.atomsk import CONVERTER_ATO
 from psdi_data_conversion.converters.c2x import CONVERTER_C2X
 from psdi_data_conversion.converters.openbabel import (CONVERTER_OB, COORD_GEN_KEY, COORD_GEN_QUAL_KEY,
                                                        DEFAULT_COORD_GEN, DEFAULT_COORD_GEN_QUAL)
-from psdi_data_conversion.database import (get_conversion_quality, get_converter_info, get_in_format_args,
-                                           get_out_format_args, get_possible_converters, get_possible_formats)
+from psdi_data_conversion.database import (get_conversion_quality, get_converter_info, get_format_info,
+                                           get_in_format_args, get_out_format_args, get_possible_conversions,
+                                           get_possible_formats)
 from psdi_data_conversion.main import FileConverterInputException, parse_args
-from psdi_data_conversion.testing.utils import run_test_conversion_with_cla, run_with_arg_string
 from psdi_data_conversion.testing.conversion_test_specs import l_cla_test_specs
+from psdi_data_conversion.testing.utils import run_test_conversion_with_cla, run_with_arg_string
+from psdi_data_conversion.utils import regularize_name
 
 
 def test_unique_args():
@@ -133,11 +136,11 @@ def test_input_validity():
 
     # We should also be able to ask for info on a specific converter
     args = get_parsed_args("-l Open Babel")
-    assert args.name == "Open Babel"
+    assert args.name == regularize_name("Open Babel")
     args = get_parsed_args("--list 'Open Babel'")
-    assert args.name == "Open Babel"
+    assert args.name == regularize_name("Open Babel")
     args = get_parsed_args("-l Atomsk")
-    assert args.name == "Atomsk"
+    assert args.name == regularize_name("Atomsk")
 
 
 def test_input_processing():
@@ -148,9 +151,9 @@ def test_input_processing():
     # Check that different ways of specifying converter are all processed correctly
     converter_name = "Open Babel"
     args = get_parsed_args(f"file1.mmcif -t pdb -w {converter_name}")
-    assert args.name == converter_name
+    assert args.name == regularize_name(converter_name)
     args = get_parsed_args(f"file1.mmcif -t pdb -w '{converter_name}'")
-    assert args.name == converter_name
+    assert args.name == regularize_name(converter_name)
 
     # Check that input dir defaults to the current directory
     cwd = os.getcwd()
@@ -181,7 +184,8 @@ def test_list_converters(capsys):
     run_with_arg_string("--list")
     captured = capsys.readouterr()
     assert "Available converters:" in captured.out
-    for converter_name in L_REGISTERED_CONVERTERS:
+    for converter_rname in L_REGISTERED_CONVERTERS:
+        converter_name = get_registered_converter_class(converter_rname).name
         assert converter_name in captured.out, converter_name
 
     # Check that no errors were produced
@@ -193,9 +197,10 @@ def test_detail_converter(capsys):
     """
 
     # Test all converters are recognised, don't raise an error, and we get info on them
-    for converter_name in L_REGISTERED_CONVERTERS:
+    for name in L_REGISTERED_CONVERTERS:
 
-        converter_info = get_converter_info(converter_name)
+        converter_info = get_converter_info(name)
+        converter_name = get_registered_converter_class(name).name
 
         run_with_arg_string(f"--list {converter_name}")
         captured = capsys.readouterr()
@@ -217,13 +222,13 @@ def test_detail_converter(capsys):
         # Check for list of allowed input/output formats
         assert "   INPUT  OUTPUT" in captured.out
 
-        l_allowed_in_formats, l_allowed_out_formats = get_possible_formats(converter_name)
+        l_allowed_in_formats, l_allowed_out_formats = get_possible_formats(name)
         for in_format in l_allowed_in_formats:
             output_allowed = "yes" if in_format in l_allowed_out_formats else "no"
-            assert string_is_present_in_out(f"{in_format}yes{output_allowed}")
+            assert string_is_present_in_out(f"{in_format.disambiguated_name}yes{output_allowed}")
         for out_format in l_allowed_out_formats:
             input_allowed = "yes" if out_format in l_allowed_in_formats else "no"
-            assert string_is_present_in_out(f"{out_format}{input_allowed}yes")
+            assert string_is_present_in_out(f"{out_format.disambiguated_name}{input_allowed}yes")
 
         # Check that no errors were produced
         assert not captured.err
@@ -244,12 +249,12 @@ def test_detail_converter(capsys):
     assert const.CONVERTER_DEFAULT not in captured.out
 
 
-def test_get_converters(capsys):
+def test_get_conversions(capsys):
     """Test the option to get information on converters which can perform a desired conversion
     """
-    in_format = "xyz"
+    in_format = "xyz-0"
     out_format = "inchi"
-    l_converters = get_possible_converters(in_format, out_format)
+    l_conversions = get_possible_conversions(in_format, out_format)
 
     run_with_arg_string(f"-l -f {in_format} -t {out_format}")
     captured = capsys.readouterr()
@@ -260,15 +265,15 @@ def test_get_converters(capsys):
 
     assert not captured.err
 
-    assert bool(l_converters) == string_is_present_in_out("The following registered converters can convert from "
-                                                          f"{in_format} to {out_format}:")
+    assert bool(l_conversions) == string_is_present_in_out("The following registered converters can convert from "
+                                                           f"{in_format} to {out_format}:")
 
-    for converter_name in l_converters:
-        if converter_name in L_REGISTERED_CONVERTERS:
-            assert string_is_present_in_out(converter_name)
-    for converter_name in L_REGISTERED_CONVERTERS:
-        if converter_name not in l_converters:
-            assert not string_is_present_in_out(converter_name)
+    for name, _, _ in l_conversions:
+        if name in L_REGISTERED_CONVERTERS:
+            assert string_is_present_in_out(get_registered_converter_class(name).name)
+    for name in L_REGISTERED_CONVERTERS:
+        if name not in [x[0] for x in l_conversions]:
+            assert not string_is_present_in_out(get_registered_converter_class(name).name)
 
 
 def test_conversion_info(capsys):
@@ -276,12 +281,13 @@ def test_conversion_info(capsys):
     """
 
     converter_name = CONVERTER_OB
+
     in_format = "xyz"
     out_format = "inchi"
     qual = get_conversion_quality(converter_name, in_format, out_format)
 
-    # Test a basic listing of arguments
-    run_with_arg_string(f"-l {converter_name} -f {in_format} -t {out_format}")
+    # Test a basic listing of arguments, checking with the converter name in lowercase to be sure that works
+    run_with_arg_string(f"-l {converter_name.lower()} -f {in_format} -t {out_format}")
     captured = capsys.readouterr()
     compressed_out: str = captured.out.replace("\n", "").replace(" ", "")
 
@@ -317,7 +323,7 @@ def test_conversion_info(capsys):
 
     # Now try listing for converters which don't yet allow in/out args
 
-    in_format = "pdb"
+    in_format = "pdb-0"
     out_format = "cif"
     for converter_name in [CONVERTER_C2X, CONVERTER_ATO]:
         qual = get_conversion_quality(converter_name, in_format, out_format)
@@ -327,3 +333,66 @@ def test_conversion_info(capsys):
         compressed_out: str = captured.out.replace("\n", "").replace(" ", "")
 
         assert not captured.err
+
+
+def test_format_info(capsys):
+    """Test that we can get information on formats
+    """
+
+    # Try to get info on an unambiguous format
+
+    in_format = "cif"
+    in_format_info = get_format_info(in_format)
+    run_with_arg_string(f"-l -f {in_format}")
+
+    captured = capsys.readouterr()
+    compressed_out: str = captured.out.replace("\n", "").replace(" ", "")
+
+    def string_is_present_in_out(s: str) -> bool:
+        return s.replace("\n", " ").replace(" ", "") in compressed_out
+
+    assert not captured.err
+
+    assert string_is_present_in_out(f"{in_format_info.id}: {in_format_info.name} "
+                                    f"({in_format_info.note})")
+
+    # Try to get info on an ambiguous format
+
+    out_format = "pdb"
+    l_out_format_info = get_format_info(out_format, which="all")
+    run_with_arg_string(f"-l -t {out_format}")
+
+    captured = capsys.readouterr()
+    compressed_out: str = captured.out.replace("\n", "").replace(" ", "")
+
+    assert not captured.err
+
+    assert string_is_present_in_out(f"WARNING: Format '{out_format}' is ambiguous")
+
+    for out_format_info in l_out_format_info:
+        assert string_is_present_in_out(f"{out_format_info.id}: {out_format_info.disambiguated_name} "
+                                        f"({out_format_info.note})")
+
+    # Test we get expected errors for unrecognised formats
+
+    in_format = 99999
+    with pytest.raises(SystemExit):
+        run_with_arg_string(f"-l -f {in_format}")
+
+    captured = capsys.readouterr()
+    compressed_err: str = captured.err.replace("\n", "").replace(" ", "")
+
+    def string_is_present_in_err(s: str) -> bool:
+        return s.replace("\n", " ").replace(" ", "") in compressed_err
+
+    assert string_is_present_in_err(f"ERROR: Format '{in_format}' not recognised")
+
+    out_format = "not_a_format"
+
+    with pytest.raises(SystemExit):
+        run_with_arg_string(f"-l -t {out_format}")
+
+    captured = capsys.readouterr()
+    compressed_err: str = captured.err.replace("\n", "").replace(" ", "")
+
+    assert string_is_present_in_err(f"ERROR: Format '{out_format}' not recognised")

@@ -6,12 +6,12 @@ This module defines general classes and methods used for unit tests.
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
-from collections.abc import Callable, Iterable
-from math import isclose
 import os
 import shlex
 import sys
+from collections.abc import Callable, Iterable
+from dataclasses import dataclass, field
+from math import isclose
 from tempfile import TemporaryDirectory
 from typing import Any
 from unittest.mock import patch
@@ -23,6 +23,7 @@ import psdi_data_conversion
 from psdi_data_conversion.constants import CONVERTER_DEFAULT, GLOBAL_LOG_FILENAME, LOG_NONE, OUTPUT_LOG_EXT
 from psdi_data_conversion.converter import run_converter
 from psdi_data_conversion.converters.openbabel import COORD_GEN_KEY, COORD_GEN_QUAL_KEY
+from psdi_data_conversion.database import get_format_info
 from psdi_data_conversion.dist import LINUX_LABEL, get_dist
 from psdi_data_conversion.file_io import is_archive, split_archive_ext
 from psdi_data_conversion.main import main as data_convert_main
@@ -65,6 +66,9 @@ def get_output_test_data_loc():
 class ConversionTestInfo:
     """Information about a tested conversion."""
 
+    run_type: str
+    """One of "library", "cla", or "gui", describing which type of test run was performed"""
+
     test_spec: SingleConversionTestSpec
     """The specification of the test conversion which was run to produce this"""
 
@@ -82,6 +86,9 @@ class ConversionTestInfo:
 
     captured_stderr: str | None = None
     """Any output to stderr while the test was run"""
+
+    exc_info: pytest.ExceptionInfo | None = None
+    """If the test conversion raised an exception, that exception's info, otherwise None"""
 
     @property
     def qualified_in_filename(self):
@@ -105,28 +112,6 @@ class ConversionTestInfo:
 
 
 @dataclass
-class LibraryConversionTestInfo(ConversionTestInfo):
-    """Information about a tested conversion, specifically for when it was tested through a call to the library"""
-
-    exc_info: pytest.ExceptionInfo | None = None
-    """If the test conversion raised an exception, that exception's info, otherwise None"""
-
-
-@dataclass
-class CLAConversionTestInfo(ConversionTestInfo):
-    """Information about a tested conversion, specifically for when it was tested through a the command-line
-    application (CLA)
-    """
-
-
-@dataclass
-class GUIConversionTestInfo(ConversionTestInfo):
-    """Information about a tested conversion, specifically for when it was tested through the GUI (the local version of
-    the web app)
-    """
-
-
-@dataclass
 class ConversionTestSpec:
     """Class providing a specification for a test file conversion.
 
@@ -141,8 +126,11 @@ class ConversionTestSpec:
     filename: str | Iterable[str] = "nacl.cif"
     """The name of the input file, relative to the input test data location, or a list thereof"""
 
-    to_format: str | Iterable[str] = "pdb"
+    to_format: str | int | Iterable[str | int] = "pdb"
     """The format to test converting the input file to, or a list thereof"""
+
+    from_format: str | int | Iterable[str | int] | None = None
+    """The format of the input file, when it needs to be explicitly specified"""
 
     converter_name: str | Iterable[str] = CONVERTER_DEFAULT
     """The name of the converter to be used for the test, or a list thereof"""
@@ -153,6 +141,11 @@ class ConversionTestSpec:
 
     expect_success: bool | Iterable[bool] = True
     """Whether or not to expect the test to succeed"""
+
+    skip: bool | Iterable[bool] = False
+    """If set to true, this test will be skipped and not run. Can also be set individually for certain tests within an
+    array. This should typically only be used when debugging to skip working tests to more easily focus on non-working
+    tests"""
 
     callback: (Callable[[ConversionTestInfo], str] |
                Iterable[Callable[[ConversionTestInfo], str]] | None) = None
@@ -220,6 +213,9 @@ class ConversionTestSpec:
             if attr_name in l_single_val_attrs:
                 setattr(self, attr_name, [getattr(self, attr_name)]*self._len)
 
+        # Check if all tests should be skipped
+        self.skip_all = all(self.skip)
+
     def __len__(self):
         """Get the length from the member - valid only after `__post_init__` has been called"""
         return self._len
@@ -241,8 +237,11 @@ class SingleConversionTestSpec:
     filename: str
     """The name of the input file, relative to the input test data location"""
 
-    to_format: str
+    to_format: str | int
     """The format to test converting the input file to"""
+
+    from_format: str | int | None = None
+    """The format of the input file, when it needs to be explicitly specified"""
 
     converter_name: str | Iterable[str] = CONVERTER_DEFAULT
     """The name of the converter to be used for the test"""
@@ -254,6 +253,9 @@ class SingleConversionTestSpec:
     expect_success: bool = True
     """Whether or not to expect the test to succeed"""
 
+    skip: bool = False
+    """If set to True, this test will be skipped, always returning success"""
+
     callback: (Callable[[ConversionTestInfo], str] | None) = None
     """Function to be called after the conversion is performed to check in detail whether results are as expected. It
     should take as its only argument a `ConversionTestInfo` and return a string. The string should be empty if the check
@@ -262,11 +264,12 @@ class SingleConversionTestSpec:
     @property
     def out_filename(self) -> str:
         """The unqualified name of the output file which should have been created by the conversion."""
+        to_format_name = get_format_info(self.to_format, which=0).name
         if not is_archive(self.filename):
-            return f"{os.path.splitext(self.filename)[0]}.{self.to_format}"
+            return f"{os.path.splitext(self.filename)[0]}.{to_format_name}"
         else:
             filename_base, ext = split_archive_ext(os.path.basename(self.filename))
-            return f"{filename_base}-{self.to_format}{ext}"
+            return f"{filename_base}-{to_format_name}{ext}"
 
     @property
     def log_filename(self) -> str:
@@ -291,9 +294,14 @@ def run_test_conversion_with_library(test_spec: ConversionTestSpec):
     with TemporaryDirectory("_input") as input_dir, TemporaryDirectory("_output") as output_dir:
         # Iterate over the test spec to run each individual test it defines
         for single_test_spec in test_spec:
+            if single_test_spec.skip:
+                print(f"Skipping single test spec {single_test_spec}")
+                continue
+            print(f"Running single test spec: {single_test_spec}")
             _run_single_test_conversion_with_library(test_spec=single_test_spec,
                                                      input_dir=input_dir,
                                                      output_dir=output_dir)
+            print(f"Success for test spec: {single_test_spec}")
 
 
 def _run_single_test_conversion_with_library(test_spec: SingleConversionTestSpec,
@@ -327,6 +335,7 @@ def _run_single_test_conversion_with_library(test_spec: SingleConversionTestSpec
         if test_spec.expect_success:
             run_converter(filename=qualified_in_filename,
                           to_format=test_spec.to_format,
+                          from_format=test_spec.from_format,
                           name=test_spec.converter_name,
                           upload_dir=input_dir,
                           download_dir=output_dir,
@@ -336,6 +345,7 @@ def _run_single_test_conversion_with_library(test_spec: SingleConversionTestSpec
             with pytest.raises(Exception) as exc_info:
                 run_converter(filename=qualified_in_filename,
                               to_format=test_spec.to_format,
+                              from_format=test_spec.from_format,
                               name=test_spec.converter_name,
                               upload_dir=input_dir,
                               download_dir=output_dir,
@@ -349,15 +359,17 @@ def _run_single_test_conversion_with_library(test_spec: SingleConversionTestSpec
 
     # Compile output info for the test and call the callback function if one is provided
     if test_spec.callback:
-        test_info = LibraryConversionTestInfo(test_spec=test_spec,
-                                              input_dir=input_dir,
-                                              output_dir=output_dir,
-                                              success=success,
-                                              captured_stdout=stdout,
-                                              captured_stderr=stderr,
-                                              exc_info=exc_info)
+        test_info = ConversionTestInfo(run_type="library",
+                                       test_spec=test_spec,
+                                       input_dir=input_dir,
+                                       output_dir=output_dir,
+                                       success=success,
+                                       captured_stdout=stdout,
+                                       captured_stderr=stderr,
+                                       exc_info=exc_info)
         callback_msg = test_spec.callback(test_info)
-        assert not callback_msg, callback_msg
+        if callback_msg:
+            pytest.fail(callback_msg)
 
 
 def run_test_conversion_with_cla(test_spec: ConversionTestSpec):
@@ -372,9 +384,14 @@ def run_test_conversion_with_cla(test_spec: ConversionTestSpec):
     with TemporaryDirectory("_input") as input_dir, TemporaryDirectory("_output") as output_dir:
         # Iterate over the test spec to run each individual test it defines
         for single_test_spec in test_spec:
+            if single_test_spec.skip:
+                print(f"Skipping single test spec {single_test_spec}")
+                continue
+            print(f"Running single test spec: {single_test_spec}")
             _run_single_test_conversion_with_cla(test_spec=single_test_spec,
                                                  input_dir=input_dir,
                                                  output_dir=output_dir)
+            print(f"Success for test spec: {single_test_spec}")
 
 
 def _run_single_test_conversion_with_cla(test_spec: SingleConversionTestSpec,
@@ -407,6 +424,7 @@ def _run_single_test_conversion_with_cla(test_spec: SingleConversionTestSpec,
         if test_spec.expect_success:
             run_converter_through_cla(filename=qualified_in_filename,
                                       to_format=test_spec.to_format,
+                                      from_format=test_spec.from_format,
                                       name=test_spec.converter_name,
                                       input_dir=input_dir,
                                       output_dir=output_dir,
@@ -417,6 +435,7 @@ def _run_single_test_conversion_with_cla(test_spec: SingleConversionTestSpec,
             with pytest.raises(SystemExit) as exc_info:
                 run_converter_through_cla(filename=qualified_in_filename,
                                           to_format=test_spec.to_format,
+                                          from_format=test_spec.from_format,
                                           name=test_spec.converter_name,
                                           input_dir=input_dir,
                                           output_dir=output_dir,
@@ -438,14 +457,16 @@ def _run_single_test_conversion_with_cla(test_spec: SingleConversionTestSpec,
 
     # Compile output info for the test and call the callback function if one is provided
     if test_spec.callback:
-        test_info = CLAConversionTestInfo(test_spec=test_spec,
-                                          input_dir=input_dir,
-                                          output_dir=output_dir,
-                                          success=success,
-                                          captured_stdout=stdout,
-                                          captured_stderr=stderr)
+        test_info = ConversionTestInfo(run_type="cla",
+                                       test_spec=test_spec,
+                                       input_dir=input_dir,
+                                       output_dir=output_dir,
+                                       success=success,
+                                       captured_stdout=stdout,
+                                       captured_stderr=stderr)
         callback_msg = test_spec.callback(test_info)
-        assert not callback_msg, callback_msg
+        if callback_msg:
+            pytest.fail(callback_msg)
 
 
 def run_converter_through_cla(filename: str,
@@ -454,6 +475,7 @@ def run_converter_through_cla(filename: str,
                               input_dir: str,
                               output_dir: str,
                               log_file: str,
+                              from_format: str | None = None,
                               **conversion_kwargs):
     """Runs a test conversion through the command-line interface
 
@@ -474,17 +496,23 @@ def run_converter_through_cla(filename: str,
         The directory which contains the output file
     log_file : str
         The desired name of the log file
+    conversion_kwargs : Any
+        Additional arguments describing the conversion
+    from_format : str | None
+        The format of the input file, when it needs to be explicitly specified, otherwise None
     """
 
     # Start the argument string with the arguments we will always include
     arg_string = f"{filename} -i {input_dir} -t {to_format} -o {output_dir} -w {name} --log-file {log_file}"
 
-    # For each argument in the conversion kwargs, convert it to the appropriate argument to be provided to the
-    # argument string
+    # For from_format and each argument in the conversion kwargs, convert it to the appropriate argument to be provided
+    # to the argument string
+
+    if from_format:
+        arg_string += f" -f {from_format}"
+
     for key, val in conversion_kwargs.items():
-        if key == "from_format":
-            arg_string += f" -f {val}"
-        elif key == "log_mode":
+        if key == "log_mode":
             if val == LOG_NONE:
                 arg_string += " -q"
             else:
@@ -497,8 +525,8 @@ def run_converter_through_cla(filename: str,
                 arg_string += " --strict"
         elif key == "max_file_size":
             if val != 0:
-                assert False, ("Test specification imposes a maximum file size, which isn't compatible with the "
-                               "command-line application.")
+                pytest.fail("Test specification imposes a maximum file size, which isn't compatible with the "
+                            "command-line application.")
         elif key == "data":
             for subkey, subval in val.items():
                 if subkey == "from_flags":
@@ -517,10 +545,10 @@ def run_converter_through_cla(filename: str,
                     # Handled alongside COORD_GEN_KEY above
                     pass
                 else:
-                    assert False, (f"The key 'data[\"{subkey}\"]' was passed to `conversion_kwargs` but could not be "
-                                   "interpreted")
+                    pytest.fail(f"The key 'data[\"{subkey}\"]' was passed to `conversion_kwargs` but could not be "
+                                "interpreted")
         else:
-            assert False, f"The key '{key}' was passed to `conversion_kwargs` but could not be interpreted"
+            pytest.fail(f"The key '{key}' was passed to `conversion_kwargs` but could not be interpreted")
 
     run_with_arg_string(arg_string)
 

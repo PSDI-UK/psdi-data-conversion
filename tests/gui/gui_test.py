@@ -3,23 +3,23 @@
 # Selenium test script for PSDI Data Conversion Service.
 
 import os
-import time
 from multiprocessing import Process
 
-from pathlib import Path
 import pytest
+
+from psdi_data_conversion.testing.constants import DEFAULT_ORIGIN
+from psdi_data_conversion.testing.gui import (GuiTestSpecRunner, wait_and_find_element, wait_for_cover_hidden,
+                                              wait_for_element)
+from psdi_data_conversion.testing.conversion_test_specs import l_gui_test_specs
 
 # Skip all tests in this module if required packages for GUI testing aren't installed
 try:
     from selenium.common.exceptions import NoSuchElementException
     from selenium import webdriver
-    from selenium.webdriver.common.alert import Alert
     from selenium.webdriver.common.by import By
     from selenium.webdriver import FirefoxOptions
     from selenium.webdriver.firefox.service import Service as FirefoxService
     from selenium.webdriver.firefox.webdriver import WebDriver
-    from selenium.webdriver.support import expected_conditions as EC
-    from selenium.webdriver.support.ui import WebDriverWait
     from webdriver_manager.firefox import GeckoDriverManager
 
     from psdi_data_conversion.app import start_app
@@ -34,28 +34,8 @@ except ImportError:
 
 
 import psdi_data_conversion
-from psdi_data_conversion.testing.utils import get_input_test_data_loc
 
-driver_path = os.environ.get("DRIVER")
-
-if not driver_path:
-    driver_path = GeckoDriverManager().install()
-
-origin = os.environ.get("ORIGIN", "http://127.0.0.1:5000")
-
-# Standard timeout at 10 seconds
-TIMEOUT = 10
-
-
-def wait_for_element(driver: WebDriver, xpath: str, by=By.XPATH):
-    """Shortcut for boilerplate to wait until a web element is visible"""
-    WebDriverWait(driver, TIMEOUT).until(EC.element_to_be_clickable((by, xpath)))
-
-
-def wait_and_find_element(driver: WebDriver, xpath: str, by=By.XPATH) -> EC.WebElement:
-    """Finds a web element, after first waiting to ensure it's visible"""
-    wait_for_element(driver, xpath, by=by)
-    return driver.find_element(by, xpath)
+origin = os.environ.get("ORIGIN", DEFAULT_ORIGIN)
 
 
 @pytest.fixture(scope="module", autouse=True)
@@ -81,6 +61,13 @@ def common_setup():
 @pytest.fixture(scope="module")
 def driver():
     """Get a headless Firefox web driver"""
+
+    driver_path = os.environ.get("DRIVER")
+
+    if not driver_path:
+        driver_path = GeckoDriverManager().install()
+        print(f"Gecko driver installed to {driver_path}")
+
     opts = FirefoxOptions()
     opts.add_argument("--headless")
     ff_driver = webdriver.Firefox(service=FirefoxService(driver_path),
@@ -89,14 +76,11 @@ def driver():
     ff_driver.quit()
 
 
-@pytest.fixture(scope="module", autouse=True)
-def setup(driver: WebDriver):
-    """Run common tasks for each test"""
-
-    driver.get(f"{origin}/")
-
-
 def test_initial_frontpage(driver: WebDriver):
+
+    # Load the home page and wait for the page cover to be removed
+    driver.get(f"{origin}/")
+    wait_for_cover_hidden(driver)
 
     # Check that the front page contains the header "Data Conversion Service".
 
@@ -117,59 +101,9 @@ def test_initial_frontpage(driver: WebDriver):
         driver.find_element(By.XPATH, "//select[@id='success']/option")
 
 
-def test_cdxml_to_inchi_conversion(driver: WebDriver):
-
-    test_file = "standard_test"
-
-    input_file = os.path.realpath(os.path.join(get_input_test_data_loc(), f"{test_file}.cdxml"))
-    output_file = Path.home().joinpath("Downloads", f"{test_file}.inchi")
-    log_file = Path.home().joinpath("Downloads", f"{test_file}.log.txt")
-
-    # Remove test files from Downloads directory if they exist.
-
-    if (Path.is_file(log_file)):
-        Path.unlink(log_file)
-
-    if (Path.is_file(output_file)):
-        Path.unlink(output_file)
-
-    wait_for_element(driver, "//select[@id='fromList']/option")
-
-    # Select cdxml from the 'from' list.
-    driver.find_element(By.XPATH, "//select[@id='fromList']/option[contains(.,'cdxml: ChemDraw CDXML')]").click()
-
-    # Select InChI from the 'to' list.
-    driver.find_element(By.XPATH, "//select[@id='toList']/option[contains(.,'inchi: InChI')]").click()
-
-    # Select Open Babel from the available conversion options list.
-    driver.find_element(By.XPATH, "//select[@id='success']/option[contains(.,'Open Babel')]").click()
-
-    # Click on the "Yes" button to accept the converter and go to the conversion page
-    driver.find_element(By.XPATH, "//input[@id='yesButton']").click()
-
-    # Select the input file.
-    wait_and_find_element(driver, "//input[@id='fileToUpload']").send_keys(str(input_file))
-
-    # Request the log file
-    wait_and_find_element(driver, "//input[@id='requestLog']").click()
-
-    # Click on the "Convert" button.
-    wait_and_find_element(driver, "//input[@id='uploadButton']").click()
-
-    # Handle alert box.
-    WebDriverWait(driver, TIMEOUT).until(EC.alert_is_present())
-    Alert(driver).dismiss()
-
-    # Wait until files exist.
-
-    time_elapsed = 0
-    while (not Path.is_file(log_file)) or (not Path.is_file(output_file)):
-        time.sleep(1)
-        time_elapsed += 1
-        if time_elapsed > TIMEOUT:
-            pytest.fail(f"Download of {output_file} and {log_file} timed out")
-
-    time.sleep(1)
-
-    # Verify that the InChI file is correct.
-    assert output_file.read_text().strip() == "InChI=1S/C12NO/c1-12(2)6-7-13-11-5-4-9(14-3)8-10(11)12"
+@pytest.mark.parametrize("test_spec", l_gui_test_specs,
+                         ids=lambda x: x.name)
+def test_conversions(driver, test_spec):
+    """Run all conversion tests in the defined list of test specifications
+    """
+    GuiTestSpecRunner(driver=driver, origin=origin).run(test_spec)

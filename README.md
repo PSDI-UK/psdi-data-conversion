@@ -1,6 +1,6 @@
 # PSDI Data Conversion
 
-Version: Pre-release 2024-02-27
+Release date: 2024-04-29
 
 This is the repository for the PSDI PF2 Chemistry File Format Conversion project. The goal of this project is to provide utilities to assist in converting files between the many different file formats used in chemistry, providing information on what converters are available for a given conversion and the expected quality of it, and providing multiple interfaces to perform these conversions. These interfaces are:
 
@@ -36,6 +36,10 @@ This is the repository for the PSDI PF2 Chemistry File Format Conversion project
 - [Troubleshooting](#troubleshooting)
   - [OSError: [Errno 24] Too many open files](#oserror-errno-24-too-many-open-files)
   - [Errors running c2x or Atomsk converters](#errors-running-c2x-or-atomsk-converters)
+  - [A supported conversion fails](#a-supported-conversion-fails)
+    - [Input file is malformatted or corrupt](#input-file-is-malformatted-or-corrupt)
+    - [Input file's format is misidentified](#input-files-format-is-misidentified)
+    - [Other known issues](#other-known-issues)
 - [Licensing](#licensing)
 - [Contributors](#contributors)
 - [Funding](#funding)
@@ -228,6 +232,24 @@ options] [-s/--strict] [--nc/--no-check] [-q/--quiet] [-g/--log-file <log file n
 
 Call `psdi-data-convert -h` for details on each of these options.
 
+Note that some requested conversions may involve ambiguous formats which share the same extension. In this case, the application will print a warning and list possible matching formats, with a disambiguating name that can be used to specify which one. For instance, the `c2x` converter can convert into two variants of the `pdb` format, and if you ask it to convert to `pdb` without specifying which one, you'll see:
+
+```
+ERROR: Extension 'pdb' is ambiguous and must be defined by ID. Possible formats and their IDs are:
+9: pdb-0 (Protein Data Bank)
+259: pdb-1 (Protein Data Bank with atoms numbered)
+```
+
+This provides the IDs ("9" and "259") and disambiguating names ("pdb-0" and "pdb-1") for the matching formats. Either can be used in the call to the converter, e.g.:
+
+```bash
+psdi-data-conversion nacl.cif -t 9 -w c2x
+# Or equivalently:
+psdi-data-conversion nacl.cif -t pdb-0 -w c2x
+```
+
+The "<format>-0" pattern can be used with any format, even if it's unambiguous, and will be interpreted as the first instance of the format in the database with valid conversions. Note that as the database expands in future versions and more valid conversions are added, these disambiguated names may change, so it is recommended to use the format's ID in scripts and with the library to ensure consistency between versions of this package.
+
 #### Requesting Information on Possible Conversions
 
 The script can also be used to get information on possible conversions by providing the `-l/--list` argument:
@@ -302,6 +324,8 @@ Where `filename` is the name of the file to convert (either fully-qualified or r
 
 See the method's documentation via `help(run_converter)` after importing it for further details on usage.
 
+Note that as with running the application through the command-line, some extra care may be needed in the case that the input or output format is ambiguous - see the [Data Conversion](#data-conversion) section above for more details on this. As with running through the command-line, a format's ID or disambiguated name must be used in the case of ambiguity.
+
 #### `constants`
 
 This package defines most constants used in the package. It may be imported via:
@@ -362,6 +386,8 @@ Once installed, the command-line script `psdi-data-convert-gui` will be made ava
 
 In case of problems when using Chrome, try opening Chrome from the command line:
 open -a "Google Chrome.app" --args --allow-file-access-from-files
+
+The local version has some customisable options for running it, which can can be seen by running `psdi-data-convert-gui --help`. Most of these are only useful for development, but one notable setting is `--max-file-size-ob`, which sets the maximum allowed filesize for conversions with the Open Babel converter in megabytes. This is set to 1 MB by default, since Open Babel has a known bug which causes it to hang indefinitely for some conversions over this size (such as from large `mmcif` files). This can be set to a higher value (or to 0 to disable the limit) if the user wishes to disable this safeguard.
 
 ## Extending Functionality
 
@@ -445,6 +471,66 @@ brew install gcc
 Alternatively, you can run your own versions of the `c2x` and `atomsk` binaries with this project. Compile them yourself however you wish - see the projects at https://github.com/codenrx/c2x and https://github.com/pierrehirel/atomsk and follow their instructions to build a binary on your system. Once you've done so, add the binary to your `$PATH`, and this project will pick that up and use it in preference to the prepackaged binary.
 
 On the other hand, it's possible that an error of this sort will occur if you have a non-working binary of one of these converters in your `$PATH`. If this might be the case, you can try removing it and see if the prepackaged binary works for you, or else recompile it to try to fix errors.
+
+### A supported conversion fails
+
+Here we'll go over some of the most common reasons that a supported conversion might fail, and what can be done to fix the issue.
+
+#### Input file is malformatted or corrupt
+
+Usually if there is a problem with the input file, the error message you receive should indicate some difficulty reading it. If the error message indicates this might be the issue, try the following:
+
+Check the validity of the input file, ideally using another tool which can read in a file of its type, and confirm that it can be read successfully. This doesn't guarantee that the file is valid, as some utilities are tolerant to some formatting errors, but if you get an error here, then you know the issue is with the file. If the file can be read by another utility, see if the conversion you're attempting is supported by another converter - it might be that the file has a negligible issue that another converter is able to ignore.
+
+If you've confirmed that the input file is malformatted or corrupt, see if it's possible to regenerate it or fix it manually. There may be a bug in the program which generated it - if this is under your control, check the format's documentation to help fix it. Otherwise, you can see if you can use the format's documentation as a guide to manually fix the file.
+
+#### Input file's format is misidentified
+
+If you've followed the steps in the previous section and confirmed that the input file is valid, but you're still having issues with it, one possibility is that this application is misidentifying the file's format. This can happen if you've given the file an extension which isn't expected of its format, or in rare cases where an extension is shared by multiple formats.
+
+To remedy this, try explicitly specifying the format, rather than letting the application guess it from the extension. You can see all supported formats by running `psdi-data-convert -l`, and then get details on one with `psdi-data-convert -l -f <format>` to confirm that it's the correct format. You can then call the conversion script with the argument `-f <format>`, or within Python make a call to the library with `run_converter(..., from_format=<format>)` to specify the format.
+
+`<format>` here can be the standard extension of the format (in the case of unambiguous extensions), its ID, or its disambiguated name. To give an example which explains what each of these are, let's say you have an MDL MOL file you wish to convert to XYZ, so you get information about it and possible converters with `psdi-data-convert -l -f mol -t xyz`:
+
+```base
+$ psdi-data-convert -l -f mol
+WARNING: Format 'mol' is ambiguous and could refer to multiple formats. It may be necessary to explicitly specify which
+you want to use when calling this script, e.g. with '-f mol-0' - see the disambiguated names in the list below:
+
+18: mol-0 (MDL MOL)
+216: mol-1 (MOLDY)
+
+20: xyz (XYZ cartesian coordinates)
+
+The following registered converters can convert from mol-0 to xyz:
+
+    Open Babel
+    c2x
+
+For details on input/output flags and options allowed by a converter for this conversion, call:
+psdi-data-convert -l <converter name> -f mol-0 -t xyz
+
+The following registered converters can convert from mol-1 to xyz:
+
+    Atomsk
+
+For details on input/output flags and options allowed by a converter for this conversion, call:
+psdi-data-convert -l <converter name> -f mol-1 -t xyz
+```
+
+This output indicates that the application is aware of two formats which share the `mol` extension: MDL MOL and MOLDY. It lists the ID, disambiguated name, and description of each: ID `18` and disambiguated name `mol-0` for MDL MOL, and ID `216` and disambiguated name `mol-1` for MOLDY. The XYZ format, on the other hand, is unambiguous, and only lists the standard extension for it as its disambiguated name (although `xyz-0` will be accepted without error as well).
+
+The program then lists converters which can handle the requested conversion, revealing a potential pitfall: The Open Babel and c2x converters can convert from MDL MOL to XYZ, which the Atomsk converter can convert from MOLDY to XYZ. If you don't specify which format you're converting from, the script might assume you meant to use the other one, if that's the only one compatible with the converter you've requested (or with the default converter, Open Babel, if you didn't explicitly request one). So to be careful here, it's best to specify this input format unambiguously.
+
+Since in this example you have an MDL MOL file, you would use `-f 18` or `-f mol-0` to explicitly specify it in the command-line, or similarly provide one of these to the `from_format` argument of `run_converter` within Python. The application will then properly handle it, including alerting you if you request a conversion that isn't supported by your requested converter (e.g. if you request a conversion of this MDL MOL file to XYZ with Atomsk).
+
+Important note: The disambiguated name is generated dynamically and isn't stored in the database, and in rare cases may change for some formats in future versions of this application which expand support to more formats and conversions. For uses which require forward-compatibility with future versions of this application, the ID should be used instead.
+
+#### Other known issues
+
+Through testing, we've identified some other conversion issues, which we list here:
+
+- Open Babel will indefinitely hang when attempting to convert large files (more than ~1 MB) of certain types (such as `mmcif`). This is an issue with the converter itself and not our application, which we hope will be fixed in a future version. If this occurs, the job will have to be forcibly terminated. CTRL+C will fail to terminate it, but it can be stopped with CTRL+Z, then terminated with `kill %N`, where N is the number listed beside the job when it is stopped (usually 1). The conversion should then be attempted with another supported converter.
 
 ## Licensing
 

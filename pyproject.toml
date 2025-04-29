@@ -1,5 +1,5 @@
 [build-system]
-requires = ["hatchling==1.21.1", "hatch-vcs"]
+requires = ["hatchling==1.27.0", "hatch-vcs"]
 build-backend = "hatchling.build"
 
 [project]
@@ -66,10 +66,12 @@ psdi-data-convert-gui = "psdi_data_conversion.app:main"
 [project.urls]
 Homepage = "https://data-conversion.psdi.ac.uk/"
 Documentation = "https://psdi-uk.github.io/psdi-data-conversion/"
-Repository = "https://github.com/PSDI-UK/psdi-data-conversion"
 Issues = "https://github.com/PSDI-UK/psdi-data-conversion/issues"
 Changelog = "https://github.com/PSDI-UK/psdi-data-conversion/blob/main/CHANGELOG.md"
-Download = "https://github.com/PSDI-UK/psdi-data-conversion/releases/latest"
+
+# Repository currently isn't public - when it goes public, uncomment the below
+# Repository = "https://github.com/PSDI-UK/psdi-data-conversion"
+# Download = "https://github.com/PSDI-UK/psdi-data-conversion/releases/latest"
 
 [tool.hatch.build]
 exclude = [
@@ -96,7 +98,7 @@ branch = true
 omit = []
 
 [tool.coverage.paths]
-tests = ["tests"]
+tests = ["tests/python"]
 
 [tool.coverage.report]
 exclude_lines = ["no cov", "if __name__ == .__main__.:", "if TYPE_CHECKING:"]

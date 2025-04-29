@@ -5,11 +5,11 @@ Created 2024-12-09 by Bryan Gillis.
 Functions and classes related to logging and other messaging for the user
 """
 
-from datetime import datetime
 import logging
 import os
 import re
 import sys
+from datetime import datetime
 
 from psdi_data_conversion import constants as const
 

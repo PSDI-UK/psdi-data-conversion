@@ -7,7 +7,9 @@
 
 
 import { getInputFlags, getOutputFlags, getInputArgFlags, getOutputArgFlags } from "./data.js";
-import { commonConvertReady, convertFile, getExtCheck, splitArchiveExt, isArchiveExt } from "./convert_common.js"
+import {
+    SAFE_CHAR_REGEX, commonConvertReady, convertFile, getExtCheck, splitArchiveExt, isArchiveExt
+} from "./convert_common.js"
 
 var token = "",
     in_ext = "",
@@ -51,8 +53,24 @@ function enterArgument(event) {
     }
 }
 
+
+/**
+ * Validate the input for a format option - if invalid, display the error message, if valid, hide it
+ *
+ * @param {*} event 
+ */
+function validateInput(event) {
+    var err_id = this.id.replace('text', 'err')
+    if (this.validity.patternMismatch) {
+        $('#' + err_id).css({ display: "block" })
+    } else {
+        $('#' + err_id).css({ display: "none" })
+    }
+}
+
 // Uploads a user-supplied file
 function submitFile() {
+
     const file = $("#fileToUpload")[0].files[0],
         [fname, ext] = splitArchiveExt(file.name);
 
@@ -78,9 +96,16 @@ function submitFile() {
     const checked_in = $('input[name=in_arg_check]:checked'),
         checked_out = $('input[name=out_arg_check]:checked');
 
+    let security_passed = true;
+
     checked_in.each(function () {
         read_arg_flags += $("#" + this.id).val()[0];
-        const arg = $("#in_arg_text" + this.id.substring(this.id.length - 1, this.id.length)).val();
+        const e = $("#in_arg_text" + this.id.substring(this.id.length - 1, this.id.length));
+        const arg = e.val();
+
+        if (e[0].validity.patternMismatch) {
+            security_passed = false;
+        }
 
         if (/\S/.test(arg)) {
             read_args += arg.trim() + '£';
@@ -92,7 +117,12 @@ function submitFile() {
 
     checked_out.each(function () {
         write_arg_flags += $("#" + this.id).val()[0];
-        const arg = $("#out_arg_text" + this.id.substring(this.id.length - 1, this.id.length)).val();
+        const e = $("#out_arg_text" + this.id.substring(this.id.length - 1, this.id.length));
+        const arg = e.val();
+
+        if (e[0].validity.patternMismatch) {
+            security_passed = false;
+        }
 
         if (/\S/.test(arg)) {
             write_args += arg.trim() + '£';
@@ -102,9 +132,21 @@ function submitFile() {
         }
     })
 
+    let alert_msg = '';
+
+    if (!security_passed) {
+        alert_msg += 'ERROR: One or more ticked options contains invalid characters. They must match the regex /' +
+            SAFE_CHAR_REGEX + '/ .\n';
+    }
+
     if (!all_args_entered) {
-        alert('All ticked option flags need additional information to be entered into the associated text box.');
-        return;
+        alert_msg += 'ERROR: All ticked options need additional information to be entered into the associated ' +
+            'text box.\n';
+    }
+
+    if (alert_msg) {
+        alert(alert_msg);
+        return
     }
 
     const coordinates = $('input[name="coordinates"]:checked').val(),
@@ -216,11 +258,17 @@ function addCheckboxes(argFlags, type) {
                 <tr>
                     <td><input type='checkbox' id="${type}_check${flagCount}" name=${type}_check value="${flag}"></input></td>
                     <td><label for="${type}_check${flagCount}">${flag} [${brief}]: ${description}<label></td>
-                    <td><input type='text' id=${type}_text${flagCount} placeholder='-- type info. here --'></input></td>
+                    <td><input type='text' id="${type}_text${flagCount}" placeholder='-- type info. here --'
+                         pattern='` + SAFE_CHAR_REGEX + `'></input>
+                         <p class="init-hidden" id="${type}_err${flagCount}"><strong>ERROR:</strong> Input contains
+                         invalid characters; it must match the regex 
+                         <code class="secondary">/` + SAFE_CHAR_REGEX + `/</code></p>
+                    </td>
                     <td><span id= ${type}_label${flagCount}>${furtherInfo}</span></td>
                 </tr>`);
 
             $(`#${type}_text${flagCount}`).hide();
+            $(`#${type}_text${flagCount}`).on('input', validateInput);
             $(`#${type}_label${flagCount}`).hide();
             $(`#${type}_check${flagCount}`).change(enterArgument);
 

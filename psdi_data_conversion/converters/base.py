@@ -6,19 +6,19 @@ Base class and information for file format converters
 """
 
 
-from copy import deepcopy
-from dataclasses import dataclass
+import abc
 import logging
-from collections.abc import Callable
 import os
 import subprocess
-import abc
-
 import sys
 import traceback
+from collections.abc import Callable
+from copy import deepcopy
+from dataclasses import dataclass
 from typing import Any
 
-from psdi_data_conversion import constants as const, log_utility
+from psdi_data_conversion import constants as const
+from psdi_data_conversion import log_utility
 from psdi_data_conversion.dist import bin_exists, get_bin_path, get_dist
 from psdi_data_conversion.security import SAFE_STRING_RE, string_is_safe
 
@@ -37,9 +37,13 @@ class FileConverterException(RuntimeError):
 
     def __init__(self,
                  *args,
-                 logged: bool = False):
+                 logged: bool = False,
+                 help: bool = False,
+                 msg_preformatted: bool = False):
         super().__init__(*args)
         self.logged = logged
+        self.help = help
+        self.msg_preformatted = msg_preformatted
 
 
 class FileConverterAbortException(FileConverterException):
@@ -74,23 +78,6 @@ class FileConverterInputException(FileConverterException):
     """Exception class to represent errors encountered with input parameters for the data conversion script.
     """
     pass
-
-
-class FileConverterHelpException(FileConverterInputException):
-    """An exception class which indicates an error where we will likely want to help the user figure out how to
-    correctly use the CLI instead of simply printing a traceback
-    """
-
-    def __init__(self, *args, msg_preformatted=False):
-        """Init the exception, noting if the message should be treated as preformatted or not
-
-        Parameters
-        ----------
-        msg_preformatted : bool, optional
-            If True, indicates that the message of the exception has already been formatted. Default False
-        """
-        super().__init__(*args)
-        self.msg_preformatted = msg_preformatted
 
 
 if HTTPException is not None:
@@ -156,6 +143,10 @@ class FileConverter:
 
     database_key_prefix: str | None = None
     """The prefix used in the database for keys related to this converter"""
+
+    supports_ambiguous_extensions: bool = False
+    """Whether or not this converter supports formats which share the same extension. This is used to enforce stricter
+    but less user-friendly requirements on format specification"""
 
     @abc.abstractmethod
     def _convert(self):
@@ -284,9 +275,9 @@ class FileConverter:
             if max_file_size is None:
                 from psdi_data_conversion.converters.openbabel import CONVERTER_OB
                 if self.name == CONVERTER_OB:
-                    self.max_file_size = const.DEFAULT_MAX_FILE_SIZE_OB*const.MEGABYTE
+                    self.max_file_size = const.DEFAULT_MAX_FILE_SIZE_OB
                 else:
-                    self.max_file_size = const.DEFAULT_MAX_FILE_SIZE*const.MEGABYTE
+                    self.max_file_size = const.DEFAULT_MAX_FILE_SIZE
             else:
                 self.max_file_size = max_file_size*const.MEGABYTE
 
@@ -325,11 +316,10 @@ class FileConverter:
             else:
                 self.from_format = from_format
 
-            # Remove any leading periods from to/from_format
-            if self.to_format.startswith("."):
-                self.to_format = self.to_format[1:]
-            if self.from_format.startswith("."):
-                self.from_format = self.from_format[1:]
+            # Convert in and out formats to FormatInfo, and raise an exception if one is ambiguous
+            from psdi_data_conversion.database import disambiguate_formats
+            (self.from_format_info,
+             self.to_format_info) = disambiguate_formats(self.name, self.from_format, self.to_format)
 
             # Set placeholders for member variables which will be set when conversion is run
             self.in_size: int | None = None
@@ -348,7 +338,7 @@ class FileConverter:
 
             self.local_filename = os.path.split(self.in_filename)[1]
             self.filename_base = os.path.splitext(self.local_filename)[0]
-            self.out_filename = f"{self.download_dir}/{self.filename_base}.{self.to_format}"
+            self.out_filename = f"{self.download_dir}/{self.filename_base}.{self.to_format_info.name}"
 
             # Set up files to log to
             self._setup_loggers()
@@ -356,13 +346,16 @@ class FileConverter:
             # Check that the requested conversion is valid and warn of any issues unless suppressed
             if not no_check:
                 from psdi_data_conversion.database import get_conversion_quality
-                qual = get_conversion_quality(self.name, self.from_format, self.to_format)
+                qual = get_conversion_quality(self.name,
+                                              self.from_format_info.id,
+                                              self.to_format_info.id)
                 if not qual:
-                    raise FileConverterHelpException(f"Conversion from {self.from_format} to {self.to_format} "
-                                                     f"with {self.name} is not supported.")
+                    raise FileConverterInputException(f"Conversion from {self.from_format_info.name} to "
+                                                      f"{self.to_format_info.name} "
+                                                      f"with {self.name} is not supported.", help=True)
                 if qual.details:
                     msg = (":\nPotential data loss or extrapolation issues with the conversion from "
-                           f"{self.from_format} to {self.to_format}:\n")
+                           f"{self.from_format_info.name} to {self.to_format_info.name}:\n")
                     for detail_line in qual.details.split("\n"):
                         msg += f"- {detail_line}\n"
                     self.logger.warning(msg)
@@ -381,7 +374,7 @@ class FileConverter:
             # Try to run the standard abort method. There's a good chance this will fail though depending on what went
             # wrong when during init, so we fallback to printing the exception to stderr
             try:
-                if not isinstance(e, FileConverterHelpException):
+                if not (isinstance(e, FileConverterException) and e.help):
                     self.logger.error(f"Exception triggering an abort was raised while initializing the converter. "
                                       f"Exception was type '{type(e)}', with message: {str(e)}")
                     if e:
@@ -389,7 +382,7 @@ class FileConverter:
                 self._abort(message="The application encountered an error while initializing the converter:\n" +
                             traceback.format_exc(), e=e)
             except Exception as ee:
-                if isinstance(ee, (l_abort_exceptions, FileConverterHelpException)):
+                if isinstance(ee, l_abort_exceptions) or (isinstance(ee, FileConverterException) and ee.help):
                     # Don't catch a deliberate abort or help exception; let it pass through
                     raise
                 message = ("ERROR: The application encounted an error during initialization of the converter and "
@@ -486,7 +479,7 @@ class FileConverter:
                                       f"with message: {str(e)}")
                     e.logged = True
                 raise
-            if not isinstance(e, FileConverterHelpException):
+            if not (isinstance(e, FileConverterException) and e.help):
                 self.logger.error(f"Exception triggering an abort was raised while running the converter. Exception "
                                   f"was type '{type(e)}', with message: {str(e)}")
                 if e:
@@ -520,6 +513,18 @@ class FileConverter:
 
         """
 
+        def try_debug_log(msg, *args, **kwargs):
+            try:
+                self.logger.debug(msg, *args, **kwargs)
+            except AttributeError:
+                pass
+
+        def error_log(msg, *args, **kwargs):
+            try:
+                self.logger.error(msg, *args, **kwargs)
+            except AttributeError:
+                print(msg, file=sys.stderr)
+
         # Remove the input and output files if they exist
         if self.delete_input:
             self.logger.debug(f"Cleaning up input file {self.in_filename}")
@@ -527,33 +532,34 @@ class FileConverter:
                 os.remove(self.in_filename)
             except FileNotFoundError:
                 pass
+
         try:
             os.remove(self.out_filename)
-        except FileNotFoundError:
-            self.logger.debug("Application aborting; no output file found to clean up")
+        except (FileNotFoundError, AttributeError):
+            try_debug_log("Application aborting; no output file found to clean up")
         else:
-            self.logger.debug(f"Application aborting, so cleaning up output file {self.out_filename}")
+            try_debug_log(f"Application aborting, so cleaning up output file {self.out_filename}")
 
         # If we have a Help exception, override the message with its message
-        if isinstance(e, FileConverterHelpException):
-            self.logger.debug("Help exception triggered, so only using its message for output")
+        if isinstance(e, FileConverterException) and e.help:
+            try_debug_log("Help exception triggered, so only using its message for output")
             message = str(e)
 
         if message:
             # If we're adding a message in server mode, read in any prior logs, clear the log, write the message, then
             # write the prior logs
             if self.log_file is None:
-                self.logger.debug("Adding abort message to the top of the output log so it will be the first thing "
-                                  "read by the user")
+                try_debug_log("Adding abort message to the top of the output log so it will be the first thing "
+                              "read by the user")
                 prior_output_log = open(self.output_log, "r").read()
                 os.remove(self.output_log)
                 with open(self.output_log, "w") as fo:
                     fo.write(message + "\n")
                     fo.write(prior_output_log)
 
-            # Note this message in the dev logger as well
-            if not isinstance(e, FileConverterHelpException):
-                self.logger.error(message)
+            # Note this message in the error logger as well
+            if not (isinstance(e, FileConverterException) and e.help):
+                error_log(message)
                 if e:
                     e.logged = True
 
@@ -604,8 +610,8 @@ class FileConverter:
         # empty or whitespace will be stripped by the logger, so we use a lone colon, which looks least obtrusive
         return (":\n"
                 f"File name:         {self.filename_base}\n"
-                f"From:              {self.from_format}\n"
-                f"To:                {self.to_format}\n"
+                f"From:              {self.from_format_info.name} ({self.from_format_info.note})\n"
+                f"To:                {self.to_format} ({self.to_format_info.note})\n"
                 f"Converter:         {self.name}\n")
 
     def _log_success(self):
@@ -680,8 +686,8 @@ class FileConverter:
         from psdi_data_conversion.database import get_conversion_quality
 
         conversion_quality = get_conversion_quality(converter_name=self.name,
-                                                    in_format=self.from_format,
-                                                    out_format=self.to_format)
+                                                    in_format=self.from_format_info.id,
+                                                    out_format=self.to_format_info.id)
         if not conversion_quality:
             return "unknown"
         return conversion_quality.qual_str
@@ -694,10 +700,6 @@ class FileConverter:
 
         if self.delete_input:
             os.remove(self.in_filename)
-        if "from_full" in self.data:
-            self.from_format = self.data["from_full"]
-        if "to_full" in self.data:
-            self.to_format = self.data["to_full"]
         if "success" in self.data:
             self.quality = self.data["success"]
         else:
@@ -733,23 +735,11 @@ class ScriptFileConverter(FileConverter):
 
         self.logger.debug(f"Performing conversion with ScriptFileConverter using script '{self.script}'")
 
-        from_flags = self.data.get("from_flags", "")
-        to_flags = self.data.get("from_flags", "")
-        from_options = self.data.get("from_options", "")
-        to_options = self.data.get("from_options", "")
-
-        # Check that all user-provided input passes security checks
-        for user_args in [from_flags, to_flags, from_options, to_options]:
-            if not string_is_safe(user_args):
-                raise FileConverterHelpException(f"Provided argument '{user_args}' does not pass security check - it "
-                                                 f"must match the regex {SAFE_STRING_RE.pattern}.")
-
         env = {"DIST": get_dist()}
         if self.required_bin is not None:
             env["BIN_PATH"] = get_bin_path(self.required_bin)
 
-        process = subprocess.run(['sh', f'psdi_data_conversion/scripts/{self.script}', '--' + self.to_format,
-                                  self.in_filename, self.out_filename, from_flags, to_flags, from_options, to_options],
+        process = subprocess.run(['sh', f'psdi_data_conversion/scripts/{self.script}', *self._get_script_args()],
                                  env=env, capture_output=True, text=True)
 
         self.out = process.stdout
@@ -760,3 +750,20 @@ class ScriptFileConverter(FileConverter):
             self._abort_from_err()
         else:
             self.logger.debug("Conversion process completed successfully")
+
+    def _get_script_args(self):
+        """Get the list of arguments which will be passed to the script"""
+
+        from_flags = self.data.get("from_flags", "")
+        to_flags = self.data.get("from_flags", "")
+        from_options = self.data.get("from_options", "")
+        to_options = self.data.get("from_options", "")
+
+        # Check that all user-provided input passes security checks
+        for user_args in [from_flags, to_flags, from_options, to_options]:
+            if not string_is_safe(user_args):
+                raise FileConverterInputException(f"Provided argument '{user_args}' does not pass security check - it "
+                                                  f"must match the regex {SAFE_STRING_RE.pattern}.", help=True)
+
+        return ['--' + self.to_format_info.name, self.in_filename, self.out_filename, from_flags, to_flags,
+                from_options, to_options]

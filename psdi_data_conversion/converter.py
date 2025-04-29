@@ -6,23 +6,26 @@ Class and functions to perform file conversion
 """
 
 from dataclasses import dataclass, field
-import os
 import json
+import glob
 import importlib
+import os
 import sys
-from tempfile import TemporaryDirectory
 import traceback
 from typing import Any, Callable, NamedTuple
 from multiprocessing import Lock
 from psdi_data_conversion import log_utility
+from collections.abc import Callable
+from dataclasses import dataclass, field
+from tempfile import TemporaryDirectory
+from typing import Any, NamedTuple
+
 from psdi_data_conversion import constants as const
 from psdi_data_conversion.converters import base
-
-import glob
-
 from psdi_data_conversion.converters.openbabel import CONVERTER_OB
 from psdi_data_conversion.file_io import (is_archive, is_supported_archive, pack_zip_or_tar, split_archive_ext,
                                           unpack_zip_or_tar)
+from psdi_data_conversion.utils import regularize_name
 
 # A lock to prevent multiple threads from logging at the same time
 logLock = Lock()
@@ -55,7 +58,8 @@ try:
 
         converter_class = module.converter
 
-        name = converter_class.name
+        # To make querying case/space-insensitive, we store all names in lowercase with spaces stripped
+        name = converter_class.name.lower().replace(" ", "")
 
         return NameAndClass(name, converter_class)
 
@@ -95,6 +99,66 @@ except Exception:
     D_CONVERTER_FLAGS = {}
     D_CONVERTER_OPTIONS = {}
     D_CONVERTER_ARGS = {}
+
+
+def get_supported_converter_class(name: str):
+    """Get the appropriate converter class matching the provided name from the dict of supported converters
+
+    Parameters
+    ----------
+    name : str
+        Converter name (case- and space-insensitive)
+
+    Returns
+    -------
+    type[base.FileConverter]
+    """
+    return D_SUPPORTED_CONVERTERS[regularize_name(name)]
+
+
+def get_registered_converter_class(name: str):
+    """Get the appropriate converter class matching the provided name from the dict of supported converters
+
+    Parameters
+    ----------
+    name : str
+        Converter name (case- and space-insensitive)
+
+    Returns
+    -------
+    type[base.FileConverter]
+    """
+    return D_REGISTERED_CONVERTERS[regularize_name(name)]
+
+
+def converter_is_supported(name: str):
+    """Checks if a converter is supported in principle by this project
+
+    Parameters
+    ----------
+    name : str
+        Converter name (case- and space-insensitive)
+
+    Returns
+    -------
+    bool
+    """
+    return regularize_name(name) in L_SUPPORTED_CONVERTERS
+
+
+def converter_is_registered(name: str):
+    """Checks if a converter is registered (usable)
+
+    Parameters
+    ----------
+    name : str
+        Converter name (case- and space-insensitive)
+
+    Returns
+    -------
+    bool
+    """
+    return regularize_name(name) in L_REGISTERED_CONVERTERS
 
 
 def get_converter(*args, name=const.CONVERTER_DEFAULT, **converter_kwargs) -> base.FileConverter:
@@ -161,10 +225,11 @@ def get_converter(*args, name=const.CONVERTER_DEFAULT, **converter_kwargs) -> ba
     FileConverterInputException
         If the converter isn't recognized or there's some other issue with the input
     """
+    name = regularize_name(name)
     if name not in L_REGISTERED_CONVERTERS:
         raise base.FileConverterInputException(const.ERR_CONVERTER_NOT_RECOGNISED.format(name) +
                                                f"{L_REGISTERED_CONVERTERS}")
-    converter_class = D_REGISTERED_CONVERTERS[name]
+    converter_class = get_registered_converter_class(name)
 
     return converter_class(*args, **converter_kwargs)
 
@@ -202,7 +267,7 @@ class FileConversionRunResult:
 
 
 def check_from_format(filename: str,
-                      from_format: str,
+                      from_format: str | int,
                       strict=False) -> bool:
     """Check that the filename for an input file ends with the expected extension
 
@@ -210,7 +275,7 @@ def check_from_format(filename: str,
     ----------
     filename : str
         The filename
-    from_format : str
+    from_format : str | int
         The expected format (extension)
     strict : bool, optional
         If True, will raise an exception on failure. Otherwise will print a warning and return False
@@ -226,14 +291,21 @@ def check_from_format(filename: str,
         If `strict` is True and the the file does not end with the expected exception
     """
 
-    # Silently make sure `from_format` starts with a dot
-    if not from_format.startswith("."):
-        from_format = f".{from_format}"
+    # Get the name of the format
+    if isinstance(from_format, str):
+        from_format_name = from_format
+    else:
+        from psdi_data_conversion.database import get_format_info
+        from_format_name = get_format_info(from_format).name
 
-    if filename.endswith(from_format):
+    # Silently make sure `from_format` starts with a dot
+    if not from_format_name.startswith("."):
+        from_format_name = f".{from_format}"
+
+    if filename.endswith(from_format_name):
         return True
 
-    msg = const.ERR_WRONG_EXTENSIONS.format(file=os.path.basename(filename), ext=from_format)
+    msg = const.ERR_WRONG_EXTENSIONS.format(file=os.path.basename(filename), ext=from_format_name)
 
     if strict:
         raise base.FileConverterInputException(msg)

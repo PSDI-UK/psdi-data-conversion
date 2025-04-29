@@ -13,3 +13,6 @@ TEST_DATA_LOC_IN_PROJECT = "./test_data"
 
 INPUT_TEST_DATA_LOC_IN_PROJECT = TEST_DATA_LOC_IN_PROJECT
 OUTPUT_TEST_DATA_LOC_IN_PROJECT = os.path.join(TEST_DATA_LOC_IN_PROJECT, "output")
+
+DEFAULT_ORIGIN = "http://127.0.0.1:5000"
+"""The default location of the server for running GUI unit tests"""
