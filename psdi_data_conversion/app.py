@@ -25,9 +25,6 @@ from psdi_data_conversion.file_io import split_archive_ext
 # Env var for the SHA of the latest commit
 SHA_EV = "SHA"
 
-# Env var for whether this is running in service mode or locally
-SERVICE_MODE_EV = "SERVICE_MODE"
-
 # Env var for whether this is a production release or development
 PRODUCTION_EV = "PRODUCTION_MODE"
 
@@ -42,7 +39,7 @@ dt = str(datetime.now())
 token = hashlib.md5(dt.encode('utf8')).hexdigest()
 
 # Get the service and production modes from their envvars
-service_mode_ev = os.environ.get(SERVICE_MODE_EV)
+service_mode_ev = os.environ.get(const.SERVICE_MODE_EV)
 service_mode = (service_mode_ev is not None) and (service_mode_ev.lower() == "true")
 production_mode_ev = os.environ.get(PRODUCTION_EV)
 production_mode = (production_mode_ev is not None) and (production_mode_ev.lower() == "true")

@@ -24,9 +24,6 @@ from psdi_data_conversion.converters.openbabel import CONVERTER_OB
 from psdi_data_conversion.file_io import (is_archive, is_supported_archive, pack_zip_or_tar, split_archive_ext,
                                           unpack_zip_or_tar)
 
-# Env var for whether this is running in service mode or locally
-SERVICE_MODE_EV = "SERVICE_MODE"
-
 # A lock to prevent multiple threads from logging at the same time
 logLock = Lock()
 
@@ -476,7 +473,7 @@ def run_converter(filename: str,
             raise exception_class(status_code, msg)
 
     # Log conversion information if in service mode
-    service_mode_ev = os.environ.get(SERVICE_MODE_EV)
+    service_mode_ev = os.environ.get(const.SERVICE_MODE_EV)
     service_mode = (service_mode_ev is not None) and (service_mode_ev.lower() == "true")
     if service_mode:
         try:
