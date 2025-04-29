@@ -9,6 +9,7 @@ from argparse import ArgumentParser
 import hashlib
 import os
 import json
+from multiprocessing import Lock
 from datetime import datetime
 from subprocess import run
 import sys
@@ -32,6 +33,9 @@ PRODUCTION_EV = "PRODUCTION_MODE"
 
 # Key for the label given to the file uploaded in the web interface
 FILE_TO_UPLOAD_KEY = 'fileToUpload'
+
+# A lock to prevent multiple threads from logging at the same time
+logLock = Lock()
 
 # Create a token by hashing the current date and time.
 dt = str(datetime.now())
@@ -202,7 +206,10 @@ def feedback():
             if key in report:
                 entry[key] = str(report[key])
 
-        log_utility.append_to_log_file("feedback", entry)
+        # Write data in JSON format and send to stdout
+        logLock.acquire()
+        sys.stdout.write(f"{json.dumps(entry) +  '\n'}")
+        logLock.release()
 
         return Response(status=201)
 
