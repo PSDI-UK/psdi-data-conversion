@@ -5,11 +5,16 @@ Created 2024-12-10 by Bryan Gillis.
 Class and functions to perform file conversion
 """
 
+from dataclasses import dataclass, field
+import json
 import glob
 import importlib
 import os
 import sys
 import traceback
+from typing import Any, Callable, NamedTuple
+from multiprocessing import Lock
+from psdi_data_conversion import log_utility
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from tempfile import TemporaryDirectory
@@ -21,6 +26,9 @@ from psdi_data_conversion.converters.openbabel import CONVERTER_OB
 from psdi_data_conversion.file_io import (is_archive, is_supported_archive, pack_zip_or_tar, split_archive_ext,
                                           unpack_zip_or_tar)
 from psdi_data_conversion.utils import regularize_name
+
+# A lock to prevent multiple threads from logging at the same time
+logLock = Lock()
 
 # Find all modules for specific converters
 l_converter_modules = glob.glob(os.path.dirname(base.__file__) + "/*.py")
@@ -191,7 +199,7 @@ def get_converter(*args, name=const.CONVERTER_DEFAULT, **converter_kwargs) -> ba
         If provided, all logging will go to a single file or stream. Otherwise, logs will be split up among multiple
         files for server-style logging.
     log_mode : str
-        How logs should be stores. Allowed values are:
+        How logs should be stored. Allowed values are:
         - 'full' - Multi-file logging, only recommended when running as a public web app
         - 'simple' - Logs saved to one file
         - 'stdout' - Output logs and errors only to stdout
@@ -365,7 +373,7 @@ def run_converter(filename: str,
         If provided, all logging will go to a single file or stream. Otherwise, logs will be split up among multiple
         files for server-style logging.
     log_mode : str
-        How logs should be stores. Allowed values are:
+        How logs should be stored. Allowed values are:
         - 'full' - Multi-file logging, only recommended when running as a public web app
         - 'simple' - Logs saved to one file
         - 'stdout' - Output logs and errors only to stdout
@@ -418,14 +426,14 @@ def run_converter(filename: str,
         if from_format is not None:
             check_from_format(filename, from_format, strict=strict)
         l_run_output.append(get_converter(filename,
-                                          to_format,
-                                          *args,
-                                          from_format=from_format,
-                                          download_dir=download_dir,
-                                          max_file_size=max_file_size,
-                                          log_file=log_file,
-                                          log_mode=log_mode,
-                                          **converter_kwargs).run())
+                            to_format,
+                            *args,
+                            from_format=from_format,
+                            download_dir=download_dir,
+                            max_file_size=max_file_size,
+                            log_file=log_file,
+                            log_mode=log_mode,
+                            **converter_kwargs).run())
 
     elif not is_supported_archive(filename):
         raise base.FileConverterInputException(f"{filename} is an unsupported archive type. Supported types are: "
@@ -536,4 +544,61 @@ def run_converter(filename: str,
                 exception_class = base.FileConverterAbortException
             raise exception_class(status_code, msg)
 
+    # Log conversion information if in service mode
+    service_mode_ev = os.environ.get(const.SERVICE_MODE_EV)
+    service_mode = (service_mode_ev is not None) and (service_mode_ev.lower() == "true")
+    if service_mode:
+        try:
+            l_index = filename.rfind('/') + 1
+            r_index = len(filename)
+            in_filename = filename[l_index:r_index]
+
+            l_index = run_output.output_filename.rfind('/') + 1
+            r_index = len(run_output.output_filename)
+
+            input_size = set_size_units(run_output.in_size)
+            output_size = set_size_units(run_output.out_size)
+
+            if status_code:
+                outcome = "failed"
+                fail_reason = l_error_lines
+            else:
+                outcome = "succeeded"
+                fail_reason = ""
+
+            entry = {
+                "datetime": log_utility.get_date_time(),
+                "input_format": converter_kwargs['data']['from_full'],
+                "output_format": converter_kwargs['data']['to_full'],
+                "input_filename": in_filename,
+                "output_filename": run_output.output_filename[l_index:r_index],
+                "input_size": input_size,
+                "output_size": output_size }
+
+            for key in [ "converter", "coordinates", "coordOption", "from_flags",
+                "to_flags", "from_arg_flags", "to_arg_flags" ]:
+                if key in converter_kwargs['data'] and converter_kwargs['data'][key] != "" and not \
+                    ((key == "coordinates" or key == "coordOption") and converter_kwargs['data']['coordinates'] == "neither") :
+                    entry[key] = converter_kwargs['data'][key]
+
+            entry["outcome"] = outcome
+
+            if fail_reason != "":
+                entry["fail_reason"] = fail_reason
+
+            logLock.acquire()
+            sys.__stdout__.write(f"{json.dumps(entry) + '\n'}")
+            logLock.release()
+        except Exception:
+            sys.__stdout__.write({"datetime": log_utility.get_date_time(),
+                                  "logging_error": "An error occurred during logging of conversion information."})
+
     return run_output
+
+def set_size_units(size):
+    if size >= 1024:
+        return str('%.3f' % (size / 1024)) + ' kB'
+    elif size >= const.MEGABYTE:
+        return str(size / const.MEGABYTE) + ' MB'
+    else:
+        return str(size) + ' B'
