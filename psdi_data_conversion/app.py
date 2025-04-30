@@ -6,6 +6,7 @@ This script acts as a server for the PSDI Data Conversion Service website.
 """
 
 import json
+from multiprocessing import Lock
 import os
 import sys
 from argparse import ArgumentParser
@@ -19,6 +20,7 @@ from typing import Any
 
 import werkzeug.serving
 from flask import Flask, Response, abort, cli, render_template, request
+from werkzeug.utils import secure_filename
 
 import psdi_data_conversion
 from psdi_data_conversion import constants as const
@@ -31,24 +33,29 @@ from psdi_data_conversion.main import print_wrap
 # Env var for the SHA of the latest commit
 SHA_EV = "SHA"
 
-# Env var for whether this is running in service mode or locally
-SERVICE_MODE_EV = "SERVICE_MODE"
-
 # Env var for whether this is a production release or development
 PRODUCTION_EV = "PRODUCTION_MODE"
 
+# Env var for whether this is a production release or development
+DEBUG_EV = "DEBUG_MODE"
+
 # Key for the label given to the file uploaded in the web interface
 FILE_TO_UPLOAD_KEY = 'fileToUpload'
+
+# A lock to prevent multiple threads from logging at the same time
+logLock = Lock()
 
 # Create a token by hashing the current date and time.
 dt = str(datetime.now())
 token = md5(dt.encode('utf8')).hexdigest()
 
-# Get the service and production modes from their envvars
-service_mode_ev = os.environ.get(SERVICE_MODE_EV)
+# Get the debug, service and production modes from their envvars
+service_mode_ev = os.environ.get(const.SERVICE_MODE_EV)
 service_mode = (service_mode_ev is not None) and (service_mode_ev.lower() == "true")
 production_mode_ev = os.environ.get(PRODUCTION_EV)
 production_mode = (production_mode_ev is not None) and (production_mode_ev.lower() == "true")
+debug_mode_ev = os.environ.get(DEBUG_EV)
+debug_mode = (debug_mode_ev is not None) and (debug_mode_ev.lower() == "true")
 
 # Get the logging mode and level from their envvars
 ev_log_mode = os.environ.get(const.LOG_MODE_EV)
@@ -86,11 +93,11 @@ if ev_max_file_size_ob is not None:
 else:
     max_file_size_ob = const.DEFAULT_MAX_FILE_SIZE_OB
 
-# Since we're using the development server as the user GUI, we monkey-patch Flask to disable the warnings that would
-# otherwise appear for this so they don't confuse the user
-
 
 def suppress_warning(func: Callable[..., Any]) -> Callable[..., Any]:
+    """Since we're using the development server as the user GUI, we monkey-patch Flask to disable the warnings that
+    would otherwise appear for this so they don't confuse the user
+    """
     @wraps(func)
     def wrapper(*args, **kwargs) -> Any:
         if args and isinstance(args[0], str) and args[0].startswith('WARNING: This is a development server.'):
@@ -103,6 +110,24 @@ werkzeug.serving._ansi_style = suppress_warning(werkzeug.serving._ansi_style)
 cli.show_server_banner = lambda *_: None
 
 app = Flask(__name__)
+
+
+def limit_upload_size():
+    """Impose a limit on the maximum file that can be uploaded before Flask will raise an error"""
+
+    # Determine the largest possible file size that can be uploaded, keeping in mind that 0 indicates unlimited
+    larger_max_file_size = max_file_size
+    if (max_file_size > 0) and (max_file_size_ob > max_file_size):
+        larger_max_file_size = max_file_size_ob
+
+    if larger_max_file_size > 0:
+        app.config['MAX_CONTENT_LENGTH'] = larger_max_file_size
+    else:
+        app.config['MAX_CONTENT_LENGTH'] = None
+
+
+# Set the upload limit based on env vars to start with
+limit_upload_size()
 
 
 def get_last_sha() -> str:
@@ -134,14 +159,13 @@ def get_last_sha() -> str:
 def website():
     """Return the web page along with the token
     """
-
-    data = [{'token': token,
-             'max_file_size': max_file_size,
-             'max_file_size_ob': max_file_size_ob,
-             'service_mode': service_mode,
-             'production_mode': production_mode,
-             'sha': get_last_sha()}]
-    return render_template("index.htm", data=data)
+    return render_template("index.htm",
+                           token=token,
+                           max_file_size=max_file_size,
+                           max_file_size_ob=max_file_size_ob,
+                           service_mode=service_mode,
+                           production_mode=production_mode,
+                           sha=get_last_sha())
 
 
 @app.route('/convert/', methods=['POST'])
@@ -153,9 +177,8 @@ def convert():
     # Make sure the upload directory exists
     os.makedirs(const.DEFAULT_UPLOAD_DIR, exist_ok=True)
 
-    # Save the file in the upload directory
     file = request.files[FILE_TO_UPLOAD_KEY]
-    filename = filename = file.filename
+    filename = secure_filename(file.filename)
 
     qualified_filename = os.path.join(const.DEFAULT_UPLOAD_DIR, filename)
     file.save(qualified_filename)
@@ -248,7 +271,10 @@ def feedback():
             if key in report:
                 entry[key] = str(report[key])
 
-        log_utility.append_to_log_file("feedback", entry)
+        # Write data in JSON format and send to stdout
+        logLock.acquire()
+        sys.stdout.write(f"{json.dumps(entry) +  '\n'}")
+        logLock.release()
 
         return Response(status=201)
 
@@ -318,7 +344,7 @@ def start_app():
     """
 
     os.chdir(os.path.join(psdi_data_conversion.__path__[0], ".."))
-    app.run()
+    app.run(debug=debug_mode)
 
 
 def main():
@@ -343,7 +369,11 @@ def main():
                         help="If set, will run as if deploying a service rather than the local GUI")
 
     parser.add_argument("--dev-mode", action="store_true",
-                        help="If set, will expose development elements")
+                        help="If set, will expose development elements, such as the SHA of the latest commit")
+
+    parser.add_argument("--debug", action="store_true",
+                        help="If set, will run the Flask server in debug mode, which will cause it to automatically "
+                        "reload if code changes and show an interactive debugger in the case of errors")
 
     parser.add_argument("--log-mode", type=str, default=const.LOG_FULL,
                         help="How logs should be stored. Allowed values are: \n"
@@ -371,6 +401,9 @@ def main():
         global service_mode
         service_mode = args.service_mode
 
+        global debug_mode
+        debug_mode = args.debug
+
         global production_mode
         production_mode = not args.dev_mode
 
@@ -379,6 +412,9 @@ def main():
 
         global log_level
         log_level = args.log_level
+
+    # Set the upload limit based on provided arguments now
+    limit_upload_size()
 
     print_wrap("Starting the PSDI Data Conversion GUI. This GUI is run as a webpage, which you can open by "
                "right-clicking the link below to open it in your default browser, or by copy-and-pasting it into your "

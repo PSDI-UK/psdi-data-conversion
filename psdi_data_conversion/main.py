@@ -16,8 +16,10 @@ from itertools import product
 
 from psdi_data_conversion import constants as const
 from psdi_data_conversion.constants import CL_SCRIPT_NAME, CONVERTER_DEFAULT, TERM_WIDTH
-from psdi_data_conversion.converter import (D_CONVERTER_ARGS, D_SUPPORTED_CONVERTERS, L_REGISTERED_CONVERTERS,
-                                            L_SUPPORTED_CONVERTERS, run_converter)
+from psdi_data_conversion.converter import (D_CONVERTER_ARGS, L_REGISTERED_CONVERTERS, L_SUPPORTED_CONVERTERS,
+                                            converter_is_registered, converter_is_supported,
+                                            get_registered_converter_class, get_supported_converter_class,
+                                            run_converter)
 from psdi_data_conversion.converters.base import (FileConverterAbortException, FileConverterException,
                                                   FileConverterInputException)
 from psdi_data_conversion.database import (FormatInfo, get_conversion_quality, get_converter_info, get_format_info,
@@ -25,6 +27,7 @@ from psdi_data_conversion.database import (FormatInfo, get_conversion_quality, g
                                            get_possible_formats)
 from psdi_data_conversion.file_io import split_archive_ext
 from psdi_data_conversion.log_utility import get_log_level_from_str
+from psdi_data_conversion.utils import regularize_name
 
 
 def print_wrap(s: str, newline=False, err=False, **kwargs):
@@ -58,9 +61,9 @@ class ConvertArgs:
         self._output_dir: str | None = args.out
         converter_name = getattr(args, "with")
         if isinstance(converter_name, str):
-            self.name = converter_name
+            self.name = regularize_name(converter_name)
         elif converter_name:
-            self.name: str = " ".join(converter_name)
+            self.name = regularize_name(" ".join(converter_name))
         else:
             self.name = None
         self.delete_input = args.delete_input
@@ -109,14 +112,14 @@ class ConvertArgs:
 
             # Get the converter name from the arguments if it wasn't provided by -w/--with
             if not self.name:
-                self.name = " ".join(self.l_args)
+                self.name = regularize_name(" ".join(self.l_args))
 
             # For this operation, any other arguments can be ignored
             return
 
         # If not listing and a converter name wasn't supplied, use the default converter
         if not self.name:
-            self.name = CONVERTER_DEFAULT
+            self.name = regularize_name(CONVERTER_DEFAULT)
 
         # Quiet mode is equivalent to logging mode == LOGGING_NONE, so normalize them if either is set
         if self.quiet:
@@ -147,13 +150,14 @@ class ConvertArgs:
             os.makedirs(self._output_dir, exist_ok=True)
 
         # Check the converter is recognized
-        if self.name not in L_SUPPORTED_CONVERTERS:
+        if not converter_is_supported(self.name):
             msg = textwrap.fill(f"ERROR: Converter '{self.name}' not recognised", width=TERM_WIDTH)
             msg += f"\n\n{get_supported_converters()}"
             raise FileConverterInputException(msg, help=True, msg_preformatted=True)
-        elif self.name not in L_REGISTERED_CONVERTERS:
-            msg = textwrap.fill(f"ERROR: Converter '{self.name}' is not registered. It may be possible to register "
-                                "it by installing an appropriate binary for your platform.", width=TERM_WIDTH)
+        elif not converter_is_registered(self.name):
+            converter_name = get_supported_converter_class(self.name).name
+            msg = textwrap.fill(f"ERROR: Converter '{converter_name}' is not registered. It may be possible to "
+                                "register it by installing an appropriate binary for your platform.", width=TERM_WIDTH)
             msg += f"\n\n{get_supported_converters()}"
             raise FileConverterInputException(msg, help=True, msg_preformatted=True)
 
@@ -349,9 +353,10 @@ def detail_converter_use(args: ConvertArgs):
     """
 
     converter_info = get_converter_info(args.name)
-    converter_class = D_SUPPORTED_CONVERTERS[args.name]
+    converter_class = get_supported_converter_class(args.name)
+    converter_name = converter_class.name
 
-    print_wrap(f"{converter_info.name}: {converter_info.description} ({converter_info.url})", break_long_words=False,
+    print_wrap(f"{converter_name}: {converter_info.description} ({converter_info.url})", break_long_words=False,
                break_on_hyphens=False, newline=True)
 
     if converter_class.info:
@@ -362,10 +367,10 @@ def detail_converter_use(args: ConvertArgs):
     if args.from_format is not None and args.to_format is not None:
         qual = get_conversion_quality(args.name, args.from_format, args.to_format)
         if qual is None:
-            print_wrap(f"Conversion from '{args.from_format}' to '{args.to_format}' with {args.name} is not "
+            print_wrap(f"Conversion from '{args.from_format}' to '{args.to_format}' with {converter_name} is not "
                        "supported.", newline=True)
         else:
-            print_wrap(f"Conversion from '{args.from_format}' to '{args.to_format}' with {args.name} is "
+            print_wrap(f"Conversion from '{args.from_format}' to '{args.to_format}' with {converter_name} is "
                        f"possible with {qual.qual_str} conversion quality", newline=True)
             # If there are any potential issues with the conversion, print them out
             if qual.details:
@@ -385,7 +390,7 @@ def detail_converter_use(args: ConvertArgs):
                 optional_not: str = ""
             else:
                 optional_not: str = "not "
-            print_wrap(f"Conversion {to_or_from} {format_name} is {optional_not}supported by {args.name}.\n")
+            print_wrap(f"Conversion {to_or_from} {format_name} is {optional_not}supported by {converter_name}.\n")
 
         # List all possible formats, and which can be used for input and which for output
         s_all_formats: set[FormatInfo] = set(l_input_formats)
@@ -393,7 +398,7 @@ def detail_converter_use(args: ConvertArgs):
         l_all_formats: list[FormatInfo] = list(s_all_formats)
         l_all_formats.sort(key=lambda x: x.disambiguated_name.lower())
 
-        print_wrap(f"File formats supported by {args.name}:", newline=True)
+        print_wrap(f"File formats supported by {converter_name}:", newline=True)
         max_format_length = max([len(x.disambiguated_name) for x in l_all_formats])
         print(" "*(max_format_length+4) + "   INPUT  OUTPUT")
         print(" "*(max_format_length+4) + "   -----  ------")
@@ -472,13 +477,13 @@ def detail_converter_use(args: ConvertArgs):
     # Now at the end, bring up input/output-format-specific flags and options
     if mention_input_format and mention_output_format:
         print_wrap("For details on input/output flags and options allowed for specific formats, call:\n"
-                   f"{CL_SCRIPT_NAME} -l {args.name} -f <input_format> -t <output_format>")
+                   f"{CL_SCRIPT_NAME} -l {converter_name} -f <input_format> -t <output_format>")
     elif mention_input_format:
         print_wrap("For details on input flags and options allowed for a specific format, call:\n"
-                   f"{CL_SCRIPT_NAME} -l {args.name} -f <input_format> [-t <output_format>]")
+                   f"{CL_SCRIPT_NAME} -l {converter_name} -f <input_format> [-t <output_format>]")
     elif mention_output_format:
         print_wrap("For details on output flags and options allowed for a specific format, call:\n"
-                   f"{CL_SCRIPT_NAME} -l {args.name} -t <output_format> [-f <input_format>]")
+                   f"{CL_SCRIPT_NAME} -l {converter_name} -t <output_format> [-f <input_format>]")
 
 
 def list_supported_formats(err=False):
@@ -600,9 +605,11 @@ def detail_formats_and_possible_converters(from_format: str, to_format: str):
         l_conversions_matching_formats = [x for x in l_possible_conversions
                                           if x[1] == possible_from_format and x[2] == possible_to_format]
 
-        l_possible_registered_converters = [x[0] for x in l_conversions_matching_formats
+        l_possible_registered_converters = [get_registered_converter_class(x[0]).name
+                                            for x in l_conversions_matching_formats
                                             if x[0] in L_REGISTERED_CONVERTERS]
-        l_possible_unregistered_converters = [x[0] for x in l_conversions_matching_formats
+        l_possible_unregistered_converters = [get_supported_converter_class(x[0]).name
+                                              for x in l_conversions_matching_formats
                                               if x[0] in L_SUPPORTED_CONVERTERS and x[0] not in L_REGISTERED_CONVERTERS]
 
         print()
@@ -640,7 +647,7 @@ def get_supported_converters():
     l_converters: list[str] = []
     any_not_registered = False
     for converter_name in L_SUPPORTED_CONVERTERS:
-        converter_text = converter_name
+        converter_text = get_supported_converter_class(converter_name).name
         if converter_name not in L_REGISTERED_CONVERTERS:
             converter_text += f" {MSG_NOT_REGISTERED}"
             any_not_registered = True
