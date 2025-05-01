@@ -30,7 +30,9 @@ from psdi_data_conversion.database import get_format_info
 from psdi_data_conversion.file_io import split_archive_ext
 from psdi_data_conversion.main import print_wrap
 
-# Env var for the SHA of the latest commit
+# Env var for the tag and SHA of the latest commit
+TAG_EV = "TAG"
+TAG_SHA_EV = "TAG_SHA"
 SHA_EV = "SHA"
 
 # Env var for whether this is a production release or development
@@ -134,6 +136,10 @@ def get_tag_and_sha() -> str:
     """Get the SHA of the last commit
     """
 
+    # Get the tag of the latest commit
+    ev_tag = os.environ.get(TAG_EV)
+    if ev_tag:
+        tag = ev_tag
     try:
         # This bash command calls `git tag` to get a sorted list of tags, with the most recent at the top, then uses
         # `head` to trim it to one line
@@ -142,16 +148,24 @@ def get_tag_and_sha() -> str:
         out_bytes = run(cmd, shell=True, capture_output=True).stdout
         tag = str(out_bytes.decode()).strip()
 
-        # Get the SHA associated with this tag
+    except Exception:
+        print("ERROR: Could not determine most recent tag. Error was:\n" + format_exc(),
+              file=sys.stderr)
+        tag = ""
+
+    # Get the SHA associated with this tag
+    ev_tag_sha = os.environ.get(TAG_SHA_EV)
+    if ev_tag_sha:
+        tag: str | None = ev_tag_sha
+    try:
         cmd = f"git show {tag}" + " | head -n 1 | gawk '{print($2)}'"
 
         out_bytes = run(cmd, shell=True, capture_output=True).stdout
         tag_sha = str(out_bytes.decode()).strip()
 
     except Exception:
-        print("ERROR: Could not determine most recent tag. Error was:\n" + format_exc(),
+        print("ERROR: Could not determine SHA for most recent tag. Error was:\n" + format_exc(),
               file=sys.stderr)
-        tag = ""
         tag_sha = None
 
     # First check if the SHA is provided through an environmental variable
