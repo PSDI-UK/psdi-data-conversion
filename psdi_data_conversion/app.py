@@ -6,7 +6,6 @@ This script acts as a server for the PSDI Data Conversion Service website.
 """
 
 import json
-from multiprocessing import Lock
 import os
 import sys
 from argparse import ArgumentParser
@@ -14,6 +13,7 @@ from collections.abc import Callable
 from datetime import datetime
 from functools import wraps
 from hashlib import md5
+from multiprocessing import Lock
 from subprocess import run
 from traceback import format_exc
 from typing import Any
@@ -130,42 +130,68 @@ def limit_upload_size():
 limit_upload_size()
 
 
-def get_last_sha() -> str:
+def get_tag_and_sha() -> str:
     """Get the SHA of the last commit
     """
+
+    try:
+        # This bash command calls `git tag` to get a sorted list of tags, with the most recent at the top, then uses
+        # `head` to trim it to one line
+        cmd = "git tag --sort -version:refname | head -n 1"
+
+        out_bytes = run(cmd, shell=True, capture_output=True).stdout
+        tag = str(out_bytes.decode()).strip()
+
+        # Get the SHA associated with this tag
+        cmd = f"git show {tag}" + " | head -n 1 | gawk '{print($2)}'"
+
+        out_bytes = run(cmd, shell=True, capture_output=True).stdout
+        tag_sha = str(out_bytes.decode()).strip()
+
+    except Exception:
+        print("ERROR: Could not determine most recent tag. Error was:\n" + format_exc(),
+              file=sys.stderr)
+        tag = ""
+        tag_sha = None
 
     # First check if the SHA is provided through an environmental variable
     ev_sha = os.environ.get(SHA_EV)
     if ev_sha:
-        return ev_sha
+        sha = ev_sha
+    else:
+        try:
+            # This bash command calls `git log` to get info on the last commit, uses `head` to trim it to one line, then
+            # uses `gawk` to get just the second word of this line, which is the SHA of this commit
+            cmd = "git log -n 1 | head -n 1 | gawk '{print($2)}'"
 
-    try:
-        # This bash command calls `git log` to get info on the last commit, uses `head` to trim it to one line, then
-        # uses `gawk` to get just the second word of this line, which is the SHA of this commit
-        cmd = "git log -n 1 | head -n 1 | gawk '{print($2)}'"
+            out_bytes = run(cmd, shell=True, capture_output=True).stdout
+            sha = str(out_bytes.decode()).strip()
 
-        out_bytes = run(cmd, shell=True, capture_output=True).stdout
-        out_str = str(out_bytes.decode()).strip()
+        except Exception:
+            print("ERROR: Could not determine SHA of most recent commit. Error was:\n" + format_exc(),
+                  file=sys.stderr)
+            sha = ""
 
-    except Exception:
-        print("ERROR: Could not determine SHA of most recent commit. Error was:\n" + format_exc(),
-              file=sys.stderr)
-        out_str = "N/A"
+    # If the SHA of the tag is the same as the current SHA, we indicate this by returning a blank SHA
+    if tag_sha == sha:
+        sha = ""
 
-    return out_str
+    return (tag, sha)
 
 
 @app.route('/')
 def website():
     """Return the web page along with the token
     """
+    tag, sha = get_tag_and_sha()
     return render_template("index.htm",
                            token=token,
                            max_file_size=max_file_size,
                            max_file_size_ob=max_file_size_ob,
                            service_mode=service_mode,
                            production_mode=production_mode,
-                           sha=get_last_sha())
+                           tag=tag,
+                           sha=sha)
 
 
 @app.route('/convert/', methods=['POST'])
@@ -273,7 +299,7 @@ def feedback():
 
         # Write data in JSON format and send to stdout
         logLock.acquire()
-        sys.stdout.write(f"{json.dumps(entry) +  '\n'}")
+        sys.stdout.write(f"{json.dumps(entry) + '\n'}")
         logLock.release()
 
         return Response(status=201)
