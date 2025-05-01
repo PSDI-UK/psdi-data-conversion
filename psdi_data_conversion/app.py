@@ -140,33 +140,35 @@ def get_tag_and_sha() -> str:
     ev_tag = os.environ.get(TAG_EV)
     if ev_tag:
         tag = ev_tag
-    try:
-        # This bash command calls `git tag` to get a sorted list of tags, with the most recent at the top, then uses
-        # `head` to trim it to one line
-        cmd = "git tag --sort -version:refname | head -n 1"
+    else:
+        try:
+            # This bash command calls `git tag` to get a sorted list of tags, with the most recent at the top, then uses
+            # `head` to trim it to one line
+            cmd = "git tag --sort -version:refname | head -n 1"
 
-        out_bytes = run(cmd, shell=True, capture_output=True).stdout
-        tag = str(out_bytes.decode()).strip()
+            out_bytes = run(cmd, shell=True, capture_output=True).stdout
+            tag = str(out_bytes.decode()).strip()
 
-    except Exception:
-        print("ERROR: Could not determine most recent tag. Error was:\n" + format_exc(),
-              file=sys.stderr)
-        tag = ""
+        except Exception:
+            print("ERROR: Could not determine most recent tag. Error was:\n" + format_exc(),
+                  file=sys.stderr)
+            tag = ""
 
     # Get the SHA associated with this tag
     ev_tag_sha = os.environ.get(TAG_SHA_EV)
     if ev_tag_sha:
-        tag: str | None = ev_tag_sha
-    try:
-        cmd = f"git show {tag}" + " | head -n 1 | gawk '{print($2)}'"
+        tag_sha: str | None = ev_tag_sha
+    else:
+        try:
+            cmd = f"git show {tag}" + " | head -n 1 | gawk '{print($2)}'"
 
-        out_bytes = run(cmd, shell=True, capture_output=True).stdout
-        tag_sha = str(out_bytes.decode()).strip()
+            out_bytes = run(cmd, shell=True, capture_output=True).stdout
+            tag_sha = str(out_bytes.decode()).strip()
 
-    except Exception:
-        print("ERROR: Could not determine SHA for most recent tag. Error was:\n" + format_exc(),
-              file=sys.stderr)
-        tag_sha = None
+        except Exception:
+            print("ERROR: Could not determine SHA for most recent tag. Error was:\n" + format_exc(),
+                  file=sys.stderr)
+            tag_sha = None
 
     # First check if the SHA is provided through an environmental variable
     ev_sha = os.environ.get(SHA_EV)
