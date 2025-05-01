@@ -120,9 +120,9 @@
       <div class="medGap"></div>
     </div>
   </form>
-  {% if sha %}
+  {% if tag %}
   <div class="secondary prod-only">
-    <div class="max-width-box">SHA: {{ sha }}</div>
+    <div class="max-width-box">PSDI Data Conversion {{ tag }} {% if sha %} (SHA: {{ sha }}) {% endif %}</div>
   </div>
   {% endif %}
   <script src="{{url_for('static', filename='/javascript/format.js')}}" type="module" language="JavaScript"></script>
