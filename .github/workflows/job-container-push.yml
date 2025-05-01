@@ -42,6 +42,7 @@ jobs:
           SHA=`git log -n 1 | head -n 1 | awk '{print($2)}'`
           TAG=`git tag --sort -version:refname | head -n 1`
           TAG_SHA=`git show $TAG | head -n 1 | awk '{print($2)}'`
+          echo "Building with TAG=$TAG, TAG_SHA=$TAG_SHA, SHA=$SHA"
           docker build \
             --build-arg SHA=$SHA \
             --build-arg TAG=$TAG \
