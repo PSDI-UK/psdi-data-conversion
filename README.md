@@ -1,5 +1,6 @@
 # PSDI Data Conversion
 
+[![License Badge](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 ![Coverage Badge](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/brgillis/dbd938192dc4de9b7779978e515c0e79/raw/covbadge.json)
 
 Release date: 2024-04-29
