@@ -8,14 +8,13 @@ on:
     branches: ["main"]
 
 jobs:
-  test-python:
-    uses: ./.github/workflows/job-test-python.yml
-  test-gui:
-    uses: ./.github/workflows/job-test-gui.yml
+  test-all:
+    uses: ./.github/workflows/job-test-main.yml
 
   container-push:
+    if: github.ref == 'refs/heads/main'
     uses: ./.github/workflows/job-container-push.yml
-    needs: [test-python, test-gui]
+    needs: [test-all]
     with:
       # container_tag
       container_tag: ${{ github.sha }}
