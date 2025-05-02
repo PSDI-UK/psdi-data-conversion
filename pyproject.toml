@@ -93,7 +93,7 @@ exclude = [
 pythonpath = ["."]
 
 [tool.coverage.run]
-source_pkgs = ["psdi_data_conversion", "tests"]
+source_pkgs = ["psdi_data_conversion"]
 branch = true
 omit = ["*/testing/*", "app.py"]
 
