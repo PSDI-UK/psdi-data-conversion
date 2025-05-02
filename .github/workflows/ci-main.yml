@@ -12,6 +12,7 @@ jobs:
     uses: ./.github/workflows/job-test-main.yml
 
   container-push:
+    if: github.ref == 'refs/heads/main'
     uses: ./.github/workflows/job-container-push.yml
     needs: [test-all]
     with:
