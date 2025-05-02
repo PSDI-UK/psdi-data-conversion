@@ -42,10 +42,12 @@ jobs:
           coverage json
           # Report coverage to the shell
           coverage report
-          # Report total coverage in GitHub step summary
-          export TOTAL=$(python -c "import json;print(json.load(open('coverage.json'))['totals']['percent_covered_display'])")
-          echo "total=$TOTAL" >> $GITHUB_OUTPUT
-          echo "### Total coverage: ${TOTAL}%" >> $GITHUB_STEP_SUMMARY
+
+      - name: "Upload coverage data"
+        uses: actions/upload-artifact@v4
+        with:
+          name: covdata
+          path: coverage.json
 
       - name: Lint with flake8
         run: |
@@ -59,7 +61,32 @@ jobs:
           pip install build
           python -m build
 
-      - name: "Make coverage badge"
+  coverage:
+    name: Report Coverage
+    needs: tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repo
+        uses: "actions/checkout@v2"
+
+      - name: Set up Python
+        uses: "actions/setup-python@v2"
+        with:
+          python-version: "3.12"
+
+      - name: Download coverage data
+        uses: actions/download-artifact@v4
+        with:
+          name: covdata
+
+      - name: Get total coverage
+        id: total
+        run: |
+          export TOTAL=$(python -c "import json;print(json.load(open('coverage.json'))['totals']['percent_covered_display'])")
+          echo "total=$TOTAL" >> $GITHUB_OUTPUT
+          echo "### Total coverage: ${TOTAL}%" >> $GITHUB_STEP_SUMMARY
+
+      - name: Make coverage badge
         uses: schneegans/dynamic-badges-action@v1.4.0
         with:
           auth: ${{ secrets.COVERAGE_GIST_TOKEN }}
