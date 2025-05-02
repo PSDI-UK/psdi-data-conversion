@@ -14,7 +14,7 @@ permissions:
   contents: read
 
 jobs:
-  build:
+  tests:
     runs-on: ${{ matrix.os }}
     continue-on-error: ${{ matrix.secondary }}
     strategy:
@@ -38,7 +38,16 @@ jobs:
           pip install .[test]
       - name: Test with pytest and report coverage
         run: |
-          coverage run -m pytest tests/python; coverage report
+          coverage run -m pytest tests/python
+          # Report coverage to the shell
+          coverage report
+          # Save coverage report to coverage.json
+          coverage json
+      - name: "Upload coverage data"
+        uses: actions/upload-artifact@v3
+        with:
+          name: covdata
+          path: coverage.json
       - name: Lint with flake8
         run: |
           # stop the build if there are Python syntax errors or undefined names
@@ -49,3 +58,40 @@ jobs:
         run: |
           pip install build
           python -m build
+
+  coverage:
+    name: Report Coverage
+    needs: tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Check out the repo"
+        uses: "actions/checkout@v2"
+
+      - name: "Set up Python"
+        uses: "actions/setup-python@v2"
+        with:
+          python-version: "3.10"
+
+      - name: "Download coverage data"
+        uses: actions/download-artifact@v3
+        with:
+          name: covdata
+
+      - name: "Get total coverage"
+        id: total
+        run: |
+          export TOTAL=$(python -c "import json;print(json.load(open('coverage.json'))['totals']['percent_covered_display'])")
+          echo "total=$TOTAL" >> $GITHUB_OUTPUT
+          echo "### Total coverage: ${TOTAL}%" >> $GITHUB_STEP_SUMMARY
+
+      - name: "Make badge"
+        uses: schneegans/dynamic-badges-action@v1.4.0
+        with:
+          auth: ${{ secrets.COVERAGE_GIST_TOKEN }}
+          gistID: dbd938192dc4de9b7779978e515c0e79
+          filename: covbadge.json
+          label: Coverage
+          message: ${{ steps.total.outputs.total }}%
+          minColorRange: 50
+          maxColorRange: 90
+          valColorRange: ${{ steps.total.outputs.total }}
