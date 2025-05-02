@@ -95,7 +95,7 @@ pythonpath = ["."]
 [tool.coverage.run]
 source_pkgs = ["psdi_data_conversion", "tests"]
 branch = true
-omit = []
+omit = ["*/testing/*", "app.py"]
 
 [tool.coverage.paths]
 tests = ["tests/python"]
