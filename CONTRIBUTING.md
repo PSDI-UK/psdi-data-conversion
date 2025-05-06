@@ -383,18 +383,18 @@ Deployment to `development`, `staging` and `production` is done from either the 
 branch deploys to which environment. The table also shows, for each environment:
 - the URL on which the service is exposed once it is successfully deployed
 - the accessibility of the service. Depending on the environment the service is either accessible to the _public_ at the specified URL,
-  or accessible only to IP addresses within the _STFC and University of Southampton VPNs_
-- the trigger used to invoke the workflow which deploys the deploys the service from the source branch. Deployment is either _automatic_
+  or accessible only to IP addresses within the _STFC and University of Southampton subnets_
+- the trigger used to invoke the workflow which deploys the service from the source branch. Deployment is either _automatic_
   upon a commit to the source branch which passes the unit-tests job; or results from a _manual_ invocation of a workflow by a
   developer.
 
-| Environment      | URL                                        | Accessibility                           | Source branch  | Deployment trigger    |
-|------------------|--------------------------------------------|-----------------------------------------|----------------|-----------------------|
-| `development`    | https://data-conversion-dev.psdi.ac.uk     | STFC and University of Southampton VPNs | `main`         | Automatic             |
-| `staging`        | https://data-conversion-staging.psdi.ac.uk | STFC and University of Southampton VPNs | `release`      | Automatic             |
-| `production`     | https://data-conversion.psdi.ac.uk         | public                                  | `release`      | Manual                |
+| Environment      | URL                                        | Accessibility                              | Source branch  | Deployment trigger    |
+|------------------|--------------------------------------------|--------------------------------------------|----------------|-----------------------|
+| `development`    | https://data-conversion-dev.psdi.ac.uk     | STFC and University of Southampton subnets | `main`         | Automatic             |
+| `staging`        | https://data-conversion-staging.psdi.ac.uk | STFC and University of Southampton subnets | `release`      | Automatic             |
+| `production`     | https://data-conversion.psdi.ac.uk         | public                                     | `release`      | Manual                |
 
-Thus the `main` is automatically deployed to the `deployment` environment, and the `release` branch is automatically deployed to the `staging`
+Thus the `main` is automatically deployed to the `development` environment, and the `release` branch is automatically deployed to the `staging`
 environment. However deployment from the `release` branch to the `production` environment is a manual process. This is to allow developers to
 manually check that the `release` version works correctly in the `staging` environment before deploying it to the `production` environment.
 The checks to `staging` before deployment to `production` should echo those described in the above
@@ -424,7 +424,7 @@ same page.
 
 The `ci-main.yml`, `ci-release.yml` and `ci-deploy-production.yml` workflows leverage the `job-deploy-k8s.yml` callable workflow to do the heavy
 lifting with regards to deployment to STFC Kubernetes environments. The `job-deploy-k8s.yml` workflow is coded to be invoked on PSDI's GitHub
-runners. These runners are hosted within STFC's network, providing a means to access to the three STFC Kubernetes clusters corresponding to the
+runners. These runners are hosted within STFC's network, providing a means to access the three STFC Kubernetes clusters corresponding to the
 `development`, `staging` and `production` environments. The environment to be targeted for deployment is passed to the `job-deploy-k8s.yml`
 workflow as an input parameter. Given a target environment `<env>`, the `job-deploy-k8s.yml` workflow will deploy the service to the
 the `<env>` environment using the Kubernetes manifests stored in the `deploy`/<env>` directory of this repository.
@@ -439,6 +439,5 @@ For further information see the `job-deploy-k8s.yml` file and aforementioned Kub
 
 
 
-TODO - Describe details of setup
 
 The server can be configured by editing the environmental variables set in `Dockerfile`.
