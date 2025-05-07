@@ -344,6 +344,11 @@ body>* {
   align-items    : center;
 }
 
+/* Applies only to buttons with this class not in the PSDI header, to not break docusaurus sites */
+.clean-btn {
+  margin: 0;
+}
+
 #psdi-header .clean-btn {
   background     : none;
   border         : none;
