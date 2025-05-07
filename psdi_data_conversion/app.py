@@ -210,12 +210,12 @@ def website():
                            sha=sha)
 
 
-@app.route('/about.htm')
-def about():
-    """Return the about page
+@app.route('/documentation.htm')
+def documentation():
+    """Return the documentation page
     """
     tag, sha = get_tag_and_sha()
-    return render_template("about.htm",
+    return render_template("documentation.htm",
                            tag=tag,
                            sha=sha)
 
