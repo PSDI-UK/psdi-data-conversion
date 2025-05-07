@@ -96,8 +96,9 @@
       <p>The colour options here are not compatible with the dark-mode toggle in the header bar. If a custom dark scheme
         is desired, the appropriate colours can be selected in light-mode.</p>
       <h3>About</h3>
-      <p><strong>PSDI Data Conversion</strong>
-        <br>
+      <p><strong>PSDI Data Conversion service</strong><br>
+        <span class="local-only">Local GUI</span><span class="service-only">Public web service</span> mode -
+        <span class="dev-only">Development</span><span class="prod-only">Production</span> build<br>
         {% if tag %}<strong>Version:</strong> {{ tag }}<br>{% endif %}
         {% if sha %}<span class="dev-only"><strong>SHA of latest commit:</strong> {{ sha }}<br></span>{% endif %}
         <strong>Project source:</strong> <a
