@@ -84,6 +84,14 @@
         in the changes being lost. Note that page appearance may vary slightly according to the browser used.</p>
       <p>The colour options here are not compatible with the dark-mode toggle in the header bar. If a custom dark scheme
         is desired, the appropriate colours can be selected in light-mode.</p>
+      <h3>About</h3>
+      <p><strong>PSDI Data Conversion</strong>
+        <br>
+        {% if tag %}<strong>Version:</strong> {{ tag }}<br>{% endif %}
+        {% if sha %}<span class="dev-only"><strong>SHA of latest commit:</strong> {{ sha }}<br></span>{% endif %}
+        <strong>Project source:</strong> <a
+          href="https://github.com/PSDI-UK/psdi-data-conversion">https://github.com/PSDI-UK/psdi-data-conversion</a><br>
+      </p>
       <div class="medGap"></div>
     </div>
   </form>
