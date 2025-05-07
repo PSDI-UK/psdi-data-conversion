@@ -15,7 +15,7 @@ This project uses a version of [GitLab Flow](https://about.gitlab.com/topics/ver
 
 The following tasks should be completed before merging a release candidate branch to `release`:
 
-- Detemine the target version based on the changes made:
+- Determine the target version based on the changes made:
 
   - If any breaking changes have been made (after version 1.0.0), the version will advance to the next major version - `X.Y.Z` to `(X+1).0.0`
   - Otherwise, if any features are added, or any breaking changes are made before version 1.0.0, the version will advance to the next minor version - `X.Y.Z` to `X.(Y+1).0`.
@@ -193,13 +193,13 @@ class MyFileConverter(FileConverter):
 converter = MyFileConverter
 ```
 
-That's all you need to do! The `psdi_data_conversion.converter` module parses all modules in the `converters` package to find converters, so if you've done everything correctly, it will find the new converter and register it for you. You can test that it is properly registered by using the CLA to run:
+That's all you need to do! The `psdi_data_conversion.converter` module parses all modules in the `converters` package to find converters, so if you've done everything correctly, it will find the new converter and register it for you. You can test that it is properly registered by using the CLI to run:
 
 ```bash
 psdi-data-convert -l
 ```
 
-Your new converter should appear, or else you will probably see an error message which will detail an exception raised when trying to register it. Note that until the converter's information is added to the database (the file `psdi_data_conversion/static/data/data.json`), the CLA will show that it is unable to perform any conversions, and it will fail on any conversion (believing it to be impossible) unless you provide the `--nc/--no-check` command-line flag.
+Your new converter should appear, or else you will probably see an error message which will detail an exception raised when trying to register it. Note that until the converter's information is added to the database (the file `psdi_data_conversion/static/data/data.json`), the CLI will show that it is unable to perform any conversions, and it will fail on any conversion (believing it to be impossible) unless you provide the `--nc/--no-check` command-line flag.
 
 For file converters which can be run with a call to a script, this can be streamlined even further by taking advantage of the `ScriptFileConverter` subclass. With this, the converter's subclass can be defined even more succinctly:
 
@@ -273,7 +273,7 @@ pip install --editable .[test]
 pytest
 ```
 
-This installs the project in a virtual environment in "editable" mode (which means the source files will be used from where they are rather than being copied, so any changes to them will be directly reflected in tests and uses of the CLA) and then calls `pytest` to run the unit tests in the project. `pytest` will automatically pick up any extra tests you add and run them as well.
+This installs the project in a virtual environment in "editable" mode (which means the source files will be used from where they are rather than being copied, so any changes to them will be directly reflected in tests and uses of the CLI) and then calls `pytest` to run the unit tests in the project. `pytest` will automatically pick up any extra tests you add and run them as well.
 
 #### Web App Integration
 
@@ -320,13 +320,13 @@ This project uses various GitHub workflows to perform Continuous Integration tas
 - Testing and scanning (triggered by pushes to `main`, `release`, `feature*`, and `rc*` branches)
 - Periodic checks for updates to common assets
 - Automatic creation of pull requests for `feature*` and `rc*` branches
-- Automatic tagging, publishing, and deployment of the `release` branch
+- Automatic tagging, publishing, and deployment of the `main` and `release` branches to the development, staging and production environments
 
-See the commons within the files for further details.
+See the comments within the files for further details. See also the [section on deployment](#deployment) for details specific to deployment tasks.
 
 ## Publishing
 
-The Python library, CLA, and local GUI are published as a Python package via PyPI. This section describes how the package is set up and how it's published.
+The Python library, CLI, and local GUI are published as a Python package via PyPI. This section describes how the package is set up and how it's published.
 
 ### Package Setup
 
@@ -338,7 +338,7 @@ The version of the package is set to be determined from the version control syst
 
 ### Initial Publication
 
-This section details the proceduce for the initial publication of this package - now that this is complete, this section is left in for reference in case of future need.
+This section details the procedure for the initial publication of this package - now that this is complete, this section is left in for reference in case of future need.
 
 First, it's necessary to install a couple required packages in order to build a Python package: `build` to build it and `twine` to upload it. These can be installed with pip via:
 
@@ -376,8 +376,68 @@ The management page can also be used to add or remove collaborators through the 
 
 ## Deployment
 
-Deployment is handled by the `job-deploy-k8s.yml` reusable workflow, which is triggered from `ci-main.yml` to deploy to dev on each push to `main` and `ci-release.yml` to deploy to staging on each push to `release`. When a push to production is desired, it must be triggered manually by calling the `ci-deploy-production.yml` workflow on the `release` branch (it's set up to fail if run on any other branch).
+The `ci-main.yml`, `ci-release.yml` and `ci-deploy-production.yml` files in the `.github/workflows` directory house workflows which deploy
+the data conversion service to [Kubernetes](https://kubernetes.io/) clusters hosted in STFC.  There are three clusters, each of which correspond
+to a different deployment _environment_ for the data conversion service. The three environments are `development`, `staging` and `production`.
+Deployment to `development`, `staging` and `production` is done from either the `main` or `release` branch. The table below indicates which
+branch deploys to which environment. The table also shows, for each environment:
+- the URL on which the service is exposed once it is successfully deployed
+- the accessibility of the service. Depending on the environment the service is either accessible to the _public_ at the specified URL,
+  or accessible only to IP addresses within the _STFC and University of Southampton subnets_
+- the trigger used to invoke the workflow which deploys the service from the source branch. Deployment is either _automatic_
+  upon a commit to the source branch which passes the unit-tests job; or results from a _manual_ invocation of a workflow by a
+  developer.
 
-TODO - Describe details of setup
+| Environment      | URL                                        | Accessibility                              | Source branch  | Deployment trigger    |
+|------------------|--------------------------------------------|--------------------------------------------|----------------|-----------------------|
+| `development`    | https://data-conversion-dev.psdi.ac.uk     | STFC and University of Southampton subnets | `main`         | Automatic             |
+| `staging`        | https://data-conversion-staging.psdi.ac.uk | STFC and University of Southampton subnets | `release`      | Automatic             |
+| `production`     | https://data-conversion.psdi.ac.uk         | public                                     | `release`      | Manual                |
+
+Thus the `main` is automatically deployed to the `development` environment, and the `release` branch is automatically deployed to the `staging`
+environment. However deployment from the `release` branch to the `production` environment is a manual process. This is to allow developers to
+manually check that the `release` version works correctly in the `staging` environment before deploying it to the `production` environment.
+The checks to `staging` before deployment to `production` should echo those described in the above
+section [Release Checklist and Procedure](#release-checklist-and-procedure).
+
+### How to deploy to the `production` environment
+
+To trigger the workflow which deploys the service to the `production` environment, from the [main page of the repo](https://github.com/PSDI-UK/psdi-data-conversion)
+navigate to [Actions](https://github.com/PSDI-UK/psdi-data-conversion/actions). Here you should see on the right a list of recent workflow
+runs, including whether or not they are successful (as indicated by a green tick); and on the left you should see a list of all workflows.
+
+The workflow which deploys the `release` branch to the `staging` environment is named `CI - Release`. As mentioned above, you should verify
+that this workflow successfully deployed the `release` version to `staging` before considering deploying to `production`. If you click on the
+latest workflow run of `CI - Release` then you can see a breakdown of the workflow into its constituent workflows. Note the `deploy-stfc-staging-k8s`
+job. If this job is successful then the `release` version has been successfully deployed to `staging`.
+
+Assuming this is the case, navigating back to [Actions](https://github.com/PSDI-UK/psdi-data-conversion/actions), note that there is a workflow
+listed on the left named `CI - Deploy to production cluster`. This is the workflow which must be invoked manually to deploy the `release`
+version to the `production` environment. Clicking on the link to this workflow gives
+[a list of recent invocations](https://github.com/PSDI-UK/psdi-data-conversion/actions/workflows/ci-deploy-production.yml) of the workflow.
+Moreover, a light blue banner appears which says `This workflow has a workflow_dispatch event trigger` on the left and has a `Run workflow` button
+on the right. To invoke the workflow, press this button, *select the `release` branch* as the option for `Use workflow from` dropdown menu, and
+then finally click the green `Run workflow` button. Once the workflow has been invoked you should be able to see its progress in real time on the
+same page.
+
+### Further technical details
+
+The `ci-main.yml`, `ci-release.yml` and `ci-deploy-production.yml` workflows leverage the `job-deploy-k8s.yml` callable workflow to do the heavy
+lifting with regards to deployment to STFC Kubernetes environments. The `job-deploy-k8s.yml` workflow is coded to be invoked on PSDI's GitHub
+runners. These runners are hosted within STFC's network, providing a means to access the three STFC Kubernetes clusters corresponding to the
+`development`, `staging` and `production` environments. The environment to be targeted for deployment is passed to the `job-deploy-k8s.yml`
+workflow as an input parameter. Given a target environment `<env>`, the `job-deploy-k8s.yml` workflow will deploy the service to the
+the `<env>` environment using the Kubernetes manifests stored in the `deploy`/<env>` directory of this repository.
+
+The workflow relies on several repository secrets, namely `KUBECONF`, `IMAGEPULLSECRET`, `CERTIFICATE_PRIVATE_KEY` and `CERTIFICATE_PEM` for
+various purposes.
+- `KUBECONF` provides Kubernetes-specific information pertaining to the the Kubernetes cluster for the target environment. Note that
+  `KUBECONF` is an _environment_-dependent secret, taking different values for each of the environments. 
+- `IMAGEPULLSECRET` enables the container image housing the data conversion service to be pulled from this GitHub repo to the PSDI runner
+- `CERTIFICATE_PRIVATE_KEY` and `CERTIFICATE_PEM` pertain to the TLS certificates for the service
+For further information see the `job-deploy-k8s.yml` file and aforementioned Kubernetes manifests.
+
+
+
 
 The server can be configured by editing the environmental variables set in `Dockerfile`.
