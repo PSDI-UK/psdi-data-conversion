@@ -197,7 +197,7 @@ def get_tag_and_sha() -> str:
 
 @app.route('/')
 def website():
-    """Return the web page along with the token
+    """Return the web page along with relevant data
     """
     tag, sha = get_tag_and_sha()
     return render_template("index.htm",
@@ -206,6 +206,16 @@ def website():
                            max_file_size_ob=max_file_size_ob,
                            service_mode=service_mode,
                            production_mode=production_mode,
+                           tag=tag,
+                           sha=sha)
+
+
+@app.route('/about.htm')
+def about():
+    """Return the about page
+    """
+    tag, sha = get_tag_and_sha()
+    return render_template("about.htm",
                            tag=tag,
                            sha=sha)
 
