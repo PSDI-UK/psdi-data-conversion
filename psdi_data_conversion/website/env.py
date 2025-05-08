@@ -138,7 +138,7 @@ class SiteEnv:
 
         return value_type(ev_value)
 
-    def _determine_tag_and_sha() -> tuple[str, str]:
+    def _determine_tag_and_sha(self) -> tuple[str, str]:
         """Get latest tag and SHA of latest commit, if the latest commit differs from the latest tagged commit
         """
 
