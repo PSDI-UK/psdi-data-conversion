@@ -32,6 +32,14 @@
   <div id="cover"></div>
 
   <header class="header" id="psdi-header"></header>
+  <script type="module">
+    import { setHeaderLinksSource, setHeaderSource, setFooterSource } from "./static/javascript/psdi-common.js";
+    // Due to the index being a template which will exist in a different directory once rendered, we need to set
+    // a non-default location of the header links file
+    setHeaderSource("{{url_for('static', filename='content/index-versions/psdi-common-header.html')}}");
+    setFooterSource("{{url_for('static', filename='content/index-versions/psdi-common-footer.html')}}");
+    setHeaderLinksSource("{{url_for('static', filename='content/index-versions/header-links.html')}}");
+  </script>
 
   <div class="hero">
     <div class="max-width-box">
