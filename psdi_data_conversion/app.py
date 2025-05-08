@@ -196,6 +196,7 @@ def get_tag_and_sha() -> str:
 
 
 @app.route('/')
+@app.route('/index.htm')
 def website():
     """Return the web page along with relevant data
     """
