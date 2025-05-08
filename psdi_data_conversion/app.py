@@ -210,6 +210,13 @@ def website():
                            sha=sha)
 
 
+@app.route('/accessibility.htm')
+def accessibility():
+    """Return the accessibility page
+    """
+    return render_template("accessibility.htm")
+
+
 @app.route('/documentation.htm')
 def documentation():
     """Return the documentation page

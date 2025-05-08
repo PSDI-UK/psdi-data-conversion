@@ -9,7 +9,7 @@
 <head>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>PSDI Data Conversion Service</title>
-  <link rel="icon" type="image/x-icon" href="./static/img/psdi-icon-dark.svg">
+  <link rel="icon" type="image/x-icon" href="{{url_for('static', filename='img/psdi-icon-dark.svg')}}">
   <link href="https://fonts.googleapis.com/css?family=Lato:400" rel="stylesheet" type="text/css">
   <link href="https://fonts.googleapis.com/css?family=Open+Sans+Condensed:700" rel="stylesheet" type="text/css">
   <link href="https://fonts.googleapis.com/css?family=Open+Sans:400" rel="stylesheet" type="text/css">
@@ -20,6 +20,10 @@
     crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/jquery.dirtyforms/2.0.0/jquery.dirtyforms.min.js"></script>
 
+  <script src="{{url_for('static', filename='javascript/load_accessibility.js')}}"></script>
+  <script src="{{url_for('static', filename='javascript/common.js')}}"></script>
+  <script src="{{url_for('static', filename='javascript/psdi-common.js')}}"></script>
+
   <script>
     const token = "{{token}}";
     const max_file_size = "{{max_file_size}}";
@@ -29,8 +33,6 @@
     document.documentElement.setAttribute("service-mode", service_mode);
     document.documentElement.setAttribute("production-mode", production_mode);
   </script>
-
-  <script src="static/javascript/load_accessibility.js"></script>
 </head>
 
 <body marginwidth="0">
