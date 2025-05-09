@@ -15,6 +15,7 @@ from flask import Flask, cli
 
 import psdi_data_conversion
 from psdi_data_conversion import constants as const
+from psdi_data_conversion.gui.accessibility import init_accessibility
 from psdi_data_conversion.gui.env import get_env
 from psdi_data_conversion.gui.get import init_get
 from psdi_data_conversion.gui.post import init_post
@@ -52,6 +53,7 @@ def _init_app():
     # Connect the app to the various pages and methods of the website
     init_get(app)
     init_post(app)
+    init_accessibility(app)
 
     return app
 

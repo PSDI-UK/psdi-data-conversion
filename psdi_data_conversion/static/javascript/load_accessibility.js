@@ -2,8 +2,8 @@ const r = document.querySelector(':root');
 const s = getComputedStyle(document.documentElement);
 
 function setDefault(default_varname, current_varname) {
-  if (s.getPropertyValue('--' + default_varname) == "") {
-    r.style.setProperty('--' + default_varname, s.getPropertyValue('--' + current_varname))
+  if (sessionStorage.getItem(default_varname) != null) {
+    sessionStorage.setItem(default_varname, s.getPropertyValue('--' + current_varname))
   }
 }
 
@@ -27,7 +27,7 @@ setDefault("psdi-default-background-color", "ifm-background-color");
 setDefault("psdi-default-color-primary", "ifm-color-primary");
 
 // Load values from session storage
-const font = sessionStorage.getItem("font"),
+let font = sessionStorage.getItem("font"),
   hfont = sessionStorage.getItem("hfont"),
   size = sessionStorage.getItem("size"),
   weight = sessionStorage.getItem("weight"),
@@ -45,45 +45,62 @@ function loadProperty(current_varname, value) {
   }
 }
 
-loadProperty("ifm-font-family-base", font);
-loadProperty("ifm-heading-font-family", hfont);
+function applyStoredAccessibility() {
 
-loadProperty("ifm-font-size-base", size);
+  loadProperty("ifm-font-family-base", font);
+  loadProperty("ifm-heading-font-family", hfont);
 
-loadProperty("ifm-font-weight-base", weight);
+  loadProperty("ifm-font-size-base", size);
 
-loadProperty("psdi-letter-spacing-base", letter);
+  loadProperty("ifm-font-weight-base", weight);
 
-loadProperty("psdi-dark-text-color-body", darkColour);
-loadProperty("psdi-dark-text-color-heading", darkColour);
-loadProperty("psdi-light-text-color-body", lightColour);
-loadProperty("psdi-light-text-color-heading", lightColour);
+  loadProperty("psdi-letter-spacing-base", letter);
 
-loadProperty("ifm-line-height-base", line);
+  loadProperty("psdi-dark-text-color-body", darkColour);
+  loadProperty("psdi-dark-text-color-heading", darkColour);
+  loadProperty("psdi-light-text-color-body", lightColour);
+  loadProperty("psdi-light-text-color-heading", lightColour);
 
-loadProperty("ifm-background-color", lightBack);
-loadProperty("ifm-color-primary", darkBack);
+  loadProperty("ifm-line-height-base", line);
+
+  loadProperty("ifm-background-color", lightBack);
+  loadProperty("ifm-color-primary", darkBack);
+
+}
 
 if (font != null) {
-
-  r.style.setProperty('--ifm-font-family-base', font);
-  r.style.setProperty('--ifm-heading-font-family', hfont);
-
-  r.style.setProperty('--ifm-font-size-base', size);
-
-  r.style.setProperty('--ifm-font-weight-base', weight);
-
-  r.style.setProperty('--psdi-letter-spacing-base', letter);
-
-  r.style.setProperty('--psdi-dark-text-color-body', darkColour);
-  r.style.setProperty('--psdi-dark-text-color-heading', darkColour);
-  r.style.setProperty('--psdi-light-text-color-body', lightColour);
-  r.style.setProperty('--psdi-light-text-color-heading', lightColour);
-
-  r.style.setProperty('--ifm-line-height-base', line);
-
-  r.style.setProperty('--ifm-background-color', lightBack);
-  r.style.setProperty('--ifm-color-primary', darkBack);
+  applyStoredAccessibility();
 }
+
+$.get(`/load_accessibility/`)
+  .done((data) => {
+
+    const oData = JSON.parse(data);
+
+    function getAndSave(key) {
+      let value = oData[key];
+      if (value != null) {
+        sessionStorage.setItem(key, value);
+        sessionStorage.setItem(key + "Opt", oData[key + "Opt"]);
+        return value;
+      } else {
+        return sessionStorage.getItem(key);
+      }
+    }
+
+    font = getAndSave("font");
+    hfont = getAndSave("hfont");
+    size = getAndSave("size");
+    weight = getAndSave("weight");
+    letter = getAndSave("letter");
+    line = getAndSave("line");
+    darkColour = getAndSave("darkColour");
+    lightColour = getAndSave("lightColour");
+    lightBack = getAndSave("lightBack");
+    darkBack = getAndSave("darkBack");
+    mode = getAndSave("mode");
+
+    applyStoredAccessibility();
+  });
 
 document.documentElement.setAttribute("data-theme", mode);

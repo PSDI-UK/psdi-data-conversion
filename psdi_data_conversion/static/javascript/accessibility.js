@@ -12,27 +12,27 @@ const LIGHT_MODE = "light";
 const DARK_MODE = "dark";
 
 function toggleMode() {
-  let currentMode = document.documentElement.getAttribute("data-theme");
-  let new_mode;
+    let currentMode = document.documentElement.getAttribute("data-theme");
+    let new_mode;
 
-  if (currentMode == DARK_MODE) {
-    new_mode = LIGHT_MODE;
-  } else {
-    new_mode = DARK_MODE;
-  }
+    if (currentMode == DARK_MODE) {
+        new_mode = LIGHT_MODE;
+    } else {
+        new_mode = DARK_MODE;
+    }
 
-  document.documentElement.setAttribute("data-theme", new_mode);
-  sessionStorage.setItem("mode", new_mode);
+    document.documentElement.setAttribute("data-theme", new_mode);
+    sessionStorage.setItem("mode", new_mode);
 }
 
 function loadOption(jsName, cssSelector, changeFunc) {
-    const opt = sessionStorage.getItem(jsName+"Opt");
-    if (opt!=null)
+    const opt = sessionStorage.getItem(jsName + "Opt");
+    if (opt != null)
         $(cssSelector).val(opt).change();
     $(cssSelector).change(changeFunc);
 }
 
-$(document).ready(function() {
+$(document).ready(function () {
 
     loadOption("font", "#font", changeFont);
     loadOption("size", "#size", changeFontSize);
@@ -53,9 +53,9 @@ function changeFont(event) {
     const fontSelection = $("#font").find(":selected");
     const font = fontSelection.text().trim();
 
-    if (font=="Default") {
-        r.style.setProperty('--ifm-font-family-base', s.getPropertyValue('--psdi-default-font'));
-        r.style.setProperty('--ifm-heading-font-family', s.getPropertyValue('--psdi-default-heading-font'));
+    if (font == "Default") {
+        r.style.setProperty('--ifm-font-family-base', sessionStorage.getItem('psdi-default-font'));
+        r.style.setProperty('--ifm-heading-font-family', sessionStorage.getItem('psdi-default-heading-font'));
     } else {
         // To avoid duplication of font settings, we retrieve the style to apply from what's applied to the font in the
         // selection box
@@ -70,18 +70,18 @@ function changeLetterSpacing(event) {
     const space = $("#letter").find(":selected").text();
 
     if (space == "Default") {
-        r.style.setProperty('--psdi-letter-spacing-base', s.getPropertyValue('--psdi-default-letter-spacing'));
+        r.style.setProperty('--psdi-letter-spacing-base', sessionStorage.getItem('psdi-default-letter-spacing'));
     } else {
-        r.style.setProperty('--psdi-letter-spacing-base', space+"px");
+        r.style.setProperty('--psdi-letter-spacing-base', space + "px");
     }
 }
 
 // Changes the line spacing for accessibility purposes.
 function changeLineSpacing(event) {
     const space = $("#line").find(":selected").text();
-    
-    if (space=="Default") {
-        r.style.setProperty('--ifm-line-height-base', s.getPropertyValue('--psdi-default-line-height'));
+
+    if (space == "Default") {
+        r.style.setProperty('--ifm-line-height-base', sessionStorage.getItem('psdi-default-line-height'));
     } else {
         r.style.setProperty('--ifm-line-height-base', space);
     }
@@ -91,10 +91,10 @@ function changeLineSpacing(event) {
 function changeFontSize(event) {
     const size = $("#size").find(":selected").text();
 
-    if (size=="Default") {
-        r.style.setProperty('--ifm-font-size-base', s.getPropertyValue('--psdi-default-font-size'));
+    if (size == "Default") {
+        r.style.setProperty('--ifm-font-size-base', sessionStorage.getItem('psdi-default-font-size'));
     } else {
-        r.style.setProperty('--ifm-font-size-base', size+"px");
+        r.style.setProperty('--ifm-font-size-base', size + "px");
     }
 }
 
@@ -102,8 +102,8 @@ function changeFontSize(event) {
 function changeFontWeight(event) {
     const weight = $("#weight").find(":selected").text();
 
-    if (weight=="Default") {
-        r.style.setProperty('--ifm-font-weight-base', s.getPropertyValue('--psdi-default-font-weight'));
+    if (weight == "Default") {
+        r.style.setProperty('--ifm-font-weight-base', sessionStorage.getItem('psdi-default-font-weight'));
     } else {
         r.style.setProperty('--ifm-font-weight-base', weight.toLowerCase());
     }
@@ -119,18 +119,18 @@ function changeFontColourLight(event) {
     return changeFontColour(event, "light");
 }
 
-function changeFontColour(event, lightOrDark="dark") {
-    
-    const colour = $("#"+lightOrDark+"-colour").find(":selected").text();
+function changeFontColour(event, lightOrDark = "dark") {
 
-    if (colour==='Default') {
-        r.style.setProperty('--psdi-'+lightOrDark+'-text-color-body',
-            s.getPropertyValue('--psdi-default-'+lightOrDark+'-text-color-body'));
-        r.style.setProperty('--psdi-'+lightOrDark+'-text-color-heading',
-            s.getPropertyValue('--psdi-default-'+lightOrDark+'-text-color-heading'));
+    const colour = $("#" + lightOrDark + "-colour").find(":selected").text();
+
+    if (colour === 'Default') {
+        r.style.setProperty('--psdi-' + lightOrDark + '-text-color-body',
+            sessionStorage.getItem('psdi-default-' + lightOrDark + '-text-color-body'));
+        r.style.setProperty('--psdi-' + lightOrDark + '-text-color-heading',
+            sessionStorage.getItem('psdi-default-' + lightOrDark + '-text-color-heading'));
     } else {
-        r.style.setProperty('--psdi-'+lightOrDark+'-text-color-body', colour);
-        r.style.setProperty('--psdi-'+lightOrDark+'-text-color-heading', colour);
+        r.style.setProperty('--psdi-' + lightOrDark + '-text-color-body', colour);
+        r.style.setProperty('--psdi-' + lightOrDark + '-text-color-heading', colour);
     }
 }
 
@@ -138,8 +138,8 @@ function changeFontColour(event, lightOrDark="dark") {
 function changeLightBackground(event) {
     const colour = $("#light-background").find(":selected").text();
 
-    if (colour=="Default") {
-        r.style.setProperty('--ifm-background-color', s.getPropertyValue('--psdi-default-background-color'));
+    if (colour == "Default") {
+        r.style.setProperty('--ifm-background-color', sessionStorage.getItem('psdi-default-background-color'));
     } else {
         r.style.setProperty('--ifm-background-color', colour);
     }
@@ -149,8 +149,8 @@ function changeLightBackground(event) {
 function changeDarkBackground(event) {
     const colour = $("#dark-background").find(":selected").text();
 
-    if (colour=="Default") {
-        r.style.setProperty('--ifm-color-primary', s.getPropertyValue('--psdi-default-color-primary'));
+    if (colour == "Default") {
+        r.style.setProperty('--ifm-color-primary', sessionStorage.getItem('psdi-default-color-primary'));
     } else {
         r.style.setProperty('--ifm-color-primary', colour);
     }
@@ -160,37 +160,64 @@ function changeDarkBackground(event) {
 function resetSelections(event) {
     ["#font", "#size", "#weight", "#letter", "#line", "#dark-colour", "#light-colour", "#light-background",
         "#dark-background"].forEach(function (selector) {
-        // Don't trigger a change event if it's already on Default
-        if ($(selector).find(":selected").val() != "Default")
-            $(selector).val("Default").change();
-    });
+            // Don't trigger a change event if it's already on Default
+            if ($(selector).find(":selected").val() != "Default")
+                $(selector).val("Default").change();
+        });
 }
 
 // Save a setting for one accessibility option to sessionStorage
-function applySetting(jsName, cssSelector, cssVar) {
+function applySetting(jsName, cssSelector, cssVar, settingsData) {
 
     // Check if set to default and not previously set, in which case don't save anything to storage
     let selectedVal = $(cssSelector).find(":selected").val();
-    if (selectedVal=="Default" && sessionStorage.getItem(jsName)==null)
+
+    let val = s.getPropertyValue(cssVar);
+
+    settingsData[jsName] = val;
+    settingsData[jsName + "Opt"] = selectedVal;
+
+    if (selectedVal == "Default" && sessionStorage.getItem(jsName) == null)
         return;
 
-    sessionStorage.setItem(jsName, s.getPropertyValue(cssVar));
-    sessionStorage.setItem(jsName+"Opt", selectedVal);
+    sessionStorage.setItem(jsName, val);
+    sessionStorage.setItem(jsName + "Opt", selectedVal);
+
 }
 
 // Applies accessibility settings to the entire website.
 function applyAllSettings(event) {
-    applySetting("font", "#font", "--ifm-font-family-base");
-    applySetting("hfont", "#font", "--ifm-heading-font-family");
-    applySetting("size", "#size", "--ifm-font-size-base");
-    applySetting("weight", "#weight", "--ifm-font-weight-base");
-    applySetting("letter", "#letter", "--psdi-letter-spacing-base");
-    applySetting("line", "#line", "--ifm-line-height-base");
-    applySetting("darkColour", "#dark-colour", "--psdi-dark-text-color-body");
-    applySetting("lightColour", "#light-colour", "--psdi-light-text-color-body");
-    applySetting("lightBack", "#light-background", "--ifm-background-color");
-    applySetting("darkBack", "#dark-background", "--ifm-color-primary");
 
-    alert("The settings have been applied to the entire website.");
+    let settingsData = new Object();
+
+    applySetting("font", "#font", "--ifm-font-family-base", settingsData);
+    applySetting("hfont", "#font", "--ifm-heading-font-family", settingsData);
+    applySetting("size", "#size", "--ifm-font-size-base", settingsData);
+    applySetting("weight", "#weight", "--ifm-font-weight-base", settingsData);
+    applySetting("letter", "#letter", "--psdi-letter-spacing-base", settingsData);
+    applySetting("line", "#line", "--ifm-line-height-base", settingsData);
+    applySetting("darkColour", "#dark-colour", "--psdi-dark-text-color-body", settingsData);
+    applySetting("lightColour", "#light-colour", "--psdi-light-text-color-body", settingsData);
+    applySetting("lightBack", "#light-background", "--ifm-background-color", settingsData);
+    applySetting("darkBack", "#dark-background", "--ifm-color-primary", settingsData);
+
+    $.post(`/save_accessibility/`, {
+        'data': JSON.stringify(settingsData)
+    })
+        .done(() => {
+            alert("Your accessibility settings have been saved. If you accidentally save settings which are " +
+                "unreadable and can't find the \"Reset\" button, you can restore the default settings by deleting " +
+                "this site's cookie in your browser's settings.");
+        })
+        .fail(function (e) {
+            alert("ERROR: Could not save accessibility settings. Your settings should still persist for this " +
+                "session, but will not be restored for future sessions. Please use the \"Contact\" link in the " +
+                "header to report this error to us.");
+
+            // For debugging
+            console.error("Error saving accessibility settings", e.status, e.responseText);
+        });
+
+
 }
 
