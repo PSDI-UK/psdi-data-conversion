@@ -35,6 +35,12 @@ def save_accessibility():
     return resp
 
 
+def load_accessibility():
+    """Load the user's accessibility settings from the cookie
+    """
+    return json.dumps(request.cookies)
+
+
 def init_accessibility(app: Flask):
     """Connect the provided Flask app to each of the post methods
     """
@@ -42,3 +48,4 @@ def init_accessibility(app: Flask):
     app.route('/accessibility.htm')(accessibility)
 
     app.route('/save_accessibility/', methods=["POST"])(save_accessibility)
+    app.route('/load_accessibility/', methods=["GET"])(load_accessibility)
