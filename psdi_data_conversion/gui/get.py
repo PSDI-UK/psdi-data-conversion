@@ -57,7 +57,7 @@ def data():
         abort(405)
 
 
-def init_pages(app: Flask):
+def init_get(app: Flask):
     """Connect the provided Flask app to each of the pages on the site
     """
 
