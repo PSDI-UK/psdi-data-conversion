@@ -74,18 +74,18 @@ class SiteEnv:
         self.sha: str = sha
         """The SHA of the latest commit, if the latest commit isn't tagged, otherwise an empty string"""
 
-        self._d_kwargs: dict[str, str] | None = None
+        self._kwargs: dict[str, str] | None = None
         """Cached value for dict containing all env values"""
 
     @property
-    def d_kwargs(self) -> dict[str, str]:
+    def kwargs(self) -> dict[str, str]:
         """Get a dict which can be used to provide kwargs for rendering a template"""
-        if not self._d_kwargs:
-            self._d_kwargs = {}
-            for kwarg in self.__dict__:
-                if not kwarg.startswith("_"):
-                    self._d_kwargs[kwarg] = self.__dict__[kwarg]
-        return self._d_kwargs
+        if not self._kwargs:
+            self._kwargs = {}
+            for key, val in self.__dict__.items():
+                if not key.startswith("_"):
+                    self._kwargs[key] = val
+        return self._kwargs
 
     def _determine_log_mode(self) -> str:
         """Determine the log mode from args and environmental variables, preferring the former"""
@@ -219,3 +219,9 @@ def update_env(args: Namespace | None = None):
     """
     global _env
     _env = SiteEnv(args)
+
+
+def get_env_kwargs():
+    """Get a dict of common kwargs for the environment
+    """
+    return get_env().kwargs

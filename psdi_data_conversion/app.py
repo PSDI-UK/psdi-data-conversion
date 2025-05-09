@@ -28,7 +28,7 @@ from psdi_data_conversion.converter import run_converter
 from psdi_data_conversion.database import get_format_info
 from psdi_data_conversion.file_io import split_archive_ext
 from psdi_data_conversion.main import print_wrap
-from psdi_data_conversion.website.env import get_env, update_env
+from psdi_data_conversion.website.env import get_env, get_env_kwargs, update_env
 
 # Key for the label given to the file uploaded in the web interface
 FILE_TO_UPLOAD_KEY = 'fileToUpload'
@@ -86,7 +86,7 @@ def website():
     """
     return render_template("index.htm",
                            token=token,
-                           **get_env().d_kwargs)
+                           **get_env_kwargs())
 
 
 @app.route('/accessibility.htm')
@@ -94,7 +94,7 @@ def accessibility():
     """Return the accessibility page
     """
     return render_template("accessibility.htm",
-                           **get_env().d_kwargs)
+                           **get_env_kwargs())
 
 
 @app.route('/documentation.htm')
@@ -102,7 +102,7 @@ def documentation():
     """Return the documentation page
     """
     return render_template("documentation.htm",
-                           **get_env().d_kwargs)
+                           **get_env_kwargs())
 
 
 @app.route('/convert/', methods=['POST'])
