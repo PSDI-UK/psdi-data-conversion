@@ -69,7 +69,8 @@ def limit_upload_size():
         app.config['MAX_CONTENT_LENGTH'] = None
 
 
-# Set the upload limit based on env vars to start with
+# Set the upload limit based on env vars to start with - this will be used when this script is invoked via the `flask`
+# command or other utilities that work similarly
 limit_upload_size()
 
 
