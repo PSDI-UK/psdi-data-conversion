@@ -173,10 +173,8 @@ def save_accessibility():
 
     d_settings: dict[str, str] = json.loads(request.form['data'])
 
-    print(repr(d_settings))
-
     for key, val in d_settings.items():
-        resp.set_cookie(key, val)
+        resp.set_cookie(key, val, max_age=const.YEAR)
 
     return resp
 
