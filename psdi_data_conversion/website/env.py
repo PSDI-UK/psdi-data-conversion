@@ -7,6 +7,8 @@ This module handles setting up and storing the state of the environment for the 
 import os
 import sys
 from argparse import Namespace
+from datetime import datetime
+from hashlib import md5
 from subprocess import run
 from traceback import format_exc
 from typing import TypeVar
@@ -73,6 +75,10 @@ class SiteEnv:
 
         self.sha: str = sha
         """The SHA of the latest commit, if the latest commit isn't tagged, otherwise an empty string"""
+
+        dt = str(datetime.now())
+        self.token = md5(dt.encode('utf8')).hexdigest()
+        """A token for this session, created by hashing the the current date and time"""
 
         self._kwargs: dict[str, str] | None = None
         """Cached value for dict containing all env values"""

@@ -10,9 +10,7 @@ import os
 import sys
 from argparse import ArgumentParser
 from collections.abc import Callable
-from datetime import datetime
 from functools import wraps
-from hashlib import md5
 from multiprocessing import Lock
 from traceback import format_exc
 from typing import Any
@@ -35,10 +33,6 @@ FILE_TO_UPLOAD_KEY = 'fileToUpload'
 
 # A lock to prevent multiple threads from logging at the same time
 logLock = Lock()
-
-# Create a token by hashing the current date and time.
-dt = str(datetime.now())
-token = md5(dt.encode('utf8')).hexdigest()
 
 
 def suppress_warning(func: Callable[..., Any]) -> Callable[..., Any]:
@@ -85,7 +79,6 @@ def website():
     """Return the web page along with relevant data
     """
     return render_template("index.htm",
-                           token=token,
                            **get_env_kwargs())
 
 
@@ -147,7 +140,7 @@ def convert():
                   file=sys.stderr)
             abort(const.STATUS_CODE_GENERAL)
 
-    if (not env.service_mode) or (request.form['token'] == token and token != ''):
+    if (not env.service_mode) or (request.form['token'] == env.token and env.token != ''):
         try:
             conversion_output = run_converter(name=request.form['converter'],
                                               filename=qualified_filename,
@@ -264,7 +257,8 @@ def data():
     str
         Output status - 'okay' if exited successfuly
     """
-    if get_env().service_mode and request.args['token'] == token and token != '':
+    env = get_env()
+    if env.service_mode and request.args['token'] == env.token and env.token != '':
         message = '[' + log_utility.get_date_time() + '] ' + request.args['data'] + '\n'
 
         with open("user_responses", "a") as f:
