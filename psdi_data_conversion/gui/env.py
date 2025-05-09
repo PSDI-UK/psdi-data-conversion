@@ -42,12 +42,14 @@ class SiteEnv:
 
         self.max_file_size = self._determine_value(ev=const.MAX_FILESIZE_EV,
                                                    arg="max_file_size",
-                                                   default=const.DEFAULT_MAX_FILE_SIZE)
+                                                   default=const.DEFAULT_MAX_FILE_SIZE /
+                                                   const.MEGABYTE)*const.MEGABYTE
         """The maximum file size for converters other than Open Babel"""
 
         self.max_file_size_ob = self._determine_value(ev=const.MAX_FILESIZE_OB_EV,
                                                       arg="max_file_size_ob",
-                                                      default=const.DEFAULT_MAX_FILE_SIZE_OB)
+                                                      default=const.DEFAULT_MAX_FILE_SIZE_OB /
+                                                      const.MEGABYTE)*const.MEGABYTE
         """The maximum file size for the Open Babel converter"""
 
         self.service_mode = self._determine_value(ev=const.SERVICE_MODE_EV,
