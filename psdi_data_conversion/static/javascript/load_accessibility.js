@@ -2,8 +2,8 @@ const r = document.querySelector(':root');
 const s = getComputedStyle(document.documentElement);
 
 function setDefault(default_varname, current_varname) {
-  if (s.getPropertyValue('--' + default_varname) == "") {
-    r.style.setProperty('--' + default_varname, s.getPropertyValue('--' + current_varname))
+  if (sessionStorage.getItem(default_varname) != null) {
+    sessionStorage.setItem(default_varname, s.getPropertyValue('--' + current_varname))
   }
 }
 
