@@ -12,7 +12,7 @@ import sys
 from multiprocessing import Lock
 from traceback import format_exc
 
-from flask import Flask, Response, abort, make_response, request
+from flask import Flask, Response, abort, request
 from werkzeug.utils import secure_filename
 
 from psdi_data_conversion import constants as const
@@ -165,20 +165,6 @@ def delete():
         return Response(status=400)
 
 
-def save_accessibility():
-    """Save the user's accessibility settings in a cookie
-    """
-
-    resp = make_response("Cookie saved successfully")
-
-    d_settings: dict[str, str] = json.loads(request.form['data'])
-
-    for key, val in d_settings.items():
-        resp.set_cookie(key, val, max_age=const.YEAR)
-
-    return resp
-
-
 def init_post(app: Flask):
     """Connect the provided Flask app to each of the post methods
     """
@@ -188,5 +174,3 @@ def init_post(app: Flask):
     app.route('/feedback/', methods=["POST"])(feedback)
 
     app.route('/delete/', methods=["POST"])(delete)
-
-    app.route('/save_accessibility/', methods=["POST"])(save_accessibility)

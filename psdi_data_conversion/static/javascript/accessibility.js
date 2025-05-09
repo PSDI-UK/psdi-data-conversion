@@ -205,7 +205,9 @@ function applyAllSettings(event) {
         'data': JSON.stringify(settingsData)
     })
         .done(() => {
-            alert("Your accessibility settings have been saved.");
+            alert("Your accessibility settings have been saved. If you accidentally save settings which are " +
+                "unreadable and can't find the \"Reset\" button, you can restore the default settings by deleting " +
+                "this site's cookie in your browser's settings.");
         })
         .fail(function (e) {
             alert("ERROR: Could not save accessibility settings. Your settings should still persist for this " +

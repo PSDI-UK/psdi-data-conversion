@@ -19,13 +19,6 @@ def index():
                            **get_env_kwargs())
 
 
-def accessibility():
-    """Return the accessibility page
-    """
-    return render_template("accessibility.htm",
-                           **get_env_kwargs())
-
-
 def documentation():
     """Return the documentation page
     """
@@ -63,8 +56,6 @@ def init_get(app: Flask):
 
     app.route('/')(index)
     app.route('/index.htm')(index)
-
-    app.route('/accessibility.htm')(accessibility)
 
     app.route('/documentation.htm')(documentation)
 
