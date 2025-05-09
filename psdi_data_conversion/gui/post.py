@@ -165,13 +165,6 @@ def delete():
         return Response(status=400)
 
 
-def delete_file():
-    """Delete file (cURL)
-    """
-    os.remove(request.form['filepath'])
-    return 'Server-side file ' + request.form['filepath'] + ' deleted\n'
-
-
 def init_post(app: Flask):
     """Connect the provided Flask app to each of the post methods
     """
@@ -181,5 +174,3 @@ def init_post(app: Flask):
     app.route('/feedback/')(feedback)
 
     app.route('/delete/')(delete)
-
-    app.route('/del/')(delete_file)
