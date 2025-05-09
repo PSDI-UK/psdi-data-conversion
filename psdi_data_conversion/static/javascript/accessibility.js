@@ -167,31 +167,55 @@ function resetSelections(event) {
 }
 
 // Save a setting for one accessibility option to sessionStorage
-function applySetting(jsName, cssSelector, cssVar) {
+function applySetting(jsName, cssSelector, cssVar, settingsData) {
 
     // Check if set to default and not previously set, in which case don't save anything to storage
     let selectedVal = $(cssSelector).find(":selected").val();
+
+    let val = s.getPropertyValue(cssVar);
+
+    settingsData[jsName] = val;
+    settingsData[jsName + "Opt"] = selectedVal;
+
     if (selectedVal == "Default" && sessionStorage.getItem(jsName) == null)
         return;
 
-    sessionStorage.setItem(jsName, s.getPropertyValue(cssVar));
+    sessionStorage.setItem(jsName, val);
     sessionStorage.setItem(jsName + "Opt", selectedVal);
 
 }
 
 // Applies accessibility settings to the entire website.
 function applyAllSettings(event) {
-    applySetting("font", "#font", "--ifm-font-family-base");
-    applySetting("hfont", "#font", "--ifm-heading-font-family");
-    applySetting("size", "#size", "--ifm-font-size-base");
-    applySetting("weight", "#weight", "--ifm-font-weight-base");
-    applySetting("letter", "#letter", "--psdi-letter-spacing-base");
-    applySetting("line", "#line", "--ifm-line-height-base");
-    applySetting("darkColour", "#dark-colour", "--psdi-dark-text-color-body");
-    applySetting("lightColour", "#light-colour", "--psdi-light-text-color-body");
-    applySetting("lightBack", "#light-background", "--ifm-background-color");
-    applySetting("darkBack", "#dark-background", "--ifm-color-primary");
 
-    alert("The settings have been applied to the entire website.");
+    let settingsData = new Object();
+
+    applySetting("font", "#font", "--ifm-font-family-base", settingsData);
+    applySetting("hfont", "#font", "--ifm-heading-font-family", settingsData);
+    applySetting("size", "#size", "--ifm-font-size-base", settingsData);
+    applySetting("weight", "#weight", "--ifm-font-weight-base", settingsData);
+    applySetting("letter", "#letter", "--psdi-letter-spacing-base", settingsData);
+    applySetting("line", "#line", "--ifm-line-height-base", settingsData);
+    applySetting("darkColour", "#dark-colour", "--psdi-dark-text-color-body", settingsData);
+    applySetting("lightColour", "#light-colour", "--psdi-light-text-color-body", settingsData);
+    applySetting("lightBack", "#light-background", "--ifm-background-color", settingsData);
+    applySetting("darkBack", "#dark-background", "--ifm-color-primary", settingsData);
+
+    $.post(`/save_accessibility/`, {
+        'data': JSON.stringify(settingsData)
+    })
+        .done(() => {
+            alert("Your accessibility settings have been saved.");
+        })
+        .fail(function (e) {
+            alert("ERROR: Could not save accessibility settings. Your settings should still persist for this " +
+                "session, but will not be restored for future sessions. Please use the \"Contact\" link in the " +
+                "header to report this error to us.");
+
+            // For debugging
+            console.error("Error saving accessibility settings", e.status, e.responseText);
+        });
+
+
 }
 
