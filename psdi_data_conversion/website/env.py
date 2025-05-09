@@ -162,6 +162,8 @@ class SiteEnv:
                 tag = str(out_bytes.decode()).strip()
 
             except Exception:
+                # Failsafe exception block, since this is reasonably likely to occur (e.g. due to a shallow fetch of the
+                # repo, and we don't want to crash the whole app because of it)
                 print("ERROR: Could not determine most recent tag. Error was:\n" + format_exc(),
                       file=sys.stderr)
                 tag = ""
@@ -178,6 +180,7 @@ class SiteEnv:
                 tag_sha = str(out_bytes.decode()).strip()
 
             except Exception:
+                # Another failsafe block, same reason as before
                 print("ERROR: Could not determine SHA for most recent tag. Error was:\n" + format_exc(),
                       file=sys.stderr)
                 tag_sha = None
@@ -196,6 +199,7 @@ class SiteEnv:
                 sha = str(out_bytes.decode()).strip()
 
             except Exception:
+                # Another failsafe block, same reason as before
                 print("ERROR: Could not determine SHA of most recent commit. Error was:\n" + format_exc(),
                       file=sys.stderr)
                 sha = ""
