@@ -9,23 +9,19 @@ import json
 import os
 import sys
 from argparse import ArgumentParser
-from collections.abc import Callable
-from functools import wraps
 from multiprocessing import Lock
 from traceback import format_exc
-from typing import Any
 
-import werkzeug.serving
-from flask import Flask, Response, abort, cli, render_template, request
+from flask import Response, abort, render_template, request
 from werkzeug.utils import secure_filename
 
-import psdi_data_conversion
 from psdi_data_conversion import constants as const
 from psdi_data_conversion import log_utility
 from psdi_data_conversion.converter import run_converter
 from psdi_data_conversion.database import get_format_info
 from psdi_data_conversion.file_io import split_archive_ext
 from psdi_data_conversion.gui.env import get_env, get_env_kwargs, update_env
+from psdi_data_conversion.gui.setup import get_app, limit_upload_size, start_app
 from psdi_data_conversion.main import print_wrap
 
 # Key for the label given to the file uploaded in the web interface
@@ -34,44 +30,7 @@ FILE_TO_UPLOAD_KEY = 'fileToUpload'
 # A lock to prevent multiple threads from logging at the same time
 logLock = Lock()
 
-
-def suppress_warning(func: Callable[..., Any]) -> Callable[..., Any]:
-    """Since we're using the development server as the user GUI, we monkey-patch Flask to disable the warnings that
-    would otherwise appear for this so they don't confuse the user
-    """
-    @wraps(func)
-    def wrapper(*args, **kwargs) -> Any:
-        if args and isinstance(args[0], str) and args[0].startswith('WARNING: This is a development server.'):
-            return ''
-        return func(*args, **kwargs)
-    return wrapper
-
-
-werkzeug.serving._ansi_style = suppress_warning(werkzeug.serving._ansi_style)
-cli.show_server_banner = lambda *_: None
-
-app = Flask(__name__)
-
-
-def limit_upload_size():
-    """Impose a limit on the maximum file that can be uploaded before Flask will raise an error"""
-
-    env = get_env()
-
-    # Determine the largest possible file size that can be uploaded, keeping in mind that 0 indicates unlimited
-    larger_max_file_size = env.max_file_size
-    if (env.max_file_size > 0) and (env.max_file_size_ob > env.max_file_size):
-        larger_max_file_size = env.max_file_size_ob
-
-    if larger_max_file_size > 0:
-        app.config['MAX_CONTENT_LENGTH'] = larger_max_file_size
-    else:
-        app.config['MAX_CONTENT_LENGTH'] = None
-
-
-# Set the upload limit based on env vars to start with - this will be used when this script is invoked via the `flask`
-# command or other utilities that work similarly
-limit_upload_size()
+app = get_app()
 
 
 @app.route('/')
@@ -269,16 +228,6 @@ def data():
     else:
         # return http status code 405
         abort(405)
-
-
-def start_app():
-    """Start the Flask app - this requires being run from the base directory of the project, so this changes the
-    current directory to there. Anything else which changes it while the app is running may interfere with its proper
-    execution.
-    """
-
-    os.chdir(os.path.join(psdi_data_conversion.__path__[0], ".."))
-    app.run(debug=get_env().debug_mode)
 
 
 def main():
