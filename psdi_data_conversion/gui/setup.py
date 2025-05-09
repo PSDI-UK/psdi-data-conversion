@@ -17,6 +17,7 @@ import psdi_data_conversion
 from psdi_data_conversion import constants as const
 from psdi_data_conversion.gui.env import get_env
 from psdi_data_conversion.gui.get import init_get
+from psdi_data_conversion.gui.post import init_post
 
 _app: Flask | None = None
 
@@ -48,8 +49,9 @@ def _init_app():
     # Set the file upload limit based on env vars
     limit_upload_size(app)
 
-    # Connect the app to the various pages of the website
+    # Connect the app to the various pages and methods of the website
     init_get(app)
+    init_post(app)
 
     return app
 
