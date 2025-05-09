@@ -12,7 +12,7 @@ from argparse import ArgumentParser
 from multiprocessing import Lock
 from traceback import format_exc
 
-from flask import Response, abort, render_template, request
+from flask import Response, abort, request
 from werkzeug.utils import secure_filename
 
 from psdi_data_conversion import constants as const
@@ -20,7 +20,7 @@ from psdi_data_conversion import log_utility
 from psdi_data_conversion.converter import run_converter
 from psdi_data_conversion.database import get_format_info
 from psdi_data_conversion.file_io import split_archive_ext
-from psdi_data_conversion.gui.env import get_env, get_env_kwargs, update_env
+from psdi_data_conversion.gui.env import get_env, update_env
 from psdi_data_conversion.gui.setup import get_app, limit_upload_size, start_app
 from psdi_data_conversion.main import print_wrap
 
@@ -31,31 +31,6 @@ FILE_TO_UPLOAD_KEY = 'fileToUpload'
 logLock = Lock()
 
 app = get_app()
-
-
-@app.route('/')
-@app.route('/index.htm')
-def website():
-    """Return the web page along with relevant data
-    """
-    return render_template("index.htm",
-                           **get_env_kwargs())
-
-
-@app.route('/accessibility.htm')
-def accessibility():
-    """Return the accessibility page
-    """
-    return render_template("accessibility.htm",
-                           **get_env_kwargs())
-
-
-@app.route('/documentation.htm')
-def documentation():
-    """Return the documentation page
-    """
-    return render_template("documentation.htm",
-                           **get_env_kwargs())
 
 
 @app.route('/convert/', methods=['POST'])
@@ -203,31 +178,6 @@ def delete_file():
     """
     os.remove(request.form['filepath'])
     return 'Server-side file ' + request.form['filepath'] + ' deleted\n'
-
-
-@app.route('/data/', methods=['GET'])
-def data():
-    """Check that the incoming token matches the one sent to the user (should mostly prevent spambots). Write date- and
-    time-stamped user input to server-side file 'user_responses'.
-
-    $$$$$$$$$$ Retained in case direct logging is required in the future. $$$$$$$$$$
-
-    Returns
-    -------
-    str
-        Output status - 'okay' if exited successfuly
-    """
-    env = get_env()
-    if env.service_mode and request.args['token'] == env.token and env.token != '':
-        message = '[' + log_utility.get_date_time() + '] ' + request.args['data'] + '\n'
-
-        with open("user_responses", "a") as f:
-            f.write(message)
-
-        return 'okay'
-    else:
-        # return http status code 405
-        abort(405)
 
 
 def main():
