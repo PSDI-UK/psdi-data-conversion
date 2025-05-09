@@ -36,6 +36,9 @@ import shutil
 # The name of the command-line script
 CL_SCRIPT_NAME = "psdi-data-convert"
 
+# The name of the Flask app
+APP_NAME = "psdi_data_conversion"
+
 # Environmental variables
 LOG_MODE_EV = "LOG_MODE"
 LOG_LEVEL_EV = "LOG_LEVEL"

@@ -9,37 +9,20 @@ import json
 import os
 import sys
 from argparse import ArgumentParser
-from collections.abc import Callable
-from datetime import datetime
-from functools import wraps
-from hashlib import md5
 from multiprocessing import Lock
-from subprocess import run
 from traceback import format_exc
-from typing import Any
 
-import werkzeug.serving
-from flask import Flask, Response, abort, cli, render_template, request
+from flask import Response, abort, render_template, request
 from werkzeug.utils import secure_filename
 
-import psdi_data_conversion
 from psdi_data_conversion import constants as const
 from psdi_data_conversion import log_utility
 from psdi_data_conversion.converter import run_converter
 from psdi_data_conversion.database import get_format_info
 from psdi_data_conversion.file_io import split_archive_ext
+from psdi_data_conversion.gui.env import get_env, get_env_kwargs, update_env
+from psdi_data_conversion.gui.setup import get_app, limit_upload_size, start_app
 from psdi_data_conversion.main import print_wrap
-
-# Env var for the tag and SHA of the latest commit
-TAG_EV = "TAG"
-TAG_SHA_EV = "TAG_SHA"
-SHA_EV = "SHA"
-
-# Env var for whether this is a production release or development
-PRODUCTION_EV = "PRODUCTION_MODE"
-
-# Env var for whether this is a production release or development
-DEBUG_EV = "DEBUG_MODE"
 
 # Key for the label given to the file uploaded in the web interface
 FILE_TO_UPLOAD_KEY = 'fileToUpload'
@@ -47,184 +30,32 @@ FILE_TO_UPLOAD_KEY = 'fileToUpload'
 # A lock to prevent multiple threads from logging at the same time
 logLock = Lock()
 
-# Create a token by hashing the current date and time.
-dt = str(datetime.now())
-token = md5(dt.encode('utf8')).hexdigest()
-
-# Get the debug, service and production modes from their envvars
-service_mode_ev = os.environ.get(const.SERVICE_MODE_EV)
-service_mode = (service_mode_ev is not None) and (service_mode_ev.lower() == "true")
-production_mode_ev = os.environ.get(PRODUCTION_EV)
-production_mode = (production_mode_ev is not None) and (production_mode_ev.lower() == "true")
-debug_mode_ev = os.environ.get(DEBUG_EV)
-debug_mode = (debug_mode_ev is not None) and (debug_mode_ev.lower() == "true")
-
-# Get the logging mode and level from their envvars
-ev_log_mode = os.environ.get(const.LOG_MODE_EV)
-if ev_log_mode is None:
-    log_mode = const.LOG_MODE_DEFAULT
-else:
-    ev_log_mode = ev_log_mode.lower()
-    if ev_log_mode not in const.L_ALLOWED_LOG_MODES:
-        print(f"ERROR: Unrecognised logging option: {ev_log_mode}. Allowed options are: {const.L_ALLOWED_LOG_MODES}",
-              file=sys.stderr)
-        exit(1)
-    log_mode = ev_log_mode
-
-ev_log_level = os.environ.get(const.LOG_LEVEL_EV)
-if ev_log_level is None:
-    log_level = None
-else:
-    try:
-        log_level = log_utility.get_log_level_from_str(ev_log_level)
-    except ValueError as e:
-        print(f"ERROR: {str(e)}")
-        exit(1)
-
-# Get the maximum allowed size from the envvar for it
-ev_max_file_size = os.environ.get(const.MAX_FILESIZE_EV)
-if ev_max_file_size is not None:
-    max_file_size = float(ev_max_file_size)*const.MEGABYTE
-else:
-    max_file_size = const.DEFAULT_MAX_FILE_SIZE
-
-# And same for the Open Babel maximum file size
-ev_max_file_size_ob = os.environ.get(const.MAX_FILESIZE_OB_EV)
-if ev_max_file_size_ob is not None:
-    max_file_size_ob = float(ev_max_file_size_ob)*const.MEGABYTE
-else:
-    max_file_size_ob = const.DEFAULT_MAX_FILE_SIZE_OB
-
-
-def suppress_warning(func: Callable[..., Any]) -> Callable[..., Any]:
-    """Since we're using the development server as the user GUI, we monkey-patch Flask to disable the warnings that
-    would otherwise appear for this so they don't confuse the user
-    """
-    @wraps(func)
-    def wrapper(*args, **kwargs) -> Any:
-        if args and isinstance(args[0], str) and args[0].startswith('WARNING: This is a development server.'):
-            return ''
-        return func(*args, **kwargs)
-    return wrapper
-
-
-werkzeug.serving._ansi_style = suppress_warning(werkzeug.serving._ansi_style)
-cli.show_server_banner = lambda *_: None
-
-app = Flask(__name__)
-
-
-def limit_upload_size():
-    """Impose a limit on the maximum file that can be uploaded before Flask will raise an error"""
-
-    # Determine the largest possible file size that can be uploaded, keeping in mind that 0 indicates unlimited
-    larger_max_file_size = max_file_size
-    if (max_file_size > 0) and (max_file_size_ob > max_file_size):
-        larger_max_file_size = max_file_size_ob
-
-    if larger_max_file_size > 0:
-        app.config['MAX_CONTENT_LENGTH'] = larger_max_file_size
-    else:
-        app.config['MAX_CONTENT_LENGTH'] = None
-
-
-# Set the upload limit based on env vars to start with
-limit_upload_size()
-
-
-def get_tag_and_sha() -> str:
-    """Get the SHA of the last commit
-    """
-
-    # Get the tag of the latest commit
-    ev_tag = os.environ.get(TAG_EV)
-    if ev_tag:
-        tag = ev_tag
-    else:
-        try:
-            # This bash command calls `git tag` to get a sorted list of tags, with the most recent at the top, then uses
-            # `head` to trim it to one line
-            cmd = "git tag --sort -version:refname | head -n 1"
-
-            out_bytes = run(cmd, shell=True, capture_output=True).stdout
-            tag = str(out_bytes.decode()).strip()
-
-        except Exception:
-            print("ERROR: Could not determine most recent tag. Error was:\n" + format_exc(),
-                  file=sys.stderr)
-            tag = ""
-
-    # Get the SHA associated with this tag
-    ev_tag_sha = os.environ.get(TAG_SHA_EV)
-    if ev_tag_sha:
-        tag_sha: str | None = ev_tag_sha
-    else:
-        try:
-            cmd = f"git show {tag}" + " | head -n 1 | gawk '{print($2)}'"
-
-            out_bytes = run(cmd, shell=True, capture_output=True).stdout
-            tag_sha = str(out_bytes.decode()).strip()
-
-        except Exception:
-            print("ERROR: Could not determine SHA for most recent tag. Error was:\n" + format_exc(),
-                  file=sys.stderr)
-            tag_sha = None
-
-    # First check if the SHA is provided through an environmental variable
-    ev_sha = os.environ.get(SHA_EV)
-    if ev_sha:
-        sha = ev_sha
-    else:
-        try:
-            # This bash command calls `git log` to get info on the last commit, uses `head` to trim it to one line, then
-            # uses `gawk` to get just the second word of this line, which is the SHA of this commit
-            cmd = "git log -n 1 | head -n 1 | gawk '{print($2)}'"
-
-            out_bytes = run(cmd, shell=True, capture_output=True).stdout
-            sha = str(out_bytes.decode()).strip()
-
-        except Exception:
-            print("ERROR: Could not determine SHA of most recent commit. Error was:\n" + format_exc(),
-                  file=sys.stderr)
-            sha = ""
-
-    # If the SHA of the tag is the same as the current SHA, we indicate this by returning a blank SHA
-    if tag_sha == sha:
-        sha = ""
-
-    return (tag, sha)
+app = get_app()
 
 
 @app.route('/')
+@app.route('/index.htm')
 def website():
     """Return the web page along with relevant data
     """
-    tag, sha = get_tag_and_sha()
     return render_template("index.htm",
-                           token=token,
-                           max_file_size=max_file_size,
-                           max_file_size_ob=max_file_size_ob,
-                           service_mode=service_mode,
-                           production_mode=production_mode,
-                           tag=tag,
-                           sha=sha)
+                           **get_env_kwargs())
 
 
 @app.route('/accessibility.htm')
 def accessibility():
     """Return the accessibility page
     """
-    return render_template("accessibility.htm")
+    return render_template("accessibility.htm",
+                           **get_env_kwargs())
 
 
 @app.route('/documentation.htm')
 def documentation():
     """Return the documentation page
     """
-    tag, sha = get_tag_and_sha()
     return render_template("documentation.htm",
-                           tag=tag,
-                           sha=sha)
+                           **get_env_kwargs())
 
 
 @app.route('/convert/', methods=['POST'])
@@ -232,6 +63,8 @@ def convert():
     """Convert file to a different format and save to folder 'downloads'. Delete original file. Note that downloading is
     achieved in format.js
     """
+
+    env = get_env()
 
     # Make sure the upload directory exists
     os.makedirs(const.DEFAULT_UPLOAD_DIR, exist_ok=True)
@@ -267,7 +100,7 @@ def convert():
                   file=sys.stderr)
             abort(const.STATUS_CODE_GENERAL)
 
-    if (not service_mode) or (request.form['token'] == token and token != ''):
+    if (not env.service_mode) or (request.form['token'] == env.token and env.token != ''):
         try:
             conversion_output = run_converter(name=request.form['converter'],
                                               filename=qualified_filename,
@@ -275,8 +108,8 @@ def convert():
                                               to_format=d_formats["to"],
                                               from_format=d_formats["from"],
                                               strict=(request.form['check_ext'] != "false"),
-                                              log_mode=log_mode,
-                                              log_level=log_level,
+                                              log_mode=env.log_mode,
+                                              log_level=env.log_level,
                                               delete_input=True,
                                               abort_callback=abort)
         except Exception as e:
@@ -384,7 +217,8 @@ def data():
     str
         Output status - 'okay' if exited successfuly
     """
-    if service_mode and request.args['token'] == token and token != '':
+    env = get_env()
+    if env.service_mode and request.args['token'] == env.token and env.token != '':
         message = '[' + log_utility.get_date_time() + '] ' + request.args['data'] + '\n'
 
         with open("user_responses", "a") as f:
@@ -394,16 +228,6 @@ def data():
     else:
         # return http status code 405
         abort(405)
-
-
-def start_app():
-    """Start the Flask app - this requires being run from the base directory of the project, so this changes the
-    current directory to there. Anything else which changes it while the app is running may interfere with its proper
-    execution.
-    """
-
-    os.chdir(os.path.join(psdi_data_conversion.__path__[0], ".."))
-    app.run(debug=debug_mode)
 
 
 def main():
@@ -450,27 +274,8 @@ def main():
     args = parser.parse_args()
 
     if not args.use_env_vars:
-
-        global max_file_size
-        max_file_size = args.max_file_size*const.MEGABYTE
-
-        global max_file_size_ob
-        max_file_size_ob = args.max_file_size_ob*const.MEGABYTE
-
-        global service_mode
-        service_mode = args.service_mode
-
-        global debug_mode
-        debug_mode = args.debug
-
-        global production_mode
-        production_mode = not args.dev_mode
-
-        global log_mode
-        log_mode = args.log_mode
-
-        global log_level
-        log_level = args.log_level
+        # Overwrite the values from environmental variables with the values from the command-line arguments
+        update_env(args)
 
     # Set the upload limit based on provided arguments now
     limit_upload_size()
