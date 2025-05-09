@@ -204,11 +204,18 @@ class SiteEnv:
 _env: SiteEnv | None = None
 
 
-def get_env(args: Namespace | None = None):
-    """Get a reference to the global `SiteEnv` object. If an `args` object (from parsing input arguments) is passed to
-    this, instead a new env object is created based on those, set as the global value, and returned.
+def get_env():
+    """Get a reference to the global `SiteEnv` object, creating it if necessary.
     """
     global _env
     if not _env:
-        _env = SiteEnv(args)
+        _env = SiteEnv()
     return _env
+
+
+def update_env(args: Namespace | None = None):
+    """Update the global `SiteEnv` object, optionally using arguments passed at the command-line to override values
+    passed through environmental variables.
+    """
+    global _env
+    _env = SiteEnv(args)

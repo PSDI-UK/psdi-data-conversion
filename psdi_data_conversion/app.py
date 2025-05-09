@@ -28,7 +28,7 @@ from psdi_data_conversion.converter import run_converter
 from psdi_data_conversion.database import get_format_info
 from psdi_data_conversion.file_io import split_archive_ext
 from psdi_data_conversion.main import print_wrap
-from psdi_data_conversion.website.env import get_env
+from psdi_data_conversion.website.env import get_env, update_env
 
 # Key for the label given to the file uploaded in the web interface
 FILE_TO_UPLOAD_KEY = 'fileToUpload'
@@ -330,9 +330,8 @@ def main():
     args = parser.parse_args()
 
     if not args.use_env_vars:
-        # Use `get_env` to overwrite the values from environmental variables with the values from the command-line
-        # arguments
-        get_env(args=args)
+        # Overwrite the values from environmental variables with the values from the command-line arguments
+        update_env(args)
 
     # Set the upload limit based on provided arguments now
     limit_upload_size()
