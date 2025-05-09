@@ -57,7 +57,7 @@ class SiteEnv:
         """True if the app is running in service mode, False if it's running in local mode"""
 
         self.production_mode = self._determine_value(ev=PRODUCTION_EV,
-                                                     arg="!production_mode",
+                                                     arg="!dev_mode",
                                                      value_type=bool,
                                                      default=False)
         """True if the app is running in production mode, False if it's running in developmennt mode"""
