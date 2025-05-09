@@ -81,6 +81,7 @@ $.get(`/load_accessibility/`)
       let value = oData[key];
       if (value != null) {
         sessionStorage.setItem(key, value);
+        sessionStorage.setItem(key + "Opt", oData[key + "Opt"]);
         return value;
       } else {
         return sessionStorage.getItem(key);
