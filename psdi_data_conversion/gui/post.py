@@ -169,8 +169,8 @@ def init_post(app: Flask):
     """Connect the provided Flask app to each of the post methods
     """
 
-    app.route('/convert/')(convert)
+    app.route('/convert/', methods=["POST"])(convert)
 
-    app.route('/feedback/')(feedback)
+    app.route('/feedback/', methods=["POST"])(feedback)
 
-    app.route('/delete/')(delete)
+    app.route('/delete/', methods=["POST"])(delete)
