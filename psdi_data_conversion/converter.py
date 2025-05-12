@@ -5,22 +5,20 @@ Created 2024-12-10 by Bryan Gillis.
 Class and functions to perform file conversion
 """
 
-from dataclasses import dataclass, field
-import json
 import glob
 import importlib
+import json
 import os
 import sys
 import traceback
-from typing import Any, Callable, NamedTuple
-from multiprocessing import Lock
-from psdi_data_conversion import log_utility
 from collections.abc import Callable
 from dataclasses import dataclass, field
+from multiprocessing import Lock
 from tempfile import TemporaryDirectory
 from typing import Any, NamedTuple
 
 from psdi_data_conversion import constants as const
+from psdi_data_conversion import log_utility
 from psdi_data_conversion.converters import base
 from psdi_data_conversion.converters.openbabel import CONVERTER_OB
 from psdi_data_conversion.file_io import (is_archive, is_supported_archive, pack_zip_or_tar, split_archive_ext,
@@ -573,12 +571,13 @@ def run_converter(filename: str,
                 "input_filename": in_filename,
                 "output_filename": run_output.output_filename[l_index:r_index],
                 "input_size": input_size,
-                "output_size": output_size }
+                "output_size": output_size}
 
-            for key in [ "converter", "coordinates", "coordOption", "from_flags",
-                "to_flags", "from_arg_flags", "to_arg_flags" ]:
+            for key in ["converter", "coordinates", "coordOption", "from_flags",
+                        "to_flags", "from_arg_flags", "to_arg_flags"]:
                 if key in converter_kwargs['data'] and converter_kwargs['data'][key] != "" and not \
-                    ((key == "coordinates" or key == "coordOption") and converter_kwargs['data']['coordinates'] == "neither") :
+                        ((key == "coordinates" or key == "coordOption") and
+                         converter_kwargs['data']['coordinates'] == "neither"):
                     entry[key] = converter_kwargs['data'][key]
 
             entry["outcome"] = outcome
@@ -594,6 +593,7 @@ def run_converter(filename: str,
                                   "logging_error": "An error occurred during logging of conversion information."})
 
     return run_output
+
 
 def set_size_units(size):
     if size >= 1024:
