@@ -37,14 +37,14 @@ def convert():
     env = get_env()
 
     # Make sure the upload directory exists
-    os.makedirs(const.DEFAULT_UPLOAD_DIR, exist_ok=True)
+    os.makedirs(const.DEFAULT_INPUT_DIR, exist_ok=True)
 
     file = request.files[FILE_TO_UPLOAD_KEY]
     filename = secure_filename(file.filename)
 
-    qualified_filename = os.path.join(const.DEFAULT_UPLOAD_DIR, filename)
+    qualified_filename = os.path.join(const.DEFAULT_INPUT_DIR, filename)
     file.save(qualified_filename)
-    qualified_output_log = os.path.join(const.DEFAULT_DOWNLOAD_DIR,
+    qualified_output_log = os.path.join(const.DEFAULT_OUTPUT_DIR,
                                         split_archive_ext(filename)[0] + const.OUTPUT_LOG_EXT)
 
     # Determine the input and output formats
@@ -148,10 +148,10 @@ def delete():
     """Delete files in folder 'downloads'
     """
 
-    realbase = os.path.realpath(const.DEFAULT_DOWNLOAD_DIR)
+    realbase = os.path.realpath(const.DEFAULT_OUTPUT_DIR)
 
-    realfilename = os.path.realpath(os.path.join(const.DEFAULT_DOWNLOAD_DIR, request.form['filename']))
-    reallogname = os.path.realpath(os.path.join(const.DEFAULT_DOWNLOAD_DIR, request.form['logname']))
+    realfilename = os.path.realpath(os.path.join(const.DEFAULT_OUTPUT_DIR, request.form['filename']))
+    reallogname = os.path.realpath(os.path.join(const.DEFAULT_OUTPUT_DIR, request.form['logname']))
 
     if realfilename.startswith(realbase + os.sep) and reallogname.startswith(realbase + os.sep):
 

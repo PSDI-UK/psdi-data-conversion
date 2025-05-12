@@ -55,8 +55,8 @@ MEGABYTE = 1024*1024
 DEFAULT_MAX_FILE_SIZE = 0 * MEGABYTE
 DEFAULT_MAX_FILE_SIZE_OB = 1 * MEGABYTE
 
-DEFAULT_UPLOAD_DIR = './psdi_data_conversion/static/uploads'
-DEFAULT_DOWNLOAD_DIR = './psdi_data_conversion/static/downloads'
+DEFAULT_INPUT_DIR = './psdi_data_conversion/static/uploads'
+DEFAULT_OUTPUT_DIR = './psdi_data_conversion/static/downloads'
 
 # Filename of the database, relative to the base of the python package
 DATABASE_FILENAME = "static/data/data.json"

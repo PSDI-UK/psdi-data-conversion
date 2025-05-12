@@ -2,9 +2,13 @@
 
 ## Since v0.1.6
 
+### New and Changed Functionality
+
+- Changed the keyword arguments `upload_dir` and `download_dir` to `input_dir` and `output_dir` respectively
+
 ### Bugfixes
 
-- Fixed bug where the `upload_dir` keyword argument for `run_converter` was being ignored
+- Fixed bug where the `input_dir` keyword argument for `run_converter` was being ignored
 
 ### Documentation Changes
 

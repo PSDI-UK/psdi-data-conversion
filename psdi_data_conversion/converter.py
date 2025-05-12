@@ -182,9 +182,9 @@ def get_converter(*args, name=const.CONVERTER_DEFAULT, **converter_kwargs) -> ba
     use_envvars : bool
         If set to True, environment variables will be checked for any that set options for this class and used,
         default False
-    upload_dir : str
+    input_dir : str
         The location of input files relative to the current directory
-    download_dir : str
+    output_dir : str
         The location of output files relative to the current directory
     max_file_size : float
         The maximum allowed file size for input/output files, in MB, default 1 MB for Open Babel, unlimited for other
@@ -317,8 +317,8 @@ def run_converter(filename: str,
                   to_format: str,
                   *args,
                   from_format: str | None = None,
-                  upload_dir=const.DEFAULT_UPLOAD_DIR,
-                  download_dir=const.DEFAULT_DOWNLOAD_DIR,
+                  input_dir=const.DEFAULT_INPUT_DIR,
+                  output_dir=const.DEFAULT_OUTPUT_DIR,
                   max_file_size=None,
                   log_file: str | None = None,
                   log_mode=const.LOG_SIMPLE,
@@ -350,9 +350,9 @@ def run_converter(filename: str,
     use_envvars : bool
         If set to True, environment variables will be checked for any that set options for this class and used,
         default False
-    upload_dir : str
+    input_dir : str
         The location of input files relative to the current directory
-    download_dir : str
+    output_dir : str
         The location of output files relative to the current directory
     strict : bool
         If True and `from_format` is not None, will fail if any input file has the wrong extension (including files
@@ -409,12 +409,12 @@ def run_converter(filename: str,
     # converter class, so it needs to be set up here to match what will be set up there
     if log_file is None:
         base_filename = os.path.basename(split_archive_ext(filename)[0])
-        log_file = os.path.join(download_dir, base_filename + const.OUTPUT_LOG_EXT)
+        log_file = os.path.join(output_dir, base_filename + const.OUTPUT_LOG_EXT)
 
     if os.path.exists(filename):
         qualified_filename = filename
     else:
-        qualified_filename = os.path.join(upload_dir, filename)
+        qualified_filename = os.path.join(input_dir, filename)
 
     # Check if the filename is for an archive file, and handle appropriately
 
@@ -433,8 +433,8 @@ def run_converter(filename: str,
                             to_format,
                             *args,
                             from_format=from_format,
-                            upload_dir=upload_dir,
-                            download_dir=download_dir,
+                            input_dir=input_dir,
+                            output_dir=output_dir,
                             max_file_size=max_file_size,
                             log_file=log_file,
                             log_mode=log_mode,
@@ -477,7 +477,7 @@ def run_converter(filename: str,
                                                           to_format,
                                                           *args,
                                                           from_format=from_format,
-                                                          download_dir=download_dir,
+                                                          output_dir=output_dir,
                                                           log_file=individual_log_file,
                                                           log_mode=individual_log_mode,
                                                           max_file_size=remaining_file_size,

@@ -248,7 +248,7 @@ class SingleConversionTestSpec:
 
     conversion_kwargs: dict[str, Any] = field(default_factory=dict)
     """Any keyword arguments to be provided to the call to `run_converter`, aside from those listed above and
-    `upload_dir` and `download_dir` (for which temporary directories are used)"""
+    `input_dir` and `output_dir` (for which temporary directories are used)"""
 
     expect_success: bool = True
     """Whether or not to expect the test to succeed"""
@@ -337,8 +337,8 @@ def _run_single_test_conversion_with_library(test_spec: SingleConversionTestSpec
                           to_format=test_spec.to_format,
                           from_format=test_spec.from_format,
                           name=test_spec.converter_name,
-                          upload_dir=input_dir,
-                          download_dir=output_dir,
+                          input_dir=input_dir,
+                          output_dir=output_dir,
                           **test_spec.conversion_kwargs)
             success = True
         else:
@@ -347,8 +347,8 @@ def _run_single_test_conversion_with_library(test_spec: SingleConversionTestSpec
                               to_format=test_spec.to_format,
                               from_format=test_spec.from_format,
                               name=test_spec.converter_name,
-                              upload_dir=input_dir,
-                              download_dir=output_dir,
+                              input_dir=input_dir,
+                              output_dir=output_dir,
                               **test_spec.conversion_kwargs)
             success = False
 
