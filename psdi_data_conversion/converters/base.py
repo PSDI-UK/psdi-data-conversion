@@ -328,9 +328,14 @@ class FileConverter:
             self.err: str | None = None
             self.quality: str | None = None
 
-            # Create directory 'uploads' if not extant.
-            if not os.path.exists(self.upload_dir):
-                os.makedirs(self.upload_dir, exist_ok=True)
+            # Determine if the filename is fully-qualified, and if not, find it in the upload dir
+            if not os.path.exists(self.in_filename):
+                qualified_in_filename = os.path.join(self.upload_dir, self.in_filename)
+                if os.path.exists(qualified_in_filename):
+                    self.in_filename = qualified_in_filename
+                else:
+                    FileConverterInputException(f"Input file {self.in_filename} not found, either absolute or relative "
+                                                f"to {self.upload_dir}")
 
             # Create directory 'downloads' if not extant.
             if not os.path.exists(self.download_dir):

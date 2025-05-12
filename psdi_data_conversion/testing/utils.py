@@ -333,7 +333,7 @@ def _run_single_test_conversion_with_library(test_spec: SingleConversionTestSpec
 
         exc_info: pytest.ExceptionInfo | None = None
         if test_spec.expect_success:
-            run_converter(filename=qualified_in_filename,
+            run_converter(filename=test_spec.filename,
                           to_format=test_spec.to_format,
                           from_format=test_spec.from_format,
                           name=test_spec.converter_name,
