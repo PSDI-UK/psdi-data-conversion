@@ -1,5 +1,20 @@
 # Changelog for PSDI Data Conversion
 
+## Since v0.1.6
+
+### Bugfixes
+
+- Fixed bug where the `upload_dir` keyword argument for `run_converter` was being ignored
+
+### Documentation Changes
+
+- The Documentation page of the GUI now shows the mode that's being run, the most recent tag, and the SHA of the most recent commit (if this isn't the latest tagged commit)
+
+### Formatting and Refactoring Changes
+
+- Changed Documentation and Accessibility pages of the GUI to work as Flask templates
+- Cleaned up Flask files to not be all in one module
+
 ## v0.1.6
 
 ### New and Changed Functionality
