@@ -317,6 +317,7 @@ def run_converter(filename: str,
                   to_format: str,
                   *args,
                   from_format: str | None = None,
+                  upload_dir=const.DEFAULT_UPLOAD_DIR,
                   download_dir=const.DEFAULT_DOWNLOAD_DIR,
                   max_file_size=None,
                   log_file: str | None = None,
@@ -410,6 +411,8 @@ def run_converter(filename: str,
         base_filename = os.path.basename(split_archive_ext(filename)[0])
         log_file = os.path.join(download_dir, base_filename + const.OUTPUT_LOG_EXT)
 
+    qualified_filename = os.path.join(upload_dir, filename)
+
     # Check if the filename is for an archive file, and handle appropriately
 
     l_run_output: list[base.FileConversionResult] = []
@@ -441,7 +444,7 @@ def run_converter(filename: str,
         # The filename is of a supported archive type. Make a temporary directory to extract its contents
         # to, then run the converter on each file extracted
         with TemporaryDirectory() as extract_dir:
-            l_filenames = unpack_zip_or_tar(filename, extract_dir=extract_dir)
+            l_filenames = unpack_zip_or_tar(qualified_filename, extract_dir=extract_dir)
 
             # Check for no files in archive
             if len(l_filenames) == 0:
