@@ -411,7 +411,10 @@ def run_converter(filename: str,
         base_filename = os.path.basename(split_archive_ext(filename)[0])
         log_file = os.path.join(download_dir, base_filename + const.OUTPUT_LOG_EXT)
 
-    qualified_filename = os.path.join(upload_dir, filename)
+    if os.path.exists(filename):
+        qualified_filename = filename
+    else:
+        qualified_filename = os.path.join(upload_dir, filename)
 
     # Check if the filename is for an archive file, and handle appropriately
 
