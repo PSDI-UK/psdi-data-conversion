@@ -98,7 +98,10 @@ input.button.init-disabled {
 }
 
 .access-instructions {
-  flex: 1 1 35%;
+  flex         : 1 1 35%;
+  margin       : 1rem;
+  border       : 1px solid black;
+  border-radius: 1rem;
 }
 
 /* Grid for textarea label/elements. */
