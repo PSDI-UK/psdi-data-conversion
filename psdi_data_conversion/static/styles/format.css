@@ -84,9 +84,13 @@ input.button.init-disabled {
 
 .instructions-panel {
   flex         : 1 1 35%;
-  margin       : 1rem;
+  margin       : 1rem 1rem 1rem 0rem;
   border       : 1px solid black;
   border-radius: 1rem;
+}
+
+.instructions-panel p:is(:last-child) {
+  margin: 0;
 }
 
 /* Grid for textarea label/elements. */
