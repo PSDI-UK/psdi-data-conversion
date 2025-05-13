@@ -59,9 +59,9 @@
   <form name="gui" class="gui">
     <div class="max-width-box">
       <p>Your one-stop shop for file format conversion, PSDI's Data Conversion Service enables users to seamlessly
-        convert between different file formats and assess the quality of proposed conversions. This is the <span
-          class="local-only">local GUI</span><span class="service-only">web</span> version
-        of our service. To find out more about Data Conversion and our other tools, click
+        convert between different file formats and assess the quality of proposed conversions. This is the
+        {% if service_mode %}web{% else %}local GUI{% endif %} version of our service. To find out more about Data
+        Conversion and our other tools, click
         <a href="https://resources.psdi.ac.uk/service/8334f94b-1c6e-4034-a5ab-71c6df375cba" id="more"
           target="_blank">here.</a>
       </p>
