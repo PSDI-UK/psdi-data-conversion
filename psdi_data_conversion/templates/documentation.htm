@@ -97,8 +97,8 @@
         is desired, the appropriate colours can be selected in light-mode.</p>
       <h3>About</h3>
       <p><strong>PSDI Data Conversion service</strong><br>
-        <span class="local-only">Local GUI</span><span class="service-only">Public web service</span> mode -
-        <span class="dev-only">Development</span><span class="prod-only">Production</span> build<br>
+        {% if service_mode %}Public web service{% else %}Local GUI{%endif %} mode -
+        {% if production_mode %}Production{% else %}Development{%endif %} build <br>
         {% if tag %}<strong>Version:</strong> {{ tag }}<br>{% endif %}
         {% if sha %}<span class="dev-only"><strong>SHA of latest commit:</strong> {{ sha }}<br></span>{% endif %}
         <strong>Project source:</strong> <a
