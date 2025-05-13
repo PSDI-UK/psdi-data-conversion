@@ -21,27 +21,13 @@ form {
 /* Width management for select boxes and forms */
 
 .med-width {
-  width: 25rem;
-}
-
-@media (max-width: 25rem) {
-  .med-width {
-    width: 100%
-  }
+  width    : 100%;
+  max-width: 25rem;
 }
 
 .large-width {
-  width: 50rem;
-}
-
-@media (max-width: 50rem) {
-  .large-width {
-    width: 100%
-  }
-
-  input.large-width {
-    width: calc(100% - 0.5rem)
-  }
+  width    : 100%;
+  max-width: 50rem;
 }
 
 /* Invalid input fields switch to alternate background */
@@ -81,7 +67,6 @@ input.button.init-disabled {
 .flex-panel-display {
   display        : flex;
   flex-direction : row;
-  flex-wrap      : wrap;
   align-items    : flex-start;
   justify-content: space-between;
 }
@@ -97,7 +82,7 @@ input.button.init-disabled {
   }
 }
 
-.access-instructions {
+.instructions-panel {
   flex         : 1 1 35%;
   margin       : 1rem;
   border       : 1px solid black;
