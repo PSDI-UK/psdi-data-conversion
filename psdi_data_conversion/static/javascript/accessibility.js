@@ -45,7 +45,7 @@ $(document).ready(function () {
     loadOption("darkBack", "#dark-background", changeDarkBackground);
 
     $("#resetButton").click(resetSelections);
-    $("#applyButton").click(applyAllSettings);
+    $("#saveButton").click(saveSettings);
 });
 
 // Changes the font for accessibility purposes
@@ -186,7 +186,7 @@ function applySetting(jsName, cssSelector, cssVar, settingsData) {
 }
 
 // Applies accessibility settings to the entire website.
-function applyAllSettings(event) {
+function saveSettings(event) {
 
     let settingsData = new Object();
 

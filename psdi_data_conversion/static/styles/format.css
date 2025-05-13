@@ -77,6 +77,33 @@ input.button.init-disabled {
   padding: 8rem;
 }
 
+/* Flex styling for pages */
+.flex-panel-display {
+  display        : flex;
+  flex-direction : row;
+  flex-wrap      : wrap;
+  align-items    : flex-start;
+  justify-content: space-between;
+}
+
+.flex-panel {
+  flex   : 1 1 50%;
+  padding: 1rem;
+}
+
+@media (max-width: 700px) {
+  .flex-panel-display {
+    display: block;
+  }
+}
+
+.access-instructions {
+  flex         : 1 1 35%;
+  margin       : 1rem;
+  border       : 1px solid black;
+  border-radius: 1rem;
+}
+
 /* Grid for textarea label/elements. */
 .access-options {
   display              : grid;
@@ -131,6 +158,11 @@ select#light-background option {
 select#dark-background option {
   background-color: var(--psdi-default-color-primary);
   color           : var(--psdi-light-text-color-body);
+}
+
+/* Classes to force specific styling for exceptional cases */
+.no-left-margin {
+  margin-left: 0 !important;
 }
 
 /* We use the service-mode variable to control whether elements with the "service-only" or "local-only" class are shown
