@@ -133,6 +133,11 @@ select#dark-background option {
   color           : var(--psdi-light-text-color-body);
 }
 
+/* Classes to force specific styling for exceptional cases */
+.no-left-margin {
+  margin-left: 0 !important;
+}
+
 /* We use the service-mode variable to control whether elements with the "service-only" or "local-only" class are shown
 */
 [service-mode=True] .local-only {
