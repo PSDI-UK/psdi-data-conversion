@@ -5,6 +5,7 @@
 ### New and Changed Functionality
 
 - Changed the keyword arguments `upload_dir` and `download_dir` to `input_dir` and `output_dir` respectively
+- Formats can now be specified case-insensitively
 
 ### Bugfixes
 
