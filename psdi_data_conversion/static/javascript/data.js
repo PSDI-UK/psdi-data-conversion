@@ -1,10 +1,8 @@
 // data.js
 
-const response = await fetch("/static/data/data.json");
-
 let data = null;
 try {
-    data = JSON.parse(await response.text());
+    data = JSON.parse(await $.get(`/database/`));
 } catch (err) {
     console.log("ERROR: Database could not be loaded, error: " + err)
 }
