@@ -150,6 +150,9 @@ def test_format_info_options():
     assert get_format_info("pdb-0").disambiguated_name == "pdb-0"
     assert get_format_info("pdb-1").disambiguated_name == "pdb-1"
 
+    # Check that formats are case-insensitive
+    assert get_format_info("PDB-0") is get_format_info("pdb-0")
+
 
 def test_disambiguate_format():
     """Test that we can disambiguate formats when only one combination is possible for a conversion

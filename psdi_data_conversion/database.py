@@ -448,6 +448,9 @@ class FormatInfo:
         self.three_dim = d_single_format_info.get(DB_FORMAT_3D_KEY)
         """Whether or not this format stores 3D structural information"""
 
+        self._lower_name: str = self.name.lower()
+        """The format name all in lower-case"""
+
         self._disambiguated_name: str | None = None
 
     @property
@@ -455,12 +458,13 @@ class FormatInfo:
         """A unique name for this format which can be used to distinguish it from others which share the same extension,
         by appending the name of each with a unique index"""
         if self._disambiguated_name is None:
-            l_formats_with_same_name = [x for x in self.parent.l_format_info if x and x.name == self.name]
+            l_formats_with_same_name = [x for x in self.parent.l_format_info
+                                        if x and x._lower_name == self._lower_name]
             if len(l_formats_with_same_name) == 1:
-                self._disambiguated_name = self.name
+                self._disambiguated_name = self._lower_name
             else:
                 index_of_this = [i for i, x in enumerate(l_formats_with_same_name) if self is x][0]
-                self._disambiguated_name = f"{self.name}-{index_of_this}"
+                self._disambiguated_name = f"{self._lower_name}-{index_of_this}"
         return self._disambiguated_name
 
     def __str__(self):
@@ -875,9 +879,9 @@ class DataConversionDatabase:
         self._l_format_info: list[FormatInfo | None] = [None] * (max_id+1)
 
         for d_single_format_info in self.formats:
-            name: str = d_single_format_info[DB_FORMAT_EXT_KEY]
+            lc_name: str = d_single_format_info[DB_FORMAT_EXT_KEY]
 
-            format_info = FormatInfo(name=name,
+            format_info = FormatInfo(name=lc_name,
                                      parent=self,
                                      d_single_format_info=d_single_format_info)
 
@@ -918,14 +922,14 @@ class DataConversionDatabase:
             if not format_info:
                 continue
 
-            name = format_info.name
+            lc_name = format_info.name.lower()
 
             # Each name may correspond to multiple formats, so we use a list for each entry to list all possible
             # formats for each name
-            if name not in self._d_format_info:
-                self._d_format_info[name] = []
+            if lc_name not in self._d_format_info:
+                self._d_format_info[lc_name] = []
 
-            self._d_format_info[name].append(format_info)
+            self._d_format_info[lc_name].append(format_info)
 
     def get_converter_info(self, converter_name_or_id: str | int) -> ConverterInfo:
         """Get a converter's info from either its name or ID
@@ -986,6 +990,9 @@ class DataConversionDatabase:
             # Silently strip leading period
             if format_name_or_id.startswith("."):
                 format_name_or_id = format_name_or_id[1:]
+
+            # Convert the format name to lower-case to handle it case-insensitively
+            format_name_or_id = format_name_or_id.lower()
 
             # Check for a hyphen in the format, which indicates a preference from the user as to which, overriding the
             # `which` kwarg
