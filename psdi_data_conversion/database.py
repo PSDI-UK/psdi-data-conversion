@@ -1057,6 +1057,22 @@ class DataConversionDatabase:
 _database: DataConversionDatabase | None = None
 
 
+def get_database_path() -> str:
+    """Get the absolute path to the database file
+
+    Returns
+    -------
+    str
+    """
+
+    # For an interactive shell, __file__ won't be defined for this module, so use the constants module instead
+    reference_file = os.path.realpath(const.__file__)
+
+    qualified_database_filename = os.path.join(os.path.dirname(reference_file), const.DATABASE_FILENAME)
+
+    return qualified_database_filename
+
+
 def load_database() -> DataConversionDatabase:
     """Load and return a new instance of the data conversion database from the JSON database file in this package. This
     function should not be called directly unless you specifically need a new instance of the database object and can't
@@ -1068,12 +1084,7 @@ def load_database() -> DataConversionDatabase:
     """
 
     # Find and load the database JSON file
-
-    # For an interactive shell, __file__ won't be defined for this module, so use the constants module instead
-    reference_file = os.path.realpath(const.__file__)
-
-    qualified_database_filename = os.path.join(os.path.dirname(reference_file), const.DATABASE_FILENAME)
-    d_data: dict = json.load(open(qualified_database_filename, "r"))
+    d_data: dict = json.load(open(get_database_path(), "r"))
 
     return DataConversionDatabase(d_data)
 

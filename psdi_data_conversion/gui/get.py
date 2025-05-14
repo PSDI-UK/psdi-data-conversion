@@ -6,10 +6,10 @@ functions to return rendered templates.
 """
 
 
-from flask import Flask, abort, render_template, request
+from flask import Flask, render_template
 
-from psdi_data_conversion import log_utility
-from psdi_data_conversion.gui.env import get_env, get_env_kwargs
+from psdi_data_conversion.database import get_database_path
+from psdi_data_conversion.gui.env import get_env_kwargs
 
 
 def index():
@@ -26,28 +26,10 @@ def documentation():
                            **get_env_kwargs())
 
 
-def data():
-    """Check that the incoming token matches the one sent to the user (should mostly prevent spambots). Write date- and
-    time-stamped user input to server-side file 'user_responses'.
-
-    $$$$$$$$$$ Retained in case direct logging is required in the future. $$$$$$$$$$
-
-    Returns
-    -------
-    str
-        Output status - 'okay' if exited successfuly
+def database():
+    """Return the raw database JSON file
     """
-    env = get_env()
-    if env.service_mode and request.args['token'] == env.token and env.token != '':
-        message = '[' + log_utility.get_date_time() + '] ' + request.args['data'] + '\n'
-
-        with open("user_responses", "a") as f:
-            f.write(message)
-
-        return 'okay'
-    else:
-        # return http status code 405
-        abort(405)
+    return open(get_database_path(), "r").read()
 
 
 def init_get(app: Flask):
@@ -59,4 +41,4 @@ def init_get(app: Flask):
 
     app.route('/documentation.htm')(documentation)
 
-    app.route('/data/')(data)
+    app.route('/database/')(database)
