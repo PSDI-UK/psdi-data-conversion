@@ -14,8 +14,11 @@ from itertools import product
 from logging import getLogger
 from typing import Any, Literal, overload
 
+import igraph as ig
+
 from psdi_data_conversion import constants as const
-from psdi_data_conversion.converter import D_SUPPORTED_CONVERTERS, get_registered_converter_class
+from psdi_data_conversion.converter import (L_REGISTERED_CONVERTERS, L_SUPPORTED_CONVERTERS,
+                                            get_registered_converter_class)
 from psdi_data_conversion.converters.base import FileConverterException
 from psdi_data_conversion.utils import regularize_name
 
@@ -588,25 +591,51 @@ class ConversionsTable:
         # Store references to needed data
         self._l_converts_to = l_converts_to
 
-        # Build the conversion table, indexed Converter, Input Format, Output Format - note that each of these is
-        # 1-indexed, so we add 1 to each of the lengths here
-        num_converters = len(parent.converters)
+        # Build the conversion graphs - each format is a vertex, each conversion is an edge
         num_formats = len(parent.formats)
 
-        self.table = [[[0 for k in range(num_formats+1)] for j in range(num_formats+1)]
-                      for i in range(num_converters+1)]
+        l_supported_conversions = [x for x in l_converts_to if
+                                   self.parent.get_converter_info(x[DB_CONV_ID_KEY]).name in L_SUPPORTED_CONVERTERS]
+        l_registered_conversions = [x for x in l_supported_conversions if
+                                    self.parent.get_converter_info(x[DB_CONV_ID_KEY]).name in L_REGISTERED_CONVERTERS]
 
-        for possible_conversion in l_converts_to:
+        # We make separate graphs for all known conversions, all supported conversions, and all registered conversions
+        self.graph: ig.Graph
+        self.supported_graph: ig.Graph
+        self.registered_graph: ig.Graph
 
-            try:
-                conv_id: int = possible_conversion[DB_CONV_ID_KEY]
-                in_id: int = possible_conversion[DB_IN_ID_KEY]
-                out_id: int = possible_conversion[DB_OUT_ID_KEY]
-            except KeyError:
-                raise FileConverterDatabaseException(
-                    f"Malformed 'converts_to' entry in database: {possible_conversion}")
+        for support_type, l_conversions in (("", l_converts_to),
+                                            ("supported_", l_supported_conversions),
+                                            ("registered_", l_registered_conversions)):
 
-            self.table[conv_id][in_id][out_id] = 1
+            setattr(self, support_type+"graph",
+                    ig.Graph(n=num_formats,
+                             directed=True,
+                             # Each vertex stores the disambiguated name of the format
+                             vertex_attrs={DB_NAME_KEY: [x.disambiguated_name if x is not None else None
+                                                         for x in parent.l_format_info]},
+                             edges=[(x[DB_IN_ID_KEY], x[DB_OUT_ID_KEY]) for x in l_conversions],
+                             # Each edge stores the id and name of the converter used for the conversion
+                             edge_attrs={DB_CONV_ID_KEY: [x[DB_CONV_ID_KEY] for x in l_conversions],
+                                         DB_NAME_KEY: [self.parent.get_converter_info(x[DB_CONV_ID_KEY]).name
+                                                       for x in l_conversions]}))
+
+    def _get_possible_converters(self, in_format_info: FormatInfo, out_format_info: FormatInfo,
+                                 only: Literal["all"] | Literal["supported"] | Literal["registered"] = "all"):
+        """Get a list of all converters which can convert from one format to another
+        """
+        if only == "all":
+            graph = self.graph
+        elif only == "supported":
+            graph = self.supported_graph
+        elif only == "registered":
+            graph = self.registered_graph
+        else:
+            raise ValueError(f"Invalid value \"{only}\" for keyword argument `only`. Allowed values are \"all\" "
+                             "(default), \"supported\", and \"registered\".")
+
+        l_edges = graph.es.select(_source=in_format_info.id, _target=out_format_info.id)
+        return [x[DB_NAME_KEY] for x in l_edges]
 
     def get_conversion_quality(self,
                                converter_name: str,
@@ -637,14 +666,12 @@ class ConversionsTable:
         else:
             which_format = 0
 
-        # Get info about the converter and formats
-        conv_id = self.parent.get_converter_info(converter_name).id
-        in_info = self.parent.get_format_info(in_format, which_format)
-        out_info: int = self.parent.get_format_info(out_format, which_format)
+        # Get the full format info for each format
+        in_format_info = self.parent.get_format_info(in_format, which_format)
+        out_format_info: int = self.parent.get_format_info(out_format, which_format)
 
         # First check if the conversion is possible
-        success_flag = self.table[conv_id][in_info.id][out_info.id]
-        if not success_flag:
+        if converter_name not in self._get_possible_converters(in_format_info, out_format_info):
             return None
 
         # The conversion is possible. Now determine how many properties of the output format are not in the input
@@ -654,8 +681,8 @@ class ConversionsTable:
         any_unknown = False
         d_prop_conversion_info: dict[str, PropertyConversionInfo] = {}
         for prop in const.D_QUAL_LABELS:
-            in_prop: bool | None = getattr(in_info, prop)
-            out_prop: bool | None = getattr(out_info, prop)
+            in_prop: bool | None = getattr(in_format_info, prop)
+            out_prop: bool | None = getattr(out_format_info, prop)
 
             d_prop_conversion_info[prop] = PropertyConversionInfo(prop, in_prop, out_prop)
 
@@ -703,7 +730,9 @@ class ConversionsTable:
 
     def get_possible_conversions(self,
                                  in_format: str | int,
-                                 out_format: str | int) -> list[tuple[str, FormatInfo, FormatInfo]]:
+                                 out_format: str | int,
+                                 only: Literal["all"] | Literal["supported"] | Literal["registered"] = "all"
+                                 ) -> list[tuple[str, FormatInfo, FormatInfo]]:
         """Get a list of converters which can perform a conversion from one format to another, disambiguating in the
         case of ambiguous formats and providing IDs for input/output formats for possible conversions
 
@@ -730,14 +759,8 @@ class ConversionsTable:
         # Iterate over all possible combinations of input and output formats
         for in_format_info, out_format_info in product(l_in_format_infos, l_out_format_infos):
 
-            # Slice the table to get a list of the success for this conversion for each converter
-            l_converter_success = [x[in_format_info.id][out_format_info.id] for x in self.table]
-
-            # Filter for possible conversions and get the converter name and degree-of-success string
-            # for each possible conversion
-            l_converter_names = [self.parent.get_converter_info(converter_id).name
-                                 for converter_id, possible_flag
-                                 in enumerate(l_converter_success) if possible_flag > 0]
+            # Filter for converters which can perform this conversion
+            l_converter_names = self._get_possible_converters(in_format_info, out_format_info, only=only)
 
             for converter_name in l_converter_names:
                 l_possible_conversions.append((converter_name, in_format_info, out_format_info))
@@ -758,21 +781,10 @@ class ConversionsTable:
             A tuple of a list of the supported input formats and a list of the supported output formats
         """
         conv_id: int = self.parent.get_converter_info(converter_name).id
-        ll_in_out_format_success = self.table[conv_id]
 
-        # Filter for possible input formats by checking if at least one output format for each has a degree of success
-        # index greater than 0, and stored the filtered lists where the input format is possible so we only need to
-        # check them for possible output formats
-        (l_possible_in_format_ids,
-         ll_filtered_in_out_format_success) = zip(*[(i, l_out_format_success) for i, l_out_format_success
-                                                    in enumerate(ll_in_out_format_success)
-                                                    if sum(l_out_format_success) > 0])
-
-        # As with input IDs, filter for output IDs where at least one input format has a degree of success index greater
-        # than 0. A bit more complicated for the second index, forcing us to do list comprehension to fetch a list
-        # across the table before summing
-        l_possible_out_format_ids = [j for j, _ in enumerate(ll_filtered_in_out_format_success[0]) if
-                                     sum([x[j] for x in ll_filtered_in_out_format_success]) > 0]
+        l_conversion_edges = self.graph.es.select(**{DB_CONV_ID_KEY: conv_id})
+        l_possible_in_format_ids = list({x.source for x in l_conversion_edges})
+        l_possible_out_format_ids = list({x.target for x in l_conversion_edges})
 
         # Get the name for each format ID, and return lists of the names
         return ([self.parent.get_format_info(x) for x in l_possible_in_format_ids],
@@ -891,24 +903,17 @@ class DataConversionDatabase:
         self._conversions_table = ConversionsTable(l_converts_to=self.converts_to,
                                                    parent=self)
 
-        # Use the conversions table to prune any formats which have no valid conversions
+        # Use the conversions graph to prune any formats which have no valid conversions
 
         # Get a slice of the table which only includes supported converters
-        l_supported_converter_ids = [self.get_converter_info(x).id for x in D_SUPPORTED_CONVERTERS]
-        supported_table = [self._conversions_table.table[x] for x in l_supported_converter_ids]
+        supported_graph = self._conversions_table.supported_graph
 
         for format_id, format_info in enumerate(self._l_format_info):
             if not format_info:
                 continue
 
-            # Check if the format is supported as the input format for any conversion
-            ll_possible_from_conversions = [x[format_id] for x in supported_table]
-            if sum([sum(x) for x in ll_possible_from_conversions]) > 0:
-                continue
-
-            # Check if the format is supported as the output format for any conversion
-            ll_possible_to_conversions = [[y[format_id] for y in x] for x in supported_table]
-            if sum([sum(x) for x in ll_possible_to_conversions]) > 0:
+            # Check if the format is supported as the input or output format for any conversion
+            if supported_graph.degree(format_id) > 0:
                 continue
 
             # If we get here, the format isn't supported for any conversions, so remove it from our list
