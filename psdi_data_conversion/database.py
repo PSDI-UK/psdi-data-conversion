@@ -17,7 +17,8 @@ from typing import Any, Literal, overload
 import igraph as ig
 
 from psdi_data_conversion import constants as const
-from psdi_data_conversion.converter import D_SUPPORTED_CONVERTERS, get_registered_converter_class
+from psdi_data_conversion.converter import (D_SUPPORTED_CONVERTERS, L_REGISTERED_CONVERTERS,
+                                            get_registered_converter_class)
 from psdi_data_conversion.converters.base import FileConverterException
 from psdi_data_conversion.utils import regularize_name
 
@@ -599,13 +600,15 @@ class ConversionsTable:
                       for i in range(num_converters+1)]
 
         # Make a graph of conversions
+        l_registered_conversions = [x for x in l_converts_to if
+                                    self.parent.get_converter_info(x[DB_CONV_ID_KEY]).name in L_REGISTERED_CONVERTERS]
         self.graph = ig.Graph(n=num_formats, directed=True,
                               vertex_attrs={DB_NAME_KEY: [x.disambiguated_name if x is not None else None
                                                           for x in parent.l_format_info]},
-                              edges=[(x[DB_IN_ID_KEY], x[DB_OUT_ID_KEY]) for x in l_converts_to],
-                              edge_attrs={DB_CONV_ID_KEY: [x[DB_CONV_ID_KEY] for x in l_converts_to],
+                              edges=[(x[DB_IN_ID_KEY], x[DB_OUT_ID_KEY]) for x in l_registered_conversions],
+                              edge_attrs={DB_CONV_ID_KEY: [x[DB_CONV_ID_KEY] for x in l_registered_conversions],
                                           DB_NAME_KEY: [self.parent.get_converter_info(x[DB_CONV_ID_KEY]).name
-                                                        for x in l_converts_to]})
+                                                        for x in l_registered_conversions]})
 
         for possible_conversion in l_converts_to:
 
@@ -712,6 +715,12 @@ class ConversionsTable:
                                      details=details,
                                      d_prop_conversion_info=d_prop_conversion_info)
 
+    def _get_possible_converters(self, in_format_info: FormatInfo, out_format_info: FormatInfo):
+        """Get a list of all converters which can convert from one converter to another
+        """
+        l_edges = self.graph.es.select(lambda x: x.source == in_format_info.id and x.target == out_format_info.id)
+        return [x[DB_NAME_KEY] for x in l_edges]
+
     def get_possible_conversions(self,
                                  in_format: str | int,
                                  out_format: str | int) -> list[tuple[str, FormatInfo, FormatInfo]]:
@@ -741,14 +750,8 @@ class ConversionsTable:
         # Iterate over all possible combinations of input and output formats
         for in_format_info, out_format_info in product(l_in_format_infos, l_out_format_infos):
 
-            # Slice the table to get a list of the success for this conversion for each converter
-            l_converter_success = [x[in_format_info.id][out_format_info.id] for x in self.table]
-
-            # Filter for possible conversions and get the converter name and degree-of-success string
-            # for each possible conversion
-            l_converter_names = [self.parent.get_converter_info(converter_id).name
-                                 for converter_id, possible_flag
-                                 in enumerate(l_converter_success) if possible_flag > 0]
+            # Filter for converters which can perform this conversion
+            l_converter_names = self._get_possible_converters(in_format_info, out_format_info)
 
             for converter_name in l_converter_names:
                 l_possible_conversions.append((converter_name, in_format_info, out_format_info))
