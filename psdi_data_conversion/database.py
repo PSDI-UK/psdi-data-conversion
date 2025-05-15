@@ -14,6 +14,8 @@ from itertools import product
 from logging import getLogger
 from typing import Any, Literal, overload
 
+import igraph as ig
+
 from psdi_data_conversion import constants as const
 from psdi_data_conversion.converter import D_SUPPORTED_CONVERTERS, get_registered_converter_class
 from psdi_data_conversion.converters.base import FileConverterException
@@ -595,6 +597,15 @@ class ConversionsTable:
 
         self.table = [[[0 for k in range(num_formats+1)] for j in range(num_formats+1)]
                       for i in range(num_converters+1)]
+
+        # Make a graph of conversions
+        self.graph = ig.Graph(n=num_formats, directed=True,
+                              vertex_attrs={DB_NAME_KEY: [x.disambiguated_name if x is not None else None
+                                                          for x in parent.l_format_info]},
+                              edges=[(x[DB_IN_ID_KEY], x[DB_OUT_ID_KEY]) for x in l_converts_to],
+                              edge_attrs={DB_CONV_ID_KEY: [x[DB_CONV_ID_KEY] for x in l_converts_to],
+                                          DB_NAME_KEY: [self.parent.get_converter_info(x[DB_CONV_ID_KEY]).name
+                                                        for x in l_converts_to]})
 
         for possible_conversion in l_converts_to:
 
