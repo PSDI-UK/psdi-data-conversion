@@ -651,14 +651,12 @@ class ConversionsTable:
         else:
             which_format = 0
 
-        # Get info about the converter and formats
-        conv_id = self.parent.get_converter_info(converter_name).id
-        in_info = self.parent.get_format_info(in_format, which_format)
-        out_info: int = self.parent.get_format_info(out_format, which_format)
+        # Get the full format info for each format
+        in_format_info = self.parent.get_format_info(in_format, which_format)
+        out_format_info: int = self.parent.get_format_info(out_format, which_format)
 
         # First check if the conversion is possible
-        success_flag = self.table[conv_id][in_info.id][out_info.id]
-        if not success_flag:
+        if converter_name not in self._get_possible_converters(in_format_info, out_format_info):
             return None
 
         # The conversion is possible. Now determine how many properties of the output format are not in the input
@@ -668,8 +666,8 @@ class ConversionsTable:
         any_unknown = False
         d_prop_conversion_info: dict[str, PropertyConversionInfo] = {}
         for prop in const.D_QUAL_LABELS:
-            in_prop: bool | None = getattr(in_info, prop)
-            out_prop: bool | None = getattr(out_info, prop)
+            in_prop: bool | None = getattr(in_format_info, prop)
+            out_prop: bool | None = getattr(out_format_info, prop)
 
             d_prop_conversion_info[prop] = PropertyConversionInfo(prop, in_prop, out_prop)
 
