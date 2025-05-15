@@ -716,7 +716,7 @@ class ConversionsTable:
                                      d_prop_conversion_info=d_prop_conversion_info)
 
     def _get_possible_converters(self, in_format_info: FormatInfo, out_format_info: FormatInfo):
-        """Get a list of all converters which can convert from one converter to another
+        """Get a list of all converters which can convert from one format to another
         """
         l_edges = self.graph.es.select(_source=in_format_info.id, _target=out_format_info.id)
         return [x[DB_NAME_KEY] for x in l_edges]
