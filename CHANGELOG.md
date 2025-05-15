@@ -11,6 +11,10 @@
 
 - Fixed bug where the `input_dir` keyword argument for `run_converter` was being ignored
 
+### Testing Changes
+
+- Excluded GUI modules from the calculating unit test coverage which can't be measured by the tool
+
 ### Documentation Changes
 
 - The Documentation page of the GUI now shows the mode that's being run, the most recent tag, and the SHA of the most recent commit (if this isn't the latest tagged commit)
