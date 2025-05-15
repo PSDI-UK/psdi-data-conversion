@@ -591,36 +591,22 @@ class ConversionsTable:
         # Store references to needed data
         self._l_converts_to = l_converts_to
 
-        # Build the conversion table, indexed Converter, Input Format, Output Format - note that each of these is
-        # 1-indexed, so we add 1 to each of the lengths here
-        num_converters = len(parent.converters)
+        # Build the conversion graph - each format is a vertex, each conversion is an edge
         num_formats = len(parent.formats)
 
-        self.table = [[[0 for k in range(num_formats+1)] for j in range(num_formats+1)]
-                      for i in range(num_converters+1)]
-
-        # Make a graph of conversions
         l_registered_conversions = [x for x in l_converts_to if
                                     self.parent.get_converter_info(x[DB_CONV_ID_KEY]).name in L_REGISTERED_CONVERTERS]
-        self.graph = ig.Graph(n=num_formats, directed=True,
+
+        self.graph = ig.Graph(n=num_formats,
+                              directed=True,
+                              # Each vertex stores the disambiguated name of the format
                               vertex_attrs={DB_NAME_KEY: [x.disambiguated_name if x is not None else None
                                                           for x in parent.l_format_info]},
                               edges=[(x[DB_IN_ID_KEY], x[DB_OUT_ID_KEY]) for x in l_registered_conversions],
+                              # Each edge stores the id and name of the converter used for the conversion
                               edge_attrs={DB_CONV_ID_KEY: [x[DB_CONV_ID_KEY] for x in l_registered_conversions],
                                           DB_NAME_KEY: [self.parent.get_converter_info(x[DB_CONV_ID_KEY]).name
                                                         for x in l_registered_conversions]})
-
-        for possible_conversion in l_converts_to:
-
-            try:
-                conv_id: int = possible_conversion[DB_CONV_ID_KEY]
-                in_id: int = possible_conversion[DB_IN_ID_KEY]
-                out_id: int = possible_conversion[DB_OUT_ID_KEY]
-            except KeyError:
-                raise FileConverterDatabaseException(
-                    f"Malformed 'converts_to' entry in database: {possible_conversion}")
-
-            self.table[conv_id][in_id][out_id] = 1
 
     def get_conversion_quality(self,
                                converter_name: str,
@@ -770,21 +756,10 @@ class ConversionsTable:
             A tuple of a list of the supported input formats and a list of the supported output formats
         """
         conv_id: int = self.parent.get_converter_info(converter_name).id
-        ll_in_out_format_success = self.table[conv_id]
 
-        # Filter for possible input formats by checking if at least one output format for each has a degree of success
-        # index greater than 0, and stored the filtered lists where the input format is possible so we only need to
-        # check them for possible output formats
-        (l_possible_in_format_ids,
-         ll_filtered_in_out_format_success) = zip(*[(i, l_out_format_success) for i, l_out_format_success
-                                                    in enumerate(ll_in_out_format_success)
-                                                    if sum(l_out_format_success) > 0])
-
-        # As with input IDs, filter for output IDs where at least one input format has a degree of success index greater
-        # than 0. A bit more complicated for the second index, forcing us to do list comprehension to fetch a list
-        # across the table before summing
-        l_possible_out_format_ids = [j for j, _ in enumerate(ll_filtered_in_out_format_success[0]) if
-                                     sum([x[j] for x in ll_filtered_in_out_format_success]) > 0]
+        l_conversion_edges = self.graph.es.select(**{DB_CONV_ID_KEY: conv_id})
+        l_possible_in_format_ids = list({x.source for x in l_conversion_edges})
+        l_possible_out_format_ids = list({x.target for x in l_conversion_edges})
 
         # Get the name for each format ID, and return lists of the names
         return ([self.parent.get_format_info(x) for x in l_possible_in_format_ids],
