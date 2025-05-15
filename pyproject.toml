@@ -97,7 +97,13 @@ source_pkgs = ["psdi_data_conversion"]
 branch = true
 # app.py is tested via the Selenium tests, which are indirect enough that the coverage tool doesn't pick up that the
 # lines are being tested, so we exclude it from the coverage % calculation
-omit = ["*/testing/*", "app.py"]
+omit = [
+  "*/testing/*",
+  "app.py",
+  "*/gui/accessibility.py",
+  "*/gui/get.py",
+  "*/gui/post.py",
+]
 
 [tool.coverage.paths]
 tests = ["tests/python"]
