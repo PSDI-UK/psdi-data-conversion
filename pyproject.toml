@@ -27,7 +27,7 @@ classifiers = [
   "Topic :: File Formats",
   "Topic :: Scientific/Engineering :: Chemistry",
 ]
-dependencies = ["openbabel-wheel", "py"]
+dependencies = ["igraph", "openbabel-wheel", "py"]
 requires-python = ">= 3.12"
 
 # Version specification - we determine the version through git. If you wish to install this without it being in a git
