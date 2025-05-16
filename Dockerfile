@@ -27,7 +27,7 @@
 FROM python:3.12-slim-bookworm
 
 RUN apt update
-RUN apt-get -y install libxrender1 libxext6
+RUN apt-get -y install libxrender1 libxext6 git
 
 # Install Python packages (including openbabel-wheel)
 RUN pip install --upgrade pip
