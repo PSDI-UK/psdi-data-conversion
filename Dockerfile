@@ -31,14 +31,12 @@ RUN apt-get -y install libxrender1 libxext6
 
 # Install Python packages (including openbabel-wheel)
 RUN pip install --upgrade pip
-RUN pip install gunicorn
-RUN pip install flask
 
 WORKDIR /app
-COPY requirements.txt /app
+COPY pyproject.toml /app
 COPY psdi_data_conversion /app/psdi_data_conversion
 
-RUN pip install -r requirements.txt
+RUN pip install .[deploy]
 
 ENV PYTHONPATH="."
 ENV SERVICE_MODE=true

@@ -27,8 +27,6 @@ classifiers = [
   "Topic :: File Formats",
   "Topic :: Scientific/Engineering :: Chemistry",
 ]
-# WARNING: The public deployment doesn't use dependencies in this file, but in the file `requirements.txt`. If adding
-# a requirement that will be used by that, it needs to be added there too
 dependencies = ["igraph", "openbabel-wheel", "py"]
 requires-python = ">= 3.12"
 
@@ -59,6 +57,7 @@ gui-test = [
   "selenium",
   "webdriver_manager",
 ]
+deploy = ["Flask", "gunicorn", "requests"]
 doc = ["pdoc3"]
 
 [project.scripts]
@@ -82,7 +81,6 @@ exclude = [
   "scripts/fetch-common-style.*",
   "scripts/make-index-html.sh",
   "Dockerfile",
-  "requirements.txt",
 ]
 
 # The following lines run a script which excludes binaries for platforms other than the current from the binary.

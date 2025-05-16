@@ -87,7 +87,6 @@ This is the repository for the PSDI PF2 Chemistry File Format Conversion project
 - `LICENSE` (Apache License version 2.0)
 - `pyproject.toml` (Python project metadata and settings)
 - `README.md` (This file)
-- `requirements.txt` (Requirements for the web app deployment of this project)
 
 ## Requirements
 

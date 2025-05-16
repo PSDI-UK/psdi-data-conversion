@@ -1,4 +1,0 @@
-requests
-igraph
-openbabel-wheel
-py
