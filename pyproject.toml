@@ -27,6 +27,8 @@ classifiers = [
   "Topic :: File Formats",
   "Topic :: Scientific/Engineering :: Chemistry",
 ]
+# WARNING: The public deployment doesn't use dependencies in this file, but in the file `requirements.txt`. If adding
+# a requirement that will be used by that, it needs to be added there too
 dependencies = ["igraph", "openbabel-wheel", "py"]
 requires-python = ">= 3.12"
 
