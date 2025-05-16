@@ -27,18 +27,18 @@
 FROM python:3.12-slim-bookworm
 
 RUN apt update
-RUN apt-get -y install libxrender1 libxext6
+RUN apt-get -y install libxrender1 libxext6 git
 
 # Install Python packages (including openbabel-wheel)
 RUN pip install --upgrade pip
-RUN pip install gunicorn
-RUN pip install flask
 
 WORKDIR /app
-COPY requirements.txt /app
 COPY psdi_data_conversion /app/psdi_data_conversion
+COPY CHANGELOG.md CONTRIBUTING.md LICENSE pyproject.toml README.md /app/
 
-RUN pip install -r requirements.txt
+ENV SETUPTOOLS_SCM_PRETEND_VERSION="1.0.0"
+
+RUN pip install .[deploy]
 
 ENV PYTHONPATH="."
 ENV SERVICE_MODE=true
