@@ -33,9 +33,13 @@ RUN apt-get -y install libxrender1 libxext6 git
 RUN pip install --upgrade pip
 
 WORKDIR /app
-COPY pyproject.toml /app
 COPY psdi_data_conversion /app/psdi_data_conversion
-COPY .git /app/.git
+COPY CHANGELOG.md /app
+COPY CONTRIBUTING.md /app
+COPY LICENSE /app
+COPY pyproject.toml /app
+COPY README.md /app
+COPY .git /app
 
 RUN pip install .[deploy]
 
