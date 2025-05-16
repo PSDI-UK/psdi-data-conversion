@@ -68,6 +68,7 @@
       <div id="format-selection">
         <div class="flex-panel-display">
           <div class="flex-panel instructions-panel">
+            <h6>Select formats for conversion</h6>
             <p>Select “from” and “to” file formats in the “Convert from/to” boxes, in either order. Typing where
               indicated filters the options (case insensitive); for example, typing “can” or “NON” reduces the number of
               options to one: “can: Canonical SMILES.”
@@ -77,6 +78,7 @@
               “Conversion options” box below along with an indication of conversion quality (many conversions have not
               yet been tested) and whether or not the converter is supported on this site.</p>
           </div>
+          <hr class="small-screen-only">
           <div class="flex-panel">
             <label for="searchFrom" id="fromLabel">Convert from:</label><br>
             <input type="text" placeholder="-- type here to filter options --" size="12" id="searchFrom"
@@ -95,6 +97,7 @@
         </div>
         <div class="flex-panel-display">
           <div class="flex-panel instructions-panel">
+            <h6>Select a converter</h6>
             <p>Selecting a converter displays information about it, along with a link to a relevant website. Selecting a
               supported converter affords the opportunity to carry out a conversion on this site. Clicking on the “Yes”
               button takes us to the “Conversion” page. If a file format has not been found, or if there are no
@@ -102,6 +105,7 @@
               Format/Conversion” in the navigation bar.
             </p>
           </div>
+          <hr class="small-screen-only">
           <div class="flex-panel">
             <p>
               <label for="success">Select from available conversion options:</label><br>
@@ -131,7 +135,6 @@
           this issue persists, please report it to us using the “Contact” link in the header. You can also download
           a version of this service for local use using the “Download” link in the header if you’d prefer.</p>
       </div>
-      <div class="medGap"></div>
     </div>
   </form>
   {% if tag %}

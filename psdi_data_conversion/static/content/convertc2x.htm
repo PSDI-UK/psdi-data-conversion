@@ -51,9 +51,10 @@
         </a>
         <br>
         <br>
-        <h6 id="heading"></h6>
+        <h5 id="heading"></h5>
         <div class="flex-panel-display">
           <div class="flex-panel instructions-panel">
+            <h6>Upload the file and run the conversion</h6>
             <p>Click on “Choose file” and then select an input file of the correct format (and extension). Clicking on
               “Convert” uploads and converts the file. The output file is automatically downloaded, along with a log
               file.
@@ -64,6 +65,7 @@
               in the navigation bar.
             </p>
           </div>
+          <hr class="small-screen-only">
           <div class="flex-panel">
             <p id="convertFile">
               <input type="checkbox" checked id="extCheck"> Enforce file naming checking to ensure uploaded files (and
@@ -73,7 +75,8 @@
               Select file to convert<span class="max-file-size"></span>:
               <br>
               <input type="file" name="fileToUpload" id="fileToUpload">
-              <input type="button" class="button" value=" Clear Uploaded File " name="clearUpload" id="clearUpload">
+              <input type="button" class="button no-left-margin" value=" Clear Uploaded File " name="clearUpload"
+                id="clearUpload">
               <br>
               If you have sensitive data you might prefer to use
               <a href="download.htm">one of our downloadable tools or Python library</a> rather than uploading your data
@@ -88,7 +91,6 @@
           </div>
         </div>
       </div>
-      <div class="largeGap"></div>
     </div>
   </form>
 

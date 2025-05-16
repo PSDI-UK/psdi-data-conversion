@@ -49,9 +49,10 @@
       </a>
       <br>
       <br>
-      <h6 id="heading"></h6>
+      <h5 id="heading"></h5>
       <div class="flex-panel-display">
         <div class="flex-panel instructions-panel">
+          <h6>Select flags and options for the file formats</h6>
           <p>
             One or more input or output flags may be selected if required (command click [Mac] or control click
             [Windows] for multiple select box selections). To undo all selections in a box, click just underneath the
@@ -63,6 +64,7 @@
             displayed underneath the select boxes if available.
           </p>
         </div>
+        <hr class="small-screen-only">
         <div class="flex-panel">
           <div id="flags">
             <div id="inFlagList">
@@ -92,11 +94,13 @@
       </div>
       <div class="flex-panel-display">
         <div class="flex-panel instructions-panel">
+          <h6>Select coordinate generation mode</h6>
           <p>If 2- or 3-dimensional atomic coordinates need to be calculated (e.g., if they do not already exist in the
             input file), select “2D” or “3D” and a speed/accuracy option (“fastest” is least accurate). Note that this
             calculation is not appropriate for all file formats, so in these cases selections will be ignored.
           </p>
         </div>
+        <hr class="small-screen-only">
         <div class="flex-panel">
           <p>
             <label for="coordinates">Select “2D” or “3D” if an Open Babel calculation of 2- or 3-dimensional atomic
@@ -123,6 +127,7 @@
       </div>
       <div class="flex-panel-display">
         <div class="flex-panel instructions-panel">
+          <h6>Upload the file and run the conversion</h6>
           <p>Click on “Choose file” and then select an input file of the correct format (and extension). Clicking on
             “Convert” uploads and converts the file. The output file is automatically downloaded, along with a log file.
           </p>
@@ -131,6 +136,7 @@
             in the navigation bar.
           </p>
         </div>
+        <hr class="small-screen-only">
         <div class="flex-panel">
           <p id="convertFile">
             <input type="checkbox" checked id="extCheck"> Enforce file naming checking to ensure uploaded files (and
@@ -140,7 +146,8 @@
             Select file to convert<span class="max-file-size"></span>:
             <br>
             <input type="file" name="fileToUpload" id="fileToUpload">
-            <input type="button" class="button" value=" Clear Uploaded File " name="clearUpload" id="clearUpload">
+            <input type="button" class="button no-left-margin" value=" Clear Uploaded File " name="clearUpload"
+              id="clearUpload">
             <br>
             If you have sensitive data you might prefer to use
             <a href="download.htm">one of our downloadable tools or Python library</a> rather than uploading your data
@@ -154,7 +161,6 @@
           </p>
         </div>
       </div>
-      <div class="medGap"></div>
     </div>
   </form>
 

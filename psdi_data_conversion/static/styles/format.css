@@ -42,6 +42,11 @@ input:invalid {
   display: none
 }
 
+/* File upload prompt */
+input#fileToUpload {
+  margin-right: 0.25rem;
+}
+
 /* Buttons that are initially disabled */
 input.button.init-disabled {
   background-color: var(--psdi-bg-color-secondary);
@@ -71,9 +76,10 @@ input.button.init-disabled {
   justify-content: space-between;
 }
 
-.flex-panel {
-  flex   : 1 1 50%;
-  padding: 1rem;
+.flex-panel-display:has(.instructions-panel) {
+  border       : 1px solid black;
+  border-radius: 1rem;
+  margin-bottom: 2rem;
 }
 
 @media (max-width: 700px) {
@@ -82,15 +88,42 @@ input.button.init-disabled {
   }
 }
 
-.instructions-panel {
-  flex         : 1 1 35%;
-  margin       : 1rem 1rem 1rem 0rem;
-  border       : 1px solid black;
-  border-radius: 1rem;
+.flex-panel {
+  flex   : 1 1 50%;
+  padding: 1rem;
 }
 
-.instructions-panel p:is(:last-child) {
+.instructions-panel {
+  flex  : 1 1 35%;
   margin: 0;
+}
+
+.flex-panel-display hr {
+  margin             : -0.5rem 25% 0.5rem 25%;
+  height             : 1px;
+  border-top-style   : none;
+  border-bottom-style: solid;
+  border-bottom-width: 1px;
+}
+
+/* Control for elements to only appear on big/small screens */
+.big-screen-only {
+  display: block;
+}
+
+.small-screen-only {
+  display: none;
+}
+
+@media (max-width: 700px) {
+
+  .big-screen-only {
+    display: none;
+  }
+
+  .small-screen-only {
+    display: block;
+  }
 }
 
 /* Grid for textarea label/elements. */
