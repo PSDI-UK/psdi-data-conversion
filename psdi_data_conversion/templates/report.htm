@@ -49,7 +49,9 @@
     </div>
   </div>
 
-  <form name="gui" class="gui service-only">
+  {% if service_mode %}
+
+  <form name="gui" class="gui">
     <div class="max-width-box">
       <p>Select the type of report (missing file format or conversion) and then follow the instructions that appear.
       <p><b>Finally:</b> click on “Report.”</p><br>
@@ -94,9 +96,10 @@
         <br><input type="text" placeholder="-- type here --" id="in" class="large-width">
         <br><input type="button" class="button" value=" Report " id="reportButton">
       </p>
-      <div class="medGap"></div>
     </div>
   </form>
+
+  {% else %}
 
   <form name="gui" class="gui local-only">
     <div class="max-width-box">
@@ -109,6 +112,10 @@
       <div class="medGap"></div>
     </div>
   </form>
+
+  {%endif %}
+
+  <div class="medGap"></div>
 
   <footer class="footer" id="psdi-footer"></footer>
 
