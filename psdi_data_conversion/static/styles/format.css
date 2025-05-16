@@ -95,11 +95,35 @@ input.button.init-disabled {
 
 .instructions-panel {
   flex  : 1 1 35%;
-  margin: 1rem 1rem 1rem 0rem;
+  margin: 0;
 }
 
-.instructions-panel p:is(:last-child) {
-  margin: 0;
+.flex-panel-display hr {
+  margin             : -0.5rem 25% 0.5rem 25%;
+  height             : 1px;
+  border-top-style   : none;
+  border-bottom-style: solid;
+  border-bottom-width: 1px;
+}
+
+/* Control for elements to only appear on big/small screens */
+.big-screen-only {
+  display: block;
+}
+
+.small-screen-only {
+  display: none;
+}
+
+@media (max-width: 700px) {
+
+  .big-screen-only {
+    display: none;
+  }
+
+  .small-screen-only {
+    display: block;
+  }
 }
 
 /* Grid for textarea label/elements. */
