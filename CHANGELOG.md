@@ -10,6 +10,7 @@
 ### Bugfixes
 
 - Fixed bug where the `input_dir` keyword argument for `run_converter` was being ignored
+- Fixed bug where the local-mode-only text was incorrectly appearing on the report page in service mode
 
 ### Testing Changes
 
@@ -24,6 +25,7 @@
 - Changed Documentation and Accessibility pages of the GUI to work as Flask templates
 - Cleaned up Flask files to not be all in one module
 - Changed the database functionality to store possible conversions as a graph instead of a table
+- Dockerfile now builds from `pyproject.toml`, with the now-unused `requirements.txt` removed
 
 ## v0.1.6
 
