@@ -32,6 +32,13 @@ def database():
     return open(get_database_path(), "r").read()
 
 
+def report():
+    """Return the report page
+    """
+    return render_template("report.htm",
+                           **get_env_kwargs())
+
+
 def init_get(app: Flask):
     """Connect the provided Flask app to each of the pages on the site
     """
@@ -40,5 +47,7 @@ def init_get(app: Flask):
     app.route('/index.htm')(index)
 
     app.route('/documentation.htm')(documentation)
+
+    app.route('/report.htm')(report)
 
     app.route('/database/')(database)
