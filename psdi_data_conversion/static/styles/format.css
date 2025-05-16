@@ -98,18 +98,6 @@ input.button.init-disabled {
   margin: 0;
 }
 
-.flex-panel:not(.instructions-panel) {
-  margin-top: 2.875rem;
-}
-
-@media (max-width: 700px) {
-
-  .flex-panel:not(.instructions-panel) {
-    margin-top: 0;
-  }
-
-}
-
 .flex-panel-display hr {
   margin             : -0.5rem 25% 0.5rem 25%;
   height             : 1px;
