@@ -13,7 +13,6 @@ jobs:
     secrets: inherit # pass all secrets for the environment
 
   container-push:
-    if: github.ref == 'refs/heads/main'
     uses: ./.github/workflows/job-container-push.yml
     needs: [test-all]
     with:
