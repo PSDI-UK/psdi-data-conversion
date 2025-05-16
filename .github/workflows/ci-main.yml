@@ -9,12 +9,12 @@ on:
 
 jobs:
   test-all:
-    if: github.ref == 'refs/heads/main'
     uses: ./.github/workflows/job-test-main.yml
     secrets: inherit # pass all secrets for the environment
 
   container-push:
     uses: ./.github/workflows/job-container-push.yml
+    needs: [test-all]
     with:
       # container_tag
       container_tag: ${{ github.sha }}
