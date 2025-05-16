@@ -39,7 +39,8 @@ COPY CONTRIBUTING.md /app
 COPY LICENSE /app
 COPY pyproject.toml /app
 COPY README.md /app
-COPY .git /app
+
+ENV SETUPTOOLS_SCM_PRETEND_VERSION="1.0.0"
 
 RUN pip install .[deploy]
 
