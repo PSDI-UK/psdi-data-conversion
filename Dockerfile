@@ -32,6 +32,11 @@ RUN apt-get -y install libxrender1 libxext6
 # Install Python packages (including openbabel-wheel)
 RUN pip install --upgrade pip
 
+WORKDIR /app
+COPY requirements.txt /app
+COPY psdi_data_conversion /app/psdi_data_conversion
+COPY .git /app/.git
+
 RUN pip install .[deploy]
 
 ENV PYTHONPATH="."
@@ -55,8 +60,8 @@ ENV LOG_LEVEL=debug
 
 EXPOSE 8000
 
-RUN mkdir /psdi_data_conversion/static/uploads
-RUN mkdir /psdi_data_conversion/static/downloads
+RUN mkdir /app/psdi_data_conversion/static/uploads
+RUN mkdir /app/psdi_data_conversion/static/downloads
 
 #set web server timout to more than application default (60)
 ENV TIMEOUT=90
