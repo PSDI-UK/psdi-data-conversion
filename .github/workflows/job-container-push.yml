@@ -11,10 +11,10 @@ on:
   workflow_call:
     inputs:
       container_tag: # define our version tag created from the upstream container build job
-        description: 'The latest tag for the container'
+        description: "The latest tag for the container"
         required: true
         type: string
-    
+
 jobs:
   container-push:
     runs-on: psdi-uk-runners
