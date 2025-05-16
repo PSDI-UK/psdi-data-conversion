@@ -42,6 +42,11 @@ input:invalid {
   display: none
 }
 
+/* File upload prompt */
+input#fileToUpload {
+  margin-right: 0.25rem;
+}
+
 /* Buttons that are initially disabled */
 input.button.init-disabled {
   background-color: var(--psdi-bg-color-secondary);
@@ -74,7 +79,7 @@ input.button.init-disabled {
 .flex-panel-display:has(.instructions-panel) {
   border       : 1px solid black;
   border-radius: 1rem;
-  margin-bottom: 1rem;
+  margin-bottom: 2rem;
 }
 
 .flex-panel {
