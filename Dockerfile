@@ -33,7 +33,8 @@ RUN apt-get -y install libxrender1 libxext6 git
 RUN pip install --upgrade pip
 
 WORKDIR /app
-COPY psdi_data_conversion CHANGELOG.md CONTRIBUTING.md LICENSE pyproject.toml README.md /app/
+COPY psdi_data_conversion /app/psdi_data_conversion
+COPY CHANGELOG.md CONTRIBUTING.md LICENSE pyproject.toml README.md /app/
 
 ENV SETUPTOOLS_SCM_PRETEND_VERSION="1.0.0"
 
