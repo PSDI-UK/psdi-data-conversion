@@ -1,6 +1,6 @@
 # Changelog for PSDI Data Conversion
 
-## Since v0.1.6
+## v0.2.0
 
 ### New and Changed Functionality
 
@@ -26,6 +26,10 @@
 - Cleaned up Flask files to not be all in one module
 - Changed the database functionality to store possible conversions as a graph instead of a table
 - Dockerfile now builds from `pyproject.toml`, with the now-unused `requirements.txt` removed
+
+### Stylistic Changes
+
+- Reformatted pages of the GUI/web app to use a two panel display, with instructions for components in boxes alongside them
 
 ## v0.1.6
 
