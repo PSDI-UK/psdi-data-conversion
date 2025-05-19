@@ -10,6 +10,7 @@ from __future__ import annotations
 import json
 import os
 from dataclasses import dataclass, field
+from functools import lru_cache
 from itertools import product
 from logging import getLogger
 from typing import Any, Literal, overload
@@ -620,23 +621,27 @@ class ConversionsTable:
                                          DB_NAME_KEY: [self.parent.get_converter_info(x[DB_CONV_ID_KEY]).name
                                                        for x in l_conversions]}))
 
-    def _get_possible_converters(self, in_format_info: FormatInfo, out_format_info: FormatInfo,
-                                 only: Literal["all"] | Literal["supported"] | Literal["registered"] = "all"):
-        """Get a list of all converters which can convert from one format to another
-        """
+    def _get_desired_graph(self,
+                           only: Literal["all"] | Literal["supported"] | Literal["registered"] = "all") -> ig.Graph:
         if only == "all":
-            graph = self.graph
+            return self.graph
         elif only == "supported":
-            graph = self.supported_graph
+            return self.supported_graph
         elif only == "registered":
-            graph = self.registered_graph
+            return self.registered_graph
         else:
             raise ValueError(f"Invalid value \"{only}\" for keyword argument `only`. Allowed values are \"all\" "
                              "(default), \"supported\", and \"registered\".")
 
+    def _get_possible_converters(self, in_format_info: FormatInfo, out_format_info: FormatInfo,
+                                 only: Literal["all"] | Literal["supported"] | Literal["registered"] = "all"):
+        """Get a list of all converters which can convert from one format to another
+        """
+        graph = self._get_desired_graph(only)
         l_edges = graph.es.select(_source=in_format_info.id, _target=out_format_info.id)
         return [x[DB_NAME_KEY] for x in l_edges]
 
+    @lru_cache(maxsize=None)
     def get_conversion_quality(self,
                                converter_name: str,
                                in_format: str | int,
@@ -766,6 +771,55 @@ class ConversionsTable:
                 l_possible_conversions.append((converter_name, in_format_info, out_format_info))
 
         return l_possible_conversions
+
+    def get_conversion_pathway(self,
+                               in_format: str | int | FormatInfo,
+                               out_format: str | int | FormatInfo,
+                               only: Literal["all"] | Literal["supported"] | Literal["registered"] = "all"
+                               ) -> list[tuple[str, FormatInfo, FormatInfo]] | None:
+        """Gets a pathway to convert from one format to another
+        """
+
+        in_format_info = self.parent.get_format_info(in_format)
+        out_format_info = self.parent.get_format_info(out_format)
+
+        # First check if direct conversion is possible
+        l_possible_direct_conversions = self.get_possible_conversions(in_format=in_format, out_format=out_format)
+        if l_possible_direct_conversions:
+            # TODO: When there's some better measure of conversion quality, use it to choose which converter to use
+            return [l_possible_direct_conversions[0]]
+
+        # Query the graph for the shortest paths to perform this conversion
+        graph: ig.Graph = self._get_desired_graph(only)
+        l_paths: list[list[int]] = graph.get_shortest_paths(in_format_info.id, to=out_format_info.id)
+
+        # Check if any paths are possible
+        if not l_paths:
+            return None
+
+        # Check each path to find the first which doesn't lose any unnecessary info, or else the one which loses the
+        # least
+        best_path: list[int] | None = None
+        best_info_loss: int | None = None
+        for path in l_paths:
+            info_loss = _get_info_loss(path)
+            if best_info_loss is None or info_loss < best_info_loss:
+                best_path = path
+                best_info_loss = info_loss
+                if best_info_loss == 0:
+                    break
+
+        # Output the best path in the desired format
+        l_steps: list[tuple[str, FormatInfo, FormatInfo]] = []
+        for i in range(len(best_path)-1):
+            source_id: int = best_path[i]
+            target_id: int = best_path[i+1]
+            converter_name: str = graph.es.select(_source=source_id, _target=target_id)[0][DB_NAME_KEY]
+            l_steps.append((converter_name,
+                            self.parent.get_format_info(source_id),
+                            self.parent.get_format_info(target_id)))
+
+        return l_steps
 
     def get_possible_formats(self, converter_name: str) -> tuple[list[FormatInfo], list[FormatInfo]]:
         """Get a list of input and output formats that a given converter supports
