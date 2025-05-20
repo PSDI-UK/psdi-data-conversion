@@ -13,9 +13,9 @@ from psdi_data_conversion.converters.atomsk import CONVERTER_ATO
 from psdi_data_conversion.converters.c2x import CONVERTER_C2X
 from psdi_data_conversion.converters.openbabel import CONVERTER_OB
 from psdi_data_conversion.database import (FileConverterDatabaseException, disambiguate_formats,
-                                           get_conversion_quality, get_converter_info, get_database, get_format_info,
-                                           get_in_format_args, get_out_format_args, get_possible_conversions,
-                                           get_possible_formats)
+                                           get_conversion_pathway, get_conversion_quality, get_converter_info,
+                                           get_database, get_format_info, get_in_format_args, get_out_format_args,
+                                           get_possible_conversions, get_possible_formats)
 from psdi_data_conversion.utils import regularize_name
 
 
@@ -220,3 +220,11 @@ def test_conversion_table():
     l_in_formats, l_out_formats = get_possible_formats(CONVERTER_OB)
     assert get_format_info("pdb", which=0) in l_in_formats
     assert get_format_info("cif", which=0) in l_out_formats
+
+
+def test_conversion_pathways():
+    """Tests of determining conversion pathways between formats
+    """
+
+    # Check that we get `None` for converting from one format to itself
+    assert get_conversion_pathway("cif", "cif") is None
