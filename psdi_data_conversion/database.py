@@ -1310,6 +1310,51 @@ def get_possible_conversions(in_format: str | int,
                                                                      out_format=out_format)
 
 
+def get_conversion_pathway(in_format: str | int | FormatInfo,
+                           out_format: str | int | FormatInfo,
+                           only: Literal["all"] | Literal["supported"] | Literal["registered"] = "all"
+                           ) -> list[tuple[str, FormatInfo, FormatInfo]] | None:
+    """Get a list of conversions that can be performed to convert one format to another. This is primarily used when a
+    direct conversion is not supported by any individual converter. Only one possible pathway will be returned,
+    prioritising pathways which do not lose lose and then re-extrapolate any information stored by some formats and not
+    others along the path.
+
+    Parameters
+    ----------
+    in_format : str | int
+        The input file format. For this function, the format must be defined uniquely, either by using a disambiguated
+        extension, ID, or FormatInfo
+    out_format : str | int
+        The output file format. For this function, the format must be defined uniquely, either by using a disambiguated
+        extension, ID, or FormatInfo
+    only : Literal["all"] | Literal["supported"] | Literal["registered"], optional
+        Which converters to limit the pathway search to:
+        - "all" (default): All known converters
+        - "supported": Only converters supported by this utility, even if not currently available (e.g. they don't work
+          on your OS)
+        - "registered": Only converters supported by this utility and currently available
+
+    Returns
+    -------
+    list[tuple[str, FormatInfo, FormatInfo]] | None
+        Will return `None` if no conversion pathway is possible or if the input and output formats are the same.
+        Otherwise, will return a list of steps in the pathway, each being a tuple of:
+
+        converter_name : str
+            Name of the converter to perform this step
+        in_format : FormatInfo
+            Input format for this step (if the first step, will be the input format to this function, otherwise will be
+            the output format of the previous step)
+        out_format : FormatInfo
+            Output format from this step (if the last step, will be the output format for this function, otherwise will
+            be the input format of the next step)
+    """
+
+    return get_database().conversions_table.get_conversion_pathway(in_format=in_format,
+                                                                   out_format=out_format,
+                                                                   only=only)
+
+
 def disambiguate_formats(converter_name: str,
                          in_format: str | int | FormatInfo,
                          out_format: str | int | FormatInfo) -> tuple[FormatInfo, FormatInfo]:
