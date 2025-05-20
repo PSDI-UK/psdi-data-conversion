@@ -313,6 +313,12 @@ def check_from_format(filename: str,
     return False
 
 
+def _run_single_file_conversion(*args, **kwargs):
+    """Run a conversion on a single file, after all arguments have been checked
+    """
+    return get_converter(*args, **kwargs).run()
+
+
 def run_converter(filename: str,
                   to_format: str,
                   *args,
@@ -429,7 +435,7 @@ def run_converter(filename: str,
         # Not an archive, so just get and run the converter straightforwardly
         if from_format is not None:
             check_from_format(filename, from_format, strict=strict)
-        l_run_output.append(get_converter(filename,
+        l_run_output.append(_run_single_file_conversion(filename,
                             to_format,
                             *args,
                             from_format=from_format,
@@ -438,7 +444,7 @@ def run_converter(filename: str,
                             max_file_size=max_file_size,
                             log_file=log_file,
                             log_mode=log_mode,
-                            **converter_kwargs).run())
+                            **converter_kwargs))
 
     elif not is_supported_archive(filename):
         raise base.FileConverterInputException(f"{filename} is an unsupported archive type. Supported types are: "
@@ -473,15 +479,15 @@ def run_converter(filename: str,
                 individual_log_mode = log_mode if log_mode != const.LOG_FULL else const.LOG_FULL_FORCE
 
                 try:
-                    individual_run_output = get_converter(extracted_filename,
-                                                          to_format,
-                                                          *args,
-                                                          from_format=from_format,
-                                                          output_dir=output_dir,
-                                                          log_file=individual_log_file,
-                                                          log_mode=individual_log_mode,
-                                                          max_file_size=remaining_file_size,
-                                                          **converter_kwargs).run()
+                    individual_run_output = _run_single_file_conversion(extracted_filename,
+                                                                        to_format,
+                                                                        *args,
+                                                                        from_format=from_format,
+                                                                        output_dir=output_dir,
+                                                                        log_file=individual_log_file,
+                                                                        log_mode=individual_log_mode,
+                                                                        max_file_size=remaining_file_size,
+                                                                        **converter_kwargs)
                 except base.FileConverterAbortException as e:
                     # If the run fails, create a run output object to indicate that
                     individual_run_output = base.FileConversionResult(log_filename=individual_log_file,

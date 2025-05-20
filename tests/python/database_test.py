@@ -13,9 +13,9 @@ from psdi_data_conversion.converters.atomsk import CONVERTER_ATO
 from psdi_data_conversion.converters.c2x import CONVERTER_C2X
 from psdi_data_conversion.converters.openbabel import CONVERTER_OB
 from psdi_data_conversion.database import (FileConverterDatabaseException, disambiguate_formats,
-                                           get_conversion_quality, get_converter_info, get_database, get_format_info,
-                                           get_in_format_args, get_out_format_args, get_possible_conversions,
-                                           get_possible_formats)
+                                           get_conversion_pathway, get_conversion_quality, get_converter_info,
+                                           get_database, get_format_info, get_in_format_args, get_out_format_args,
+                                           get_possible_conversions, get_possible_formats)
 from psdi_data_conversion.utils import regularize_name
 
 
@@ -220,3 +220,31 @@ def test_conversion_table():
     l_in_formats, l_out_formats = get_possible_formats(CONVERTER_OB)
     assert get_format_info("pdb", which=0) in l_in_formats
     assert get_format_info("cif", which=0) in l_out_formats
+
+
+def test_conversion_pathways():
+    """Tests of determining conversion pathways between formats
+    """
+
+    # Check that we get `None` for converting from one format to itself
+    assert get_conversion_pathway("cif", "cif") is None
+
+    # Check that we get the expected single-step conversion for a known direct conversion
+    cif_to_inchi_path = get_conversion_pathway("cif", "inchi", only="registered")
+    assert len(cif_to_inchi_path) == 1
+    converter_name, in_format_info, out_format_info = cif_to_inchi_path[0]
+    assert converter_name == regularize_name(CONVERTER_OB)
+    assert in_format_info.name == "cif"
+    assert out_format_info.name == "inchi"
+
+    # Test getting a multi-step conversion - it's possible this will become direct in the future if a new converter is
+    # added, so the test is a bit loose here
+    inchi_to_moldy_path = get_conversion_pathway("inchi", 216)
+    assert len(inchi_to_moldy_path) <= 2
+    assert inchi_to_moldy_path[0][1].name == "inchi"
+    assert inchi_to_moldy_path[-1][2].id == 216
+    for i in range(len(inchi_to_moldy_path)-1):
+        # Output format of each step should match input of next
+        assert inchi_to_moldy_path[i][2] is inchi_to_moldy_path[i+1][1]
+        # Each step should use a different converter
+        assert inchi_to_moldy_path[i][0] != inchi_to_moldy_path[i+1][0]
