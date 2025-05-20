@@ -823,6 +823,10 @@ class ConversionsTable:
         in_format_info = self.parent.get_format_info(in_format)
         out_format_info = self.parent.get_format_info(out_format)
 
+        # Check if the formats are the same
+        if in_format_info is out_format_info:
+            return None
+
         # First check if direct conversion is possible
         l_possible_direct_conversions = self.get_possible_conversions(in_format=in_format, out_format=out_format)
         if l_possible_direct_conversions:
