@@ -794,6 +794,9 @@ class ConversionsTable:
         """
         l_shared_attrs = self._get_shared_attrs(path[0], path[-1])
 
+        if len(l_shared_attrs) == 0:
+            return 0
+
         l_kept_attrs = copy(l_shared_attrs)
         for i in range(len(path)-1):
             target_format_info = self.parent.get_format_info(i+1)
@@ -802,6 +805,8 @@ class ConversionsTable:
             for attr in l_kept_attrs:
                 if not getattr(target_format_info, attr):
                     l_kept_attrs.remove(attr)
+                    if len(l_kept_attrs) == 0:
+                        break
 
         num_lost_attrs = len(l_shared_attrs) - len(l_kept_attrs)
 
