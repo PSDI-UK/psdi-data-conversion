@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import json
 import os
+from copy import copy
 from dataclasses import dataclass, field
 from functools import lru_cache
 from itertools import product
@@ -772,6 +773,40 @@ class ConversionsTable:
 
         return l_possible_conversions
 
+    @lru_cache
+    def _get_shared_attrs(self, source_format, target_format):
+        """Get a list of attributes that both the source and target format feature
+        """
+        source_format_info = self.parent.get_format_info(source_format)
+        target_format_info = self.parent.get_format_info(target_format)
+
+        l_shared_attrs: list[str] = []
+
+        for attr in ("composition", "connections", "two_dim", "three_dim"):
+            if getattr(source_format_info, attr) and getattr(target_format_info, attr):
+                l_shared_attrs.append(attr)
+
+        return l_shared_attrs
+
+    def _get_info_loss(self, path):
+        """Get the number of attributes in both the first and last format which would be lost if a conversion path
+        is traversed
+        """
+        l_shared_attrs = self._get_shared_attrs(path[0], path[-1])
+
+        l_kept_attrs = copy(l_shared_attrs)
+        for i in range(len(path)-1):
+            target_format_info = self.parent.get_format_info(i+1)
+
+            # Check if each attr still in the shared list is kept here
+            for attr in l_kept_attrs:
+                if not getattr(target_format_info, attr):
+                    l_kept_attrs.remove(attr)
+
+        num_lost_attrs = len(l_shared_attrs) - len(l_kept_attrs)
+
+        return num_lost_attrs
+
     def get_conversion_pathway(self,
                                in_format: str | int | FormatInfo,
                                out_format: str | int | FormatInfo,
@@ -802,7 +837,7 @@ class ConversionsTable:
         best_path: list[int] | None = None
         best_info_loss: int | None = None
         for path in l_paths:
-            info_loss = _get_info_loss(path)
+            info_loss = self._get_info_loss(path)
             if best_info_loss is None or info_loss < best_info_loss:
                 best_path = path
                 best_info_loss = info_loss
