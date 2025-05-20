@@ -228,3 +228,11 @@ def test_conversion_pathways():
 
     # Check that we get `None` for converting from one format to itself
     assert get_conversion_pathway("cif", "cif") is None
+
+    # Check that we get the expected single-step conversion for a known direct conversion
+    cif_to_inchi_path = get_conversion_pathway("cif", "inchi", only="registered")
+    assert len(cif_to_inchi_path) == 1
+    converter_name, in_format_info, out_format_info = cif_to_inchi_path[0]
+    assert converter_name == regularize_name(CONVERTER_OB)
+    assert in_format_info.name == "cif"
+    assert out_format_info.name == "inchi"
