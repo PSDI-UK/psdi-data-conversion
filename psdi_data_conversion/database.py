@@ -408,6 +408,12 @@ class FormatInfo:
     """Class providing information on a file format from the PSDI Data Conversion database
     """
 
+    D_PROPERTY_ATTRS = {const.QUAL_COMP_KEY: const.QUAL_COMP_LABEL,
+                        const.QUAL_CONN_KEY: const.QUAL_CONN_LABEL,
+                        const.QUAL_2D_KEY: const.QUAL_2D_LABEL,
+                        const.QUAL_3D_KEY: const.QUAL_3D_LABEL}
+    """A dict of attrs of this class which describe properties that a format may or may not have"""
+
     def __init__(self,
                  name: str,
                  parent: DataConversionDatabase,
@@ -495,7 +501,7 @@ class PropertyConversionInfo:
     def __post_init__(self):
         """Set the label and note based on input/output status
         """
-        self.label = const.D_QUAL_LABELS[self.key]
+        self.label = FormatInfo.D_PROPERTY_ATTRS[self.key]
 
         if self.input_supported is None and self.output_supported is None:
             self.note = const.QUAL_NOTE_BOTH_UNKNOWN
@@ -686,7 +692,7 @@ class ConversionsTable:
         num_new_props = 0
         any_unknown = False
         d_prop_conversion_info: dict[str, PropertyConversionInfo] = {}
-        for prop in const.D_QUAL_LABELS:
+        for prop in FormatInfo.D_PROPERTY_ATTRS:
             in_prop: bool | None = getattr(in_format_info, prop)
             out_prop: bool | None = getattr(out_format_info, prop)
 
@@ -782,7 +788,7 @@ class ConversionsTable:
 
         l_shared_attrs: list[str] = []
 
-        for attr in ("composition", "connections", "two_dim", "three_dim"):
+        for attr in FormatInfo.D_PROPERTY_ATTRS:
             if getattr(source_format_info, attr) and getattr(target_format_info, attr):
                 l_shared_attrs.append(attr)
 

@@ -555,7 +555,19 @@ def detail_format(format_name: str):
                    f"'-f {format_name}-0' - see the disambiguated names in the list below:", newline=True)
 
     for format_info in l_format_info:
+        # Print the format's basic details
         print_wrap(f"{format_info.id}: {format_info.disambiguated_name} ({format_info.note})")
+
+        # Print whether or not it supports each possible property
+        for attr, label in FormatInfo.D_PROPERTY_ATTRS.items():
+            support_str = label
+            if getattr(format_info, attr):
+                support_str += " supported"
+            elif getattr(format_info, attr) is False:
+                support_str += " not supported"
+            else:
+                support_str += " unknown whether or not to be supported"
+            print_wrap(f"- {support_str}")
 
 
 def detail_formats_and_possible_converters(from_format: str, to_format: str):
