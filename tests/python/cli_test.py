@@ -268,12 +268,13 @@ def test_get_conversions(capsys):
     assert bool(l_conversions) == string_is_present_in_out("The following registered converters can convert from "
                                                            f"{in_format} to {out_format}:")
 
-    for name, _, _ in l_conversions:
-        if name in L_REGISTERED_CONVERTERS:
-            assert string_is_present_in_out(get_registered_converter_class(name).name)
+    for converter_info, _, _ in l_conversions:
+        if converter_info.name in L_REGISTERED_CONVERTERS:
+            assert string_is_present_in_out(converter_info.pretty_name)
     for name in L_REGISTERED_CONVERTERS:
-        if name not in [x[0] for x in l_conversions]:
-            assert not string_is_present_in_out(get_registered_converter_class(name).name)
+        converter_info = get_converter_info(name)
+        if converter_info not in [x[0] for x in l_conversions]:
+            assert not string_is_present_in_out(converter_info.pretty_name)
 
 
 def test_conversion_info(capsys):

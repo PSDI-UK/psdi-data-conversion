@@ -18,8 +18,7 @@ from psdi_data_conversion import constants as const
 from psdi_data_conversion.constants import CL_SCRIPT_NAME, CONVERTER_DEFAULT, TERM_WIDTH
 from psdi_data_conversion.converter import (D_CONVERTER_ARGS, L_REGISTERED_CONVERTERS, L_SUPPORTED_CONVERTERS,
                                             converter_is_registered, converter_is_supported,
-                                            get_registered_converter_class, get_supported_converter_class,
-                                            run_converter)
+                                            get_supported_converter_class, run_converter)
 from psdi_data_conversion.converters.base import (FileConverterAbortException, FileConverterException,
                                                   FileConverterInputException)
 from psdi_data_conversion.database import (FormatInfo, get_conversion_pathway, get_conversion_quality,
@@ -655,12 +654,13 @@ def detail_formats_and_possible_converters(from_format: str, to_format: str):
         l_conversions_matching_formats = [x for x in l_possible_conversions
                                           if x[1] == possible_from_format and x[2] == possible_to_format]
 
-        l_possible_registered_converters = [get_registered_converter_class(x[0]).name
+        l_possible_registered_converters = [x[0].pretty_name
                                             for x in l_conversions_matching_formats
-                                            if x[0] in L_REGISTERED_CONVERTERS]
-        l_possible_unregistered_converters = [get_supported_converter_class(x[0]).name
+                                            if x[0].name in L_REGISTERED_CONVERTERS]
+        l_possible_unregistered_converters = [x[0].pretty_name
                                               for x in l_conversions_matching_formats
-                                              if x[0] in L_SUPPORTED_CONVERTERS and x[0] not in L_REGISTERED_CONVERTERS]
+                                              if x[0].name in L_SUPPORTED_CONVERTERS
+                                              and x[0] not in L_REGISTERED_CONVERTERS]
 
         if len(l_possible_registered_converters)+len(l_possible_unregistered_converters) == 0:
             print_wrap(f"No converters are available which can perform a conversion from {from_name} to "

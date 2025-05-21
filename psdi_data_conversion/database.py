@@ -21,7 +21,7 @@ import igraph as ig
 from psdi_data_conversion import constants as const
 from psdi_data_conversion.converter import (L_REGISTERED_CONVERTERS, L_SUPPORTED_CONVERTERS,
                                             get_registered_converter_class)
-from psdi_data_conversion.converters.base import FileConverterException
+from psdi_data_conversion.converters.base import FileConverter, FileConverterException
 from psdi_data_conversion.utils import regularize_name
 
 # Keys for top-level and general items in the database
@@ -126,17 +126,40 @@ class ConverterInfo:
             The regularized name of the converter
         parent : DataConversionDatabase
             The database which this belongs to
+        d_single_converter_info : dict[str, int | str]
+            The dict within the database file which describes this converter
         d_data : dict[str, Any]
             The loaded database dict
         """
 
         self.name = regularize_name(name)
+        """The regularized name of the converter"""
+
+        self.converter_class: type[FileConverter]
+        """The class used to perform conversions with this converter"""
+
+        self.pretty_name: str
+        """The name of the converter, properly spaced and capitalized"""
+
+        try:
+            self.converter_class = get_registered_converter_class(self.name)
+            self.pretty_name = self.converter_class.name
+        except KeyError:
+            self.converter_class = None
+            self.pretty_name = name
+
         self.parent = parent
+        """The parent database"""
 
         # Get info about the converter from the database
         self.id: int = d_single_converter_info.get(DB_ID_KEY, -1)
+        """The converter's ID"""
+
         self.description: str = d_single_converter_info.get(DB_DESC_KEY, "")
+        """A description of the converter"""
+
         self.url: str = d_single_converter_info.get(DB_URL_KEY, "")
+        """The official URL for the converter"""
 
         # Get necessary info about the converter from the class
         try:
@@ -744,7 +767,7 @@ class ConversionsTable:
                                  in_format: str | int,
                                  out_format: str | int,
                                  only: Literal["all"] | Literal["supported"] | Literal["registered"] = "all"
-                                 ) -> list[tuple[str, FormatInfo, FormatInfo]]:
+                                 ) -> list[tuple[ConverterInfo, FormatInfo, FormatInfo]]:
         """Get a list of converters which can perform a conversion from one format to another, disambiguating in the
         case of ambiguous formats and providing IDs for input/output formats for possible conversions
 
@@ -757,10 +780,10 @@ class ConversionsTable:
 
         Returns
         -------
-        list[tuple[str, FormatInfo, FormatInfo]]
-            A list of tuples, where each tuple's first item is the name of a converter which can perform a matching
-            conversion, the second is the info of the input format for this conversion, and the third is the info of the
-            output format
+        list[tuple[ConverterInfo, FormatInfo, FormatInfo]]
+            A list of tuples, where each tuple's first item is the ConverterInfo of a converter which can perform a
+            matching conversion, the second is the info of the input format for this conversion, and the third is the
+            info of the output format
         """
         l_in_format_infos = self.parent.get_format_info(in_format, which="all")
         l_out_format_infos = self.parent.get_format_info(out_format, which="all")
@@ -775,7 +798,8 @@ class ConversionsTable:
             l_converter_names = self._get_possible_converters(in_format_info, out_format_info, only=only)
 
             for converter_name in l_converter_names:
-                l_possible_conversions.append((converter_name, in_format_info, out_format_info))
+                l_possible_conversions.append((self.parent.get_converter_info(converter_name),
+                                               in_format_info, out_format_info))
 
         return l_possible_conversions
 
@@ -822,7 +846,7 @@ class ConversionsTable:
                                in_format: str | int | FormatInfo,
                                out_format: str | int | FormatInfo,
                                only: Literal["all"] | Literal["supported"] | Literal["registered"] = "all"
-                               ) -> list[tuple[str, FormatInfo, FormatInfo]] | None:
+                               ) -> list[tuple[ConverterInfo, FormatInfo, FormatInfo]] | None:
         """Gets a pathway to convert from one format to another
         """
 
@@ -865,7 +889,7 @@ class ConversionsTable:
             source_id: int = best_path[i]
             target_id: int = best_path[i+1]
             converter_name: str = graph.es.select(_source=source_id, _target=target_id)[0][DB_NAME_KEY]
-            l_steps.append((converter_name,
+            l_steps.append((get_converter_info(converter_name),
                             self.parent.get_format_info(source_id),
                             self.parent.get_format_info(target_id)))
 
@@ -1293,7 +1317,7 @@ def get_conversion_quality(converter_name: str,
 
 
 def get_possible_conversions(in_format: str | int,
-                             out_format: str | int) -> list[tuple[str, FormatInfo, FormatInfo]]:
+                             out_format: str | int) -> list[tuple[ConverterInfo, FormatInfo, FormatInfo]]:
     """Get a list of converters which can perform a conversion from one format to another and disambiguate in the case
     of ambiguous input/output formats
 
@@ -1306,8 +1330,8 @@ def get_possible_conversions(in_format: str | int,
 
     Returns
     -------
-    list[tuple[str, FormatInfo, FormatInfo]]
-        A list of tuples, where each tuple's first item is the name of a converter which can perform a matching
+    list[tuple[ConverterInfo, FormatInfo, FormatInfo]]
+        A list of tuples, where each tuple's first item is the ConverterInfo of a converter which can perform a matching
         conversion, the second is the info of the input format for this conversion, and the third is the info of the
         output format
     """
@@ -1319,7 +1343,7 @@ def get_possible_conversions(in_format: str | int,
 def get_conversion_pathway(in_format: str | int | FormatInfo,
                            out_format: str | int | FormatInfo,
                            only: Literal["all"] | Literal["supported"] | Literal["registered"] = "all"
-                           ) -> list[tuple[str, FormatInfo, FormatInfo]] | None:
+                           ) -> list[tuple[ConverterInfo, FormatInfo, FormatInfo]] | None:
     """Get a list of conversions that can be performed to convert one format to another. This is primarily used when a
     direct conversion is not supported by any individual converter. Only one possible pathway will be returned,
     prioritising pathways which do not lose lose and then re-extrapolate any information stored by some formats and not
@@ -1342,12 +1366,12 @@ def get_conversion_pathway(in_format: str | int | FormatInfo,
 
     Returns
     -------
-    list[tuple[str, FormatInfo, FormatInfo]] | None
+    list[tuple[ConverterInfo, FormatInfo, FormatInfo]] | None
         Will return `None` if no conversion pathway is possible or if the input and output formats are the same.
         Otherwise, will return a list of steps in the pathway, each being a tuple of:
 
-        converter_name : str
-            Name of the converter to perform this step
+        converter_info : ConverterInfo
+            Info on the converter used to perform this step
         in_format : FormatInfo
             Input format for this step (if the first step, will be the input format to this function, otherwise will be
             the output format of the previous step)
@@ -1388,11 +1412,11 @@ def disambiguate_formats(converter_name: str,
     """
 
     # Regularize the converter name so we don't worry about case/spacing mismatches
-    converter_name = regularize_name(converter_name)
+    converter_reg_name = regularize_name(converter_name)
 
     # Get all possible conversions, and see if we only have one for this converter
     l_possible_conversions = [x for x in get_possible_conversions(in_format, out_format)
-                              if x[0] == converter_name]
+                              if x[0].name == converter_reg_name]
 
     if len(l_possible_conversions) == 1:
         return l_possible_conversions[0][1], l_possible_conversions[0][2]
