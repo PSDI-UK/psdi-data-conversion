@@ -19,7 +19,7 @@ from psdi_data_conversion.converters.atomsk import CONVERTER_ATO
 from psdi_data_conversion.converters.c2x import CONVERTER_C2X
 from psdi_data_conversion.converters.openbabel import (CONVERTER_OB, COORD_GEN_KEY, COORD_GEN_QUAL_KEY,
                                                        DEFAULT_COORD_GEN, DEFAULT_COORD_GEN_QUAL)
-from psdi_data_conversion.database import (get_conversion_quality, get_converter_info, get_format_info,
+from psdi_data_conversion.database import (FormatInfo, get_conversion_quality, get_converter_info, get_format_info,
                                            get_in_format_args, get_out_format_args, get_possible_conversions,
                                            get_possible_formats)
 from psdi_data_conversion.main import FileConverterInputException, parse_args
@@ -341,7 +341,7 @@ def test_format_info(capsys):
 
     # Try to get info on an unambiguous format
 
-    in_format = "cif"
+    in_format = "inchi"
     in_format_info = get_format_info(in_format)
     run_with_arg_string(f"-l -f {in_format}")
 
@@ -353,8 +353,19 @@ def test_format_info(capsys):
 
     assert not captured.err
 
+    # Check for basic format information
     assert string_is_present_in_out(f"{in_format_info.id}: {in_format_info.name} "
                                     f"({in_format_info.note})")
+
+    # Check for property information
+    for attr, label in FormatInfo.D_PROPERTY_ATTRS.items():
+        support_status = getattr(in_format_info, attr)
+        if support_status:
+            assert string_is_present_in_out(label + " supported")
+        elif support_status is False:
+            assert string_is_present_in_out(label + " not supported")
+        else:
+            assert string_is_present_in_out(label + " unknown whether or not to be supported")
 
     # Try to get info on an ambiguous format
 
