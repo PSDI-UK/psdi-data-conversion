@@ -623,8 +623,8 @@ def detail_formats_and_possible_converters(from_format: str, to_format: str):
                 print_wrap(f"A chained conversion is possible from {from_format} to {to_format} using "
                            f"{converter_type_needed} converters:")
 
-                for step in pathway:
-                    print_wrap(f"- Convert from {step[1].name} to {step[2].name} with {step[0]}")
+                for i, step in enumerate(pathway):
+                    print_wrap(f"{i+1}) Convert from {step[1].name} to {step[2].name} with {step[0].pretty_name}")
 
                 print()
                 print_wrap("Chained conversion is not yet supported by this utility, but will be added soon")
