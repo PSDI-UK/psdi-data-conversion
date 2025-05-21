@@ -153,11 +153,6 @@ QUAL_2D_LABEL = "2D atomic coordinates are"
 QUAL_3D_KEY = "three_dim"
 QUAL_3D_LABEL = "2D atomic coordinates are"
 
-D_QUAL_LABELS = {QUAL_COMP_KEY: QUAL_COMP_LABEL,
-                 QUAL_CONN_KEY: QUAL_CONN_LABEL,
-                 QUAL_2D_KEY: QUAL_2D_LABEL,
-                 QUAL_3D_KEY: QUAL_3D_LABEL}
-
 # Notes for conversion quality
 QUAL_NOTE_IN_UNKNOWN = ("Potential data extrapolation: {} represented in the output format but its representation in "
                         "the input format is unknown")

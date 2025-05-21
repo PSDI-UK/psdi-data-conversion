@@ -6,6 +6,8 @@
 
 - Changed the keyword arguments `upload_dir` and `download_dir` to `input_dir` and `output_dir` respectively
 - Formats can now be specified case-insensitively
+- When requesting details on a format through the command-line interface, details will be provided on which molecular
+  properties it supports (e.g. whether or not it supports connections information)
 - Added function `database.get_conversion_pathway` which can be used to get possible conversion routes between formats
   a direct conversion isn't possible with any converter
 

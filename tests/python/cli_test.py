@@ -19,9 +19,9 @@ from psdi_data_conversion.converters.atomsk import CONVERTER_ATO
 from psdi_data_conversion.converters.c2x import CONVERTER_C2X
 from psdi_data_conversion.converters.openbabel import (CONVERTER_OB, COORD_GEN_KEY, COORD_GEN_QUAL_KEY,
                                                        DEFAULT_COORD_GEN, DEFAULT_COORD_GEN_QUAL)
-from psdi_data_conversion.database import (get_conversion_quality, get_converter_info, get_format_info,
-                                           get_in_format_args, get_out_format_args, get_possible_conversions,
-                                           get_possible_formats)
+from psdi_data_conversion.database import (FormatInfo, get_conversion_pathway, get_conversion_quality,
+                                           get_converter_info, get_format_info, get_in_format_args,
+                                           get_out_format_args, get_possible_conversions, get_possible_formats)
 from psdi_data_conversion.main import FileConverterInputException, parse_args
 from psdi_data_conversion.testing.conversion_test_specs import l_cla_test_specs
 from psdi_data_conversion.testing.utils import run_test_conversion_with_cla, run_with_arg_string
@@ -268,12 +268,40 @@ def test_get_conversions(capsys):
     assert bool(l_conversions) == string_is_present_in_out("The following registered converters can convert from "
                                                            f"{in_format} to {out_format}:")
 
-    for name, _, _ in l_conversions:
-        if name in L_REGISTERED_CONVERTERS:
-            assert string_is_present_in_out(get_registered_converter_class(name).name)
+    for converter_info, _, _ in l_conversions:
+        if converter_info.name in L_REGISTERED_CONVERTERS:
+            assert string_is_present_in_out(converter_info.pretty_name)
     for name in L_REGISTERED_CONVERTERS:
-        if name not in [x[0] for x in l_conversions]:
-            assert not string_is_present_in_out(get_registered_converter_class(name).name)
+        converter_info = get_converter_info(name)
+        if converter_info not in [x[0] for x in l_conversions]:
+            assert not string_is_present_in_out(converter_info.pretty_name)
+
+
+def test_get_chained(capsys):
+    """Test the ability to get a pathway for a chained conversion
+    """
+    in_format = "mol-1"
+    out_format = "inchi"
+    pathway = get_conversion_pathway(in_format, out_format)
+    assert len(pathway) > 1
+
+    run_with_arg_string(f"-l -f {in_format} -t {out_format}")
+    captured = capsys.readouterr()
+    compressed_out: str = captured.out.replace("\n", "").replace(" ", "")
+
+    def string_is_present_in_out(s: str) -> bool:
+        return s.replace("\n", " ").replace(" ", "") in compressed_out
+
+    assert not captured.err
+
+    assert string_is_present_in_out(f"No direct conversions are possible from {in_format} to {out_format}")
+
+    assert string_is_present_in_out(f"A chained conversion is possible from {in_format} to {out_format} using "
+                                    f"registered converters:")
+
+    for i, step in enumerate(pathway):
+        assert string_is_present_in_out(f"{i+1}) Convert from {step[1].name} to {step[2].name} with "
+                                        f"{step[0].pretty_name}")
 
 
 def test_conversion_info(capsys):
@@ -341,7 +369,7 @@ def test_format_info(capsys):
 
     # Try to get info on an unambiguous format
 
-    in_format = "cif"
+    in_format = "inchi"
     in_format_info = get_format_info(in_format)
     run_with_arg_string(f"-l -f {in_format}")
 
@@ -353,8 +381,19 @@ def test_format_info(capsys):
 
     assert not captured.err
 
+    # Check for basic format information
     assert string_is_present_in_out(f"{in_format_info.id}: {in_format_info.name} "
                                     f"({in_format_info.note})")
+
+    # Check for property information
+    for attr, label in FormatInfo.D_PROPERTY_ATTRS.items():
+        support_status = getattr(in_format_info, attr)
+        if support_status:
+            assert string_is_present_in_out(label + " supported")
+        elif support_status is False:
+            assert string_is_present_in_out(label + " not supported")
+        else:
+            assert string_is_present_in_out(label + " unknown whether or not to be supported")
 
     # Try to get info on an ambiguous format
 

@@ -213,7 +213,7 @@ def test_conversion_table():
 
     # Check we can get a list of possible converters for a given conversion
     l_possible_conversions = get_possible_conversions("pdb", "cif")
-    assert (regularize_name(CONVERTER_OB), get_format_info("pdb", which=0),
+    assert (get_converter_info(CONVERTER_OB), get_format_info("pdb", which=0),
             get_format_info("cif", which=0)) in l_possible_conversions
 
     # Check that we can get a list of possible input/outpat formats for a given converter
@@ -232,8 +232,8 @@ def test_conversion_pathways():
     # Check that we get the expected single-step conversion for a known direct conversion
     cif_to_inchi_path = get_conversion_pathway("cif", "inchi", only="registered")
     assert len(cif_to_inchi_path) == 1
-    converter_name, in_format_info, out_format_info = cif_to_inchi_path[0]
-    assert converter_name == regularize_name(CONVERTER_OB)
+    converter_info, in_format_info, out_format_info = cif_to_inchi_path[0]
+    assert converter_info.name == regularize_name(CONVERTER_OB)
     assert in_format_info.name == "cif"
     assert out_format_info.name == "inchi"
 
