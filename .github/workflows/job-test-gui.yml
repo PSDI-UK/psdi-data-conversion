@@ -55,4 +55,4 @@ jobs:
         run: pytest tests/gui
       - name: Run simple GUI test
         if: ${{ inputs.simple }}
-        run: pytest tests/gui/gui_test.py::test_conversions[Standard Single Test]
+        run: pytest 'tests/gui/gui_test.py::test_conversions[Standard Single Test]'
