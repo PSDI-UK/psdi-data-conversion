@@ -553,7 +553,15 @@ def detail_format(format_name: str):
                    "necessary to explicitly specify which you want to use when calling this script, e.g. with "
                    f"'-f {format_name}-0' - see the disambiguated names in the list below:", newline=True)
 
+    first = True
     for format_info in l_format_info:
+
+        # Add linebreak before each after the first
+        if first:
+            first = False
+        else:
+            print()
+
         # Print the format's basic details
         print_wrap(f"{format_info.id}: {format_info.disambiguated_name} ({format_info.note})")
 
@@ -597,12 +605,12 @@ def detail_formats_and_possible_converters(from_format: str, to_format: str):
     detail_format(from_format)
     print()
     detail_format(to_format)
-    print()
 
     l_possible_conversions = get_possible_conversions(from_format, to_format)
 
     # Check if no direct conversions are possible, and if formats are specified uniquely, recommend a chained conversion
     if len(l_possible_conversions) == 0:
+        print()
         print_wrap(f"No direct conversions are possible from {from_format} to {to_format}")
         print()
 
@@ -647,6 +655,7 @@ def detail_formats_and_possible_converters(from_format: str, to_format: str):
     # Loop over all possible combinations of formats
 
     for possible_from_format, possible_to_format in product(l_from_formats, l_to_formats):
+        print()
 
         from_name = possible_from_format.disambiguated_name
         to_name = possible_to_format.disambiguated_name
@@ -660,7 +669,7 @@ def detail_formats_and_possible_converters(from_format: str, to_format: str):
         l_possible_unregistered_converters = [x[0].pretty_name
                                               for x in l_conversions_matching_formats
                                               if x[0].name in L_SUPPORTED_CONVERTERS
-                                              and x[0] not in L_REGISTERED_CONVERTERS]
+                                              and x[0].name not in L_REGISTERED_CONVERTERS]
 
         if len(l_possible_registered_converters)+len(l_possible_unregistered_converters) == 0:
             print_wrap(f"No converters are available which can perform a conversion from {from_name} to "
