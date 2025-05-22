@@ -8,10 +8,14 @@ CONVERTER_ATO = "Atomsk"
 l_names = ["MOLDY", "CIF", "PDB", "InChI"]
 edges = [(0, 1), (0, 2), (1, 2), (1, 2), (1, 3), (2, 3)]
 l_converters = [CONVERTER_ATO, CONVERTER_ATO, CONVERTER_ATO, CONVERTER_OB, CONVERTER_OB, CONVERTER_OB]
-g = ig.Graph(len(l_names), edges, vertex_attrs={"name": l_names}, edge_attrs={"converter": l_converters})
+g = ig.Graph(len(l_names), edges, vertex_attrs={"label": l_names}, edge_attrs={"label": l_converters})
 
 # Set title for the graph
 g["title"] = "Example conversions"
+
+# Set up the desired layout of the graph
+layout = g.layout(layout="grid")
+layout.rotate(-45)
 
 # Plot in matplotlib
 # Note that attributes can be set globally (e.g. vertex_size), or set individually using arrays (e.g. vertex_color)
@@ -19,15 +23,15 @@ fig, ax = plt.subplots(figsize=(5, 5))
 ig.plot(
     g,
     target=ax,
-    # layout="circle",  # print nodes in a circular layout
+    layout=layout,
     vertex_size=30,
     vertex_color="steelblue",
     vertex_frame_width=4.0,
     vertex_frame_color="white",
-    vertex_label=g.vs["name"],
-    vertex_label_size=7.0,
-    # edge_width=[2 if married else 1 for married in g.es["married"]],
-    edge_color=["#7142cf" if converter == CONVERTER_ATO else "#AAA" for converter in g.es["converter"]]
+    vertex_label_size=18,
+    vertex_label_dist=1.5,
+    edge_width=2,
+    edge_color=["red" if converter == CONVERTER_ATO else "blue" for converter in g.es["label"]]
 )
 
 plt.show()
