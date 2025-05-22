@@ -7,8 +7,19 @@ run-name: Test GUI
 
 on:
   workflow_call:
-  # Allows you to run this workflow manually from the Actions tab
+    inputs:
+      simple:
+        description: "If true, will only run a single test conversion"
+        required: false
+        default: false
+        type: boolean
   workflow_dispatch:
+    inputs:
+      simple:
+        description: "If true, will only run a single test conversion"
+        required: false
+        default: false
+        type: boolean
 
 permissions:
   contents: read
@@ -30,4 +41,8 @@ jobs:
           python -m pip install --upgrade pip
           pip install .[gui-test]
       - name: Run GUI tests
+        if: !inputs.simple
         run: pytest tests/gui
+      - name: Run simple GUI test
+        if: inputs.simple
+        run: pytest tests/gui/gui_test.py::test_conversions[Standard Single Test]
