@@ -24,3 +24,5 @@ jobs:
   test-gui:
     if: github.event.pull_request.draft == false
     uses: ./.github/workflows/job-test-gui.yml
+    with:
+      simple: true
