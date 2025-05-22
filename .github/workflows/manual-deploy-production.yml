@@ -7,8 +7,8 @@
 # repo whose tag corresponds to the highest version number, while only considering tags of the form 'v*.*.*',
 # where '*' signify non-negative integers.
 
-name: CI - Deploy to production cluster
-run-name: CI - Deploy to production cluster
+name: Manual Trigger - Deploy to production cluster
+run-name: Manual Trigger - Deploy to production cluster
 on:
   workflow_dispatch:
 
