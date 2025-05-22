@@ -52,7 +52,15 @@ jobs:
           pip install .[gui-test]
       - name: Run GUI tests
         if: ${{ ! inputs.simple }}
-        run: pytest tests/gui
+        run: |
+          if ${{ inputs.prod }}; then
+            export ORIGIN=https://data-conversion.psdi.ac.uk/
+          fi
+          pytest tests/gui
       - name: Run simple GUI test
         if: ${{ inputs.simple }}
-        run: pytest 'tests/gui/gui_test.py::test_conversions[Standard Single Test]'
+        run: |
+          if ${{ inputs.prod }}; then
+            export ORIGIN=https://data-conversion.psdi.ac.uk/
+          fi
+          pytest 'tests/gui/gui_test.py::test_conversions[Standard Single Test]'
