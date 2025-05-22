@@ -597,12 +597,12 @@ def detail_formats_and_possible_converters(from_format: str, to_format: str):
     detail_format(from_format)
     print()
     detail_format(to_format)
-    print()
 
     l_possible_conversions = get_possible_conversions(from_format, to_format)
 
     # Check if no direct conversions are possible, and if formats are specified uniquely, recommend a chained conversion
     if len(l_possible_conversions) == 0:
+        print()
         print_wrap(f"No direct conversions are possible from {from_format} to {to_format}")
         print()
 
@@ -647,6 +647,7 @@ def detail_formats_and_possible_converters(from_format: str, to_format: str):
     # Loop over all possible combinations of formats
 
     for possible_from_format, possible_to_format in product(l_from_formats, l_to_formats):
+        print()
 
         from_name = possible_from_format.disambiguated_name
         to_name = possible_to_format.disambiguated_name
