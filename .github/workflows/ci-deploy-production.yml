@@ -51,3 +51,11 @@ jobs:
     with:
       container_tag: ${{ needs.get-latest-release-tag.outputs.tag }}
       environment: production
+
+  # Run a simple test on prod to ensure nothing is broken
+  test-prod:
+    needs: deploy-stfc-production-k8s
+    uses: ./.github/workflows/job-test-gui.yml
+    with:
+      simple: true
+      prod: true
