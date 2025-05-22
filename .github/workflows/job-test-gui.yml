@@ -13,10 +13,20 @@ on:
         required: false
         default: false
         type: boolean
+      prod:
+        description: "If true, will run test on the deployed site instead of local"
+        required: false
+        default: false
+        type: boolean
   workflow_dispatch:
     inputs:
       simple:
         description: "If true, will only run a single test conversion"
+        required: false
+        default: false
+        type: boolean
+      prod:
+        description: "If true, will run test on the deployed site instead of local"
         required: false
         default: false
         type: boolean
