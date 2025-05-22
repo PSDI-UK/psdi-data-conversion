@@ -553,7 +553,15 @@ def detail_format(format_name: str):
                    "necessary to explicitly specify which you want to use when calling this script, e.g. with "
                    f"'-f {format_name}-0' - see the disambiguated names in the list below:", newline=True)
 
+    first = True
     for format_info in l_format_info:
+
+        # Add linebreak before each after the first
+        if first:
+            first = False
+        else:
+            print()
+
         # Print the format's basic details
         print_wrap(f"{format_info.id}: {format_info.disambiguated_name} ({format_info.note})")
 
