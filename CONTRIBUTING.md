@@ -21,7 +21,7 @@ The following tasks should be completed before merging a release candidate branc
   - Otherwise, if any features are added, or any breaking changes are made before version 1.0.0, the version will advance to the next minor version - `X.Y.Z` to `X.(Y+1).0`.
   - Otherwise, the version will advance to the next bugfix version - `X.Y.Z` to `X.Y.(Z+1)`.
 
-- Create a release candidate branch with the name `rc-<target-version>` (e.g. `rc-1.2.3`). This should trigger an automated workflow to create a Pull Request from this branch to`release`. You may wish to edit the PR's name and/or description.
+- Create a release candidate branch with the name `rc-<target-version>` (e.g. `rc-1.2.3`), branched off of `main`. This should trigger an automated workflow to create a Pull Request from this branch to `release`. You may wish to edit the PR's name and/or description.
 
 - Tagging of the release is handled by an automated workflow which determines the new version based on the previous version and the commit history, looking for any commits which indicate a feature addition or breaking change using [Angular convention](https://github.com/conventional-changelog/conventional-changelog/tree/master/packages/conventional-changelog-angular#commit-message-format). Since we don't practice this regularly, you'll need to make a commit with this style to indicate any feature additions or breaking changes (this can be done when updating the version in the next step):
 
@@ -53,7 +53,7 @@ The following tasks should be completed before merging a release candidate branc
 
 - Ensure that all automated tests and checks pass - these should be run automatically on the PR opened above
 
-- Manually test the local web interface
+- Manually test the web interface. At this stage, it should be deployed to dev at https://data-conversion-dev.psdi.ac.uk/ (requires VPN to access), and it can be run locally as well
 
   - If there have been any changes to the Python backend, run a test that a file can be converted successfully and produces a proper log
   - If there have been any changes to the web frontend, check the appearance of the site to ensure that it looks as desired. Test the Accessibility page to ensure that changes there work properly, are saved when requested and apply to other pages
@@ -65,7 +65,10 @@ If any of these tasks fail and require changes, make the needed changes and then
 Then, follow the following steps to make the release:
 
 1. Merge the pull request to `release`. The release candidate branch can be safely deleted. This should trigger an automated pipeline to tag, publish, and deploy and the new code.
-2. Merge `release` into `main` via PR (obviously don't delete `release` - if it even gives you the option to, something has gone wrong in the project rulesets, so report this).
+2. After the above pipeline finishes, confirm that the changes are shown live on the staging site at https://data-conversion-staging.psdi.ac.uk/ by checking the version shown at the bottom of the Documentation page. If necessary, double-check that nothing has broken due to the slight changes in appearance between the dev and staging sites
+3. Manually trigger the `CI - Deploy to production cluster` workflow on the `release` branch to deploy the site from the staging to release environment, which will make the changes visible to users
+4. After completion of the workflow, confirm that the changes are live on the production site at https://data-conversion.psdi.ac.uk/ by checking the version shown at the bottom of the Documentation page
+5. Merge `release` into `main` via PR (obviously don't delete `release` - if it even gives you the option to, something has gone wrong in the project rulesets, so report this).
 
 ## Changelog
 
@@ -377,10 +380,11 @@ The management page can also be used to add or remove collaborators through the 
 ## Deployment
 
 The `ci-main.yml`, `ci-release.yml` and `ci-deploy-production.yml` files in the `.github/workflows` directory house workflows which deploy
-the data conversion service to [Kubernetes](https://kubernetes.io/) clusters hosted in STFC.  There are three clusters, each of which correspond
+the data conversion service to [Kubernetes](https://kubernetes.io/) clusters hosted in STFC. There are three clusters, each of which correspond
 to a different deployment _environment_ for the data conversion service. The three environments are `development`, `staging` and `production`.
 Deployment to `development`, `staging` and `production` is done from either the `main` or `release` branch. The table below indicates which
 branch deploys to which environment. The table also shows, for each environment:
+
 - the URL on which the service is exposed once it is successfully deployed
 - the accessibility of the service. Depending on the environment the service is either accessible to the _public_ at the specified URL,
   or accessible only to IP addresses within the _STFC and University of Southampton subnets_
@@ -388,11 +392,11 @@ branch deploys to which environment. The table also shows, for each environment:
   upon a commit to the source branch which passes the unit-tests job; or results from a _manual_ invocation of a workflow by a
   developer.
 
-| Environment      | URL                                        | Accessibility                              | Source branch  | Deployment trigger    |
-|------------------|--------------------------------------------|--------------------------------------------|----------------|-----------------------|
-| `development`    | https://data-conversion-dev.psdi.ac.uk     | STFC and University of Southampton subnets | `main`         | Automatic             |
-| `staging`        | https://data-conversion-staging.psdi.ac.uk | STFC and University of Southampton subnets | `release`      | Automatic             |
-| `production`     | https://data-conversion.psdi.ac.uk         | public                                     | `release`      | Manual                |
+| Environment   | URL                                        | Accessibility                              | Source branch | Deployment trigger |
+| ------------- | ------------------------------------------ | ------------------------------------------ | ------------- | ------------------ |
+| `development` | https://data-conversion-dev.psdi.ac.uk     | STFC and University of Southampton subnets | `main`        | Automatic          |
+| `staging`     | https://data-conversion-staging.psdi.ac.uk | STFC and University of Southampton subnets | `release`     | Automatic          |
+| `production`  | https://data-conversion.psdi.ac.uk         | public                                     | `release`     | Manual             |
 
 Thus the `main` is automatically deployed to the `development` environment, and the `release` branch is automatically deployed to the `staging`
 environment. However deployment from the `release` branch to the `production` environment is a manual process. This is to allow developers to
@@ -416,7 +420,7 @@ listed on the left named `CI - Deploy to production cluster`. This is the workfl
 version to the `production` environment. Clicking on the link to this workflow gives
 [a list of recent invocations](https://github.com/PSDI-UK/psdi-data-conversion/actions/workflows/ci-deploy-production.yml) of the workflow.
 Moreover, a light blue banner appears which says `This workflow has a workflow_dispatch event trigger` on the left and has a `Run workflow` button
-on the right. To invoke the workflow, press this button, *select the `release` branch* as the option for `Use workflow from` dropdown menu, and
+on the right. To invoke the workflow, press this button, _select the `release` branch_ as the option for `Use workflow from` dropdown menu, and
 then finally click the green `Run workflow` button. Once the workflow has been invoked you should be able to see its progress in real time on the
 same page.
 
@@ -431,13 +435,11 @@ the `<env>` environment using the Kubernetes manifests stored in the `deploy`/<e
 
 The workflow relies on several repository secrets, namely `KUBECONF`, `IMAGEPULLSECRET`, `CERTIFICATE_PRIVATE_KEY` and `CERTIFICATE_PEM` for
 various purposes.
+
 - `KUBECONF` provides Kubernetes-specific information pertaining to the the Kubernetes cluster for the target environment. Note that
-  `KUBECONF` is an _environment_-dependent secret, taking different values for each of the environments. 
+  `KUBECONF` is an _environment_-dependent secret, taking different values for each of the environments.
 - `IMAGEPULLSECRET` enables the container image housing the data conversion service to be pulled from this GitHub repo to the PSDI runner
 - `CERTIFICATE_PRIVATE_KEY` and `CERTIFICATE_PEM` pertain to the TLS certificates for the service
-For further information see the `job-deploy-k8s.yml` file and aforementioned Kubernetes manifests.
-
-
-
+  For further information see the `job-deploy-k8s.yml` file and aforementioned Kubernetes manifests.
 
 The server can be configured by editing the environmental variables set in `Dockerfile`.
