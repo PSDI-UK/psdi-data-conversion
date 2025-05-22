@@ -660,7 +660,7 @@ def detail_formats_and_possible_converters(from_format: str, to_format: str):
         l_possible_unregistered_converters = [x[0].pretty_name
                                               for x in l_conversions_matching_formats
                                               if x[0].name in L_SUPPORTED_CONVERTERS
-                                              and x[0] not in L_REGISTERED_CONVERTERS]
+                                              and x[0].name not in L_REGISTERED_CONVERTERS]
 
         if len(l_possible_registered_converters)+len(l_possible_unregistered_converters) == 0:
             print_wrap(f"No converters are available which can perform a conversion from {from_name} to "
