@@ -1,8 +1,14 @@
+import os
+
 import igraph as ig
 import matplotlib.pyplot as plt
 
 CONVERTER_OB = "Open Babel"
 CONVERTER_ATO = "Atomsk"
+
+doc_dir = "./doc"
+img_dir = os.path.join(doc_dir, "img")
+os.makedirs(img_dir, exist_ok=True)
 
 # Construct a graph with 4 vertices
 l_names = ["MOLDY", "CIF", "PDB", "InChI"]
@@ -18,7 +24,6 @@ layout = g.layout(layout="grid")
 layout.rotate(-45)
 
 # Plot in matplotlib
-# Note that attributes can be set globally (e.g. vertex_size), or set individually using arrays (e.g. vertex_color)
 fig, ax = plt.subplots(figsize=(5, 5))
 ig.plot(
     g,
@@ -31,18 +36,36 @@ ig.plot(
     vertex_label_size=18,
     vertex_label_dist=1.5,
     edge_width=2,
-    edge_color=["red" if converter == CONVERTER_ATO else "blue" for converter in g.es["label"]]
+    edge_color=["red" if converter == CONVERTER_ATO else "blue" if converter == CONVERTER_OB
+                else "green" for converter in g.es["label"]]
 )
 
-plt.show()
-
-exit()
+# plt.show()
 
 # Save the graph as an image file
-fig.savefig('social_network.png')
-fig.savefig('social_network.jpg')
-fig.savefig('social_network.pdf')
+fig.savefig(os.path.join(img_dir, "simple_graph.svg"))
 
-# Export and import a graph as a GML file.
-g.save("social_network.gml")
-g = ig.load("social_network.gml")
+# Add a node and edge
+g.add_vertex(label="Custom")
+g.add_edge(3, 4, label="Custom")
+layout.append((2, 0))
+
+# Plot the new graph
+fig, ax = plt.subplots(figsize=(7, 5))
+ig.plot(
+    g,
+    target=ax,
+    layout=layout,
+    vertex_size=30,
+    vertex_color="steelblue",
+    vertex_frame_width=4.0,
+    vertex_frame_color="white",
+    vertex_label_size=18,
+    vertex_label_dist=1.5,
+    edge_width=2,
+    edge_color=["red" if converter == CONVERTER_ATO else "blue" if converter == CONVERTER_OB
+                else "green" for converter in g.es["label"]]
+)
+
+# Save the new graph
+fig.savefig(os.path.join(img_dir, "simple_graph_with_custom.svg"))
