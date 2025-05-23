@@ -3,6 +3,8 @@ import os
 import igraph as ig
 import matplotlib.pyplot as plt
 
+from psdi_data_conversion.database import get_database
+
 CONVERTER_OB = "Open Babel"
 CONVERTER_ATO = "Atomsk"
 
@@ -69,3 +71,24 @@ ig.plot(
 
 # Save the new graph
 fig.savefig(os.path.join(img_dir, "simple_graph_with_custom.svg"))
+
+# Now let's make a graph of the actual formats and conversions
+full_graph = get_database().conversions_table.graph
+fig, ax = plt.subplots(figsize=(8, 8))
+
+ig.plot(
+    full_graph,
+    target=ax,
+    layout="auto",
+    vertex_size=2,
+    vertex_color="black",
+    vertex_label_size=4,
+    vertex_label_dist=0,
+    edge_width=0.1,
+    edge_color=["red" if converter == "atomsk" else "blue" if converter == "openbabel"
+                else "green" if converter == "c2x" else "grey" for converter in full_graph.es["name"]],
+    edge_arrow_size=0,
+    edge_arrow_width=0,
+)
+
+plt.show()
