@@ -5,22 +5,20 @@ Created 2024-12-10 by Bryan Gillis.
 Class and functions to perform file conversion
 """
 
-from dataclasses import dataclass, field
-import json
 import glob
 import importlib
+import json
 import os
 import sys
 import traceback
-from typing import Any, Callable, NamedTuple
-from multiprocessing import Lock
-from psdi_data_conversion import log_utility
 from collections.abc import Callable
 from dataclasses import dataclass, field
+from multiprocessing import Lock
 from tempfile import TemporaryDirectory
 from typing import Any, NamedTuple
 
 from psdi_data_conversion import constants as const
+from psdi_data_conversion import log_utility
 from psdi_data_conversion.converters import base
 from psdi_data_conversion.converters.openbabel import CONVERTER_OB
 from psdi_data_conversion.file_io import (is_archive, is_supported_archive, pack_zip_or_tar, split_archive_ext,
@@ -184,9 +182,9 @@ def get_converter(*args, name=const.CONVERTER_DEFAULT, **converter_kwargs) -> ba
     use_envvars : bool
         If set to True, environment variables will be checked for any that set options for this class and used,
         default False
-    upload_dir : str
+    input_dir : str
         The location of input files relative to the current directory
-    download_dir : str
+    output_dir : str
         The location of output files relative to the current directory
     max_file_size : float
         The maximum allowed file size for input/output files, in MB, default 1 MB for Open Babel, unlimited for other
@@ -315,11 +313,18 @@ def check_from_format(filename: str,
     return False
 
 
+def _run_single_file_conversion(*args, **kwargs):
+    """Run a conversion on a single file, after all arguments have been checked
+    """
+    return get_converter(*args, **kwargs).run()
+
+
 def run_converter(filename: str,
                   to_format: str,
                   *args,
                   from_format: str | None = None,
-                  download_dir=const.DEFAULT_DOWNLOAD_DIR,
+                  input_dir=const.DEFAULT_INPUT_DIR,
+                  output_dir=const.DEFAULT_OUTPUT_DIR,
                   max_file_size=None,
                   log_file: str | None = None,
                   log_mode=const.LOG_SIMPLE,
@@ -351,9 +356,9 @@ def run_converter(filename: str,
     use_envvars : bool
         If set to True, environment variables will be checked for any that set options for this class and used,
         default False
-    upload_dir : str
+    input_dir : str
         The location of input files relative to the current directory
-    download_dir : str
+    output_dir : str
         The location of output files relative to the current directory
     strict : bool
         If True and `from_format` is not None, will fail if any input file has the wrong extension (including files
@@ -410,7 +415,12 @@ def run_converter(filename: str,
     # converter class, so it needs to be set up here to match what will be set up there
     if log_file is None:
         base_filename = os.path.basename(split_archive_ext(filename)[0])
-        log_file = os.path.join(download_dir, base_filename + const.OUTPUT_LOG_EXT)
+        log_file = os.path.join(output_dir, base_filename + const.OUTPUT_LOG_EXT)
+
+    if os.path.exists(filename):
+        qualified_filename = filename
+    else:
+        qualified_filename = os.path.join(input_dir, filename)
 
     # Check if the filename is for an archive file, and handle appropriately
 
@@ -425,15 +435,16 @@ def run_converter(filename: str,
         # Not an archive, so just get and run the converter straightforwardly
         if from_format is not None:
             check_from_format(filename, from_format, strict=strict)
-        l_run_output.append(get_converter(filename,
+        l_run_output.append(_run_single_file_conversion(filename,
                             to_format,
                             *args,
                             from_format=from_format,
-                            download_dir=download_dir,
+                            input_dir=input_dir,
+                            output_dir=output_dir,
                             max_file_size=max_file_size,
                             log_file=log_file,
                             log_mode=log_mode,
-                            **converter_kwargs).run())
+                            **converter_kwargs))
 
     elif not is_supported_archive(filename):
         raise base.FileConverterInputException(f"{filename} is an unsupported archive type. Supported types are: "
@@ -443,7 +454,7 @@ def run_converter(filename: str,
         # The filename is of a supported archive type. Make a temporary directory to extract its contents
         # to, then run the converter on each file extracted
         with TemporaryDirectory() as extract_dir:
-            l_filenames = unpack_zip_or_tar(filename, extract_dir=extract_dir)
+            l_filenames = unpack_zip_or_tar(qualified_filename, extract_dir=extract_dir)
 
             # Check for no files in archive
             if len(l_filenames) == 0:
@@ -468,15 +479,15 @@ def run_converter(filename: str,
                 individual_log_mode = log_mode if log_mode != const.LOG_FULL else const.LOG_FULL_FORCE
 
                 try:
-                    individual_run_output = get_converter(extracted_filename,
-                                                          to_format,
-                                                          *args,
-                                                          from_format=from_format,
-                                                          download_dir=download_dir,
-                                                          log_file=individual_log_file,
-                                                          log_mode=individual_log_mode,
-                                                          max_file_size=remaining_file_size,
-                                                          **converter_kwargs).run()
+                    individual_run_output = _run_single_file_conversion(extracted_filename,
+                                                                        to_format,
+                                                                        *args,
+                                                                        from_format=from_format,
+                                                                        output_dir=output_dir,
+                                                                        log_file=individual_log_file,
+                                                                        log_mode=individual_log_mode,
+                                                                        max_file_size=remaining_file_size,
+                                                                        **converter_kwargs)
                 except base.FileConverterAbortException as e:
                     # If the run fails, create a run output object to indicate that
                     individual_run_output = base.FileConversionResult(log_filename=individual_log_file,
@@ -573,12 +584,13 @@ def run_converter(filename: str,
                 "input_filename": in_filename,
                 "output_filename": run_output.output_filename[l_index:r_index],
                 "input_size": input_size,
-                "output_size": output_size }
+                "output_size": output_size}
 
-            for key in [ "converter", "coordinates", "coordOption", "from_flags",
-                "to_flags", "from_arg_flags", "to_arg_flags" ]:
+            for key in ["converter", "coordinates", "coordOption", "from_flags",
+                        "to_flags", "from_arg_flags", "to_arg_flags"]:
                 if key in converter_kwargs['data'] and converter_kwargs['data'][key] != "" and not \
-                    ((key == "coordinates" or key == "coordOption") and converter_kwargs['data']['coordinates'] == "neither") :
+                        ((key == "coordinates" or key == "coordOption") and
+                         converter_kwargs['data']['coordinates'] == "neither"):
                     entry[key] = converter_kwargs['data'][key]
 
             entry["outcome"] = outcome
@@ -594,6 +606,7 @@ def run_converter(filename: str,
                                   "logging_error": "An error occurred during logging of conversion information."})
 
     return run_output
+
 
 def set_size_units(size):
     if size >= 1024:

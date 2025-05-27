@@ -206,8 +206,8 @@ class FileConverter:
                  data: dict[str, Any] | None = None,
                  abort_callback: Callable[[int], None] = abort_raise,
                  use_envvars=False,
-                 upload_dir=const.DEFAULT_UPLOAD_DIR,
-                 download_dir=const.DEFAULT_DOWNLOAD_DIR,
+                 input_dir=const.DEFAULT_INPUT_DIR,
+                 output_dir=const.DEFAULT_OUTPUT_DIR,
                  max_file_size=None,
                  no_check=False,
                  log_file: str | None = None,
@@ -235,9 +235,9 @@ class FileConverter:
         use_envvars : bool
             If set to True, environment variables will be checked for any that set options for this class and used,
             default False
-        upload_dir : str
+        input_dir : str
             The location of input files relative to the current directory
-        download_dir : str
+        output_dir : str
             The location of output files relative to the current directory
         max_file_size : float
             The maximum allowed file size for input/output files, in MB. If 0, will be unlimited. Default 0 (unlimited)
@@ -296,8 +296,8 @@ class FileConverter:
             # Set member variables directly from input
             self.in_filename = filename
             self.to_format = to_format
-            self.upload_dir = upload_dir
-            self.download_dir = download_dir
+            self.input_dir = input_dir
+            self.output_dir = output_dir
             self.log_file = log_file
             self.log_mode = log_mode
             self.log_level = log_level
@@ -328,17 +328,22 @@ class FileConverter:
             self.err: str | None = None
             self.quality: str | None = None
 
-            # Create directory 'uploads' if not extant.
-            if not os.path.exists(self.upload_dir):
-                os.makedirs(self.upload_dir, exist_ok=True)
+            # Determine if the filename is fully-qualified, and if not, find it in the upload dir
+            if not os.path.exists(self.in_filename):
+                qualified_in_filename = os.path.join(self.input_dir, self.in_filename)
+                if os.path.exists(qualified_in_filename):
+                    self.in_filename = qualified_in_filename
+                else:
+                    FileConverterInputException(f"Input file {self.in_filename} not found, either absolute or relative "
+                                                f"to {self.input_dir}")
 
             # Create directory 'downloads' if not extant.
-            if not os.path.exists(self.download_dir):
-                os.makedirs(self.download_dir, exist_ok=True)
+            if not os.path.exists(self.output_dir):
+                os.makedirs(self.output_dir, exist_ok=True)
 
             self.local_filename = os.path.split(self.in_filename)[1]
             self.filename_base = os.path.splitext(self.local_filename)[0]
-            self.out_filename = f"{self.download_dir}/{self.filename_base}.{self.to_format_info.name}"
+            self.out_filename = f"{self.output_dir}/{self.filename_base}.{self.to_format_info.name}"
 
             # Set up files to log to
             self._setup_loggers()
@@ -441,7 +446,7 @@ class FileConverter:
         if self.log_mode == const.LOG_FULL_FORCE:
             self.output_log = self.log_file
         else:
-            self.output_log = os.path.join(self.download_dir, f"{self.filename_base}{const.OUTPUT_LOG_EXT}")
+            self.output_log = os.path.join(self.output_dir, f"{self.filename_base}{const.OUTPUT_LOG_EXT}")
 
         # If any previous log exists, delete it
         if os.path.exists(self.output_log):

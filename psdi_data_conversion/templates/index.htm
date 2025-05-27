@@ -9,7 +9,7 @@
 <head>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>PSDI Data Conversion Service</title>
-  <link rel="icon" type="image/x-icon" href="./static/img/psdi-icon-dark.svg">
+  <link rel="icon" type="image/x-icon" href="{{url_for('static', filename='img/psdi-icon-dark.svg')}}">
   <link href="https://fonts.googleapis.com/css?family=Lato:400" rel="stylesheet" type="text/css">
   <link href="https://fonts.googleapis.com/css?family=Open+Sans+Condensed:700" rel="stylesheet" type="text/css">
   <link href="https://fonts.googleapis.com/css?family=Open+Sans:400" rel="stylesheet" type="text/css">
@@ -20,6 +20,10 @@
     crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/jquery.dirtyforms/2.0.0/jquery.dirtyforms.min.js"></script>
 
+  <script type="module" src="{{url_for('static', filename='javascript/load_accessibility.js')}}"></script>
+  <script type="module" src="{{url_for('static', filename='javascript/common.js')}}"></script>
+  <script type="module" src="{{url_for('static', filename='javascript/psdi-common.js')}}"></script>
+
   <script>
     const token = "{{token}}";
     const max_file_size = "{{max_file_size}}";
@@ -29,8 +33,6 @@
     document.documentElement.setAttribute("service-mode", service_mode);
     document.documentElement.setAttribute("production-mode", production_mode);
   </script>
-
-  <script src="static/javascript/load_accessibility.js"></script>
 </head>
 
 <body marginwidth="0">
@@ -56,68 +58,83 @@
 
   <form name="gui" class="gui">
     <div class="max-width-box">
-      <p>Your one-stop shop for file format conversion, PSDI's Data Conversion Service enables users to seamlessly
-        convert between different file formats and assess the quality of proposed conversions. This is the web version
-        of our service. To find out more about Data Conversion and our other tools, click
+      <p>Your one-stop shop for file format conversion, PSDI’s Data Conversion Service enables users to seamlessly
+        convert between different file formats and assess the quality of proposed conversions. This is the
+        {% if service_mode %}web{% else %}local GUI{% endif %} version of our service. To find out more about Data
+        Conversion and our other tools, click
         <a href="https://resources.psdi.ac.uk/service/8334f94b-1c6e-4034-a5ab-71c6df375cba" id="more"
           target="_blank">here.</a>
       </p>
       <div id="format-selection">
-        <p>Select 'from' and 'to' file formats in the 'Convert from/to' boxes, in either order. Typing where indicated
-          filters the options (case insensitive); for example, typing 'can' or 'NON' reduces the number of options to
-          one:
-          'can: Canonical SMILES.' If you change your mind about a conversion, it is advisable to click on the 'Reset'
-          button. When both formats have been selected, converters able to carry out this conversion appear in the
-          'Conversion options' box along with an indication of conversion quality (many conversions have not yet been
-          tested) and whether or not the converter is supported on this site.</p>
-        <p>
-          <label for="searchFrom" id="fromLabel">Convert from:</label><br>
-          <input type="text" placeholder="-- type here to filter options --" size="12" id="searchFrom"
-            class="large-width"><br>
-          <select size="4" id="fromList" class="large-width"></select>
-        </p>
-        <div class="smallGap"></div>
-        <p>
-          <label for="searchTo" id="toLabel">Convert to:</label><br>
-          <input type="text" placeholder="-- type here to filter options --" size="12" id="searchTo"
-            class="large-width"><br>
-          <select size="4" id="toList" class="large-width"></select>
-        </p>
-        <input type="button" class="button" value=" Reset " name="resetButton" id="resetButton">
-        <br><br>
-        <p>Selecting a converter displays information
-          about it, along with a link to a relevant website. Selecting a supported converter affords the opportunity to
-          carry out a conversion on this site. Clicking on the 'Yes' button takes us to the 'Conversion' page. If a
-          file format has not been found, or if there are no converters capable of carrying out a required conversion
-          please click on 'Report Missing Format/Conversion' in the navigation bar.</p>
-        <p>
-          <label for="success">Select from available conversion
-            options:</label><br>
-          <select size="4" id="success" class="large-width"></select>
-        </p>
-        <span class="normalText">Show how the conversion quality was determined for the selected converter.</span>
-        <input type="button" class="button" value=" Show " name="showButton" id="showButton">
-        <br>
-        <h6>Converter details:</h6>
-        <p id="converter" , class="init-hidden">
-          <span id="name"></span>
-          <br><span id="description"></span>
-          <br><span id="url"></span>
-          <br><span id="info"></span>
-          <a id="visit" target="_blank">this website.</a>
-        <div id="formatWarning" class="init-hidden"></div>
-        <div id="offer" class="init-hidden">
-          <span id="question"></span>
-          <input type="button" class="button" value=" Yes " name="yesButton" id="yesButton">
+        <div class="flex-panel-display">
+          <div class="flex-panel instructions-panel">
+            <h6>Select formats for conversion</h6>
+            <p>Select “from” and “to” file formats in the “Convert from/to” boxes, in either order. Typing where
+              indicated filters the options (case insensitive); for example, typing “can” or “NON” reduces the number of
+              options to one: “can: Canonical SMILES.”
+            </p>
+            <p>If you change your mind about a conversion, click the “Reset” button.</p>
+            <p>When both formats have been selected, converters able to carry out this conversion appear in the
+              “Conversion options” box below along with an indication of conversion quality (many conversions have not
+              yet been tested) and whether or not the converter is supported on this site.</p>
+          </div>
+          <hr class="small-screen-only">
+          <div class="flex-panel">
+            <label for="searchFrom" id="fromLabel">Convert from:</label><br>
+            <input type="text" placeholder="-- type here to filter options --" size="12" id="searchFrom"
+              class="large-width"><br>
+            <select size="4" id="fromList" class="large-width"></select>
+            </p>
+            <div class="smallGap"></div>
+            <p>
+              <label for="searchTo" id="toLabel">Convert to:</label><br>
+              <input type="text" placeholder="-- type here to filter options --" size="12" id="searchTo"
+                class="large-width"><br>
+              <select size="4" id="toList" class="large-width"></select>
+            </p>
+            <input type="button" class="button" value=" Reset " name="resetButton" id="resetButton">
+          </div>
         </div>
-        </p>
+        <div class="flex-panel-display">
+          <div class="flex-panel instructions-panel">
+            <h6>Select a converter</h6>
+            <p>Selecting a converter displays information about it, along with a link to a relevant website. Selecting a
+              supported converter affords the opportunity to carry out a conversion on this site. Clicking on the “Yes”
+              button takes us to the “Conversion” page. If a file format has not been found, or if there are no
+              converters capable of carrying out a required conversion please click on “Report Missing
+              Format/Conversion” in the navigation bar.
+            </p>
+          </div>
+          <hr class="small-screen-only">
+          <div class="flex-panel">
+            <p>
+              <label for="success">Select from available conversion options:</label><br>
+              <select size="4" id="success" class="large-width"></select>
+            </p>
+            <span class="normalText">Show how the conversion quality was determined for the selected converter.</span>
+            <input type="button" class="button" value=" Show " name="showButton" id="showButton">
+            <br>
+            <h6>Converter details:</h6>
+            <p id="converter" , class="init-hidden">
+              <span id="name"></span>
+              <br><span id="description"></span>
+              <br><span id="url"></span>
+              <br><span id="info"></span>
+              <a id="visit" target="_blank">this website.</a>
+            <div id="formatWarning" class="init-hidden"></div>
+            <div id="offer" class="init-hidden">
+              <span id="question"></span>
+              <input type="button" class="button" value=" Yes " name="yesButton" id="yesButton">
+            </div>
+            </p>
+          </div>
+        </div>
       </div>
       <div id="database-error" class="init-hidden">
         <p><strong>ERROR:</strong> Connection to the conversion database failed. Please try refreshing this page. If
-          this issue persists, please report it to us using the "Contact" link in the header. You can also download
-          a version of this service for local use using the "Download" link in the header if you'd prefer.</p>
+          this issue persists, please report it to us using the “Contact” link in the header. You can also download
+          a version of this service for local use using the “Download” link in the header if you’d prefer.</p>
       </div>
-      <div class="medGap"></div>
     </div>
   </form>
   {% if tag %}

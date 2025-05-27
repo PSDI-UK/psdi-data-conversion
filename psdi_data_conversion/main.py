@@ -18,13 +18,12 @@ from psdi_data_conversion import constants as const
 from psdi_data_conversion.constants import CL_SCRIPT_NAME, CONVERTER_DEFAULT, TERM_WIDTH
 from psdi_data_conversion.converter import (D_CONVERTER_ARGS, L_REGISTERED_CONVERTERS, L_SUPPORTED_CONVERTERS,
                                             converter_is_registered, converter_is_supported,
-                                            get_registered_converter_class, get_supported_converter_class,
-                                            run_converter)
+                                            get_supported_converter_class, run_converter)
 from psdi_data_conversion.converters.base import (FileConverterAbortException, FileConverterException,
                                                   FileConverterInputException)
-from psdi_data_conversion.database import (FormatInfo, get_conversion_quality, get_converter_info, get_format_info,
-                                           get_in_format_args, get_out_format_args, get_possible_conversions,
-                                           get_possible_formats)
+from psdi_data_conversion.database import (FormatInfo, get_conversion_pathway, get_conversion_quality,
+                                           get_converter_info, get_format_info, get_in_format_args,
+                                           get_out_format_args, get_possible_conversions, get_possible_formats)
 from psdi_data_conversion.file_io import split_archive_ext
 from psdi_data_conversion.log_utility import get_log_level_from_str
 from psdi_data_conversion.utils import regularize_name
@@ -554,8 +553,28 @@ def detail_format(format_name: str):
                    "necessary to explicitly specify which you want to use when calling this script, e.g. with "
                    f"'-f {format_name}-0' - see the disambiguated names in the list below:", newline=True)
 
+    first = True
     for format_info in l_format_info:
+
+        # Add linebreak before each after the first
+        if first:
+            first = False
+        else:
+            print()
+
+        # Print the format's basic details
         print_wrap(f"{format_info.id}: {format_info.disambiguated_name} ({format_info.note})")
+
+        # Print whether or not it supports each possible property
+        for attr, label in FormatInfo.D_PROPERTY_ATTRS.items():
+            support_str = label
+            if getattr(format_info, attr):
+                support_str += " supported"
+            elif getattr(format_info, attr) is False:
+                support_str += " not supported"
+            else:
+                support_str += " unknown whether or not to be supported"
+            print_wrap(f"- {support_str}")
 
 
 def detail_formats_and_possible_converters(from_format: str, to_format: str):
@@ -589,6 +608,44 @@ def detail_formats_and_possible_converters(from_format: str, to_format: str):
 
     l_possible_conversions = get_possible_conversions(from_format, to_format)
 
+    # Check if no direct conversions are possible, and if formats are specified uniquely, recommend a chained conversion
+    if len(l_possible_conversions) == 0:
+        print()
+        print_wrap(f"No direct conversions are possible from {from_format} to {to_format}")
+        print()
+
+        l_from_formats = get_format_info(from_format, which="all")
+        l_to_formats = get_format_info(to_format, which="all")
+
+        if len(l_from_formats) == 1 and len(l_to_formats) == 1:
+
+            for only in "registered", "supported", "all":
+                pathway = get_conversion_pathway(l_from_formats[0], l_to_formats[0], only=only)
+                if pathway is None:
+                    continue
+
+                if only == "registered" or only == "supported":
+                    converter_type_needed = only
+                else:
+                    converter_type_needed = "unsupported"
+                print_wrap(f"A chained conversion is possible from {from_format} to {to_format} using "
+                           f"{converter_type_needed} converters:")
+
+                for i, step in enumerate(pathway):
+                    print_wrap(f"{i+1}) Convert from {step[1].name} to {step[2].name} with {step[0].pretty_name}")
+
+                print()
+                print_wrap("Chained conversion is not yet supported by this utility, but will be added soon")
+
+                break
+
+            else:
+                print_wrap(f"No chained conversions are possible from {from_format} to {to_format}.")
+
+        else:
+            print_wrap("To see possible chained conversions, specify each format uniquely using the ID or "
+                       "disambiguated name (e.g. \"xxx-0\") listed above)")
+
     # Get a list of all different formats which share the provided name, cutting out duplicates
     l_from_formats = list(set([x[1] for x in l_possible_conversions]))
     l_from_formats.sort(key=lambda x: x.disambiguated_name)
@@ -598,6 +655,7 @@ def detail_formats_and_possible_converters(from_format: str, to_format: str):
     # Loop over all possible combinations of formats
 
     for possible_from_format, possible_to_format in product(l_from_formats, l_to_formats):
+        print()
 
         from_name = possible_from_format.disambiguated_name
         to_name = possible_to_format.disambiguated_name
@@ -605,14 +663,13 @@ def detail_formats_and_possible_converters(from_format: str, to_format: str):
         l_conversions_matching_formats = [x for x in l_possible_conversions
                                           if x[1] == possible_from_format and x[2] == possible_to_format]
 
-        l_possible_registered_converters = [get_registered_converter_class(x[0]).name
+        l_possible_registered_converters = [x[0].pretty_name
                                             for x in l_conversions_matching_formats
-                                            if x[0] in L_REGISTERED_CONVERTERS]
-        l_possible_unregistered_converters = [get_supported_converter_class(x[0]).name
+                                            if x[0].name in L_REGISTERED_CONVERTERS]
+        l_possible_unregistered_converters = [x[0].pretty_name
                                               for x in l_conversions_matching_formats
-                                              if x[0] in L_SUPPORTED_CONVERTERS and x[0] not in L_REGISTERED_CONVERTERS]
-
-        print()
+                                              if x[0].name in L_SUPPORTED_CONVERTERS
+                                              and x[0].name not in L_REGISTERED_CONVERTERS]
 
         if len(l_possible_registered_converters)+len(l_possible_unregistered_converters) == 0:
             print_wrap(f"No converters are available which can perform a conversion from {from_name} to "
@@ -769,8 +826,8 @@ def run_from_args(args: ConvertArgs):
                                               name=args.name,
                                               data=data,
                                               use_envvars=False,
-                                              upload_dir=args.input_dir,
-                                              download_dir=args.output_dir,
+                                              input_dir=args.input_dir,
+                                              output_dir=args.output_dir,
                                               no_check=args.no_check,
                                               strict=args.strict,
                                               log_file=args.log_file,

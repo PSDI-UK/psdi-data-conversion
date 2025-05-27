@@ -1,3 +1,0 @@
-requests
-openbabel-wheel
-py

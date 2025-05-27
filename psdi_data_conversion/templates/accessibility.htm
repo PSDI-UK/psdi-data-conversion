@@ -1,0 +1,274 @@
+<!--
+  accessibility.htm
+  Version 1.0, 7th June 2024
+-->
+
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PSDI Data Conversion Service</title>
+  <link rel="icon" type="image/x-icon" href="{{url_for('static', filename='img/psdi-icon-dark.svg')}}">
+  <link href="https://fonts.googleapis.com/css?family=Lato:400" rel="stylesheet" type="text/css">
+  <link href="https://fonts.googleapis.com/css?family=Open+Sans+Condensed:700" rel="stylesheet" type="text/css">
+  <link href="https://fonts.googleapis.com/css?family=Open+Sans:400" rel="stylesheet" type="text/css">
+  <link href="https://fonts.googleapis.com/css?family=Lexend:400" rel="stylesheet" type="text/css">
+  <link rel="stylesheet" href="{{url_for('static', filename='styles/format.css')}}">
+
+  <script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4="
+    crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/jquery.dirtyforms/2.0.0/jquery.dirtyforms.min.js"></script>
+
+  <script type="module" src="{{url_for('static', filename='javascript/load_accessibility.js')}}"></script>
+  <script type="module" src="{{url_for('static', filename='javascript/common.js')}}"></script>
+  <script type="module" src="{{url_for('static', filename='javascript/psdi-common.js')}}"></script>
+
+  <script type="module" src="{{url_for('static', filename='javascript/accessibility.js')}}"></script>
+</head>
+
+<body marginwidth="0">
+
+  <!-- Cover to hide element loading and make page transitions seem smoother -->
+  <div id="cover"></div>
+
+  <header class="header" id="psdi-header"></header>
+  <script type="module">
+    import { setHeaderLinksSource, setHeaderSource, setFooterSource } from "./static/javascript/psdi-common.js";
+    // Due to the index being a template which will exist in a different directory once rendered, we need to set
+    // a non-default location of the header links file
+    setHeaderSource("{{url_for('static', filename='content/index-versions/psdi-common-header.html')}}");
+    setFooterSource("{{url_for('static', filename='content/index-versions/psdi-common-footer.html')}}");
+    setHeaderLinksSource("{{url_for('static', filename='content/index-versions/header-links.html')}}");
+  </script>
+
+  <div class="hero">
+    <div class="max-width-box">
+      <h1 class="hero__title marginless_header">Accessibility</h1>
+    </div>
+  </div>
+
+  <form name="gui">
+    <div class="max-width-box">
+      <div class="flex-panel-display">
+        <div class="flex-panel instructions-panel">
+          <h6>Select accessibility options</h6>
+          <p>Select accessibility settings below as require to find a setup you like. Once the appearance of the page is
+            satisfactory, click on the "Save" button to apply the settings to the entire website. This saves the
+            settings in a cookie on your device which is only used for this purpose and does not store any personal
+            data.</p>
+          <p>The colour options here are not compatible with the dark-mode toggle in the header bar. If a custom dark
+            scheme is desired, the appropriate colours can be selected in light-mode.</p>
+        </div>
+        <hr class="small-screen-only">
+        <div class="flex-panel">
+          <div class="access-options">
+            <div class="access-option-container">
+              <p>
+                <label for="font" id="fontLabel">Font:</label><br>
+                <select id="font">
+                  <option value="Default">Default</option>
+                  <option value="Arial" style="font-family: Arial, 'Helvetica Neue', Helvetica, sans-serif;">Arial
+                  </option>
+                  <option value="Calibri"
+                    style="font-family: Calibri, Candara, Segoe, 'Segoe UI', Optima, Arial, sans-serif;">Calibri
+                  </option>
+                  <option value="Comic Sans" style="font-family: 'Comic Sans MS', 'Comic Sans', sans-serif;">Comic Sans
+                  </option>
+                  <option value="Courier New"
+                    style="font-family: 'Courier New', Courier, 'Lucida Sans Typewriter', 'Lucida Typewriter', monospace;">
+                    Courier New</option>
+                  <option value="Georgia" style="font-family: Georgia, Times, 'Times New Roman', serif">Georgia
+                  </option>
+                  <option value="Helvetica" style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif">
+                    Helvetica
+                  </option>
+                  <option value="Lexend" style="font-family: Lexend, sans-serif;">Lexend</option>
+                  <option value="Lucida Bright" style="font-family: 'Lucida Bright', Georgia, serif">Lucida Bright
+                  </option>
+                  <option value="Open Sans" style="font-family: Open Sans, sans-serif;">Open Sans
+                  </option>
+                  <option value="Tahoma" style="font-family: Tahoma, Verdana, Segoe, sans-serif;">Tahoma</option>
+                  <option value="Times New Roman"
+                    style="font-family: TimesNewRoman, 'Times New Roman', Times, Baskerville, Georgia, serif;">Times New
+                    Roman</option>
+                  <option value="Trebuchet"
+                    style="font-family: 'Trebuchet MS', 'Lucida Grande', 'Lucida Sans Unicode', 'Lucida Sans', Tahoma, sans-serif;">
+                    Trebuchet</option>
+                  <option value="Verdana" style="font-family: Verdana, Geneva, sans-serif;">Verdana</option>
+                </select><br>
+              </p>
+            </div>
+            <div class="access-option-container">
+              <p>
+                <label for="size" id="sizeLabel">Font size (px):</label><br>
+                <select id="size">
+                  <option value="Default">Default</option>
+                  <option value="14" style="font-size: 14px;">14</option>
+                  <option value="15" style="font-size: 15px;">15</option>
+                  <option value="16" style="font-size: 16px;">16</option>
+                  <option value="17" style="font-size: 17px;">17</option>
+                  <option value="18" style="font-size: 18px;">18</option>
+                  <option value="19" style="font-size: 19px;">19</option>
+                  <option value="20" style="font-size: 20px;">20</option>
+                  <option value="21" style="font-size: 21px;">21</option>
+                </select>
+              </p>
+            </div>
+            <div class="access-option-container">
+              <p>
+                <label for="weight" id="weightLabel">Font weight:</label><br>
+                <select id="weight">
+                  <option value="Default" style="font-weight: normal;">Default</option>
+                  <option value="Bold" style="font-weight: bold;">Bold</option>
+                </select>
+              </p>
+            </div>
+            <div class="access-option-container">
+              <p>
+                <label for="letter" id="letterLabel">Letter spacing (px):</label><br>
+                <select id="letter">
+                  <!-- Limitations of how the select element works prevent us from showing a preview of this element
+                   in the dropdown -->
+                  <option value="Default">Default</option>
+                  <option value="0.5">0.5</option>
+                  <option value="1.0">1.0</option>
+                  <option value="1.5">1.5</option>
+                  <option value="2.0">2.0</option>
+                  <option value="2.5">2.5</option>
+                  <option value="3.0">3.0</option>
+                  <option value="3.5">3.5</option>
+                </select>
+              </p>
+            </div>
+            <div class="access-option-container">
+              <p>
+                <label for="line" id="lineLabel">Line spacing:</label><br>
+                <select id="line">
+                  <!-- Limitations of how the select element works prevent us from showing a preview of this element
+                   in the dropdown -->
+                  <option value="Default">Default</option>
+                  <option value="1.0">1.0</option>
+                  <option value="1.1">1.1</option>
+                  <option value="1.2">1.2</option>
+                  <option value="1.3">1.3</option>
+                  <option value="1.4">1.4</option>
+                  <option value="1.5">1.5</option>
+                  <option value="1.6">1.6</option>
+                  <option value="1.7">1.7</option>
+                  <option value="1.8">1.8</option>
+                  <option value="1.9">1.9</option>
+                  <option value="2.0">2.0</option>
+                </select>
+              </p>
+            </div>
+            <div class="access-option-container lm-only">
+              <p>
+                <label for="dark-colour" id="colourLabel">Primary font colour:</label><br>
+                <select id="dark-colour">
+                  <option value="Default">Default</option>
+                  <option value="White" style="color: White">White</option>
+                  <option value="LightGrey" style="color: LightGrey">LightGrey</option>
+                  <option value="DarkGrey" style="color: DarkGrey">DarkGrey</option>
+                  <option value="Black" style="color: Black">Black</option>
+                  <option value="LightBlue" style="color: LightBlue">LightBlue</option>
+                  <option value="Blue" style="color: Blue">Blue</option>
+                  <option value="DarkBlue" style="color: DarkBlue">DarkBlue</option>
+                  <option value="Purple" style="color: Purple">Purple</option>
+                  <option value="Pink" style="color: Pink">Pink</option>
+                  <option value="Red" style="color: Red">Red</option>
+                  <option value="DarkRed" style="color: DarkRed">DarkRed</option>
+                  <option value="Orange" style="color: Orange">Orange</option>
+                  <option value="Brown" style="color: Brown">Brown</option>
+                  <option value="LightGreen" style="color: LightGreen">LightGreen</option>
+                  <option value="Green" style="color: Green">Green</option>
+                  <option value="DarkGreen" style="color: DarkGreen">DarkGreen</option>
+                </select>
+              </p>
+            </div>
+            <div class="access-option-container lm-only">
+              <p>
+                <label for="light-colour" id="lightColourLabel">Alternate font colour:</label><br>
+                <select id="light-colour">
+                  <option value="Default">Default</option>
+                  <option value="White" style="color: White">White</option>
+                  <option value="LightGrey" style="color: LightGrey">LightGrey</option>
+                  <option value="DarkGrey" style="color: DarkGrey">DarkGrey</option>
+                  <option value="Black" style="color: Black">Black</option>
+                  <option value="LightBlue" style="color: LightBlue">LightBlue</option>
+                  <option value="Blue" style="color: Blue">Blue</option>
+                  <option value="DarkBlue" style="color: DarkBlue">DarkBlue</option>
+                  <option value="Purple" style="color: Purple">Purple</option>
+                  <option value="Pink" style="color: Pink">Pink</option>
+                  <option value="Red" style="color: Red">Red</option>
+                  <option value="DarkRed" style="color: DarkRed">DarkRed</option>
+                  <option value="Orange" style="color: Orange">Orange</option>
+                  <option value="Brown" style="color: Brown">Brown</option>
+                  <option value="LightGreen" style="color: LightGreen">LightGreen</option>
+                  <option value="Green" style="color: Green">Green</option>
+                  <option value="DarkGreen" style="color: DarkGreen">DarkGreen</option>
+                </select>
+              </p>
+            </div>
+            <div class="access-option-container lm-only">
+              <p>
+                <label for="lightBackground" id="lightBackgroundLabel">Primary background colour:</label><br>
+                <select id="light-background">
+                  <option value="Default">Default</option>
+                  <option value="White" style="background-color: White">White</option>
+                  <option value="LightGrey" style="background-color: LightGrey">LightGrey</option>
+                  <option value="DarkGrey" style="background-color: DarkGrey">DarkGrey</option>
+                  <option value="Black" style="background-color: Black">Black</option>
+                  <option value="LightBlue" style="background-color: LightBlue">LightBlue</option>
+                  <option value="Blue" style="background-color: Blue">Blue</option>
+                  <option value="DarkBlue" style="background-color: DarkBlue">DarkBlue</option>
+                  <option value="Purple" style="background-color: Purple">Purple</option>
+                  <option value="Pink" style="background-color: Pink">Pink</option>
+                  <option value="Red" style="background-color: Red">Red</option>
+                  <option value="DarkRed" style="background-color: DarkRed">DarkRed</option>
+                  <option value="Orange" style="background-color: Orange">Orange</option>
+                  <option value="Brown" style="background-color: Brown">Brown</option>
+                  <option value="LightGreen" style="background-color: LightGreen">LightGreen</option>
+                  <option value="Green" style="background-color: Green">Green</option>
+                  <option value="DarkGreen" style="background-color: DarkGreen">DarkGreen</option>
+                </select>
+              </p>
+            </div>
+            <div class="access-option-container lm-only">
+              <p>
+                <label for="darkBackground" id="darkBackgroundLabel">Alternate background colour:</label><br>
+                <select id="dark-background">
+                  <option value="Default">Default</option>
+                  <option value="White" style="background-color: White">White</option>
+                  <option value="LightGrey" style="background-color: LightGrey">LightGrey</option>
+                  <option value="DarkGrey" style="background-color: DarkGrey">DarkGrey</option>
+                  <option value="Black" style="background-color: Black">Black</option>
+                  <option value="LightBlue" style="background-color: LightBlue">LightBlue</option>
+                  <option value="Blue" style="background-color: Blue">Blue</option>
+                  <option value="DarkBlue" style="background-color: DarkBlue">DarkBlue</option>
+                  <option value="Purple" style="background-color: Purple">Purple</option>
+                  <option value="Pink" style="background-color: Pink">Pink</option>
+                  <option value="Red" style="background-color: Red">Red</option>
+                  <option value="DarkRed" style="background-color: DarkRed">DarkRed</option>
+                  <option value="Orange" style="background-color: Orange">Orange</option>
+                  <option value="Brown" style="background-color: Brown">Brown</option>
+                  <option value="LightGreen" style="background-color: LightGreen">Green</option>
+                  <option value="Green" style="background-color: Green">Green</option>
+                  <option value="DarkGreen" style="background-color: DarkGreen">DarkGreen</option>
+                </select>
+              </p>
+            </div>
+          </div>
+          <input type="button" class="button no-left-margin" value=" Save " id="saveButton">
+          <input type="button" class="button" value=" Reset " id="resetButton">
+        </div>
+
+      </div>
+    </div>
+  </form>
+
+  <footer class="footer" id="psdi-footer"></footer>
+
+</body>
+
+</html>

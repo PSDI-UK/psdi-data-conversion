@@ -27,7 +27,7 @@ classifiers = [
   "Topic :: File Formats",
   "Topic :: Scientific/Engineering :: Chemistry",
 ]
-dependencies = ["openbabel-wheel", "py"]
+dependencies = ["igraph", "openbabel-wheel", "py"]
 requires-python = ">= 3.12"
 
 # Version specification - we determine the version through git. If you wish to install this without it being in a git
@@ -57,6 +57,7 @@ gui-test = [
   "selenium",
   "webdriver_manager",
 ]
+deploy = ["Flask", "gunicorn", "requests"]
 doc = ["pdoc3"]
 
 [project.scripts]
@@ -80,7 +81,6 @@ exclude = [
   "scripts/fetch-common-style.*",
   "scripts/make-index-html.sh",
   "Dockerfile",
-  "requirements.txt",
 ]
 
 # The following lines run a script which excludes binaries for platforms other than the current from the binary.
@@ -97,7 +97,13 @@ source_pkgs = ["psdi_data_conversion"]
 branch = true
 # app.py is tested via the Selenium tests, which are indirect enough that the coverage tool doesn't pick up that the
 # lines are being tested, so we exclude it from the coverage % calculation
-omit = ["*/testing/*", "app.py"]
+omit = [
+  "*/testing/*",
+  "app.py",
+  "*/gui/accessibility.py",
+  "*/gui/get.py",
+  "*/gui/post.py",
+]
 
 [tool.coverage.paths]
 tests = ["tests/python"]

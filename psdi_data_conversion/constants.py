@@ -36,6 +36,9 @@ import shutil
 # The name of the command-line script
 CL_SCRIPT_NAME = "psdi-data-convert"
 
+# The name of the Flask app
+APP_NAME = "psdi_data_conversion"
+
 # Environmental variables
 LOG_MODE_EV = "LOG_MODE"
 LOG_LEVEL_EV = "LOG_LEVEL"
@@ -52,8 +55,8 @@ MEGABYTE = 1024*1024
 DEFAULT_MAX_FILE_SIZE = 0 * MEGABYTE
 DEFAULT_MAX_FILE_SIZE_OB = 1 * MEGABYTE
 
-DEFAULT_UPLOAD_DIR = './psdi_data_conversion/static/uploads'
-DEFAULT_DOWNLOAD_DIR = './psdi_data_conversion/static/downloads'
+DEFAULT_INPUT_DIR = './psdi_data_conversion/static/uploads'
+DEFAULT_OUTPUT_DIR = './psdi_data_conversion/static/downloads'
 
 # Filename of the database, relative to the base of the python package
 DATABASE_FILENAME = "static/data/data.json"
@@ -150,11 +153,6 @@ QUAL_2D_LABEL = "2D atomic coordinates are"
 QUAL_3D_KEY = "three_dim"
 QUAL_3D_LABEL = "2D atomic coordinates are"
 
-D_QUAL_LABELS = {QUAL_COMP_KEY: QUAL_COMP_LABEL,
-                 QUAL_CONN_KEY: QUAL_CONN_LABEL,
-                 QUAL_2D_KEY: QUAL_2D_LABEL,
-                 QUAL_3D_KEY: QUAL_3D_LABEL}
-
 # Notes for conversion quality
 QUAL_NOTE_IN_UNKNOWN = ("Potential data extrapolation: {} represented in the output format but its representation in "
                         "the input format is unknown")
@@ -187,3 +185,9 @@ ERR_WRONG_EXTENSIONS = "Input file '{file}' does not have expected extension '{e
 ERR_EMPTY_ARCHIVE = "No files to convert were contained in archive"
 ERR_CONVERSION_FAILED = ("File conversion failed for one or more files. Lines from the output log "
                          "{} which indicate possible sources of error: ")
+
+# Misc
+# ----
+
+# Year in seconds
+YEAR = 365*24*60*60

@@ -9,14 +9,19 @@ from __future__ import annotations
 
 import json
 import os
+from copy import copy
 from dataclasses import dataclass, field
+from functools import lru_cache
 from itertools import product
 from logging import getLogger
 from typing import Any, Literal, overload
 
+import igraph as ig
+
 from psdi_data_conversion import constants as const
-from psdi_data_conversion.converter import D_SUPPORTED_CONVERTERS, get_registered_converter_class
-from psdi_data_conversion.converters.base import FileConverterException
+from psdi_data_conversion.converter import (L_REGISTERED_CONVERTERS, L_SUPPORTED_CONVERTERS,
+                                            get_registered_converter_class)
+from psdi_data_conversion.converters.base import FileConverter, FileConverterException
 from psdi_data_conversion.utils import regularize_name
 
 # Keys for top-level and general items in the database
@@ -121,17 +126,40 @@ class ConverterInfo:
             The regularized name of the converter
         parent : DataConversionDatabase
             The database which this belongs to
+        d_single_converter_info : dict[str, int | str]
+            The dict within the database file which describes this converter
         d_data : dict[str, Any]
             The loaded database dict
         """
 
         self.name = regularize_name(name)
+        """The regularized name of the converter"""
+
+        self.converter_class: type[FileConverter]
+        """The class used to perform conversions with this converter"""
+
+        self.pretty_name: str
+        """The name of the converter, properly spaced and capitalized"""
+
+        try:
+            self.converter_class = get_registered_converter_class(self.name)
+            self.pretty_name = self.converter_class.name
+        except KeyError:
+            self.converter_class = None
+            self.pretty_name = name
+
         self.parent = parent
+        """The parent database"""
 
         # Get info about the converter from the database
         self.id: int = d_single_converter_info.get(DB_ID_KEY, -1)
+        """The converter's ID"""
+
         self.description: str = d_single_converter_info.get(DB_DESC_KEY, "")
+        """A description of the converter"""
+
         self.url: str = d_single_converter_info.get(DB_URL_KEY, "")
+        """The official URL for the converter"""
 
         # Get necessary info about the converter from the class
         try:
@@ -403,6 +431,12 @@ class FormatInfo:
     """Class providing information on a file format from the PSDI Data Conversion database
     """
 
+    D_PROPERTY_ATTRS = {const.QUAL_COMP_KEY: const.QUAL_COMP_LABEL,
+                        const.QUAL_CONN_KEY: const.QUAL_CONN_LABEL,
+                        const.QUAL_2D_KEY: const.QUAL_2D_LABEL,
+                        const.QUAL_3D_KEY: const.QUAL_3D_LABEL}
+    """A dict of attrs of this class which describe properties that a format may or may not have"""
+
     def __init__(self,
                  name: str,
                  parent: DataConversionDatabase,
@@ -448,6 +482,9 @@ class FormatInfo:
         self.three_dim = d_single_format_info.get(DB_FORMAT_3D_KEY)
         """Whether or not this format stores 3D structural information"""
 
+        self._lower_name: str = self.name.lower()
+        """The format name all in lower-case"""
+
         self._disambiguated_name: str | None = None
 
     @property
@@ -455,12 +492,13 @@ class FormatInfo:
         """A unique name for this format which can be used to distinguish it from others which share the same extension,
         by appending the name of each with a unique index"""
         if self._disambiguated_name is None:
-            l_formats_with_same_name = [x for x in self.parent.l_format_info if x and x.name == self.name]
+            l_formats_with_same_name = [x for x in self.parent.l_format_info
+                                        if x and x._lower_name == self._lower_name]
             if len(l_formats_with_same_name) == 1:
-                self._disambiguated_name = self.name
+                self._disambiguated_name = self._lower_name
             else:
                 index_of_this = [i for i, x in enumerate(l_formats_with_same_name) if self is x][0]
-                self._disambiguated_name = f"{self.name}-{index_of_this}"
+                self._disambiguated_name = f"{self._lower_name}-{index_of_this}"
         return self._disambiguated_name
 
     def __str__(self):
@@ -486,7 +524,7 @@ class PropertyConversionInfo:
     def __post_init__(self):
         """Set the label and note based on input/output status
         """
-        self.label = const.D_QUAL_LABELS[self.key]
+        self.label = FormatInfo.D_PROPERTY_ATTRS[self.key]
 
         if self.input_supported is None and self.output_supported is None:
             self.note = const.QUAL_NOTE_BOTH_UNKNOWN
@@ -584,26 +622,56 @@ class ConversionsTable:
         # Store references to needed data
         self._l_converts_to = l_converts_to
 
-        # Build the conversion table, indexed Converter, Input Format, Output Format - note that each of these is
-        # 1-indexed, so we add 1 to each of the lengths here
-        num_converters = len(parent.converters)
+        # Build the conversion graphs - each format is a vertex, each conversion is an edge
         num_formats = len(parent.formats)
 
-        self.table = [[[0 for k in range(num_formats+1)] for j in range(num_formats+1)]
-                      for i in range(num_converters+1)]
+        l_supported_conversions = [x for x in l_converts_to if
+                                   self.parent.get_converter_info(x[DB_CONV_ID_KEY]).name in L_SUPPORTED_CONVERTERS]
+        l_registered_conversions = [x for x in l_supported_conversions if
+                                    self.parent.get_converter_info(x[DB_CONV_ID_KEY]).name in L_REGISTERED_CONVERTERS]
 
-        for possible_conversion in l_converts_to:
+        # We make separate graphs for all known conversions, all supported conversions, and all registered conversions
+        self.graph: ig.Graph
+        self.supported_graph: ig.Graph
+        self.registered_graph: ig.Graph
 
-            try:
-                conv_id: int = possible_conversion[DB_CONV_ID_KEY]
-                in_id: int = possible_conversion[DB_IN_ID_KEY]
-                out_id: int = possible_conversion[DB_OUT_ID_KEY]
-            except KeyError:
-                raise FileConverterDatabaseException(
-                    f"Malformed 'converts_to' entry in database: {possible_conversion}")
+        for support_type, l_conversions in (("", l_converts_to),
+                                            ("supported_", l_supported_conversions),
+                                            ("registered_", l_registered_conversions)):
 
-            self.table[conv_id][in_id][out_id] = 1
+            setattr(self, support_type+"graph",
+                    ig.Graph(n=num_formats,
+                             directed=True,
+                             # Each vertex stores the disambiguated name of the format
+                             vertex_attrs={DB_NAME_KEY: [x.disambiguated_name if x is not None else None
+                                                         for x in parent.l_format_info]},
+                             edges=[(x[DB_IN_ID_KEY], x[DB_OUT_ID_KEY]) for x in l_conversions],
+                             # Each edge stores the id and name of the converter used for the conversion
+                             edge_attrs={DB_CONV_ID_KEY: [x[DB_CONV_ID_KEY] for x in l_conversions],
+                                         DB_NAME_KEY: [self.parent.get_converter_info(x[DB_CONV_ID_KEY]).name
+                                                       for x in l_conversions]}))
 
+    def _get_desired_graph(self,
+                           only: Literal["all"] | Literal["supported"] | Literal["registered"] = "all") -> ig.Graph:
+        if only == "all":
+            return self.graph
+        elif only == "supported":
+            return self.supported_graph
+        elif only == "registered":
+            return self.registered_graph
+        else:
+            raise ValueError(f"Invalid value \"{only}\" for keyword argument `only`. Allowed values are \"all\" "
+                             "(default), \"supported\", and \"registered\".")
+
+    def _get_possible_converters(self, in_format_info: FormatInfo, out_format_info: FormatInfo,
+                                 only: Literal["all"] | Literal["supported"] | Literal["registered"] = "all"):
+        """Get a list of all converters which can convert from one format to another
+        """
+        graph = self._get_desired_graph(only)
+        l_edges = graph.es.select(_source=in_format_info.id, _target=out_format_info.id)
+        return [x[DB_NAME_KEY] for x in l_edges]
+
+    @lru_cache(maxsize=None)
     def get_conversion_quality(self,
                                converter_name: str,
                                in_format: str | int,
@@ -633,14 +701,12 @@ class ConversionsTable:
         else:
             which_format = 0
 
-        # Get info about the converter and formats
-        conv_id = self.parent.get_converter_info(converter_name).id
-        in_info = self.parent.get_format_info(in_format, which_format)
-        out_info: int = self.parent.get_format_info(out_format, which_format)
+        # Get the full format info for each format
+        in_format_info = self.parent.get_format_info(in_format, which_format)
+        out_format_info: int = self.parent.get_format_info(out_format, which_format)
 
         # First check if the conversion is possible
-        success_flag = self.table[conv_id][in_info.id][out_info.id]
-        if not success_flag:
+        if converter_name not in self._get_possible_converters(in_format_info, out_format_info):
             return None
 
         # The conversion is possible. Now determine how many properties of the output format are not in the input
@@ -649,9 +715,9 @@ class ConversionsTable:
         num_new_props = 0
         any_unknown = False
         d_prop_conversion_info: dict[str, PropertyConversionInfo] = {}
-        for prop in const.D_QUAL_LABELS:
-            in_prop: bool | None = getattr(in_info, prop)
-            out_prop: bool | None = getattr(out_info, prop)
+        for prop in FormatInfo.D_PROPERTY_ATTRS:
+            in_prop: bool | None = getattr(in_format_info, prop)
+            out_prop: bool | None = getattr(out_format_info, prop)
 
             d_prop_conversion_info[prop] = PropertyConversionInfo(prop, in_prop, out_prop)
 
@@ -699,7 +765,9 @@ class ConversionsTable:
 
     def get_possible_conversions(self,
                                  in_format: str | int,
-                                 out_format: str | int) -> list[tuple[str, FormatInfo, FormatInfo]]:
+                                 out_format: str | int,
+                                 only: Literal["all"] | Literal["supported"] | Literal["registered"] = "all"
+                                 ) -> list[tuple[ConverterInfo, FormatInfo, FormatInfo]]:
         """Get a list of converters which can perform a conversion from one format to another, disambiguating in the
         case of ambiguous formats and providing IDs for input/output formats for possible conversions
 
@@ -712,10 +780,10 @@ class ConversionsTable:
 
         Returns
         -------
-        list[tuple[str, FormatInfo, FormatInfo]]
-            A list of tuples, where each tuple's first item is the name of a converter which can perform a matching
-            conversion, the second is the info of the input format for this conversion, and the third is the info of the
-            output format
+        list[tuple[ConverterInfo, FormatInfo, FormatInfo]]
+            A list of tuples, where each tuple's first item is the ConverterInfo of a converter which can perform a
+            matching conversion, the second is the info of the input format for this conversion, and the third is the
+            info of the output format
         """
         l_in_format_infos = self.parent.get_format_info(in_format, which="all")
         l_out_format_infos = self.parent.get_format_info(out_format, which="all")
@@ -726,19 +794,106 @@ class ConversionsTable:
         # Iterate over all possible combinations of input and output formats
         for in_format_info, out_format_info in product(l_in_format_infos, l_out_format_infos):
 
-            # Slice the table to get a list of the success for this conversion for each converter
-            l_converter_success = [x[in_format_info.id][out_format_info.id] for x in self.table]
-
-            # Filter for possible conversions and get the converter name and degree-of-success string
-            # for each possible conversion
-            l_converter_names = [self.parent.get_converter_info(converter_id).name
-                                 for converter_id, possible_flag
-                                 in enumerate(l_converter_success) if possible_flag > 0]
+            # Filter for converters which can perform this conversion
+            l_converter_names = self._get_possible_converters(in_format_info, out_format_info, only=only)
 
             for converter_name in l_converter_names:
-                l_possible_conversions.append((converter_name, in_format_info, out_format_info))
+                l_possible_conversions.append((self.parent.get_converter_info(converter_name),
+                                               in_format_info, out_format_info))
 
         return l_possible_conversions
+
+    @lru_cache
+    def _get_shared_attrs(self, source_format, target_format):
+        """Get a list of attributes that both the source and target format feature
+        """
+        source_format_info = self.parent.get_format_info(source_format)
+        target_format_info = self.parent.get_format_info(target_format)
+
+        l_shared_attrs: list[str] = []
+
+        for attr in FormatInfo.D_PROPERTY_ATTRS:
+            if getattr(source_format_info, attr) and getattr(target_format_info, attr):
+                l_shared_attrs.append(attr)
+
+        return l_shared_attrs
+
+    def _get_info_loss(self, path):
+        """Get the number of attributes in both the first and last format which would be lost if a conversion path
+        is traversed
+        """
+        l_shared_attrs = self._get_shared_attrs(path[0], path[-1])
+
+        if len(l_shared_attrs) == 0:
+            return 0
+
+        l_kept_attrs = copy(l_shared_attrs)
+        for i in range(len(path)-1):
+            target_format_info = self.parent.get_format_info(i+1)
+
+            # Check if each attr still in the shared list is kept here
+            for attr in l_kept_attrs:
+                if not getattr(target_format_info, attr):
+                    l_kept_attrs.remove(attr)
+                    if len(l_kept_attrs) == 0:
+                        break
+
+        num_lost_attrs = len(l_shared_attrs) - len(l_kept_attrs)
+
+        return num_lost_attrs
+
+    def get_conversion_pathway(self,
+                               in_format: str | int | FormatInfo,
+                               out_format: str | int | FormatInfo,
+                               only: Literal["all"] | Literal["supported"] | Literal["registered"] = "all"
+                               ) -> list[tuple[ConverterInfo, FormatInfo, FormatInfo]] | None:
+        """Gets a pathway to convert from one format to another
+        """
+
+        in_format_info = self.parent.get_format_info(in_format)
+        out_format_info = self.parent.get_format_info(out_format)
+
+        # Check if the formats are the same
+        if in_format_info is out_format_info:
+            return None
+
+        # First check if direct conversion is possible
+        l_possible_direct_conversions = self.get_possible_conversions(in_format=in_format, out_format=out_format)
+        if l_possible_direct_conversions:
+            # TODO: When there's some better measure of conversion quality, use it to choose which converter to use
+            return [l_possible_direct_conversions[0]]
+
+        # Query the graph for the shortest paths to perform this conversion
+        graph: ig.Graph = self._get_desired_graph(only)
+        l_paths: list[list[int]] = graph.get_shortest_paths(in_format_info.id, to=out_format_info.id)
+
+        # Check if any paths are possible
+        if not l_paths:
+            return None
+
+        # Check each path to find the first which doesn't lose any unnecessary info, or else the one which loses the
+        # least
+        best_path: list[int] | None = None
+        best_info_loss: int | None = None
+        for path in l_paths:
+            info_loss = self._get_info_loss(path)
+            if best_info_loss is None or info_loss < best_info_loss:
+                best_path = path
+                best_info_loss = info_loss
+                if best_info_loss == 0:
+                    break
+
+        # Output the best path in the desired format
+        l_steps: list[tuple[str, FormatInfo, FormatInfo]] = []
+        for i in range(len(best_path)-1):
+            source_id: int = best_path[i]
+            target_id: int = best_path[i+1]
+            converter_name: str = graph.es.select(_source=source_id, _target=target_id)[0][DB_NAME_KEY]
+            l_steps.append((get_converter_info(converter_name),
+                            self.parent.get_format_info(source_id),
+                            self.parent.get_format_info(target_id)))
+
+        return l_steps
 
     def get_possible_formats(self, converter_name: str) -> tuple[list[FormatInfo], list[FormatInfo]]:
         """Get a list of input and output formats that a given converter supports
@@ -754,21 +909,10 @@ class ConversionsTable:
             A tuple of a list of the supported input formats and a list of the supported output formats
         """
         conv_id: int = self.parent.get_converter_info(converter_name).id
-        ll_in_out_format_success = self.table[conv_id]
 
-        # Filter for possible input formats by checking if at least one output format for each has a degree of success
-        # index greater than 0, and stored the filtered lists where the input format is possible so we only need to
-        # check them for possible output formats
-        (l_possible_in_format_ids,
-         ll_filtered_in_out_format_success) = zip(*[(i, l_out_format_success) for i, l_out_format_success
-                                                    in enumerate(ll_in_out_format_success)
-                                                    if sum(l_out_format_success) > 0])
-
-        # As with input IDs, filter for output IDs where at least one input format has a degree of success index greater
-        # than 0. A bit more complicated for the second index, forcing us to do list comprehension to fetch a list
-        # across the table before summing
-        l_possible_out_format_ids = [j for j, _ in enumerate(ll_filtered_in_out_format_success[0]) if
-                                     sum([x[j] for x in ll_filtered_in_out_format_success]) > 0]
+        l_conversion_edges = self.graph.es.select(**{DB_CONV_ID_KEY: conv_id})
+        l_possible_in_format_ids = list({x.source for x in l_conversion_edges})
+        l_possible_out_format_ids = list({x.target for x in l_conversion_edges})
 
         # Get the name for each format ID, and return lists of the names
         return ([self.parent.get_format_info(x) for x in l_possible_in_format_ids],
@@ -875,9 +1019,9 @@ class DataConversionDatabase:
         self._l_format_info: list[FormatInfo | None] = [None] * (max_id+1)
 
         for d_single_format_info in self.formats:
-            name: str = d_single_format_info[DB_FORMAT_EXT_KEY]
+            lc_name: str = d_single_format_info[DB_FORMAT_EXT_KEY]
 
-            format_info = FormatInfo(name=name,
+            format_info = FormatInfo(name=lc_name,
                                      parent=self,
                                      d_single_format_info=d_single_format_info)
 
@@ -887,24 +1031,17 @@ class DataConversionDatabase:
         self._conversions_table = ConversionsTable(l_converts_to=self.converts_to,
                                                    parent=self)
 
-        # Use the conversions table to prune any formats which have no valid conversions
+        # Use the conversions graph to prune any formats which have no valid conversions
 
         # Get a slice of the table which only includes supported converters
-        l_supported_converter_ids = [self.get_converter_info(x).id for x in D_SUPPORTED_CONVERTERS]
-        supported_table = [self._conversions_table.table[x] for x in l_supported_converter_ids]
+        supported_graph = self._conversions_table.supported_graph
 
         for format_id, format_info in enumerate(self._l_format_info):
             if not format_info:
                 continue
 
-            # Check if the format is supported as the input format for any conversion
-            ll_possible_from_conversions = [x[format_id] for x in supported_table]
-            if sum([sum(x) for x in ll_possible_from_conversions]) > 0:
-                continue
-
-            # Check if the format is supported as the output format for any conversion
-            ll_possible_to_conversions = [[y[format_id] for y in x] for x in supported_table]
-            if sum([sum(x) for x in ll_possible_to_conversions]) > 0:
+            # Check if the format is supported as the input or output format for any conversion
+            if supported_graph.degree(format_id) > 0:
                 continue
 
             # If we get here, the format isn't supported for any conversions, so remove it from our list
@@ -918,14 +1055,14 @@ class DataConversionDatabase:
             if not format_info:
                 continue
 
-            name = format_info.name
+            lc_name = format_info.name.lower()
 
             # Each name may correspond to multiple formats, so we use a list for each entry to list all possible
             # formats for each name
-            if name not in self._d_format_info:
-                self._d_format_info[name] = []
+            if lc_name not in self._d_format_info:
+                self._d_format_info[lc_name] = []
 
-            self._d_format_info[name].append(format_info)
+            self._d_format_info[lc_name].append(format_info)
 
     def get_converter_info(self, converter_name_or_id: str | int) -> ConverterInfo:
         """Get a converter's info from either its name or ID
@@ -986,6 +1123,9 @@ class DataConversionDatabase:
             # Silently strip leading period
             if format_name_or_id.startswith("."):
                 format_name_or_id = format_name_or_id[1:]
+
+            # Convert the format name to lower-case to handle it case-insensitively
+            format_name_or_id = format_name_or_id.lower()
 
             # Check for a hyphen in the format, which indicates a preference from the user as to which, overriding the
             # `which` kwarg
@@ -1050,6 +1190,22 @@ class DataConversionDatabase:
 _database: DataConversionDatabase | None = None
 
 
+def get_database_path() -> str:
+    """Get the absolute path to the database file
+
+    Returns
+    -------
+    str
+    """
+
+    # For an interactive shell, __file__ won't be defined for this module, so use the constants module instead
+    reference_file = os.path.realpath(const.__file__)
+
+    qualified_database_filename = os.path.join(os.path.dirname(reference_file), const.DATABASE_FILENAME)
+
+    return qualified_database_filename
+
+
 def load_database() -> DataConversionDatabase:
     """Load and return a new instance of the data conversion database from the JSON database file in this package. This
     function should not be called directly unless you specifically need a new instance of the database object and can't
@@ -1061,12 +1217,7 @@ def load_database() -> DataConversionDatabase:
     """
 
     # Find and load the database JSON file
-
-    # For an interactive shell, __file__ won't be defined for this module, so use the constants module instead
-    reference_file = os.path.realpath(const.__file__)
-
-    qualified_database_filename = os.path.join(os.path.dirname(reference_file), const.DATABASE_FILENAME)
-    d_data: dict = json.load(open(qualified_database_filename, "r"))
+    d_data: dict = json.load(open(get_database_path(), "r"))
 
     return DataConversionDatabase(d_data)
 
@@ -1166,7 +1317,7 @@ def get_conversion_quality(converter_name: str,
 
 
 def get_possible_conversions(in_format: str | int,
-                             out_format: str | int) -> list[tuple[str, FormatInfo, FormatInfo]]:
+                             out_format: str | int) -> list[tuple[ConverterInfo, FormatInfo, FormatInfo]]:
     """Get a list of converters which can perform a conversion from one format to another and disambiguate in the case
     of ambiguous input/output formats
 
@@ -1179,14 +1330,59 @@ def get_possible_conversions(in_format: str | int,
 
     Returns
     -------
-    list[tuple[str, FormatInfo, FormatInfo]]
-        A list of tuples, where each tuple's first item is the name of a converter which can perform a matching
+    list[tuple[ConverterInfo, FormatInfo, FormatInfo]]
+        A list of tuples, where each tuple's first item is the ConverterInfo of a converter which can perform a matching
         conversion, the second is the info of the input format for this conversion, and the third is the info of the
         output format
     """
 
     return get_database().conversions_table.get_possible_conversions(in_format=in_format,
                                                                      out_format=out_format)
+
+
+def get_conversion_pathway(in_format: str | int | FormatInfo,
+                           out_format: str | int | FormatInfo,
+                           only: Literal["all"] | Literal["supported"] | Literal["registered"] = "all"
+                           ) -> list[tuple[ConverterInfo, FormatInfo, FormatInfo]] | None:
+    """Get a list of conversions that can be performed to convert one format to another. This is primarily used when a
+    direct conversion is not supported by any individual converter. Only one possible pathway will be returned,
+    prioritising pathways which do not lose lose and then re-extrapolate any information stored by some formats and not
+    others along the path.
+
+    Parameters
+    ----------
+    in_format : str | int
+        The input file format. For this function, the format must be defined uniquely, either by using a disambiguated
+        extension, ID, or FormatInfo
+    out_format : str | int
+        The output file format. For this function, the format must be defined uniquely, either by using a disambiguated
+        extension, ID, or FormatInfo
+    only : Literal["all"] | Literal["supported"] | Literal["registered"], optional
+        Which converters to limit the pathway search to:
+        - "all" (default): All known converters
+        - "supported": Only converters supported by this utility, even if not currently available (e.g. they don't work
+          on your OS)
+        - "registered": Only converters supported by this utility and currently available
+
+    Returns
+    -------
+    list[tuple[ConverterInfo, FormatInfo, FormatInfo]] | None
+        Will return `None` if no conversion pathway is possible or if the input and output formats are the same.
+        Otherwise, will return a list of steps in the pathway, each being a tuple of:
+
+        converter_info : ConverterInfo
+            Info on the converter used to perform this step
+        in_format : FormatInfo
+            Input format for this step (if the first step, will be the input format to this function, otherwise will be
+            the output format of the previous step)
+        out_format : FormatInfo
+            Output format from this step (if the last step, will be the output format for this function, otherwise will
+            be the input format of the next step)
+    """
+
+    return get_database().conversions_table.get_conversion_pathway(in_format=in_format,
+                                                                   out_format=out_format,
+                                                                   only=only)
 
 
 def disambiguate_formats(converter_name: str,
@@ -1216,11 +1412,11 @@ def disambiguate_formats(converter_name: str,
     """
 
     # Regularize the converter name so we don't worry about case/spacing mismatches
-    converter_name = regularize_name(converter_name)
+    converter_reg_name = regularize_name(converter_name)
 
     # Get all possible conversions, and see if we only have one for this converter
     l_possible_conversions = [x for x in get_possible_conversions(in_format, out_format)
-                              if x[0] == converter_name]
+                              if x[0].name == converter_reg_name]
 
     if len(l_possible_conversions) == 1:
         return l_possible_conversions[0][1], l_possible_conversions[0][2]
