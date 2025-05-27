@@ -1,5 +1,11 @@
 # Changelog for PSDI Data Conversion
 
+## v0.2.1
+
+### Bugfixes
+
+- Fixed bug where when a conversion pathway is requested which turns out to be impossible, an exception is thrown instead of `None` being returned
+
 ## v0.2.0
 
 ### New and Changed Functionality
