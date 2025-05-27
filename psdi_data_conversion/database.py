@@ -868,7 +868,7 @@ class ConversionsTable:
         l_paths: list[list[int]] = graph.get_shortest_paths(in_format_info.id, to=out_format_info.id)
 
         # Check if any paths are possible
-        if not l_paths:
+        if not l_paths or not l_paths[0]:
             return None
 
         # Check each path to find the first which doesn't lose any unnecessary info, or else the one which loses the
