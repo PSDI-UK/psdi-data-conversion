@@ -145,3 +145,21 @@ However, in case 2, the source format only has 4-digit precision, so although it
 This leads to an important conclusion about this problem: Edge weights are not independent, instead being dependent on the source and target formats. In particular, we can say that a weight for losing information should be applied only if both the source and target format share that information (or level of precision).
 
 If we want to be particularly careful, we should also say that this weight should only be applied the first time this information is lost along a pathway. This is difficult to implement though as it would mean that an edge would have a different weight depending on the path taken to get to its source vertex, which is not standard and would require a completely different pathfinding algorithm. However, this would require a particularly long chain of conversions - which is unlikely to occur - and the impact if it did would not be significant - an already dispreferred path would be even more dispreferred - so the amount of work needed to implement this would not nearly be justified.
+
+#### Constraint summary
+
+Putting this all together, we have the following list of properties to weight, in descending order of importance:
+
+1. Composition
+2. Connections
+3. 2D Coordinates
+4. 3D coordinates
+5. Numerical precision
+6. Conversion time
+
+With the following notes:
+
+- We want to apply this importance strictly - e.g. a faster conversion isn't worth losing numerical precision
+- We should always apply a small weight to numerical precision for each conversion to be on the safe side
+- Not all formats currently list what information they support
+- Any loss of information should only be weighted if both the source and target format support this information, and similarly with numerical precision
