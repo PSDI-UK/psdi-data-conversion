@@ -163,3 +163,28 @@ With the following notes:
 - We should always apply a small weight to numerical precision for each conversion to be on the safe side
 - Not all formats currently list what information they support
 - Any loss of information should only be weighted if both the source and target format support this information, and similarly with numerical precision
+
+#### Our approach
+
+Let's look again at the graph of all conversions:
+
+![Graph of all conversions](img/all_conversions.png)
+
+Note that the vast majority of formats are supported by only one converter, with only a small number of formats being supported by more than one and acting as bridges. Converters also tend to support any-to-any conversions of formats they support, with the only exceptions being some formats they can only convert from, and others they can only convert to.
+
+This implies that in the vast majority of cases, conversion chains will be short, likely with two intermediate formats at most, and typically just one. And since there are only a relative few formats that can act as bridges, any filter on equally-short pathways (however "short" is defined) is going to result in a relatively small number of pathways.
+
+Since any initial filter will reduce the number of potential pathways so much, the additional computational overhead cost of the tiered pathfinding approach will be minimal. Meanwhile, with so many different factors to consider, the weighted combination approach could become unwieldy. Either solution is probably workable, but it seems like the tiered pathfinding approach is best here.
+
+The approach we'll take is thus the following:
+
+1. Choose the most important property that hasn't already been used, starting with Composition
+2. If both the source and target format don't share this property (for the types of information), go back to step 1 with the next property. If the status of the property is unknown for the source or target format, assume they _do_ support it to be on the safe side
+3. Assign weights to all edges, based on the following determination:
+4. If we're working with a type of information, assign a weight of 1 if this is lost in this conversion. If the status of the property is unknown in either format involved in this conversion, assume that they _don't_ support it to be on the safe side
+5. If we're working with numerical precision, assign a weight of 1 plus the number of digits of precision lost in the conversion, minimum 1 if no digits are lost or some are gained
+6. If we're working with time, assign a weight of the average conversion time in milliseconds
+7. Run the pathfinding algorithm to find a set of all equally-short paths
+8. If no path is returned, the conversion is impossible, so indicate that. If only one path is returned, return that path
+9. Unless this is the final property, create a new graph featuring only formats that appear in one of the shortest paths and their possible conversions, then return to step 1 and continue this process on the next-most-important property
+10. If this is the final property and more than one path has been found to be equally short, return whichever is first in the list
