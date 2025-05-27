@@ -59,6 +59,7 @@ gui-test = [
 ]
 deploy = ["Flask", "gunicorn", "requests"]
 doc = ["pdoc3"]
+plots = ["matplotlib"]
 
 [project.scripts]
 psdi-data-convert = "psdi_data_conversion.main:main"
