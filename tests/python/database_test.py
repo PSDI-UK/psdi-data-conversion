@@ -229,6 +229,9 @@ def test_conversion_pathways():
     # Check that we get `None` for converting from one format to itself
     assert get_conversion_pathway("cif", "cif") is None
 
+    # Check that we get `None` for an impossible conversion
+    assert get_conversion_pathway("cif", "abinit") is None
+
     # Check that we get the expected single-step conversion for a known direct conversion
     cif_to_inchi_path = get_conversion_pathway("cif", "inchi", only="registered")
     assert len(cif_to_inchi_path) == 1

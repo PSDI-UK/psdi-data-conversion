@@ -9,12 +9,14 @@ from __future__ import annotations
 
 import json
 import os
+import sys
 from copy import copy
 from dataclasses import dataclass, field
 from functools import lru_cache
 from itertools import product
 from logging import getLogger
 from typing import Any, Literal, overload
+from warnings import catch_warnings
 
 import igraph as ig
 
@@ -863,12 +865,18 @@ class ConversionsTable:
             # TODO: When there's some better measure of conversion quality, use it to choose which converter to use
             return [l_possible_direct_conversions[0]]
 
-        # Query the graph for the shortest paths to perform this conversion
         graph: ig.Graph = self._get_desired_graph(only)
-        l_paths: list[list[int]] = graph.get_shortest_paths(in_format_info.id, to=out_format_info.id)
+
+        # Query the graph for the shortest paths to perform this conversion. If no conversions are possible, igraph
+        # will print a warning, which we catch and suppress here
+        with catch_warnings(record=True) as l_warnings:
+            l_paths: list[list[int]] = graph.get_shortest_paths(in_format_info.id, to=out_format_info.id)
+            for warning in l_warnings:
+                if "Couldn't reach some vertices" not in str(warning.message):
+                    print(warning, file=sys.stderr)
 
         # Check if any paths are possible
-        if not l_paths:
+        if not l_paths or not l_paths[0]:
             return None
 
         # Check each path to find the first which doesn't lose any unnecessary info, or else the one which loses the
