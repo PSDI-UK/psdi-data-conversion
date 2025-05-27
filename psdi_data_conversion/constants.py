@@ -151,7 +151,7 @@ QUAL_CONN_LABEL = "Atomic connections are"
 QUAL_2D_KEY = "two_dim"
 QUAL_2D_LABEL = "2D atomic coordinates are"
 QUAL_3D_KEY = "three_dim"
-QUAL_3D_LABEL = "2D atomic coordinates are"
+QUAL_3D_LABEL = "3D atomic coordinates are"
 
 # Notes for conversion quality
 QUAL_NOTE_IN_UNKNOWN = ("Potential data extrapolation: {} represented in the output format but its representation in "
