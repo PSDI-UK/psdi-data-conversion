@@ -8,16 +8,16 @@ from multiprocessing import Process
 import pytest
 
 from psdi_data_conversion.testing.constants import DEFAULT_ORIGIN
+from psdi_data_conversion.testing.conversion_test_specs import l_gui_test_specs
 from psdi_data_conversion.testing.gui import (GuiTestSpecRunner, wait_and_find_element, wait_for_cover_hidden,
                                               wait_for_element)
-from psdi_data_conversion.testing.conversion_test_specs import l_gui_test_specs
 
 # Skip all tests in this module if required packages for GUI testing aren't installed
 try:
-    from selenium.common.exceptions import NoSuchElementException
     from selenium import webdriver
-    from selenium.webdriver.common.by import By
+    from selenium.common.exceptions import NoSuchElementException
     from selenium.webdriver import FirefoxOptions
+    from selenium.webdriver.common.by import By
     from selenium.webdriver.firefox.service import Service as FirefoxService
     from selenium.webdriver.firefox.webdriver import WebDriver
     from webdriver_manager.firefox import GeckoDriverManager
@@ -41,6 +41,11 @@ origin = os.environ.get("ORIGIN", DEFAULT_ORIGIN)
 @pytest.fixture(scope="module", autouse=True)
 def common_setup():
     """Autouse fixture which starts the app before tests and stops it afterwards"""
+
+    # If the origin is set to something else, don't start the local server here
+    if origin != DEFAULT_ORIGIN:
+        yield
+        return
 
     server = Process(target=start_app)
     server.start()

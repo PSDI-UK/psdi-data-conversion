@@ -303,6 +303,20 @@ def test_get_chained(capsys):
         assert string_is_present_in_out(f"{i+1}) Convert from {step[1].name} to {step[2].name} with "
                                         f"{step[0].pretty_name}")
 
+    # Now try getting a conversion which is not in fact possible, even chained
+
+    in_format = "cif"
+    out_format = "abinit"
+
+    run_with_arg_string(f"-l -f {in_format} -t {out_format}")
+    captured = capsys.readouterr()
+    compressed_out: str = captured.out.replace("\n", "").replace(" ", "")
+
+    assert string_is_present_in_out(f"No chained conversions are possible from {in_format} to {out_format}.")
+
+    # Check that igraph's warning is suppressed
+    assert not string_is_present_in_out("Couldn't reach some vertices")
+
 
 def test_conversion_info(capsys):
     """Test the option to provide detail on degree of success and arguments a converter allows for a given conversion
