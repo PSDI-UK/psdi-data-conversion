@@ -264,4 +264,6 @@ When a number is expressed to a given number of digits, e.g. "3.510", the possib
 \sigma^2 = \frac{1}{12}\left(a-b\right)^2
 ```
 
-where $a$ is the maximum of the range and $b$ is the minimum.
+where $a$ is the maximum of the range and $b$ is the minimum. In cases where this number is converted to another number with the same precision, this variance can be used as a rough estimate of the loss of precision. It's possible that numbers will simply be copied over without any loss of precision, but it's best to be safest and impose a minimal cost for each conversion.
+
+If this value is stored to fewer decimal places, e.g. for "3.51", the range becomes 3.505 through 3.515, increasing the variance by a factor of 100 per decimal place lost. So if we wished to represent this directly in the weight, we could impose weight of $100^N$, where $N$ is the number of decimal places lost, with a minimum value of 1.
