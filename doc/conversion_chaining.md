@@ -215,3 +215,53 @@ The procedure for this step is as follows:
 - The molreport to InChI conversion has bit mask 00000000 00000000 00010000 00000001
 - The MMCIF to MOLDY conversion requested has bit mask 00000001 00000100 00010000 01000001
 - A bitwise "and" combination of these gives 00000000 00000000 00010000 00000001 (decimal representation 4,097)
+
+4. Run the pathfinding algorithm using these weights, collecting a list of the shortest paths
+
+### Weighted combination 2: Precision and time
+
+The first weighted combination will cut the number of possible shortest paths down to a much smaller number. In the current setup, there are likely to be fewer than 10 pathways at this point, so a full pathfinding approach might not even be necessary to determine the shortest based on loss of precision and time, with a simple search through the list potentially being faster given the lower overhead. However, this may not continue to be the case as the project expands and more converters are integrated with it, so a full pathfinding approach is probably still best here.
+
+The first step here is to prune down the graph to just the formats and conversions which are on one of the shortest paths. This is best done by constructing sets of each from the list of shortest paths, then reconstructing a smaller graph using only these. Note that this smaller graph won't include all possible conversions between formats within it, but only those which were used in one of the shortest paths determined before.
+
+Next, we have to determine a weight for precision and time for each of the edges in this new graph, prioritising the former. We'll start with the latter though, since placing an upper bound on it will let us know how much of a relative weight we need to give to precision so that differences in runtime will never dominate.
+
+#### Time weights
+
+At present, we lack information on the typical time to perform different conversions, so the following is speculative. While it is in theory possible to test and record times for all conversions, this is very demanding and likely not worth the efforts. Since all the converters incorporated so far support conversion between any pair of supported formats (albeit with some formats only being supported as sources and some only as targets), a rough formula to estimate the time for a given conversion would be:
+
+```math
+t_{\rm tot}(x) = t_{\rm o} + t_{\rm s}(x) + t_{\rm t}(x)
+```
+
+where $t_{\rm o}$ is the overhead time used by the converter for any conversion, $t_{\rm s}$ is the time needed to convert from the source format, $t_{\rm t}$ is the time needed to convert to the target format, and $x$ represents the size of the file to be converted.
+
+The overhead time will be the same for all conversions, and we already intend for the precision weight to include a minimum weight for all conversions, so it serves no purpose including it here. The remaining terms will likely share the same time-dependence, so we can reasonably divide it out, getting a simplified time weight equation:
+
+```math
+w_{\rm tot} = w_{\rm s} + w_{\rm t}
+```
+
+where the time weight for a given conversion is simply the sum of time weights for the source and target formats (note that this will still differ for each converter). Reasonable values for these could be determined through the following procedure:
+
+1. Choose a "standard" file. Convert it to every format supported by each converter for direct conversion many times, timing the conversion process and averaging for each target format. The lowest such time will be our zero-point; subtract it from all times. The remaining time in milliseconds can then be used as the target time weight for each format. Also note the average of these weights, which can be used as a default value.
+2. For each of these converted files, convert it back to the original format of the standard file, again timing, averaging, and subtracting off the zero-point. This will give the source time weight for each format.
+3. Repeat this procedure for each converter, getting separate source and target weights for each format with each converter.
+
+Note that this process won't produce weights for the format of the original standard file. This will have to be determined in a separate step, using comparisons of conversions to/from it with other formats and their conversions to each other.
+
+Milliseconds will likely be the most useful unit for time weights, based on preliminary testing.
+
+Note that as time is the lowest-priority factor in pathfinding, gathering accurate time weights is a low-priority task. In the meantime, default weights can be used.
+
+#### Precision weights
+
+From the previous section, we noted that time weights will be measured in milliseconds. From testing, a reasonable upper bound for the time of a conversion is 10 seconds, but the weights will be measured on smaller files and thus likely to be much less than this. Since we only have two factors to worry about for this combination, we can be sure we're well in the clear by using a base precision weight of 100,000 (equivalent to a total conversion time of 100 seconds on small test files, which should never be the case). For brevity, we will omit this factor from the discussion below.
+
+When a number is expressed to a given number of digits, e.g. "3.510", the possible true number represented will be one that could round to it, here 3.5095 through 3.5105. With no other information, all values in this range are equally likely, so this can be described as a uniform distribution, which has a variance of:
+
+```math
+\sigma^2 = \frac{1}{12}\left(a-b\right)^2
+```
+
+where $a$ is the maximum of the range and $b$ is the minimum.
