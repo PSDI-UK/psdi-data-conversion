@@ -14,9 +14,7 @@ The full graph of formats and allowed conversions looks like the following, with
 
 We can see from this that most formats are only supported by one converter, with only a handful being supported by more than one. This underlines the necessity of supporting chained conversions, as a random pair of two formats will not be supported by a direct conversion more often than not.
 
-## Deciding an optimal path
-
-### General pathfinding
+## General pathfinding
 
 Rather than tackling this full graph, let's look at a much smaller, more manageable subset it, with just four supported formats:
 
@@ -53,7 +51,7 @@ An exhaustive search of all paths that don't retrace their steps would find here
 
 But an exhaustive search isn't reasonable with larger maps, as the number of possible routes scales exponentially with the number of vertices (`O(e^V)` time). Luckily, this is a solved problem in graph theory, and modern implementations of [Dijkstra's_algorithm](https://en.wikipedia.org/wiki/Dijkstra%27s_algorithm) can find the optimal route in `O(E + V log(V))` time (where E is the number of edges and V is the number of vertices), making the problem easily tractable for a graph of the size we're working with.
 
-### Determining pathfinding weights
+## Determining pathfinding weights
 
 In the above example, we chose time as the relevant property we wanted to minimise in pathfinding, but of course we could have chosen something else, such as price, and minimised that instead. The chosen quantity is referred to as the "weight" of a path in the general case. Dijkstra's algorithm functions with any set of unbounded non-negative weights, even if they don't follow intuitive physical properties such as the [triangle inequality](https://en.wikipedia.org/wiki/Triangle_inequality), i.e. it's allowable for A->B to have a greater weight than the sum of A->C and C->B.
 
@@ -69,7 +67,7 @@ This is in fact the case we're dealing with when it comes to format conversions.
 
 Dijkstra's algorithm requires only one weight per path, so we have to find some way to combine these aspects.
 
-#### Weighted combination
+### Weighted combination
 
 The most straightforward way to have only one weight per path is to calculate it a weighted combination of the relevant factors, e.g.:
 
@@ -83,7 +81,7 @@ But the situation here is actually a bit more complicated. We don't simply wish 
 
 Strictly speaking, this can't be accomplished with a weighted combination, as no matter how different the weights are, there could always be extreme cases where the weight is overcome. This might occur rarely enough that it gives an acceptably low rate of error though, so we'll pin this possibility while we investigate if other solutions are worthwhile.
 
-#### Tiered pathfinding
+### Tiered pathfinding
 
 In the example here of losing one's luggage, this is a binary event - either the condition of keeping one's luggage through the trip is satisfied or it isn't. With this binary condition, there isn't likely to be a single best path, but rather many paths which fulfill this criterion equally.
 
@@ -93,7 +91,7 @@ The fact that the high-importance criteria isn't binary actually isn't necessary
 
 This has the advantage over the previous approach that it will guarantee that the strict relative importance of the criteria is respective, but it comes with the drawback of greater computational overhead, needing to run the pathfinding algorithm multiple times (or else running some analogous operation on the list of shortest pathways from the first step such as a sort). This will also get more complicated to program if there are more than two importance tiers.
 
-#### Custom weight type
+### Custom weight type
 
 It's possible to run the pathfinding in a single stage with strict tiering of criteria if we use a custom data type for the weights of paths. The only requirements that Dijkstra's algorithm places on the weights is that they be non-negative, addable, and comparable. It's possible to construct a data type which meets these criteria and also allows for strict importance tiering, and in fact such a type is already in use for version numbering.
 
@@ -110,9 +108,9 @@ A single pathfinding algorithm could then be run, which will prioritise trips wh
 
 This solution keeps the programming of the pathfinding simple (the extra complexity going into the definition of the data type), but will slow it down as comparisons of a custom data type such as this will take longer than native types, as compilers, hardware etc. are optimised for native numerical types. This also has the issue that if a third-party library is used for the pathfinding, it isn't likely to support a custom data type for weights. For instance, the `igraph` library only supports integer and floating-point weights.
 
-### Optimal approach for our task
+## Optimal approach for our task
 
-#### Nature of the problem
+### Nature of the problem
 
 To determine which approach is best for our task, let's now get into the details of what we need to do.
 
@@ -146,7 +144,7 @@ This leads to an important conclusion about this problem: Edge weights are not i
 
 If we want to be particularly careful, we should also say that this weight should only be applied the first time this information is lost along a pathway. This is difficult to implement though as it would mean that an edge would have a different weight depending on the path taken to get to its source vertex, which is not standard and would require a completely different pathfinding algorithm. However, this would require a particularly long chain of conversions - which is unlikely to occur - and the impact if it did would not be significant - an already dispreferred path would be even more dispreferred - so the amount of work needed to implement this would not nearly be justified.
 
-#### Constraint summary
+### Constraint summary
 
 Putting this all together, we have the following list of properties to weight, in descending order of importance:
 
@@ -164,7 +162,7 @@ With the following notes:
 - Not all formats currently list what information they support
 - Any loss of information should only be weighted if both the source and target format support this information, and similarly with numerical precision
 
-#### Our approach
+### Our approach
 
 Let's look again at the graph of all conversions:
 
@@ -172,19 +170,48 @@ Let's look again at the graph of all conversions:
 
 Note that the vast majority of formats are supported by only one converter, with only a small number of formats being supported by more than one and acting as bridges. Converters also tend to support any-to-any conversions of formats they support, with the only exceptions being some formats they can only convert from, and others they can only convert to.
 
-This implies that in the vast majority of cases, conversion chains will be short, likely with two intermediate formats at most, and typically just one. And since there are only a relative few formats that can act as bridges, any filter on equally-short pathways (however "short" is defined) is going to result in a relatively small number of pathways.
+This implies that in the vast majority of cases, conversion chains will be short, likely with two intermediate formats at most, and typically just one. And since there are only a relative few formats that can act as bridges, any filter on equally-short pathways (however "short" is defined, as long as there's at least some cost to each conversion) is going to result in a relatively small number of pathways.
 
-Since any initial filter will reduce the number of potential pathways so much, the additional computational overhead cost of the tiered pathfinding approach will be minimal. Meanwhile, with so many different factors to consider, the weighted combination approach could become unwieldy. Either solution is probably workable, but it seems like the tiered pathfinding approach is best here.
+We also face the key issue here that any weights we assign to conversions (aside from for the conversion time) will depend on what the original source format and final target format are. This means there is going to be computational overhead in updating the edge weights, which will be more costly the more edges we have to deal with.
 
-The approach we'll take is thus the following:
+Since any initial filter will reduce the number of potential pathways so much, the additional computational overhead cost of the tiered pathfinding approach will be minimal. Meanwhile, with so many different factors to consider, the weighted combination approach could become unwieldy. Either solution is probably workable, but consideration of the factors involved leads us to the conclusion that a hybrid approach is best.
 
-1. Choose the most important property that hasn't already been used, starting with Composition
-2. If both the source and target format don't share this property (for the types of information), go back to step 1 with the next property. If the status of the property is unknown for the source or target format, assume they _do_ support it to be on the safe side
-3. Assign weights to all edges, based on the following determination:
-4. If we're working with a type of information, assign a weight of 1 if this is lost in this conversion. If the status of the property is unknown in either format involved in this conversion, assume that they _don't_ support it to be on the safe side
-5. If we're working with numerical precision, assign a weight of 1 plus the number of digits of precision lost in the conversion, minimum 1 if no digits are lost or some are gained
-6. If we're working with time, assign a weight of the average conversion time in milliseconds
-7. Run the pathfinding algorithm to find a set of all equally-short paths
-8. If no path is returned, the conversion is impossible, so indicate that. If only one path is returned, return that path
-9. Unless this is the final property, create a new graph featuring only formats that appear in one of the shortest paths and their possible conversions, then return to step 1 and continue this process on the next-most-important property
-10. If this is the final property and more than one path has been found to be equally short, return whichever is first in the list
+Due to the computational cost of calculating weights for all conversions, we want to do this on the full set of conversions only once, and then use this to reduce the number of formats and edges we need to worry about to a manageable number. After that point, it's less costly to make more complicated weight calculations.
+
+Looking at the list the properties to weight, the first four factors (Composition, Connections, 2D Coordinates, and 3D coordinates) are all binary, the fifth (precision) requires a more complicated comparison and calculation for each conversion, and the sixth (time) is independent. This means we'll benefit most by cutting down the graph before dealing with precision. We thus apply a weighted combination approach first to the first four factors, cut down the graph, then use a second weighted combination approach for the final two.
+
+### Weighted combination 1: Types of information
+
+Since the first four factors are all binary, it can in fact be quite efficient to calculate weights for all of them at once by using bitwise operations. That is, we can use an unsigned integer where different bits represent whether or not we weight for the loss of a given property. We assign the following bits to these properties:
+
+| Property       | Bit |
+| -------------- | --- |
+| Composition    | 24  |
+| Connections    | 18  |
+| 2D Coordinates | 12  |
+| 3D Coordinates | 6   |
+| (always)       | 0   |
+
+Note here that we also include an always-weight bit at bit 0. This is to impose a minimal cost for any conversion, so that the pathfinding algorithm won't end up including circuitious paths through zero-weight conversions in the list of shortest paths returned from this step.
+
+This set of bits was chosen so that they could all fit into a 32-bit integer value and they are spaced out enough that if used as weights there is negligible chance that any path will accrue enough weight from a lower-importance property to overcome the lack of a weight from a higher-importance property (the 6-bit difference would require 64 occurences to be overcome, which is exceedingly unlikely to cause a problem even imaging the future addition of many different specialised converters).
+
+The procedure for this step is as follows:
+
+1. For each conversion in the database, determine a bit mask, where 1 is set in the bit for a property if it's supported in the source property and not supported in the target property (if unknown for the source, assume it to be supported, and if unknown for the target, assume it to not be supported). This can be precalculated for every conversion, since this part doesn't depend on the source and target formats. For instance, take the conversion from molreport to InChI:
+
+- Molreport supports Composition, Connections, and 2D Coordinates
+- InChI supports Composition and Connections
+- 2D Coordinates is thus supported only by the source format, so we set the bit for it (bit 12) to be 1, as well as the always-on bit (bit 0), getting the bit mask 00000000 00000000 00010000 00000001 (decimal representation 4,097)
+
+2. Determine a bit mask for the specific conversion requested, where 1 is set in the bit for a property if it's supported in both the original source and final target format (if unknown, consider it supported). For instance, for the conversion from MMCIF to MOLDY:
+
+- MMCIF supports all properties
+- MOLDY has unknown support for all properties
+- We assume MOLDY has support for all properties to be on the safe side. Thus, both the original source and final target support all properties, so we set 1 for all of them, getting the bit mask 00000001 00000100 00010000 01000001 (decimal representation 17,043,521)
+
+3. Calculate the weights for all conversions by performing a bitwise "and" operation on their bit mask and the bit mask for the specific conversion requeted. This is the weight to be used for this conversion in determining a path for the conversion requested. For this example:
+
+- The molreport to InChI conversion has bit mask 00000000 00000000 00010000 00000001
+- The MMCIF to MOLDY conversion requested has bit mask 00000001 00000100 00010000 01000001
+- A bitwise "and" combination of these gives 00000000 00000000 00010000 00000001 (decimal representation 4,097)
