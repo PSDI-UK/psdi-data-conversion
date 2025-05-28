@@ -256,7 +256,7 @@ Note that as time is the lowest-priority factor in pathfinding, gathering accura
 
 #### Precision weights
 
-From the previous section, we noted that time weights will be measured in milliseconds. From testing, a reasonable upper bound for the time of a conversion is 10 seconds, but the weights will be measured on smaller files and thus likely to be much less than this. Since we only have two factors to worry about for this combination, we can be sure we're well in the clear by using a base precision weight of 100,000 (equivalent to a total conversion time of 100 seconds on small test files, which should never be the case). For brevity, we will omit this factor from the discussion below.
+From the previous section, we noted that time weights will be measured in milliseconds. From testing, a reasonable upper bound for the time of a conversion is 10 seconds, but the weights will be measured on smaller files and thus likely to be much less than this. Since we only have two factors to worry about for this combination, we can be sure we're well in the clear by using a base precision weight of 65,536 (equivalent to a total conversion time of ~65.5 seconds on small test files, which should never be the case). For brevity, we will omit this factor from the discussion below.
 
 When a number is expressed to a given number of digits, e.g. "3.510", the possible true number represented will be one that could round to it, here 3.5095 through 3.5105. With no other information, all values in this range are equally likely, so this can be described as a uniform distribution, which has a variance of:
 
@@ -267,3 +267,7 @@ When a number is expressed to a given number of digits, e.g. "3.510", the possib
 where $a$ is the maximum of the range and $b$ is the minimum. In cases where this number is converted to another number with the same precision, this variance can be used as a rough estimate of the loss of precision. It's possible that numbers will simply be copied over without any loss of precision, but it's best to be safest and impose a minimal cost for each conversion.
 
 If this value is stored to fewer decimal places, e.g. for "3.51", the range becomes 3.505 through 3.515, increasing the variance by a factor of 100 per decimal place lost. So if we wished to represent this directly in the weight, we could impose weight of $100^N$, where $N$ is the number of decimal places lost, with a minimum value of 1.
+
+This level of accurately representing the variance isn't necessary, however. We're free to scale the values as we wish, as long as there isn't a risk of lower-tier changes overwhelming higher-tier changes. If we were to use a similar method to the weights for types of information and use bits for each level of precision lost, we would need to reserve 3 bits for each digit to be comfortable.
+
+If we account for the values taken up by the time weight, this gives only enough room to represent 5 digits of precision loss in a 32-bit integer, which isn't likely to be enough - formats can range from just a few digits up to 16, or possibly more. It's safest to use a 64-bit integer here, giving us triple the room to store precision weight information, which should be enough for reasonable use cases.
