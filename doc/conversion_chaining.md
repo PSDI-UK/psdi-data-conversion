@@ -271,3 +271,38 @@ If this value is stored to fewer decimal places, e.g. for "3.51", the range beco
 This level of accurately representing the variance isn't necessary, however. We're free to scale the values as we wish, as long as there isn't a risk of lower-tier changes overwhelming higher-tier changes. If we were to use a similar method to the weights for types of information and use bits for each level of precision lost, we would need to reserve 3 bits for each digit to be comfortable.
 
 If we account for the values taken up by the time weight, this gives only enough room to represent 5 digits of precision loss in a 32-bit integer, which isn't likely to be enough - formats can range from just a few digits up to 16, or possibly more. It's safest to use a 64-bit integer here, giving us triple the room to store precision weight information, which should be enough for reasonable use cases.
+
+#### Putting them together
+
+Now, let's put these together into a specific procedure. The weight for this tier will be the sum of a weight for time (capped at a value of 65,535) and a weight for precision (setting bits from 2^16 = 65,536 upwards based on which digits are lost). The time weight is simply the sum of the calculated weights for the source and target formats, with the cap imposed. The precision weight is more complicated, calculated through the following procedure:
+
+1. Determine the lower precision of the original source and final target formats - call this number of digits $D_{\rm 0}$
+2. For each conversion, compare the precision of the target format $D_i$ to $D_{\rm 0}$, to get the number of digits lost $L_i = D_{\rm 0} - D_i$, constrained to the values $0 \leq L_i \leq 12$ - the minimum of 0 imposes a minimum cost for each conversion, and the maximum of 12 prevents it from overflowing a 64-bit integer.
+3. The precision weight is then determined by setting bit $16 + 3L_i$ to 1, i.e. setting the value to $2^{16 + 3L_i}$
+
+To illustrate this, let's imagine the following scenario, for the pathway A -> B -> C -> D:
+
+- Format A: 8-digit precision, source time weight 10, target time weight 11
+- Format B: 9-digit precision, source time weight 20, target time weight 25
+- Format C: 4-digit precision, source time weight 5, target time weight 6
+- Format D: 9-digit precision, source time weight 30, target time weight 35
+
+The time weights for each conversion are:
+
+- A -> B: Source time weight of A (10) + Target time weight of B (25) = 35
+- B -> C: Source time weight of B (20) + Target time weight of C (6) = 26
+- C -> D: Source time weight of C (5) + Target time weight of D (35) = 40
+
+For the precision weight, $D_{\rm 0}$ is set to the lower precision of format A (8) and D (9): 8. The precision weights for each conversion are then calculated to be:
+
+- A -> B: Target format's precision is $D_{\rm B}=9$; $D_{\rm 0} - D_{\rm B} = -1$; bounded to $L_{\rm B} = 0$; giving precision weight $2^{16+3*0}=65,536$
+- B -> C: Target format's precision is $D_{\rm C}=4$; $D_{\rm 0} - D_{\rm C} = 4$; already within bounds, so $L_{\rm C} = 4$; giving precision weight $2^{16+3*4}=268,435,456$
+- C -> D: Target format's precision is $D_{\rm D}=9$; $D_{\rm 0} - D_{\rm D} = -1$; bounded to $L_{\rm D} = 0$; giving precision weight $2^{16+3*0}=65,536$
+
+The combined precision and time weights for each conversion are then:
+
+- A -> B: Time weight (35) + Precision weight (65,536) = 65,571
+- B -> C: Time weight (26) + Precision weight (268,435,456) = 268,435,482
+- C -> D: Time weight (40) + Precision weight (65,536) = 65,576
+
+The combined precision and time weights can then be assigned to all conversions in the reduced graph, and the pathfinding algorithm run on it to find all equally-shortest paths. In the case that one shortest path is found, it's returned as the best path. If more than one is found, whichever is the first in the list can be returned.
