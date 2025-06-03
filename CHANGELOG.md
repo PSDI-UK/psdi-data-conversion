@@ -5,6 +5,7 @@
 ### Bugfixes
 
 - Fixed bug where when a conversion pathway is requested which turns out to be impossible, an exception is thrown instead of `None` being returned
+- The logging level in the production deployment will now properly be INFO, while it will be DEBUG in the dev deployment
 
 ## v0.2.0
 
