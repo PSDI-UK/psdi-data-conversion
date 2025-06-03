@@ -49,7 +49,8 @@ The following tasks should be completed before merging a release candidate branc
 - Check that the project version is updated to the desired new version in all places it appears:
 
   - `CHANGELOG.md` (The top section should reflect the new version)
-  - `README.md` (The top line should reflect the new version)
+ 
+- Update the release date at the top of `README.md`
 
 - Ensure that all automated tests and checks pass - these should be run automatically on the PR opened above
 
