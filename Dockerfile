@@ -57,7 +57,6 @@ ENV SHA=$SHA
 
 # Set LOG_LEVEL to a desired level (e.g. "debug") to force all logging to be at that level. Leave blank for default
 # behaviour (INFO+ to user log, ERROR+ to server log and stdout)
-ENV LOG_LEVEL=debug
 
 EXPOSE 8000
 

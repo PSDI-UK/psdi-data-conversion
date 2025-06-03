@@ -1,5 +1,18 @@
 # Changelog for PSDI Data Conversion
 
+## v0.2.1
+
+### Bugfixes
+
+- Fixed bug where when a conversion pathway is requested which turns out to be impossible, an exception is thrown instead of `None` being returned
+- The logging level in the production deployment will now properly be INFO, while it will be DEBUG in the dev deployment
+- Fixed the label for formats supporting 3D coordinates, which was unintentionally a duplicate of the 2D label
+- Fixed crash when requesting info on a conversion which is impossible even with chained conversions
+
+### Documentation Changes
+
+- Added file `doc/conversion_chaining.md`, which explains the thought process behind the algorithm we (intend to) use for finding the best chained conversion
+
 ## v0.2.0
 
 ### New and Changed Functionality
