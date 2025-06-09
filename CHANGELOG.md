@@ -1,5 +1,11 @@
 # Changelog for PSDI Data Conversion
 
+## v0.2.2
+
+### Testing Changes
+
+- Disabled automated MacOS testing, which started failing due to an update on GitHub's end, while we decide how to fix it
+
 ## v0.2.1
 
 ### Bugfixes
