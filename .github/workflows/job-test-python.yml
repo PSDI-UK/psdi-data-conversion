@@ -21,9 +21,11 @@ jobs:
       matrix:
         os: [ubuntu-latest]
         secondary: [false]
-        include:
-          - os: [macos-latest]
-            secondary: true
+        # Temporarily disable MacOS tests due to bug introduced in recent GitHub version update, while we decide how to
+        # address it
+        # include:
+        #   - os: [macos-latest]
+        #     secondary: true
 
     steps:
       - name: Checkout repo
