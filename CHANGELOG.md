@@ -1,5 +1,11 @@
 # Changelog for PSDI Data Conversion
 
+## v0.2.2
+
+### Bugfixes
+
+- Fixed bug where c2x and Atomsk converters would fail if the current working directory wasn't the base directory of the project
+
 ## v0.2.1
 
 ### Bugfixes
