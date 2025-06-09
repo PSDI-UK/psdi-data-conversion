@@ -579,7 +579,7 @@ def check_file_match(filename: str, ex_filename: str) -> str:
 
     # Read in both files
     text = open(filename, "r").read()
-    ex_text = open(ex_filename, "r").read()
+    ex_text = open(get_path_in_project(ex_filename), "r").read()
 
     # We want to check they're the same without worrying about whitespace (which doesn't matter for this format),
     # so we accomplish this by using the string's `split` method, which splits on whitespace by default
