@@ -1,5 +1,15 @@
 # Changelog for PSDI Data Conversion
 
+## v0.2.2
+
+### Bugfixes
+
+- Fixed bug where c2x and Atomsk converters would fail if the current working directory wasn't the base directory of the project
+
+### Testing Changes
+
+- Disabled automated MacOS testing, which started failing due to an update on GitHub's end, while we decide how to fix it
+
 ## v0.2.1
 
 ### Bugfixes
