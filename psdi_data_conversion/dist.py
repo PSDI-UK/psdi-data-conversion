@@ -9,7 +9,7 @@ import os
 import shutil
 import sys
 
-import psdi_data_conversion
+from psdi_data_conversion.file_io import get_package_path
 
 # Labels for each platform (which we use for the folder in this project), and the head of the name each platform will
 # have in `sys.platform`
@@ -29,7 +29,7 @@ D_DIST_NAME_HEADS = {LINUX_LABEL: LINUX_NAME_HEAD,
 
 
 # Determine the fully-qualified binary directory when this module is first imported
-BIN_DIR: str = os.path.join(psdi_data_conversion.__path__[0], "bin")
+BIN_DIR: str = os.path.join(get_package_path(), "bin")
 
 
 def get_dist():

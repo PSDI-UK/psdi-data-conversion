@@ -24,6 +24,7 @@ from psdi_data_conversion import constants as const
 from psdi_data_conversion.converter import (L_REGISTERED_CONVERTERS, L_SUPPORTED_CONVERTERS,
                                             get_registered_converter_class)
 from psdi_data_conversion.converters.base import FileConverter, FileConverterException
+from psdi_data_conversion.file_io import get_package_path
 from psdi_data_conversion.utils import regularize_name
 
 # Keys for top-level and general items in the database
@@ -1206,10 +1207,7 @@ def get_database_path() -> str:
     str
     """
 
-    # For an interactive shell, __file__ won't be defined for this module, so use the constants module instead
-    reference_file = os.path.realpath(const.__file__)
-
-    qualified_database_filename = os.path.join(os.path.dirname(reference_file), const.DATABASE_FILENAME)
+    qualified_database_filename = os.path.join(get_package_path(), const.DATABASE_FILENAME)
 
     return qualified_database_filename
 

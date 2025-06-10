@@ -20,6 +20,7 @@ from typing import Any
 from psdi_data_conversion import constants as const
 from psdi_data_conversion import log_utility
 from psdi_data_conversion.dist import bin_exists, get_bin_path, get_dist
+from psdi_data_conversion.file_io import get_package_path
 from psdi_data_conversion.security import SAFE_STRING_RE, string_is_safe
 
 try:
@@ -744,7 +745,9 @@ class ScriptFileConverter(FileConverter):
         if self.required_bin is not None:
             env["BIN_PATH"] = get_bin_path(self.required_bin)
 
-        process = subprocess.run(['sh', f'psdi_data_conversion/scripts/{self.script}', *self._get_script_args()],
+        script_abs_path = os.path.join(get_package_path(), "scripts", self.script)
+
+        process = subprocess.run(['sh', script_abs_path, *self._get_script_args()],
                                  env=env, capture_output=True, text=True)
 
         self.out = process.stdout

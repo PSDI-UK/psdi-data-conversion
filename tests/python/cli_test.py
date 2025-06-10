@@ -9,6 +9,7 @@ import logging
 import os
 import shlex
 import sys
+from tempfile import TemporaryDirectory
 from unittest.mock import patch
 
 import pytest
@@ -48,7 +49,7 @@ def get_parsed_args(s):
 
 
 @pytest.fixture(autouse=True)
-def setup_test() -> None:
+def setup_test():
     """Reset global aspects before a test, so that different tests won't interfere with each other"""
 
     # Remove the global log file if one exists
@@ -59,6 +60,14 @@ def setup_test() -> None:
 
     # Clear any existing loggers so new ones will be created fresh
     logging.Logger.manager.loggerDict.clear()
+
+    # Change directory to a temporary directory, so we can be sure that the script can be run from anywhere and not
+    # just the project directory and/or $HOME
+    old_cwd = os.getcwd()
+    with TemporaryDirectory(prefix="test_cwd") as tmp_cwd:
+        os.chdir(tmp_cwd)
+        yield
+    os.chdir(old_cwd)
 
 
 @pytest.mark.parametrize("test_spec", l_cla_test_specs,
