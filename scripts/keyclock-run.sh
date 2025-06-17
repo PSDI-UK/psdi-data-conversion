@@ -3,12 +3,15 @@
 export KEYCLOAK_URL="https://auth.psdi-dev.vbox"
 export KEYCLOAK_REALM="labtrove"
 export KEYCLOAK_CLIENT_ID="data-conversion-service"
-export KEYCLOAK_SECRET="WfHgzbu43Cppde48PbMWBLfL7kTovqxi"
 export KEYCLOAK_REDIRECT_URL="https://dcs.psdi-dev.vbox/oidc_callback"
 
-export SESSION_TIMEOUT_SECONDS="30"
+# Will need to be a GitHub secret in the future (with a different value)
+export KEYCLOAK_SECRET="WfHgzbu43Cppde48PbMWBLfL7kTovqxi" 
 
-export REQUESTS_CA_BUNDLE="/etc/pki/tls/certs/psdi/psdi-dev.crt"
+export SESSION_TIMEOUT_SECONDS="1800"
+
+# Not needed if just using regular SSL
+# export REQUESTS_CA_BUNDLE="/etc/pki/tls/certs/psdi/psdi-dev.crt" 
 
 export GUNICORN="/home/dgc/.local/bin/gunicorn"
 
