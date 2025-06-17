@@ -157,12 +157,6 @@ def get_authenticated_user():
 
                 try:
 
-                    decoded_user_key = jwt.decode(
-                        auth_token,
-                        key=user_key["public_key"],
-                        algorithms=['ES256']
-                    )
-
                     authenticated_user = user_key["access_token"]
                     user_key["last_used"] = datetime.utcnow()
 
