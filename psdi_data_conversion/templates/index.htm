@@ -33,6 +33,7 @@
     document.documentElement.setAttribute("service-mode", service_mode);
     document.documentElement.setAttribute("production-mode", production_mode);
   </script>
+  <script src="static/javascript/authentication.js"></script>
 </head>
 
 <body marginwidth="0">
@@ -58,6 +59,15 @@
 
   <form name="gui" class="gui">
     <div class="max-width-box">
+      <div style="background: yellow; margin: 1em; padding: 1em">
+        <p>Logged in = {{ logged_in }}</p>
+        {% if logged_in %}
+        <div>Logged in as &quot;{{ user_label }}&quot;</div>
+        <a href="{{ logout_url }}">Logout</a>
+        {% else %}
+        <a id="loginLink" href="{{ login_url }}">Login</a>
+        {% endif %}
+      </div>
       <p>Your one-stop shop for file format conversion, PSDI’s Data Conversion Service enables users to seamlessly
         convert between different file formats and assess the quality of proposed conversions. This is the
         {% if service_mode %}web{% else %}local GUI{% endif %} version of our service. To find out more about Data

@@ -19,6 +19,8 @@ from psdi_data_conversion.gui.accessibility import init_accessibility
 from psdi_data_conversion.gui.env import get_env
 from psdi_data_conversion.gui.get import init_get
 from psdi_data_conversion.gui.post import init_post
+from psdi_data_conversion.gui.authentication import init_authentication
+
 
 _app: Flask | None = None
 
@@ -54,6 +56,7 @@ def _init_app():
     init_get(app)
     init_post(app)
     init_accessibility(app)
+    init_authentication(app)
 
     return app
 
