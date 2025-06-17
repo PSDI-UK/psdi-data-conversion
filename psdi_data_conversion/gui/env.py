@@ -6,7 +6,6 @@ This module handles setting up and storing the state of the environment for the 
 
 import os
 import sys
-import json
 from argparse import Namespace
 from datetime import datetime
 from hashlib import md5
@@ -16,7 +15,7 @@ from typing import TypeVar
 
 from psdi_data_conversion import constants as const
 from psdi_data_conversion import log_utility
-from psdi_data_conversion.gui.authentication import get_login_url, get_logout_url, get_authenticated_user
+from psdi_data_conversion.gui.authentication import get_authenticated_user, get_login_url, get_logout_url
 
 # Env var for the tag and SHA of the latest commit
 TAG_EV = "TAG"
@@ -246,7 +245,7 @@ def get_env_kwargs():
 
     authenticated_user = get_authenticated_user()
 
-    logged_in = authenticated_user != None
+    logged_in = authenticated_user is not None
 
     kwargs["logged_in"] = logged_in
 
