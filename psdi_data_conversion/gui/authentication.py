@@ -8,9 +8,9 @@ import jwt
 import json
 import requests
 
-from datetime import datetime, timedelta
+from datetime import datetime
 from cachetools.func import ttl_cache
-from flask import Flask, Response, abort, request, redirect
+from flask import Flask, abort, request, redirect
 from urllib.parse import urlencode, unquote
 
 
