@@ -115,7 +115,7 @@ def logout():
 
     authenticated_user = get_authenticated_user()
 
-    if authenticated_user != None:
+    if authenticated_user is not None:
 
         sid = authenticated_user["sid"]
 
@@ -134,7 +134,7 @@ def get_authenticated_user():
 
     auth_token_string = request.cookies.get('auth_token')
 
-    if auth_token_string != None:
+    if auth_token_string is not None:
 
         auth_token = unquote(auth_token_string)
 
