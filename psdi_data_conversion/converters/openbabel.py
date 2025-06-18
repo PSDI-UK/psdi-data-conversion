@@ -266,8 +266,6 @@ class OBFileConverter(FileConverter):
 
                     # Check that the option is valid
                     try:
-                        import pdb
-                        pdb.set_trace()
                         get_out_format_args(self.name, self.to_format_info, arg)
                     except FileConverterDatabaseException:
                         print_wrap(f"WARNING: Output format option '{option}' not recognised for conversion with "
