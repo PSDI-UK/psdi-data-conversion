@@ -226,7 +226,7 @@ class OBFileConverter(FileConverter):
                     try:
                         get_in_format_args(self.name, self.from_format_info, arg)
                     except FileConverterDatabaseException:
-                        print_wrap(f"WARNING: Input format option '{option}' not recognised for conversion with "
+                        print_wrap(f"WARNING: Input format option '{arg}' not recognised for conversion with "
                                    f"{self.name}. If this is valid, the database should be updated to indicate "
                                    "this.", err=True)
 
@@ -268,7 +268,7 @@ class OBFileConverter(FileConverter):
                     try:
                         get_out_format_args(self.name, self.to_format_info, arg)
                     except FileConverterDatabaseException:
-                        print_wrap(f"WARNING: Output format option '{option}' not recognised for conversion with "
+                        print_wrap(f"WARNING: Output format option '{arg}' not recognised for conversion with "
                                    f"{self.name}. If this is valid, the database should be updated to indicate "
                                    "this.", err=True)
 
