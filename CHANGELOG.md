@@ -1,5 +1,11 @@
 # Changelog for PSDI Data Conversion
 
+## v0.2.3
+
+### New and Changed Functionality
+
+- When listing formats supported by a given converter in the command-line application, the description of each format will also be shown in the table
+
 ## v0.2.2
 
 ### Bugfixes
