@@ -229,15 +229,15 @@ def test_detail_converter(capsys):
         assert converter_info.url in captured.out
 
         # Check for list of allowed input/output formats
-        assert "   INPUT  OUTPUT" in captured.out
+        assert "    INPUT    OUTPUT    DESCRIPTION" in captured.out
 
         l_allowed_in_formats, l_allowed_out_formats = get_possible_formats(name)
         for in_format in l_allowed_in_formats:
             output_allowed = "yes" if in_format in l_allowed_out_formats else "no"
-            assert string_is_present_in_out(f"{in_format.disambiguated_name}yes{output_allowed}")
+            assert string_is_present_in_out(f"{in_format.disambiguated_name}yes{output_allowed}{in_format.note}")
         for out_format in l_allowed_out_formats:
             input_allowed = "yes" if out_format in l_allowed_in_formats else "no"
-            assert string_is_present_in_out(f"{out_format.disambiguated_name}{input_allowed}yes")
+            assert string_is_present_in_out(f"{out_format.disambiguated_name}{input_allowed}yes{out_format.note}")
 
         # Check that no errors were produced
         assert not captured.err
