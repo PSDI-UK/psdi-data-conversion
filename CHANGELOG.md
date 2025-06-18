@@ -5,6 +5,11 @@
 ### New and Changed Functionality
 
 - When listing formats supported by a given converter in the command-line application, the description of each format will also be shown in the table
+- A warning will now be printed to stderr and logged if an unrecognised format flag or option is provided for conversion with Open Babel
+
+### Documentation Changes
+
+- Fixed help for the "--from-flags", "--from-options" etc. command-line options to properly describe how values should be provided for them
 
 ## v0.2.2
 
