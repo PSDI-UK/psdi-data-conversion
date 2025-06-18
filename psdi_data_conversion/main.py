@@ -399,12 +399,13 @@ def detail_converter_use(args: ConvertArgs):
 
         print_wrap(f"File formats supported by {converter_name}:", newline=True)
         max_format_length = max([len(x.disambiguated_name) for x in l_all_formats])
-        print(" "*(max_format_length+4) + "   INPUT  OUTPUT")
-        print(" "*(max_format_length+4) + "   -----  ------")
+        print(" "*(max_format_length+4) + "    INPUT    OUTPUT    DESCRIPTION")
+        print(" "*(max_format_length+4) + "    -----    ------    -----------")
         for file_format in l_all_formats:
             in_yes_or_no = "yes" if file_format in l_input_formats else "no"
             out_yes_or_no = "yes" if file_format in l_output_formats else "no"
-            print(f"    {file_format.disambiguated_name:>{max_format_length}}{in_yes_or_no:>8}{out_yes_or_no:>8}")
+            print(f"    {file_format.disambiguated_name:>{max_format_length}}    {in_yes_or_no:<9}{out_yes_or_no:<10}"
+                  f"{file_format.note}")
         print("")
 
     if converter_class.allowed_flags is None:
