@@ -260,29 +260,29 @@ def get_argument_parser():
     parser.add_argument("--delete-input", action="store_true",
                         help="If set, input files will be deleted after conversion, default they will be kept")
     parser.add_argument("--from-flags", type=str, default="",
-                        help="Any command-line flags to be provided to the converter for reading in the input file(s). "
-                             "For information on the flags accepted by a converter and its required format for them, "
-                             "call this script with '-l <converter name>'. If the set of flags includes any spaces, it "
-                             "must be quoted, and if hyphens are used, the first preceding hyphen for each flag must "
-                             "be backslash-escaped, e.g. '--from-flags \"\\-a \\-bc \\--example\"'")
+                        help="String of concatenated one-letter flags for how to read the input file, e.g. "
+                        "``--from-flags xyz`` will set flags x, y, and z. To list the flags supported for a given "
+                        "input format, call ``psdi-data-convert -l -f <format> -w Open Babel`` at the command-line "
+                        "and look for the \"Allowed input flags\" section, if one exists.")
     parser.add_argument("--to-flags", type=str, default="",
-                        help="Any command-line flags to be provided to the converter for writing the output file(s). "
-                             "For information on the flags accepted by a converter and its required format for them, "
-                             "call this script with '-l <converter name>'. If the set of flags includes any spaces, it "
-                             "must be quoted, and if hyphens are used, the first preceding hyphen for each flag must "
-                             "be backslash-escaped, e.g. '--to-flags \"\\-a \\-bc \\--example\"'")
+                        help="String of concatenated one-letter flags for how to write the output file, e.g. "
+                        "``--from-flags xyz`` will set flags x, y, and z. To list the flags supported for a given "
+                        "output format, call ``psdi-data-convert -l -t <format> -w Open Babel`` at the command-line "
+                        "and look for the \"Allowed output flags\" section, if one exists.")
     parser.add_argument("--from-options", type=str, default="",
-                        help="Any command-line options to be provided to the converter for reading in the input "
-                             "file(s). For information on the options accepted by a converter and its required format "
-                             "for them, call this script with '-l <converter name>'. If the set of options includes "
-                             "any spaces, it must be quoted, and the first preceding hyphen for each option must be "
-                             "backslash-escaped, e.g. '--from-options \"\\-x xval --opt optval\"'")
+                        help="String of space-separated options for how to read the input file. Each option \"word\" "
+                        "in this string should start with the letter indicating which option is being used, followed "
+                        "by the value for that option. E.g. ``--from_options a1 b2`` will set the value 1 for "
+                        "option a and the value 2 for option b. To list the options supported for a given input "
+                        "format, call ``psdi-data-convert -l -f <format> -w Open Babel`` at the command-line and look "
+                        "for the \"Allowed input options\" section, if one exists.")
     parser.add_argument("--to-options", type=str, default="",
-                        help="Any command-line options to be provided to the converter for writing the output "
-                             "file(s). For information on the options accepted by a converter and its required format "
-                             "for them, call this script with '-l <converter name>'. If the set of options includes "
-                             "any spaces, it must be quoted, and the first preceding hyphen for each option must be "
-                             "backslash-escaped, e.g. '--to-options \"\\-x xval --opt optval\"'")
+                        help="String of space-separated options for how to write the output file. Each option \"word\" "
+                        "in this string should start with the letter indicating which option is being used, followed "
+                        "by the value for that option. E.g. ``--to_options a1 b2`` will set the value 1 for "
+                        "option a and the value 2 for option b. To list the options supported for a given output "
+                        "format, call ``psdi-data-convert -l -t <format> -w Open Babel`` at the command-line and look "
+                        "for the \"Allowed input options\" section, if one exists.")
     parser.add_argument("-s", "--strict", action="store_true",
                         help="If set, will fail if one of the input files has the wrong extension (including those "
                         "contained in archives, but not the archive files themselves). Otherwise, will only print a "
