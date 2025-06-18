@@ -5,7 +5,6 @@ Created 2025-01-23 by Bryan Gillis.
 Open Babel FileConverter
 """
 
-import sys
 from copy import deepcopy
 
 import py
@@ -13,6 +12,7 @@ from openbabel import openbabel
 
 from psdi_data_conversion.converters.base import FileConverter, FileConverterInputException
 from psdi_data_conversion.security import SAFE_STRING_RE, string_is_safe
+from psdi_data_conversion.utils import print_wrap
 
 CONVERTER_OB = 'Open Babel'
 
@@ -174,8 +174,8 @@ class OBFileConverter(FileConverter):
                 try:
                     get_in_format_args(self.name, self.from_format_info, char)
                 except FileConverterDatabaseException:
-                    print(f"WARNING: Input format flag '{char}' not recognised for conversion with {self.name}. If "
-                          "this is valid, the database should be updated to indicate this.", file=sys.stderr)
+                    print_wrap(f"WARNING: Input format flag '{char}' not recognised for conversion with {self.name}. "
+                               "If this is valid, the database should be updated to indicate this.", err=True)
                 ob_conversion.AddOption(char, ob_conversion.INOPTIONS)
 
             for char in to_flags:
@@ -184,8 +184,8 @@ class OBFileConverter(FileConverter):
                 try:
                     get_out_format_args(self.name, self.from_format_info, char)
                 except FileConverterDatabaseException:
-                    print(f"WARNING: Output format flag '{char}' not recognised for conversion with {self.name}. If "
-                          "this is valid, the database should be updated to indicate this", file=sys.stderr)
+                    print_wrap(f"WARNING: Output format flag '{char}' not recognised for conversion with {self.name}. "
+                               "If this is valid, the database should be updated to indicate this", err=True)
                 ob_conversion.AddOption(char, ob_conversion.OUTOPTIONS)
 
             self.data["read_flags_args"] = []
@@ -204,9 +204,9 @@ class OBFileConverter(FileConverter):
                     try:
                         get_in_format_args(self.name, self.from_format_info, option)
                     except FileConverterDatabaseException:
-                        print(f"WARNING: Input format option '{option}' not recognised for conversion with "
-                              f"{self.name}. If this is valid, the database should be updated to indicate "
-                              "this", file=sys.stderr)
+                        print_wrap(f"WARNING: Input format option '{option}' not recognised for conversion with "
+                                   f"{self.name}. If this is valid, the database should be updated to indicate "
+                                   "this", err=True)
 
                     ob_conversion.AddOption(option, ob_conversion.INOPTIONS, value)
 
@@ -226,9 +226,9 @@ class OBFileConverter(FileConverter):
                     try:
                         get_in_format_args(self.name, self.from_format_info, arg)
                     except FileConverterDatabaseException:
-                        print(f"WARNING: Input format option '{option}' not recognised for conversion with "
-                              f"{self.name}. If this is valid, the database should be updated to indicate "
-                              "this.", file=sys.stderr)
+                        print_wrap(f"WARNING: Input format option '{option}' not recognised for conversion with "
+                                   f"{self.name}. If this is valid, the database should be updated to indicate "
+                                   "this.", err=True)
 
                     ob_conversion.AddOption(char, ob_conversion.INOPTIONS, arg)
                     self.data["read_flags_args"].append(char + "  " + arg)
@@ -246,9 +246,9 @@ class OBFileConverter(FileConverter):
                     try:
                         get_in_format_args(self.name, self.to_format_info, option)
                     except FileConverterDatabaseException:
-                        print(f"WARNING: Output format option '{option}' not recognised for conversion with "
-                              f"{self.name}. If this is valid, the database should be updated to indicate "
-                              "this.", file=sys.stderr)
+                        print_wrap(f"WARNING: Output format option '{option}' not recognised for conversion with "
+                                   f"{self.name}. If this is valid, the database should be updated to indicate "
+                                   "this.", err=True)
 
                     ob_conversion.AddOption(option, ob_conversion.OUTOPTIONS, value)
 
@@ -270,9 +270,9 @@ class OBFileConverter(FileConverter):
                         pdb.set_trace()
                         get_out_format_args(self.name, self.to_format_info, arg)
                     except FileConverterDatabaseException:
-                        print(f"WARNING: Output format option '{option}' not recognised for conversion with "
-                              f"{self.name}. If this is valid, the database should be updated to indicate "
-                              "this.", file=sys.stderr)
+                        print_wrap(f"WARNING: Output format option '{option}' not recognised for conversion with "
+                                   f"{self.name}. If this is valid, the database should be updated to indicate "
+                                   "this.", err=True)
 
                     ob_conversion.AddOption(char, ob_conversion.OUTOPTIONS, arg)
                     self.data["write_flags_args"].append(char + "  " + arg)
@@ -305,6 +305,12 @@ class OBFileConverter(FileConverter):
 
         if "Open Babel Error" in self.err:
             self._abort_from_err()
+
+        # Check for any non-critical errors and print them out
+        l_err_blocks = self.err.split("\n\n")
+        for err_block in l_err_blocks:
+            if err_block.startswith("ERROR:") or err_block.startswith("WARNING:"):
+                print_wrap(err_block, err=True)
 
     def _create_message(self) -> str:
         """Overload method to create a log of options passed to the converter

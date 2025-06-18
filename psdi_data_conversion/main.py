@@ -26,20 +26,7 @@ from psdi_data_conversion.database import (FormatInfo, get_conversion_pathway, g
                                            get_out_format_args, get_possible_conversions, get_possible_formats)
 from psdi_data_conversion.file_io import split_archive_ext
 from psdi_data_conversion.log_utility import get_log_level_from_str
-from psdi_data_conversion.utils import regularize_name
-
-
-def print_wrap(s: str, newline=False, err=False, **kwargs):
-    """Print a string wrapped to the terminal width
-    """
-    if err:
-        file = sys.stderr
-    else:
-        file = sys.stdout
-    for line in s.split("\n"):
-        print(textwrap.fill(line, width=TERM_WIDTH, **kwargs), file=file)
-    if newline:
-        print("")
+from psdi_data_conversion.utils import print_wrap, regularize_name
 
 
 class ConvertArgs:
