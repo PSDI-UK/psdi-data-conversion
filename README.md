@@ -43,6 +43,7 @@ This is the repository for the PSDI PF2 Chemistry File Format Conversion project
     - [Input file is malformatted or corrupt](#input-file-is-malformatted-or-corrupt)
     - [Input file's format is misidentified](#input-files-format-is-misidentified)
     - [Other known issues](#other-known-issues)
+- [Feedback](#feedback)
 - [Licensing](#licensing)
 - [Contributors](#contributors)
 - [Funding](#funding)
@@ -533,6 +534,10 @@ Important note: The disambiguated name is generated dynamically and isn't stored
 Through testing, we've identified some other conversion issues, which we list here:
 
 - Open Babel will indefinitely hang when attempting to convert large files (more than ~1 MB) of certain types (such as `mmcif`). This is an issue with the converter itself and not our application, which we hope will be fixed in a future version. If this occurs, the job will have to be forcibly terminated. CTRL+C will fail to terminate it, but it can be stopped with CTRL+Z, then terminated with `kill %N`, where N is the number listed beside the job when it is stopped (usually 1). The conversion should then be attempted with another supported converter.
+
+## Feedback
+
+To report a missing format or conversion, please use [the form on the public web service](https://data-conversion.psdi.ac.uk/report.htm). Other feedback can be submitted on [the feedback page](https://data-conversion.psdi.ac.uk/static/content/feedback.htm).
 
 ## Licensing
 

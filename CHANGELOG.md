@@ -10,6 +10,7 @@
 ### Documentation Changes
 
 - Fixed help for the "--from-flags", "--from-options" etc. command-line options to properly describe how values should be provided for them
+- Add note to README about how to submit feedback and missing formats/conversion
 
 ## v0.2.2
 
