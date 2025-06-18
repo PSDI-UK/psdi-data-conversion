@@ -10,7 +10,7 @@ from argparse import ArgumentParser
 from psdi_data_conversion import constants as const
 from psdi_data_conversion.gui.env import update_env
 from psdi_data_conversion.gui.setup import get_app, limit_upload_size, start_app
-from psdi_data_conversion.main import print_wrap
+from psdi_data_conversion.utils import print_wrap
 
 app = get_app()
 
