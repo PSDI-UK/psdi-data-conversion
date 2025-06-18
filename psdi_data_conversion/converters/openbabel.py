@@ -319,7 +319,7 @@ class OBFileConverter(FileConverter):
         label_length = 19
 
         for (label, key, multi) in (("Coord. gen.:", COORD_GEN_KEY, False),
-                                    ("Coord. option:", "coord_option", False),
+                                    ("Coord. option:", COORD_GEN_QUAL_KEY, False),
                                     ("Read options:", "from_flags", False),
                                     ("Write options:", "to_flags", False),
                                     ("Read opts + args:", "read_flags_args", True),
