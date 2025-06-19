@@ -19,21 +19,21 @@ def index():
                            **get_env_kwargs())
 
 
-def convert():
+def convert_ob():
     """Return the Open Babel convert page
     """
-    return render_template("convert.htm",
+    return render_template("convert_ob.htm",
                            **get_env_kwargs())
 
 
-def convertato():
+def convert_ato():
     """Return the Atomsk convert page
     """
     return render_template("convertato.htm",
                            **get_env_kwargs())
 
 
-def convertc2x():
+def convert_c2x():
     """Return the c2x convert page
     """
     return render_template("convertc2x.htm",
@@ -81,9 +81,9 @@ def init_get(app: Flask):
     app.route('/')(index)
     app.route('/index.htm')(index)
 
-    app.route('/convert.htm')(convert)
-    app.route('/convertato.htm')(convertato)
-    app.route('/convertc2x.htm')(convertc2x)
+    app.route('/convert_ob.htm')(convert_ob)
+    app.route('/convert_ato.htm')(convert_ato)
+    app.route('/convert_c2x.htm')(convert_c2x)
     app.route('/database/')(database)
     app.route('/documentation.htm')(documentation)
     app.route('/download.htm')(download)
