@@ -1,131 +1,79 @@
-<!--
-  download.htm
-  Version 1.0, 28th March 2025
--->
+{% extends "parent/layout.htm" %}
 
-<!DOCTYPE html>
-<html>
+{% block hero_title %}Download{% endblock %}
 
-<head>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>PSDI Data Conversion Service</title>
-  <link rel="icon" type="image/x-icon" href="{{url_for('static', filename='img/psdi-icon-dark.svg')}}">
-  <link href="https://fonts.googleapis.com/css?family=Lato:400" rel="stylesheet" type="text/css">
-  <link href="https://fonts.googleapis.com/css?family=Open+Sans+Condensed:700" rel="stylesheet" type="text/css">
-  <link href="https://fonts.googleapis.com/css?family=Open+Sans:400" rel="stylesheet" type="text/css">
-  <link href="https://fonts.googleapis.com/css?family=Lexend:400" rel="stylesheet" type="text/css">
-  <link rel="stylesheet" href="{{url_for('static', filename='styles/format.css')}}">
+{% block gui_content %}
+<p>
+  The PSDI Data Conversion service can be downloaded for local use. This is recommended when you wish to convert
+  sensitive, convert files exceeding the size limit for the public service, or access it via the command-line or
+  Python library.
+</p>
 
-  <script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4="
-    crossorigin="anonymous"></script>
+<h2>Installation</h2>
 
-  <script type="module" src="{{url_for('static', filename='javascript/load_accessibility.js')}}"></script>
-  <script type="module" src="{{url_for('static', filename='javascript/common.js')}}"></script>
-  <script type="module" src="{{url_for('static', filename='javascript/psdi-common.js')}}"></script>
-</head>
+<h3>Install via pip</h3>
 
-<body marginwidth="0">
+<ul>
+  <li><a href="https://pypi.org/project/psdi-data-conversion/">PSDI Data Conversion Service on PyPI</a></li>
+</ul>
 
-  <!-- Cover to hide element loading and make page transitions seem smoother -->
-  <div id="cover"></div>
+<p>
+  The easiest way to install the project is via Python’s pip utility. If you do not already have this installed,
+  the readme in the link above provides details on installing Python and pip. If you do, you can install the
+  package via:
+</p>
 
-  <header class="header" id="psdi-header"></header>
-  <script type="module">
-    import { setHeaderLinksSource, setHeaderSource, setFooterSource } from "./static/javascript/psdi-common.js";
-    // Due to the index being a template which will exist in a different directory once rendered, we need to set
-    // a non-default location of the header links file
-    setHeaderSource("{{url_for('static', filename='content/index-versions/psdi-common-header.html')}}");
-    setFooterSource("{{url_for('static', filename='content/index-versions/psdi-common-footer.html')}}");
-    setHeaderLinksSource("{{url_for('static', filename='content/index-versions/header-links.html')}}");
-  </script>
+<pre><code class="secondary">pip install psdi-data-conversion[gui]</code></pre>
 
-  <div class="hero">
-    <div class="max-width-box">
-      <h1 class="hero__title marginless_header">Download</h1>
-    </div>
-  </div>
+<p>
+  The <code class="secondary">[gui]</code> portion installs the optional requirements needed to run a local
+  version of this webpage, and can be excluded if you only intend to use the command-line application and/or
+  Python library.
+</p>
 
-  <form class="body-panel">
-    <div class="max-width-box">
-      <p>
-        The PSDI Data Conversion service can be downloaded for local use. This is recommended when you wish to convert
-        sensitive, convert files exceeding the size limit for the public service, or access it via the command-line or
-        Python library.
-      </p>
+<h3>Source Code</h3>
 
-      <h2>Installation</h2>
+<ul>
+  <li><a href="https://github.com/PSDI-UK/psdi-data-conversion">PSDI Data Conversion Project on GitHub</a></li>
+</ul>
 
-      <h3>Install via pip</h3>
+The project’s source code is available on GitHub at the link above. If you wish to install it from source, you
+can clone the repository, and then install it via:
 
-      <ul>
-        <li><a href="https://pypi.org/project/psdi-data-conversion/">PSDI Data Conversion Service on PyPI</a></li>
-      </ul>
+<pre><code class="secondary">pip install .[gui-test]</code></pre>
 
-      <p>
-        The easiest way to install the project is via Python’s pip utility. If you do not already have this installed,
-        the readme in the link above provides details on installing Python and pip. If you do, you can install the
-        package via:
-      </p>
+<p>
+  The <code class="secondary">[gui-test]</code> portion installs all optional components for running the local
+  webpage and testing all project components. See the project’s <code class="secondary">pyproject.toml</code> file
+  for other possible optional dependencies sets that can be installed.
+</p>
 
-      <pre><code class="secondary">pip install psdi-data-conversion[gui]</code></pre>
+<h2>Use</h2>
 
-      <p>
-        The <code class="secondary">[gui]</code> portion installs the optional requirements needed to run a local
-        version of this webpage, and can be excluded if you only intend to use the command-line application and/or
-        Python library.
-      </p>
+<p>
+  Once installed, the project can be used in one of three ways:
+</p>
 
-      <h3>Source Code</h3>
+<ul>
+  <li><strong>Local Gui:</strong> Run the script <code class="secondary">psdi-data-convert-gui</code> to start the
+    server. Append the <code class="secondary">--help</code> option for to see optional arguments (generally not
+    required for end-users)
+  </li>
+  <li><strong>Command-Line Application:</strong> Run the script <code class="secondary">psdi-data-convert</code>
+    to use the application at the command-line. Append the <code class="secondary">--help</code> option to see
+    arguments for it, and/or find documentation in the project’s README.
+  </li>
+  <li><strong>Python Library:</strong> Within a Python script, library, or terminal, the project can be imported
+    via <code class="secondary">import psdi_data_conversion</code>, with the most useful function being <code
+      class="secondary">psdi_data_conversion.converter.run_converter</code> - see the <code
+      class="secondary">help()</code> of this function and/or find documentation in the project’s README.
+  </li>
+</ul>
 
-      <ul>
-        <li><a href="https://github.com/PSDI-UK/psdi-data-conversion">PSDI Data Conversion Project on GitHub</a></li>
-      </ul>
+<h2>Documentation</h2>
 
-      The project’s source code is available on GitHub at the link above. If you wish to install it from source, you
-      can clone the repository, and then install it via:
-
-      <pre><code class="secondary">pip install .[gui-test]</code></pre>
-
-      <p>
-        The <code class="secondary">[gui-test]</code> portion installs all optional components for running the local
-        webpage and testing all project components. See the project’s <code class="secondary">pyproject.toml</code> file
-        for other possible optional dependencies sets that can be installed.
-      </p>
-
-      <h2>Use</h2>
-
-      <p>
-        Once installed, the project can be used in one of three ways:
-      </p>
-
-      <ul>
-        <li><strong>Local Gui:</strong> Run the script <code class="secondary">psdi-data-convert-gui</code> to start the
-          server. Append the <code class="secondary">--help</code> option for to see optional arguments (generally not
-          required for end-users)
-        </li>
-        <li><strong>Command-Line Application:</strong> Run the script <code class="secondary">psdi-data-convert</code>
-          to use the application at the command-line. Append the <code class="secondary">--help</code> option to see
-          arguments for it, and/or find documentation in the project’s README.
-        </li>
-        <li><strong>Python Library:</strong> Within a Python script, library, or terminal, the project can be imported
-          via <code class="secondary">import psdi_data_conversion</code>, with the most useful function being <code
-            class="secondary">psdi_data_conversion.converter.run_converter</code> - see the <code
-            class="secondary">help()</code> of this function and/or find documentation in the project’s README.
-        </li>
-      </ul>
-
-      <h2>Documentation</h2>
-
-      <ul>
-        <li><a href="https://github.com/PSDI-UK/psdi-data-conversion/blob/main/README.md">README</a></li>
-        <li><a href="https://psdi-uk.github.io/psdi-data-conversion/">Code Documentation</a></li>
-      </ul>
-
-    </div>
-  </form>
-
-  <footer class="footer" id="psdi-footer"></footer>
-
-</body>
-
-</html>
+<ul>
+  <li><a href="https://github.com/PSDI-UK/psdi-data-conversion/blob/main/README.md">README</a></li>
+  <li><a href="https://psdi-uk.github.io/psdi-data-conversion/">Code Documentation</a></li>
+</ul>
+{% endblock %}
