@@ -1,0 +1,69 @@
+<!--
+  Layout template for all pages
+-->
+
+<!DOCTYPE html>
+<html>
+
+<head>
+  {% block head %}
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block page_title %}PSDI Data Conversion Service{% endblock %}</title>
+  <link rel="icon" type="image/x-icon" href="{{url_for('static', filename='img/psdi-icon-dark.svg')}}">
+  <link href="https://fonts.googleapis.com/css?family=Lato:400" rel="stylesheet" type="text/css">
+  <link href="https://fonts.googleapis.com/css?family=Open+Sans+Condensed:700" rel="stylesheet" type="text/css">
+  <link href="https://fonts.googleapis.com/css?family=Open+Sans:400" rel="stylesheet" type="text/css">
+  <link href="https://fonts.googleapis.com/css?family=Lexend:400" rel="stylesheet" type="text/css">
+  <link rel="stylesheet" href="{{url_for('static', filename='styles/format.css')}}">
+
+  <script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4="
+    crossorigin="anonymous"></script>
+
+  <script type="module" src="{{url_for('static', filename='javascript/load_accessibility.js')}}"></script>
+  <script type="module" src="{{url_for('static', filename='javascript/common.js')}}"></script>
+  <script type="module" src="{{url_for('static', filename='javascript/psdi-common.js')}}"></script>
+  {% endblock %}
+</head>
+
+<body marginwidth="0">
+  {% block body %}
+
+  <!-- Cover to hide element loading and make page transitions seem smoother -->
+  <div id="cover"></div>
+
+  {% block header %}
+  <header class="header" id="psdi-header"></header>
+  <script type="module">
+    import { setHeaderLinksSource, setHeaderSource, setFooterSource } from "./static/javascript/psdi-common.js";
+    // Due to the index being a template which will exist in a different directory once rendered, we need to set
+    // a non-default location of the header links file
+    setHeaderSource("{{url_for('static', filename='content/index-versions/psdi-common-header.html')}}");
+    setFooterSource("{{url_for('static', filename='content/index-versions/psdi-common-footer.html')}}");
+    setHeaderLinksSource("{{url_for('static', filename='content/index-versions/header-links.html')}}");
+  </script>
+  {% endblock %}
+
+  {% block hero_banner %}
+  <div class="hero">
+    <div class="max-width-box">
+      <h1 class="hero__title marginless_header">{% block hero_title %}{% endblock %}</h1>
+    </div>
+  </div>
+  {% endblock %}
+
+  {% block form_gui %}
+  <form name="gui">
+    <div class="max-width-box">
+      {% block gui_content %}{% endblock %}
+    </div>
+  </form>
+  {% endblock %}
+
+  {% block footer %}
+  <footer class="footer" id="psdi-footer"></footer>
+  {% endblock %}
+
+  {% endblock %}
+</body>
+
+</html>
