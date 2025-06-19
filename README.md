@@ -235,12 +235,17 @@ options] [-s/--strict] [--nc/--no-check] [-q/--quiet] [-g/--log-file <log file n
 
 Call `psdi-data-convert -h` for details on each of these options.
 
-Note that some requested conversions may involve ambiguous formats which share the same extension. In this case, the application will print a warning and list possible matching formats, with a disambiguating name that can be used to specify which one. For instance, the `c2x` converter can convert into two variants of the `pdb` format, and if you ask it to convert to `pdb` without specifying which one, you'll see:
+Note that some requested conversions may involve ambiguous formats which share the same extension. In this case, the application will print a warning and list possible matching formats, with IDs and disambiguating names that can be used to specify which one. For instance, the `c2x` converter can convert into two variants of the `pdb` format, and if you ask it to convert to `pdb` without specifying which one, you'll see:
 
 ```
-ERROR: Extension 'pdb' is ambiguous and must be defined by ID. Possible formats and their IDs are:
+WARNING: Format 'pdb' is ambiguous and could refer to multiple formats. It may be necessary to explicitly specify which
+you want to use when calling this script, e.g. with '-f pdb-0' - see the disambiguated names in the list below:
+
 9: pdb-0 (Protein Data Bank)
+...
+
 259: pdb-1 (Protein Data Bank with atoms numbered)
+...
 ```
 
 This provides the IDs ("9" and "259") and disambiguating names ("pdb-0" and "pdb-1") for the matching formats. Either can be used in the call to the converter, e.g.:
@@ -496,38 +501,69 @@ To remedy this, try explicitly specifying the format, rather than letting the ap
 `<format>` here can be the standard extension of the format (in the case of unambiguous extensions), its ID, or its disambiguated name. To give an example which explains what each of these are, let's say you have an MDL MOL file you wish to convert to XYZ, so you get information about it and possible converters with `psdi-data-convert -l -f mol -t xyz`:
 
 ```base
-$ psdi-data-convert -l -f mol
+$ psdi-data-convert -l -f mol -t xyz
 WARNING: Format 'mol' is ambiguous and could refer to multiple formats. It may be necessary to explicitly specify which
 you want to use when calling this script, e.g. with '-f mol-0' - see the disambiguated names in the list below:
 
 18: mol-0 (MDL MOL)
+- Atomic composition is supported
+- Atomic connections are supported
+- 2D atomic coordinates are supported
+- 3D atomic coordinates are supported
+
 216: mol-1 (MOLDY)
+- Atomic composition is unknown whether or not to be supported
+- Atomic connections are unknown whether or not to be supported
+- 2D atomic coordinates are unknown whether or not to be supported
+- 3D atomic coordinates are unknown whether or not to be supported
 
-20: xyz (XYZ cartesian coordinates)
+WARNING: Format 'xyz' is ambiguous and could refer to multiple formats. It may be necessary to explicitly specify which
+you want to use when calling this script, e.g. with '-f xyz-0' - see the disambiguated names in the list below:
 
-The following registered converters can convert from mol-0 to xyz:
+20: xyz-0 (XYZ cartesian coordinates)
+- Atomic composition is supported
+- Atomic connections are not supported
+- 2D atomic coordinates are supported
+- 3D atomic coordinates are supported
+
+284: xyz-1 (Extended XYZ (adds lattice vectors))
+- Atomic composition is unknown whether or not to be supported
+- Atomic connections are unknown whether or not to be supported
+- 2D atomic coordinates are unknown whether or not to be supported
+- 3D atomic coordinates are unknown whether or not to be supported
+
+The following registered converters can convert from mol-0 to xyz-0:
 
     Open Babel
     c2x
 
 For details on input/output flags and options allowed by a converter for this conversion, call:
-psdi-data-convert -l <converter name> -f mol-0 -t xyz
+psdi-data-convert -l <converter name> -f mol-0 -t xyz-0
 
-The following registered converters can convert from mol-1 to xyz:
+The following registered converters can convert from mol-0 to xyz-1:
+
+    c2x
+
+For details on input/output flags and options allowed by a converter for this conversion, call:
+psdi-data-convert -l <converter name> -f mol-0 -t xyz-1
+
+The following registered converters can convert from mol-1 to xyz-0:
 
     Atomsk
 
 For details on input/output flags and options allowed by a converter for this conversion, call:
-psdi-data-convert -l <converter name> -f mol-1 -t xyz
+psdi-data-convert -l <converter name> -f mol-1 -t xyz-0
+
+No converters are available which can perform a conversion from mol-1 to xyz-1
 ```
 
-This output indicates that the application is aware of two formats which share the `mol` extension: MDL MOL and MOLDY. It lists the ID, disambiguated name, and description of each: ID `18` and disambiguated name `mol-0` for MDL MOL, and ID `216` and disambiguated name `mol-1` for MOLDY. The XYZ format, on the other hand, is unambiguous, and only lists the standard extension for it as its disambiguated name (although `xyz-0` will be accepted without error as well).
+This output indicates that the application is aware of two formats which share the `mol` extension: MDL MOL and MOLDY. It lists the ID, disambiguated name, and description of each: ID `18` and disambiguated name `mol-0` for MDL MOL, and ID `216` and disambiguated name `mol-1` for MOLDY. The XYZ format similarly has two variants which can be converted to.
 
 The program then lists converters which can handle the requested conversion, revealing a potential pitfall: The Open Babel and c2x converters can convert from MDL MOL to XYZ, which the Atomsk converter can convert from MOLDY to XYZ. If you don't specify which format you're converting from, the script might assume you meant to use the other one, if that's the only one compatible with the converter you've requested (or with the default converter, Open Babel, if you didn't explicitly request one). So to be careful here, it's best to specify this input format unambiguously.
 
 Since in this example you have an MDL MOL file, you would use `-f 18` or `-f mol-0` to explicitly specify it in the command-line, or similarly provide one of these to the `from_format` argument of `run_converter` within Python. The application will then properly handle it, including alerting you if you request a conversion that isn't supported by your requested converter (e.g. if you request a conversion of this MDL MOL file to XYZ with Atomsk).
 
-Important note: The disambiguated name is generated dynamically and isn't stored in the database, and in rare cases may change for some formats in future versions of this application which expand support to more formats and conversions. For uses which require forward-compatibility with future versions of this application, the ID should be used instead.
+Important note: The disambiguated name is generated dynamically and isn't stored in the database, and in rare cases may change for some formats in future versions of this application which expand support to more formats and conversions. For uses which require forward-compatibility with future versions of this application, the ID should be used instead. You can obtain the ID for any format via the command: `psdi-data-convert -l -f <format-name>`.
 
 #### Other known issues
 

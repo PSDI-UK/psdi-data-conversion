@@ -393,7 +393,10 @@ def detail_converter_use(args: ConvertArgs):
             out_yes_or_no = "yes" if file_format in l_output_formats else "no"
             print(f"    {file_format.disambiguated_name:>{max_format_length}}    {in_yes_or_no:<9}{out_yes_or_no:<10}"
                   f"{file_format.note}")
-        print("")
+        print_wrap("\nFor more information on a format, including its ID (which can be used to specify it uniquely in "
+                   "case of ambiguity, and is resilient to database changes affecting the disambiguated names listed "
+                   "above), call:\n"
+                   f"{CL_SCRIPT_NAME} -l -f <format>", newline=True)
 
     if converter_class.allowed_flags is None:
         print_wrap("Information has not been provided about general flags accepted by this converter.", newline=True)
