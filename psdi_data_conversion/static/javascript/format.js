@@ -538,13 +538,13 @@ function goToConversionPage(event) {
     var path = ``;
 
     if ($("#name").html() == "Open Babel") {
-        path = `static/content/convert.htm`;
+        path = `./convert.htm`;
     }
     else if ($("#name").html() == "Atomsk") {
-        path = `static/content/convertato.htm`;
+        path = `./convertato.htm`;
     }
     else if ($("#name").html() == "c2x") {
-        path = `static/content/convertc2x.htm`;
+        path = `./convertc2x.htm`;
     }
 
     const a = $("<a>")

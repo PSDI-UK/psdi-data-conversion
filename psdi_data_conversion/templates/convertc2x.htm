@@ -1,20 +1,22 @@
 <!--
-  convertato.htm
-  Version 1.0, 11th November 2024
+  convertc2x.htm
+  Version 1.0, 10th January 2025
 -->
 
 <!DOCTYPE html>
 <html>
 
 <head>
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>PSDI Data Conversion Service</title>
-  <link rel="icon" type="image/x-icon" href="../img/psdi-icon-dark.svg">
-
+  <link rel="icon" type="image/x-icon" href="{{url_for('static', filename='img/psdi-icon-dark.svg')}}">
   <link href="https://fonts.googleapis.com/css?family=Lato:400" rel="stylesheet" type="text/css">
   <link href="https://fonts.googleapis.com/css?family=Open+Sans+Condensed:700" rel="stylesheet" type="text/css">
-
+  <link href="https://fonts.googleapis.com/css?family=Open+Sans:400" rel="stylesheet" type="text/css">
+  <link href="https://fonts.googleapis.com/css?family=Lexend:400" rel="stylesheet" type="text/css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="{{url_for('static', filename='styles/format.css')}}">
 
   <script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4="
     crossorigin="anonymous"></script>
@@ -22,11 +24,10 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
   <script src="https://cdn.jsdelivr.net/jquery.dirtyforms/2.0.0/jquery.dirtyforms.min.js"></script>
 
-  <link rel="stylesheet" href="../styles/format.css">
-  <script src="../javascript/load_accessibility.js"></script>
-  <script src="../javascript/common.js" type="module"></script>
-  <script src="../javascript/psdi-common.js" type="module"></script>
-  <script src="../javascript/convertato.js" type="module" language="JavaScript"></script>
+  <script type="module" src="{{url_for('static', filename='javascript/load_accessibility.js')}}"></script>
+  <script type="module" src="{{url_for('static', filename='javascript/common.js')}}"></script>
+  <script type="module" src="{{url_for('static', filename='javascript/psdi-common.js')}}"></script>
+  <script type="module" src="{{url_for('static', filename='javascript/convertc2x.js')}}"></script>
 </head>
 
 <body marginwidth="0">
@@ -35,6 +36,14 @@
   <div id="cover"></div>
 
   <header class="header" id="psdi-header"></header>
+  <script type="module">
+    import { setHeaderLinksSource, setHeaderSource, setFooterSource } from "./static/javascript/psdi-common.js";
+    // Due to the index being a template which will exist in a different directory once rendered, we need to set
+    // a non-default location of the header links file
+    setHeaderSource("{{url_for('static', filename='content/index-versions/psdi-common-header.html')}}");
+    setFooterSource("{{url_for('static', filename='content/index-versions/psdi-common-footer.html')}}");
+    setHeaderLinksSource("{{url_for('static', filename='content/index-versions/header-links.html')}}");
+  </script>
 
   <div class="hero">
     <div class="max-width-box">
@@ -45,7 +54,7 @@
   <form name="gui" class="gui">
     <div class="max-width-box">
       <div>
-        <a href="../../">
+        <a href="./">
           <input type="button" class="button" value=" ← Return to Format Selection " name="returnHome" id="returnHome">
         </a>
         <br>
@@ -68,7 +77,8 @@
           <div class="flex-panel">
             <p id="convertFile">
               <input type="checkbox" checked id="extCheck"> Enforce file naming checking to ensure uploaded files (and
-              files contained in archives) all have the correct extension<br>
+              files
+              contained in archives) all have the correct extension<br>
               <input type="checkbox" id="requestLog"> Also download log file for the conversion<br>
               Select file to convert<span class="max-file-size"></span>:
               <br>
@@ -76,8 +86,10 @@
               <input type="button" class="button no-left-margin" value=" Clear Uploaded File " name="clearUpload"
                 id="clearUpload">
               <br>
-              If you have sensitive data you might prefer to use <a href="download.htm">one of our downloadable tools or
-                Python library</a> rather than uploading your data to our service.<br>
+              If you have sensitive data you might prefer to use
+              <a href="download.htm">one of our downloadable tools or Python library</a> rather than uploading your data
+              to
+              our service.<br>
               <span class="convert-button-and-spinner">
                 <input type="button" class="button init-disabled no-left-margin" value=" Convert " name="uploadButton"
                   id="uploadButton" disabled=true>
