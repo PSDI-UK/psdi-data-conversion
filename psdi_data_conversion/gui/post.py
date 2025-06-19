@@ -116,7 +116,7 @@ def convert():
         abort(405)
 
 
-def feedback():
+def post_feedback():
     """Take feedback data from the web app and log it
     """
 
@@ -171,6 +171,6 @@ def init_post(app: Flask):
 
     app.route('/convert/', methods=["POST"])(convert)
 
-    app.route('/feedback/', methods=["POST"])(feedback)
-
     app.route('/delete/', methods=["POST"])(delete)
+
+    app.route('/feedback/', methods=["POST"])(post_feedback)

@@ -32,6 +32,20 @@ def database():
     return open(get_database_path(), "r").read()
 
 
+def download():
+    """Return the download page
+    """
+    return render_template("download.htm",
+                           **get_env_kwargs())
+
+
+def feedback():
+    """Return the feedback page
+    """
+    return render_template("feedback.htm",
+                           **get_env_kwargs())
+
+
 def report():
     """Return the report page
     """
@@ -46,8 +60,12 @@ def init_get(app: Flask):
     app.route('/')(index)
     app.route('/index.htm')(index)
 
+    app.route('/database/')(database)
+
     app.route('/documentation.htm')(documentation)
 
-    app.route('/report.htm')(report)
+    app.route('/download.htm')(download)
 
-    app.route('/database/')(database)
+    app.route('/feedback.htm')(feedback)
+
+    app.route('/report.htm')(report)
