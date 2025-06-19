@@ -29,14 +29,14 @@ def convert_ob():
 def convert_ato():
     """Return the Atomsk convert page
     """
-    return render_template("convertato.htm",
+    return render_template("convert_ato.htm",
                            **get_env_kwargs())
 
 
 def convert_c2x():
     """Return the c2x convert page
     """
-    return render_template("convertc2x.htm",
+    return render_template("convert_c2x.htm",
                            **get_env_kwargs())
 
 
