@@ -11,7 +11,7 @@
 
 - Fixed help for the "--from-flags", "--from-options" etc. command-line options to properly describe how values should be provided for them
 - Add note to README about how to submit feedback and missing formats/conversion
-- Updated README discussion of format IDs and disambiguated names, and provided more information about how to get IDs when formats are listed
+- Updated README discussion of format IDs and disambiguated names, and provided more information about how to get IDs when formats are listed or when an ambiguous conversion is requested
 
 ## v0.2.2
 
