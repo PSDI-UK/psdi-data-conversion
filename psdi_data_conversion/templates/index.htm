@@ -1,5 +1,10 @@
 {% extends "parent/layout.htm" %}
 
+{% block head %}
+{{ super() }}
+<script type="module" src="{{url_for('static', filename='javascript/format.js')}}"></script>
+{% endblock %}
+
 {% block hero_title %}Format and Converter Selection{% endblock %}
 
 {% block gui_content %}
