@@ -383,47 +383,51 @@ class ConverterInfo:
             self._d_out_format_options = self._create_d_format_args(OptionInfo, "out")
         return self._d_out_format_options
 
-    def get_in_format_args(self, name: str) -> tuple[list[FlagInfo], list[OptionInfo]]:
+    def get_in_format_args(self, in_format: str | int | FormatInfo) -> tuple[list[FlagInfo], list[OptionInfo]]:
         """Get the input flags and options supported for a given format (provided as its extension)
 
         Parameters
         ----------
-        name : str
-            The file format name (extension)
+        in_format : str
+            The file format name (extension), ID, or FormatInfo
 
         Returns
         -------
         tuple[set[FlagInfo], set[OptionInfo]]
             A set of info for the allowed flags, and a set of info for the allowed options
         """
-        l_flag_ids = list(self.d_in_format_flags.get(name, set()))
+        in_format_id = get_format_info(in_format).id
+
+        l_flag_ids = list(self.d_in_format_flags.get(in_format_id, set()))
         l_flag_ids.sort()
         l_flag_info = [self.l_in_flag_info[x] for x in l_flag_ids]
 
-        l_option_ids = list(self.d_in_format_options.get(name, set()))
+        l_option_ids = list(self.d_in_format_options.get(in_format_id, set()))
         l_option_ids.sort()
         l_option_info = [self.l_in_option_info[x] for x in l_option_ids]
 
         return l_flag_info, l_option_info
 
-    def get_out_format_args(self, name: str) -> tuple[list[FlagInfo], list[OptionInfo]]:
+    def get_out_format_args(self, out_format: str | int | FormatInfo) -> tuple[list[FlagInfo], list[OptionInfo]]:
         """Get the output flags and options supported for a given format (provided as its extension)
 
         Parameters
         ----------
-        name : str
-            The file format name (extension)
+        out_format : str
+            The file format name (extension), ID, or FormatInfo
 
         Returns
         -------
         tuple[set[FlagInfo], set[OptionInfo]]
             A set of info for the allowed flags, and a set of info for the allowed options
         """
-        l_flag_ids = list(self.d_out_format_flags.get(name, set()))
+        out_format_id = get_format_info(out_format).id
+
+        l_flag_ids = list(self.d_out_format_flags.get(out_format_id, set()))
         l_flag_ids.sort()
         l_flag_info = [self.l_out_flag_info[x] for x in l_flag_ids]
 
-        l_option_ids = list(self.d_out_format_options.get(name, set()))
+        l_option_ids = list(self.d_out_format_options.get(out_format_id, set()))
         l_option_ids.sort()
         l_option_info = [self.l_out_option_info[x] for x in l_option_ids]
 

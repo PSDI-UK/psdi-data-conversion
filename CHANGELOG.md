@@ -1,5 +1,11 @@
 # Changelog for PSDI Data Conversion
 
+## v0.2.4
+
+### Bugfixes
+
+- Fixed false warnings which said that every format option was unsupported
+
 ## v0.2.3
 
 ### New and Changed Functionality
