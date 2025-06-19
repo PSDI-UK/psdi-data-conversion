@@ -12,6 +12,7 @@ from openbabel import openbabel
 
 from psdi_data_conversion.converters.base import FileConverter, FileConverterInputException
 from psdi_data_conversion.security import SAFE_STRING_RE, string_is_safe
+from psdi_data_conversion.utils import print_wrap
 
 CONVERTER_OB = 'Open Babel'
 
@@ -83,30 +84,34 @@ class OBFileConverter(FileConverter):
     `run_converter()` through providing a dict to the `data` kwarg. The supported keys and values are:
 
     "from_flags": str
-        String of concatenated one-letter flags for how to read the input file. To list the flags supported for a given
-        input format, call ``psdi-data-convert -l -f <format> -w Open Babel`` at the command-line and look for the
-        "Allowed input flags" section, if one exists, or alternatively call the library function
+        String of concatenated one-letter flags for how to write the output file, e.g. ``"from_flags": "xyz"`` will set
+        flags x, y and z. To list the flags supported for a given output format, call
+        ``psdi-data-convert -l -f <format> -w Open Babel`` at the command-line and look for the "Allowed input flags"
+        section, if one exists, or alternatively call the library function
         ``psdi_data_conversion.database.get_in_format_args("Open Babel", <format>)`` from within Python code.
 
     "to_flags": str
-        String of concatenated one-letter flags for how to write the output file. To list the flags supported for a
-        given output format, call ``psdi-data-convert -l -f <format> -w Open Babel`` at the command-line and look for
-        the "Allowed output flags" section, if one exists, or alternatively call the library function
+        String of concatenated one-letter flags for how to write the output file, e.g. ``"to_flags": "xyz"`` will set
+        flags x, y and z. To list the flags supported for a given output format, call
+        ``psdi-data-convert -l -t <format> -w Open Babel`` at the command-line and look for the "Allowed output flags"
+        section, if one exists, or alternatively call the library function
         ``psdi_data_conversion.database.get_out_format_args("Open Babel", <format>)`` from within Python code.
 
     "from_options": str
         String of space-separated options for how to read the input file. Each option "word" in this string should start
-        with the letter indicating which option is being used, followed by the value for that option. To list the
+        with the letter indicating which option is being used, followed by the value for that option. E.g.
+        ``"from_options": "a1 b2"`` will set the value 1 for option a and the value 2 for option b. To list the
         options supported for a given input format, call ``psdi-data-convert -l -f <format> -w Open Babel`` at the
         command-line and look for the "Allowed input options" section, if one exists, or alternatively call the library
         function ``psdi_data_conversion.database.get_in_format_args("Open Babel", <format>)`` from within Python code.
 
     "to_options": str
         String of space-separated options for how to write the output file. Each option "word" in this string should
-        start with the letter indicating which option is being used, followed by the value for that option. To list the
+        start with the letter indicating which option is being used, followed by the value for that option. E.g.
+        ``"to_options": "a1 b2"`` will set the value 1 for option a and the value 2 for option b. To list the
         options supported for a given output format, call ``psdi-data-convert -l -t <format> -w Open Babel`` at the
         command-line and look for the "Allowed output options" section, if one exists, or alternatively call the library
-        function ``psdi_data_conversion.database.get_out_format_args("Open Babel", <format>)`` from within Python code.
+        function ``psdi_data_conversion.database.get_in_format_args("Open Babel", <format>)`` from within Python code.
 
     "coordinates": str
         One of "Gen2D", "Gen3D", or "neither", specifying how positional coordinates should be generated in the output
@@ -159,13 +164,28 @@ class OBFileConverter(FileConverter):
             from_args = self.data.get("from_args", "")
             to_args = self.data.get("to_args", "")
 
+            from psdi_data_conversion.database import (FileConverterDatabaseException, get_in_format_args,
+                                                       get_out_format_args)
+
             # Add option flags and arguments as appropriate
             for char in from_flags:
                 check_string_security(char)
+                # Check that the flag is valid
+                try:
+                    get_in_format_args(self.name, self.from_format_info, char)
+                except FileConverterDatabaseException:
+                    print_wrap(f"WARNING: Input format flag '{char}' not recognised for conversion with {self.name}. "
+                               "If this is valid, the database should be updated to indicate this.", err=True)
                 ob_conversion.AddOption(char, ob_conversion.INOPTIONS)
 
             for char in to_flags:
                 check_string_security(char)
+                # Check that the flag is valid
+                try:
+                    get_out_format_args(self.name, self.from_format_info, char)
+                except FileConverterDatabaseException:
+                    print_wrap(f"WARNING: Output format flag '{char}' not recognised for conversion with {self.name}. "
+                               "If this is valid, the database should be updated to indicate this", err=True)
                 ob_conversion.AddOption(char, ob_conversion.OUTOPTIONS)
 
             self.data["read_flags_args"] = []
@@ -176,37 +196,82 @@ class OBFileConverter(FileConverter):
             if "from_options" in self.data:
                 # From options were provided by the command-line script or library
                 l_from_options = self.data["from_options"].split()
+
                 for opt in l_from_options:
                     option, value = get_option_and_value(opt)
+
+                    # Check that the option is valid
+                    try:
+                        get_in_format_args(self.name, self.from_format_info, option)
+                    except FileConverterDatabaseException:
+                        print_wrap(f"WARNING: Input format option '{option}' not recognised for conversion with "
+                                   f"{self.name}. If this is valid, the database should be updated to indicate "
+                                   "this", err=True)
+
                     ob_conversion.AddOption(option, ob_conversion.INOPTIONS, value)
+
                 self.logger.debug(f"Set Open Babel read flags arguments to: {self.data['from_options']}")
                 # Store the options in the "read_flags_args" entry for the later logging
                 self.data["read_flags_args"] = l_from_options
+
             else:
                 # From options were provided by the command-line script or library
                 for char in from_arg_flags:
+
                     index = from_args.find('£')
                     arg, from_args = from_args[0:index], from_args[index + 1:len(from_args)]
                     check_string_security(char), check_string_security(arg)
+
+                    # Check that the option is valid
+                    try:
+                        get_in_format_args(self.name, self.from_format_info, arg)
+                    except FileConverterDatabaseException:
+                        print_wrap(f"WARNING: Input format option '{arg}' not recognised for conversion with "
+                                   f"{self.name}. If this is valid, the database should be updated to indicate "
+                                   "this.", err=True)
+
                     ob_conversion.AddOption(char, ob_conversion.INOPTIONS, arg)
                     self.data["read_flags_args"].append(char + "  " + arg)
+
                 self.logger.debug(f"Set Open Babel read flags arguments to: {self.data['read_flags_args']}")
 
             if "to_options" in self.data:
                 # From options were provided by the command-line script or library
                 l_to_options = self.data["to_options"].split()
+
                 for opt in l_to_options:
                     option, value = get_option_and_value(opt)
+
+                    # Check that the option is valid
+                    try:
+                        get_in_format_args(self.name, self.to_format_info, option)
+                    except FileConverterDatabaseException:
+                        print_wrap(f"WARNING: Output format option '{option}' not recognised for conversion with "
+                                   f"{self.name}. If this is valid, the database should be updated to indicate "
+                                   "this.", err=True)
+
                     ob_conversion.AddOption(option, ob_conversion.OUTOPTIONS, value)
+
                 self.logger.debug(f"Set Open Babel write flags arguments to: {self.data['to_options']}")
                 # Store the options in the "write_flags_args" entry for the later logging
                 self.data["write_flags_args"] = l_to_options
+
             else:
-                # From options were provided by the command-line script or library
+                # To options were provided by the command-line script or library
                 for char in to_arg_flags:
+
                     index = to_args.find('£')
                     arg, to_args = to_args[0:index], to_args[index + 1:len(to_args)]
                     check_string_security(char), check_string_security(arg)
+
+                    # Check that the option is valid
+                    try:
+                        get_out_format_args(self.name, self.to_format_info, arg)
+                    except FileConverterDatabaseException:
+                        print_wrap(f"WARNING: Output format option '{arg}' not recognised for conversion with "
+                                   f"{self.name}. If this is valid, the database should be updated to indicate "
+                                   "this.", err=True)
+
                     ob_conversion.AddOption(char, ob_conversion.OUTOPTIONS, arg)
                     self.data["write_flags_args"].append(char + "  " + arg)
                 self.logger.debug(f"Set Open Babel write flags arguments to: {self.data['read_flags_args']}")
@@ -239,6 +304,12 @@ class OBFileConverter(FileConverter):
         if "Open Babel Error" in self.err:
             self._abort_from_err()
 
+        # Check for any non-critical errors and print them out
+        l_err_blocks = self.err.split("\n\n")
+        for err_block in l_err_blocks:
+            if err_block.startswith("ERROR:") or err_block.startswith("WARNING:"):
+                print_wrap(err_block, err=True)
+
     def _create_message(self) -> str:
         """Overload method to create a log of options passed to the converter
         """
@@ -248,7 +319,7 @@ class OBFileConverter(FileConverter):
         label_length = 19
 
         for (label, key, multi) in (("Coord. gen.:", COORD_GEN_KEY, False),
-                                    ("Coord. option:", "coord_option", False),
+                                    ("Coord. option:", COORD_GEN_QUAL_KEY, False),
                                     ("Read options:", "from_flags", False),
                                     ("Write options:", "to_flags", False),
                                     ("Read opts + args:", "read_flags_args", True),

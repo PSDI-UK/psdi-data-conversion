@@ -26,20 +26,7 @@ from psdi_data_conversion.database import (FormatInfo, get_conversion_pathway, g
                                            get_out_format_args, get_possible_conversions, get_possible_formats)
 from psdi_data_conversion.file_io import split_archive_ext
 from psdi_data_conversion.log_utility import get_log_level_from_str
-from psdi_data_conversion.utils import regularize_name
-
-
-def print_wrap(s: str, newline=False, err=False, **kwargs):
-    """Print a string wrapped to the terminal width
-    """
-    if err:
-        file = sys.stderr
-    else:
-        file = sys.stdout
-    for line in s.split("\n"):
-        print(textwrap.fill(line, width=TERM_WIDTH, **kwargs), file=file)
-    if newline:
-        print("")
+from psdi_data_conversion.utils import print_wrap, regularize_name
 
 
 class ConvertArgs:
@@ -260,29 +247,29 @@ def get_argument_parser():
     parser.add_argument("--delete-input", action="store_true",
                         help="If set, input files will be deleted after conversion, default they will be kept")
     parser.add_argument("--from-flags", type=str, default="",
-                        help="Any command-line flags to be provided to the converter for reading in the input file(s). "
-                             "For information on the flags accepted by a converter and its required format for them, "
-                             "call this script with '-l <converter name>'. If the set of flags includes any spaces, it "
-                             "must be quoted, and if hyphens are used, the first preceding hyphen for each flag must "
-                             "be backslash-escaped, e.g. '--from-flags \"\\-a \\-bc \\--example\"'")
+                        help="String of concatenated one-letter flags for how to read the input file, e.g. "
+                        "``--from-flags xyz`` will set flags x, y, and z. To list the flags supported for a given "
+                        "input format, call ``psdi-data-convert -l -f <format> -w Open Babel`` at the command-line "
+                        "and look for the \"Allowed input flags\" section, if one exists.")
     parser.add_argument("--to-flags", type=str, default="",
-                        help="Any command-line flags to be provided to the converter for writing the output file(s). "
-                             "For information on the flags accepted by a converter and its required format for them, "
-                             "call this script with '-l <converter name>'. If the set of flags includes any spaces, it "
-                             "must be quoted, and if hyphens are used, the first preceding hyphen for each flag must "
-                             "be backslash-escaped, e.g. '--to-flags \"\\-a \\-bc \\--example\"'")
+                        help="String of concatenated one-letter flags for how to write the output file, e.g. "
+                        "``--from-flags xyz`` will set flags x, y, and z. To list the flags supported for a given "
+                        "output format, call ``psdi-data-convert -l -t <format> -w Open Babel`` at the command-line "
+                        "and look for the \"Allowed output flags\" section, if one exists.")
     parser.add_argument("--from-options", type=str, default="",
-                        help="Any command-line options to be provided to the converter for reading in the input "
-                             "file(s). For information on the options accepted by a converter and its required format "
-                             "for them, call this script with '-l <converter name>'. If the set of options includes "
-                             "any spaces, it must be quoted, and the first preceding hyphen for each option must be "
-                             "backslash-escaped, e.g. '--from-options \"\\-x xval --opt optval\"'")
+                        help="String of space-separated options for how to read the input file. Each option \"word\" "
+                        "in this string should start with the letter indicating which option is being used, followed "
+                        "by the value for that option. E.g. ``--from_options a1 b2`` will set the value 1 for "
+                        "option a and the value 2 for option b. To list the options supported for a given input "
+                        "format, call ``psdi-data-convert -l -f <format> -w Open Babel`` at the command-line and look "
+                        "for the \"Allowed input options\" section, if one exists.")
     parser.add_argument("--to-options", type=str, default="",
-                        help="Any command-line options to be provided to the converter for writing the output "
-                             "file(s). For information on the options accepted by a converter and its required format "
-                             "for them, call this script with '-l <converter name>'. If the set of options includes "
-                             "any spaces, it must be quoted, and the first preceding hyphen for each option must be "
-                             "backslash-escaped, e.g. '--to-options \"\\-x xval --opt optval\"'")
+                        help="String of space-separated options for how to write the output file. Each option \"word\" "
+                        "in this string should start with the letter indicating which option is being used, followed "
+                        "by the value for that option. E.g. ``--to_options a1 b2`` will set the value 1 for "
+                        "option a and the value 2 for option b. To list the options supported for a given output "
+                        "format, call ``psdi-data-convert -l -t <format> -w Open Babel`` at the command-line and look "
+                        "for the \"Allowed input options\" section, if one exists.")
     parser.add_argument("-s", "--strict", action="store_true",
                         help="If set, will fail if one of the input files has the wrong extension (including those "
                         "contained in archives, but not the archive files themselves). Otherwise, will only print a "
@@ -399,13 +386,17 @@ def detail_converter_use(args: ConvertArgs):
 
         print_wrap(f"File formats supported by {converter_name}:", newline=True)
         max_format_length = max([len(x.disambiguated_name) for x in l_all_formats])
-        print(" "*(max_format_length+4) + "   INPUT  OUTPUT")
-        print(" "*(max_format_length+4) + "   -----  ------")
+        print(" "*(max_format_length+4) + "    INPUT    OUTPUT    DESCRIPTION")
+        print(" "*(max_format_length+4) + "    -----    ------    -----------")
         for file_format in l_all_formats:
             in_yes_or_no = "yes" if file_format in l_input_formats else "no"
             out_yes_or_no = "yes" if file_format in l_output_formats else "no"
-            print(f"    {file_format.disambiguated_name:>{max_format_length}}{in_yes_or_no:>8}{out_yes_or_no:>8}")
-        print("")
+            print(f"    {file_format.disambiguated_name:>{max_format_length}}    {in_yes_or_no:<9}{out_yes_or_no:<10}"
+                  f"{file_format.note}")
+        print_wrap("\nFor more information on a format, including its ID (which can be used to specify it uniquely in "
+                   "case of ambiguity, and is resilient to database changes affecting the disambiguated names listed "
+                   "above), call:\n"
+                   f"{CL_SCRIPT_NAME} -l -f <format>", newline=True)
 
     if converter_class.allowed_flags is None:
         print_wrap("Information has not been provided about general flags accepted by this converter.", newline=True)

@@ -5,6 +5,25 @@ Miscellaneous utility functions used by this project
 """
 
 
+import sys
+import textwrap
+
+from psdi_data_conversion.constants import TERM_WIDTH
+
+
+def print_wrap(s: str, newline=False, err=False, **kwargs):
+    """Print a string wrapped to the terminal width
+    """
+    if err:
+        file = sys.stderr
+    else:
+        file = sys.stdout
+    for line in s.split("\n"):
+        print(textwrap.fill(line, width=TERM_WIDTH, **kwargs), file=file)
+    if newline:
+        print("")
+
+
 def regularize_name(name: str):
     """Regularizes a name for comparisons, making it lowercase and stripping spaces
 
