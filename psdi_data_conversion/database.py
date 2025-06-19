@@ -396,13 +396,22 @@ class ConverterInfo:
         tuple[set[FlagInfo], set[OptionInfo]]
             A set of info for the allowed flags, and a set of info for the allowed options
         """
-        in_format_id = get_format_info(in_format).id
 
-        l_flag_ids = list(self.d_in_format_flags.get(in_format_id, set()))
+        l_in_format_infos = get_format_info(in_format, which="all")
+        s_flag_ids = set()
+        s_option_ids = set()
+
+        for in_format_info in l_in_format_infos:
+            in_format_id = in_format_info.id
+
+            s_flag_ids.update(self.d_in_format_flags.get(in_format_id, set()))
+            s_option_ids.update(self.d_in_format_options.get(in_format_id, set()))
+
+        l_flag_ids = list(s_flag_ids)
         l_flag_ids.sort()
         l_flag_info = [self.l_in_flag_info[x] for x in l_flag_ids]
 
-        l_option_ids = list(self.d_in_format_options.get(in_format_id, set()))
+        l_option_ids = list(s_option_ids)
         l_option_ids.sort()
         l_option_info = [self.l_in_option_info[x] for x in l_option_ids]
 
@@ -421,13 +430,22 @@ class ConverterInfo:
         tuple[set[FlagInfo], set[OptionInfo]]
             A set of info for the allowed flags, and a set of info for the allowed options
         """
-        out_format_id = get_format_info(out_format).id
 
-        l_flag_ids = list(self.d_out_format_flags.get(out_format_id, set()))
+        l_out_format_infos = get_format_info(out_format, which="all")
+        s_flag_ids = set()
+        s_option_ids = set()
+
+        for out_format_info in l_out_format_infos:
+            out_format_id = out_format_info.id
+
+            s_flag_ids.update(self.d_out_format_flags.get(out_format_id, set()))
+            s_option_ids.update(self.d_out_format_options.get(out_format_id, set()))
+
+        l_flag_ids = list(s_flag_ids)
         l_flag_ids.sort()
         l_flag_info = [self.l_out_flag_info[x] for x in l_flag_ids]
 
-        l_option_ids = list(self.d_out_format_options.get(out_format_id, set()))
+        l_option_ids = list(s_option_ids)
         l_option_ids.sort()
         l_option_info = [self.l_out_option_info[x] for x in l_option_ids]
 
