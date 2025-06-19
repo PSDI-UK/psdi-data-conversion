@@ -244,7 +244,7 @@ class OBFileConverter(FileConverter):
 
                     # Check that the option is valid
                     try:
-                        get_in_format_args(self.name, self.to_format_info, option)
+                        get_out_format_args(self.name, self.to_format_info, option)
                     except FileConverterDatabaseException:
                         print_wrap(f"WARNING: Output format option '{option}' not recognised for conversion with "
                                    f"{self.name}. If this is valid, the database should be updated to indicate "
