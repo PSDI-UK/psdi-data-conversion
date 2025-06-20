@@ -2,7 +2,7 @@
   convert.js
   Version 1.0, 24th January 2025
 
-  This is the JavaScript which makes the convert.htm gui work.
+  This is the JavaScript which makes the convert gui work.
 */
 
 
