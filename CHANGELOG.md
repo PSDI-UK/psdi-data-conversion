@@ -1,5 +1,11 @@
 # Changelog for PSDI Data Conversion
 
+## v0.2.5
+
+### New and Changed Functionality
+
+- The light-mode/dark-mode toggle button and Accessibility settings now play more nicely together, with the latest used taking precedence
+
 ## v0.2.4
 
 ### Bugfixes
