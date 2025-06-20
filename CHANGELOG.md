@@ -6,6 +6,11 @@
 
 - The light-mode/dark-mode toggle button and Accessibility settings now play more nicely together, with the latest used taking precedence
 
+### Formatting and Refactoring Changes
+
+- All pages are now served via templates rendered with Flask, using inheritance to reduce code duplication
+- Service mode and Production mode are now handled by variables used by Flask, not CSS stylings
+
 ## v0.2.4
 
 ### Bugfixes
