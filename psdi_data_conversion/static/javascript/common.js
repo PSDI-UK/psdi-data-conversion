@@ -4,6 +4,11 @@
  * @author Bryan Gillis
  */
 
+// Connect the color mode toggle button in the header - since we write the header directly in our templates, the
+// psdi-common.js code doesn't run this automatically out of caution
+import { connectModeToggleButton } from "./psdi-common.js";
+connectModeToggleButton();
+
 export function initDirtyForms() {
   $("form.gui").dirtyForms();
 }
