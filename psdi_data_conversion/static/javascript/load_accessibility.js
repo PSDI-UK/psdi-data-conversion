@@ -2,7 +2,7 @@ const r = document.querySelector(':root');
 const s = getComputedStyle(document.documentElement);
 
 function setDefault(default_varname, current_varname) {
-  if (sessionStorage.getItem(default_varname) != null) {
+  if (sessionStorage.getItem(default_varname) == null) {
     sessionStorage.setItem(default_varname, s.getPropertyValue('--' + current_varname))
   }
 }
@@ -39,7 +39,7 @@ let font = sessionStorage.getItem("font"),
   darkBack = sessionStorage.getItem("darkBack"),
   mode = sessionStorage.getItem("mode");
 
-function loadProperty(current_varname, value) {
+export function loadProperty(current_varname, value) {
   if (value != null) {
     r.style.setProperty('--' + current_varname, value);
   }
@@ -104,3 +104,48 @@ $.get(`/load_accessibility/`)
   });
 
 document.documentElement.setAttribute("data-theme", mode);
+
+// Connect the color mode toggle button in the header - since we write the header directly in our templates, the
+// psdi-common.js code doesn't connect the normal function, and so we use our own custom function here to play nicely
+// with our accessibility settings
+
+const LIGHT_MODE = "light";
+const DARK_MODE = "dark";
+
+function toggleMode() {
+  let currentMode = document.documentElement.getAttribute("data-theme");
+  let new_mode;
+
+  if (currentMode == DARK_MODE) {
+
+    new_mode = LIGHT_MODE;
+
+    loadProperty("psdi-dark-text-color-body", sessionStorage.getItem("psdi-default-dark-text-color-body"));
+    loadProperty("psdi-dark-text-color-heading", sessionStorage.getItem("psdi-default-dark-text-color-heading"));
+    loadProperty("psdi-light-text-color-body", sessionStorage.getItem("psdi-default-light-text-color-body"));
+    loadProperty("psdi-light-text-color-heading", sessionStorage.getItem("psdi-default-light-text-color-heading"));
+
+    loadProperty("ifm-background-color", sessionStorage.getItem("psdi-default-background-color"));
+    loadProperty("ifm-color-primary", sessionStorage.getItem("psdi-default-color-primary"));
+
+  } else {
+
+    new_mode = DARK_MODE;
+
+    loadProperty("psdi-dark-text-color-body", sessionStorage.getItem("psdi-default-light-text-color-body"));
+    loadProperty("psdi-dark-text-color-heading", sessionStorage.getItem("psdi-default-light-text-color-heading"));
+    loadProperty("psdi-light-text-color-body", sessionStorage.getItem("psdi-default-dark-text-color-body"));
+    loadProperty("psdi-light-text-color-heading", sessionStorage.getItem("psdi-default-dark-text-color-heading"));
+
+    loadProperty("ifm-background-color", s.getPropertyValue("--psdi-dm-bg-color-default"));
+    loadProperty("ifm-color-primary", s.getPropertyValue("--psdi-dm-bg-color-primary"));
+  }
+
+  document.documentElement.setAttribute("data-theme", new_mode);
+  sessionStorage.setItem("mode", new_mode);
+}
+
+const lModeToggleButton = document.querySelectorAll(".color-mode-toggle");
+lModeToggleButton.forEach(function (modeToggleButton) {
+  modeToggleButton.addEventListener("click", toggleMode);
+});
