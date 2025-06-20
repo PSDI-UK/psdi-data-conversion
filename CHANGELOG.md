@@ -1,5 +1,12 @@
 # Changelog for PSDI Data Conversion
 
+## v0.2.5
+
+### Formatting and Refactoring Changes
+
+- All pages are now served via templates rendered with Flask, using inheritance to reduce code duplication
+- Service mode and Production mode are now handled by variables used by Flask, not CSS stylings
+
 ## v0.2.4
 
 ### Bugfixes
