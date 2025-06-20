@@ -46,6 +46,8 @@ $(document).ready(function () {
 
     $("#resetButton").click(resetSelections);
     $("#saveButton").click(saveSettings);
+    $("#dmRestoreButton").click(restoreSettings);
+    $("#lmRestoreButton").click(restoreSettings);
 });
 
 // Changes the font for accessibility purposes
@@ -221,3 +223,8 @@ function saveSettings(event) {
 
 }
 
+// Restores the ability to manage settings after using the mode toggle button
+import { setMode } from "./load_accessibility.js";
+function restoreSettings() {
+    setMode("disable");
+}

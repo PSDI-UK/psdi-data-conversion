@@ -173,8 +173,25 @@ input.button.init-disabled {
   justify-content: flex-end;
 }
 
-[data-theme="dark"] .access-option-container.lm-only {
+.access-lm,
+.access-dm {
   display: none;
+}
+
+[data-theme="light"] .access-nm {
+  display: none;
+}
+
+[data-theme="light"] .access-lm {
+  display: block;
+}
+
+[data-theme="dark"] .access-nm {
+  display: none;
+}
+
+[data-theme="dark"] .access-dm {
+  display: block;
 }
 
 /* Select boxes for accessibility options */

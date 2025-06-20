@@ -73,39 +73,44 @@ if (font != null) {
   applyStoredAccessibility();
 }
 
-$.get(`/load_accessibility/`)
-  .done((data) => {
+export function loadAccessibility() {
+  $.get(`/load_accessibility/`)
+    .done((data) => {
 
-    const oData = JSON.parse(data);
+      const oData = JSON.parse(data);
 
-    function getAndSave(key) {
-      let value = oData[key];
-      if (value != null) {
-        sessionStorage.setItem(key, value);
-        sessionStorage.setItem(key + "Opt", oData[key + "Opt"]);
-        return value;
-      } else {
-        return sessionStorage.getItem(key);
+      function getAndSave(key) {
+        let value = oData[key];
+        if (value != null) {
+          sessionStorage.setItem(key, value);
+          sessionStorage.setItem(key + "Opt", oData[key + "Opt"]);
+          return value;
+        } else {
+          return sessionStorage.getItem(key);
+        }
       }
-    }
 
-    font = getAndSave("font");
-    hfont = getAndSave("hfont");
-    size = getAndSave("size");
-    weight = getAndSave("weight");
-    letter = getAndSave("letter");
-    line = getAndSave("line");
-    darkColour = getAndSave("darkColour");
-    lightColour = getAndSave("lightColour");
-    lightBack = getAndSave("lightBack");
-    darkBack = getAndSave("darkBack");
-    mode = getAndSave("mode");
+      font = getAndSave("font");
+      hfont = getAndSave("hfont");
+      size = getAndSave("size");
+      weight = getAndSave("weight");
+      letter = getAndSave("letter");
+      line = getAndSave("line");
+      darkColour = getAndSave("darkColour");
+      lightColour = getAndSave("lightColour");
+      lightBack = getAndSave("lightBack");
+      darkBack = getAndSave("darkBack");
+      mode = getAndSave("mode");
 
-    if (initMode == null) {
-      // Only load accessibility settings if the light/dark mode hasn't been toggled
-      applyStoredAccessibility();
-    }
-  });
+      if (initMode == null) {
+        // Only load accessibility settings if the light/dark mode hasn't been toggled
+        applyStoredAccessibility();
+      }
+    });
+
+}
+
+loadAccessibility();
 
 document.documentElement.setAttribute("data-theme", mode);
 
@@ -116,7 +121,7 @@ document.documentElement.setAttribute("data-theme", mode);
 const LIGHT_MODE = "light";
 const DARK_MODE = "dark";
 
-function setMode(new_mode = null) {
+export function setMode(new_mode = null) {
 
   // If not provide a mode, toggle between modes
   if (new_mode == null) {
@@ -126,19 +131,11 @@ function setMode(new_mode = null) {
     } else {
       new_mode = DARK_MODE;
     }
+  } else if (new_mode == "disable") {
+    new_mode = null;
   }
 
-  if (new_mode == LIGHT_MODE) {
-
-    loadProperty("psdi-dark-text-color-body", sessionStorage.getItem("psdi-default-dark-text-color-body"));
-    loadProperty("psdi-dark-text-color-heading", sessionStorage.getItem("psdi-default-dark-text-color-heading"));
-    loadProperty("psdi-light-text-color-body", sessionStorage.getItem("psdi-default-light-text-color-body"));
-    loadProperty("psdi-light-text-color-heading", sessionStorage.getItem("psdi-default-light-text-color-heading"));
-
-    loadProperty("ifm-background-color", sessionStorage.getItem("psdi-default-background-color"));
-    loadProperty("ifm-color-primary", sessionStorage.getItem("psdi-default-color-primary"));
-
-  } else {
+  if (new_mode == DARK_MODE) {
 
     loadProperty("psdi-dark-text-color-body", sessionStorage.getItem("psdi-default-light-text-color-body"));
     loadProperty("psdi-dark-text-color-heading", sessionStorage.getItem("psdi-default-light-text-color-heading"));
@@ -147,6 +144,20 @@ function setMode(new_mode = null) {
 
     loadProperty("ifm-background-color", s.getPropertyValue("--psdi-dm-bg-color-default"));
     loadProperty("ifm-color-primary", s.getPropertyValue("--psdi-dm-bg-color-primary"));
+
+  } else {
+
+    loadProperty("psdi-dark-text-color-body", sessionStorage.getItem("psdi-default-dark-text-color-body"));
+    loadProperty("psdi-dark-text-color-heading", sessionStorage.getItem("psdi-default-dark-text-color-heading"));
+    loadProperty("psdi-light-text-color-body", sessionStorage.getItem("psdi-default-light-text-color-body"));
+    loadProperty("psdi-light-text-color-heading", sessionStorage.getItem("psdi-default-light-text-color-heading"));
+
+    loadProperty("ifm-background-color", sessionStorage.getItem("psdi-default-background-color"));
+    loadProperty("ifm-color-primary", sessionStorage.getItem("psdi-default-color-primary"));
+  }
+
+  if (new_mode == null) {
+    loadAccessibility();
   }
 
   document.documentElement.setAttribute("data-theme", new_mode);
