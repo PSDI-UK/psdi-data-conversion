@@ -1,5 +1,6 @@
 const r = document.querySelector(':root');
 const s = getComputedStyle(document.documentElement);
+const initMode = sessionStorage.getItem("mode");
 
 function setDefault(default_varname, current_varname) {
   if (sessionStorage.getItem(default_varname) == null) {
@@ -100,7 +101,10 @@ $.get(`/load_accessibility/`)
     darkBack = getAndSave("darkBack");
     mode = getAndSave("mode");
 
-    applyStoredAccessibility();
+    if (initMode == null) {
+      // Only load accessibility settings if the light/dark mode hasn't been toggled
+      applyStoredAccessibility();
+    }
   });
 
 document.documentElement.setAttribute("data-theme", mode);
@@ -112,13 +116,19 @@ document.documentElement.setAttribute("data-theme", mode);
 const LIGHT_MODE = "light";
 const DARK_MODE = "dark";
 
-function toggleMode() {
-  let currentMode = document.documentElement.getAttribute("data-theme");
-  let new_mode;
+function setMode(new_mode = null) {
 
-  if (currentMode == DARK_MODE) {
+  // If not provide a mode, toggle between modes
+  if (new_mode == null) {
+    let currentMode = document.documentElement.getAttribute("data-theme");
+    if (currentMode == DARK_MODE) {
+      new_mode = LIGHT_MODE;
+    } else {
+      new_mode = DARK_MODE;
+    }
+  }
 
-    new_mode = LIGHT_MODE;
+  if (new_mode == LIGHT_MODE) {
 
     loadProperty("psdi-dark-text-color-body", sessionStorage.getItem("psdi-default-dark-text-color-body"));
     loadProperty("psdi-dark-text-color-heading", sessionStorage.getItem("psdi-default-dark-text-color-heading"));
@@ -129,8 +139,6 @@ function toggleMode() {
     loadProperty("ifm-color-primary", sessionStorage.getItem("psdi-default-color-primary"));
 
   } else {
-
-    new_mode = DARK_MODE;
 
     loadProperty("psdi-dark-text-color-body", sessionStorage.getItem("psdi-default-light-text-color-body"));
     loadProperty("psdi-dark-text-color-heading", sessionStorage.getItem("psdi-default-light-text-color-heading"));
@@ -145,7 +153,16 @@ function toggleMode() {
   sessionStorage.setItem("mode", new_mode);
 }
 
+function toggleMode() {
+  setMode();
+}
+
 const lModeToggleButton = document.querySelectorAll(".color-mode-toggle");
 lModeToggleButton.forEach(function (modeToggleButton) {
   modeToggleButton.addEventListener("click", toggleMode);
 });
+
+// Load the settings for the current mode if it's already been toggled in this session
+if (initMode != null) {
+  setMode(initMode);
+}
