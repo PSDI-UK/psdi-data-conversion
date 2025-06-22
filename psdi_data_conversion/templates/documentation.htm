@@ -11,50 +11,69 @@
 <form name="gui">
   <div class="max-width-box">
     <h3>Format and Converter Selection</h3>
-    <p>Select 'from' and 'to' file formats in the 'Convert from/to' boxes, in either order. Typing where indicated
-      filters the options (case insensitive); for example, typing 'can' or 'NON' reduces the number of options to one:
-      'can: Canonical SMILES.' If you change your mind about a conversion, it is advisable to click on the 'Reset'
-      button. When both formats have been selected, converters able to carry out this conversion appear in the
-      'Conversion options' box along with an indication of conversion quality (many conversions have not yet been
-      tested) and whether or not the converter is supported on this site.</p>
+    <p> Your one-stop shop for file format conversion, PSDI's Data Conversion Service enables users to seamlessly
+      convert between different file formats and assess the quality of proposed conversions. This is the
+      {% if service_mode %}web{% else %}local GUI{% endif %} version of our service. To find out more about Data
+      Conversion and our other tools, click
+      <a href="https://resources.psdi.ac.uk/service/8334f94b-1c6e-4034-a5ab-71c6df375cba"
+      id="more" target="_blank">here.</a>
+    </p>
+    <h6>Select formats for conversion</h6>
+    <p>Select "from" and "to" file formats in the "Convert from/to" boxes, in either order. Typing where indicated
+      filters the options (case insensitive); for example, typing "can" or "NON" reduces the number of options to one:
+      "can: Canonical SMILES."
+    </p>
+    <p>When converting multiple files with, say, extension cif within an archive (e.g., ZIP), select "cif: Crystallographic Information File."
+    </p>
+    <p>If you change your mind about a conversion, click the "Reset" button.
+    </p>
+    <p>When both formats have been selected, converters able to carry out this conversion appear in the
+      "Conversion options" box along with an indication of conversion quality (many conversions not yet
+      tested) and whether or not the converter is supported on this site.
+    </p>
+    <h6>Select a converter</h6>
     <p>Selecting a converter displays information
       about it, along with a link to a relevant website. Irrespective of the selected converter, an Open Babel
-      conversion is offered if it can be carried out. Clicking on the 'Yes' button takes us to the 'Conversion' page.
+      conversion is offered if it can be carried out. Clicking on the "Yes" button takes us to the "Conversion" page.
       If a file format has not been found, or if there are no converters supporting a required conversion, please
-      click on 'Report Missing Format/Conversion' in the navigation bar.</p><br>
+      click on "Report Missing Format/Conversion" in the navigation bar.
+    </p><br>
     <h3>Conversion</h3>
     <h4>Open Babel</h4>
+    <h6>Select flags and options for the file formats</h6>
     <p>Zero to two option flag select boxes and zero to two sets of option flag check boxes may be displayed,
       depending on the conversion and the degree of completion of the database. Further information may be displayed
       underneath the select boxes if available. One or more input or output flags may be selected if required (command
       click [Mac] or control click [Windows] for multiple select box selections). To undo all selections in a box,
       click just underneath the final option. Ticking a check box reveals a text box for entry of required
       information, along with further explanation if available.</p>
+    <h6>Select coordinate generation mode</h6>
     <p>If 2- or 3-dimensional atomic coordinates need to be calculated (e.g., if they do not already exist in the
-      input file), select '2D' or '3D' and a speed/accuracy option ('fastest' is least accurate).
+      input file), select "2D" or "3D" and a speed/accuracy option ("fastest" is least accurate).
       Note that this calculation is not appropriate for all file formats, so in these cases selections will be
-      ignored. Click on 'Choose file' and then select an input file of the correct format (and extension). Clicking
-      on 'Convert' uploads and converts the file. The output file is automatically downloaded, along with a log file.
-      if any issues are encountered (e.g., the output file does not download), please click on 'Provide Feedback' in
+      ignored.
+    </p>
+    <h6>Upload the file and run the conversion</h6>
+    <p>Click on "Choose file" and then select an input file of the correct format (and extension). Clicking
+      on "Convert" uploads and converts the file. The output file is automatically downloaded, along with a log file.
+      if any issues are encountered (e.g., the output file does not download), please click on "Provide Feedback" in
       the navigation bar.</p>
     <h4>Atomsk and c2x</h4>
-    <p>Click on 'Choose file' and then select an input file of the correct format (and extension). Clicking on
-      'Convert'
+    <p>Click on "Choose file" and then select an input file of the correct format (and extension). Clicking on "Convert"
       uploads and converts the file. The output file is automatically downloaded, along with a log file. If any issues
       are
-      encountered (e.g., the output file does not download), please click on 'Provide Feedback' in the navigation bar.
+      encountered (e.g., the output file does not download), please click on "Provide Feedback" in the navigation bar.
     </p><br>
     <h3>Report Missing Format/Conversion</h3>
     <p>Select the type of report (missing file format or conversion) and then follow the instructions that appear.
-      Finally, click on 'Report.'</p><br>
+      Finally, click on "Report."</p><br>
     <h3>Provide feedback</h3>
-    <p>To report issues other than missing formats or conversions, please click on the 'Feedback form' link. The form
+    <p>To report issues other than missing formats or conversions, please click on the "Feedback form" link. The form
       will open in a new tab.</p><br>
     <h3>Accessibility</h3>
-    <p>Select accessibility settings below as required, in any order. Each new setting immediately comes into effect
-      on this page only, in the first instance. Once the appearance of the page is satisfactory, clicking on the
-      'Apply' button applies the settings to the entire website. Leaving the page without clicking on 'Apply' results
-      in the changes being lost. Note that page appearance may vary slightly according to the browser used.</p>
+    <p>Select accessibility settings as required to find a setup you like. Once the appearance of the page is
+      satisfactory, click on the "Save" button to apply the settings to the entire website. This saves the settings in
+      a cookie on your device which is only used for this purpose and does not store any personal data.</p>
     <p>The colour options here are not compatible with the dark-mode toggle in the header bar. If a custom dark scheme
       is desired, the appropriate colours can be selected in light-mode.</p>
     <h3>About</h3>
