@@ -1,124 +1,67 @@
-<!--
-  report.htm
-  Version 1.0, 19th June 2024
--->
+{% extends "parent/layout.htm" %}
 
-<!DOCTYPE html>
-<html>
+{% block head %}
+{{ super() }}
+<script type="module" src="{{url_for('static', filename='javascript/report.js')}}"></script>
+{% endblock %}
 
-<head>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>PSDI Data Conversion Service</title>
-  <link rel="icon" type="image/x-icon" href="{{url_for('static', filename='img/psdi-icon-dark.svg')}}">
-  <link href="https://fonts.googleapis.com/css?family=Lato:400" rel="stylesheet" type="text/css">
-  <link href="https://fonts.googleapis.com/css?family=Open+Sans+Condensed:700" rel="stylesheet" type="text/css">
-  <link href="https://fonts.googleapis.com/css?family=Open+Sans:400" rel="stylesheet" type="text/css">
-  <link href="https://fonts.googleapis.com/css?family=Lexend:400" rel="stylesheet" type="text/css">
-  <link rel="stylesheet" href="{{url_for('static', filename='styles/format.css')}}">
+{% block hero_title %}Report Missing Format/Conversion{% endblock %}
 
-  <script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4="
-    crossorigin="anonymous"></script>
-  <script src="https://cdn.jsdelivr.net/jquery.dirtyforms/2.0.0/jquery.dirtyforms.min.js"></script>
+{% block gui_content %}
+{% if service_mode %}
+<p>Select the type of report (missing file format or conversion) and then follow the instructions that appear.
+<p><b>Finally:</b> click on “Report.”</p><br>
+<select id="reason" class="med-width">
+  <option value="placeholder">-- select type of report --</option>
+  <option value="format">Missing file format</option>
+  <option value="conversion">Missing conversion</option>
+</select>
+<div class="medGap"></div>
+<div id="formats" class="init-hidden">
+  <p>
+    <label for="formatList" id="formatLabel">Check that the format is not present in the list. If it is, consider
+      reporting a missing conversion.</label><br>
+    <input type="text" placeholder="-- type here to filter options --" id="searchFormats" class="large-width"><br>
+    <select size="4" id="formatList" class="large-width"></select>
+  </p>
+  <input type="button" class="button" value=" Reset " name="resetButton" id="resetButton">
+</div>
+<div id="missing" class="init-hidden"><br>
+  <br>Enter the name of the missing file format including the file extension(s) [max 100 characters].
+  <br><input type="text" placeholder="-- type here --" id="missingFormat" class="large-width">
+</div>
+<div id="in_out_formats" class="init-hidden">
+  <br>Select the required “to” and “from” formats below.
+  <p>
+    <label for="searchFrom" id="fromLabel">Convert from:</label><br>
+    <input type="text" placeholder="-- type here to filter options --" id="searchFrom" class="large-width"><br>
+    <select size="4" id="fromList" class="large-width"></select>
+  </p>
+  <div class="smallGap"></div>
+  <p>
+    <label for="searchTo" id="toLabel">Convert to:</label><br>
+    <input type="text" placeholder="-- type here to filter options --" id="searchTo" class="large-width"><br>
+    <select size="4" id="toList" class="large-width"></select>
+  </p>
+  <input type="button" class="button" value=" Reset " name="resetButton2" id="resetButton2">
+</div>
+<select id="success" class="large-width"></select> <!-- Not for display. For convenience only. -->
+<p id="userInput" class="init-hidden">
+  <span id="message"></span>
+  <br><span id="message1"></span>
+  <br><input type="text" placeholder="-- type here --" id="in" class="large-width">
+  <br><input type="button" class="button" value=" Report " id="reportButton">
+</p>
 
+{% else %}
 
-  <script type="module" src="{{url_for('static', filename='javascript/load_accessibility.js')}}"></script>
-  <script type="module" src="{{url_for('static', filename='javascript/common.js')}}"></script>
-  <script type="module" src="{{url_for('static', filename='javascript/psdi-common.js')}}"></script>
-  <script type="module" src="{{url_for('static', filename='javascript/report.js')}}"></script>
+<div class="smallGap"></div>
+<p>
+  To report a missing format or conversion, please use
+  <a href="https://data-conversion.psdi.ac.uk/report.htm?origin=local">the interface on the public
+    web app</a>.
+</p>
+<div class="medGap"></div>
 
-</head>
-
-<body marginwidth="0">
-
-  <!-- Cover to hide element loading and make page transitions seem smoother -->
-  <div id="cover"></div>
-
-  <header class="header" id="psdi-header"></header>
-  <script type="module">
-    import { setHeaderLinksSource, setHeaderSource, setFooterSource } from "./static/javascript/psdi-common.js";
-    // Due to the index being a template which will exist in a different directory once rendered, we need to set
-    // a non-default location of the header links file
-    setHeaderSource("{{url_for('static', filename='content/index-versions/psdi-common-header.html')}}");
-    setFooterSource("{{url_for('static', filename='content/index-versions/psdi-common-footer.html')}}");
-    setHeaderLinksSource("{{url_for('static', filename='content/index-versions/header-links.html')}}");
-  </script>
-
-  <div class="hero">
-    <div class="max-width-box">
-      <h1 class="hero__title marginless_header">Report Missing Format/Conversion</h1>
-    </div>
-  </div>
-
-  {% if service_mode %}
-
-  <form name="gui" class="gui">
-    <div class="max-width-box">
-      <p>Select the type of report (missing file format or conversion) and then follow the instructions that appear.
-      <p><b>Finally:</b> click on “Report.”</p><br>
-      <select id="reason" class="med-width">
-        <option value="placeholder">-- select type of report --</option>
-        <option value="format">Missing file format</option>
-        <option value="conversion">Missing conversion</option>
-      </select>
-      <div class="medGap"></div>
-      <div id="formats" class="init-hidden">
-        <p>
-          <label for="formatList" id="formatLabel">Check that the format is not present in the list. If it is, consider
-            reporting a missing conversion.</label><br>
-          <input type="text" placeholder="-- type here to filter options --" id="searchFormats" class="large-width"><br>
-          <select size="4" id="formatList" class="large-width"></select>
-        </p>
-        <input type="button" class="button" value=" Reset " name="resetButton" id="resetButton">
-      </div>
-      <div id="missing" class="init-hidden"><br>
-        <br>Enter the name of the missing file format including the file extension(s) [max 100 characters].
-        <br><input type="text" placeholder="-- type here --" id="missingFormat" class="large-width">
-      </div>
-      <div id="in_out_formats" class="init-hidden">
-        <br>Select the required “to” and “from” formats below.
-        <p>
-          <label for="searchFrom" id="fromLabel">Convert from:</label><br>
-          <input type="text" placeholder="-- type here to filter options --" id="searchFrom" class="large-width"><br>
-          <select size="4" id="fromList" class="large-width"></select>
-        </p>
-        <div class="smallGap"></div>
-        <p>
-          <label for="searchTo" id="toLabel">Convert to:</label><br>
-          <input type="text" placeholder="-- type here to filter options --" id="searchTo" class="large-width"><br>
-          <select size="4" id="toList" class="large-width"></select>
-        </p>
-        <input type="button" class="button" value=" Reset " name="resetButton2" id="resetButton2">
-      </div>
-      <select id="success" class="large-width"></select> <!-- Not for display. For convenience only. -->
-      <p id="userInput" class="init-hidden">
-        <span id="message"></span>
-        <br><span id="message1"></span>
-        <br><input type="text" placeholder="-- type here --" id="in" class="large-width">
-        <br><input type="button" class="button" value=" Report " id="reportButton">
-      </p>
-    </div>
-  </form>
-
-  {% else %}
-
-  <form name="gui" class="gui local-only">
-    <div class="max-width-box">
-      <div class="smallGap"></div>
-      <p>
-        To report a missing format or conversion, please use
-        <a href="https://data-conversion.psdi.ac.uk/static/content/report.htm?origin=local">the interface on the public
-          web app</a>.
-      </p>
-      <div class="medGap"></div>
-    </div>
-  </form>
-
-  {%endif %}
-
-  <div class="medGap"></div>
-
-  <footer class="footer" id="psdi-footer"></footer>
-
-</body>
-
-</html>
+{%endif %}
+{% endblock %}

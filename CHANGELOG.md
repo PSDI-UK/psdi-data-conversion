@@ -1,5 +1,35 @@
 # Changelog for PSDI Data Conversion
 
+## v0.2.5
+
+### Formatting and Refactoring Changes
+
+- All pages are now served via templates rendered with Flask, using inheritance to reduce code duplication
+- Service mode and Production mode are now handled by variables used by Flask, not CSS stylings
+
+## v0.2.4
+
+### Bugfixes
+
+- Fixed false warnings which said that every format option was unsupported
+
+## v0.2.3
+
+### New and Changed Functionality
+
+- When listing formats supported by a given converter in the command-line application, the description of each format will also be shown in the table
+- A warning will now be printed to stderr and logged if an unrecognised format flag or option is provided for conversion with Open Babel
+
+### Bugfixes
+
+- Fixed coordinate generation quality not being properly logged
+
+### Documentation Changes
+
+- Fixed help for the "--from-flags", "--from-options" etc. command-line options to properly describe how values should be provided for them
+- Add note to README about how to submit feedback and missing formats/conversion
+- Updated README discussion of format IDs and disambiguated names, and provided more information about how to get IDs when formats are listed or when an ambiguous conversion is requested
+
 ## v0.2.2
 
 ### Bugfixes

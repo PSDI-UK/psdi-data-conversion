@@ -29,7 +29,7 @@ FILE_TO_UPLOAD_KEY = 'fileToUpload'
 logLock = Lock()
 
 
-def convert():
+def post_convert():
     """Convert file to a different format and save to folder 'downloads'. Delete original file. Note that downloading is
     achieved in format.js
     """
@@ -116,7 +116,7 @@ def convert():
         abort(405)
 
 
-def feedback():
+def post_feedback():
     """Take feedback data from the web app and log it
     """
 
@@ -144,7 +144,7 @@ def feedback():
         return Response(status=400)
 
 
-def delete():
+def post_delete():
     """Delete files in folder 'downloads'
     """
 
@@ -169,8 +169,8 @@ def init_post(app: Flask):
     """Connect the provided Flask app to each of the post methods
     """
 
-    app.route('/convert/', methods=["POST"])(convert)
+    app.route('/convert/', methods=["POST"])(post_convert)
 
-    app.route('/feedback/', methods=["POST"])(feedback)
+    app.route('/delete/', methods=["POST"])(post_delete)
 
-    app.route('/delete/', methods=["POST"])(delete)
+    app.route('/feedback/', methods=["POST"])(post_feedback)

@@ -112,7 +112,7 @@ export function convertFile(form_data, download_fname, fname) {
             disableDirtyForms();
 
             if (!convertTimedOut) {
-                await downloadFile(`../downloads/${download_fname}`, download_fname)
+                await downloadFile(`static/downloads/${download_fname}`, download_fname)
 
                 let msg = "To the best of our knowledge, this conversion has worked. A download prompt for your " +
                     "converted file should now be open for you.";
@@ -124,7 +124,7 @@ export function convertFile(form_data, download_fname, fname) {
                 alert(msg);
 
                 if (requestLog) {
-                    await downloadFile(`../downloads/${fname}.log.txt`, fname + '.log.txt')
+                    await downloadFile(`static/downloads/${fname}.log.txt`, fname + '.log.txt')
                 }
             }
 

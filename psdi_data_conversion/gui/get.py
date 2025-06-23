@@ -19,6 +19,27 @@ def index():
                            **get_env_kwargs())
 
 
+def convert_ob():
+    """Return the Open Babel convert page
+    """
+    return render_template("convert_ob.htm",
+                           **get_env_kwargs())
+
+
+def convert_ato():
+    """Return the Atomsk convert page
+    """
+    return render_template("convert_ato.htm",
+                           **get_env_kwargs())
+
+
+def convert_c2x():
+    """Return the c2x convert page
+    """
+    return render_template("convert_c2x.htm",
+                           **get_env_kwargs())
+
+
 def documentation():
     """Return the documentation page
     """
@@ -30,6 +51,20 @@ def database():
     """Return the raw database JSON file
     """
     return open(get_database_path(), "r").read()
+
+
+def download():
+    """Return the download page
+    """
+    return render_template("download.htm",
+                           **get_env_kwargs())
+
+
+def feedback():
+    """Return the feedback page
+    """
+    return render_template("feedback.htm",
+                           **get_env_kwargs())
 
 
 def report():
@@ -46,8 +81,11 @@ def init_get(app: Flask):
     app.route('/')(index)
     app.route('/index.htm')(index)
 
-    app.route('/documentation.htm')(documentation)
-
-    app.route('/report.htm')(report)
-
+    app.route('/convert_ob.htm')(convert_ob)
+    app.route('/convert_ato.htm')(convert_ato)
+    app.route('/convert_c2x.htm')(convert_c2x)
     app.route('/database/')(database)
+    app.route('/documentation.htm')(documentation)
+    app.route('/download.htm')(download)
+    app.route('/feedback.htm')(feedback)
+    app.route('/report.htm')(report)

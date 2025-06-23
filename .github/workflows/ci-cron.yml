@@ -21,7 +21,6 @@ jobs:
       - name: Fetch assets
         run: |
           ./scripts/fetch-common-style.sh
-          ./scripts/make-index-html.sh
 
       - name: Check for changes in staged files
         id: check-changes

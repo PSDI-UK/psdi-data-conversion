@@ -56,6 +56,7 @@ jobs:
           if ${{ inputs.prod }}; then
             export ORIGIN=https://data-conversion.psdi.ac.uk/
           fi
+          export GH_TOKEN=${{ github.token }}
           pytest tests/gui
       - name: Run simple GUI test
         if: ${{ inputs.simple }}
@@ -63,4 +64,5 @@ jobs:
           if ${{ inputs.prod }}; then
             export ORIGIN=https://data-conversion.psdi.ac.uk/
           fi
+          export GH_TOKEN=${{ github.token }}
           pytest 'tests/gui/gui_test.py::test_conversions[Standard Single Test]'
