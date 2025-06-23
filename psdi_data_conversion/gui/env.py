@@ -15,7 +15,7 @@ from typing import TypeVar
 
 from psdi_data_conversion import constants as const
 from psdi_data_conversion import log_utility
-from psdi_data_conversion.gui.authentication import get_authenticated_user, get_login_url, get_logout_url
+from psdi_data_conversion.utils import TextColors
 
 # Env var for the tag and SHA of the latest commit
 TAG_EV = "TAG"
@@ -35,6 +35,14 @@ KEYCLOAK_CLIENT_ID_EV = "KEYCLOAK_CLIENT_ID"
 KEYCLOAK_SECRET_EV = "KEYCLOAK_SECRET"
 KEYCLOAK_REDIRECT_URL_EV = "KEYCLOAK_REDIRECT_URL"
 SESSION_TIMEOUT_SECONDS_EV = "SESSION_TIMEOUT_SECONDS"
+
+# Default keycloak values
+DEFAULT_KEYCLOAK_URL = "https://auth.psdi-dev.vbox"
+DEFAULT_KEYCLOAK_REALM = "labtrove"
+DEFAULT_KEYCLOAK_CLIENT_ID = "data-conversion-service"
+DEFAULT_KEYCLOAK_SECRET = "WfHgzbu43Cppde48PbMWBLfL7kTovqxi"
+DEFAULT_KEYCLOAK_REDIRECT_URL = "https://dcs.psdi-dev.vbox/oidc_callback"
+DEFAULT_SESSION_TIMEOUT_SECONDS = 1800
 
 
 class SiteEnv:
@@ -94,27 +102,36 @@ class SiteEnv:
         # Env vars for authentication settings
         self.keycloak_url = self._determine_value(ev=KEYCLOAK_URL_EV,
                                                   value_type=str,
-                                                  default=False)
+                                                  default=DEFAULT_KEYCLOAK_URL)
 
         self.keycloak_realm = self._determine_value(ev=KEYCLOAK_REALM_EV,
                                                     value_type=str,
-                                                    default=False)
+                                                    default=DEFAULT_KEYCLOAK_REALM)
 
         self.keycloak_client_id = self._determine_value(ev=KEYCLOAK_CLIENT_ID_EV,
                                                         value_type=str,
-                                                        default=False)
+                                                        default=DEFAULT_KEYCLOAK_CLIENT_ID)
 
         self._keycloak_secret = self._determine_value(ev=KEYCLOAK_SECRET_EV,
                                                       value_type=str,
-                                                      default=False)
+                                                      default=DEFAULT_KEYCLOAK_SECRET)
+
+        # Warn if the default secret is being used
+        if self.service_mode and self._keycloak_secret == DEFAULT_KEYCLOAK_SECRET:
+            print(f"\n{TextColors.WARNING}!!! WARNING !!! \n"
+                  "The default keycloak secret is being used, which is not secure. In a production "
+                  f"deployment, the keycloak secret must be set using the {KEYCLOAK_SECRET_EV} environmental "
+                  "variable. \n"
+                  f"!!! WARNING !!!{TextColors.ENDC}\n",
+                  file=sys.stderr)
 
         self.keycloak_redirect_url = self._determine_value(ev=KEYCLOAK_REDIRECT_URL_EV,
                                                            value_type=str,
-                                                           default=False)
+                                                           default=DEFAULT_KEYCLOAK_REDIRECT_URL)
 
         self.session_timeout_seconds = self._determine_value(ev=SESSION_TIMEOUT_SECONDS_EV,
                                                              value_type=int,
-                                                             default=0)
+                                                             default=DEFAULT_SESSION_TIMEOUT_SECONDS)
 
         self._kwargs: dict[str, str] | None = None
         """Cached value for dict containing all env values"""
@@ -180,8 +197,7 @@ class SiteEnv:
 
         # Special handling for bool, to properly parse strings into bools
         if value_type is bool:
-            # Explicitly cast to value_type so we don't confuse the type-hinter when the type isn't bool
-            return value_type(ev_value.lower().startswith("t"))
+            return ev_value.lower().startswith("t")
 
         return value_type(ev_value)
 
@@ -277,6 +293,8 @@ def get_env_kwargs():
     """
 
     kwargs = get_env().kwargs
+
+    from psdi_data_conversion.gui.authentication import get_authenticated_user, get_login_url, get_logout_url
 
     kwargs["login_url"] = get_login_url()
     kwargs["logout_url"] = get_logout_url()
