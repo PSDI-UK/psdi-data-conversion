@@ -4,6 +4,7 @@ This module contains the OpenID Connect and JSON Web Token handling.
 """
 
 import json
+import sys
 from datetime import datetime
 from urllib.parse import unquote, urlencode
 
@@ -105,7 +106,7 @@ def oidc_callback():
         return redirect("/")
 
     except jwt.InvalidTokenError as e:
-        print(f"Failed to verify access token: {e}")
+        print(f"Failed to verify access token: {e}", file=sys.stderr)
         abort(400)
 
 
@@ -161,7 +162,7 @@ def get_authenticated_user():
 
                 except jwt.InvalidTokenError as e:
 
-                    print(f"Failed to verify session token: {e}")
+                    print(f"Failed to verify session token: {e}", file=sys.stderr)
 
     return authenticated_user
 
