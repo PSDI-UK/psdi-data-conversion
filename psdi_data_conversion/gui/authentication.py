@@ -3,24 +3,16 @@
 This module contains the OpenID Connect and JSON Web Token handling.
 """
 
-import os
-import jwt
 import json
-import requests
-
 from datetime import datetime
+from urllib.parse import unquote, urlencode
+
+import jwt
+import requests
 from cachetools.func import ttl_cache
-from flask import Flask, abort, request, redirect
-from urllib.parse import urlencode, unquote
+from flask import Flask, abort, redirect, request
 
-
-# Authentication settings
-KEYCLOAK_URL = os.getenv("KEYCLOAK_URL", None)
-KEYCLOAK_REALM = os.getenv("KEYCLOAK_REALM", None)
-KEYCLOAK_CLIENT_ID = os.getenv("KEYCLOAK_CLIENT_ID", None)
-KEYCLOAK_SECRET = os.getenv("KEYCLOAK_SECRET", None)
-KEYCLOAK_REDIRECT_URL = os.getenv("KEYCLOAK_REDIRECT_URL", None)
-SESSION_TIMEOUT_SECONDS = int(os.getenv("SESSION_TIMEOUT_SECONDS", 0))
+from psdi_data_conversion.gui.env import get_env
 
 user_keys = {}
 
@@ -30,7 +22,9 @@ def get_keycloak_public_key():
     # Get JSON Web Key Set from Keycloak so we can verify tokens.
     # This needs to run periodically.
 
-    jwks_url = f"{KEYCLOAK_URL}/realms/{KEYCLOAK_REALM}/protocol/openid-connect/certs"
+    env = get_env()
+
+    jwks_url = f"{env.keycloak_url}/realms/{env.keycloak_realm}/protocol/openid-connect/certs"
     jwks = requests.get(jwks_url).json()
     public_keys = {}
 
@@ -42,14 +36,16 @@ def get_keycloak_public_key():
 
 def get_login_url():
 
+    env = get_env()
+
     query = {
-        'client_id': KEYCLOAK_CLIENT_ID,
-        'redirect_uri': KEYCLOAK_REDIRECT_URL,
+        'client_id': env.keycloak_client_id,
+        'redirect_uri': env.keycloak_redirect_url,
         'response_type': 'code',
         'scope': 'openid',
     }
 
-    return f"{KEYCLOAK_URL}/realms/{KEYCLOAK_REALM}/protocol/openid-connect/auth?{urlencode(query)}"
+    return f"{env.keycloak_url}/realms/{env.keycloak_realm}/protocol/openid-connect/auth?{urlencode(query)}"
 
 
 def get_logout_url():
@@ -65,17 +61,19 @@ def oidc_callback():
     if not code:
         abort(400)
 
+    env = get_env()
+
     # Make request to Keycloak for a id / access token
     keycloak_data = {
         "grant_type": "authorization_code",
         "code": code,
-        "client_id": KEYCLOAK_CLIENT_ID,
-        "client_secret": KEYCLOAK_SECRET,
-        "redirect_uri": KEYCLOAK_REDIRECT_URL,
+        "client_id": env.keycloak_client_id,
+        "client_secret": env.get_keycloak_secret(),
+        "redirect_uri": env.keycloak_redirect_url,
         "scope": "openid",
     }
 
-    keycloak_url = f"{KEYCLOAK_URL}/realms/{KEYCLOAK_REALM}/protocol/openid-connect/token"
+    keycloak_url = f"{env.keycloak_url}/realms/{env.keycloak_realm}/protocol/openid-connect/token"
 
     token_data = requests.post(keycloak_url, data=keycloak_data).json()
     access_token = token_data.get("access_token")
@@ -148,8 +146,9 @@ def get_authenticated_user():
 
             now = datetime.utcnow()
             elapsed = now - user_key["last_used"]
+            timeout = get_env().session_timeout_seconds
 
-            if elapsed.seconds > SESSION_TIMEOUT_SECONDS:
+            if timeout > 0 and elapsed.seconds > timeout:
 
                 del user_keys[kid]
 

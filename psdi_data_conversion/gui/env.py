@@ -28,6 +28,14 @@ PRODUCTION_EV = "PRODUCTION_MODE"
 # Env var for whether this is a production release or development
 DEBUG_EV = "DEBUG_MODE"
 
+# Env vars for authentication settings
+KEYCLOAK_URL_EV = "KEYCLOAK_URL"
+KEYCLOAK_REALM_EV = "KEYCLOAK_REALM"
+KEYCLOAK_CLIENT_ID_EV = "KEYCLOAK_CLIENT_ID"
+KEYCLOAK_SECRET_EV = "KEYCLOAK_SECRET"
+KEYCLOAK_REDIRECT_URL_EV = "KEYCLOAK_REDIRECT_URL"
+SESSION_TIMEOUT_SECONDS_EV = "SESSION_TIMEOUT_SECONDS"
+
 
 class SiteEnv:
     def __init__(self, args: Namespace | None = None):
@@ -83,6 +91,31 @@ class SiteEnv:
         self.token = md5(dt.encode('utf8')).hexdigest()
         """A token for this session, created by hashing the the current date and time"""
 
+        # Env vars for authentication settings
+        self.keycloak_url = self._determine_value(ev=KEYCLOAK_URL_EV,
+                                                  value_type=str,
+                                                  default=False)
+
+        self.keycloak_realm = self._determine_value(ev=KEYCLOAK_REALM_EV,
+                                                    value_type=str,
+                                                    default=False)
+
+        self.keycloak_client_id = self._determine_value(ev=KEYCLOAK_CLIENT_ID_EV,
+                                                        value_type=str,
+                                                        default=False)
+
+        self._keycloak_secret = self._determine_value(ev=KEYCLOAK_SECRET_EV,
+                                                      value_type=str,
+                                                      default=False)
+
+        self.keycloak_redirect_url = self._determine_value(ev=KEYCLOAK_REDIRECT_URL_EV,
+                                                           value_type=str,
+                                                           default=False)
+
+        self.session_timeout_seconds = self._determine_value(ev=SESSION_TIMEOUT_SECONDS_EV,
+                                                             value_type=int,
+                                                             default=0)
+
         self._kwargs: dict[str, str] | None = None
         """Cached value for dict containing all env values"""
 
@@ -95,6 +128,10 @@ class SiteEnv:
                 if not key.startswith("_"):
                     self._kwargs[key] = val
         return self._kwargs
+
+    def get_keycloak_secret(self) -> str:
+        """Get the private KeyCloak secret"""
+        return self._keycloak_secret
 
     def _determine_log_mode(self) -> str:
         """Determine the log mode from args and environmental variables, preferring the former"""
@@ -127,7 +164,7 @@ class SiteEnv:
 
     def _determine_value(self,
                          ev: str,
-                         arg: str,
+                         arg: str | None = None,
                          value_type: type[T] = float,
                          default: T = None) -> T | None:
         """Determine a value using input arguments (preferred if present) and environmental variables"""
@@ -143,7 +180,8 @@ class SiteEnv:
 
         # Special handling for bool, to properly parse strings into bools
         if value_type is bool:
-            return ev_value.lower().startswith("t")
+            # Explicitly cast to value_type so we don't confuse the type-hinter when the type isn't bool
+            return value_type(ev_value.lower().startswith("t"))
 
         return value_type(ev_value)
 
