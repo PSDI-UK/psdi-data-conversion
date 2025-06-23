@@ -5,7 +5,8 @@ This module contains the OpenID Connect and JSON Web Token handling.
 
 import json
 import sys
-from datetime import datetime
+from datetime import datetime, timezone
+from typing import Any
 from urllib.parse import unquote, urlencode
 
 import jwt
@@ -15,7 +16,7 @@ from flask import Flask, abort, redirect, request
 
 from psdi_data_conversion.gui.env import get_env
 
-user_keys = {}
+d_all_user_keys: dict[str, dict | str] = {}
 
 
 @ttl_cache(ttl=60)
@@ -26,11 +27,11 @@ def get_keycloak_public_key():
     env = get_env()
 
     jwks_url = f"{env.keycloak_url}/realms/{env.keycloak_realm}/protocol/openid-connect/certs"
-    jwks = requests.get(jwks_url).json()
-    public_keys = {}
+    d_jwks: dict[str, dict | str] = requests.get(jwks_url).json()
+    public_keys: dict[str, str] = {}
 
-    for key in jwks['keys']:
-        public_keys[key['kid']] = jwt.algorithms.RSAAlgorithm.from_jwk(json.dumps(key))
+    for d_key in d_jwks['keys']:
+        public_keys[d_key['kid']] = jwt.algorithms.RSAAlgorithm.from_jwk(json.dumps(d_key))
 
     return public_keys
 
@@ -76,28 +77,28 @@ def oidc_callback():
 
     keycloak_url = f"{env.keycloak_url}/realms/{env.keycloak_realm}/protocol/openid-connect/token"
 
-    token_data = requests.post(keycloak_url, data=keycloak_data).json()
-    access_token = token_data.get("access_token")
+    d_token_data: dict[str, dict | str] = requests.post(keycloak_url, data=keycloak_data).json()
+    access_token: str = d_token_data["access_token"]
 
     try:
         # Verify and decode the access token
-        headers = jwt.get_unverified_header(access_token)
-        public_key = get_keycloak_public_key().get(headers['kid'])
+        d_header: dict[str, Any] = jwt.get_unverified_header(access_token)
+        public_key = get_keycloak_public_key()[d_header['kid']]
 
-        decoded_access_token = jwt.decode(
+        decoded_access_token: str = jwt.decode(
             access_token,
             key=public_key,
             audience="account",
             algorithms=['RS256']
         )
 
-        user_public_key_string = unquote(request.cookies.get('public_key'))
+        user_public_key_string = unquote(request.cookies['public_key'])
 
-        user_public_key = json.loads(user_public_key_string)
+        d_user_public_key: dict[str, dict | str] = json.loads(user_public_key_string)
 
-        kid = user_public_key["kid"]
+        kid: str = d_user_public_key["kid"]
 
-        user_keys[kid] = {
+        d_all_user_keys[kid] = {
             "last_used": datetime.utcnow(),
             "access_token": decoded_access_token,
             "public_key": jwt.PyJWK.from_json(user_public_key_string)
@@ -112,59 +113,63 @@ def oidc_callback():
 
 def logout():
 
-    authenticated_user = get_authenticated_user()
+    d_authenticated_user: dict[str, dict | str] | None = get_authenticated_user()
 
-    if authenticated_user is not None:
+    if d_authenticated_user is None:
 
-        sid = authenticated_user["sid"]
+        return redirect("/")
 
-        for kid in user_keys.copy():
+    sid = d_authenticated_user["sid"]
 
-            if user_keys[kid]["access_token"]["sid"] == sid:
+    # Iterate over keys in a shallow copy so the iteration isn't disrupted when we delete a key
+    for kid in d_all_user_keys.copy():
 
-                del user_keys[kid]
+        if d_all_user_keys[kid]["access_token"]["sid"] == sid:
+
+            del d_all_user_keys[kid]
 
     return redirect("/")
 
 
 def get_authenticated_user():
 
-    authenticated_user = None
-
     auth_token_string = request.cookies.get('auth_token')
 
-    if auth_token_string is not None:
+    if auth_token_string is None:
+        return None
 
-        auth_token = unquote(auth_token_string)
+    auth_token = unquote(auth_token_string)
 
-        unverified_headers = jwt.get_unverified_header(auth_token)
+    d_unverified_header: dict[str, dict | str] = jwt.get_unverified_header(auth_token)
 
-        kid = unverified_headers['kid']
+    kid: str = d_unverified_header['kid']
 
-        if kid in user_keys:
+    d_authenticated_user: dict[str, dict | str] | None = None
 
-            user_key = user_keys[kid]
+    if kid in d_all_user_keys:
 
-            now = datetime.utcnow()
-            elapsed = now - user_key["last_used"]
-            timeout = get_env().session_timeout_seconds
+        d_user_key: dict[str, dict | str] = d_all_user_keys[kid]
 
-            if timeout > 0 and elapsed.seconds > timeout:
+        now = datetime.now(timezone.utc)
+        elapsed = now - datetime(d_user_key["last_used"])
+        timeout = get_env().session_timeout_seconds
 
-                del user_keys[kid]
+        if timeout > 0 and elapsed.seconds > timeout:
 
-            else:
+            del d_all_user_keys[kid]
 
-                try:
+        else:
 
-                    authenticated_user = user_key["access_token"]
-                    user_key["last_used"] = datetime.utcnow()
+            try:
 
-                except jwt.InvalidTokenError as e:
+                d_authenticated_user = d_user_key["access_token"]
+                d_user_key["last_used"] = datetime.now(timezone.utc)
 
-                    print(f"Failed to verify session token: {e}", file=sys.stderr)
+            except jwt.InvalidTokenError as e:
 
-    return authenticated_user
+                print(f"Failed to verify session token: {e}", file=sys.stderr)
+
+    return d_authenticated_user
 
 
 def init_authentication(app: Flask):
