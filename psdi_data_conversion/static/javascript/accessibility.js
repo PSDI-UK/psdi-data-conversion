@@ -26,10 +26,10 @@ function toggleMode() {
 }
 
 function loadOption(jsName, cssSelector, changeFunc) {
+    $(cssSelector).change(changeFunc);
     const opt = sessionStorage.getItem(jsName + "Opt");
     if (opt != null)
         $(cssSelector).val(opt).change();
-    $(cssSelector).change(changeFunc);
 }
 
 $(document).ready(function () {
