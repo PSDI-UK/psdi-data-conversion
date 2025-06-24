@@ -131,8 +131,6 @@ export function setMode(new_mode = null) {
     } else {
       new_mode = DARK_MODE;
     }
-  } else if (new_mode == "disable") {
-    new_mode = null;
   }
 
   if (new_mode == DARK_MODE) {
@@ -145,7 +143,7 @@ export function setMode(new_mode = null) {
     loadProperty("ifm-background-color", s.getPropertyValue("--psdi-dm-bg-color-default"));
     loadProperty("ifm-color-primary", s.getPropertyValue("--psdi-dm-bg-color-primary"));
 
-  } else {
+  } else if (new_mode == LIGHT_MODE) {
 
     loadProperty("psdi-dark-text-color-body", sessionStorage.getItem("psdi-default-dark-text-color-body"));
     loadProperty("psdi-dark-text-color-heading", sessionStorage.getItem("psdi-default-dark-text-color-heading"));
@@ -154,9 +152,8 @@ export function setMode(new_mode = null) {
 
     loadProperty("ifm-background-color", sessionStorage.getItem("psdi-default-background-color"));
     loadProperty("ifm-color-primary", sessionStorage.getItem("psdi-default-color-primary"));
-  }
 
-  if (new_mode == null) {
+  } else {
     loadAccessibility();
   }
 
