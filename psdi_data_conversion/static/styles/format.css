@@ -216,11 +216,11 @@ select#dark-background option:checked {
 }
 
 select#size option {
-  font-family: var(--psdi-default-font);
+  font-size: var(--psdi-default-font-size);
 }
 
 select#font option {
-  font-size: var(--psdi-default-font-size);
+  font-family: var(--psdi-default-font);
 }
 
 select#dark-colour option {
