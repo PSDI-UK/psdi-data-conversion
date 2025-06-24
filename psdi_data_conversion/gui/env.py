@@ -41,7 +41,7 @@ DEFAULT_KEYCLOAK_URL = "http://localhost:5050"
 DEFAULT_KEYCLOAK_REALM = "master"
 DEFAULT_KEYCLOAK_CLIENT_ID = "data-conversion-service"
 DEFAULT_KEYCLOAK_SECRET = "WfHgzbu43Cppde48PbMWBLfL7kTovqxi"
-DEFAULT_KEYCLOAK_REDIRECT_URL = "https://dcs.psdi-dev.vbox/oidc_callback"
+DEFAULT_KEYCLOAK_REDIRECT_URL = "http://127.0.0.1:5000/oidc_callback"
 DEFAULT_SESSION_TIMEOUT_SECONDS = 1800
 
 
