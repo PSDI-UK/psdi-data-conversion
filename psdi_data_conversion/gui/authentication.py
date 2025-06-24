@@ -42,7 +42,7 @@ def get_login_url():
 
     query = {
         'client_id': env.keycloak_client_id,
-        'redirect_url': env.keycloak_redirect_url,
+        'redirect_uri': env.keycloak_redirect_url,
         'response_type': 'code',
         'scope': 'openid',
     }
@@ -71,7 +71,7 @@ def oidc_callback():
         "code": code,
         "client_id": env.keycloak_client_id,
         "client_secret": env.get_keycloak_secret(),
-        "redirect_url": env.keycloak_redirect_url,
+        "redirect_uri": env.keycloak_redirect_url,
         "scope": "openid",
     }
 
