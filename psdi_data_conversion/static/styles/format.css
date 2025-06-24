@@ -200,10 +200,19 @@ input.button.init-disabled {
   width    : 100%;
 }
 
+.access-option-container select option:checked {
+  background-color: var(--ifm-background-color);
+  color           : var(--ifm-font-color-base);
+}
+
 select#light-colour,
-select#dark-background {
+select#dark-background,
+select#light-colour option,
+select#dark-background option,
+select#light-colour option:checked,
+select#dark-background option:checked {
   background-color: var(--ifm-color-primary);
-  color           : var(--psdi-light-text-color-body);
+  color           : var(--ifm-hero-text-color);
 }
 
 select#size option {
