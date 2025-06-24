@@ -20,6 +20,23 @@ function loadOption(jsName, cssSelector, changeFunc) {
 
 $(document).ready(function () {
 
+    // Store default styles in the stylesheet
+    r.style.setProperty('--psdi-default-font', sessionStorage.getItem('psdi-default-font'));
+    r.style.setProperty('--psdi-default-heading-font', sessionStorage.getItem('psdi-default-heading-font'));
+    r.style.setProperty('--psdi-default-letter-spacing', sessionStorage.getItem('psdi-default-letter-spacing'));
+    r.style.setProperty('--psdi-default-font-weight', sessionStorage.getItem('psdi-default-font-weight'));
+    r.style.setProperty('--psdi-default-light-text-color-body',
+        sessionStorage.getItem('psdi-default-light-text-color-body'));
+    r.style.setProperty('--psdi-default-light-text-color-heading',
+        sessionStorage.getItem('psdi-default-light-text-color-heading'));
+    r.style.setProperty('--psdi-default-dark-text-color-body',
+        sessionStorage.getItem('psdi-default-dark-text-color-body'));
+    r.style.setProperty('--psdi-default-dark-text-color-heading',
+        sessionStorage.getItem('psdi-default-dark-text-color-heading'));
+    r.style.setProperty('--psdi-default-background-color', sessionStorage.getItem('psdi-default-background-color'));
+    r.style.setProperty('--psdi-default-color-primary', sessionStorage.getItem('psdi-default-color-primary'));
+
+    // Set up selection boxes
     loadOption("font", "#font", changeFont);
     loadOption("size", "#size", changeFontSize);
     loadOption("weight", "#weight", changeFontWeight);
@@ -30,6 +47,7 @@ $(document).ready(function () {
     loadOption("lightBack", "#light-background", changeLightBackground);
     loadOption("darkBack", "#dark-background", changeDarkBackground);
 
+    // Connect buttons
     $("#resetButton").click(resetSelections);
     $("#saveButton").click(saveSettings);
     $("#dmRestoreButton").click(restoreAllSettings);
