@@ -37,8 +37,8 @@ KEYCLOAK_REDIRECT_URL_EV = "KEYCLOAK_REDIRECT_URL"
 SESSION_TIMEOUT_SECONDS_EV = "SESSION_TIMEOUT_SECONDS"
 
 # Default keycloak values
-DEFAULT_KEYCLOAK_URL = "https://auth.psdi-dev.vbox"
-DEFAULT_KEYCLOAK_REALM = "labtrove"
+DEFAULT_KEYCLOAK_URL = "http://localhost:5050"
+DEFAULT_KEYCLOAK_REALM = "master"
 DEFAULT_KEYCLOAK_CLIENT_ID = "data-conversion-service"
 DEFAULT_KEYCLOAK_SECRET = "WfHgzbu43Cppde48PbMWBLfL7kTovqxi"
 DEFAULT_KEYCLOAK_REDIRECT_URL = "https://dcs.psdi-dev.vbox/oidc_callback"
