@@ -11,6 +11,10 @@
 - All pages are now served via templates rendered with Flask, using inheritance to reduce code duplication
 - Service mode and Production mode are now handled by variables used by Flask, not CSS stylings
 
+### Bugfixes
+
+- On the Accessibility page of the GUI, the "Default" options now properly show the default stylings rather than the current
+
 ## v0.2.4
 
 ### Bugfixes
