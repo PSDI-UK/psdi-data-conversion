@@ -12,3 +12,14 @@ spec:
               value: "false"
             - name: LOG_LEVEL
               value: "debug"
+            - name: KEYCLOAK_URL
+              value: "TBD"
+            - name: KEYCLOAK_REALM
+              value: "TBD"
+            - name: KEYCLOAK_CLIENT_ID
+              value: "data-conversion-service"
+            - name: KEYCLOAK_REDIRECT_URL
+              value: "https://data-conversion-dev.psdi.ac.uk/oidc_callback"
+            - name: SESSION_TIMEOUT_SECONDS
+              # 30-day timeout
+              value: "2592000"
