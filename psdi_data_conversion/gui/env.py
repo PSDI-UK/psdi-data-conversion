@@ -299,13 +299,6 @@ def get_env_kwargs():
     kwargs["login_url"] = get_login_url()
     kwargs["logout_url"] = get_logout_url()
 
-    authenticated_user = get_authenticated_user()
-
-    logged_in = authenticated_user is not None
-
-    kwargs["logged_in"] = logged_in
-
-    if logged_in:
-        kwargs["user_label"] = authenticated_user["name"]
+    kwargs["logged_in"] = (get_authenticated_user() is not None)
 
     return kwargs
