@@ -99,7 +99,7 @@ def oidc_callback():
         kid: str = d_user_public_key["kid"]
 
         d_all_user_keys[kid] = {
-            "last_used": datetime.utcnow(),
+            "last_used": datetime.now(timezone.utc),
             "access_token": decoded_access_token,
             "public_key": jwt.PyJWK.from_json(user_public_key_string)
         }
@@ -151,7 +151,7 @@ def get_authenticated_user():
         d_user_key: dict[str, dict | str] = d_all_user_keys[kid]
 
         now = datetime.now(timezone.utc)
-        elapsed = now - datetime(d_user_key["last_used"])
+        elapsed = now - d_user_key["last_used"]
         timeout = get_env().session_timeout_seconds
 
         if timeout > 0 and elapsed.seconds > timeout:
