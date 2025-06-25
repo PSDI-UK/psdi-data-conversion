@@ -78,7 +78,11 @@ def oidc_callback():
     keycloak_url = f"{env.keycloak_url}/realms/{env.keycloak_realm}/protocol/openid-connect/token"
 
     d_token_data: dict[str, dict | str] = requests.post(keycloak_url, data=keycloak_data).json()
-    access_token: str = d_token_data["access_token"]
+    access_token: str = d_token_data.get("access_token")
+
+    if not access_token:
+        print(f"ERROR: Access token not granted: {repr(d_token_data)}", file=sys.stderr)
+        abort(400)
 
     try:
         # Verify and decode the access token
@@ -107,7 +111,7 @@ def oidc_callback():
         return redirect("/")
 
     except jwt.InvalidTokenError as e:
-        print(f"Failed to verify access token: {e}", file=sys.stderr)
+        print(f"ERROR: Failed to verify access token: {e}", file=sys.stderr)
         abort(400)
 
 
