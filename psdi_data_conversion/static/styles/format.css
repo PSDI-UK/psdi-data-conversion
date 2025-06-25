@@ -5,6 +5,35 @@
 
 @import url("./psdi-common.css");
 
+/* Special handling for dark mode - we override the color specifications to match light mode here, and store the
+values for dark mode in variables that we can reference when we want to retrieve them
+*/
+[data-theme='dark'] {
+
+  /* In dark mode, store the same value as in light mode - the variable values will be overridden to enact the toggle */
+  --ifm-background-color: var(--psdi-bg-color-default);
+
+  --ifm-color-primary         : var(--psdi-bg-color-primary);
+  --ifm-color-primary-dark    : var(--psdi-bg-color-primary-dark);
+  --ifm-color-primary-darker  : var(--psdi-bg-color-primary-darker);
+  --ifm-color-primary-darkest : var(--psdi-bg-color-primary-darkest);
+  --ifm-color-primary-light   : var(--psdi-bg-color-primary-light);
+  --ifm-color-primary-lighter : var(--psdi-bg-color-primary-lighter);
+  --ifm-color-primary-lightest: var(--psdi-bg-color-primary-lightest);
+
+  --ifm-color-secondary           : var(--psdi-bg-color-secondary);
+  --ifm-color-secondary-dark      : var(--psdi-bg-color-secondary-dark);
+  --ifm-background-color-secondary: var(--psdi-bg-color-secondary);
+
+  --ifm-font-color-base        : var(--psdi-dark-text-color-body);
+  --ifm-hero-text-color        : var(--psdi-light-text-color-body);
+  --ifm-heading-color          : var(--psdi-dark-text-color-heading);
+  --psdi-heading-color-inverse : var(--psdi-light-text-color-heading);
+  --ifm-font-color-secondary   : var(--psdi-text-color-secondary-body);
+  --ifm-heading-color-secondary: var(--psdi-dark-text-color-heading);
+  --psdi-font-color-faint      : gray;
+}
+
 /* Forms inherit style from normal content, and make sure content is well away from the edges */
 form {
   width      : 95%;
@@ -77,9 +106,13 @@ input.button.init-disabled {
 }
 
 .flex-panel-display:has(.instructions-panel) {
-  border       : 1px solid black;
+  border       : 1px solid var(--psdi-border-color-dark);
   border-radius: 1rem;
   margin-bottom: 2rem;
+}
+
+[data-theme='dark'] .flex-panel-display:has(.instructions-panel) {
+  border: 1px solid var(--psdi-border-color-light);
 }
 
 @media (max-width: 700px) {
@@ -140,8 +173,25 @@ input.button.init-disabled {
   justify-content: flex-end;
 }
 
-[data-theme="dark"] .access-option-container.lm-only {
+.access-lm,
+.access-dm {
   display: none;
+}
+
+[data-theme="light"] .access-nm {
+  display: none;
+}
+
+[data-theme="light"] .access-lm {
+  display: block;
+}
+
+[data-theme="dark"] .access-nm {
+  display: none;
+}
+
+[data-theme="dark"] .access-dm {
+  display: block;
 }
 
 /* Select boxes for accessibility options */
@@ -150,18 +200,27 @@ input.button.init-disabled {
   width    : 100%;
 }
 
+.access-option-container select option:checked {
+  background-color: var(--ifm-background-color);
+  color           : var(--ifm-font-color-base);
+}
+
 select#light-colour,
-select#dark-background {
+select#dark-background,
+select#light-colour option,
+select#dark-background option,
+select#light-colour option:checked,
+select#dark-background option:checked {
   background-color: var(--ifm-color-primary);
-  color           : var(--psdi-light-text-color-body);
+  color           : var(--ifm-hero-text-color);
 }
 
 select#size option {
-  font-family: var(--psdi-default-font);
+  font-size: var(--psdi-default-font-size);
 }
 
 select#font option {
-  font-size: var(--psdi-default-font-size);
+  font-family: var(--psdi-default-font);
 }
 
 select#dark-colour option {

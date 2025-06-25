@@ -9,7 +9,7 @@
 
 {% block gui_content %}
 <div class="flex-panel-display">
-  <div class="flex-panel instructions-panel">
+  <div class="flex-panel instructions-panel access-nm">
     <h6>Select accessibility options</h6>
     <p>Select accessibility settings below as require to find a setup you like. Once the appearance of the page is
       satisfactory, click on the "Save" button to apply the settings to the entire website. This saves the
@@ -17,9 +17,28 @@
       data.</p>
     <p>The colour options here are not compatible with the dark-mode toggle in the header bar. If a custom dark
       scheme is desired, the appropriate colours can be selected in light-mode.</p>
+    <p>If the dark-mode toggle in the header bar is used after saving Accessibility settings, it will toggle the color
+      settings between the fixed light-mode and dark-mode color schemes. Saved settings can be restored by returning to
+      this page.
+    </p>
   </div>
-  <hr class="small-screen-only">
-  <div class="flex-panel">
+  <div class="flex-panel instructions-panel access-dm">
+    <h6>Switch to Light Mode</h6>
+    <p>Accessibility settings can only be managed in light mode. Click the button below to start managing these
+      settings.
+    </p>
+    <input type="button" class="button no-left-margin" value=" Restore/Manage " id="dmRestoreButton">
+  </div>
+  <div class="flex-panel instructions-panel access-lm">
+    <h6>Restore Accessibility Settings</h6>
+    <p>When the light-mode/dark-mode toggle button is used, the preset color options will take precedence for the
+      remainder of the current session. Any saved accessibility settings will be restored if you start a new session. If
+      you wish to restore them now, click the button below.
+    </p>
+    <input type="button" class="button no-left-margin" value=" Restore/Manage " id="lmRestoreButton">
+  </div>
+  <hr class="small-screen-only access-nm">
+  <div class="flex-panel access-nm">
     <div class="access-options">
       <div class="access-option-container">
         <p>
@@ -120,7 +139,7 @@
           </select>
         </p>
       </div>
-      <div class="access-option-container lm-only">
+      <div class="access-option-container">
         <p>
           <label for="dark-colour" id="colourLabel">Primary font colour:</label><br>
           <select id="dark-colour">
@@ -144,7 +163,7 @@
           </select>
         </p>
       </div>
-      <div class="access-option-container lm-only">
+      <div class="access-option-container">
         <p>
           <label for="light-colour" id="lightColourLabel">Alternate font colour:</label><br>
           <select id="light-colour">
@@ -168,7 +187,7 @@
           </select>
         </p>
       </div>
-      <div class="access-option-container lm-only">
+      <div class="access-option-container">
         <p>
           <label for="lightBackground" id="lightBackgroundLabel">Primary background colour:</label><br>
           <select id="light-background">
@@ -192,7 +211,7 @@
           </select>
         </p>
       </div>
-      <div class="access-option-container lm-only">
+      <div class="access-option-container">
         <p>
           <label for="darkBackground" id="darkBackgroundLabel">Alternate background colour:</label><br>
           <select id="dark-background">
