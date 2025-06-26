@@ -25,8 +25,8 @@ jobs:
       - name: Apply secrets to deployment patch
         uses: nowactions/envsubst@v1
         with:
-          input: deployment-env-patch.template.yaml
-          output: deployment-env-patch.yaml
+          input: deploy/${{ inputs.environment }}/deployment-env-patch.template.yaml
+          output: deploy/${{ inputs.environment }}/deployment-env-patch.yaml
         env:
           KEYCLOAK_SECRET: ${{ secrets.KEYCLOAK_SECRET }}
 
