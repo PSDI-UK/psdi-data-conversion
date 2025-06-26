@@ -16,6 +16,8 @@ spec:
               value: "PSDI"
             - name: KEYCLOAK_CLIENT_ID
               value: "data-conversion-service"
+            - name: KEYCLOAK_SECRET
+              value: "$KEYCLOAK_SECRET"
             - name: KEYCLOAK_REDIRECT_URL
               value: "https://data-conversion-staging.psdi.ac.uk/oidc_callback"
             - name: SESSION_TIMEOUT_SECONDS
