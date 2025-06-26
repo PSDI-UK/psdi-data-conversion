@@ -63,7 +63,7 @@ jobs:
           kustomize edit set image data-conversion=ghcr.io/psdi-uk/psdi-data-conversion/data-conversion:$CONTAINER_TAG
           # Substitute secret environmental variables into the kustomizations
           export KEYCLOAK_SECRET=${{ secrets.KEYCLOAK_SECRET }}
-          envsubst < deployment-env-patch.yaml > deployment-env-patch.yaml
+          envsubst < deployment-env-patch.template.yaml > deployment-env-patch.yaml
           # return to root of repository
           cd -
           # Apply env specific kustomizations
