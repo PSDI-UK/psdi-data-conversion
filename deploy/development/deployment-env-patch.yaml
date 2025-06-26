@@ -13,9 +13,9 @@ spec:
             - name: LOG_LEVEL
               value: "debug"
             - name: KEYCLOAK_URL
-              value: "TBD"
+              value: "https://account-dev.psdi.ac.uk"
             - name: KEYCLOAK_REALM
-              value: "TBD"
+              value: "PSDI"
             - name: KEYCLOAK_CLIENT_ID
               value: "data-conversion-service"
             - name: KEYCLOAK_REDIRECT_URL
