@@ -21,6 +21,15 @@ jobs:
     runs-on: psdi-uk-runners 
     steps:
       - uses: actions/checkout@v4
+
+      - name: Apply secrets to deployment patch
+        uses: nowactions/envsubst@v1
+        with:
+          input: deployment-env-patch.template.yaml
+          output: deployment-env-patch.yaml
+        env:
+          KEYCLOAK_SECRET: ${{ secrets.KEYCLOAK_SECRET }}
+
       - name: Test kubectl/kustomize with env secret
         env:
           KUBECONF: ${{ secrets.KUBECONF }}
@@ -61,9 +70,6 @@ jobs:
           cd deploy/$DEPLOY_ENV
           # update image with version passed from upstream build job
           kustomize edit set image data-conversion=ghcr.io/psdi-uk/psdi-data-conversion/data-conversion:$CONTAINER_TAG
-          # Substitute secret environmental variables into the kustomizations
-          export KEYCLOAK_SECRET=${{ secrets.KEYCLOAK_SECRET }}
-          envsubst < deployment-env-patch.template.yaml > deployment-env-patch.yaml
           # return to root of repository
           cd -
           # Apply env specific kustomizations
