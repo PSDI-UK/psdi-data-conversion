@@ -211,7 +211,7 @@ function applySetting(jsName, cssSelector, cssVar, settingsData) {
 }
 
 // Applies accessibility settings to the entire website.
-function saveSettings(event) {
+function saveSettings(event, show_alert = true) {
 
     let settingsData = new Object();
 
@@ -230,9 +230,11 @@ function saveSettings(event) {
         'data': JSON.stringify(settingsData)
     })
         .done(() => {
-            alert("Your accessibility settings have been saved. If you accidentally save settings which are " +
-                "unreadable and can't find the \"Reset\" button, you can restore the default settings by deleting " +
-                "this site's cookie in your browser's settings.");
+            if (show_alert) {
+                alert("Your accessibility settings have been saved. If you accidentally save settings which are " +
+                    "unreadable and can't find the \"Reset\" button, you can restore the default settings by " +
+                    "deleting this site's cookie in your browser's settings.");
+            }
         })
         .fail(function (e) {
             alert("ERROR: Could not save accessibility settings. Your settings should still persist for this " +
@@ -248,10 +250,10 @@ function saveSettings(event) {
 
 // Restores the ability to manage settings after using the mode toggle button
 import { setMode, loadAccessibility } from "./load_accessibility.js";
-function restoreAllSettings() {
+function restoreAllSettings(event) {
     setMode("disable");
     loadAccessibility();
 
     // We save settings here to apply them and save them into session storage
-    saveSettings();
+    saveSettings(event, false);
 }
