@@ -16,7 +16,6 @@ from flask import Flask, cli
 import psdi_data_conversion
 from psdi_data_conversion import constants as const
 from psdi_data_conversion.gui.accessibility import init_accessibility
-from psdi_data_conversion.gui.authentication import init_authentication
 from psdi_data_conversion.gui.env import get_env
 from psdi_data_conversion.gui.get import init_get
 from psdi_data_conversion.gui.post import init_post
@@ -55,7 +54,12 @@ def _init_app():
     init_get(app)
     init_post(app)
     init_accessibility(app)
-    init_authentication(app)
+
+    # Only initialize authentication if running in service mode, so dependencies for it don't need to be installed
+    # otherwise
+    if get_env().service_mode:
+        from psdi_data_conversion.gui.authentication import init_authentication
+        init_authentication(app)
 
     return app
 
