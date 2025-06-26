@@ -17,7 +17,7 @@ spec:
             - name: KEYCLOAK_REALM
               value: "PSDI"
             - name: KEYCLOAK_CLIENT_ID
-              value: "data-conversion-service"
+              value: "data-conversion-dev"
             - name: KEYCLOAK_SECRET
               value: "$KEYCLOAK_SECRET"
             - name: KEYCLOAK_REDIRECT_URL
