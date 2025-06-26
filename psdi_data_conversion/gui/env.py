@@ -292,13 +292,16 @@ def get_env_kwargs():
     """Get a dict of common kwargs for the environment
     """
 
-    kwargs = get_env().kwargs
+    env = get_env()
 
-    from psdi_data_conversion.gui.authentication import get_authenticated_user, get_login_url, get_logout_url
+    kwargs = env.kwargs
 
-    kwargs["login_url"] = get_login_url()
-    kwargs["logout_url"] = get_logout_url()
+    if env.service_mode:
+        from psdi_data_conversion.gui.authentication import get_authenticated_user, get_login_url, get_logout_url
 
-    kwargs["logged_in"] = (get_authenticated_user() is not None)
+        kwargs["login_url"] = get_login_url()
+        kwargs["logout_url"] = get_logout_url()
+
+        kwargs["logged_in"] = (get_authenticated_user() is not None)
 
     return kwargs
