@@ -34,6 +34,8 @@ jobs:
   # For the tag, we need something unique for each push, so we use the SHA of the latest commit
   deploy-stfc-dev-k8s:
     needs: [container-push]
+    # Proceed if test-all was successful or skipped
+    if: always() && (needs.container-push.result == 'success')
     uses: ./.github/workflows/job-deploy-k8s.yml # use the callable deploy job
     secrets: inherit # pass all secrets for the environment
     with:
