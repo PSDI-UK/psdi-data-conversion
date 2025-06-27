@@ -10,14 +10,14 @@
 {% block gui_content %}
 <form name="gui">
   <div class="max-width-box">
-    <h3>Format and Converter Selection</h3>
     <p> Your one-stop shop for file format conversion, PSDI's Data Conversion Service enables users to seamlessly
       convert between different file formats and assess the quality of proposed conversions. This is the
       {% if service_mode %}web{% else %}local GUI{% endif %} version of our service. To find out more about Data
       Conversion and our other tools, click
       <a href="https://resources.psdi.ac.uk/service/8334f94b-1c6e-4034-a5ab-71c6df375cba"
       id="more" target="_blank">here.</a>
-    </p>
+    </p><br>
+    <h3>Format and Converter Selection</h3>
     <h6>Select formats for conversion</h6>
     <p>Select "from" and "to" file formats in the "Convert from/to" boxes, in either order. Typing where indicated
       filters the options (case insensitive); for example, typing "can" or "NON" reduces the number of options to one:
@@ -33,20 +33,22 @@
     </p>
     <h6>Select a converter</h6>
     <p>Selecting a converter displays information
-      about it, along with a link to a relevant website. Irrespective of the selected converter, an Open Babel
-      conversion is offered if it can be carried out. Clicking on the "Yes" button takes us to the "Conversion" page.
-      If a file format has not been found, or if there are no converters supporting a required conversion, please
-      click on "Report Missing Format/Conversion" in the navigation bar.
+      about it, along with a link to a relevant website. Selecting a supported converter affords the opportunity to
+      carry out a conversion on this site. Clicking on the "Yes" button takes us to the "Conversion" page.
+      If a file format has not been found, or if there are no converters capable of carrying out a required
+      conversion, please click on "Report Missing Format/Conversion" in the navigation bar.
     </p><br>
     <h3>Conversion</h3>
     <h4>Open Babel</h4>
     <h6>Select flags and options for the file formats</h6>
+    <p>One or more input or output flags may be selected if required (hold command [Mac] or CTRL [Windows]
+      to select multiple options; and use command+click [Mac] or CTRL+click [Windows] to unselect an option).
+      To undo all selections in a box, click just underneath the final option. Ticking a check box reveals a
+      text box for entry of required information, along with further explanation if available.
+    </p>
     <p>Zero to two option flag select boxes and zero to two sets of option flag check boxes may be displayed,
       depending on the conversion and the degree of completion of the database. Further information may be displayed
-      underneath the select boxes if available. One or more input or output flags may be selected if required (command
-      click [Mac] or control click [Windows] for multiple select box selections). To undo all selections in a box,
-      click just underneath the final option. Ticking a check box reveals a text box for entry of required
-      information, along with further explanation if available.</p>
+      underneath the select boxes if available.</p>
     <h6>Select coordinate generation mode</h6>
     <p>If 2- or 3-dimensional atomic coordinates need to be calculated (e.g., if they do not already exist in the
       input file), select "2D" or "3D" and a speed/accuracy option ("fastest" is least accurate).
@@ -55,18 +57,28 @@
     </p>
     <h6>Upload the file and run the conversion</h6>
     <p>Click on "Choose file" and then select an input file of the correct format (and extension). Clicking
-      on "Convert" uploads and converts the file. The output file is automatically downloaded, along with a log file.
-      if any issues are encountered (e.g., the output file does not download), please click on "Provide Feedback" in
+      on "Convert" uploads and converts the file. The output file is automatically downloaded, along with a log file if this option is ticked.</p>
+    <p>If any issues are encountered (e.g., the output file does not download), please click on "Provide Feedback" in
       the navigation bar.</p>
+    <p> If you have sensitive data you might prefer to use <a href="download.htm">one of our downloadable tools or Python library</a> rather than uploading your data to our service.
+    </p>
     <h4>Atomsk and c2x</h4>
     <p>Click on "Choose file" and then select an input file of the correct format (and extension). Clicking on "Convert"
-      uploads and converts the file. The output file is automatically downloaded, along with a log file. If any issues
-      are
+      uploads and converts the file. The output file is automatically downloaded, along with a log file if this option is ticked.</p>
+    <p>If any issues are
       encountered (e.g., the output file does not download), please click on "Provide Feedback" in the navigation bar.
+    </p>
+    <p> If you have sensitive data you might prefer to use <a href="download.htm">one of our downloadable tools or Python library</a> rather than uploading your data to our service.
     </p><br>
     <h3>Report Missing Format/Conversion</h3>
-    <p>Select the type of report (missing file format or conversion) and then follow the instructions that appear.
-      Finally, click on "Report."</p><br>
+    <p>
+      {% if service_mode %}Select the type of report (missing file format or conversion) and then follow the instructions that appear.
+      Finally, click on "Report."
+      {% else %}To report a missing format or conversion, please use
+      <a href="https://data-conversion.psdi.ac.uk/report.htm?origin=local">the interface on the public web app.</a>
+      {% endif %}
+    </p>
+    <p>Alternatively, you may wish to see if your needs can be met by <a href="https://yard.datatractor.org">Datatractor.</a></p><br>
     <h3>Provide feedback</h3>
     <p>To report issues other than missing formats or conversions, please click on the "Feedback form" link. The form
       will open in a new tab.</p><br>
@@ -75,7 +87,7 @@
       satisfactory, click on the "Save" button to apply the settings to the entire website. This saves the settings in
       a cookie on your device which is only used for this purpose and does not store any personal data.</p>
     <p>The colour options here are not compatible with the dark-mode toggle in the header bar. If a custom dark scheme
-      is desired, the appropriate colours can be selected in light-mode.</p>
+      is desired, the appropriate colours can be selected in light-mode.</p><br>
     <h3>About</h3>
     <p><strong>PSDI Data Conversion service</strong><br>
       {% if service_mode %}Public web service{% else %}Local GUI{%endif %} mode -
