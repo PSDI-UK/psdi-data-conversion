@@ -22,6 +22,8 @@ jobs:
   container-push:
     uses: ./.github/workflows/job-container-push.yml
     needs: [test-all]
+    # Proceed if test-all was successful or skipped
+    if: always() &&  (needs.test-all.result == 'skipped' || needs.test-all.result == 'success')
     with:
       # container_tag
       container_tag: ${{ github.sha }}
