@@ -4,11 +4,18 @@ name: CI - Main
 run-name: CI - Main
 on:
   workflow_dispatch:
+    inputs:
+      skip-tests:
+        description: "Don't run tests before deploying"
+        required: false
+        default: false
+        type: boolean
   push:
     branches: ["main"]
 
 jobs:
   test-all:
+    if: ${{ github.event_name == 'push' || ! github.event.inputs.skip-tests }}
     uses: ./.github/workflows/job-test-main.yml
     secrets: inherit # pass all secrets for the environment
 
