@@ -27,12 +27,16 @@
   <script type="module" src="{{url_for('static', filename='javascript/psdi-common.js')}}"></script>
   <script type="module" src="{{url_for('static', filename='javascript/load_accessibility.js')}}"></script>
 
-  {# Store the logged-in status in sessionStorage - this is user-meddlable, so isn't the final check on anything,
-  but will limit things appropriate for normal users. #}
+  {# Store the service-mode/logged-in status in sessionStorage - this is user-meddlable, so isn't the final check on
+  anything, but will limit things appropriate for normal users. #}
+  {% if not service_mode %}
+  <script type="module">sessionStorage.setItem("permissions_level", 2);</script>
+  {% else %}
   {% if logged_in %}
-  <script type="module">sessionStorage.setItem("logged_in", true);</script>
-  {%else}
-  <script type="module">sessionStorage.setItem("logged_in", false);</script>
+  <script type="module">sessionStorage.setItem("permissions_level", 1);</script>
+  {% else %}
+  <script type="module">sessionStorage.setItem("permissions_level", 0);</script>
+  {% endif %}
   {% endif %}
   {% endblock %}
 </head>

@@ -285,10 +285,15 @@ function checkFile(event) {
 }
 
 /**
- * Allow the file upload to only accept the expected type of file, plus archives
+ * Allow the file upload to only accept the expected type of file, plus archives if logged in
  */
 function limitFileType() {
-    $("#fileToUpload")[0].accept = "." + in_ext + ", .zip, .tar, .tar.gz, .tar.xz, .tar.bz";
+    let typesToAccept = "." + in_ext;
+    // Allow archives to be uploaded if permissions level is 1 (logged in) or greater
+    if (sessionStorage.getItem("permissions_level") >= 1) {
+        typesToAccept += ", .zip, .tar, .tar.gz, .tar.xz, .tar.bz";
+    }
+    $("#fileToUpload")[0].accept = typesToAccept;
 }
 
 /**
