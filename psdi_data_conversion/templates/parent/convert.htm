@@ -19,7 +19,19 @@
   <div class="flex-panel instructions-panel">
     <h6>Upload the file and run the conversion</h6>
     <p>Click on “Choose file” and then select an input file of the correct format (and extension). Clicking on
-      “Convert” uploads and converts the file. The output file is automatically downloaded, along with a log file if this option is ticked.
+      “Convert” uploads and converts the file. The output file is automatically downloaded, along with a log file if
+      this option is ticked.
+    </p>
+    <p>
+      {% if permission_level >= 1 %}
+      You may upload archives of files of the same type. Archives of types .tar, .tar.gz, .tar.xz, and .tar.bz are
+      supported."
+      {% else %}
+      If you wish to convert a batch of multiple files of the same type contained within an archive, this functionality
+      is available to logged in users. Use the "Log in" link in the header to log in or register, then return to this
+      page. A higher file size limit is also available to logged-in users (except for conversions with Open Babel, due
+      to a bug in it when converting large files).
+      {% endif %}
     </p>
     <p>
       If any issues are encountered (e.g., the output file does not download), please click on “Provide

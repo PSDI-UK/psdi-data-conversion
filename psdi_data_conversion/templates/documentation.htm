@@ -14,8 +14,8 @@
       convert between different file formats and assess the quality of proposed conversions. This is the
       {% if service_mode %}web{% else %}local GUI{% endif %} version of our service. To find out more about Data
       Conversion and our other tools, click
-      <a href="https://resources.psdi.ac.uk/service/8334f94b-1c6e-4034-a5ab-71c6df375cba"
-      id="more" target="_blank">here.</a>
+      <a href="https://resources.psdi.ac.uk/service/8334f94b-1c6e-4034-a5ab-71c6df375cba" id="more"
+        target="_blank">here.</a>
     </p><br>
     <h3>Format and Converter Selection</h3>
     <h6>Select formats for conversion</h6>
@@ -23,7 +23,9 @@
       filters the options (case insensitive); for example, typing "can" or "NON" reduces the number of options to one:
       "can: Canonical SMILES."
     </p>
-    <p>When converting multiple files with, say, extension cif within an archive (e.g., ZIP), select "cif: Crystallographic Information File."
+    <p>When converting multiple files with, say, extension cif within an archive (e.g., .zip), select "cif:
+      Crystallographic Information File." Conversion of archives of files is enabled only for logged-in users, and
+      archives of types .tar, .tar.gz, .tar.xz, and .tar.bz are supported.
     </p>
     <p>If you change your mind about a conversion, click the "Reset" button.
     </p>
@@ -56,29 +58,36 @@
       ignored.
     </p>
     <h6>Upload the file and run the conversion</h6>
-    <p>Click on "Choose file" and then select an input file of the correct format (and extension). Clicking
-      on "Convert" uploads and converts the file. The output file is automatically downloaded, along with a log file if this option is ticked.</p>
+    <p>Click on "Choose file" and then select an input file of the correct format (and extension). The file size limit
+      depends on whether or not you are logged in, with logged-in users allowed a greater file size. Clicking
+      on "Convert" uploads and converts the file. The output file is automatically downloaded, along with a log file if
+      this option is ticked.</p>
     <p>If any issues are encountered (e.g., the output file does not download), please click on "Provide Feedback" in
       the navigation bar.</p>
-    <p> If you have sensitive data you might prefer to use <a href="download.htm">one of our downloadable tools or Python library</a> rather than uploading your data to our service.
+    <p> If you have sensitive data you might prefer to use <a href="download.htm">one of our downloadable tools or
+        Python library</a> rather than uploading your data to our service.
     </p>
     <h4>Atomsk and c2x</h4>
     <p>Click on "Choose file" and then select an input file of the correct format (and extension). Clicking on "Convert"
-      uploads and converts the file. The output file is automatically downloaded, along with a log file if this option is ticked.</p>
+      uploads and converts the file. The output file is automatically downloaded, along with a log file if this option
+      is ticked.</p>
     <p>If any issues are
       encountered (e.g., the output file does not download), please click on "Provide Feedback" in the navigation bar.
     </p>
-    <p> If you have sensitive data you might prefer to use <a href="download.htm">one of our downloadable tools or Python library</a> rather than uploading your data to our service.
+    <p> If you have sensitive data you might prefer to use <a href="download.htm">one of our downloadable tools or
+        Python library</a> rather than uploading your data to our service.
     </p><br>
     <h3>Report Missing Format/Conversion</h3>
     <p>
-      {% if service_mode %}Select the type of report (missing file format or conversion) and then follow the instructions that appear.
+      {% if service_mode %}Select the type of report (missing file format or conversion) and then follow the
+      instructions that appear.
       Finally, click on "Report."
       {% else %}To report a missing format or conversion, please use
       <a href="https://data-conversion.psdi.ac.uk/report.htm?origin=local">the interface on the public web app.</a>
       {% endif %}
     </p>
-    <p>Alternatively, you may wish to see if your needs can be met by <a href="https://yard.datatractor.org">Datatractor.</a></p><br>
+    <p>Alternatively, you may wish to see if your needs can be met by <a
+        href="https://yard.datatractor.org">Datatractor.</a></p><br>
     <h3>Provide feedback</h3>
     <p>To report issues other than missing formats or conversions, please click on the "Feedback form" link. The form
       will open in a new tab.</p><br>
