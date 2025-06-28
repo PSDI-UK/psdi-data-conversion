@@ -63,6 +63,18 @@ class SiteEnv:
                                                           const.MEGABYTE)*const.MEGABYTE
         """The maximum file size for converters other than Open Babel"""
 
+        self.max_file_size_logged_in: float = self._determine_value(ev=const.MAX_FILESIZE_LOGGED_IN_EV,
+                                                                    arg="max_file_size_logged_in",
+                                                                    default=const.DEFAULT_MAX_FILE_SIZE_LOGGED_IN /
+                                                                    const.MEGABYTE)*const.MEGABYTE
+        """The maximum file size for logged-in users for converters other than Open Babel"""
+
+        self.max_file_size_logged_out: float = self._determine_value(ev=const.MAX_FILESIZE_LOGGED_OUT_EV,
+                                                                     arg="max_file_size_logged_out",
+                                                                     default=const.DEFAULT_MAX_FILE_SIZE_LOGGED_OUT /
+                                                                     const.MEGABYTE)*const.MEGABYTE
+        """The maximum file size for logged-in users for converters other than Open Babel"""
+
         self.max_file_size_ob: float = self._determine_value(ev=const.MAX_FILESIZE_OB_EV,
                                                              arg="max_file_size_ob",
                                                              default=const.DEFAULT_MAX_FILE_SIZE_OB /

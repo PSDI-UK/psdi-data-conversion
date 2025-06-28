@@ -6,9 +6,17 @@
 
 <script>
   const token = "{{token}}";
-  const max_file_size = "{{max_file_size}}";
   const max_file_size_ob = "{{max_file_size_ob}}";
+  let max_file_size;
 </script>
+
+{% if not service_mode %}
+<script>max_file_size = "{{max_file_size}}";</script>
+{% elif logged_in %}
+<script>max_file_size = "{{max_file_size_logged_in}}";</script>
+{% else %}
+<script>max_file_size = "{{max_file_size_logged_out}}";</script>
+{% endif %}
 {% endblock %}
 
 {% block hero_title %}Format and Converter Selection{% endblock %}

@@ -92,6 +92,16 @@ export function commonConvertReady(converter) {
 // Converts user-supplied file to another format and downloads the resulting file
 export function convertFile(form_data, download_fname, fname) {
 
+    // Check if the file is allowed to be submitted
+    let [_, ext] = splitArchiveExt(download_fname);
+    if (isArchiveExt(ext) && sessionStorage.getItem("permission_level") < 1) {
+        alert("ERROR: Conversion of archives of files is only allowed for logged-in users. Please register or log in " +
+            "using the “Log in” link in the header."
+        )
+        clearUploadedFile();
+        return;
+    }
+
     showSpinner();
     disableConvertButton();
 
@@ -285,10 +295,15 @@ function checkFile(event) {
 }
 
 /**
- * Allow the file upload to only accept the expected type of file, plus archives
+ * Allow the file upload to only accept the expected type of file, plus archives if logged in
  */
 function limitFileType() {
-    $("#fileToUpload")[0].accept = "." + in_ext + ", .zip, .tar, .tar.gz, .tar.xz, .tar.bz";
+    let typesToAccept = "." + in_ext;
+    // Allow archives to be uploaded if permissions level is 1 (logged in) or greater
+    if (sessionStorage.getItem("permission_level") >= 1) {
+        typesToAccept += ", .zip, .tar, .tar.gz, .tar.xz, .tar.bz";
+    }
+    $("#fileToUpload")[0].accept = typesToAccept;
 }
 
 /**
