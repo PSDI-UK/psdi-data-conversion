@@ -416,15 +416,15 @@ def run_converter(filename: str,
     # specified
     if max_file_size is None:
         if name == CONVERTER_OB:
-            max_file_size == const.DEFAULT_MAX_FILE_SIZE_OB
+            max_file_size == const.DEFAULT_MAX_FILE_SIZE_OB/const.MEGABYTE
         elif permission_level >= const.PERMISSION_LOCAL:
-            max_file_size = const.DEFAULT_MAX_FILE_SIZE
+            max_file_size = const.DEFAULT_MAX_FILE_SIZE/const.MEGABYTE
         elif permission_level >= const.PERMISSION_LOGGED_IN:
             from psdi_data_conversion.gui.env import get_env
-            max_file_size = get_env().max_file_size_logged_in
+            max_file_size = get_env().max_file_size_logged_in/const.MEGABYTE
         else:
             from psdi_data_conversion.gui.env import get_env
-            max_file_size = get_env().max_file_size_logged_out
+            max_file_size = get_env().max_file_size_logged_out/const.MEGABYTE
 
     # Set the log file if it was unset - note that in server logging mode, this value won't be used within the
     # converter class, so it needs to be set up here to match what will be set up there
