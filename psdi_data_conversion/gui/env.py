@@ -15,6 +15,7 @@ from typing import TypeVar
 
 from psdi_data_conversion import constants as const
 from psdi_data_conversion import log_utility
+from psdi_data_conversion.utils import TextColors
 
 # Env var for the tag and SHA of the latest commit
 TAG_EV = "TAG"
@@ -26,6 +27,22 @@ PRODUCTION_EV = "PRODUCTION_MODE"
 
 # Env var for whether this is a production release or development
 DEBUG_EV = "DEBUG_MODE"
+
+# Env vars for authentication settings
+KEYCLOAK_URL_EV = "KEYCLOAK_URL"
+KEYCLOAK_REALM_EV = "KEYCLOAK_REALM"
+KEYCLOAK_CLIENT_ID_EV = "KEYCLOAK_CLIENT_ID"
+KEYCLOAK_SECRET_EV = "KEYCLOAK_SECRET"
+KEYCLOAK_REDIRECT_URL_EV = "KEYCLOAK_REDIRECT_URL"
+SESSION_TIMEOUT_SECONDS_EV = "SESSION_TIMEOUT_SECONDS"
+
+# Default keycloak values
+DEFAULT_KEYCLOAK_URL = "http://localhost:5050"
+DEFAULT_KEYCLOAK_REALM = "master"
+DEFAULT_KEYCLOAK_CLIENT_ID = "data-conversion-service"
+DEFAULT_KEYCLOAK_SECRET = "WfHgzbu43Cppde48PbMWBLfL7kTovqxi"
+DEFAULT_KEYCLOAK_REDIRECT_URL = "http://127.0.0.1:5000/oidc_callback"
+DEFAULT_SESSION_TIMEOUT_SECONDS = 1800
 
 
 class SiteEnv:
@@ -40,34 +57,34 @@ class SiteEnv:
         self.log_level: str = self._determine_log_level()
         """The logging level"""
 
-        self.max_file_size = self._determine_value(ev=const.MAX_FILESIZE_EV,
-                                                   arg="max_file_size",
-                                                   default=const.DEFAULT_MAX_FILE_SIZE /
-                                                   const.MEGABYTE)*const.MEGABYTE
+        self.max_file_size: float = self._determine_value(ev=const.MAX_FILESIZE_EV,
+                                                          arg="max_file_size",
+                                                          default=const.DEFAULT_MAX_FILE_SIZE /
+                                                          const.MEGABYTE)*const.MEGABYTE
         """The maximum file size for converters other than Open Babel"""
 
-        self.max_file_size_ob = self._determine_value(ev=const.MAX_FILESIZE_OB_EV,
-                                                      arg="max_file_size_ob",
-                                                      default=const.DEFAULT_MAX_FILE_SIZE_OB /
-                                                      const.MEGABYTE)*const.MEGABYTE
+        self.max_file_size_ob: float = self._determine_value(ev=const.MAX_FILESIZE_OB_EV,
+                                                             arg="max_file_size_ob",
+                                                             default=const.DEFAULT_MAX_FILE_SIZE_OB /
+                                                             const.MEGABYTE)*const.MEGABYTE
         """The maximum file size for the Open Babel converter"""
 
-        self.service_mode = self._determine_value(ev=const.SERVICE_MODE_EV,
-                                                  arg="service_mode",
-                                                  value_type=bool,
-                                                  default=False)
+        self.service_mode: bool = self._determine_value(ev=const.SERVICE_MODE_EV,
+                                                        arg="service_mode",
+                                                        value_type=bool,
+                                                        default=False)
         """True if the app is running in service mode, False if it's running in local mode"""
 
-        self.production_mode = self._determine_value(ev=PRODUCTION_EV,
-                                                     arg="!dev_mode",
-                                                     value_type=bool,
-                                                     default=False)
+        self.production_mode: bool = self._determine_value(ev=PRODUCTION_EV,
+                                                           arg="!dev_mode",
+                                                           value_type=bool,
+                                                           default=False)
         """True if the app is running in production mode, False if it's running in developmennt mode"""
 
-        self.debug_mode = self._determine_value(ev=DEBUG_EV,
-                                                arg="debug",
-                                                value_type=bool,
-                                                default=False)
+        self.debug_mode: bool = self._determine_value(ev=DEBUG_EV,
+                                                      arg="debug",
+                                                      value_type=bool,
+                                                      default=False)
         """True if the app is running in debug mode, False if not"""
 
         tag, sha = self._determine_tag_and_sha()
@@ -82,6 +99,40 @@ class SiteEnv:
         self.token = md5(dt.encode('utf8')).hexdigest()
         """A token for this session, created by hashing the the current date and time"""
 
+        # Env vars for authentication settings
+        self.keycloak_url: str = self._determine_value(ev=KEYCLOAK_URL_EV,
+                                                       value_type=str,
+                                                       default=DEFAULT_KEYCLOAK_URL)
+
+        self.keycloak_realm: str = self._determine_value(ev=KEYCLOAK_REALM_EV,
+                                                         value_type=str,
+                                                         default=DEFAULT_KEYCLOAK_REALM)
+
+        self.keycloak_client_id: str = self._determine_value(ev=KEYCLOAK_CLIENT_ID_EV,
+                                                             value_type=str,
+                                                             default=DEFAULT_KEYCLOAK_CLIENT_ID)
+
+        self._keycloak_secret: str = self._determine_value(ev=KEYCLOAK_SECRET_EV,
+                                                           value_type=str,
+                                                           default=DEFAULT_KEYCLOAK_SECRET)
+
+        # Warn if the default secret is being used
+        if self.service_mode and self._keycloak_secret == DEFAULT_KEYCLOAK_SECRET:
+            print(f"\n{TextColors.WARNING}!!! WARNING !!! \n"
+                  "The default keycloak secret is being used, which is not secure. In a production "
+                  f"deployment, the keycloak secret must be set using the {KEYCLOAK_SECRET_EV} environmental "
+                  "variable. \n"
+                  f"!!! WARNING !!!{TextColors.ENDC}\n",
+                  file=sys.stderr)
+
+        self.keycloak_redirect_url: str = self._determine_value(ev=KEYCLOAK_REDIRECT_URL_EV,
+                                                                value_type=str,
+                                                                default=DEFAULT_KEYCLOAK_REDIRECT_URL)
+
+        self.session_timeout_seconds: int = self._determine_value(ev=SESSION_TIMEOUT_SECONDS_EV,
+                                                                  value_type=int,
+                                                                  default=DEFAULT_SESSION_TIMEOUT_SECONDS)
+
         self._kwargs: dict[str, str] | None = None
         """Cached value for dict containing all env values"""
 
@@ -94,6 +145,10 @@ class SiteEnv:
                 if not key.startswith("_"):
                     self._kwargs[key] = val
         return self._kwargs
+
+    def get_keycloak_secret(self) -> str:
+        """Get the private KeyCloak secret"""
+        return self._keycloak_secret
 
     def _determine_log_mode(self) -> str:
         """Determine the log mode from args and environmental variables, preferring the former"""
@@ -126,7 +181,7 @@ class SiteEnv:
 
     def _determine_value(self,
                          ev: str,
-                         arg: str,
+                         arg: str | None = None,
                          value_type: type[T] = float,
                          default: T = None) -> T | None:
         """Determine a value using input arguments (preferred if present) and environmental variables"""
@@ -236,4 +291,17 @@ def update_env(args: Namespace | None = None):
 def get_env_kwargs():
     """Get a dict of common kwargs for the environment
     """
-    return get_env().kwargs
+
+    env = get_env()
+
+    kwargs = env.kwargs
+
+    if env.service_mode:
+        from psdi_data_conversion.gui.authentication import get_authenticated_user, get_login_url, get_logout_url
+
+        kwargs["login_url"] = get_login_url()
+        kwargs["logout_url"] = get_logout_url()
+
+        kwargs["logged_in"] = (get_authenticated_user() is not None)
+
+    return kwargs

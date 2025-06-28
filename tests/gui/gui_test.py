@@ -22,7 +22,7 @@ try:
     from selenium.webdriver.firefox.webdriver import WebDriver
     from webdriver_manager.firefox import GeckoDriverManager
 
-    from psdi_data_conversion.app import start_app
+    from psdi_data_conversion.gui.setup import start_app
 
 except ImportError:
     # We put the importorskip commands here rather than above so that standard imports can be used by static analysis

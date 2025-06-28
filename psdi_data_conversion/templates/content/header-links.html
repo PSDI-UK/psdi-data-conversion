@@ -7,3 +7,10 @@
 {% if service_mode %}<a href="./download.htm" class="navbar__item navbar__link">Download</a>{%endif %}
 <a href="./accessibility.htm" class="navbar__item navbar__link">Accessibility</a>
 <a href="mailto: psdi@soton.ac.uk" class="navbar__item navbar__link" id="mail">Contact</a>
+{% if service_mode %}
+{% if logged_in %}
+<a href={{ logout_url }} class="navbar__item navbar__link">Log out</a>
+{% else %}
+<a id="loginLink" href={{ login_url }} class="navbar__item navbar__link">Log in</a>
+{% endif %}
+{% endif %}
