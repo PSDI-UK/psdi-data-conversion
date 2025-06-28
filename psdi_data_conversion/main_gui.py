@@ -23,7 +23,18 @@ def main():
                         "the app running in production server mode.")
 
     parser.add_argument("--max-file-size", type=float, default=const.DEFAULT_MAX_FILE_SIZE/const.MEGABYTE,
-                        help="The maximum allowed filesize in MB - 0 (default) indicates no maximum")
+                        help="The maximum allowed filesize in MB when not running in service mode - 0 (default) "
+                        "indicates no maximum")
+
+    parser.add_argument("--max-file-size-logged-in", type=float,
+                        default=const.DEFAULT_MAX_FILE_SIZE_LOGGED_IN/const.MEGABYTE,
+                        help="The maximum allowed filesize in MB for logged in users when running in service mode - 0 "
+                        "(default) indicates no maximum")
+
+    parser.add_argument("--max-file-size-logged-out", type=float,
+                        default=const.DEFAULT_MAX_FILE_SIZE_LOGGED_OUT/const.MEGABYTE,
+                        help="The maximum allowed filesize in MB for logged in users when running in service mode - 0 "
+                        "(default) indicates no maximum")
 
     parser.add_argument("--max-file-size-ob", type=float, default=const.DEFAULT_MAX_FILE_SIZE_OB/const.MEGABYTE,
                         help="The maximum allowed filesize in MB for the Open Babel converter, taking precendence over "

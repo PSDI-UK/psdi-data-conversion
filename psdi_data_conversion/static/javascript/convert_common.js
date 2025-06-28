@@ -290,7 +290,7 @@ function checkFile(event) {
 function limitFileType() {
     let typesToAccept = "." + in_ext;
     // Allow archives to be uploaded if permissions level is 1 (logged in) or greater
-    if (sessionStorage.getItem("permissions_level") >= 1) {
+    if (sessionStorage.getItem("permission_level") >= 1) {
         typesToAccept += ", .zip, .tar, .tar.gz, .tar.xz, .tar.bz";
     }
     $("#fileToUpload")[0].accept = typesToAccept;

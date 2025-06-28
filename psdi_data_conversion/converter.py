@@ -15,7 +15,7 @@ from collections.abc import Callable
 from dataclasses import dataclass, field
 from multiprocessing import Lock
 from tempfile import TemporaryDirectory
-from typing import Any, NamedTuple
+from typing import Any, Literal, NamedTuple
 
 from psdi_data_conversion import constants as const
 from psdi_data_conversion import log_utility
@@ -329,6 +329,7 @@ def run_converter(filename: str,
                   log_file: str | None = None,
                   log_mode=const.LOG_SIMPLE,
                   strict=False,
+                  permission_level: Literal[0, 1, 2] = const.PERMISSION_LOCAL,
                   archive_output=True,
                   **converter_kwargs) -> FileConversionRunResult:
     """Shortcut to create and run a FileConverter in one step
@@ -363,6 +364,10 @@ def run_converter(filename: str,
     strict : bool
         If True and `from_format` is not None, will fail if any input file has the wrong extension (including files
         within archives, but not the archives themselves). Otherwise, will only print a warning in this case
+    permission_level : Literal[0,1,2]
+        Integer representing the permissions level of the user requesting the conversion. 2 (default) indicates running
+        in local mode, so maximum permissions. 1 indicates running in service mode with a logged-in user, 0 indicates
+        running in service mode with a logged-out user
     archive_output : bool
         If True (default) and the input file is an archive (i.e. zip or tar file), the converted files will be archived
         into a file of the same format, their logs will be combined into a single log, and the converted files and
@@ -407,9 +412,19 @@ def run_converter(filename: str,
         If something goes wrong during the conversion process
     """
 
-    # Set the maximum file size based on which converter is being used if using the default
+    # Set the maximum file size based on permission level and which converter is being used, if it isn't explicitly
+    # specified
     if max_file_size is None:
-        max_file_size = const.DEFAULT_MAX_FILE_SIZE_OB if name == CONVERTER_OB else const.DEFAULT_MAX_FILE_SIZE
+        if name == CONVERTER_OB:
+            max_file_size == const.DEFAULT_MAX_FILE_SIZE_OB
+        elif permission_level >= const.PERMISSION_LOCAL:
+            max_file_size = const.DEFAULT_MAX_FILE_SIZE
+        elif permission_level >= const.PERMISSION_LOGGED_IN:
+            from psdi_data_conversion.gui.env import get_env
+            max_file_size = get_env().max_file_size_logged_in
+        else:
+            from psdi_data_conversion.gui.env import get_env
+            max_file_size = get_env().max_file_size_logged_out
 
     # Set the log file if it was unset - note that in server logging mode, this value won't be used within the
     # converter class, so it needs to be set up here to match what will be set up there
@@ -449,6 +464,10 @@ def run_converter(filename: str,
     elif not is_supported_archive(filename):
         raise base.FileConverterInputException(f"{filename} is an unsupported archive type. Supported types are: "
                                                f"{const.D_SUPPORTED_ARCHIVE_FORMATS}")
+
+    elif permission_level < const.PERMISSION_LOGGED_IN:
+        raise base.FileConverterInputException(f"{filename} is an archive file. Conversion of archives of files is "
+                                               "only supported for logged-in users or when running the app locally.")
 
     else:
         # The filename is of a supported archive type. Make a temporary directory to extract its contents

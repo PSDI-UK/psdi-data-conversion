@@ -20,7 +20,7 @@ from psdi_data_conversion import log_utility
 from psdi_data_conversion.converter import run_converter
 from psdi_data_conversion.database import get_format_info
 from psdi_data_conversion.file_io import split_archive_ext
-from psdi_data_conversion.gui.env import get_env
+from psdi_data_conversion.gui.env import get_env, get_env_kwargs
 
 # Key for the label given to the file uploaded in the web interface
 FILE_TO_UPLOAD_KEY = 'fileToUpload'
@@ -70,6 +70,14 @@ def post_convert():
                   file=sys.stderr)
             abort(const.STATUS_CODE_GENERAL)
 
+    # Determine the permissions level
+    if not env.service_mode:
+        permission_level = const.PERMISSION_LOCAL
+    elif get_env_kwargs().get("logged_in"):
+        permission_level = const.PERMISSION_LOGGED_IN
+    else:
+        permission_level = const.PERMISSION_LOGGED_OUT
+
     if (not env.service_mode) or (request.form['token'] == env.token and env.token != ''):
         try:
             conversion_output = run_converter(name=request.form['converter'],
@@ -78,6 +86,7 @@ def post_convert():
                                               to_format=d_formats["to"],
                                               from_format=d_formats["from"],
                                               strict=(request.form['check_ext'] != "false"),
+                                              permission_level=permission_level,
                                               log_mode=env.log_mode,
                                               log_level=env.log_level,
                                               delete_input=True,
