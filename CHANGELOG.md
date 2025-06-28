@@ -5,6 +5,7 @@
 ### New and Changed Functionality
 
 - The light-mode/dark-mode toggle button and Accessibility settings now play more nicely together, with the latest used taking precedence
+- Added login functionality via Keycloak using a link in the GUI header (only in service mode). When running in service mode, logged out users will now be unable to convert archives of files and will have a reduced file size limit.
 
 ### Formatting and Refactoring Changes
 
