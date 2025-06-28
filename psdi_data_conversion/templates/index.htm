@@ -10,9 +10,9 @@
   let max_file_size;
 </script>
 
-{% if permission_level >= 2 %}
+{% if not service_mode %}
 <script>max_file_size = "{{max_file_size}}";</script>
-{% else if permission_level >= 1 %}
+{% elif logged_in %}
 <script>max_file_size = "{{max_file_size_logged_in}}";</script>
 {% else %}
 <script>max_file_size = "{{max_file_size_logged_out}}";</script>

@@ -23,12 +23,12 @@
       this option is ticked.
     </p>
     <p>
-      {% if permission_level >= 1 %}
+      {% if not service_mode or logged_in %}
       You may upload archives of files of the same type. Archives of types .tar, .tar.gz, .tar.xz, and .tar.bz are
-      supported."
+      supported.
       {% else %}
       If you wish to convert a batch of multiple files of the same type contained within an archive, this functionality
-      is available to logged in users. Use the "Log in" link in the header to log in or register, then return to this
+      is available to logged in users. Use the “Log in” link in the header to log in or register, then return to this
       page. A higher file size limit is also available to logged-in users (except for conversions with Open Babel, due
       to a bug in it when converting large files).
       {% endif %}
