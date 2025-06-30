@@ -1,6 +1,6 @@
 # Changelog for PSDI Data Conversion
 
-## v0.2.5
+## v0.3.0
 
 ### New and Changed Functionality
 
