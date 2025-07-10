@@ -12,3 +12,8 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
+  - package-ecosystem: "docker"
+    # We use Dockerfile in the root directory, the default
+    directory: "/"
+    schedule:
+      interval: "weekly"
