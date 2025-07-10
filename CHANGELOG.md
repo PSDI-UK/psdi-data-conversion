@@ -15,6 +15,7 @@
 ### Bugfixes
 
 - On the Accessibility page of the GUI, the "Default" options now properly show the default stylings rather than the current
+- Fixed potential error with building the Docker image locally if the uploads/downloads directories already exist
 
 ## v0.2.4
 
