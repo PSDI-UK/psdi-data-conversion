@@ -62,8 +62,8 @@ ENV SHA=$SHA
 
 EXPOSE 8000
 
-RUN mkdir /app/psdi_data_conversion/static/uploads
-RUN mkdir /app/psdi_data_conversion/static/downloads
+RUN mkdir -p /app/psdi_data_conversion/static/uploads
+RUN mkdir -p /app/psdi_data_conversion/static/downloads
 
 #set web server timout to more than application default (60)
 ENV TIMEOUT=90
