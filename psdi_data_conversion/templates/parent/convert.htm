@@ -44,7 +44,12 @@
       <input type="checkbox" checked id="extCheck"> Enforce file naming checking to ensure uploaded files (and
       files contained in archives) all have the correct extension<br>
       <input type="checkbox" id="requestLog"> Also download log file for the conversion<br>
-      Select file to convert<span class="max-file-size"></span>:
+      Select file to convert<span class="mfs-space"></span><span data-bs-toggle="tooltip"
+        class="max-file-size {% if service_mode %}mouseover{% endif %}" {% if service_mode and logged_in %}
+        title="Need more? You can log in to increase the limit for some converters: Use the “Log in” link in the header"
+        {% elif service_mode %}
+        title="Need even more? You can download the app and run it locally for unlimited size: Use the “Download” link in the header"
+        {% endif %}></span>:
       <br>
       <input type="file" name="fileToUpload" id="fileToUpload">
       <input type="button" class="button no-left-margin" value=" Clear Uploaded File " name="clearUpload"

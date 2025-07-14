@@ -57,7 +57,11 @@ export function commonConvertReady(converter) {
 
     // Set the text for displaying the maximum size
     if (max_file_size > 0) {
-        $(".max-file-size").text(" (max size " + (max_file_size / MEGABYTE).toFixed(2) + " MB)");
+        $(".mfs-space").text(" ");
+        $(".max-file-size").text("(max size " + (max_file_size / MEGABYTE).toFixed(2) + " MB)");
+    } else {
+        $(".mfs-space").text("");
+        $(".max-file-size").text("");
     }
 
     in_str = sessionStorage.getItem("in_str");

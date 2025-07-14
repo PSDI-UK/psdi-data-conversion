@@ -66,6 +66,11 @@ input:invalid {
   color           : var(--ifm-hero-text-color);
 }
 
+/* Dotted underline to indicate text that will show a tooltip on mouseover */
+.mouseover {
+  text-decoration: underline dotted;
+}
+
 /* Converter details, user input and file conversion initially not displayed. */
 .init-hidden {
   display: none
