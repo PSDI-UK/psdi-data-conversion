@@ -5,7 +5,7 @@
 ### New and Changed Functionality
 
 - The light-mode/dark-mode toggle button and Accessibility settings now play more nicely together, with the latest used taking precedence
-- Added login functionality via Keycloak using a link in the GUI header (only in service mode). When running in service mode, logged out users will now be unable to convert archives of files and will have a reduced file size limit.
+- Added login functionality via Keycloak using a link in the GUI header (only in service mode). When running in service mode, logged out users will now be unable to convert archives of files and will have a reduced file size limit. This is also accompanied by appropriate text updates in the guidance, including tooltips for the use of archives and maximum file size
 
 ### Formatting and Refactoring Changes
 
@@ -16,6 +16,7 @@
 
 - On the Accessibility page of the GUI, the "Default" options now properly show the default stylings rather than the current
 - Fixed potential error with building the Docker image locally if the uploads/downloads directories already exist
+- Fixed bug in testing where elements weren't properly scrolled into view
 
 ## v0.2.4
 
