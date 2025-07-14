@@ -12,9 +12,11 @@ from tempfile import TemporaryDirectory
 
 import pytest
 from selenium.common.exceptions import TimeoutException
+from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.alert import Alert
 from selenium.webdriver.common.by import By
 from selenium.webdriver.firefox.webdriver import WebDriver
+from selenium.webdriver.remote.errorhandler import MoveTargetOutOfBoundsException
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.select import Select
 from selenium.webdriver.support.ui import WebDriverWait
@@ -34,15 +36,28 @@ from psdi_data_conversion.testing.utils import (ConversionTestInfo, ConversionTe
 TIMEOUT = 10
 
 
-def wait_for_element(root: WebDriver | EC.WebElement, xpath: str, by=By.XPATH):
+def wait_for_element(root: WebDriver | EC.WebElement, xpath: str, by=By.XPATH) -> EC.WebElement:
     """Shortcut for boilerplate to wait until a web element is visible"""
     WebDriverWait(root, TIMEOUT).until(EC.element_to_be_clickable((by, xpath)))
+    e = root.find_element(by, xpath)
 
+    # Scroll the element into view
+    def scroll_into_view():
+        root.execute_script("arguments[0].scrollIntoView();", e)
+        ActionChains(root).move_to_element(e).perform()
 
-def wait_and_find_element(root: WebDriver | EC.WebElement, xpath: str, by=By.XPATH) -> EC.WebElement:
-    """Finds a web element, after first waiting to ensure it's visible"""
-    wait_for_element(root, xpath, by=by)
-    return root.find_element(by, xpath)
+    # Some elements might take some time to load into place, so we loop for a bit to give them a chance to do so if we
+    # can't immediately do so
+    time_elapsed = 0
+    while time_elapsed < TIMEOUT:
+        try:
+            scroll_into_view()
+            break
+        except MoveTargetOutOfBoundsException:
+            time_elapsed += 1
+            time.sleep(1)
+
+    return e
 
 
 def wait_for_cover_hidden(root: WebDriver):
@@ -275,13 +290,13 @@ class GuiSingleTestSpecRunner:
             By.XPATH, f"//select[@id='toList']/option[starts-with(.,'{full_to_format}')]").click()
 
         # Select converter from the available conversion options list.
-        wait_and_find_element(self.driver,
-                              "//select[@id='success']/option[contains(.,'"
-                              f"{self.single_test_spec.converter_name}')]").click()
+        wait_for_element(self.driver,
+                         "//select[@id='success']/option[contains(.,'"
+                         f"{self.single_test_spec.converter_name}')]").click()
 
         # Click on the "Yes" button to accept the converter and go to the conversion page, and wait for the cover to be
         # removed there
-        wait_and_find_element(self.driver, "//input[@id='yesButton']").click()
+        wait_for_element(self.driver, "//input[@id='yesButton']").click()
         wait_for_cover_hidden(self.driver)
 
     def _set_conversion_settings(self):
@@ -289,10 +304,10 @@ class GuiSingleTestSpecRunner:
         """
         # Request non-strict filename checking if desired
         if not self._strict:
-            wait_and_find_element(self.driver, "//input[@id='extCheck']").click()
+            wait_for_element(self.driver, "//input[@id='extCheck']").click()
 
         # Request the log file
-        wait_and_find_element(self.driver, "//input[@id='requestLog']").click()
+        wait_for_element(self.driver, "//input[@id='requestLog']").click()
 
         # Set appropriate format and converter settings for this conversion
         self._select_format_flags()
@@ -303,7 +318,7 @@ class GuiSingleTestSpecRunner:
         """Provide the input file for the conversion, checking if any alert is raised in response
         """
         # Select the input file
-        wait_and_find_element(self.driver, "//input[@id='fileToUpload']").send_keys(str(self._input_file))
+        wait_for_element(self.driver, "//input[@id='fileToUpload']").send_keys(str(self._input_file))
 
         # An alert may be present here, which we check for using a try block
         try:
@@ -324,7 +339,7 @@ class GuiSingleTestSpecRunner:
                                      (self._to_flags, "outFlags")):
             if not l_flags:
                 continue
-            flags_select = Select(wait_and_find_element(self.driver, f"//select[@id='{select_id}']"))
+            flags_select = Select(wait_for_element(self.driver, f"//select[@id='{select_id}']"))
             for flag in l_flags:
                 for option in flags_select.options:
                     if option.text.startswith(f"{flag}:"):
@@ -347,7 +362,7 @@ class GuiSingleTestSpecRunner:
             l_options = options_string.split()
 
             # Get the rows in the options table
-            options_table = wait_and_find_element(self.driver, f"//table[@id='{table_id}']")
+            options_table = wait_for_element(self.driver, f"//table[@id='{table_id}']")
             l_rows = options_table.find_elements(By.XPATH, "./tr")
 
             # Look for and set each option
@@ -362,7 +377,7 @@ class GuiSingleTestSpecRunner:
                     l_items[0].click()
 
                     # Input the option in the input box that appears in the third position in the row
-                    input_box = wait_and_find_element(l_items[2], "./input")
+                    input_box = wait_for_element(l_items[2], "./input")
                     input_box.send_keys(option[1:])
 
                     break
@@ -385,14 +400,14 @@ class GuiSingleTestSpecRunner:
                 raise ValueError(f"Invalid {name} value supplied: {setting}. Allowed values are: " +
                                  str(l_allowed))
 
-            setting_radio = wait_and_find_element(self.driver, f"//input[@value='{setting}']")
+            setting_radio = wait_for_element(self.driver, f"//input[@value='{setting}']")
             setting_radio.click()
 
     def _request_conversion(self):
         """Request the conversion, handle the alert box that appears, and wait for the files to be downloaded
         """
         # Click on the "Convert" button.
-        wait_and_find_element(self.driver, "//input[@id='uploadButton']").click()
+        wait_for_element(self.driver, "//input[@id='uploadButton']").click()
 
         # Handle alert box.
         WebDriverWait(self.driver, TIMEOUT).until(EC.alert_is_present())

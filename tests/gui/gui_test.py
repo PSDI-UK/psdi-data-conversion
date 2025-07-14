@@ -9,8 +9,7 @@ import pytest
 
 from psdi_data_conversion.testing.constants import DEFAULT_ORIGIN
 from psdi_data_conversion.testing.conversion_test_specs import l_gui_test_specs
-from psdi_data_conversion.testing.gui import (GuiTestSpecRunner, wait_and_find_element, wait_for_cover_hidden,
-                                              wait_for_element)
+from psdi_data_conversion.testing.gui import GuiTestSpecRunner, wait_for_cover_hidden, wait_for_element
 
 # Skip all tests in this module if required packages for GUI testing aren't installed
 try:
@@ -89,7 +88,7 @@ def test_initial_frontpage(driver: WebDriver):
 
     # Check that the front page contains the header "Data Conversion Service".
 
-    element = wait_and_find_element(driver, "//header//h5")
+    element = wait_for_element(driver, "//header//h5")
     assert element.text == "Data Conversion Service"
 
     # Check that the 'from' and 'to' lists contains "abinit" and "acesin" respectively.
