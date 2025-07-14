@@ -42,9 +42,18 @@
   <div class="flex-panel">
     <p id="convertFile">
       <input type="checkbox" checked id="extCheck"> Enforce file naming checking to ensure uploaded files (and
-      files contained in archives) all have the correct extension<br>
+      files contained in <span class="mouseover" data-bs-toggle="tooltip" data-bs-custom-class="tooltip-on-light"
+        data-bs-placement="top"
+        title="{% if service_mode and not logged_in %}Log in using the link in the header to enable conversion of archives of files, or see the “Download” page to download and run the app locally {% endif %}">archives</span>)
+      all have the correct extension<br>
       <input type="checkbox" id="requestLog"> Also download log file for the conversion<br>
-      Select file to convert<span class="max-file-size"></span>:
+      Select file to convert<span class="mfs-space"></span><span data-bs-toggle="tooltip"
+        data-bs-custom-class="tooltip-on-light" data-bs-placement="top"
+        class="max-file-size {% if service_mode %}mouseover{% endif %}" {% if service_mode and logged_in %}
+        title="Need more? You can log in to increase the limit for some converters: Use the “Log in” link in the header"
+        {% elif service_mode %}
+        title="Need even more? You can download the app and run it locally for unlimited size: Use the “Download” link in the header"
+        {% endif %}></span>:
       <br>
       <input type="file" name="fileToUpload" id="fileToUpload">
       <input type="button" class="button no-left-margin" value=" Clear Uploaded File " name="clearUpload"

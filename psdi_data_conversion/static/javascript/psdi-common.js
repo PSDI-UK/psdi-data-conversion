@@ -116,6 +116,10 @@ $(document).ready(function () {
   // Start fading out the cover over one second as a failsafe in case something goes wrong and it never gets removed
   $("#cover").fadeOut(1000);
 
+  // Enable all tooltips on the page
+  const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
+  const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
+
   // Count the elements we'll need to load first, to avoid prematurely removing the cover
   // We load an element only if it's a pure stub with no children; otherwise we assume it is intended to be used
   // as-is and not overwritten by a load. If it's intended to be used as a fallback for if we can't load, it can be
