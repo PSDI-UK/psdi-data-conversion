@@ -36,15 +36,22 @@ from psdi_data_conversion.testing.utils import (ConversionTestInfo, ConversionTe
 TIMEOUT = 10
 
 
-def wait_for_element(root: WebDriver | EC.WebElement, xpath: str, by=By.XPATH) -> EC.WebElement:
+def wait_for_element(driver: WebDriver | EC.WebElement,
+                     xpath: str,
+                     root: EC.WebElement | None = None,
+                     by=By.XPATH) -> EC.WebElement:
     """Shortcut for boilerplate to wait until a web element is visible"""
+
+    if root is None:
+        root = driver
+
     WebDriverWait(root, TIMEOUT).until(EC.element_to_be_clickable((by, xpath)))
     e = root.find_element(by, xpath)
 
     # Scroll the element into view
     def scroll_into_view():
-        root.execute_script("arguments[0].scrollIntoView();", e)
-        ActionChains(root).move_to_element(e).perform()
+        driver.execute_script("arguments[0].scrollIntoView();", e)
+        ActionChains(driver).move_to_element(e).perform()
 
     # Some elements might take some time to load into place, so we loop for a bit to give them a chance to do so if we
     # can't immediately do so
@@ -377,7 +384,7 @@ class GuiSingleTestSpecRunner:
                     l_items[0].click()
 
                     # Input the option in the input box that appears in the third position in the row
-                    input_box = wait_for_element(l_items[2], "./input")
+                    input_box = wait_for_element(self.driver, "./input", root=l_items[2])
                     input_box.send_keys(option[1:])
 
                     break
