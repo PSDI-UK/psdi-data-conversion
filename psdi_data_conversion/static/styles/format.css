@@ -71,6 +71,21 @@ input:invalid {
   text-decoration: underline dotted;
 }
 
+/* Style the popup tooltips */
+.tooltip {
+  --bs-tooltip-opacity: 1;
+}
+
+.tooltip-on-light {
+  --bs-tooltip-bg   : var(--ifm-color-primary);
+  --bs-tooltip-color: var(--psdi-light-text-color-body);
+}
+
+.tooltip-on-dark {
+  --bs-tooltip-bg   : var(--ifm-background-color);
+  --bs-tooltip-color: var(--psdi-dark-text-color-body);
+}
+
 /* Converter details, user input and file conversion initially not displayed. */
 .init-hidden {
   display: none
