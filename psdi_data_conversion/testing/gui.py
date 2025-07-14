@@ -275,12 +275,13 @@ class GuiSingleTestSpecRunner:
             By.XPATH, f"//select[@id='toList']/option[starts-with(.,'{full_to_format}')]").click()
 
         # Select converter from the available conversion options list.
-        self.driver.find_element(
-            By.XPATH, f"//select[@id='success']/option[contains(.,'{self.single_test_spec.converter_name}')]").click()
+        wait_and_find_element(self.driver,
+                              "//select[@id='success']/option[contains(.,'"
+                              f"{self.single_test_spec.converter_name}')]").click()
 
         # Click on the "Yes" button to accept the converter and go to the conversion page, and wait for the cover to be
         # removed there
-        self.driver.find_element(By.XPATH, "//input[@id='yesButton']").click()
+        wait_and_find_element(self.driver, "//input[@id='yesButton']").click()
         wait_for_cover_hidden(self.driver)
 
     def _set_conversion_settings(self):
