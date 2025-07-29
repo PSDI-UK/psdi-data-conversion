@@ -1,11 +1,15 @@
 # Changelog for PSDI Data Conversion
 
-## v0.3.0
+## v0.3.1
 
 ### New and Changed Functionality
 
 - The light-mode/dark-mode toggle button and Accessibility settings now play more nicely together, with the latest used taking precedence
 - Added login functionality via Keycloak using a link in the GUI header (only in service mode). When running in service mode, logged out users will now be unable to convert archives of files and will have a reduced file size limit. This is also accompanied by appropriate text updates in the guidance, including tooltips for the use of archives and maximum file size
+
+### Bugfixes
+
+- Fixed requirements for generating documentation
 
 ### Formatting and Refactoring Changes
 
