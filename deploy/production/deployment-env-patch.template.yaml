@@ -11,11 +11,11 @@ spec:
             - name: PRODUCTION_MODE
               value: "true"
             - name: KEYCLOAK_URL
-              value: "https://account-staging.psdi.ac.uk"
+              value: "https://account.psdi.ac.uk"
             - name: KEYCLOAK_REALM
               value: "PSDI"
             - name: KEYCLOAK_CLIENT_ID
-              value: "data-conversion-staging"
+              value: "data-conversion"
             - name: KEYCLOAK_SECRET
               value: "$KEYCLOAK_SECRET"
             - name: KEYCLOAK_REDIRECT_URL
