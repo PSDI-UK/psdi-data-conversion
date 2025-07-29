@@ -58,7 +58,16 @@ gui-test = [
   "webdriver_manager",
 ]
 deploy = ["cachetools", "Flask", "gunicorn", "PyJWT[crypto]", "requests"]
-doc = ["pdoc3"]
+doc = [
+  "pdoc3",
+  "cachetools",
+  "Flask",
+  "gunicorn",
+  "PyJWT[crypto]",
+  "requests",
+  "pytest",
+  "selenium",
+]
 plots = ["matplotlib"]
 
 [project.scripts]
