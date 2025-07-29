@@ -1,0 +1,16 @@
+<!-- This file contains the links that will appear in the top-right of the header bar for .html files in the
+ index.htm page. -->
+<a href="./" class="navbar__item navbar__link">Home</a>
+<a href="./report.htm" class="navbar__item navbar__link">Report Missing Format/Conversion</a>
+<a href="./feedback.htm" class="navbar__item navbar__link">Provide Feedback</a>
+<a href="./documentation.htm" class="navbar__item navbar__link">Documentation</a>
+{% if service_mode %}<a href="./download.htm" class="navbar__item navbar__link">Download</a>{%endif %}
+<a href="./accessibility.htm" class="navbar__item navbar__link">Accessibility</a>
+<a href="mailto: psdi@soton.ac.uk" class="navbar__item navbar__link" id="mail">Contact</a>
+{% if service_mode %}
+{% if logged_in %}
+<a href={{ logout_url }} class="navbar__item navbar__link">Log out</a>
+{% else %}
+<a id="loginLink" href={{ login_url }} class="navbar__item navbar__link">Log in</a>
+{% endif %}
+{% endif %}

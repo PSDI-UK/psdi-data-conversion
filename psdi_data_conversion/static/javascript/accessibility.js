@@ -11,20 +11,6 @@ const s = getComputedStyle(document.documentElement);
 const LIGHT_MODE = "light";
 const DARK_MODE = "dark";
 
-function toggleMode() {
-    let currentMode = document.documentElement.getAttribute("data-theme");
-    let new_mode;
-
-    if (currentMode == DARK_MODE) {
-        new_mode = LIGHT_MODE;
-    } else {
-        new_mode = DARK_MODE;
-    }
-
-    document.documentElement.setAttribute("data-theme", new_mode);
-    sessionStorage.setItem("mode", new_mode);
-}
-
 function loadOption(jsName, cssSelector, changeFunc) {
     const opt = sessionStorage.getItem(jsName + "Opt");
     if (opt != null)
@@ -34,6 +20,24 @@ function loadOption(jsName, cssSelector, changeFunc) {
 
 $(document).ready(function () {
 
+    // Store default styles in the stylesheet
+    r.style.setProperty('--psdi-default-font', sessionStorage.getItem('psdi-default-font'));
+    r.style.setProperty('--psdi-default-font-size', sessionStorage.getItem('psdi-default-font-size'));
+    r.style.setProperty('--psdi-default-heading-font', sessionStorage.getItem('psdi-default-heading-font'));
+    r.style.setProperty('--psdi-default-letter-spacing', sessionStorage.getItem('psdi-default-letter-spacing'));
+    r.style.setProperty('--psdi-default-font-weight', sessionStorage.getItem('psdi-default-font-weight'));
+    r.style.setProperty('--psdi-default-light-text-color-body',
+        sessionStorage.getItem('psdi-default-light-text-color-body'));
+    r.style.setProperty('--psdi-default-light-text-color-heading',
+        sessionStorage.getItem('psdi-default-light-text-color-heading'));
+    r.style.setProperty('--psdi-default-dark-text-color-body',
+        sessionStorage.getItem('psdi-default-dark-text-color-body'));
+    r.style.setProperty('--psdi-default-dark-text-color-heading',
+        sessionStorage.getItem('psdi-default-dark-text-color-heading'));
+    r.style.setProperty('--psdi-default-background-color', sessionStorage.getItem('psdi-default-background-color'));
+    r.style.setProperty('--psdi-default-color-primary', sessionStorage.getItem('psdi-default-color-primary'));
+
+    // Set up selection boxes
     loadOption("font", "#font", changeFont);
     loadOption("size", "#size", changeFontSize);
     loadOption("weight", "#weight", changeFontWeight);
@@ -44,8 +48,11 @@ $(document).ready(function () {
     loadOption("lightBack", "#light-background", changeLightBackground);
     loadOption("darkBack", "#dark-background", changeDarkBackground);
 
+    // Connect buttons
     $("#resetButton").click(resetSelections);
     $("#saveButton").click(saveSettings);
+    $("#dmRestoreButton").click(restoreAllSettings);
+    $("#lmRestoreButton").click(restoreAllSettings);
 });
 
 // Changes the font for accessibility purposes
@@ -166,17 +173,35 @@ function resetSelections(event) {
         });
 }
 
+/**
+ * Get the selected value for a selection box and force a change to ensure it's in effect
+ * 
+ * @param {*} cssSelector The selector for the selection box, e.g. "#font"
+ * @returns {string}
+ */
+function getAndRestoreSetting(cssSelector) {
+
+    let selector = $(cssSelector).find(":selected");
+    let selectedVal = selector.val();
+
+    // Just in case something went wrong and the stored options and values aren't aligned, force a change to the
+    // selected option to change the value to match
+    $(selector).val(selectedVal).change();
+
+    return selectedVal;
+}
+
 // Save a setting for one accessibility option to sessionStorage
 function applySetting(jsName, cssSelector, cssVar, settingsData) {
 
-    // Check if set to default and not previously set, in which case don't save anything to storage
-    let selectedVal = $(cssSelector).find(":selected").val();
+    const selectedVal = getAndRestoreSetting(cssSelector);
 
     let val = s.getPropertyValue(cssVar);
 
     settingsData[jsName] = val;
     settingsData[jsName + "Opt"] = selectedVal;
 
+    // Check if set to default and not previously set, in which case don't save anything to storage
     if (selectedVal == "Default" && sessionStorage.getItem(jsName) == null)
         return;
 
@@ -186,7 +211,7 @@ function applySetting(jsName, cssSelector, cssVar, settingsData) {
 }
 
 // Applies accessibility settings to the entire website.
-function saveSettings(event) {
+function saveSettings(event, show_alert = true) {
 
     let settingsData = new Object();
 
@@ -205,9 +230,11 @@ function saveSettings(event) {
         'data': JSON.stringify(settingsData)
     })
         .done(() => {
-            alert("Your accessibility settings have been saved. If you accidentally save settings which are " +
-                "unreadable and can't find the \"Reset\" button, you can restore the default settings by deleting " +
-                "this site's cookie in your browser's settings.");
+            if (show_alert) {
+                alert("Your accessibility settings have been saved. If you accidentally save settings which are " +
+                    "unreadable and can't find the \"Reset\" button, you can restore the default settings by " +
+                    "deleting this site's cookie in your browser's settings.");
+            }
         })
         .fail(function (e) {
             alert("ERROR: Could not save accessibility settings. Your settings should still persist for this " +
@@ -221,3 +248,12 @@ function saveSettings(event) {
 
 }
 
+// Restores the ability to manage settings after using the mode toggle button
+import { setMode, loadAccessibility } from "./load_accessibility.js";
+function restoreAllSettings(event) {
+    setMode("disable");
+    loadAccessibility();
+
+    // We save settings here to apply them and save them into session storage
+    saveSettings(event, false);
+}

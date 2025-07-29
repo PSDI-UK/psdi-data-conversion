@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: data-conversion
+spec:
+  template:
+    spec:
+      containers:
+        - name: data-conversion
+          env:
+            - name: PRODUCTION_MODE
+              value: "false"
+            - name: LOG_LEVEL
+              value: "debug"
+            - name: KEYCLOAK_URL
+              value: "https://account-dev.psdi.ac.uk"
+            - name: KEYCLOAK_REALM
+              value: "PSDI"
+            - name: KEYCLOAK_CLIENT_ID
+              value: "data-conversion-dev"
+            - name: KEYCLOAK_SECRET
+              value: "$KEYCLOAK_SECRET"
+            - name: KEYCLOAK_REDIRECT_URL
+              value: "https://data-conversion-dev.psdi.ac.uk/oidc_callback"
+            - name: SESSION_TIMEOUT_SECONDS
+              # 30-day timeout
+              value: "2592000"

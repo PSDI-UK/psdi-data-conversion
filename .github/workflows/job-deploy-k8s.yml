@@ -21,6 +21,15 @@ jobs:
     runs-on: psdi-uk-runners 
     steps:
       - uses: actions/checkout@v4
+
+      - name: Apply secrets to deployment patch
+        uses: nowactions/envsubst@v1
+        with:
+          input: deploy/${{ inputs.environment }}/deployment-env-patch.template.yaml
+          output: deploy/${{ inputs.environment }}/deployment-env-patch.yaml
+        env:
+          KEYCLOAK_SECRET: ${{ secrets.KEYCLOAK_SECRET }}
+
       - name: Test kubectl/kustomize with env secret
         env:
           KUBECONF: ${{ secrets.KUBECONF }}

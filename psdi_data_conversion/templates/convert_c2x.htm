@@ -1,0 +1,8 @@
+{% extends "parent/convert.htm" %}
+
+{% block head %}
+{{ super() }}
+<script type="module" src="{{url_for('static', filename='javascript/convert_c2x.js')}}"></script>
+{% endblock %}
+
+{% block hero_title %}Conversion{% endblock %}

@@ -55,6 +55,12 @@ def _init_app():
     init_post(app)
     init_accessibility(app)
 
+    # Only initialize authentication if running in service mode, so dependencies for it don't need to be installed
+    # otherwise
+    if get_env().service_mode:
+        from psdi_data_conversion.gui.authentication import init_authentication
+        init_authentication(app)
+
     return app
 
 

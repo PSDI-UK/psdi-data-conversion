@@ -43,6 +43,8 @@ RUN pip install .[deploy]
 ENV PYTHONPATH="."
 ENV SERVICE_MODE=true
 ENV MAX_FILESIZE=50
+ENV MAX_FILESIZE_LOGGED_IN=50
+ENV MAX_FILESIZE_LOGGED_OUT=1
 ENV MAX_FILESIZE_OB=1
 ENV LOG_MODE=full
 ARG TAG
@@ -60,8 +62,8 @@ ENV SHA=$SHA
 
 EXPOSE 8000
 
-RUN mkdir /app/psdi_data_conversion/static/uploads
-RUN mkdir /app/psdi_data_conversion/static/downloads
+RUN mkdir -p /app/psdi_data_conversion/static/uploads
+RUN mkdir -p /app/psdi_data_conversion/static/downloads
 
 #set web server timout to more than application default (60)
 ENV TIMEOUT=90

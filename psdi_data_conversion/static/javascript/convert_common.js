@@ -57,7 +57,11 @@ export function commonConvertReady(converter) {
 
     // Set the text for displaying the maximum size
     if (max_file_size > 0) {
-        $(".max-file-size").text(" (max size " + (max_file_size / MEGABYTE).toFixed(2) + " MB)");
+        $(".mfs-space").text(" ");
+        $(".max-file-size").text("(max size " + (max_file_size / MEGABYTE).toFixed(2) + " MB)");
+    } else {
+        $(".mfs-space").text("");
+        $(".max-file-size").text("");
     }
 
     in_str = sessionStorage.getItem("in_str");
@@ -92,6 +96,16 @@ export function commonConvertReady(converter) {
 // Converts user-supplied file to another format and downloads the resulting file
 export function convertFile(form_data, download_fname, fname) {
 
+    // Check if the file is allowed to be submitted
+    let [_, ext] = splitArchiveExt(download_fname);
+    if (isArchiveExt(ext) && sessionStorage.getItem("permission_level") < 1) {
+        alert("ERROR: Conversion of archives of files is only allowed for logged-in users. Please register or log in " +
+            "using the “Log in” link in the header."
+        )
+        clearUploadedFile();
+        return;
+    }
+
     showSpinner();
     disableConvertButton();
 
@@ -112,7 +126,7 @@ export function convertFile(form_data, download_fname, fname) {
             disableDirtyForms();
 
             if (!convertTimedOut) {
-                await downloadFile(`../downloads/${download_fname}`, download_fname)
+                await downloadFile(`static/downloads/${download_fname}`, download_fname)
 
                 let msg = "To the best of our knowledge, this conversion has worked. A download prompt for your " +
                     "converted file should now be open for you.";
@@ -124,7 +138,7 @@ export function convertFile(form_data, download_fname, fname) {
                 alert(msg);
 
                 if (requestLog) {
-                    await downloadFile(`../downloads/${fname}.log.txt`, fname + '.log.txt')
+                    await downloadFile(`static/downloads/${fname}.log.txt`, fname + '.log.txt')
                 }
             }
 
@@ -285,10 +299,15 @@ function checkFile(event) {
 }
 
 /**
- * Allow the file upload to only accept the expected type of file, plus archives
+ * Allow the file upload to only accept the expected type of file, plus archives if logged in
  */
 function limitFileType() {
-    $("#fileToUpload")[0].accept = "." + in_ext + ", .zip, .tar, .tar.gz, .tar.xz, .tar.bz";
+    let typesToAccept = "." + in_ext;
+    // Allow archives to be uploaded if permissions level is 1 (logged in) or greater
+    if (sessionStorage.getItem("permission_level") >= 1) {
+        typesToAccept += ", .zip, .tar, .tar.gz, .tar.xz, .tar.bz";
+    }
+    $("#fileToUpload")[0].accept = typesToAccept;
 }
 
 /**

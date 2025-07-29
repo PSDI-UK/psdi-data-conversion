@@ -1,0 +1,28 @@
+<!-- This is the common header which will be added to all pages. Everything in this file will be added within the div
+ that loads it. Header links specific to each site must be added or loaded via JS after this is loaded.-->
+
+<div class="max-width-box navbar">
+  <div class="header-left">
+    <div class="navbar__brand">
+      <a class="navbar__logo" href="https://psdi.ac.uk/">
+        <img src="../static/img/psdi-logo-darktext.png" alt="PSDI logo"
+          class="lm-only">
+        <img src="../static/img/psdi-logo-lighttext.png" alt="PSDI logo"
+          class="dm-only">
+      </a>
+      <a class="navbar__title" href="../../">
+        <h5>Data Conversion Service</h5>
+      </a>
+    </div>
+  </div>
+  <div class="navbar__items navbar__items--right">
+    <!-- This file contains the links that will appear in the top-right of the header bar for .html files in the index.htm page. --> <a href="./" class="navbar__item navbar__link">Home</a> <a href="./report.htm" class="navbar__item navbar__link">Report Missing Format/Conversion</a> <a href="./feedback.htm" class="navbar__item navbar__link">Provide Feedback</a> <a href="./documentation.htm" class="navbar__item navbar__link">Documentation</a> {% if service_mode %}<a href="./download.htm" class="navbar__item navbar__link">Download</a>{%endif %} <a href="./accessibility.htm" class="navbar__item navbar__link">Accessibility</a> <a href="mailto: psdi@soton.ac.uk" class="navbar__item navbar__link" id="mail">Contact</a> {% if service_mode %} {% if logged_in %} <a href={{ logout_url }} class="navbar__item navbar__link">Log out</a> {% else %} <a id="loginLink" href={{ login_url }} class="navbar__item navbar__link">Log in</a> {% endif %} {% endif %}
+    <button class="clean-btn color-mode-toggle" title="Switch between dark and light mode"
+      aria-label="Lightmode/darkmode toggle button">
+      <img src="../static/img/colormode-toggle-lm.svg" alt="Lightmode toggle icon"
+        class="lm-only">
+      <img src="../static/img/colormode-toggle-dm.svg" alt="Darkmode toggle icon"
+        class="dm-only">
+    </button>
+  </div>
+</div>

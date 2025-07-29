@@ -4,6 +4,8 @@
  * @author Bryan Gillis
  */
 
+const AUTH_REFRESH = 60; // Seconds
+
 export function initDirtyForms() {
   $("form.gui").dirtyForms();
 }
@@ -24,45 +26,70 @@ export function disableDirtyForms() {
   $('form.gui').addClass($.DirtyForms.ignoreClass);
 }
 
+async function refreshAuthCookie(repeat) {
 
-/**
- * Gets whether or not the app is operating in "Service mode"
- * 
- * This is the mode used for the public web app.
- *
- * @return {bool} True indicates service mode, False indicates local mode
- */
-export function getServiceMode() {
-  return sessionStorage.getItem("service_mode");
+  const jwt = await import("/static/javascript/jwt.js");
+
+  const keyInfo = await jwt.getKeyInfo("keys");
+
+  if (keyInfo) {
+
+    const auth_token = await jwt.sign({ "type": "refreshAuth" }, keyInfo, AUTH_REFRESH * 2);
+
+    document.cookie = `auth_token=${auth_token}`;
+
+    if (repeat) {
+      setTimeout(refreshAuthCookie, AUTH_REFRESH * 1000);
+    }
+  }
 }
 
-/**
- * Sets the service mode for the CSS document of the current page
- */
-export function loadServiceMode() {
-  document.documentElement.setAttribute("service-mode", getServiceMode());
-}
+window.addEventListener("load", function () {
 
-// Set the service mode variable for each page so that only appropriate elements are shown
-loadServiceMode();
+  const loginLink = document.querySelector("a#loginLink");
 
-/**
- * Gets whether or not the app is operating in "Production mode"
- * 
- * This is the mode used in staging/production deployments, but not dev deployments
- *
- * @return {bool} True indicates production mode, False indicates dev mode
- */
-export function getProductionMode() {
-  return sessionStorage.getItem("production_mode");
-}
+  // Add public key cookie when the user clicks login.
 
-/**
- * Sets the production mode for the CSS document of the current page
- */
-export function loadProductionMode() {
-  document.documentElement.setAttribute("production-mode", getProductionMode());
-}
+  if (loginLink !== null) {
 
-// Set the production mode variable for this page so that only appropriate elements are shown
-loadProductionMode();
+    loginLink.addEventListener("click", async function (event) {
+
+      const hasPublicKey = document.cookie.split(";").some((item) => item.trim().startsWith("public_key="));
+
+      if (hasPublicKey === false) {
+
+        event.preventDefault();
+
+        const jwt = await import("/static/javascript/jwt.js");
+
+        const keyInfo = await jwt.getKeyInfo("keys");
+
+        const publicKey = {
+          "kid": keyInfo.thumbprint,
+          "crv": keyInfo.exportedPublicKey.crv,
+          "kty": keyInfo.exportedPublicKey.kty,
+          "x": keyInfo.exportedPublicKey.x,
+          "y": keyInfo.exportedPublicKey.y
+        };
+
+        document.cookie = `public_key=${encodeURIComponent(JSON.stringify(publicKey))}`;
+
+        await refreshAuthCookie();
+
+        // loginLink.click();
+
+        return;
+      }
+    });
+  }
+});
+
+refreshAuthCookie(true);
+
+$(document).ready(function () {
+
+  // Enable all tooltips on the page
+  const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+  const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl));
+
+});
