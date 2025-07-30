@@ -42,8 +42,8 @@
   <div class="flex-panel">
     <p id="convertFile">
       <input type="checkbox" checked id="extCheck"> Enforce file naming checking to ensure uploaded files (and
-      files contained in <span class="mouseover" data-bs-toggle="tooltip" data-bs-custom-class="tooltip-on-light"
-        data-bs-placement="top"
+      files contained in <span {% if service_mode and not logged_in %} class="mouseover" {% endif %}
+        data-bs-toggle="tooltip" data-bs-custom-class="tooltip-on-light" data-bs-placement="top"
         title="{% if service_mode and not logged_in %}Log in using the link in the header to enable conversion of archives of files, or see the “Download” page to download and run the app locally {% endif %}">archives</span>)
       all have the correct extension<br>
       <input type="checkbox" id="requestLog"> Also download log file for the conversion<br>

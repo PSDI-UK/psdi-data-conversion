@@ -1,5 +1,11 @@
 # Changelog for PSDI Data Conversion
 
+## v0.3.2
+
+### Bugfixes
+
+- Removed incorrect underline under "archives" on Conversion page when it doesn't have a tooltip
+
 ## v0.3.1
 
 ### New and Changed Functionality
