@@ -1,5 +1,11 @@
 # Changelog for PSDI Data Conversion
 
+## v0.3.3
+
+### Stylistic Changes
+
+- Each page of the GUI now has a unique title
+
 ## v0.3.2
 
 ### Bugfixes

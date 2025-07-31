@@ -1,5 +1,7 @@
 {% extends "parent/layout.htm" %}
 
+{% block page_title %}Accessibility - PSDI Data Conversion Service{% endblock %}
+
 {% block head %}
 {{ super() }}
 <script type="module" src="{{url_for('static', filename='javascript/accessibility.js')}}"></script>
