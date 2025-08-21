@@ -59,7 +59,7 @@ jobs:
   build:
     needs: [tag]
     name: Build distribution 📦
-    runs-on: psdi-uk-runners
+    runs-on: psdi-data-conversion-runners
 
     steps:
       - uses: actions/checkout@v4
