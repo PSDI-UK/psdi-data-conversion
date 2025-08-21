@@ -19,7 +19,7 @@ jobs:
     continue-on-error: ${{ matrix.secondary }}
     strategy:
       matrix:
-        os: [ubuntu-latest]
+        os: [psdi-data-conversion-runners]
         secondary: [false]
         # Temporarily disable MacOS tests due to bug introduced in recent GitHub version update, while we decide how to
         # address it
