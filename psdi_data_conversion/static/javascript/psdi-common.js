@@ -158,6 +158,8 @@ $(document).ready(function () {
           finalizeLoad();
         }
       });
+  } else {
+    connectModeToggleButton();
   }
 
   // Load only if the footer stub has no children

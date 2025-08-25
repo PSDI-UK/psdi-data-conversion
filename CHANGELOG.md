@@ -1,5 +1,11 @@
 # Changelog for PSDI Data Conversion
 
+## v0.3.4
+
+### Stylistic Changes
+
+- Updated page titles to new standardised PSDI format
+
 ## v0.3.3
 
 ### Stylistic Changes
