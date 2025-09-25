@@ -22,8 +22,8 @@ $(document).ready(function () {
 
     $('input[name="coordinates"]').change(coordOptionAvailability);
     $("#uploadButton").click(submitFile);
-    $("#inFlags").click(blurBox);
-    $("#outFlags").click(blurBox);
+    $("#inFlags").change(blurBox);
+    $("#outFlags").change(blurBox);
 
     getFlags("in", in_str);
     getFlags("out", out_str);
