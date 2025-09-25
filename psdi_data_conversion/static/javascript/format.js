@@ -483,12 +483,6 @@ function filterOptions(event) {
     emptySuccess();
     hideConverterDetails();
     hideOffer();
-
-    // Disable and the re-enable the select boxes to force an update on mobile browsers
-    $("#fromList").attr("disabled", "true");
-    $("#fromList").removeAttr("disabled");
-    $("#toList").attr("disabled", "true");
-    $("#toList").removeAttr("disabled");
 }
 
 // Only options having user filter input as a substring (case insensitive) are included in the slection list
