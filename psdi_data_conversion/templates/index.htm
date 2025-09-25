@@ -44,6 +44,12 @@
       <p>When both formats have been selected, converters able to carry out this conversion appear in the
         “Conversion options” box below along with an indication of conversion quality (many conversions not yet
         tested) and whether or not the converter is supported on this site.</p>
+      {% if service_mode %}
+      <p><strong>Note for mobile users:</strong> On phone and tablet browsers, the format selection will only update
+        after you finish typing. In order to see the matching formats, you will then have to tap the selection box,
+        which will bring up a list of the matching formats which you can select from.</p>
+      {% endif %}
+
     </div>
     <hr class="small-screen-only">
     <div class="flex-panel">
@@ -71,6 +77,10 @@
         converters capable of carrying out a required conversion, please click on “Report Missing
         Format/Conversion” in the navigation bar.
       </p>
+      {% if service_mode %}
+      <p><strong>Note for mobile users:</strong> On phone and tablet browsers, you will need to tap the select box to
+        see a list of the available converters, which you will then be able to select from.</p>
+      {% endif %}
     </div>
     <hr class="small-screen-only">
     <div class="flex-panel">
