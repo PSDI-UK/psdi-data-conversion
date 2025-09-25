@@ -40,10 +40,14 @@ $(document).ready(function () {
     sessionStorage.setItem("out_str", "");
     sessionStorage.setItem("success", "");
 
-    $("#fromList").click(populateConversionSuccess);
-    $("#toList").click(populateConversionSuccess);
+    $("#fromList").change(populateConversionSuccess);
+    $("#toList").change(populateConversionSuccess);
+
     $("#searchTo").keyup(filterOptions);
+    $("#searchTo").change(filterOptions);
     $("#searchFrom").keyup(filterOptions);
+    $("#searchFrom").change(filterOptions);
+
     $("#yesButton").click(goToConversionPage);
     $("#success").click(showConverterDetails);
     $("#resetButton").click(resetAll);
@@ -429,9 +433,18 @@ function qualityDetail(input, output, type) {
     }
 }
 
+let lastFormats = {};
+
 // Only options having user filter input as a substring (case insensitive) are included in the selection list $$$$$$$$$$ REVISE $$$$$$$$$$
 function filterOptions(event) {
     const str = event.target.value.toLowerCase();
+
+    // Check if there's a change from the last time this was run, and return early if so
+    if (str == lastFormats[event.target])
+        return;
+    else
+        lastFormats[event.target] = str;
+
     var box, list,
         count = 0,
         text = "";
