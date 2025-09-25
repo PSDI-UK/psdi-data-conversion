@@ -40,10 +40,14 @@ $(document).ready(function () {
     sessionStorage.setItem("out_str", "");
     sessionStorage.setItem("success", "");
 
-    $("#fromList").click(populateConversionSuccess);
-    $("#toList").click(populateConversionSuccess);
+    $("#fromList").change(populateConversionSuccess);
+    $("#toList").change(populateConversionSuccess);
+
     $("#searchTo").keyup(filterOptions);
+    $("#searchTo").change(filterOptions);
     $("#searchFrom").keyup(filterOptions);
+    $("#searchFrom").change(filterOptions);
+
     $("#yesButton").click(goToConversionPage);
     $("#success").click(showConverterDetails);
     $("#resetButton").click(resetAll);

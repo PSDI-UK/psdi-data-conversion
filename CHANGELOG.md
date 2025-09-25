@@ -1,5 +1,11 @@
 # Changelog for PSDI Data Conversion
 
+## v0.3.5
+
+### Bugfixes
+
+- Fixed functionality of format-selection page on mobile browsers
+
 ## v0.3.4
 
 ### Stylistic Changes
