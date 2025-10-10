@@ -390,8 +390,20 @@ things like maximum size on a per-test basis. May be possible to set up in the f
 
 
 l_all_test_specs.append(Spec(name="Format args",
-                             filename="caffeine.inchi",
-                             to_format="smi",
+                             filename=["caffeine.inchi",
+                                       "caffeine.inchi",
+                                       "caffeine.inchi",
+                                       "caffeine.inchi",
+                                       "caffeine.inchi",
+                                       "caffeine.inchi",
+                                       "standard_test.cdjson"],
+                             to_format=["smi",
+                                        "smi",
+                                        "smi",
+                                        "smi",
+                                        "smi",
+                                        "smi",
+                                        "inchi"],
                              conversion_kwargs=[{},
                                                 {"data": {"from_flags": "a"}},
                                                 {"data": {"from_flags": "a", "to_flags": "x"}},
@@ -399,14 +411,19 @@ l_all_test_specs.append(Spec(name="Format args",
                                                 {"data": {"from_flags": "a", "to_flags": "kx",
                                                                         "to_options": "f4"}},
                                                 {"data": {"from_flags": "a", "to_flags": "kx",
-                                                                        "to_options": "f4 l5"}}
-                                                ],
+                                                                        "to_options": "f4 l5"}},
+                                                {"data": {"from_options": "c25", "to_flags": "st"}}],
                              callback=[MatchOutputFile("caffeine.smi"),
                                        MatchOutputFile("caffeine_a_in.smi"),
                                        MatchOutputFile("caffeine_a_in_x_out.smi"),
                                        MatchOutputFile("caffeine_a_in_kx_out.smi"),
                                        MatchOutputFile("caffeine_a_in_kx_f4_out.smi"),
-                                       MatchOutputFile("caffeine_a_in_kx_f4_l5_out.smi")
+                                       MatchOutputFile("caffeine_a_in_kx_f4_l5_out.smi"),
+                                       CheckLogContents(l_strings_to_exclude=[
+                                                        "Input format option 'c' not recognised",
+                                                        "Input format option '25' not recognised",
+                                                        "Output format flag 's' not recognised",
+                                                        "Output format flag 't' not recognised"]),
                                        ]
                              ))
 """A set of tests which checks that format args (for how to read from and write to specific file formats) are processed
