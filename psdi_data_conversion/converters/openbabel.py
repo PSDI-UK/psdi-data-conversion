@@ -182,7 +182,7 @@ class OBFileConverter(FileConverter):
                 check_string_security(char)
                 # Check that the flag is valid
                 try:
-                    get_out_format_args(self.name, self.from_format_info, char)
+                    get_out_format_args(self.name, self.to_format_info, char)
                 except FileConverterDatabaseException:
                     print_wrap(f"WARNING: Output format flag '{char}' not recognised for conversion with {self.name}. "
                                "If this is valid, the database should be updated to indicate this", err=True)
