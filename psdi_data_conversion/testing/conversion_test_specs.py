@@ -420,7 +420,10 @@ l_all_test_specs.append(Spec(name="Format args",
                                        MatchOutputFile("caffeine_a_in_kx_f4_out.smi"),
                                        MatchOutputFile("caffeine_a_in_kx_f4_l5_out.smi"),
                                        CheckLogContents(l_strings_to_exclude=[
-                                                        "Input format option '25' not recognised"]),
+                                                        "Input format option 'c' not recognised",
+                                                        "Input format option '25' not recognised",
+                                                        "Output format flag 's' not recognised",
+                                                        "Output format flag 't' not recognised"]),
                                        ]
                              ))
 """A set of tests which checks that format args (for how to read from and write to specific file formats) are processed
