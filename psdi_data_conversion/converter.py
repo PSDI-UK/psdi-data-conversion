@@ -575,6 +575,7 @@ def run_converter(filename: str,
             raise exception_class(status_code, msg)
 
     # Log conversion information if in service mode
+    from psdi_data_conversion.gui.env import get_env
     service_mode = get_env().service_mode
     if service_mode:
         try:
