@@ -1,5 +1,11 @@
 # Changelog for PSDI Data Conversion
 
+## v0.3.7
+
+### Bugfixes
+
+- Fixed bug where conversions weren't being logged in service mode
+
 ## v0.3.6
 
 ### Miscellaneous Changes
