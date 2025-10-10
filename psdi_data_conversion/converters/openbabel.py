@@ -224,14 +224,14 @@ class OBFileConverter(FileConverter):
 
                     # Check that the option is valid
                     try:
-                        get_in_format_args(self.name, self.from_format_info, arg)
+                        get_in_format_args(self.name, self.from_format_info, char)
                     except FileConverterDatabaseException:
                         print_wrap(f"WARNING: Input format option '{arg}' not recognised for conversion with "
                                    f"{self.name}. If this is valid, the database should be updated to indicate "
                                    "this.", err=True)
 
                     ob_conversion.AddOption(char, ob_conversion.INOPTIONS, arg)
-                    self.data["read_flags_args"].append(char + "  " + arg)
+                    self.data["read_flags_args"].append(char + arg)
 
                 self.logger.debug(f"Set Open Babel read flags arguments to: {self.data['read_flags_args']}")
 
@@ -266,14 +266,14 @@ class OBFileConverter(FileConverter):
 
                     # Check that the option is valid
                     try:
-                        get_out_format_args(self.name, self.to_format_info, arg)
+                        get_out_format_args(self.name, self.to_format_info, char)
                     except FileConverterDatabaseException:
                         print_wrap(f"WARNING: Output format option '{arg}' not recognised for conversion with "
                                    f"{self.name}. If this is valid, the database should be updated to indicate "
                                    "this.", err=True)
 
                     ob_conversion.AddOption(char, ob_conversion.OUTOPTIONS, arg)
-                    self.data["write_flags_args"].append(char + "  " + arg)
+                    self.data["write_flags_args"].append(char + arg)
                 self.logger.debug(f"Set Open Babel write flags arguments to: {self.data['read_flags_args']}")
 
             # Read the file to be converted
