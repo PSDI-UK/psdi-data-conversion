@@ -348,9 +348,6 @@ def run_converter(filename: str,
         archive file
     name : str
         The desired converter type, by default 'Open Babel'
-    data : dict[str | Any] | None
-        A dict of any other data needed by a converter or for extra logging information, default empty dict. See the
-        docstring of each converter for supported keys and values that can be passed to `data` here
     abort_callback : Callable[[int], None]
         Function to be called if the conversion hits an error and must be aborted, default `abort_raise`, which
         raises an appropriate exception
