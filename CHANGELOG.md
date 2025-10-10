@@ -1,5 +1,11 @@
 # Changelog for PSDI Data Conversion
 
+## v0.3.6
+
+### Miscellaneous Changes
+
+- Updated certificates for web deployment (no change to pypi deployment)
+
 ## v0.3.5
 
 ### Bugfixes
