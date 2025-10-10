@@ -575,8 +575,7 @@ def run_converter(filename: str,
             raise exception_class(status_code, msg)
 
     # Log conversion information if in service mode
-    service_mode_ev = os.environ.get(const.SERVICE_MODE_EV)
-    service_mode = (service_mode_ev is not None) and (service_mode_ev.lower() == "true")
+    service_mode = get_env().service_mode
     if service_mode:
         try:
             l_index = filename.rfind('/') + 1
@@ -618,11 +617,11 @@ def run_converter(filename: str,
                 entry["fail_reason"] = fail_reason
 
             logLock.acquire()
-            sys.__stdout__.write(f"{json.dumps(entry) + '\n'}")
+            print(json.dumps(entry))
             logLock.release()
         except Exception:
-            sys.__stdout__.write({"datetime": log_utility.get_date_time(),
-                                  "logging_error": "An error occurred during logging of conversion information."})
+            print({"datetime": log_utility.get_date_time(),
+                   "logging_error": "An error occurred during logging of conversion information."})
 
     return run_output
 
