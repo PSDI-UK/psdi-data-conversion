@@ -348,9 +348,6 @@ def run_converter(filename: str,
         archive file
     name : str
         The desired converter type, by default 'Open Babel'
-    data : dict[str | Any] | None
-        A dict of any other data needed by a converter or for extra logging information, default empty dict. See the
-        docstring of each converter for supported keys and values that can be passed to `data` here
     abort_callback : Callable[[int], None]
         Function to be called if the conversion hits an error and must be aborted, default `abort_raise`, which
         raises an appropriate exception
@@ -575,8 +572,8 @@ def run_converter(filename: str,
             raise exception_class(status_code, msg)
 
     # Log conversion information if in service mode
-    service_mode_ev = os.environ.get(const.SERVICE_MODE_EV)
-    service_mode = (service_mode_ev is not None) and (service_mode_ev.lower() == "true")
+    from psdi_data_conversion.gui.env import get_env
+    service_mode = get_env().service_mode
     if service_mode:
         try:
             l_index = filename.rfind('/') + 1
@@ -618,11 +615,11 @@ def run_converter(filename: str,
                 entry["fail_reason"] = fail_reason
 
             logLock.acquire()
-            sys.__stdout__.write(f"{json.dumps(entry) + '\n'}")
+            print(json.dumps(entry))
             logLock.release()
         except Exception:
-            sys.__stdout__.write({"datetime": log_utility.get_date_time(),
-                                  "logging_error": "An error occurred during logging of conversion information."})
+            print({"datetime": log_utility.get_date_time(),
+                   "logging_error": "An error occurred during logging of conversion information."})
 
     return run_output
 

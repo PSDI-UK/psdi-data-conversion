@@ -1,5 +1,17 @@
 # Changelog for PSDI Data Conversion
 
+## v0.3.7
+
+### Bugfixes
+
+- Fixed bug where conversions weren't being logged in service mode
+- Fixed improper logging of input/output options when Open Babel conversions are called through the GUI
+- Fixed checks on validity of Open Babel input/output flags/options
+
+### Miscellaneous Changes
+
+- Fixed bug with previous certificates which was resulting them being flagged as invalid by stricter browsers
+
 ## v0.3.6
 
 ### Miscellaneous Changes
