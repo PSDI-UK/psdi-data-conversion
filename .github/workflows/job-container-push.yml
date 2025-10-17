@@ -17,7 +17,7 @@ on:
 
 jobs:
   container-push:
-    runs-on: psdi-data-conversion-runners
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
