@@ -1,0 +1,47 @@
+# Reusable workflow intended to be called as a job by other workflows
+
+# Calls the workflow in the external (provate) repository containing the deployment jobs
+# Ultimately calling this job with the cirrect arguments results in a deployment in K8s
+# on STFC infrastructure
+
+name: Job - Trigger deployment
+run-name: trigger-deployment
+on:
+  workflow_call:  # allow this workflow to be called from other workflows
+    inputs:
+      environment: # pass the environment, used for targettinbg env specific K8s manifests
+        required: true
+        type: string
+      container_tag: # define our version tag created from the upstream container build job
+        description: 'The latest tag for the container'
+        required: true
+        type: string
+jobs:
+  trigger:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate GitHub App Token
+        id: app-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ secrets.DEPLOYMENT_APP_ID }}
+          private-key: ${{ secrets.DEPLOYMENT_APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          repositories: "psdi-data-conversion-deployment"
+
+      - name: Trigger deployment workflow
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: |
+          gh api /repos/PSDI-UK/psdi-data-conversion-deployment/dispatches \
+            --method POST \
+            --field event_type=deploy \
+            --field client_payload[tag]=${{ inputs.container_tag }} \
+            --field client_payload[ref]=${{ github.ref }} \
+            --field client_payload[repo]=${{ github.repository }} \
+            --field client_payload[env]=${{ inputs.environment }}
+
+          echo "✅ Deployment triggered successfully"
+          echo "Tag: ${{ inputs.container_tag }}"
+          echo "Ref: ${{ github.ref }}"
+          echo "Env: ${{ inputs.environment }}"
