@@ -58,7 +58,7 @@ jobs:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
           TRIGGER_TIME: ${{ steps.trigger.outputs.trigger_time }}
           DEPLOY_REPO: "PSDI-UK/psdi-data-conversion-deployment"
-          WORKFLOW_FILE: "ci-deploy.yml"  # Update this to match your actual workflow filename
+          WORKFLOW_FILE: "ci-deploy.yml"
         run: |
           TIMEOUT=1800  # 30 minutes timeout
           POLL_INTERVAL=15  # Check every 15 seconds
