@@ -44,17 +44,38 @@ jobs:
     needs: [tag]
     uses: ./.github/workflows/job-publish-doc.yml
 
-  # Deploy to Kubernetes Job
-  # Requires an environment, which must reflect the target environment as defined in the
-  # GitHub repository: https://github.com/PSDI-UK/psdi-data-conversion/settings/environments
-  # The downstream deploy job leverages on Environment specific secrets, which also must be defined
+  # Deploy to Kubernetes Job - triggers remote workflow in private repo
+  # Requires an environment, which is used downstream to consume environment specific secrets
+  # from Vault, and to target the correct K8s manifests in the deploy/$environment directory hierarchy
   deploy-stfc-staging-k8s:
     needs: [tag]
-    uses: ./.github/workflows/job-deploy-k8s.yml # use the callable deploy job
-    secrets: inherit # pass all secrets for the environment
-    with:
-      container_tag: ${{ needs.tag.outputs.container_tag }}
-      environment: staging
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate GitHub App Token
+        id: app-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ secrets.DEPLOYMENT_APP_ID }}
+          private-key: ${{ secrets.DEPLOYMENT_APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          repositories: "psdi-data-conversion-deployment"
+
+      - name: Trigger deployment workflow
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: |
+          gh api /repos/PSDI-UK/psdi-data-conversion-deployment/dispatches \
+            --method POST \
+            --field event_type=deploy \
+            --field client_payload[tag]=${{ needs.tag.outputs.container_tag }} \
+            --field client_payload[ref]=${{ github.ref }} \
+            --field client_payload[repo]=${{ github.repository }} \
+            --field client_payload[env]="staging"
+
+          echo "✅ Deployment triggered successfully"
+          echo "Tag: ${{ needs.tag.outputs.container_tag }}"
+          echo "Ref: ${{ github.ref }}"
+          echo "Env: staging"
 
   build:
     needs: [tag]
