@@ -96,11 +96,11 @@ jobs:
         with:
           verbose: true
 
-  # Deploy container with tag to production environment
+  # Trigger external deploy workflow for Production environment
   deploy-stfc-production-k8s:
     name: Deploy to production
     needs: get-latest-release-tag
-    uses: ./.github/workflows/job-deploy-k8s.yml # use the callable deploy job
+    uses: ./.github/workflows/job-external-deployment.yml # use the callable deploy job
     secrets: inherit # pass all secrets for the environment
     with:
       container_tag: ${{ needs.get-latest-release-tag.outputs.tag }}
