@@ -1,7 +1,7 @@
 # Reusable workflow intended to be called as a job by other workflows
 
-# Calls the workflow in the external (provate) repository containing the deployment jobs
-# Ultimately calling this job with the cirrect arguments results in a deployment in K8s
+# Calls the workflow in the external (private) repository containing the deployment jobs
+# Ultimately calling this job with the correct arguments results in a deployment in K8s
 # on STFC infrastructure
 
 name: Job - Trigger deployment
@@ -9,15 +9,16 @@ run-name: trigger-deployment
 on:
   workflow_call:  # allow this workflow to be called from other workflows
     inputs:
-      environment: # pass the environment, used for targettinbg env specific K8s manifests
+      environment: # pass the environment, used for targeting env specific K8s manifests
         required: true
         type: string
       container_tag: # define our version tag created from the upstream container build job
         description: 'The latest tag for the container'
         required: true
         type: string
+
 jobs:
-  trigger:
+  trigger-and-wait:
     runs-on: ubuntu-latest
     steps:
       - name: Generate GitHub App Token
@@ -30,6 +31,7 @@ jobs:
           repositories: "psdi-data-conversion-deployment"
 
       - name: Trigger deployment workflow
+        id: trigger
         env:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
         run: |
@@ -45,3 +47,81 @@ jobs:
           echo "Tag: ${{ inputs.container_tag }}"
           echo "Ref: ${{ github.ref }}"
           echo "Env: ${{ inputs.environment }}"
+          
+          # Store trigger time for polling
+          TRIGGER_TIME=$(date -u +%s)
+          echo "trigger_time=$TRIGGER_TIME" >> $GITHUB_OUTPUT
+          echo "Trigger time: $(date -u -d @$TRIGGER_TIME '+%Y-%m-%d %H:%M:%S UTC')"
+
+      - name: Wait for deployment to complete
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          TRIGGER_TIME: ${{ steps.trigger.outputs.trigger_time }}
+          DEPLOY_REPO: "PSDI-UK/psdi-data-conversion-deployment"
+          WORKFLOW_FILE: "ci-deploy.yml"  # Update this to match your actual workflow filename
+        run: |
+          TIMEOUT=1800  # 30 minutes timeout
+          POLL_INTERVAL=15  # Check every 15 seconds
+          ELAPSED=0
+          FOUND_RUN=false
+          
+          echo "⏳ Waiting for deployment workflow to start and complete..."
+          echo "Timeout: ${TIMEOUT}s ($(($TIMEOUT / 60)) minutes)"
+          
+          while [ $ELAPSED -lt $TIMEOUT ]; do
+            # Get workflow runs triggered by repository_dispatch after our trigger time
+            RUNS=$(gh api \
+              "/repos/$DEPLOY_REPO/actions/workflows/$WORKFLOW_FILE/runs?per_page=10" \
+              --jq "[.workflow_runs[] | select(.event == \"repository_dispatch\" and (.created_at | fromdateiso8601) >= $TRIGGER_TIME)] | sort_by(.created_at) | reverse | .[0]" \
+              2>/dev/null) || true
+            
+            if [ -n "$RUNS" ] && [ "$RUNS" != "null" ] && [ "$RUNS" != "" ]; then
+              FOUND_RUN=true
+              STATUS=$(echo "$RUNS" | jq -r .status)
+              CONCLUSION=$(echo "$RUNS" | jq -r .conclusion)
+              RUN_ID=$(echo "$RUNS" | jq -r .id)
+              RUN_NUMBER=$(echo "$RUNS" | jq -r .run_number)
+              
+              echo "📊 Deployment workflow #$RUN_NUMBER - Status: $STATUS, Conclusion: $CONCLUSION"
+              
+              if [ "$STATUS" = "completed" ]; then
+                echo ""
+                echo "🔗 Deployment run: https://github.com/$DEPLOY_REPO/actions/runs/$RUN_ID"
+                
+                if [ "$CONCLUSION" = "success" ]; then
+                  echo "✅ Deployment completed successfully!"
+                  exit 0
+                elif [ "$CONCLUSION" = "failure" ]; then
+                  echo "❌ Deployment failed"
+                  exit 1
+                elif [ "$CONCLUSION" = "cancelled" ]; then
+                  echo "❌ Deployment was cancelled"
+                  exit 1
+                elif [ "$CONCLUSION" = "skipped" ]; then
+                  echo "⚠️  Deployment was skipped"
+                  exit 1
+                else
+                  echo "❌ Deployment completed with unexpected conclusion: $CONCLUSION"
+                  exit 1
+                fi
+              fi
+            elif [ "$FOUND_RUN" = false ]; then
+              echo "⏳ Waiting for deployment workflow to start... (${ELAPSED}s elapsed)"
+            else
+              echo "⏳ Deployment in progress... (${ELAPSED}s elapsed)"
+            fi
+            
+            sleep $POLL_INTERVAL
+            ELAPSED=$((ELAPSED + POLL_INTERVAL))
+          done
+          
+          echo ""
+          echo "❌ Timeout: Deployment did not complete within ${TIMEOUT}s"
+          
+          if [ "$FOUND_RUN" = true ]; then
+            echo "🔗 Check deployment status: https://github.com/$DEPLOY_REPO/actions/workflows/$WORKFLOW_FILE"
+          else
+            echo "⚠️  Warning: No deployment workflow run was detected. Check repository_dispatch was received."
+          fi
+          
+          exit 1
