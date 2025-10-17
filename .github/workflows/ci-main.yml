@@ -27,38 +27,18 @@ jobs:
     with:
       # container_tag
       container_tag: ${{ github.sha }}
-  # Deploy to Kubernetes Job - triggers remote workflow in private repo
-  # Requires an environment, which is used downstream to consume environment specific secrets
-  # from Vault, and to target the correct K8s manifests in the deploy/$environment directory hierarchy
+  # Deploy to Kubernetes Job
+  # Requires an environment, which must reflect the target environment as defined in the
+  # GitHub repository: https://github.com/PSDI-UK/psdi-data-conversion/settings/environments
+  # The downstream deploy job leverages on Environment specific secrets, which also must be defined
   # For the tag, we need something unique for each push, so we use the SHA of the latest commit
   deploy-stfc-dev-k8s:
     needs: [container-push]
     # Proceed if test-all was successful or skipped
     if: always() && (needs.container-push.result == 'success')
-    runs-on: ubuntu-latest
-    steps:
-      - name: Generate GitHub App Token
-        id: app-token
-        uses: actions/create-github-app-token@v1
-        with:
-          app-id: ${{ secrets.DEPLOYMENT_APP_ID }}
-          private-key: ${{ secrets.DEPLOYMENT_APP_PRIVATE_KEY }}
-          owner: ${{ github.repository_owner }}
-          repositories: "psdi-data-conversion-deployment"
-
-      - name: Trigger deployment workflow
-        env:
-          GH_TOKEN: ${{ steps.app-token.outputs.token }}
-        run: |
-          gh api /repos/PSDI-UK/psdi-data-conversion-deployment/dispatches \
-            --method POST \
-            --field event_type=deploy \
-            --field client_payload[tag]=${{ github.sha }} \
-            --field client_payload[ref]=${{ github.ref }} \
-            --field client_payload[repo]=${{ github.repository }} \
-            --field client_payload[env]="development"
-
-          echo "✅ Deployment triggered successfully"
-          echo "Tag: ${{ github.sha }}"
-          echo "Ref: ${{ github.ref }}"
-          echo "Env: development"
+    uses: ./.github/workflows/job-deploy-k8s.yml # use the callable deploy job
+    secrets: inherit # pass all secrets for the environment
+    with:
+      # container_tag
+      container_tag: ${{ github.sha }}
+      environment: development
