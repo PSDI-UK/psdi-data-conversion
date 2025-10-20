@@ -324,7 +324,7 @@ This project uses various GitHub workflows to perform Continuous Integration tas
 - Testing and scanning (triggered by pushes to `main`, `release`, `feature*`, and `rc*` branches)
 - Periodic checks for updates to common assets
 - Automatic creation of pull requests for `feature*` and `rc*` branches
-- Automatic tagging, publishing, and deployment of the `main` and `release` branches to the development, staging and production environments
+- Automatic tagging, publishing, and deployment (by triggering a deploment workflow in an [external repository](https://github.com/PSDI-UK/psdi-data-conversion-deployment) of the `main` and `release` branches to the development, staging and production environments
 
 See the comments within the files for further details. See also the [section on deployment](#deployment) for details specific to deployment tasks.
 
@@ -380,11 +380,7 @@ The management page can also be used to add or remove collaborators through the 
 
 ## Deployment
 
-The `ci-main.yml`, `ci-release.yml` and `manual-deploy-production.yml` files in the `.github/workflows` directory house workflows which deploy
-the data conversion service to [Kubernetes](https://kubernetes.io/) clusters hosted in STFC. There are three clusters, each of which correspond
-to a different deployment _environment_ for the data conversion service. The three environments are `development`, `staging` and `production`.
-Deployment to `development`, `staging` and `production` is done from either the `main` or `release` branch. The table below indicates which
-branch deploys to which environment. The table also shows, for each environment:
+The `ci-main.yml`, `ci-release.yml` and `manual-deploy-production.yml` files in the `.github/workflows` directory house workflows which trigger a deployment workflow in the dedicated, private, [deployment repository](https://github.com/PSDI-UK/psdi-data-conversion-deployment). Ultimately these deploy the data conversion service to [Kubernetes](https://kubernetes.io/) clusters hosted in STFC. There are three clusters, each of which correspond to a different deployment _environment_ for the data conversion service. The three environments are `development`, `staging` and `production`. Deployment to `development`, `staging` and `production` is done from either the `main` or `release` branch. The table below indicates which branch deploys to which environment. The table also shows, for each environment:
 
 - the URL on which the service is exposed once it is successfully deployed
 - the accessibility of the service. Depending on the environment the service is either accessible to the _public_ at the specified URL,
@@ -404,6 +400,8 @@ environment. However deployment from the `release` branch to the `production` en
 manually check that the `release` version works correctly in the `staging` environment before deploying it to the `production` environment.
 The checks to `staging` before deployment to `production` should echo those described in the above
 section [Release Checklist and Procedure](#release-checklist-and-procedure).
+
+Intergration between this public repository and the private deployment repository is exclusively mediated by a [GitHub App](https://docs.github.com/en/apps) with tightly restricted permissions. Once a deployment in whichever environment has been triggered the calling jobs waits for it to be completely before reporting the status of the downstream workflow. There is a [configurable](https://github.com/PSDI-UK/psdi-data-conversion/blob/b95e0739048bfb688287a95c728970bf2cd0f35c/.github/workflows/job-external-deployment.yml#L63) timeout, so if the workflow is either not triggered, or fails to report a status within that period (30 minutes by default) then the Action is marked as `failed`.
 
 ### How to deploy to the `production` environment
 
@@ -427,20 +425,6 @@ same page.
 
 ### Further technical details
 
-The `ci-main.yml`, `ci-release.yml` and `ci-deploy-production.yml` workflows leverage the `job-deploy-k8s.yml` callable workflow to do the heavy
-lifting with regards to deployment to STFC Kubernetes environments. The `job-deploy-k8s.yml` workflow is coded to be invoked on PSDI's GitHub
-runners. These runners are hosted within STFC's network, providing a means to access the three STFC Kubernetes clusters corresponding to the
-`development`, `staging` and `production` environments. The environment to be targeted for deployment is passed to the `job-deploy-k8s.yml`
-workflow as an input parameter. Given a target environment `<env>`, the `job-deploy-k8s.yml` workflow will deploy the service to the
-the `<env>` environment using the Kubernetes manifests stored in the `deploy`/<env>` directory of this repository.
-
-The workflow relies on several repository secrets, namely `KUBECONF`, `IMAGEPULLSECRET`, `CERTIFICATE_PRIVATE_KEY` and `CERTIFICATE_PEM` for
-various purposes.
-
-- `KUBECONF` provides Kubernetes-specific information pertaining to the the Kubernetes cluster for the target environment. Note that
-  `KUBECONF` is an _environment_-dependent secret, taking different values for each of the environments.
-- `IMAGEPULLSECRET` enables the container image housing the data conversion service to be pulled from this GitHub repo to the PSDI runner
-- `CERTIFICATE_PRIVATE_KEY` and `CERTIFICATE_PEM` pertain to the TLS certificates for the service
-  For further information see the `job-deploy-k8s.yml` file and aforementioned Kubernetes manifests.
+The `ci-main.yml`, `ci-release.yml` and `ci-deploy-production.yml` workflows leverage the `job-external-deployment.yml` callable workflow to trigger the downstream deployment job in the dedicated  external, private repository. The environment to be targeted for deployment is passed to this job workflow as an input parameter. Given a target environment `<env>`, the `job-external-deployment.yml` workflow will trigger a deployment in the specified Kubernetes cluster on STFC infrastructure. All related secrets required for deployment are hosted within an STFC Secrets management service.
 
 The server can be configured by editing the environmental variables set in `Dockerfile`.
