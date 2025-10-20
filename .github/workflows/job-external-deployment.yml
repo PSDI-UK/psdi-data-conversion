@@ -98,7 +98,7 @@ jobs:
                   echo "❌ Deployment was cancelled"
                   exit 1
                 elif [ "$CONCLUSION" = "skipped" ]; then
-                  echo "⚠️  Deployment was skipped"
+                  echo "⚠️ Deployment was skipped"
                   exit 1
                 else
                   echo "❌ Deployment completed with unexpected conclusion: $CONCLUSION"
