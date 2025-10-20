@@ -13,7 +13,7 @@ on:
 jobs:
   update-assets:
     name: Update common assets
-    runs-on: psdi-data-conversion-runners
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
