@@ -49,6 +49,15 @@
   <!-- Cover to hide element loading and make page transitions seem smoother -->
   <div id="cover"></div>
 
+  {% block announcement_banner %}
+  <div class="announcementBar_mb4j" role="banner">
+    <div class="max-width-box announcementBarContent_xLdY">Dear users, PSDI will undergo scheduled maintenance from 30th
+      Oct to 4th Nov 2025, during which the PSDI Data Conversion Service will be temporarily unavailable. If you have
+      any questions, please contact our helpdesk (<a href="mailto:support@psdi.ac.uk">support@psdi.ac.uk</a>). Thank you
+      for your understanding, and we apologise for any inconvenience this may cause.</div>
+  </div>
+  {% endblock %}
+
   {% block header %}
   <header class="header" id="psdi-header">
     {% include 'content/psdi-common-header.html' %}
