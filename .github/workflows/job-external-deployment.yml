@@ -121,7 +121,7 @@ jobs:
           if [ "$FOUND_RUN" = true ]; then
             echo "🔗 Check deployment status: https://github.com/$DEPLOY_REPO/actions/workflows/$WORKFLOW_FILE"
           else
-            echo "⚠️  Warning: No deployment workflow run was detected. Check repository_dispatch was received."
+            echo "⚠️ Warning: No deployment workflow run was detected. Check repository_dispatch was received."
           fi
           
           exit 1
