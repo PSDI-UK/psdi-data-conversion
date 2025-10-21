@@ -1,5 +1,15 @@
 # Changelog for PSDI Data Conversion
 
+## v0.3.11
+
+### Bugfixes
+
+- In deployment, set all logs to be output unbuffered so they should be properly captured by Kibana
+
+### Miscellaneous Changes
+
+- Updated to use new deployment workflow with private deployment repo connected to STFC runners
+
 ## v0.3.7
 
 ### Bugfixes

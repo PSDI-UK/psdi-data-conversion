@@ -38,6 +38,9 @@ COPY CHANGELOG.md CONTRIBUTING.md LICENSE pyproject.toml README.md /app/
 
 ENV SETUPTOOLS_SCM_PRETEND_VERSION="1.0.0"
 
+# Ensure all Python logs go directly to terminal and don't get caught in the buffer
+ENV PYTHONUNBUFFERED 1
+
 RUN pip install .[deploy]
 
 ENV PYTHONPATH="."
