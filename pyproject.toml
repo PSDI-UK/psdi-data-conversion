@@ -80,9 +80,8 @@ Documentation = "https://psdi-uk.github.io/psdi-data-conversion/"
 Issues = "https://github.com/PSDI-UK/psdi-data-conversion/issues"
 Changelog = "https://github.com/PSDI-UK/psdi-data-conversion/blob/main/CHANGELOG.md"
 
-# Repository currently isn't public - when it goes public, uncomment the below
-# Repository = "https://github.com/PSDI-UK/psdi-data-conversion"
-# Download = "https://github.com/PSDI-UK/psdi-data-conversion/releases/latest"
+Repository = "https://github.com/PSDI-UK/psdi-data-conversion"
+Download = "https://github.com/PSDI-UK/psdi-data-conversion/releases/latest"
 
 [tool.hatch.build]
 exclude = [
