@@ -87,7 +87,8 @@ input:invalid {
 }
 
 /* Converter details, user input and file conversion initially not displayed. */
-.init-hidden {
+.init-hidden,
+.hidden {
   display: none
 }
 
