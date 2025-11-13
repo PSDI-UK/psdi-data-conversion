@@ -143,7 +143,7 @@ def post_feedback():
 
         # Write data in JSON format and send to stdout
         logLock.acquire()
-        sys.stdout.write(f"{json.dumps(entry) + '\n'}")
+        sys.stdout.write(str(json.dumps(entry)) + "\n")
         logLock.release()
 
         return Response(status=201)

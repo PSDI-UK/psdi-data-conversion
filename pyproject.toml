@@ -28,7 +28,10 @@ classifiers = [
   "Topic :: Scientific/Engineering :: Chemistry",
 ]
 dependencies = ["igraph", "openbabel-wheel", "py"]
-requires-python = ">= 3.12"
+
+# Note: The conversion of tarball/zip archives of files requires Python 3.12, but this is a rare use-case for local
+# installation, so Python 3.11 is permitted here
+requires-python = ">= 3.11"
 
 # Version specification - we determine the version through git. If you wish to install this without it being in a git
 # repository, you can do so by uncommenting the next line, then commenting out the block below which specifies how to

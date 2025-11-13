@@ -42,6 +42,7 @@ This project provides utilities to assist in converting files between the many d
   - [Running the App](#running-the-app)
 - [Testing](#testing)
 - [Troubleshooting](#troubleshooting)
+  - [Unable to convert archives of files](#unable-to-convert-archives-of-files)
   - [OSError: [Errno 24] Too many open files](#oserror-errno-24-too-many-open-files)
   - [Errors running c2x or Atomsk converters](#errors-running-c2x-or-atomsk-converters)
   - [A supported conversion fails](#a-supported-conversion-fails)
@@ -98,7 +99,9 @@ This project provides utilities to assist in converting files between the many d
 
 ### Python
 
-Any local installation of this project requires Python 3.12 or greater. The best way to do this is dependant on your system, and you are likely to find the best tailored instructions by searching the web for e.g. "install Python 3.12 <your-os-or-distribution>". Some standard options are:
+Any local installation of this project requires Python 3.11 or greater, ideally at least Python 3.12 for full features. Python 3.11 allows the use of most features, with the most notable exception being the conversions of files contained in tarball/zip archives, which relies on security features introduced in Python 3.12. With a local installation, this can be worked around by instead converting a list of files if necessary.
+
+The best way to do this is dependant on your system, and you are likely to find the best tailored instructions by searching the web for e.g. "install Python 3.12 <your-os-or-distribution>". Some standard options are:
 
 For Windows and MacOS: Download and run the installer for the latest version from the official site: https://www.python.org/downloads/
 
@@ -440,6 +443,12 @@ pytest
 ## Troubleshooting
 
 This section presents solutions for commonly-encountered issues.
+
+### Unable to convert archives of files
+
+Conversion of archives of files is only supported with Python version 3.12 and greater. Since this is a rarely-used feature for local installations, we allow installation with Python 3.11. Check your version of Python to confirm its version with `python --version`. If it's anything less than 3.12.0, this is the source of the problem.
+
+You can resolve this either by upgrading to Python 3.12 (see instructions in the [Requirements section above](#python)), or else work around it by instead converting a list of files.
 
 ### OSError: [Errno 24] Too many open files
 
