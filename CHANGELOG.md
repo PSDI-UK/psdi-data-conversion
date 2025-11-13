@@ -1,10 +1,16 @@
 # Changelog for PSDI Data Conversion
 
+## v0.3.16
+
+### Documentation Changes
+
+- Update README to display quick links at top
+
 ## v0.3.13
 
 ### Miscellaneous Changes
 
-- Uisplay code repo in project details now that it will be public
+- Display code repo in project details now that it will be public
 
 ## v0.3.11
 
