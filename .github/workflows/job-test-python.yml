@@ -31,6 +31,7 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
+      # We run Python tests on 3.11 since we want all the core functionality to work on this version and not need 3.12
       - name: Set up Python 3.11
         uses: actions/setup-python@v5
         with:
