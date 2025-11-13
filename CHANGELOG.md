@@ -1,5 +1,11 @@
 # Changelog for PSDI Data Conversion
 
+## v0.3.17
+
+### Miscellaneous Changes:
+
+- Lowered Python requirement to 3.11, since this allows all functionality a user doing a local install should need. Still using 3.12 for deployment, since it has better security for unpacking archive files
+
 ## v0.3.16
 
 ### Documentation Changes
