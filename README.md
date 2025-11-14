@@ -156,17 +156,17 @@ Required for all installations (`pip install .`):
 - `py`
 - `openbabel-wheel`
 
-Required to run the web app locally for a GUI experience (`pip install .[gui]`):
+Required to run the web app locally for a GUI experience (`pip install 'psdi-data-conversion[gui]'`):
 
 - `Flask`
 - `requests`
 
-Required to run unit tests (`pip install .[test]`):
+Required to run unit tests (`pip install 'psdi-data-conversion[test]'`):
 
 - `pytest`
 - `coverage`
 
-Required to run unit tests on the web app (`pip install .[gui-test]`):
+Required to run unit tests on the web app (`pip install 'psdi-data-conversion[gui-test]'`):
 
 - (all web app and test requirements listed above)
 - `selenium`
@@ -383,13 +383,13 @@ Enter https://data-conversion.psdi.ac.uk/ in a browser. Guidance on usage is giv
 This project is available on PyPI, and so can be installed via pip, including the necessary dependencies for the GUI, with:
 
 ```bash
-pip install psdi-data-conversion'[gui]'
+pip install 'psdi-data-conversion[gui]'
 ```
 
 If you wish to install the project locally from source, this can be done most easily by cloning the project and then executing:
 
 ```bash
-pip install .'[gui]'
+pip install '.[gui]'
 ```
 
 **Note:** This project uses git to determine the version number. If you clone the repository, you won't have to do anything special here, but if you get the source e.g. by extracting a release archive, you'll have to do one additional step before running the command above. If you have git installed, simply run `git init` in the project directory and it will be able to install. Otherwise, edit the project's `pyproject.toml` file to uncomment the line that sets a fixed version, and comment out the lines that set it up to determine the version from git - these are pointed out in the comments there.
@@ -410,7 +410,7 @@ The local version has some customisable options for running it, which can can be
 The Python library and CLA are written to make it easy to extend the functionality of this package to use other file format converters. This can be done by downloading or cloning the project's source from it's GitHub Repository (https://github.com/PSDI-UK/psdi-data-conversion), editing the code to add your converter following the guidance in the "[Adding File Format Converters](https://github.com/PSDI-UK/psdi-data-conversion/blob/main/CONTRIBUTING.md#adding-file-format-converters)" section of CONTRIBUTING.md to integrate it with the Python code, and installing the modified package on your system via:
 
 ```bash
-pip install --editable .'[test]'
+pip install --editable '.[test]'
 ```
 
 (This command uses the `--editable` option and optional `test` dependencies to ease the process of testing and debugging your changes.)
@@ -422,21 +422,21 @@ Note that when adding a converter in this manner, information on its possible co
 To test the CLA and Python library, install the optional testing requirements locally (ideally within a virtual environment) and test with pytest by executing the following commands from this project's directory:
 
 ```bash
-pip install .'[test]'
+pip install '.[test]'
 pytest tests/python
 ```
 
 To test the local version of the web app, install the GUI testing requirements locally (which also include the standard GUI requirements and standard testing requirements), start the server, and test by executing the GUI test script:
 
 ```bash
-pip install .'[gui-test]'
+pip install '.[gui-test]'
 pytest tests/gui
 ```
 
 Both of these sets of tests can also be run together if desired through:
 
 ```bash
-pip install .'[gui-test]'
+pip install '.[gui-test]'
 pytest
 ```
 
