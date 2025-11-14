@@ -49,7 +49,7 @@ The following tasks should be completed before merging a release candidate branc
 - Check that the project version is updated to the desired new version in all places it appears:
 
   - `CHANGELOG.md` (The top section should reflect the new version)
- 
+
 - Update the release date at the top of `README.md`
 
 - Ensure that all automated tests and checks pass - these should be run automatically on the PR opened above
@@ -273,7 +273,7 @@ You can then run the any tests you added, plus the existing test suite, through 
 
 ```bash
 source .venv/bin/activate # Create a venv first if necessary with `python -m venv .venv`
-pip install --editable .[test]
+pip install --editable '.[test]'
 pytest
 ```
 
@@ -298,7 +298,7 @@ List of necessary steps:
 For debugging python issues, it's recommended to install the package in editable mode via pip. This sets it up so that the python source files are used in-place rather than copied to a separate install directory, meaning that changes to them will be reflected in runs without need for a new installation. This can be done through the following command (which also installs all optional packages):
 
 ```bash
-pip install --editable .'[gui-test]'
+pip install --editable '.[gui-test]'
 ```
 
 ### Running Unit Tests
@@ -425,6 +425,6 @@ same page.
 
 ### Further technical details
 
-The `ci-main.yml`, `ci-release.yml` and `ci-deploy-production.yml` workflows leverage the `job-external-deployment.yml` callable workflow to trigger the downstream deployment job in the dedicated  external, private repository. The environment to be targeted for deployment is passed to this job workflow as an input parameter. Given a target environment `<env>`, the `job-external-deployment.yml` workflow will trigger a deployment in the specified Kubernetes cluster on STFC infrastructure. All related secrets required for deployment are hosted within an STFC Secrets management service.
+The `ci-main.yml`, `ci-release.yml` and `ci-deploy-production.yml` workflows leverage the `job-external-deployment.yml` callable workflow to trigger the downstream deployment job in the dedicated external, private repository. The environment to be targeted for deployment is passed to this job workflow as an input parameter. Given a target environment `<env>`, the `job-external-deployment.yml` workflow will trigger a deployment in the specified Kubernetes cluster on STFC infrastructure. All related secrets required for deployment are hosted within an STFC Secrets management service.
 
 The server can be configured by editing the environmental variables set in `Dockerfile`.
