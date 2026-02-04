@@ -1,5 +1,12 @@
 # Changelog for PSDI Data Conversion
 
+## v0.3.19
+
+### Documentation Changes:
+
+- Updating text on package documentation intro page to no longer state it's a WIP and explain the purpose of the package doc
+- Misc. fixes to code samples in documentation
+
 ## v0.3.17
 
 ### Miscellaneous Changes:
