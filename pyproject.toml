@@ -27,7 +27,7 @@ classifiers = [
   "Topic :: File Formats",
   "Topic :: Scientific/Engineering :: Chemistry",
 ]
-dependencies = ["igraph", "openbabel-wheel", "py"]
+dependencies = ["igraph", "openbabel>=3.2.0", "py"]
 
 # Note: The conversion of tarball/zip archives of files requires Python 3.12, but this is a rare use-case for local
 # installation, so Python 3.11 is permitted here
