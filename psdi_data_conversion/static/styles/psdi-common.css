@@ -402,7 +402,7 @@ input[type="radio"]:hover {
   cursor: pointer;
 }
 
-:is(select, select[size="1"]>option, input) {
+:is(select, select[size="0"]>option, select[size="1"]>option, input) {
   font-family     : var(--ifm-font-family-base);
   font-size       : var(--ifm-font-size-base);
   font-weight     : var(--ifm-font-weight-base);
