@@ -77,9 +77,9 @@ function changeLetterSpacing(event) {
     const space = $("#letter").find(":selected").text();
 
     if (space == "Default") {
-        r.style.setProperty('--psdi-letter-spacing-base', sessionStorage.getItem('psdi-default-letter-spacing'));
+        r.style.setProperty('--ifm-letter-spacing-base', sessionStorage.getItem('psdi-default-letter-spacing'));
     } else {
-        r.style.setProperty('--psdi-letter-spacing-base', space + "px");
+        r.style.setProperty('--ifm-letter-spacing-base', space + "px");
     }
 }
 
@@ -219,7 +219,7 @@ function saveSettings(event, show_alert = true) {
     applySetting("hfont", "#font", "--ifm-heading-font-family", settingsData);
     applySetting("size", "#size", "--ifm-font-size-base", settingsData);
     applySetting("weight", "#weight", "--ifm-font-weight-base", settingsData);
-    applySetting("letter", "#letter", "--psdi-letter-spacing-base", settingsData);
+    applySetting("letter", "#letter", "--ifm-letter-spacing-base", settingsData);
     applySetting("line", "#line", "--ifm-line-height-base", settingsData);
     applySetting("darkColour", "#dark-colour", "--psdi-dark-text-color-body", settingsData);
     applySetting("lightColour", "#light-colour", "--psdi-light-text-color-body", settingsData);

@@ -6,7 +6,7 @@ const initMode = sessionStorage.getItem("mode");
 
 function setDefault(default_varname, current_varname) {
   if (sessionStorage.getItem(default_varname) == null) {
-    sessionStorage.setItem(default_varname, s.getPropertyValue('--' + current_varname))
+    sessionStorage.setItem(default_varname, s.getPropertyValue('--' + current_varname));
   }
 }
 
@@ -17,7 +17,7 @@ setDefault("psdi-default-font-size", "ifm-font-size-base");
 
 setDefault("psdi-default-font-weight", "ifm-font-weight-base");
 
-setDefault("psdi-default-letter-spacing", "psdi-letter-spacing-base");
+setDefault("psdi-default-letter-spacing", "ifm-letter-spacing-base");
 
 setDefault("psdi-default-dark-text-color-body", "psdi-dark-text-color-body");
 setDefault("psdi-default-dark-text-color-heading", "psdi-dark-text-color-heading");
@@ -57,7 +57,7 @@ function applyStoredAccessibility() {
 
   loadProperty("ifm-font-weight-base", weight);
 
-  loadProperty("psdi-letter-spacing-base", letter);
+  loadProperty("ifm-letter-spacing-base", letter);
 
   loadProperty("psdi-dark-text-color-body", darkColour);
   loadProperty("psdi-dark-text-color-heading", darkColour);
