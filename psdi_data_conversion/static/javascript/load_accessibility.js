@@ -1,3 +1,5 @@
+import { disconnectModeToggleButton } from "./psdi-common.js";
+
 const r = document.querySelector(':root');
 const s = getComputedStyle(document.documentElement);
 const initMode = sessionStorage.getItem("mode");
@@ -123,7 +125,7 @@ const DARK_MODE = "dark";
 
 export function setMode(new_mode = null) {
 
-  // If not provide a mode, toggle between modes
+  // If not provided a mode, toggle between modes
   if (new_mode == null) {
     let currentMode = document.documentElement.getAttribute("data-theme");
     if (currentMode == DARK_MODE) {
@@ -165,12 +167,19 @@ function toggleMode() {
   setMode();
 }
 
-const lModeToggleButton = document.querySelectorAll(".color-mode-toggle");
-lModeToggleButton.forEach(function (modeToggleButton) {
-  modeToggleButton.addEventListener("click", toggleMode);
-});
 
-// Load the settings for the current mode if it's already been toggled in this session
-if (initMode != null) {
-  setMode(initMode);
-}
+$(document).ready(function () {
+
+  // We want to use the custom mode toggle here rather than the default one, so disconnect that and connect this one
+  disconnectModeToggleButton();
+  const lModeToggleButton = document.querySelectorAll(".color-mode-toggle");
+  lModeToggleButton.forEach(function (modeToggleButton) {
+    modeToggleButton.addEventListener("click", toggleMode);
+  });
+
+  // Load the settings for the current mode if it's already been toggled in this session
+  if (initMode != null) {
+    setMode(initMode);
+  }
+
+});

@@ -1,5 +1,11 @@
 # Changelog for PSDI Data Conversion
 
+## v0.3.20
+
+### Bugfixes
+
+- Fixed light-mode/dark-mode toggle button functionality, which was causing the site to break when toggling into dark mode
+
 ## v0.3.19
 
 ### Documentation Changes:
