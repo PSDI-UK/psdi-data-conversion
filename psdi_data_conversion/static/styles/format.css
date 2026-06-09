@@ -100,6 +100,12 @@ form {
   max-width: 50rem;
 }
 
+/* Placeholder text in input should be halfway faded between text color and background */
+input::placeholder {
+  color     : color-mix(in srgb, var(--ifm-font-color-base) 50%, var(--ifm-background-color) 50%);
+  font-style: italic;
+}
+
 /* Invalid input fields switch to alternate background */
 
 input:invalid {
