@@ -5,37 +5,40 @@
   This is the JavaScript which makes the Accessibility gui work.
 */
 
+export const COOKIE_VER = "2";
+
 const r = document.querySelector(':root');
 const s = getComputedStyle(document.documentElement);
 
 const LIGHT_MODE = "light";
 const DARK_MODE = "dark";
 
-function loadOption(jsName, cssSelector, changeFunc) {
+function loadOption(jsName, cssSelector, changeFunc = null) {
     const opt = sessionStorage.getItem(jsName + "Opt");
     if (opt != null)
         $(cssSelector).val(opt).change();
-    $(cssSelector).change(changeFunc);
+    if (changeFunc)
+        $(cssSelector).change(changeFunc);
 }
 
 $(document).ready(function () {
 
     // Store default styles in the stylesheet
-    r.style.setProperty('--psdi-default-font', sessionStorage.getItem('psdi-default-font'));
-    r.style.setProperty('--psdi-default-font-size', sessionStorage.getItem('psdi-default-font-size'));
-    r.style.setProperty('--psdi-default-heading-font', sessionStorage.getItem('psdi-default-heading-font'));
-    r.style.setProperty('--psdi-default-letter-spacing', sessionStorage.getItem('psdi-default-letter-spacing'));
-    r.style.setProperty('--psdi-default-font-weight', sessionStorage.getItem('psdi-default-font-weight'));
-    r.style.setProperty('--psdi-default-light-text-color-body',
-        sessionStorage.getItem('psdi-default-light-text-color-body'));
-    r.style.setProperty('--psdi-default-light-text-color-heading',
-        sessionStorage.getItem('psdi-default-light-text-color-heading'));
-    r.style.setProperty('--psdi-default-dark-text-color-body',
-        sessionStorage.getItem('psdi-default-dark-text-color-body'));
-    r.style.setProperty('--psdi-default-dark-text-color-heading',
-        sessionStorage.getItem('psdi-default-dark-text-color-heading'));
-    r.style.setProperty('--psdi-default-background-color', sessionStorage.getItem('psdi-default-background-color'));
-    r.style.setProperty('--psdi-default-color-primary', sessionStorage.getItem('psdi-default-color-primary'));
+    r.style.setProperty('--default-font', sessionStorage.getItem('default-font'));
+    r.style.setProperty('--default-font-size', sessionStorage.getItem('default-font-size'));
+    r.style.setProperty('--default-heading-font', sessionStorage.getItem('default-heading-font'));
+    r.style.setProperty('--default-letter-spacing', sessionStorage.getItem('default-letter-spacing'));
+    r.style.setProperty('--default-font-weight', sessionStorage.getItem('default-font-weight'));
+    r.style.setProperty('--default-light-text-color-body',
+        sessionStorage.getItem('default-light-text-color-body'));
+    r.style.setProperty('--default-light-text-color-heading',
+        sessionStorage.getItem('default-light-text-color-heading'));
+    r.style.setProperty('--default-dark-text-color-body',
+        sessionStorage.getItem('default-dark-text-color-body'));
+    r.style.setProperty('--default-dark-text-color-heading',
+        sessionStorage.getItem('default-dark-text-color-heading'));
+    r.style.setProperty('--default-background-color', sessionStorage.getItem('default-background-color'));
+    r.style.setProperty('--default-color-primary', sessionStorage.getItem('default-color-primary'));
 
     // Set up selection boxes
     loadOption("font", "#font", changeFont);
@@ -43,8 +46,11 @@ $(document).ready(function () {
     loadOption("weight", "#weight", changeFontWeight);
     loadOption("letter", "#letter", changeLetterSpacing);
     loadOption("line", "#line", changeLineSpacing);
-    loadOption("darkColour", "#dark-colour", changeFontColourDark);
-    loadOption("lightColour", "#light-colour", changeFontColourLight);
+
+    // Loading the text colours will also load the heading colours and vice-versa, so we only call once
+    loadOption("darkTextColour", "#dark-colour", changeFontColourDark);
+    loadOption("lightTextColour", "#light-colour", changeFontColourLight);
+
     loadOption("lightBack", "#light-background", changeLightBackground);
     loadOption("darkBack", "#dark-background", changeDarkBackground);
 
@@ -61,8 +67,8 @@ function changeFont(event) {
     const font = fontSelection.text().trim();
 
     if (font == "Default") {
-        r.style.setProperty('--ifm-font-family-base', sessionStorage.getItem('psdi-default-font'));
-        r.style.setProperty('--ifm-heading-font-family', sessionStorage.getItem('psdi-default-heading-font'));
+        r.style.setProperty('--ifm-font-family-base', sessionStorage.getItem('default-font'));
+        r.style.setProperty('--ifm-heading-font-family', sessionStorage.getItem('default-heading-font'));
     } else {
         // To avoid duplication of font settings, we retrieve the style to apply from what's applied to the font in the
         // selection box
@@ -77,9 +83,9 @@ function changeLetterSpacing(event) {
     const space = $("#letter").find(":selected").text();
 
     if (space == "Default") {
-        r.style.setProperty('--psdi-letter-spacing-base', sessionStorage.getItem('psdi-default-letter-spacing'));
+        r.style.setProperty('--ifm-letter-spacing-base', sessionStorage.getItem('default-letter-spacing'));
     } else {
-        r.style.setProperty('--psdi-letter-spacing-base', space + "px");
+        r.style.setProperty('--ifm-letter-spacing-base', space + "px");
     }
 }
 
@@ -88,7 +94,7 @@ function changeLineSpacing(event) {
     const space = $("#line").find(":selected").text();
 
     if (space == "Default") {
-        r.style.setProperty('--ifm-line-height-base', sessionStorage.getItem('psdi-default-line-height'));
+        r.style.setProperty('--ifm-line-height-base', sessionStorage.getItem('default-line-height'));
     } else {
         r.style.setProperty('--ifm-line-height-base', space);
     }
@@ -99,7 +105,7 @@ function changeFontSize(event) {
     const size = $("#size").find(":selected").text();
 
     if (size == "Default") {
-        r.style.setProperty('--ifm-font-size-base', sessionStorage.getItem('psdi-default-font-size'));
+        r.style.setProperty('--ifm-font-size-base', sessionStorage.getItem('default-font-size'));
     } else {
         r.style.setProperty('--ifm-font-size-base', size + "px");
     }
@@ -110,7 +116,7 @@ function changeFontWeight(event) {
     const weight = $("#weight").find(":selected").text();
 
     if (weight == "Default") {
-        r.style.setProperty('--ifm-font-weight-base', sessionStorage.getItem('psdi-default-font-weight'));
+        r.style.setProperty('--ifm-font-weight-base', sessionStorage.getItem('default-font-weight'));
     } else {
         r.style.setProperty('--ifm-font-weight-base', weight.toLowerCase());
     }
@@ -130,14 +136,21 @@ function changeFontColour(event, lightOrDark = "dark") {
 
     const colour = $("#" + lightOrDark + "-colour").find(":selected").text();
 
-    if (colour === 'Default') {
-        r.style.setProperty('--psdi-' + lightOrDark + '-text-color-body',
-            sessionStorage.getItem('psdi-default-' + lightOrDark + '-text-color-body'));
-        r.style.setProperty('--psdi-' + lightOrDark + '-text-color-heading',
-            sessionStorage.getItem('psdi-default-' + lightOrDark + '-text-color-heading'));
+    let textColour, headingColour;
+    if (lightOrDark == "dark") {
+        textColour = "--ifm-font-color-base";
+        headingColour = "--ifm-heading-color";
     } else {
-        r.style.setProperty('--psdi-' + lightOrDark + '-text-color-body', colour);
-        r.style.setProperty('--psdi-' + lightOrDark + '-text-color-heading', colour);
+        textColour = "--ifm-hero-text-color";
+        headingColour = "--ifm-hero-heading-color";
+    }
+
+    if (colour === 'Default') {
+        r.style.setProperty(textColour, sessionStorage.getItem('default-' + lightOrDark + '-text-color-body'));
+        r.style.setProperty(headingColour, sessionStorage.getItem('default-' + lightOrDark + '-text-color-heading'));
+    } else {
+        r.style.setProperty(textColour, colour);
+        r.style.setProperty(headingColour, colour);
     }
 }
 
@@ -146,7 +159,7 @@ function changeLightBackground(event) {
     const colour = $("#light-background").find(":selected").text();
 
     if (colour == "Default") {
-        r.style.setProperty('--ifm-background-color', sessionStorage.getItem('psdi-default-background-color'));
+        r.style.setProperty('--ifm-background-color', sessionStorage.getItem('default-background-color'));
     } else {
         r.style.setProperty('--ifm-background-color', colour);
     }
@@ -157,7 +170,7 @@ function changeDarkBackground(event) {
     const colour = $("#dark-background").find(":selected").text();
 
     if (colour == "Default") {
-        r.style.setProperty('--ifm-color-primary', sessionStorage.getItem('psdi-default-color-primary'));
+        r.style.setProperty('--ifm-color-primary', sessionStorage.getItem('default-color-primary'));
     } else {
         r.style.setProperty('--ifm-color-primary', colour);
     }
@@ -213,16 +226,18 @@ function applySetting(jsName, cssSelector, cssVar, settingsData) {
 // Applies accessibility settings to the entire website.
 function saveSettings(event, show_alert = true) {
 
-    let settingsData = new Object();
+    let settingsData = { "version": COOKIE_VER };
 
     applySetting("font", "#font", "--ifm-font-family-base", settingsData);
     applySetting("hfont", "#font", "--ifm-heading-font-family", settingsData);
     applySetting("size", "#size", "--ifm-font-size-base", settingsData);
     applySetting("weight", "#weight", "--ifm-font-weight-base", settingsData);
-    applySetting("letter", "#letter", "--psdi-letter-spacing-base", settingsData);
+    applySetting("letter", "#letter", "--ifm-letter-spacing-base", settingsData);
     applySetting("line", "#line", "--ifm-line-height-base", settingsData);
-    applySetting("darkColour", "#dark-colour", "--psdi-dark-text-color-body", settingsData);
-    applySetting("lightColour", "#light-colour", "--psdi-light-text-color-body", settingsData);
+    applySetting("darkTextColour", "#dark-colour", "--ifm-font-color-base", settingsData);
+    applySetting("darkHeadingColour", "#dark-colour", "--ifm-heading-color", settingsData);
+    applySetting("lightTextColour", "#light-colour", "--ifm-hero-text-color", settingsData);
+    applySetting("lightHeadingColour", "#light-colour", "--ifm-hero-heading-color", settingsData);
     applySetting("lightBack", "#light-background", "--ifm-background-color", settingsData);
     applySetting("darkBack", "#dark-background", "--ifm-color-primary", settingsData);
 
