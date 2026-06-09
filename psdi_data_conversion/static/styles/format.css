@@ -146,8 +146,18 @@ input#fileToUpload {
 
 /* Buttons that are initially disabled */
 input.button.init-disabled {
-  background-color: var(--psdi-bg-color-secondary);
+  background-color: var(--ifm-color-secondary);
   color           : gray
+}
+
+/* Custom button shading to work with accessibility settings */
+:is(input.button, input[type="button"]):not(.clean-btn):hover,
+:is(input.button, input[type="button"]):not(.clean-btn):focus {
+  background-color: color-mix(in srgb, var(--ifm-color-primary) 90%, var(--ifm-hero-text-color) 10%);
+}
+
+:is(input.button, input[type="button"]):not(.clean-btn):active {
+  background-color: color-mix(in srgb, var(--ifm-color-primary) 80%, var(--ifm-hero-text-color) 20%);
 }
 
 /* Small vertical space. */
