@@ -6,6 +6,10 @@
 
 - Fixed light-mode/dark-mode toggle button functionality, which was causing the site to break when toggling into dark mode
 
+### Testing Changes
+
+- Updated test data to use newest version of Open Babel
+
 ## v0.3.19
 
 ### Documentation Changes:
