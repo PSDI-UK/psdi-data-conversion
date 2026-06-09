@@ -481,11 +481,6 @@ option:checked {
   color           : var(--ifm-hero-text-color);
 }
 
-button:hover,
-input.button:hover {
-  cursor: pointer;
-}
-
 *:has(> .max-width-box) {
   display        : flex;
   justify-content: center;
@@ -702,11 +697,6 @@ a {
 a:hover {
   text-decoration: none;
   cursor         : pointer;
-}
-
-a.no-pointer {
-  cursor: default;
-  cursor: pointer;
 }
 
 a.no-pointer {
