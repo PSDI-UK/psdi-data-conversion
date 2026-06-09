@@ -5,6 +5,8 @@
   This is the JavaScript which makes the Accessibility gui work.
 */
 
+export const COOKIE_VER = "2";
+
 const r = document.querySelector(':root');
 const s = getComputedStyle(document.documentElement);
 
@@ -135,7 +137,7 @@ function changeFontColour(event, lightOrDark = "dark") {
     const colour = $("#" + lightOrDark + "-colour").find(":selected").text();
 
     let textColour, headingColour;
-    if (lightOrDark == "light") {
+    if (lightOrDark == "dark") {
         textColour = "--ifm-font-color-base";
         headingColour = "--ifm-heading-color";
     } else {
@@ -224,7 +226,7 @@ function applySetting(jsName, cssSelector, cssVar, settingsData) {
 // Applies accessibility settings to the entire website.
 function saveSettings(event, show_alert = true) {
 
-    let settingsData = new Object();
+    let settingsData = { "version": COOKIE_VER };
 
     applySetting("font", "#font", "--ifm-font-family-base", settingsData);
     applySetting("hfont", "#font", "--ifm-heading-font-family", settingsData);

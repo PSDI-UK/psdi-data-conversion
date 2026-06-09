@@ -1,3 +1,4 @@
+import { COOKIE_VER } from "./accessibility.js";
 import { disconnectModeToggleButton } from "./psdi-common.js";
 
 const r = document.querySelector(':root');
@@ -19,10 +20,10 @@ setDefault("default-font-weight", "ifm-font-weight-base");
 
 setDefault("default-letter-spacing", "ifm-letter-spacing-base");
 
-setDefault("default-dark-text-color-body", "psdi-dark-text-color-body");
-setDefault("default-dark-text-color-heading", "psdi-dark-text-color-heading");
-setDefault("default-light-text-color-body", "psdi-light-text-color-body");
-setDefault("default-light-text-color-heading", "psdi-light-text-color-heading");
+setDefault("default-dark-text-color-body", "ifm-font-color-base");
+setDefault("default-dark-text-color-heading", "ifm-heading-color");
+setDefault("default-light-text-color-body", "ifm-hero-text-color");
+setDefault("default-light-text-color-heading", "ifm-hero-heading-color");
 
 setDefault("default-line-height", "ifm-line-height-base");
 
@@ -82,6 +83,12 @@ export function loadAccessibility() {
     .done((data) => {
 
       const oData = JSON.parse(data);
+
+      // Check if the saved data is in a compatible format
+      if (!oData.version || +oData.version < +COOKIE_VER) {
+        console.log("Saved accessibility settings are out-of-date and will not be loaded")
+        return;
+      }
 
       function getAndSave(key) {
         let value = oData[key];
