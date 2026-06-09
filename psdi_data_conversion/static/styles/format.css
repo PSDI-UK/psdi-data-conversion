@@ -278,28 +278,28 @@ select#dark-background option:checked {
 }
 
 select#size option {
-  font-size: var(--psdi-default-font-size);
+  font-size: var(--default-font-size);
 }
 
 select#font option {
-  font-family: var(--psdi-default-font);
+  font-family: var(--default-font);
 }
 
 select#dark-colour option {
-  color: var(--psdi-default-dark-text-color-body);
+  color: var(--default-dark-text-color-body);
 }
 
 select#light-colour option {
   background-color: var(--ifm-color-primary);
-  color           : var(--psdi-default-light-text-color-body);
+  color           : var(--default-light-text-color-body);
 }
 
 select#light-background option {
-  background-color: var(--psdi-default-background-color);
+  background-color: var(--default-background-color);
 }
 
 select#dark-background option {
-  background-color: var(--psdi-default-color-primary);
+  background-color: var(--default-color-primary);
   color           : var(--psdi-light-text-color-body);
 }
 

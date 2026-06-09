@@ -10,24 +10,24 @@ function setDefault(default_varname, current_varname) {
   }
 }
 
-setDefault("psdi-default-font", "ifm-font-family-base");
-setDefault("psdi-default-heading-font", "ifm-heading-font-family");
+setDefault("default-font", "ifm-font-family-base");
+setDefault("default-heading-font", "ifm-heading-font-family");
 
-setDefault("psdi-default-font-size", "ifm-font-size-base");
+setDefault("default-font-size", "ifm-font-size-base");
 
-setDefault("psdi-default-font-weight", "ifm-font-weight-base");
+setDefault("default-font-weight", "ifm-font-weight-base");
 
-setDefault("psdi-default-letter-spacing", "ifm-letter-spacing-base");
+setDefault("default-letter-spacing", "ifm-letter-spacing-base");
 
-setDefault("psdi-default-dark-text-color-body", "psdi-dark-text-color-body");
-setDefault("psdi-default-dark-text-color-heading", "psdi-dark-text-color-heading");
-setDefault("psdi-default-light-text-color-body", "psdi-light-text-color-body");
-setDefault("psdi-default-light-text-color-heading", "psdi-light-text-color-heading");
+setDefault("default-dark-text-color-body", "psdi-dark-text-color-body");
+setDefault("default-dark-text-color-heading", "psdi-dark-text-color-heading");
+setDefault("default-light-text-color-body", "psdi-light-text-color-body");
+setDefault("default-light-text-color-heading", "psdi-light-text-color-heading");
 
-setDefault("psdi-default-line-height", "ifm-line-height-base");
+setDefault("default-line-height", "ifm-line-height-base");
 
-setDefault("psdi-default-background-color", "ifm-background-color");
-setDefault("psdi-default-color-primary", "ifm-color-primary");
+setDefault("default-background-color", "ifm-background-color");
+setDefault("default-color-primary", "ifm-color-primary");
 
 // Load values from session storage
 let font = sessionStorage.getItem("font"),
@@ -137,23 +137,23 @@ export function setMode(new_mode = null) {
 
   if (new_mode == DARK_MODE) {
 
-    loadProperty("psdi-dark-text-color-body", sessionStorage.getItem("psdi-default-light-text-color-body"));
-    loadProperty("psdi-dark-text-color-heading", sessionStorage.getItem("psdi-default-light-text-color-heading"));
-    loadProperty("psdi-light-text-color-body", sessionStorage.getItem("psdi-default-dark-text-color-body"));
-    loadProperty("psdi-light-text-color-heading", sessionStorage.getItem("psdi-default-dark-text-color-heading"));
+    loadProperty("psdi-dark-text-color-body", sessionStorage.getItem("default-light-text-color-body"));
+    loadProperty("psdi-dark-text-color-heading", sessionStorage.getItem("default-light-text-color-heading"));
+    loadProperty("psdi-light-text-color-body", sessionStorage.getItem("default-dark-text-color-body"));
+    loadProperty("psdi-light-text-color-heading", sessionStorage.getItem("default-dark-text-color-heading"));
 
     loadProperty("ifm-background-color", s.getPropertyValue("--psdi-dm-bg-color-default"));
     loadProperty("ifm-color-primary", s.getPropertyValue("--psdi-dm-bg-color-primary"));
 
   } else if (new_mode == LIGHT_MODE) {
 
-    loadProperty("psdi-dark-text-color-body", sessionStorage.getItem("psdi-default-dark-text-color-body"));
-    loadProperty("psdi-dark-text-color-heading", sessionStorage.getItem("psdi-default-dark-text-color-heading"));
-    loadProperty("psdi-light-text-color-body", sessionStorage.getItem("psdi-default-light-text-color-body"));
-    loadProperty("psdi-light-text-color-heading", sessionStorage.getItem("psdi-default-light-text-color-heading"));
+    loadProperty("psdi-dark-text-color-body", sessionStorage.getItem("default-dark-text-color-body"));
+    loadProperty("psdi-dark-text-color-heading", sessionStorage.getItem("default-dark-text-color-heading"));
+    loadProperty("psdi-light-text-color-body", sessionStorage.getItem("default-light-text-color-body"));
+    loadProperty("psdi-light-text-color-heading", sessionStorage.getItem("default-light-text-color-heading"));
 
-    loadProperty("ifm-background-color", sessionStorage.getItem("psdi-default-background-color"));
-    loadProperty("ifm-color-primary", sessionStorage.getItem("psdi-default-color-primary"));
+    loadProperty("ifm-background-color", sessionStorage.getItem("default-background-color"));
+    loadProperty("ifm-color-primary", sessionStorage.getItem("default-color-primary"));
 
   } else {
     loadAccessibility();
