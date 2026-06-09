@@ -137,20 +137,20 @@ export function setMode(new_mode = null) {
 
   if (new_mode == DARK_MODE) {
 
-    loadProperty("psdi-dark-text-color-body", sessionStorage.getItem("default-light-text-color-body"));
-    loadProperty("psdi-dark-text-color-heading", sessionStorage.getItem("default-light-text-color-heading"));
-    loadProperty("psdi-light-text-color-body", sessionStorage.getItem("default-dark-text-color-body"));
-    loadProperty("psdi-light-text-color-heading", sessionStorage.getItem("default-dark-text-color-heading"));
+    loadProperty("ifm-font-color-base", sessionStorage.getItem("default-light-text-color-body"))
+    loadProperty("ifm-heading-color", sessionStorage.getItem("default-light-text-color-heading"))
+    loadProperty("ifm-hero-text-color", sessionStorage.getItem("default-light-text-color-heading"))
+    loadProperty("ifm-hero-heading-color", sessionStorage.getItem("default-light-text-color-heading"))
 
     loadProperty("ifm-background-color", s.getPropertyValue("--psdi-dm-bg-color-default"));
     loadProperty("ifm-color-primary", s.getPropertyValue("--psdi-dm-bg-color-primary"));
 
   } else if (new_mode == LIGHT_MODE) {
 
-    loadProperty("psdi-dark-text-color-body", sessionStorage.getItem("default-dark-text-color-body"));
-    loadProperty("psdi-dark-text-color-heading", sessionStorage.getItem("default-dark-text-color-heading"));
-    loadProperty("psdi-light-text-color-body", sessionStorage.getItem("default-light-text-color-body"));
-    loadProperty("psdi-light-text-color-heading", sessionStorage.getItem("default-light-text-color-heading"));
+    loadProperty("ifm-font-color-base", sessionStorage.getItem("default-dark-text-color-body"))
+    loadProperty("ifm-heading-color", sessionStorage.getItem("default-dark-text-color-heading"))
+    loadProperty("ifm-hero-text-color", sessionStorage.getItem("default-light-text-color-body"))
+    loadProperty("ifm-hero-heading-color", sessionStorage.getItem("default-light-text-color-heading"))
 
     loadProperty("ifm-background-color", sessionStorage.getItem("default-background-color"));
     loadProperty("ifm-color-primary", sessionStorage.getItem("default-color-primary"));
