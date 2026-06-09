@@ -11,11 +11,12 @@ const s = getComputedStyle(document.documentElement);
 const LIGHT_MODE = "light";
 const DARK_MODE = "dark";
 
-function loadOption(jsName, cssSelector, changeFunc) {
+function loadOption(jsName, cssSelector, changeFunc = null) {
     const opt = sessionStorage.getItem(jsName + "Opt");
     if (opt != null)
         $(cssSelector).val(opt).change();
-    $(cssSelector).change(changeFunc);
+    if (changeFunc)
+        $(cssSelector).change(changeFunc);
 }
 
 $(document).ready(function () {
@@ -43,8 +44,11 @@ $(document).ready(function () {
     loadOption("weight", "#weight", changeFontWeight);
     loadOption("letter", "#letter", changeLetterSpacing);
     loadOption("line", "#line", changeLineSpacing);
-    loadOption("darkColour", "#dark-colour", changeFontColourDark);
-    loadOption("lightColour", "#light-colour", changeFontColourLight);
+
+    // Loading the text colours will also load the heading colours and vice-versa, so we only call once
+    loadOption("darkTextColour", "#dark-colour", changeFontColourDark);
+    loadOption("lightTextColour", "#light-colour", changeFontColourLight);
+
     loadOption("lightBack", "#light-background", changeLightBackground);
     loadOption("darkBack", "#dark-background", changeDarkBackground);
 
@@ -228,10 +232,10 @@ function saveSettings(event, show_alert = true) {
     applySetting("weight", "#weight", "--ifm-font-weight-base", settingsData);
     applySetting("letter", "#letter", "--ifm-letter-spacing-base", settingsData);
     applySetting("line", "#line", "--ifm-line-height-base", settingsData);
-    applySetting("darkColour", "#dark-colour", "--ifm-font-color-base", settingsData);
-    applySetting("darkColour", "#dark-colour", "--ifm-heading-color", settingsData);
-    applySetting("lightColour", "#light-colour", "--ifm-hero-text-color", settingsData);
-    applySetting("lightColour", "#light-colour", "--ifm-hero-heading-color", settingsData);
+    applySetting("darkTextColour", "#dark-colour", "--ifm-font-color-base", settingsData);
+    applySetting("darkHeadingColour", "#dark-colour", "--ifm-heading-color", settingsData);
+    applySetting("lightTextColour", "#light-colour", "--ifm-hero-text-color", settingsData);
+    applySetting("lightHeadingColour", "#light-colour", "--ifm-hero-heading-color", settingsData);
     applySetting("lightBack", "#light-background", "--ifm-background-color", settingsData);
     applySetting("darkBack", "#dark-background", "--ifm-color-primary", settingsData);
 

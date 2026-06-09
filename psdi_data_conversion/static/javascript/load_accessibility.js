@@ -36,8 +36,10 @@ let font = sessionStorage.getItem("font"),
   weight = sessionStorage.getItem("weight"),
   letter = sessionStorage.getItem("letter"),
   line = sessionStorage.getItem("line"),
-  darkColour = sessionStorage.getItem("darkColour"),
-  lightColour = sessionStorage.getItem("lightColour"),
+  darkTextColour = sessionStorage.getItem("darkTextColour"),
+  darkHeadingColour = sessionStorage.getItem("darkHeadingColour"),
+  lightTextColour = sessionStorage.getItem("lightTextColour"),
+  lightHeadingColour = sessionStorage.getItem("lightHeadingColour"),
   lightBack = sessionStorage.getItem("lightBack"),
   darkBack = sessionStorage.getItem("darkBack"),
   mode = sessionStorage.getItem("mode");
@@ -59,10 +61,10 @@ function applyStoredAccessibility() {
 
   loadProperty("ifm-letter-spacing-base", letter);
 
-  loadProperty("psdi-dark-text-color-body", darkColour);
-  loadProperty("psdi-dark-text-color-heading", darkColour);
-  loadProperty("psdi-light-text-color-body", lightColour);
-  loadProperty("psdi-light-text-color-heading", lightColour);
+  loadProperty("ifm-font-color-base", darkTextColour);
+  loadProperty("ifm-heading-color", darkHeadingColour);
+  loadProperty("ifm-hero-text-color", lightTextColour);
+  loadProperty("ifm-hero-heading-color", lightHeadingColour);
 
   loadProperty("ifm-line-height-base", line);
 
@@ -98,8 +100,10 @@ export function loadAccessibility() {
       weight = getAndSave("weight");
       letter = getAndSave("letter");
       line = getAndSave("line");
-      darkColour = getAndSave("darkColour");
-      lightColour = getAndSave("lightColour");
+      darkTextColour = getAndSave("darkTextColour");
+      darkHeadingColour = getAndSave("darkHeadingColour");
+      lightTextColour = getAndSave("lightTextColour");
+      lightHeadingColour = getAndSave("lightHeadingColour");
       lightBack = getAndSave("lightBack");
       darkBack = getAndSave("darkBack");
       mode = getAndSave("mode");
