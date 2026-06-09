@@ -112,8 +112,6 @@ export function loadAccessibility() {
 
 }
 
-loadAccessibility();
-
 document.documentElement.setAttribute("data-theme", mode);
 
 // Connect the color mode toggle button in the header - since we write the header directly in our templates, the
@@ -137,20 +135,20 @@ export function setMode(new_mode = null) {
 
   if (new_mode == DARK_MODE) {
 
-    loadProperty("ifm-font-color-base", sessionStorage.getItem("default-light-text-color-body"))
-    loadProperty("ifm-heading-color", sessionStorage.getItem("default-light-text-color-heading"))
-    loadProperty("ifm-hero-text-color", sessionStorage.getItem("default-light-text-color-heading"))
-    loadProperty("ifm-hero-heading-color", sessionStorage.getItem("default-light-text-color-heading"))
+    loadProperty("ifm-font-color-base", sessionStorage.getItem("default-light-text-color-body"));
+    loadProperty("ifm-heading-color", sessionStorage.getItem("default-light-text-color-heading"));
+    loadProperty("ifm-hero-text-color", sessionStorage.getItem("default-light-text-color-heading"));
+    loadProperty("ifm-hero-heading-color", sessionStorage.getItem("default-light-text-color-heading"));
 
     loadProperty("ifm-background-color", s.getPropertyValue("--psdi-dm-bg-color-default"));
     loadProperty("ifm-color-primary", s.getPropertyValue("--psdi-dm-bg-color-primary"));
 
   } else if (new_mode == LIGHT_MODE) {
 
-    loadProperty("ifm-font-color-base", sessionStorage.getItem("default-dark-text-color-body"))
-    loadProperty("ifm-heading-color", sessionStorage.getItem("default-dark-text-color-heading"))
-    loadProperty("ifm-hero-text-color", sessionStorage.getItem("default-light-text-color-body"))
-    loadProperty("ifm-hero-heading-color", sessionStorage.getItem("default-light-text-color-heading"))
+    loadProperty("ifm-font-color-base", sessionStorage.getItem("default-dark-text-color-body"));
+    loadProperty("ifm-heading-color", sessionStorage.getItem("default-dark-text-color-heading"));
+    loadProperty("ifm-hero-text-color", sessionStorage.getItem("default-light-text-color-body"));
+    loadProperty("ifm-hero-heading-color", sessionStorage.getItem("default-light-text-color-heading"));
 
     loadProperty("ifm-background-color", sessionStorage.getItem("default-background-color"));
     loadProperty("ifm-color-primary", sessionStorage.getItem("default-color-primary"));
@@ -169,6 +167,8 @@ function toggleMode() {
 
 
 $(document).ready(function () {
+
+  loadAccessibility();
 
   // We want to use the custom mode toggle here rather than the default one, so disconnect that and connect this one
   disconnectModeToggleButton();

@@ -130,14 +130,21 @@ function changeFontColour(event, lightOrDark = "dark") {
 
     const colour = $("#" + lightOrDark + "-colour").find(":selected").text();
 
-    if (colour === 'Default') {
-        r.style.setProperty('--psdi-' + lightOrDark + '-text-color-body',
-            sessionStorage.getItem('default-' + lightOrDark + '-text-color-body'));
-        r.style.setProperty('--psdi-' + lightOrDark + '-text-color-heading',
-            sessionStorage.getItem('default-' + lightOrDark + '-text-color-heading'));
+    let textColour, headingColour;
+    if (lightOrDark == "light") {
+        textColour = "--ifm-font-color-base";
+        headingColour = "--ifm-heading-color";
     } else {
-        r.style.setProperty('--psdi-' + lightOrDark + '-text-color-body', colour);
-        r.style.setProperty('--psdi-' + lightOrDark + '-text-color-heading', colour);
+        textColour = "--ifm-hero-text-color";
+        headingColour = "--ifm-hero-heading-color";
+    }
+
+    if (colour === 'Default') {
+        r.style.setProperty(textColour, sessionStorage.getItem('default-' + lightOrDark + '-text-color-body'));
+        r.style.setProperty(headingColour, sessionStorage.getItem('default-' + lightOrDark + '-text-color-heading'));
+    } else {
+        r.style.setProperty(textColour, colour);
+        r.style.setProperty(headingColour, colour);
     }
 }
 
@@ -221,8 +228,10 @@ function saveSettings(event, show_alert = true) {
     applySetting("weight", "#weight", "--ifm-font-weight-base", settingsData);
     applySetting("letter", "#letter", "--ifm-letter-spacing-base", settingsData);
     applySetting("line", "#line", "--ifm-line-height-base", settingsData);
-    applySetting("darkColour", "#dark-colour", "--psdi-dark-text-color-body", settingsData);
-    applySetting("lightColour", "#light-colour", "--psdi-light-text-color-body", settingsData);
+    applySetting("darkColour", "#dark-colour", "--ifm-font-color-base", settingsData);
+    applySetting("darkColour", "#dark-colour", "--ifm-heading-color", settingsData);
+    applySetting("lightColour", "#light-colour", "--ifm-hero-text-color", settingsData);
+    applySetting("lightColour", "#light-colour", "--ifm-hero-heading-color", settingsData);
     applySetting("lightBack", "#light-background", "--ifm-background-color", settingsData);
     applySetting("darkBack", "#dark-background", "--ifm-color-primary", settingsData);
 
