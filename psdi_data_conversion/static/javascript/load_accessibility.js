@@ -1,31 +1,34 @@
+import { COOKIE_VER } from "./accessibility.js";
+import { disconnectModeToggleButton } from "./psdi-common.js";
+
 const r = document.querySelector(':root');
 const s = getComputedStyle(document.documentElement);
 const initMode = sessionStorage.getItem("mode");
 
 function setDefault(default_varname, current_varname) {
   if (sessionStorage.getItem(default_varname) == null) {
-    sessionStorage.setItem(default_varname, s.getPropertyValue('--' + current_varname))
+    sessionStorage.setItem(default_varname, s.getPropertyValue('--' + current_varname));
   }
 }
 
-setDefault("psdi-default-font", "ifm-font-family-base");
-setDefault("psdi-default-heading-font", "ifm-heading-font-family");
+setDefault("default-font", "ifm-font-family-base");
+setDefault("default-heading-font", "ifm-heading-font-family");
 
-setDefault("psdi-default-font-size", "ifm-font-size-base");
+setDefault("default-font-size", "ifm-font-size-base");
 
-setDefault("psdi-default-font-weight", "ifm-font-weight-base");
+setDefault("default-font-weight", "ifm-font-weight-base");
 
-setDefault("psdi-default-letter-spacing", "psdi-letter-spacing-base");
+setDefault("default-letter-spacing", "ifm-letter-spacing-base");
 
-setDefault("psdi-default-dark-text-color-body", "psdi-dark-text-color-body");
-setDefault("psdi-default-dark-text-color-heading", "psdi-dark-text-color-heading");
-setDefault("psdi-default-light-text-color-body", "psdi-light-text-color-body");
-setDefault("psdi-default-light-text-color-heading", "psdi-light-text-color-heading");
+setDefault("default-dark-text-color-body", "ifm-font-color-base");
+setDefault("default-dark-text-color-heading", "ifm-heading-color");
+setDefault("default-light-text-color-body", "ifm-hero-text-color");
+setDefault("default-light-text-color-heading", "ifm-hero-heading-color");
 
-setDefault("psdi-default-line-height", "ifm-line-height-base");
+setDefault("default-line-height", "ifm-line-height-base");
 
-setDefault("psdi-default-background-color", "ifm-background-color");
-setDefault("psdi-default-color-primary", "ifm-color-primary");
+setDefault("default-background-color", "ifm-background-color");
+setDefault("default-color-primary", "ifm-color-primary");
 
 // Load values from session storage
 let font = sessionStorage.getItem("font"),
@@ -34,8 +37,10 @@ let font = sessionStorage.getItem("font"),
   weight = sessionStorage.getItem("weight"),
   letter = sessionStorage.getItem("letter"),
   line = sessionStorage.getItem("line"),
-  darkColour = sessionStorage.getItem("darkColour"),
-  lightColour = sessionStorage.getItem("lightColour"),
+  darkTextColour = sessionStorage.getItem("darkTextColour"),
+  darkHeadingColour = sessionStorage.getItem("darkHeadingColour"),
+  lightTextColour = sessionStorage.getItem("lightTextColour"),
+  lightHeadingColour = sessionStorage.getItem("lightHeadingColour"),
   lightBack = sessionStorage.getItem("lightBack"),
   darkBack = sessionStorage.getItem("darkBack"),
   mode = sessionStorage.getItem("mode");
@@ -55,12 +60,12 @@ function applyStoredAccessibility() {
 
   loadProperty("ifm-font-weight-base", weight);
 
-  loadProperty("psdi-letter-spacing-base", letter);
+  loadProperty("ifm-letter-spacing-base", letter);
 
-  loadProperty("psdi-dark-text-color-body", darkColour);
-  loadProperty("psdi-dark-text-color-heading", darkColour);
-  loadProperty("psdi-light-text-color-body", lightColour);
-  loadProperty("psdi-light-text-color-heading", lightColour);
+  loadProperty("ifm-font-color-base", darkTextColour);
+  loadProperty("ifm-heading-color", darkHeadingColour);
+  loadProperty("ifm-hero-text-color", lightTextColour);
+  loadProperty("ifm-hero-heading-color", lightHeadingColour);
 
   loadProperty("ifm-line-height-base", line);
 
@@ -79,6 +84,12 @@ export function loadAccessibility() {
 
       const oData = JSON.parse(data);
 
+      // Check if the saved data is in a compatible format
+      if (!oData.version || +oData.version < +COOKIE_VER) {
+        console.log("Saved accessibility settings are out-of-date and will not be loaded")
+        return;
+      }
+
       function getAndSave(key) {
         let value = oData[key];
         if (value != null) {
@@ -96,8 +107,10 @@ export function loadAccessibility() {
       weight = getAndSave("weight");
       letter = getAndSave("letter");
       line = getAndSave("line");
-      darkColour = getAndSave("darkColour");
-      lightColour = getAndSave("lightColour");
+      darkTextColour = getAndSave("darkTextColour");
+      darkHeadingColour = getAndSave("darkHeadingColour");
+      lightTextColour = getAndSave("lightTextColour");
+      lightHeadingColour = getAndSave("lightHeadingColour");
       lightBack = getAndSave("lightBack");
       darkBack = getAndSave("darkBack");
       mode = getAndSave("mode");
@@ -110,8 +123,6 @@ export function loadAccessibility() {
 
 }
 
-loadAccessibility();
-
 document.documentElement.setAttribute("data-theme", mode);
 
 // Connect the color mode toggle button in the header - since we write the header directly in our templates, the
@@ -123,7 +134,7 @@ const DARK_MODE = "dark";
 
 export function setMode(new_mode = null) {
 
-  // If not provide a mode, toggle between modes
+  // If not provided a mode, toggle between modes
   if (new_mode == null) {
     let currentMode = document.documentElement.getAttribute("data-theme");
     if (currentMode == DARK_MODE) {
@@ -135,23 +146,23 @@ export function setMode(new_mode = null) {
 
   if (new_mode == DARK_MODE) {
 
-    loadProperty("psdi-dark-text-color-body", sessionStorage.getItem("psdi-default-light-text-color-body"));
-    loadProperty("psdi-dark-text-color-heading", sessionStorage.getItem("psdi-default-light-text-color-heading"));
-    loadProperty("psdi-light-text-color-body", sessionStorage.getItem("psdi-default-dark-text-color-body"));
-    loadProperty("psdi-light-text-color-heading", sessionStorage.getItem("psdi-default-dark-text-color-heading"));
+    loadProperty("ifm-font-color-base", sessionStorage.getItem("default-light-text-color-body"));
+    loadProperty("ifm-heading-color", sessionStorage.getItem("default-light-text-color-heading"));
+    loadProperty("ifm-hero-text-color", sessionStorage.getItem("default-light-text-color-heading"));
+    loadProperty("ifm-hero-heading-color", sessionStorage.getItem("default-light-text-color-heading"));
 
     loadProperty("ifm-background-color", s.getPropertyValue("--psdi-dm-bg-color-default"));
     loadProperty("ifm-color-primary", s.getPropertyValue("--psdi-dm-bg-color-primary"));
 
   } else if (new_mode == LIGHT_MODE) {
 
-    loadProperty("psdi-dark-text-color-body", sessionStorage.getItem("psdi-default-dark-text-color-body"));
-    loadProperty("psdi-dark-text-color-heading", sessionStorage.getItem("psdi-default-dark-text-color-heading"));
-    loadProperty("psdi-light-text-color-body", sessionStorage.getItem("psdi-default-light-text-color-body"));
-    loadProperty("psdi-light-text-color-heading", sessionStorage.getItem("psdi-default-light-text-color-heading"));
+    loadProperty("ifm-font-color-base", sessionStorage.getItem("default-dark-text-color-body"));
+    loadProperty("ifm-heading-color", sessionStorage.getItem("default-dark-text-color-heading"));
+    loadProperty("ifm-hero-text-color", sessionStorage.getItem("default-light-text-color-body"));
+    loadProperty("ifm-hero-heading-color", sessionStorage.getItem("default-light-text-color-heading"));
 
-    loadProperty("ifm-background-color", sessionStorage.getItem("psdi-default-background-color"));
-    loadProperty("ifm-color-primary", sessionStorage.getItem("psdi-default-color-primary"));
+    loadProperty("ifm-background-color", sessionStorage.getItem("default-background-color"));
+    loadProperty("ifm-color-primary", sessionStorage.getItem("default-color-primary"));
 
   } else {
     loadAccessibility();
@@ -165,12 +176,21 @@ function toggleMode() {
   setMode();
 }
 
-const lModeToggleButton = document.querySelectorAll(".color-mode-toggle");
-lModeToggleButton.forEach(function (modeToggleButton) {
-  modeToggleButton.addEventListener("click", toggleMode);
-});
 
-// Load the settings for the current mode if it's already been toggled in this session
-if (initMode != null) {
-  setMode(initMode);
-}
+$(document).ready(function () {
+
+  loadAccessibility();
+
+  // We want to use the custom mode toggle here rather than the default one, so disconnect that and connect this one
+  disconnectModeToggleButton();
+  const lModeToggleButton = document.querySelectorAll(".color-mode-toggle");
+  lModeToggleButton.forEach(function (modeToggleButton) {
+    modeToggleButton.addEventListener("click", toggleMode);
+  });
+
+  // Load the settings for the current mode if it's already been toggled in this session
+  if (initMode != null) {
+    setMode(initMode);
+  }
+
+});
