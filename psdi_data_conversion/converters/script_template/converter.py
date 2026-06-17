@@ -11,8 +11,8 @@ class ScriptTemplateFileConverter(ScriptFileConverter):
 
     meta = FileConverterMeta.load(__file__)
 
-    script = "c2x.sh"
-    required_bin = "c2x"
+    script = ""
+    required_bin = ""
 
     has_in_format_flags_or_options = False
     has_out_format_flags_or_options = False
