@@ -7,6 +7,7 @@ Base class and information for file format converters
 
 
 import abc
+import json
 import logging
 import os
 import subprocess
@@ -30,6 +31,12 @@ try:
     from werkzeug.exceptions import HTTPException
 except ImportError:
     HTTPException = None
+
+
+class FileConverterSetupException(ImportError):
+    """Exception class for problems occurring when setting up a FileConverter class
+    """
+    pass
 
 
 class FileConverterException(RuntimeError):
@@ -113,8 +120,23 @@ class FileConverterMeta:
         """Factory method to create a `FileConverterMeta` object for a converter by loading the `data.json` file
         contained in the same folder as the provided filename
         """
-        # TODO
-        return FileConverterMeta(id=0, name="", desc="", url="")
+        data_path = os.path.join(os.path.split(converter_path)[0], "data.json")
+        if not os.path.isfile(data_path):
+            raise FileConverterSetupException(f"Expected converter data file {data_path} does not exist")
+
+        try:
+            data: dict[str, Any] = json.load(open(data_path))
+        except json.JSONDecodeError as e:
+            raise FileConverterSetupException(f"Converter data file {data_path} could not be parsed. Error: {e}")
+
+        meta_kwargs: dict[str, str] = {}
+        try:
+            for key in "id", "name", "desc", "url":
+                meta_kwargs[key] = data[key]
+        except KeyError as e:
+            raise FileConverterSetupException(f"Converter data file {data_path} is missing required data. Error: {e}")
+
+        return FileConverterMeta(**meta_kwargs)
 
 
 if HTTPException is not None:
