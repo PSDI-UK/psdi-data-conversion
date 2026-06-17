@@ -1,9 +1,9 @@
 {
     "converter": {
         "id": null,
-        "name": "Template",
-        "desc": "Template converter plugin, including some example data for extra formats",
-        "url": "https://www.scm.com"
+        "name": "Example",
+        "desc": "Example converter plugin",
+        "url": "https://www.example.com"
     },
     "extra_formats": [
         {

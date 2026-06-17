@@ -1,1 +1,1 @@
-"""@file psdi_data_conversion/converters/template/__init__.py"""
+"""@file psdi_data_conversion/converters/example/__init__.py"""

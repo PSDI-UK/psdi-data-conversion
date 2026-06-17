@@ -1,0 +1,18 @@
+{
+    "converter": {
+        "id": null,
+        "name": "Template",
+        "desc": "Template converter plugin",
+        "url": ""
+    },
+    "extra_formats": [],
+    "supported_formats": [],
+    "in_only_formats": [],
+    "out_only_formats": [],
+    "supported_conversions": [],
+    "unsupported_conversions": [],
+    "in_flags": [],
+    "out_flags": [],
+    "in_options": [],
+    "out_options": []
+}
