@@ -76,9 +76,45 @@ class FileConverterSizeException(FileConverterAbortException):
 
 
 class FileConverterInputException(FileConverterException):
-    """Exception class to represent errors encountered with input parameters for the data conversion script.
+    """Exception class to represent errors encountered with any type of input.
     """
     pass
+
+
+class FileConverterInputFileException(FileConverterInputException):
+    """Exception class to represent errors encountered with the input file.
+    """
+    pass
+
+
+class FileConverterArgException(FileConverterInputException):
+    """Exception class to represent errors encountered with input arguments.
+    """
+    pass
+
+
+class FileConverterUnsupportedException(FileConverterInputException):
+    """Exception class to represent errors caused by an unsupported conversion being requested.
+    """
+    pass
+
+
+@dataclass
+class FileConverterMeta:
+    """Class containing meta information for a file converter
+    """
+    id: int
+    name: str
+    desc: str
+    url: str
+
+    @classmethod
+    def load(converter_path: str):
+        """Factory method to create a `FileConverterMeta` object for a converter by loading the `data.json` file
+        contained in the same folder as the provided filename
+        """
+        # TODO
+        return FileConverterMeta(id=0, name="", desc="", url="")
 
 
 if HTTPException is not None:
@@ -335,8 +371,8 @@ class FileConverter:
                 if os.path.exists(qualified_in_filename):
                     self.in_filename = qualified_in_filename
                 else:
-                    FileConverterInputException(f"Input file {self.in_filename} not found, either absolute or relative "
-                                                f"to {self.input_dir}")
+                    FileConverterInputFileException(f"Input file {self.in_filename} not found, either absolute or "
+                                                    f"relative to {self.input_dir}")
 
             # Create directory 'downloads' if not extant.
             if not os.path.exists(self.output_dir):
@@ -356,9 +392,9 @@ class FileConverter:
                                               self.from_format_info.id,
                                               self.to_format_info.id)
                 if not qual:
-                    raise FileConverterInputException(f"Conversion from {self.from_format_info.name} to "
-                                                      f"{self.to_format_info.name} "
-                                                      f"with {self.name} is not supported.", help=True)
+                    raise FileConverterUnsupportedException(f"Conversion from {self.from_format_info.name} to "
+                                                            f"{self.to_format_info.name} "
+                                                            f"with {self.name} is not supported.", help=True)
                 if qual.details:
                     msg = (":\nPotential data loss or extrapolation issues with the conversion from "
                            f"{self.from_format_info.name} to {self.to_format_info.name}:\n")
@@ -418,8 +454,8 @@ class FileConverter:
                 self._local_logger_level = const.DEFAULT_LOCAL_LOGGER_LEVEL
                 self._stdout_output_level = logging.ERROR
             else:
-                raise FileConverterInputException(f"ERROR: Unrecognised logging option: {self.log_mode}. Allowed "
-                                                  f"options are: {const.L_ALLOWED_LOG_MODES}")
+                raise FileConverterArgException(f"ERROR: Unrecognised logging option: {self.log_mode}. Allowed "
+                                                f"options are: {const.L_ALLOWED_LOG_MODES}")
         if self.log_mode in (const.LOG_FULL, const.LOG_FULL_FORCE):
             return self._setup_server_loggers()
 
@@ -595,7 +631,7 @@ class FileConverter:
         self._abort(message=self.err, logged=True)
 
     def _create_message(self) -> str:
-        """Create a log of options passed to the converter - this method should be overloaded to log any information
+        """Create a log of options passed to the converter - this method should be overridden to log any information
         unique to a specific converter.
         """
 
@@ -770,8 +806,8 @@ class ScriptFileConverter(FileConverter):
         # Check that all user-provided input passes security checks
         for user_args in [from_flags, to_flags, from_options, to_options]:
             if not string_is_safe(user_args):
-                raise FileConverterInputException(f"Provided argument '{user_args}' does not pass security check - it "
-                                                  f"must match the regex {SAFE_STRING_RE.pattern}.", help=True)
+                raise FileConverterArgException(f"Provided argument '{user_args}' does not pass security check - it "
+                                                f"must match the regex {SAFE_STRING_RE.pattern}.", help=True)
 
         return ['--' + self.to_format_info.name, self.in_filename, self.out_filename, from_flags, to_flags,
                 from_options, to_options]
