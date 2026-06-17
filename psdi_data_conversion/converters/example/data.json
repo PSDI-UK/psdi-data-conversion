@@ -3,7 +3,8 @@
         "id": null,
         "name": "Example",
         "desc": "Example converter plugin",
-        "url": "https://www.example.com"
+        "url": "https://www.example.com",
+        "supports_ambiguous_extensions": false
     },
     "extra_formats": [
         {

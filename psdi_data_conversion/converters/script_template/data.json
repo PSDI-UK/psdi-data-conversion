@@ -1,8 +1,8 @@
 {
     "converter": {
         "id": null,
-        "name": "Template",
-        "desc": "Template converter plugin",
+        "name": "ScriptTemplate",
+        "desc": "ScriptTemplate converter plugin",
         "url": "",
         "supports_ambiguous_extensions": false
     },
