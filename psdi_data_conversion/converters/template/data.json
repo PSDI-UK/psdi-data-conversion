@@ -4,7 +4,8 @@
         "name": "Template",
         "desc": "Template converter plugin",
         "url": "",
-        "supports_ambiguous_extensions": false
+        "supports_ambiguous_extensions": null,
+        "database_key_prefix": null
     },
     "extra_formats": [],
     "supported_formats": [],

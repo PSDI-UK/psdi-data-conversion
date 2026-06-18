@@ -4,7 +4,8 @@
         "name": "Example",
         "desc": "Example converter plugin",
         "url": "https://www.example.com",
-        "supports_ambiguous_extensions": false
+        "supports_ambiguous_extensions": null,
+        "database_key_prefix": null
     },
     "extra_formats": [
         {
