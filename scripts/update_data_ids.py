@@ -12,15 +12,20 @@ import json
 import logging
 from argparse import ArgumentParser
 from copy import deepcopy
-from itertools import product
 from typing import Any
 from uuid import uuid4
 
 from psdi_data_conversion import database as db
 
 L_DB_CONVERTER_PREFIXES = ["ob"]
-L_DB_ARG_SUFFIXES = [db.DB_IN_FLAGS_FORMATS_KEY_BASE, db.DB_OUT_FLAGS_FORMATS_KEY_BASE,
-                     db.DB_IN_OPTIONS_FORMATS_KEY_BASE, db.DB_OUT_OPTIONS_FORMATS_KEY_BASE]
+L_DB_ARG_SUFFIXES = [(db.DB_IN_FLAGS_KEY_BASE, db.DB_IN_FLAGS_FORMATS_KEY_BASE,
+                      db.DB_IN_FLAGS_ID_KEY_BASE),
+                     (db.DB_OUT_FLAGS_KEY_BASE, db.DB_OUT_FLAGS_FORMATS_KEY_BASE,
+                      db.DB_OUT_FLAGS_ID_KEY_BASE),
+                     (db.DB_IN_OPTIONS_KEY_BASE, db.DB_IN_OPTIONS_FORMATS_KEY_BASE,
+                      db.DB_IN_OPTIONS_ID_KEY_BASE),
+                     (db.DB_OUT_OPTIONS_KEY_BASE, db.DB_OUT_OPTIONS_FORMATS_KEY_BASE,
+                      db.DB_OUT_OPTIONS_ID_KEY_BASE)]
 
 logger = logging.getLogger(__name__)
 
@@ -79,22 +84,30 @@ def run_from_args(args):
     d_db_out = deepcopy(d_db_in)
 
     # Start by changing all format IDs to UUIDs, and keep a dict of the changes
-    d_id_changes: dict[int, int] = {}
+    d_id_changes: dict[str, dict[str, dict[int, int]]] = {}
 
-    for d_converter_info_in, d_converter_info_in in zip(d_db_in[db.DB_CONVERTERS_KEY], d_db_out[db.DB_CONVERTERS_KEY]):
-        id_in: int = d_converter_info_in[db.DB_ID_KEY]
-        id_out = uuid4().int
-        d_converter_info_in[db.DB_ID_KEY] = id_out
-        d_id_changes[id_in] = id_out
+    for prefix in L_DB_CONVERTER_PREFIXES:
 
-    # Now update the IDs wherever else they appear into the new IDs
-    # for prefix, suffix in product(L_DB_CONVERTER_PREFIXES, L_DB_ARG_SUFFIXES):
-    #     key = prefix + suffix
-    #     for d_arg_info_in, d_arg_info_out in zip(d_db_in[key], d_db_out[key]):
-    #         d_arg_info_out[db.DB_FORMAT_ID_KEY] = d_id_changes[d_arg_info_in[db.DB_FORMAT_ID_KEY]]
-    for d_conversion_info_in, d_conversion_info_out in zip(d_db_in[db.DB_CONVERTS_TO_KEY],
-                                                           d_db_out[db.DB_CONVERTS_TO_KEY]):
-        d_conversion_info_out[db.DB_CONV_ID_KEY] = d_id_changes[d_conversion_info_in[db.DB_CONV_ID_KEY]]
+        d_converter_id_changes: dict[str, dict[int, int]] = {}
+        d_id_changes[prefix] = d_converter_id_changes
+
+        for arg_suffix, format_suffix, id_key_suffix in L_DB_ARG_SUFFIXES:
+
+            d_arg_id_changes: dict[int, int] = {}
+            d_converter_id_changes[arg_suffix] = d_arg_id_changes
+
+            arg_key = prefix + arg_suffix
+            format_key = prefix + format_suffix
+            id_key = prefix + id_key_suffix
+
+            for d_arg_info_in, d_arg_info_out in zip(d_db_in[arg_key], d_db_out[arg_key]):
+                id_in: int = d_arg_info_in[db.DB_ID_KEY]
+                id_out = uuid4().int
+                d_arg_info_out[db.DB_ID_KEY] = id_out
+                d_arg_id_changes[id_in] = id_out
+
+            for d_format_info_in, d_format_info_out in zip(d_db_in[format_key], d_db_out[format_key]):
+                d_format_info_out[id_key] = d_arg_id_changes[d_format_info_in[id_key]]
 
     # Write the updated database file and ID changes dict
     json.dump(d_db_out, open(args.out, "w"))
