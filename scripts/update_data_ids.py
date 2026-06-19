@@ -5,7 +5,7 @@
 
 Created 2026-06-19 by Bryan Gillis.
 
-Script to convert format IDs in the database to new UUIDs
+Script to convert converter IDs in the database to new UUIDs
 """
 
 import json
@@ -81,21 +81,20 @@ def run_from_args(args):
     # Start by changing all format IDs to UUIDs, and keep a dict of the changes
     d_id_changes: dict[int, int] = {}
 
-    for d_format_info_in, d_format_info_out in zip(d_db_in[db.DB_FORMATS_KEY], d_db_out[db.DB_FORMATS_KEY]):
-        id_in: int = d_format_info_in[db.DB_ID_KEY]
+    for d_converter_info_in, d_converter_info_in in zip(d_db_in[db.DB_CONVERTERS_KEY], d_db_out[db.DB_CONVERTERS_KEY]):
+        id_in: int = d_converter_info_in[db.DB_ID_KEY]
         id_out = uuid4().int
-        d_format_info_out[db.DB_ID_KEY] = id_out
+        d_converter_info_in[db.DB_ID_KEY] = id_out
         d_id_changes[id_in] = id_out
 
     # Now update the IDs wherever else they appear into the new IDs
-    for prefix, suffix in product(L_DB_CONVERTER_PREFIXES, L_DB_ARG_SUFFIXES):
-        key = prefix + suffix
-        for d_arg_info_in, d_arg_info_out in zip(d_db_in[key], d_db_out[key]):
-            d_arg_info_out[db.DB_FORMAT_ID_KEY] = d_id_changes[d_arg_info_in[db.DB_FORMAT_ID_KEY]]
+    # for prefix, suffix in product(L_DB_CONVERTER_PREFIXES, L_DB_ARG_SUFFIXES):
+    #     key = prefix + suffix
+    #     for d_arg_info_in, d_arg_info_out in zip(d_db_in[key], d_db_out[key]):
+    #         d_arg_info_out[db.DB_FORMAT_ID_KEY] = d_id_changes[d_arg_info_in[db.DB_FORMAT_ID_KEY]]
     for d_conversion_info_in, d_conversion_info_out in zip(d_db_in[db.DB_CONVERTS_TO_KEY],
                                                            d_db_out[db.DB_CONVERTS_TO_KEY]):
-        d_conversion_info_out[db.DB_IN_ID_KEY] = d_id_changes[d_conversion_info_in[db.DB_IN_ID_KEY]]
-        d_conversion_info_out[db.DB_OUT_ID_KEY] = d_id_changes[d_conversion_info_in[db.DB_OUT_ID_KEY]]
+        d_conversion_info_out[db.DB_CONV_ID_KEY] = d_id_changes[d_conversion_info_in[db.DB_CONV_ID_KEY]]
 
     # Write the updated database file and ID changes dict
     json.dump(d_db_out, open(args.out, "w"))
