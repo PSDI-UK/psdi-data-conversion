@@ -85,7 +85,7 @@ def run_from_args(args):
         id_in: int = d_format_info_in[db.DB_ID_KEY]
         id_out = uuid4().int
         d_format_info_out[db.DB_ID_KEY] = id_out
-        d_id_changes[id_in] = d_id_changes[id_out]
+        d_id_changes[id_in] = id_out
 
     # Now update the IDs wherever else they appear into the new IDs
     for prefix, suffix in product(L_DB_CONVERTER_PREFIXES, L_DB_ARG_SUFFIXES):
