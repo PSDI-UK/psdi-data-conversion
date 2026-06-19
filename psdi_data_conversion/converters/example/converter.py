@@ -23,7 +23,6 @@ class ExampleFileConverter(FileConverter):
     meta = FileConverterMeta.load(__file__)
     has_in_format_flags_or_options = True
     has_out_format_flags_or_options = True
-    database_key_prefix = "ob"
 
     allowed_flags = (("--example-flag-1",
                       "(Example converter only). Help text for example flag 1."),
@@ -41,7 +40,7 @@ class ExampleFileConverter(FileConverter):
         pass
 
     def _create_message(self) -> str:
-        """Optional override: Create a lot of options passed to the converter"""
+        """Optional override: Create a log of options passed to the converter"""
         return ""
 
 

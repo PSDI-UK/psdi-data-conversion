@@ -21,7 +21,7 @@ class TemplateFileConverter(FileConverter):
         pass
 
     def _create_message(self) -> str:
-        """Optional override: Create a lot of options passed to the converter"""
+        """Optional override: Create a log of options passed to the converter"""
         return ""
 
 

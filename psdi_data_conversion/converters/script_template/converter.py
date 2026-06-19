@@ -20,12 +20,8 @@ class ScriptTemplateFileConverter(ScriptFileConverter):
     allowed_flags = ()
     allowed_options = ()
 
-    def _convert(self):
-        """Mandatory override: Perform the conversion"""
-        pass
-
     def _create_message(self) -> str:
-        """Optional override: Create a lot of options passed to the converter"""
+        """Optional override: Create a log of options passed to the converter"""
         return ""
 
 
