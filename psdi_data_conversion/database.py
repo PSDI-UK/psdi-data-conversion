@@ -316,7 +316,7 @@ class ConverterInfo:
                 f"Unrecognised subclass passed to `_create_d_format_args`: {subclass}")
 
         d_format_args: dict[str | int, set[ArgInfo]] = {}
-        l_parent_format_info = self.parent.l_format_info
+        d_parent_format_info_from_id = self.parent.d_format_info_from_id
 
         # If the converter doesn't provide argument info, set l_arg_info to an empty list so it can be iterated in
         # the next step, rather than None
@@ -332,7 +332,7 @@ class ConverterInfo:
                 s_formats = arg_info.s_in_formats
             else:
                 s_formats = arg_info.s_out_formats
-            l_format_info = [l_parent_format_info[format_id] for format_id in s_formats]
+            l_format_info = [d_parent_format_info_from_id[format_id] for format_id in s_formats]
             for format_info in l_format_info:
                 format_name = format_info.name
                 format_id = format_info.id
@@ -974,7 +974,9 @@ class DataConversionDatabase:
         # Placeholders for properties that are generated when needed
         self._d_converter_info: dict[str, ConverterInfo] | None = None
         self._l_converter_info: list[ConverterInfo] | None = None
-        self._d_format_info: dict[str, FormatInfo] | None = None
+        self._d_format_info_from_id: dict[int, FormatInfo] | None = None
+        self._d_format_info_from_name: dict[str, FormatInfo] | None = None
+        self._d_format_info: dict[int | str, list[FormatInfo]] | None = None
         self._l_format_info: list[FormatInfo] | None = None
         self._conversions_table: ConversionsTable | None = None
 
@@ -1013,17 +1015,35 @@ class DataConversionDatabase:
         return self._l_converter_info
 
     @property
-    def d_format_info(self) -> dict[str, list[FormatInfo]]:
-        """Generate the format info dict when needed
+    def d_format_info_from_name(self) -> dict[str, list[FormatInfo]]:
+        """Generate the format info from format name dict when needed
         """
-        if self._d_format_info is None:
+        if self._d_format_info_from_name is None:
             self._init_formats_and_conversions()
 
-        return self._d_format_info
+        return self._d_format_info_from_name
 
     @property
-    def l_format_info(self) -> list[FormatInfo | None]:
-        """Generate the format info list (indexed by ID) when needed
+    def d_format_info_from_id(self) -> dict[int, FormatInfo]:
+        """Generate the format info from format ID dict when needed
+        """
+        if self._d_format_info_from_id is None:
+            self._init_formats_and_conversions()
+
+        return self._d_format_info_from_id
+
+    @property
+    def d_format_info(self) -> dict[int | str, list[FormatInfo]]:
+        """Generate the format info dict when needed
+        """
+        if self._d_format_info_from_name is None:
+            self._init_formats_and_conversions()
+
+        return self._d_format_info_from_name
+
+    @property
+    def l_format_info(self) -> list[FormatInfo]:
+        """Generate the format info list when needed
         """
         if self._l_format_info is None:
             self._init_formats_and_conversions()
@@ -1045,9 +1065,8 @@ class DataConversionDatabase:
 
         # Start by initializing the list of conversions
 
-        # Pre-size a list based on the maximum ID plus 1 (since IDs are 1-indexed)
-        max_id: int = max([x[DB_ID_KEY] for x in self.formats])
-        self._l_format_info: list[FormatInfo | None] = [None] * (max_id+1)
+        # Make the dict of format info keyed by ID
+        self._d_format_info_from_id: dict[int, FormatInfo] = {}
 
         for d_single_format_info in self.formats:
             lc_name: str = d_single_format_info[DB_FORMAT_EXT_KEY]
@@ -1056,7 +1075,7 @@ class DataConversionDatabase:
                                      parent=self,
                                      d_single_format_info=d_single_format_info)
 
-            self._l_format_info[format_info.id] = format_info
+            self._d_format_info_from_id[format_info.id] = format_info
 
         # Initialize the conversions table now
         self._conversions_table = ConversionsTable(l_converts_to=self.converts_to,
@@ -1067,33 +1086,29 @@ class DataConversionDatabase:
         # Get a slice of the table which only includes supported converters
         supported_graph = self._conversions_table.supported_graph
 
-        for format_id, format_info in enumerate(self._l_format_info):
-            if not format_info:
-                continue
+        for format_id, format_info in self._d_format_info_from_id.items():
+            if not format_info or supported_graph.degree(format_id) == 0:
+                # The format isn't supported for any conversions, so remove it from the dict
+                del self._d_format_info_from_id[format_id]
 
-            # Check if the format is supported as the input or output format for any conversion
-            if supported_graph.degree(format_id) > 0:
-                continue
+        # Now create the formats from name dict
+        self._d_format_info_from_name: dict[str, list[FormatInfo]] = {}
 
-            # If we get here, the format isn't supported for any conversions, so remove it from our list
-            self._l_format_info[format_id] = None
-
-        # Now create the formats dict, with only the pruned list of formats
-        self._d_format_info: dict[str, list[FormatInfo]] = {}
-
-        for format_info in self.l_format_info:
-
-            if not format_info:
-                continue
+        for format_info in self._d_format_info_from_id.values():
 
             lc_name = format_info.name.lower()
 
             # Each name may correspond to multiple formats, so we use a list for each entry to list all possible
             # formats for each name
-            if lc_name not in self._d_format_info:
-                self._d_format_info[lc_name] = []
+            if lc_name not in self._d_format_info_from_name:
+                self._d_format_info_from_name[lc_name] = []
 
-            self._d_format_info[lc_name].append(format_info)
+            self._d_format_info_from_name[lc_name].append(format_info)
+
+        # Finally, create a combined dict, keyed by both ID and name, and a list of format infos (with arbitrary index)
+        self._d_format_info = {**self._d_format_info_from_name,
+                               **{key: [val] for key, val in self._d_format_info_from_id.items()}}
+        self._l_format_info = [*self._d_format_info_from_id.values()]
 
     def get_converter_info(self, converter_name_or_id: str | int) -> ConverterInfo:
         """Get a converter's info from either its name or ID
@@ -1171,7 +1186,7 @@ class DataConversionDatabase:
                 format_name_or_id = l_name_segments[0]
                 which = int(l_name_segments[1])
 
-            l_possible_format_info = self.d_format_info.get(format_name_or_id, [])
+            l_possible_format_info = self.d_format_info_from_name.get(format_name_or_id, [])
 
             if which == "all":
                 return l_possible_format_info
@@ -1196,7 +1211,7 @@ class DataConversionDatabase:
 
         elif isinstance(format_name_or_id, int):
             try:
-                format_info = self.l_format_info[format_name_or_id]
+                format_info = self.d_format_info_from_id[format_name_or_id]
             except IndexError:
                 if return_as_list:
                     return []
