@@ -10,6 +10,7 @@ from __future__ import annotations
 import json
 import os
 import sys
+import warnings
 from copy import copy
 from dataclasses import dataclass, field
 from functools import lru_cache
@@ -517,7 +518,7 @@ class FormatInfo:
         """A unique name for this format which can be used to distinguish it from others which share the same extension,
         by appending the name of each with a unique index"""
         if self._disambiguated_name is None:
-            l_formats_with_same_name = [x for x in self.parent.l_format_info
+            l_formats_with_same_name = [x for x in self.parent.l_unsorted_format_info
                                         if x and x._lower_name == self._lower_name]
             if len(l_formats_with_same_name) == 1:
                 self._disambiguated_name = self._lower_name
@@ -669,7 +670,7 @@ class ConversionsTable:
                              directed=True,
                              # Each vertex stores the disambiguated name of the format
                              vertex_attrs={DB_NAME_KEY: [x.disambiguated_name if x is not None else None
-                                                         for x in parent.l_format_info]},
+                                                         for x in parent.l_unsorted_format_info]},
                              edges=[(x[DB_IN_ID_KEY], x[DB_OUT_ID_KEY]) for x in l_conversions],
                              # Each edge stores the id and name of the converter used for the conversion
                              edge_attrs={DB_CONV_ID_KEY: [x[DB_CONV_ID_KEY] for x in l_conversions],
@@ -977,15 +978,15 @@ class DataConversionDatabase:
         self._d_format_info_from_id: dict[int, FormatInfo] | None = None
         self._d_format_info_from_name: dict[str, FormatInfo] | None = None
         self._d_format_info: dict[int | str, list[FormatInfo]] | None = None
-        self._l_format_info: list[FormatInfo] | None = None
+        self._l_unsorted_format_info: list[FormatInfo] | None = None
         self._conversions_table: ConversionsTable | None = None
 
     @property
-    def d_converter_info(self) -> dict[str, ConverterInfo]:
-        """Generate the converter info dict (indexed by name) when needed
+    def d_converter_info(self) -> dict[str | int, ConverterInfo]:
+        """Generate the converter info dict (indexed by name and ID) when needed
         """
         if self._d_converter_info is None:
-            self._d_converter_info: dict[str, ConverterInfo] = {}
+            self._d_converter_info: dict[str | int, ConverterInfo] = {}
             for d_single_converter_info in self.converters:
                 name: str = regularize_name(d_single_converter_info[DB_NAME_KEY])
                 if name in self._d_converter_info:
@@ -993,26 +994,14 @@ class DataConversionDatabase:
                                    " will be used.")
                     continue
 
-                self._d_converter_info[name] = ConverterInfo(name=name,
-                                                             parent=self,
-                                                             d_single_converter_info=d_single_converter_info,
-                                                             d_data=self._d_data)
+                single_converter_info = ConverterInfo(name=name,
+                                                      parent=self,
+                                                      d_single_converter_info=d_single_converter_info,
+                                                      d_data=self._d_data)
+                self._d_converter_info[name] = single_converter_info
+                self._d_converter_info[single_converter_info.id] = single_converter_info
+
         return self._d_converter_info
-
-    @property
-    def l_converter_info(self) -> list[ConverterInfo | None]:
-        """Generate the converter info list (indexed by ID) when needed
-        """
-        if self._l_converter_info is None:
-            # Pre-size a list based on the maximum ID plus 1 (since IDs are 1-indexed)
-            max_id: int = max([x[DB_ID_KEY] for x in self.converters])
-            self._l_converter_info: list[ConverterInfo | None] = [None] * (max_id+1)
-
-            # Fill the list with all converters in the dict
-            for single_converter_info in self.d_converter_info.values():
-                self._l_converter_info[single_converter_info.id] = single_converter_info
-
-        return self._l_converter_info
 
     @property
     def d_format_info_from_name(self) -> dict[str, list[FormatInfo]]:
@@ -1033,22 +1022,31 @@ class DataConversionDatabase:
         return self._d_format_info_from_id
 
     @property
-    def d_format_info(self) -> dict[int | str, list[FormatInfo]]:
-        """Generate the format info dict when needed
-        """
-        if self._d_format_info_from_name is None:
-            self._init_formats_and_conversions()
-
-        return self._d_format_info_from_name
+    def d_format_info(self) -> dict[str, list[FormatInfo]]:
+        """DEPRECATED: Get a dict of format info keyed by format name"""
+        warnings.warn("`d_format_info` is deprecated as of version 0.4.0 and due to be removed in a future release. " +
+                      "To get a FormatInfo from the format name (the previous functionality of this), use " +
+                      "`d_format_info_from_name`. To get a FormatInfo from the format UUID, use " +
+                      "`d_format_info_from_id`.", DeprecationWarning)
+        return self.d_format_info_from_name
 
     @property
-    def l_format_info(self) -> list[FormatInfo]:
-        """Generate the format info list when needed
+    def l_unsorted_format_info(self) -> list[FormatInfo]:
+        """Generate the unsorted format info list when needed
         """
-        if self._l_format_info is None:
+        if self._l_unsorted_format_info is None:
             self._init_formats_and_conversions()
 
-        return self._l_format_info
+        return self._l_unsorted_format_info
+
+    @property
+    def l_format_info(self) -> dict[str, list[FormatInfo]]:
+        """DEPRECATED: Get a list of format info keyed by ID"""
+        deprecation_msg = ("`l_format_info` is deprecated as of version 0.4.0 and due to be removed in a future "
+                           "release. To get a FormatInfo from the format UUID, use `d_format_info_from_id`. To get an "
+                           "unsorted list of FormatInfos, use `l_unsorted_format_info`.")
+        warnings.warn(deprecation_msg, DeprecationWarning)
+        raise AttributeError(deprecation_msg)
 
     @property
     def conversions_table(self) -> ConversionsTable:
@@ -1108,7 +1106,7 @@ class DataConversionDatabase:
         # Finally, create a combined dict, keyed by both ID and name, and a list of format infos (with arbitrary index)
         self._d_format_info = {**self._d_format_info_from_name,
                                **{key: [val] for key, val in self._d_format_info_from_id.items()}}
-        self._l_format_info = [*self._d_format_info_from_id.values()]
+        self._l_unsorted_format_info = [*self._d_format_info_from_id.values()]
 
     def get_converter_info(self, converter_name_or_id: str | int) -> ConverterInfo:
         """Get a converter's info from either its name or ID
@@ -1120,7 +1118,7 @@ class DataConversionDatabase:
                 raise FileConverterDatabaseException(f"Converter name '{converter_name_or_id}' not recognised",
                                                      help=True)
         elif isinstance(converter_name_or_id, int):
-            return self.l_converter_info[converter_name_or_id]
+            return self.d_converter_info[converter_name_or_id]
         else:
             raise FileConverterDatabaseException(f"Invalid key passed to `get_converter_info`: '{converter_name_or_id}'"
                                                  f" of type '{type(converter_name_or_id)}'. Type must be `str` or "
