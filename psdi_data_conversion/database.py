@@ -1012,7 +1012,7 @@ class DataConversionDatabase:
         if self._l_converter_info is None:
             # Pre-size a list based on the maximum ID plus 1 (since IDs are 1-indexed)
             max_id: int = max([x[DB_ID_KEY] for x in self.converters])
-            self._l_converter_info: list[ConverterInfo | None] = [None] * (max_id+1)
+            self._l_converter_info: list[ConverterInfo] = [None] * (max_id+1)
 
             # Fill the list with all converters in the dict
             for single_converter_info in self.d_converter_info.values():
@@ -1279,7 +1279,7 @@ def get_converter_info(name: str) -> ConverterInfo: ...
 
 
 @overload
-def get_converter_info(name: None = None) -> list[ConverterInfo]: ...
+def get_converter_info() -> list[ConverterInfo]: ...
 
 
 def get_converter_info(name: str | None = None) -> ConverterInfo | list[ConverterInfo]:
