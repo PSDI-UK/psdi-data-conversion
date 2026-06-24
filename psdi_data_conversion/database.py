@@ -1127,6 +1127,10 @@ class DataConversionDatabase:
 
             self._d_format_info_from_id[format_info.id] = format_info
 
+        # Create a temporary version of the unsorted format info list. We'll create a pruned version later, but the
+        # unpruned version is needed to create the conversions table, which is needed before we can prune it
+        self._l_unsorted_format_info = [*self._d_format_info_from_id.values()]
+
         # Initialize the conversions table now
         self._conversions_table = ConversionsTable(l_converts_to=self.converts_to,
                                                    parent=self)
@@ -1191,14 +1195,14 @@ class DataConversionDatabase:
 
         if isinstance(converter_name_or_id, str):
             try:
-                return self.d_converter_info_from_name[converter_name_or_id]
+                return self.d_converter_info_from_name[regularize_name(converter_name_or_id)]
             except KeyError:
                 raise FileConverterDatabaseException(f"Converter name '{converter_name_or_id}' not found in database. "
                                                      "Known converter names are (case and space-insensitive):" +
                                                      ", ".join([x.pretty_name for x in self.l_unsorted_converter_info]),
                                                      help=True)
         elif isinstance(converter_name_or_id, int):
-            return self.d_converter_info_from_name[converter_name_or_id]
+            return self.d_converter_info_from_id[converter_name_or_id]
         elif isinstance(converter_name_or_id, ConverterInfo):
             # Silently return if it's already a ConverterInfo
             return converter_name_or_id
