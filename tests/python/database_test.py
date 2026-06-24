@@ -36,7 +36,7 @@ def test_converter_info():
 
     database = get_database()
 
-    l_converter_info = [x for x in get_converter_info() if x is not None]
+    l_converter_info = get_converter_info()
     l_converter_names = [x.name for x in l_converter_info]
 
     # Check that all supported converters are in this list

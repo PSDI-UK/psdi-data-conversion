@@ -981,50 +981,79 @@ class DataConversionDatabase:
         self.converts_to: list[dict[str, bool | int | str | None]] = d_data[DB_CONVERTS_TO_KEY]
 
         # Placeholders for properties that are generated when needed
-        self._d_converter_info: dict[str, ConverterInfo] | None = None
-        self._l_converter_info: list[ConverterInfo] | None = None
+        self._d_converter_info_from_name: dict[str, ConverterInfo] | None = None
+        self._d_converter_info_from_id: dict[int, ConverterInfo] | None = None
+        self._l_unsorted_converter_info: list[ConverterInfo] | None = None
         self._d_format_info_from_id: dict[int, FormatInfo] | None = None
         self._d_format_info_from_name: dict[str, FormatInfo] | None = None
-        self._d_format_info: dict[int | str, list[FormatInfo]] | None = None
         self._l_unsorted_format_info: list[FormatInfo] | None = None
         self._conversions_table: ConversionsTable | None = None
 
-    @property
-    def d_converter_info(self) -> dict[str | int, ConverterInfo]:
-        """Generate the converter info dict (indexed by name and ID) when needed
+    def _init_converter_info(self):
+        """Initialises the private dicts and lists for converter info
         """
-        if self._d_converter_info is None:
-            self._d_converter_info: dict[str | int, ConverterInfo] = {}
-            for d_single_converter_info in self.converters:
-                name: str = regularize_name(d_single_converter_info[DB_NAME_KEY])
-                if name in self._d_converter_info:
-                    logger.warning(f"Converter '{name}' appears more than once in the database. Only the first instance"
-                                   " will be used.")
-                    continue
+        self._d_converter_info_from_name: dict[str, ConverterInfo] = {}
+        self._d_converter_info_from_id: dict[int, ConverterInfo] = {}
+        self._l_unsorted_converter_info: list[ConverterInfo] = []
+        for d_single_converter_info in self.converters:
+            name: str = regularize_name(d_single_converter_info[DB_NAME_KEY])
+            if name in self._d_converter_info_from_name:
+                logger.warning(f"Converter '{name}' appears more than once in the database. Only the first instance"
+                               " will be used.")
+                continue
 
-                single_converter_info = ConverterInfo(name=name,
-                                                      parent=self,
-                                                      d_single_converter_info=d_single_converter_info,
-                                                      d_data=self._d_data)
-                self._d_converter_info[name] = single_converter_info
-                self._d_converter_info[single_converter_info.id] = single_converter_info
-
-        return self._d_converter_info
+            single_converter_info = ConverterInfo(name=name,
+                                                  parent=self,
+                                                  d_single_converter_info=d_single_converter_info,
+                                                  d_data=self._d_data)
+            self._d_converter_info_from_name[name] = single_converter_info
+            self._d_converter_info_from_id[single_converter_info.id] = single_converter_info
+            self._l_unsorted_converter_info.append(single_converter_info)
 
     @property
-    def l_converter_info(self) -> list[ConverterInfo | None]:
-        """Generate the converter info list (indexed by ID) when needed
+    def d_converter_info_from_name(self) -> dict[str, ConverterInfo]:
+        """Generate the converter info dict (indexed by name) when needed
         """
-        if self._l_converter_info is None:
-            # Pre-size a list based on the maximum ID plus 1 (since IDs are 1-indexed)
-            max_id: int = max([x[DB_ID_KEY] for x in self.converters])
-            self._l_converter_info: list[ConverterInfo] = [None] * (max_id+1)
+        if self._d_converter_info_from_name is None:
+            self._init_converter_info()
 
-            # Fill the list with all converters in the dict
-            for single_converter_info in self.d_converter_info.values():
-                self._l_converter_info[single_converter_info.id] = single_converter_info
+        return self._d_converter_info_from_name
 
-        return self._l_converter_info
+    @property
+    def d_converter_info_from_id(self) -> dict[int, ConverterInfo]:
+        """Generate the converter info dict (indexed by ID) when needed
+        """
+        if self._d_converter_info_from_id is None:
+            self._init_converter_info()
+
+        return self._d_converter_info_from_id
+
+    @property
+    def d_converter_info(self) -> dict[str, ConverterInfo]:
+        """DEPRECATED: Get a dict of converter info keyed by name"""
+        warnings.warn("`d_converter_info` is deprecated as of version 0.4.0 and due to be removed in a future release. "
+                      "To get a ConverterInfo from the converter name (the previous functionality of this), use "
+                      "`d_converter_info_from_name`. To get a FormatInfo from the format UUID, use "
+                      "`d_converter_info_from_id`.", DeprecationWarning)
+        return self.d_converter_info_from_name
+
+    @property
+    def l_unsorted_converter_info(self) -> list[ConverterInfo]:
+        """Generate the unsorted converter info list when needed
+        """
+        if self._l_unsorted_converter_info is None:
+            self._init_converter_info()
+
+        return self._l_unsorted_converter_info
+
+    @property
+    def l_converter_info(self):
+        """DEPRECATED: Get a list of converter info keyed by ID"""
+        deprecation_msg = ("`l_converter_info` is deprecated as of version 0.4.0 and due to be removed in a future "
+                           "release. To get a ConverterInfo from the format UUID, use `d_converter_info_from_id`. To "
+                           "get an unsorted list of ConverterInfos, use `l_unsorted_converter_info`.")
+        warnings.warn(deprecation_msg, DeprecationWarning)
+        raise AttributeError(deprecation_msg)
 
     @property
     def d_format_info_from_name(self) -> dict[str, list[FormatInfo]]:
@@ -1047,9 +1076,9 @@ class DataConversionDatabase:
     @property
     def d_format_info(self) -> dict[str, list[FormatInfo]]:
         """DEPRECATED: Get a dict of format info keyed by format name"""
-        warnings.warn("`d_format_info` is deprecated as of version 0.4.0 and due to be removed in a future release. " +
-                      "To get a FormatInfo from the format name (the previous functionality of this), use " +
-                      "`d_format_info_from_name`. To get a FormatInfo from the format UUID, use " +
+        warnings.warn("`d_format_info` is deprecated as of version 0.4.0 and due to be removed in a future release. "
+                      "To get a FormatInfo from the format name (the previous functionality of this), use "
+                      "`d_format_info_from_name`. To get a FormatInfo from the format UUID, use "
                       "`d_format_info_from_id`.", DeprecationWarning)
         return self.d_format_info_from_name
 
@@ -1063,7 +1092,7 @@ class DataConversionDatabase:
         return self._l_unsorted_format_info
 
     @property
-    def l_format_info(self) -> dict[str, list[FormatInfo]]:
+    def l_format_info(self):
         """DEPRECATED: Get a list of format info keyed by ID"""
         deprecation_msg = ("`l_format_info` is deprecated as of version 0.4.0 and due to be removed in a future "
                            "release. To get a FormatInfo from the format UUID, use `d_format_info_from_id`. To get an "
@@ -1126,22 +1155,55 @@ class DataConversionDatabase:
 
             self._d_format_info_from_name[lc_name].append(format_info)
 
-        # Finally, create a combined dict, keyed by both ID and name, and a list of format infos (with arbitrary index)
-        self._d_format_info = {**self._d_format_info_from_name,
-                               **{key: [val] for key, val in self._d_format_info_from_id.items()}}
+        # Finally, create a list of format infos (with arbitrary index)
         self._l_unsorted_format_info = [*self._d_format_info_from_id.values()]
 
-    def get_converter_info(self, converter_name_or_id: str | int) -> ConverterInfo:
-        """Get a converter's info from either its name or ID
+    @overload
+    def get_converter_info(self, converter_name_or_id: str | int | ConverterInfo) -> ConverterInfo: ...
+
+    @overload
+    def get_converter_info(self, converter_name_or_id: None) -> list[ConverterInfo]: ...
+
+    @overload
+    def get_converter_info(self) -> list[ConverterInfo]: ...
+
+    def get_converter_info(self, converter_name_or_id: str | int | ConverterInfo | None = None) -> (
+            ConverterInfo | list[ConverterInfo]):
+        """Gets the information on converters or a given converter stored in the database
+
+        Parameters
+        ----------
+        converter_name_or_id : str | int | ConverterInfo | None
+            The name or UUID of the converter to get info for. Default None, which results in a list being returned of
+            the info for all converters in the database
+
+        Returns
+        -------
+        ConverterInfo | list[ConverterInfo]
+            If `converter_name_or_id` is provided, will return a single `ConverterInfo` (or raise an exception if the
+            name is invalid). If not provided, a list of all `ConverterInfo` objects in the database will be returned
+
+        Raises
+        ------
+        FileConverterDatabaseException
+        If `name` is provided but does not match the name of a converter in the database
         """
+
         if isinstance(converter_name_or_id, str):
             try:
-                return self.d_converter_info[converter_name_or_id]
+                return self.d_converter_info_from_name[converter_name_or_id]
             except KeyError:
-                raise FileConverterDatabaseException(f"Converter name '{converter_name_or_id}' not recognised",
+                raise FileConverterDatabaseException(f"Converter name '{converter_name_or_id}' not found in database. "
+                                                     "Known converter names are (case and space-insensitive):" +
+                                                     ", ".join([x.pretty_name for x in self.l_unsorted_converter_info]),
                                                      help=True)
         elif isinstance(converter_name_or_id, int):
-            return self.d_converter_info[converter_name_or_id]
+            return self.d_converter_info_from_name[converter_name_or_id]
+        elif isinstance(converter_name_or_id, ConverterInfo):
+            # Silently return if it's already a ConverterInfo
+            return converter_name_or_id
+        elif converter_name_or_id is None:
+            return self.l_unsorted_converter_info
         else:
             raise FileConverterDatabaseException(f"Invalid key passed to `get_converter_info`: '{converter_name_or_id}'"
                                                  f" of type '{type(converter_name_or_id)}'. Type must be `str` or "
@@ -1303,28 +1365,32 @@ def get_database() -> DataConversionDatabase:
 
 
 @overload
-def get_converter_info(name: str) -> ConverterInfo: ...
+def get_converter_info(converter_name_or_id: str | int | ConverterInfo) -> ConverterInfo: ...
+
+
+@overload
+def get_converter_info(converter_name_or_id: None) -> list[ConverterInfo]: ...
 
 
 @overload
 def get_converter_info() -> list[ConverterInfo]: ...
 
 
-def get_converter_info(name: str | None = None) -> ConverterInfo | list[ConverterInfo]:
+def get_converter_info(converter_name_or_id: str | int | ConverterInfo | None = None) -> (
+        ConverterInfo | list[ConverterInfo]):
     """Gets the information on converters or a given converter stored in the database
 
     Parameters
     ----------
-    name : str | None
-        The name of the converter to get info for. Default None, which results in a list being returned of the info for
-        all converters in the database
+    converter_name_or_id : str | int | ConverterInfo | None
+        The name or UUID of the converter to get info for. Default None, which results in a list being returned of the
+        info for all converters in the database
 
     Returns
     -------
     ConverterInfo | list[ConverterInfo]
-        If `name` is provided, will return a single `ConverterInfo` (or raise an exception if the name is invalid). If
-        not provided, a list of all `ConverterInfo` objects in the database will be returned
-
+        If `converter_name_or_id` is provided, will return a single `ConverterInfo` (or raise an exception if the name
+        is invalid). If not provided, a list of all `ConverterInfo` objects in the database will be returned
 
     Raises
     ------
@@ -1332,20 +1398,7 @@ def get_converter_info(name: str | None = None) -> ConverterInfo | list[Converte
         If `name` is provided but does not match the name of a converter in the database
     """
 
-    database = get_database()
-    if name is None:
-        return database.l_converter_info
-
-    regularized_name = regularize_name(name)
-    d_converter_info = database.d_converter_info
-
-    if regularized_name not in d_converter_info:
-        raise FileConverterDatabaseException(f"Converter name '{name}' not found in database. Known converter names " +
-                                             "are (case and space-insensitive):" +
-                                             ", ".join([x.pretty_name for x in database.l_converter_info]),
-                                             help=True)
-
-    return d_converter_info[regularized_name]
+    return get_database().get_converter_info(converter_name_or_id)
 
 
 @overload
