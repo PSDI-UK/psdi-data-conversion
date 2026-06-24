@@ -1511,8 +1511,9 @@ def get_in_format_args(converter_name: str,
 
     Returns
     -------
-    tuple[set[FlagInfo], set[OptionInfo]]
-        A list of info for the allowed flags, and a set of info for the allowed options
+    tuple[list[FlagInfo], list[OptionInfo]]
+        A list of info for the allowed flags, and a set of info for the allowed options. Each list is sorted by the ID
+        of the flag or option.
     """
 
     converter_info = get_converter_info(converter_name)
@@ -1539,8 +1540,9 @@ def get_out_format_args(converter_name: str,
 
     Returns
     -------
-    tuple[set[FlagInfo], set[OptionInfo]]
-        A list of info for the allowed flags, and a set of info for the allowed options
+    tuple[list[FlagInfo], list[OptionInfo]]
+        A list of info for the allowed flags, and a set of info for the allowed options. Each list is sorted by the ID
+        of the flag or option.
     """
 
     converter_info = get_converter_info(converter_name)

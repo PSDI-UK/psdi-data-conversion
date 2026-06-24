@@ -1,5 +1,11 @@
 # Changelog for PSDI Data Conversion
 
+## Since v0.3.23
+
+### Documentation Changes
+
+- Fixed incorrect output type in documentation for database functions `get_in_format_args` and `get_out_format_args`
+
 ## v0.3.23
 
 ### Bugfixes
