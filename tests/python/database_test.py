@@ -8,7 +8,7 @@ Unit tests relating to using the database
 import pytest
 
 from psdi_data_conversion import constants as const
-from psdi_data_conversion.converter import L_REGISTERED_CONVERTERS
+from psdi_data_conversion.converter import L_SUPPORTED_CONVERTERS
 from psdi_data_conversion.converters.atomsk import CONVERTER_ATO
 from psdi_data_conversion.converters.c2x import CONVERTER_C2X
 from psdi_data_conversion.converters.openbabel import CONVERTER_OB
@@ -36,9 +36,21 @@ def test_converter_info():
 
     database = get_database()
 
-    for name in L_REGISTERED_CONVERTERS:
+    l_converter_info = [x for x in get_converter_info() if x is not None]
+    l_converter_names = [x.name for x in l_converter_info]
 
-        converter_info = get_converter_info(name)
+    # Check that all supported converters are in this list
+    for name in L_SUPPORTED_CONVERTERS:
+        assert name in l_converter_names
+
+    for id, converter_info in enumerate(get_converter_info()):
+
+        if converter_info is None:
+            continue
+
+        # Check the name and pretty name are correct
+        name = converter_info.name
+        assert regularize_name(converter_info.pretty_name) == name
 
         # Check database is properly set as parent
         assert converter_info.parent == database

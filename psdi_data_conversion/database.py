@@ -166,6 +166,14 @@ class ConverterInfo:
         """The official URL for the converter"""
 
         # Get necessary info about the converter from the class
+
+        self.supported = self.name in L_SUPPORTED_CONVERTERS
+        """Whether or not the converter is supported by this package. If a converter is supported but not registered,
+        this usually means that a required binary is missing and must be supplied by the user"""
+
+        self.registered = self.name in L_REGISTERED_CONVERTERS
+        """Whether or not the converter is ready to be used by this package"""
+
         try:
             self._key_prefix = get_registered_converter_class(name).database_key_prefix
         except KeyError:
@@ -1004,6 +1012,21 @@ class DataConversionDatabase:
         return self._d_converter_info
 
     @property
+    def l_converter_info(self) -> list[ConverterInfo | None]:
+        """Generate the converter info list (indexed by ID) when needed
+        """
+        if self._l_converter_info is None:
+            # Pre-size a list based on the maximum ID plus 1 (since IDs are 1-indexed)
+            max_id: int = max([x[DB_ID_KEY] for x in self.converters])
+            self._l_converter_info: list[ConverterInfo] = [None] * (max_id+1)
+
+            # Fill the list with all converters in the dict
+            for single_converter_info in self.d_converter_info.values():
+                self._l_converter_info[single_converter_info.id] = single_converter_info
+
+        return self._l_converter_info
+
+    @property
     def d_format_info_from_name(self) -> dict[str, list[FormatInfo]]:
         """Generate the format info from format name dict when needed
         """
@@ -1279,20 +1302,50 @@ def get_database() -> DataConversionDatabase:
     return _database
 
 
-def get_converter_info(name: str) -> ConverterInfo:
-    """Gets the information on a given converter stored in the database
+@overload
+def get_converter_info(name: str) -> ConverterInfo: ...
+
+
+@overload
+def get_converter_info() -> list[ConverterInfo]: ...
+
+
+def get_converter_info(name: str | None = None) -> ConverterInfo | list[ConverterInfo]:
+    """Gets the information on converters or a given converter stored in the database
 
     Parameters
     ----------
-    name : str
-        The name of the converter
+    name : str | None
+        The name of the converter to get info for. Default None, which results in a list being returned of the info for
+        all converters in the database
 
     Returns
     -------
-    ConverterInfo
+    ConverterInfo | list[ConverterInfo]
+        If `name` is provided, will return a single `ConverterInfo` (or raise an exception if the name is invalid). If
+        not provided, a list of all `ConverterInfo` objects in the database will be returned
+
+
+    Raises
+    ------
+    FileConverterDatabaseException
+        If `name` is provided but does not match the name of a converter in the database
     """
 
-    return get_database().d_converter_info[regularize_name(name)]
+    database = get_database()
+    if name is None:
+        return database.l_converter_info
+
+    regularized_name = regularize_name(name)
+    d_converter_info = database.d_converter_info
+
+    if regularized_name not in d_converter_info:
+        raise FileConverterDatabaseException(f"Converter name '{name}' not found in database. Known converter names " +
+                                             "are (case and space-insensitive):" +
+                                             ", ".join([x.pretty_name for x in database.l_converter_info]),
+                                             help=True)
+
+    return d_converter_info[regularized_name]
 
 
 @overload
@@ -1524,8 +1577,9 @@ def get_in_format_args(converter_name: str,
 
     Returns
     -------
-    tuple[set[FlagInfo], set[OptionInfo]]
-        A list of info for the allowed flags, and a set of info for the allowed options
+    tuple[list[FlagInfo], list[OptionInfo]]
+        A list of info for the allowed flags, and a set of info for the allowed options. Each list is sorted by the ID
+        of the flag or option.
     """
 
     converter_info = get_converter_info(converter_name)
@@ -1552,8 +1606,9 @@ def get_out_format_args(converter_name: str,
 
     Returns
     -------
-    tuple[set[FlagInfo], set[OptionInfo]]
-        A list of info for the allowed flags, and a set of info for the allowed options
+    tuple[list[FlagInfo], list[OptionInfo]]
+        A list of info for the allowed flags, and a set of info for the allowed options. Each list is sorted by the ID
+        of the flag or option.
     """
 
     converter_info = get_converter_info(converter_name)
