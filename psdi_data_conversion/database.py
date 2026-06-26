@@ -653,11 +653,18 @@ class ConversionsTable:
 
         self.parent = parent
 
-        # Store references to needed data
-        self._l_converts_to = l_converts_to
-
         # Build the conversion graphs - each format is a vertex, each conversion is an edge
+
         num_formats = len(parent.formats)
+
+        # igraph doesn't support int128s (used for UUIDs) for indices, so associate each format with an index
+        self.d_indices_from_uuids: dict[int, int] = {}
+        self.d_uuids_from_indices: dict[int, int] = {}
+
+        for i, format in enumerate(parent.formats):
+            uuid = format[DB_ID_KEY]
+            self.d_indices_from_uuids[uuid] = i
+            self.d_uuids_from_indices[i] = uuid
 
         l_supported_conversions = [x for x in l_converts_to if
                                    self.parent.get_converter_info(x[DB_CONV_ID_KEY]).name in L_SUPPORTED_CONVERTERS]
@@ -679,7 +686,8 @@ class ConversionsTable:
                              # Each vertex stores the disambiguated name of the format
                              vertex_attrs={DB_NAME_KEY: [x.disambiguated_name if x is not None else None
                                                          for x in parent.l_unsorted_format_info]},
-                             edges=[(x[DB_IN_ID_KEY], x[DB_OUT_ID_KEY]) for x in l_conversions],
+                             edges=[(self.d_indices_from_uuids[x[DB_IN_ID_KEY]],
+                                     self.d_indices_from_uuids[x[DB_OUT_ID_KEY]]) for x in l_conversions],
                              # Each edge stores the id and name of the converter used for the conversion
                              edge_attrs={DB_CONV_ID_KEY: [x[DB_CONV_ID_KEY] for x in l_conversions],
                                          DB_NAME_KEY: [self.parent.get_converter_info(x[DB_CONV_ID_KEY]).name
@@ -702,7 +710,8 @@ class ConversionsTable:
         """Get a list of all converters which can convert from one format to another
         """
         graph = self._get_desired_graph(only)
-        l_edges = graph.es.select(_source=in_format_info.id, _target=out_format_info.id)
+        l_edges = graph.es.select(_source=self.d_indices_from_uuids[in_format_info.id],
+                                  _target=self.d_indices_from_uuids[out_format_info.id])
         return [x[DB_NAME_KEY] for x in l_edges]
 
     @lru_cache(maxsize=None)
@@ -838,11 +847,11 @@ class ConversionsTable:
         return l_possible_conversions
 
     @lru_cache
-    def _get_shared_attrs(self, source_format, target_format):
+    def _get_shared_attrs(self, source_format_index, target_format_index):
         """Get a list of attributes that both the source and target format feature
         """
-        source_format_info = self.parent.get_format_info(source_format)
-        target_format_info = self.parent.get_format_info(target_format)
+        source_format_info = self.parent.get_format_info(self.d_uuids_from_indices[source_format_index])
+        target_format_info = self.parent.get_format_info(self.d_uuids_from_indices[target_format_index])
 
         l_shared_attrs: list[str] = []
 
@@ -863,7 +872,7 @@ class ConversionsTable:
 
         l_kept_attrs = copy(l_shared_attrs)
         for i in range(len(path)-1):
-            target_format_info = self.parent.get_format_info(i+1)
+            target_format_info = self.parent.get_format_info(self.d_uuids_from_indices[path[i+1]])
 
             # Check if each attr still in the shared list is kept here
             for attr in l_kept_attrs:
@@ -902,7 +911,8 @@ class ConversionsTable:
         # Query the graph for the shortest paths to perform this conversion. If no conversions are possible, igraph
         # will print a warning, which we catch and suppress here
         with catch_warnings(record=True) as l_warnings:
-            l_paths: list[list[int]] = graph.get_shortest_paths(in_format_info.id, to=out_format_info.id)
+            l_paths: list[list[int]] = graph.get_shortest_paths(self.d_indices_from_uuids[in_format_info.id],
+                                                                to=self.d_indices_from_uuids[out_format_info.id])
             for warning in l_warnings:
                 if "Couldn't reach some vertices" not in str(warning.message):
                     print(warning, file=sys.stderr)
@@ -926,8 +936,8 @@ class ConversionsTable:
         # Output the best path in the desired format
         l_steps: list[tuple[str, FormatInfo, FormatInfo]] = []
         for i in range(len(best_path)-1):
-            source_id: int = best_path[i]
-            target_id: int = best_path[i+1]
+            source_id: int = self.d_uuids_from_indices[best_path[i]]
+            target_id: int = self.d_uuids_from_indices[best_path[i+1]]
             converter_name: str = graph.es.select(_source=source_id, _target=target_id)[0][DB_NAME_KEY]
             l_steps.append((get_converter_info(converter_name),
                             self.parent.get_format_info(source_id),
@@ -951,8 +961,8 @@ class ConversionsTable:
         conv_id: int = self.parent.get_converter_info(converter_name).id
 
         l_conversion_edges = self.graph.es.select(**{DB_CONV_ID_KEY: conv_id})
-        l_possible_in_format_ids = list({x.source for x in l_conversion_edges})
-        l_possible_out_format_ids = list({x.target for x in l_conversion_edges})
+        l_possible_in_format_ids = list({self.d_uuids_from_indices[x.source] for x in l_conversion_edges})
+        l_possible_out_format_ids = list({self.d_uuids_from_indices[x.target] for x in l_conversion_edges})
 
         # Get the name for each format ID, and return lists of the names
         return ([self.parent.get_format_info(x) for x in l_possible_in_format_ids],
@@ -1139,9 +1149,10 @@ class DataConversionDatabase:
 
         # Get a slice of the table which only includes supported converters
         supported_graph = self._conversions_table.supported_graph
+        d_indices_from_uuids: dict[int, int] = self._conversions_table.d_indices_from_uuids
 
         for format_id, format_info in self._d_format_info_from_id.items():
-            if not format_info or supported_graph.degree(format_id) == 0:
+            if not format_info or supported_graph.degree(d_indices_from_uuids[format_id]) == 0:
                 # The format isn't supported for any conversions, so remove it from the dict
                 del self._d_format_info_from_id[format_id]
 
