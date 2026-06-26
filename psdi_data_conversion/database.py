@@ -1151,10 +1151,14 @@ class DataConversionDatabase:
         supported_graph = self._conversions_table.supported_graph
         d_indices_from_uuids: dict[int, int] = self._conversions_table.d_indices_from_uuids
 
+        l_ids_to_remove: list[int] = []
         for format_id, format_info in self._d_format_info_from_id.items():
             if not format_info or supported_graph.degree(d_indices_from_uuids[format_id]) == 0:
-                # The format isn't supported for any conversions, so remove it from the dict
-                del self._d_format_info_from_id[format_id]
+                # The format isn't supported for any conversions, so mark it to be removed from the dict
+                # (Can't remove while we're iterating over the dict)
+                l_ids_to_remove.append(format_id)
+        for id in l_ids_to_remove:
+            del self._d_format_info_from_id[id]
 
         # Now create the formats from name dict
         self._d_format_info_from_name: dict[str, list[FormatInfo]] = {}
