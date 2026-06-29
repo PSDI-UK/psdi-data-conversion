@@ -184,10 +184,14 @@ class ConverterInfo:
         self._arg_info: dict[str, list[dict[str, int | str]]] = {}
 
         # Placeholders for members that are generated when needed
-        self._l_in_flag_info: list[FlagInfo] | None = None
-        self._l_out_flag_info: list[FlagInfo] | None = None
-        self._l_in_option_info: list[OptionInfo] | None = None
-        self._l_out_option_info: list[OptionInfo] | None = None
+        self._d_in_flag_info: dict[int, FlagInfo] | None = None
+        self._l_unsorted_in_flag_info: list[FlagInfo] | None = None
+        self._d_out_flag_info: dict[int, FlagInfo] | None = None
+        self._l_unsorted_out_flag_info: list[FlagInfo] | None = None
+        self._d_in_option_info: dict[int, OptionInfo] | None = None
+        self._l_unsorted_in_option_info: list[FlagInfo] | None = None
+        self._d_out_option_info: dict[int, OptionInfo] | None = None
+        self._l_unsorted_out_option_info: list[FlagInfo] | None = None
 
         self._d_in_format_flags: dict[str | int, set[str]] | None = None
         self._d_out_format_flags: dict[str | int, set[str]] | None = None
@@ -207,8 +211,8 @@ class ConverterInfo:
                          DB_OUT_OPTIONS_FORMATS_KEY_BASE):
             self._arg_info[key_base] = d_data.get(self._key_prefix + key_base)
 
-    def _create_l_arg_info(self, subclass: type[ArgInfo]) -> tuple[list[ArgInfo], list[ArgInfo]]:
-        """Creates either the flag or option info list
+    def _create_d_arg_info(self, subclass: type[ArgInfo]):
+        """Creates either the flag or option info dicts when needed
         """
 
         # Set values based on whether we're working with flags or options
@@ -227,13 +231,12 @@ class ConverterInfo:
             out_formats_key_base = DB_OUT_OPTIONS_FORMATS_KEY_BASE
             out_args_id_key_base = DB_OUT_OPTIONS_ID_KEY_BASE
         else:
-            raise FileConverterDatabaseException(f"Unrecognised subclass passed to `_create_l_arg_info`: {subclass}")
+            raise FileConverterDatabaseException(f"Unrecognised subclass passed to `_create_d_arg_info`: {subclass}")
 
         for key_base, in_or_out in ((in_key_base, "in"),
                                     (out_key_base, "out")):
 
-            max_id = max([x[DB_ID_KEY] for x in self._arg_info[key_base]])
-            l_arg_info: list[ArgInfo] = [None]*(max_id+1)
+            d_arg_info: dict[int, ArgInfo] = {}
 
             for d_single_arg_info in self._arg_info[key_base]:
                 name: str = d_single_arg_info[DB_FLAG_KEY]
@@ -248,7 +251,7 @@ class ConverterInfo:
                                     description=d_single_arg_info[DB_DESC_KEY],
                                     info=d_single_arg_info[DB_INFO_KEY],
                                     **optional_arg_info_kwargs)
-                l_arg_info[arg_id] = arg_info
+                d_arg_info[arg_id] = arg_info
 
                 # Get a list of all in and formats applicable to this flag, and add them to the flag info's sets
                 if in_or_out == "in":
@@ -262,48 +265,139 @@ class ConverterInfo:
                                      if x[self._key_prefix + out_args_id_key_base] == arg_id]
                     arg_info.s_out_formats.update(l_out_formats)
 
-            if in_or_out == "in":
-                l_in_arg_info = l_arg_info
+            if in_or_out == "in" and issubclass(subclass, FlagInfo):
+                self._d_in_flag_info = d_arg_info
+                self._l_unsorted_in_flag_info = list(d_arg_info.values())
+            elif in_or_out == "out" and issubclass(subclass, FlagInfo):
+                self._d_out_flag_info = d_arg_info
+                self._l_unsorted_out_flag_info = list(d_arg_info.values())
+            elif in_or_out == "in" and issubclass(subclass, OptionInfo):
+                self._d_in_option_info = d_arg_info
+                self._l_unsorted_in_option_info = list(d_arg_info.values())
+            elif in_or_out == "out" and issubclass(subclass, OptionInfo):
+                self._d_out_option_info = d_arg_info
+                self._l_unsorted_out_option_info = list(d_arg_info.values())
             else:
-                l_out_arg_info = l_arg_info
+                raise FileConverterDatabaseException(
+                    f"Unrecognised subclass passed to `_create_d_arg_info`: {subclass}")
 
-        return l_in_arg_info, l_out_arg_info
+        return
 
     @property
-    def l_in_flag_info(self) -> list[FlagInfo | None]:
-        """Generate the input flag info list (indexed by ID) when needed. Returns None if the converter has no flag info
+    def d_in_flag_info(self) -> dict[int, FlagInfo] | None:
+        """Generate the input flag info dict (indexed by ID) when needed. Returns None if the converter has no flag info
         in the database
         """
-        if self._l_in_flag_info is None and self._key_prefix is not None:
-            self._l_in_flag_info, self._l_out_flag_info = self._create_l_arg_info(FlagInfo)
-        return self._l_in_flag_info
+        if self._d_in_flag_info is None and self._key_prefix is not None:
+            self._create_d_arg_info(FlagInfo)
+        return self._d_in_flag_info
 
     @property
-    def l_out_flag_info(self) -> list[FlagInfo | None]:
-        """Generate the output flag info list (indexed by ID) when needed. Returns None if the converter has no flag
-        info in the database
+    def l_in_flag_info(self):
+        """DEPRECATED: Generate the input flag info list (indexed by ID) when needed. Returns None if the converter has
+        no flag info in the database
         """
-        if self._l_out_flag_info is None and self._key_prefix is not None:
-            self._l_in_flag_info, self._l_out_flag_info = self._create_l_arg_info(FlagInfo)
-        return self._l_out_flag_info
+        deprecation_msg = ("`l_in_flag_info` is deprecated as of version 0.4.0 and due to be removed in a future "
+                           "release. To get an input FlagInfo from the format UUID, use `d_in_flag_info`. To "
+                           "get an unsorted list of input FlagInfo, use `l_unsorted_in_flag_info`.")
+        warnings.warn(deprecation_msg, DeprecationWarning)
+        raise AttributeError(deprecation_msg)
 
     @property
-    def l_in_option_info(self) -> list[OptionInfo | None]:
-        """Generate the input option info list (indexed by ID) when needed. Returns None if the converter has no option
-        info in the database
+    def l_unsorted_in_flag_info(self) -> list[FlagInfo] | None:
+        """Generate the unsorted input flag info list when needed. Returns None if the converter has
+        no flag info in the database
         """
-        if self._l_in_option_info is None and self._key_prefix is not None:
-            self._l_in_option_info, self._l_out_option_info = self._create_l_arg_info(OptionInfo)
-        return self._l_in_option_info
+        if self._l_unsorted_in_flag_info is None and self._key_prefix is not None:
+            self._create_d_arg_info(FlagInfo)
+        return self._l_unsorted_in_flag_info
 
     @property
-    def l_out_option_info(self) -> list[OptionInfo | None]:
-        """Generate the output option info list (indexed by ID) when needed. Returns None if the converter has no option
+    def d_out_flag_info(self) -> dict[int, FlagInfo] | None:
+        """Generate the input flag info dict (indexed by ID) when needed. Returns None if the converter has no flag info
+        in the database
+        """
+        if self._d_out_flag_info is None and self._key_prefix is not None:
+            self._create_d_arg_info(FlagInfo)
+        return self._d_out_flag_info
+
+    @property
+    def l_out_flag_info(self):
+        """DEPRECATED: Generate the input flag info list (indexed by ID) when needed. Returns None if the converter has
+        no flag info in the database
+        """
+        deprecation_msg = ("`l_out_flag_info` is deprecated as of version 0.4.0 and due to be removed in a future "
+                           "release. To get an input FlagInfo from the format UUID, use `d_out_flag_info`. To "
+                           "get an unsorted list of input FlagInfo, use `l_unsorted_out_flag_info`.")
+        warnings.warn(deprecation_msg, DeprecationWarning)
+        raise AttributeError(deprecation_msg)
+
+    @property
+    def l_unsorted_out_flag_info(self) -> list[FlagInfo] | None:
+        """Generate the unsorted input flag info list when needed. Returns None if the converter has
+        no flag info in the database
+        """
+        if self._l_unsorted_out_flag_info is None and self._key_prefix is not None:
+            self._create_d_arg_info(FlagInfo)
+        return self._l_unsorted_out_flag_info
+
+    @property
+    def d_in_option_info(self) -> dict[int, OptionInfo] | None:
+        """Generate the input option info dict (indexed by ID) when needed. Returns None if the converter has no option
         info in the database
         """
-        if self._l_out_option_info is None and self._key_prefix is not None:
-            self._l_in_option_info, self._l_out_option_info = self._create_l_arg_info(OptionInfo)
-        return self._l_out_option_info
+        if self._d_in_option_info is None and self._key_prefix is not None:
+            self._create_d_arg_info(OptionInfo)
+        return self._d_in_option_info
+
+    @property
+    def l_in_option_info(self):
+        """DEPRECATED: Generate the input option info list (indexed by ID) when needed. Returns None if the converter
+        has no option info in the database
+        """
+        deprecation_msg = ("`l_in_option_info` is deprecated as of version 0.4.0 and due to be removed in a future "
+                           "release. To get an input OptionInfo from the format UUID, use `d_in_option_info`. To "
+                           "get an unsorted list of input OptionInfo, use `l_unsorted_in_option_info`.")
+        warnings.warn(deprecation_msg, DeprecationWarning)
+        raise AttributeError(deprecation_msg)
+
+    @property
+    def l_unsorted_in_option_info(self) -> list[OptionInfo] | None:
+        """Generate the unsorted input option info list when needed. Returns None if the converter has
+        no option info in the database
+        """
+        if self._l_unsorted_in_option_info is None and self._key_prefix is not None:
+            self._create_d_arg_info(OptionInfo)
+        return self._l_unsorted_in_option_info
+
+    @property
+    def d_out_option_info(self) -> dict[int, OptionInfo] | None:
+        """Generate the input option info dict (indexed by ID) when needed. Returns None if the converter has no option
+        info in the database
+        """
+        if self._d_out_option_info is None and self._key_prefix is not None:
+            self._create_d_arg_info(OptionInfo)
+        return self._d_out_option_info
+
+    @property
+    def l_out_option_info(self):
+        """DEPRECATED: Generate the input option info list (indexed by ID) when needed. Returns None if the converter
+        has no option info in the database
+        """
+        deprecation_msg = ("`l_out_option_info` is deprecated as of version 0.4.0 and due to be removed in a future "
+                           "release. To get an input OptionInfo from the format UUID, use `d_out_option_info`. To "
+                           "get an unsorted list of input OptionInfo, use `l_unsorted_out_option_info`.")
+        warnings.warn(deprecation_msg, DeprecationWarning)
+        raise AttributeError(deprecation_msg)
+
+    @property
+    def l_unsorted_out_option_info(self) -> list[OptionInfo] | None:
+        """Generate the unsorted input option info list when needed. Returns None if the converter has
+        no option info in the database
+        """
+        if self._l_unsorted_out_option_info is None and self._key_prefix is not None:
+            self._create_d_arg_info(OptionInfo)
+        return self._l_unsorted_out_option_info
 
     def _create_d_format_args(self,
                               subclass: type[ArgInfo],
@@ -317,9 +411,9 @@ class ConverterInfo:
 
         # Set values based on whether we're working with flags or options, and input or output
         if issubclass(subclass, FlagInfo):
-            l_arg_info = self.l_in_flag_info if in_or_out == "in" else self.l_out_flag_info
+            l_arg_info = self.l_unsorted_in_flag_info if in_or_out == "in" else self.l_unsorted_out_flag_info
         elif issubclass(subclass, OptionInfo):
-            l_arg_info = self.l_in_option_info if in_or_out == "in" else self.l_out_option_info
+            l_arg_info = self.l_unsorted_in_option_info if in_or_out == "in" else self.l_unsorted_out_option_info
         else:
             raise FileConverterDatabaseException(
                 f"Unrecognised subclass passed to `_create_d_format_args`: {subclass}")
@@ -418,11 +512,11 @@ class ConverterInfo:
 
         l_flag_ids = list(s_flag_ids)
         l_flag_ids.sort()
-        l_flag_info = [self.l_in_flag_info[x] for x in l_flag_ids]
+        l_flag_info = [self.d_in_flag_info[x] for x in l_flag_ids]
 
         l_option_ids = list(s_option_ids)
         l_option_ids.sort()
-        l_option_info = [self.l_in_option_info[x] for x in l_option_ids]
+        l_option_info = [self.d_in_option_info[x] for x in l_option_ids]
 
         return l_flag_info, l_option_info
 
@@ -452,11 +546,11 @@ class ConverterInfo:
 
         l_flag_ids = list(s_flag_ids)
         l_flag_ids.sort()
-        l_flag_info = [self.l_out_flag_info[x] for x in l_flag_ids]
+        l_flag_info = [self.d_out_flag_info[x] for x in l_flag_ids]
 
         l_option_ids = list(s_option_ids)
         l_option_ids.sort()
-        l_option_info = [self.l_out_option_info[x] for x in l_option_ids]
+        l_option_info = [self.d_out_option_info[x] for x in l_option_ids]
 
         return l_flag_info, l_option_info
 
@@ -1139,7 +1233,7 @@ class DataConversionDatabase:
 
         # Create a temporary version of the unsorted format info list. We'll create a pruned version later, but the
         # unpruned version is needed to create the conversions table, which is needed before we can prune it
-        self._l_unsorted_format_info = [*self._d_format_info_from_id.values()]
+        self._l_unsorted_format_info = list(self._d_format_info_from_id.values())
 
         # Initialize the conversions table now
         self._conversions_table = ConversionsTable(l_converts_to=self.converts_to,
@@ -1175,7 +1269,7 @@ class DataConversionDatabase:
             self._d_format_info_from_name[lc_name].append(format_info)
 
         # Finally, create a list of format infos (with arbitrary index)
-        self._l_unsorted_format_info = [*self._d_format_info_from_id.values()]
+        self._l_unsorted_format_info = list(self._d_format_info_from_id.values())
 
     @overload
     def get_converter_info(self, converter_name_or_id: str | int | ConverterInfo) -> ConverterInfo: ...
