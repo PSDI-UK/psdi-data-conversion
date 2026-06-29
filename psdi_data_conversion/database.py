@@ -1030,9 +1030,11 @@ class ConversionsTable:
         # Output the best path in the desired format
         l_steps: list[tuple[str, FormatInfo, FormatInfo]] = []
         for i in range(len(best_path)-1):
-            source_id: int = self.d_uuids_from_indices[best_path[i]]
-            target_id: int = self.d_uuids_from_indices[best_path[i+1]]
-            converter_name: str = graph.es.select(_source=source_id, _target=target_id)[0][DB_NAME_KEY]
+            source_index = best_path[i]
+            source_id: int = self.d_uuids_from_indices[source_index]
+            target_index: int = best_path[i+1]
+            target_id: int = self.d_uuids_from_indices[target_index]
+            converter_name: str = graph.es.select(_source=source_index, _target=target_index)[0][DB_NAME_KEY]
             l_steps.append((get_converter_info(converter_name),
                             self.parent.get_format_info(source_id),
                             self.parent.get_format_info(target_id)))

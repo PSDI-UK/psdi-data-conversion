@@ -254,10 +254,11 @@ def test_conversion_pathways():
 
     # Test getting a multi-step conversion - it's possible this will become direct in the future if a new converter is
     # added, so the test is a bit loose here
-    inchi_to_moldy_path = get_conversion_pathway("inchi", 216)
+    inchi_to_moldy_path = get_conversion_pathway("inchi",
+                                                 72959745128074324821901268400337732406)
     assert len(inchi_to_moldy_path) <= 2
     assert inchi_to_moldy_path[0][1].name == "inchi"
-    assert inchi_to_moldy_path[-1][2].id == 216
+    assert inchi_to_moldy_path[-1][2].id == 72959745128074324821901268400337732406
     for i in range(len(inchi_to_moldy_path)-1):
         # Output format of each step should match input of next
         assert inchi_to_moldy_path[i][2] is inchi_to_moldy_path[i+1][1]
