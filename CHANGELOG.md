@@ -2,6 +2,24 @@
 
 ## v0.4.0
 
+### **Breaking Changes**
+
+- The IDs of all formats, converters, and arguments have been changed from indices to UUIDs. This is necessary to allow new converter plugins to be added without fearing ID collisions. This has the following direct and indirect impacts which may require changes in code using the Python library or CLI:
+  - All IDs of formats, converts, and arguments have been changed. The `doc` folder contains three `.json` files which list what these changes were, providing dicts of the old IDs to the new IDs, so these can be referenced to convert any IDs used to the new UUIDs
+  - Some attributes of the `DataConversionDatabase` class returned by the method `psdi_data_conversion.database.get_database` have been deprecated, since the change from indices to UUIDs makes them non-functional or misleading. These are:
+    - `d_converter_info` -> Renamed to `d_converter_info_from_name` (since now there's also a dict from ID). Previous name is still functional for now, but will give a deprecation warning
+    - `l_converter_info` -> Fully deprecated. Functionality now replaced by `d_converter_info_from_id` (to look up by UUID) and `l_unsorted_converter_info` (to get an unsorted list, similar to using `list(self.d_converter_info_from_id.values())`)
+    - `d_format_info` -> Renamed to `d_format_info_from_name` (since now there's also a dict from ID). Previous name is still functional for now, but will give a deprecation warning
+    - `l_format_info` -> Fully deprecated. Functionality now replaced by `d_format_info_from_id` (to look up by UUID) and `l_unsorted_format_info` (to get an unsorted list, similar to using `list(self.d_format_info_from_id.values())`)
+  - Some attributes of the `ConverterInfo` class returned by various methods in `psdi_data_conversion.database` to get information on a converter have been deprecated, since the change from indices to UUIDs makes them non-functional. These are:
+    - `l_in_flag_info` -> Fully deprecated. Functionality now replaced by `d_in_flag_info` (to look up by UUID) and `l_unsorted_in_flag_info` (to get an unsorted list, similar to using `list(self.d_in_flag_info.values())`)
+    - `l_out_flag_info` -> Ditto, replaced by `d_out_flag_info` and `l_unsorted_out_flag_info`
+    - `l_in_option_info` -> Ditto, replaced by `d_in_option_info` and `l_unsorted_in_option_info`
+    - `l_out_option_info` -> Ditto, replaced by `d_out_option_info` and `l_unsorted_out_option_info`
+  - Since the graphs of the `ConversionsTable` class (`graph`, `supported_graph`, and `registered_graph`) don't support UUIDs as vertex IDs, they internally use indices for these vertices, which are generated at runtime. To support converting between UUIDs and vertex indices, the following dicts have been added to this class:
+    - `d_indices_from_uuids`
+    - `d_uuids_from_indices`
+
 ### New and Changed Functionality
 
 - The database method `get_converter_info` in can now be called without a `name` argument, and will return a list of info on all converters
