@@ -1410,7 +1410,7 @@ class DataConversionDatabase:
         elif isinstance(format_name_or_id, int):
             try:
                 format_info = self.d_format_info_from_id[format_name_or_id]
-            except IndexError:
+            except KeyError:
                 if return_as_list:
                     return []
                 raise FileConverterDatabaseException(f"Format ID '{format_name_or_id}' not recognised",
