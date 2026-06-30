@@ -405,8 +405,8 @@ def test_format_info(capsys):
     assert not captured.err
 
     # Check for basic format information
-    assert string_is_present_in_out(f"{in_format_info.id}: {in_format_info.name} "
-                                    f"({in_format_info.note})")
+    assert string_is_present_in_out(f"{in_format_info.disambiguated_name} (ID: {in_format_info.id}): " +
+                                    in_format_info.note)
 
     # Check for property information
     for attr, label in FormatInfo.D_PROPERTY_ATTRS.items():
@@ -432,8 +432,8 @@ def test_format_info(capsys):
     assert string_is_present_in_out(f"WARNING: Format '{out_format}' is ambiguous")
 
     for out_format_info in l_out_format_info:
-        assert string_is_present_in_out(f"{out_format_info.id}: {out_format_info.disambiguated_name} "
-                                        f"({out_format_info.note})")
+        assert string_is_present_in_out(f"{out_format_info.disambiguated_name} (ID: {out_format_info.id}): " +
+                                        out_format_info.note)
 
     # Test we get expected errors for unrecognised formats
 
