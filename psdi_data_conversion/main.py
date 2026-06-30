@@ -383,6 +383,7 @@ def detail_converter_use(args: ConvertArgs):
             if format_name is None:
                 continue
             l_format_info = get_format_info(format_name, which="all")
+            formats_found = False
             for format_info in l_format_info:
                 if format_info is None:
                     continue
@@ -390,9 +391,12 @@ def detail_converter_use(args: ConvertArgs):
                     optional_not: str = ""
                 else:
                     optional_not: str = "not "
+                formats_found = True
 
                 print_wrap(f"Conversion {to_or_from} {format_info.disambiguated_name} (ID: {format_info.id}) is "
-                           f"{optional_not}supported by {converter_name}.\n")
+                           f"{optional_not}supported by {converter_name}.")
+            if formats_found:
+                print("")
 
         # List all possible formats, and which can be used for input and which for output
         s_all_formats: set[FormatInfo] = set(l_input_formats)
@@ -558,7 +562,8 @@ def detail_format(format_name: str):
     if len(l_format_info) > 1:
         print_wrap(f"WARNING: Format '{format_name}' is ambiguous and could refer to multiple formats. It may be "
                    "necessary to explicitly specify which you want to use when calling this script, e.g. with "
-                   f"'-f {format_name}-0' - see the disambiguated names in the list below:", newline=True)
+                   f"'-f {format_name}-0' or using its ID - see the disambiguated names and IDs in the list below:",
+                   newline=True)
 
     first = True
     for format_info in l_format_info:
@@ -570,7 +575,7 @@ def detail_format(format_name: str):
             print()
 
         # Print the format's basic details
-        print_wrap(f"{format_info.id}: {format_info.disambiguated_name} ({format_info.note})")
+        print_wrap(f"{format_info.disambiguated_name} (ID: {format_info.id}): {format_info.note}")
 
         # Print whether or not it supports each possible property
         for attr, label in FormatInfo.D_PROPERTY_ATTRS.items():
