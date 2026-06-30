@@ -28,6 +28,11 @@
   - `supported==True`, `registered==False`: This package has a plugin ready to support this converter, but it cannot currently be used due to e.g. a required binary being missing which must be provided by the user
   - Both `True`: The converter is supported and ready to use
 
+### Bugfixes
+
+- Fixed a CLI bug where if the user requested info about a conversion where one of the formats is ambiguous, they would be shown a stack trace instead of a helpful message
+- Fixed a CLI bug where if requesting info on both a converter and format, the user would always be told that conversion to/from it was not possible
+
 ### Documentation Changes
 
 - Fixed incorrect output type in documentation for database methods `get_in_format_args` and `get_out_format_args`
