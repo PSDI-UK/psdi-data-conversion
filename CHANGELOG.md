@@ -31,7 +31,7 @@
 ### Bugfixes
 
 - Fixed a CLI bug where if the user requested info about a conversion where one of the formats is ambiguous, they would be shown a stack trace instead of a helpful message
-- Fixed a CLI bug where if requesting info on both a converter and format, the user would always be told that conversion to/from it was not possible
+- Fixed a CLI bug where if requesting info on both a converter and format, the user would always be told that conversion to/from the format with this converter was not possible
 
 ### Documentation Changes
 
