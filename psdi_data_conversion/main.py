@@ -21,9 +21,10 @@ from psdi_data_conversion.converter import (D_CONVERTER_ARGS, L_REGISTERED_CONVE
                                             get_supported_converter_class, run_converter)
 from psdi_data_conversion.converters.base import (FileConverterAbortException, FileConverterException,
                                                   FileConverterInputException)
-from psdi_data_conversion.database import (FormatInfo, get_conversion_pathway, get_conversion_quality,
-                                           get_converter_info, get_format_info, get_in_format_args,
-                                           get_out_format_args, get_possible_conversions, get_possible_formats)
+from psdi_data_conversion.database import (ConversionQualityInfo, FormatInfo, get_conversion_pathway,
+                                           get_conversion_quality, get_converter_info, get_format_info,
+                                           get_in_format_args, get_out_format_args, get_possible_conversions,
+                                           get_possible_formats)
 from psdi_data_conversion.file_io import split_archive_ext
 from psdi_data_conversion.log_utility import get_log_level_from_str
 from psdi_data_conversion.utils import print_wrap, regularize_name
@@ -351,11 +352,20 @@ def detail_converter_use(args: ConvertArgs):
     # If both an input and output format are specified, provide the degree of success for this conversion. Otherwise
     # list possible input/output formats
     if args.from_format is not None and args.to_format is not None:
-        qual = get_conversion_quality(args.name, args.from_format, args.to_format)
-        if qual is None:
+        qual: ConversionQualityInfo | None = None
+        conversion_found = False
+        try:
+            qual = get_conversion_quality(args.name, args.from_format, args.to_format)
+            conversion_found = True
+        except FileConverterException as e:
+            if e.help:
+                print_wrap(str(e), newline=True)
+            else:
+                raise
+        if conversion_found and qual is None:
             print_wrap(f"Conversion from '{args.from_format}' to '{args.to_format}' with {converter_name} is not "
                        "supported.", newline=True)
-        else:
+        elif conversion_found:
             print_wrap(f"Conversion from '{args.from_format}' to '{args.to_format}' with {converter_name} is "
                        f"possible with {qual.qual_str} conversion quality", newline=True)
             # If there are any potential issues with the conversion, print them out
