@@ -382,11 +382,17 @@ def detail_converter_use(args: ConvertArgs):
                                                      (args.to_format, l_output_formats, "to")):
             if format_name is None:
                 continue
-            if format_name in l_formats:
-                optional_not: str = ""
-            else:
-                optional_not: str = "not "
-            print_wrap(f"Conversion {to_or_from} {format_name} is {optional_not}supported by {converter_name}.\n")
+            l_format_info = get_format_info(format_name, which="all")
+            for format_info in l_format_info:
+                if format_info is None:
+                    continue
+                if format_info in l_formats:
+                    optional_not: str = ""
+                else:
+                    optional_not: str = "not "
+
+                print_wrap(f"Conversion {to_or_from} {format_info.disambiguated_name} (ID: {format_info.id}) is "
+                           f"{optional_not}supported by {converter_name}.\n")
 
         # List all possible formats, and which can be used for input and which for output
         s_all_formats: set[FormatInfo] = set(l_input_formats)
