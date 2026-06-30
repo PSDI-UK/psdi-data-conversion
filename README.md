@@ -249,22 +249,22 @@ Note that some requested conversions may involve ambiguous formats which share t
 WARNING: Format 'pdb' is ambiguous and could refer to multiple formats. It may be necessary to explicitly specify which
 you want to use when calling this script, e.g. with '-f pdb-0' - see the disambiguated names in the list below:
 
-9: pdb-0 (Protein Data Bank)
+178366529166858241161075106138867206788: pdb-0 (Protein Data Bank)
 ...
 
-259: pdb-1 (Protein Data Bank with atoms numbered)
+325652524238156842953511960586864188646: pdb-1 (Protein Data Bank with atoms numbered)
 ...
 ```
 
-This provides the IDs ("9" and "259") and disambiguating names ("pdb-0" and "pdb-1") for the matching formats. Either can be used in the call to the converter, e.g.:
+This provides the IDs (`178366529166858241161075106138867206788` and `325652524238156842953511960586864188646`) and disambiguating names (`pdb-0` and `pdb-1`) for the matching formats. Either can be used in the call to the converter, e.g.:
 
 ```bash
-psdi-data-conversion nacl.cif -t 9 -w c2x
+psdi-data-conversion nacl.cif -t 178366529166858241161075106138867206788 -w c2x
 # Or equivalently:
 psdi-data-conversion nacl.cif -t pdb-0 -w c2x
 ```
 
-The "<format>-0" pattern can be used with any format, even if it's unambiguous, and will be interpreted as the first instance of the format in the database with valid conversions. Note that as the database expands in future versions and more valid conversions are added, these disambiguated names may change, so it is recommended to use the format's ID in scripts and with the library to ensure consistency between versions of this package.
+The "<format>-0" pattern can be used with any format, even if it's unambiguous, and will be interpreted as the first instance of the format in the database with valid conversions. Note that as the database expands in future versions and more valid conversions are added, these disambiguated names may change, so it is recommended to use the format's ID in scripts and with the library to ensure consistency between versions of this package. It was necessary to update IDs in v0.4.0 to use UUIDs, but for all future versions there should be no need to change IDs. If you need to update from before this version, see the `v0.4.0` section of `CHANGELOG.md` for guidance.
 
 #### Requesting Information on Possible Conversions
 
@@ -519,13 +519,13 @@ $ psdi-data-convert -l -f mol -t xyz
 WARNING: Format 'mol' is ambiguous and could refer to multiple formats. It may be necessary to explicitly specify which
 you want to use when calling this script, e.g. with '-f mol-0' - see the disambiguated names in the list below:
 
-18: mol-0 (MDL MOL)
+14163986051707882465586360841029029139: mol-0 (MDL MOL)
 - Atomic composition is supported
 - Atomic connections are supported
 - 2D atomic coordinates are supported
 - 3D atomic coordinates are supported
 
-216: mol-1 (MOLDY)
+72959745128074324821901268400337732406: mol-1 (MOLDY)
 - Atomic composition is unknown whether or not to be supported
 - Atomic connections are unknown whether or not to be supported
 - 2D atomic coordinates are unknown whether or not to be supported
@@ -534,13 +534,13 @@ you want to use when calling this script, e.g. with '-f mol-0' - see the disambi
 WARNING: Format 'xyz' is ambiguous and could refer to multiple formats. It may be necessary to explicitly specify which
 you want to use when calling this script, e.g. with '-f xyz-0' - see the disambiguated names in the list below:
 
-20: xyz-0 (XYZ cartesian coordinates)
+50135205643343990489495467470022579507: xyz-0 (XYZ cartesian coordinates)
 - Atomic composition is supported
 - Atomic connections are not supported
 - 2D atomic coordinates are supported
 - 3D atomic coordinates are supported
 
-284: xyz-1 (Extended XYZ (adds lattice vectors))
+46290705721393589047128301807650178748: xyz-1 (Extended XYZ (adds lattice vectors))
 - Atomic composition is unknown whether or not to be supported
 - Atomic connections are unknown whether or not to be supported
 - 2D atomic coordinates are unknown whether or not to be supported
@@ -571,11 +571,11 @@ psdi-data-convert -l <converter name> -f mol-1 -t xyz-0
 No converters are available which can perform a conversion from mol-1 to xyz-1
 ```
 
-This output indicates that the application is aware of two formats which share the `mol` extension: MDL MOL and MOLDY. It lists the ID, disambiguated name, and description of each: ID `18` and disambiguated name `mol-0` for MDL MOL, and ID `216` and disambiguated name `mol-1` for MOLDY. The XYZ format similarly has two variants which can be converted to.
+This output indicates that the application is aware of two formats which share the `mol` extension: MDL MOL and MOLDY. It lists the ID, disambiguated name, and description of each: ID `14163986051707882465586360841029029139` and disambiguated name `mol-0` for MDL MOL, and ID `72959745128074324821901268400337732406216` and disambiguated name `mol-1` for MOLDY. The XYZ format similarly has two variants which can be converted to.
 
 The program then lists converters which can handle the requested conversion, revealing a potential pitfall: The Open Babel and c2x converters can convert from MDL MOL to XYZ, which the Atomsk converter can convert from MOLDY to XYZ. If you don't specify which format you're converting from, the script might assume you meant to use the other one, if that's the only one compatible with the converter you've requested (or with the default converter, Open Babel, if you didn't explicitly request one). So to be careful here, it's best to specify this input format unambiguously.
 
-Since in this example you have an MDL MOL file, you would use `-f 18` or `-f mol-0` to explicitly specify it in the command-line, or similarly provide one of these to the `from_format` argument of `run_converter` within Python. The application will then properly handle it, including alerting you if you request a conversion that isn't supported by your requested converter (e.g. if you request a conversion of this MDL MOL file to XYZ with Atomsk).
+Since in this example you have an MDL MOL file, you would use `-f 14163986051707882465586360841029029139` or `-f mol-0` to explicitly specify it in the command-line, or similarly provide one of these to the `from_format` argument of `run_converter` within Python. The application will then properly handle it, including alerting you if you request a conversion that isn't supported by your requested converter (e.g. if you request a conversion of the MDL MOL file to XYZ with Atomsk).
 
 Important note: The disambiguated name is generated dynamically and isn't stored in the database, and in rare cases may change for some formats in future versions of this application which expand support to more formats and conversions. For uses which require forward-compatibility with future versions of this application, the ID should be used instead. You can obtain the ID for any format via the command: `psdi-data-convert -l -f <format-name>`.
 

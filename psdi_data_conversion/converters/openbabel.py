@@ -311,7 +311,7 @@ class OBFileConverter(FileConverter):
                 print_wrap(err_block, err=True)
 
     def _create_message(self) -> str:
-        """Overload method to create a log of options passed to the converter
+        """Override method to create a log of options passed to the converter
         """
 
         message = ""

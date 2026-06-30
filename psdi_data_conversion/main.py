@@ -21,9 +21,10 @@ from psdi_data_conversion.converter import (D_CONVERTER_ARGS, L_REGISTERED_CONVE
                                             get_supported_converter_class, run_converter)
 from psdi_data_conversion.converters.base import (FileConverterAbortException, FileConverterException,
                                                   FileConverterInputException)
-from psdi_data_conversion.database import (FormatInfo, get_conversion_pathway, get_conversion_quality,
-                                           get_converter_info, get_format_info, get_in_format_args,
-                                           get_out_format_args, get_possible_conversions, get_possible_formats)
+from psdi_data_conversion.database import (ConversionQualityInfo, FormatInfo, get_conversion_pathway,
+                                           get_conversion_quality, get_converter_info, get_format_info,
+                                           get_in_format_args, get_out_format_args, get_possible_conversions,
+                                           get_possible_formats)
 from psdi_data_conversion.file_io import split_archive_ext
 from psdi_data_conversion.log_utility import get_log_level_from_str
 from psdi_data_conversion.utils import print_wrap, regularize_name
@@ -351,11 +352,20 @@ def detail_converter_use(args: ConvertArgs):
     # If both an input and output format are specified, provide the degree of success for this conversion. Otherwise
     # list possible input/output formats
     if args.from_format is not None and args.to_format is not None:
-        qual = get_conversion_quality(args.name, args.from_format, args.to_format)
-        if qual is None:
+        qual: ConversionQualityInfo | None = None
+        conversion_found = False
+        try:
+            qual = get_conversion_quality(args.name, args.from_format, args.to_format)
+            conversion_found = True
+        except FileConverterException as e:
+            if e.help:
+                print_wrap(str(e), newline=True)
+            else:
+                raise
+        if conversion_found and qual is None:
             print_wrap(f"Conversion from '{args.from_format}' to '{args.to_format}' with {converter_name} is not "
                        "supported.", newline=True)
-        else:
+        elif conversion_found:
             print_wrap(f"Conversion from '{args.from_format}' to '{args.to_format}' with {converter_name} is "
                        f"possible with {qual.qual_str} conversion quality", newline=True)
             # If there are any potential issues with the conversion, print them out
@@ -372,11 +382,21 @@ def detail_converter_use(args: ConvertArgs):
                                                      (args.to_format, l_output_formats, "to")):
             if format_name is None:
                 continue
-            if format_name in l_formats:
-                optional_not: str = ""
-            else:
-                optional_not: str = "not "
-            print_wrap(f"Conversion {to_or_from} {format_name} is {optional_not}supported by {converter_name}.\n")
+            l_format_info = get_format_info(format_name, which="all")
+            formats_found = False
+            for format_info in l_format_info:
+                if format_info is None:
+                    continue
+                if format_info in l_formats:
+                    optional_not: str = ""
+                else:
+                    optional_not: str = "not "
+                formats_found = True
+
+                print_wrap(f"Conversion {to_or_from} {format_info.disambiguated_name} (ID: {format_info.id}) is "
+                           f"{optional_not}supported by {converter_name}.")
+            if formats_found:
+                print("")
 
         # List all possible formats, and which can be used for input and which for output
         s_all_formats: set[FormatInfo] = set(l_input_formats)
@@ -542,7 +562,8 @@ def detail_format(format_name: str):
     if len(l_format_info) > 1:
         print_wrap(f"WARNING: Format '{format_name}' is ambiguous and could refer to multiple formats. It may be "
                    "necessary to explicitly specify which you want to use when calling this script, e.g. with "
-                   f"'-f {format_name}-0' - see the disambiguated names in the list below:", newline=True)
+                   f"'-f {format_name}-0' or using its ID - see the disambiguated names and IDs in the list below:",
+                   newline=True)
 
     first = True
     for format_info in l_format_info:
@@ -554,7 +575,7 @@ def detail_format(format_name: str):
             print()
 
         # Print the format's basic details
-        print_wrap(f"{format_info.id}: {format_info.disambiguated_name} ({format_info.note})")
+        print_wrap(f"{format_info.disambiguated_name} (ID: {format_info.id}): {format_info.note}")
 
         # Print whether or not it supports each possible property
         for attr, label in FormatInfo.D_PROPERTY_ATTRS.items():

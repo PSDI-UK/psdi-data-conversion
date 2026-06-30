@@ -187,6 +187,13 @@ def test_input_processing():
     assert list_check_args.log_file == const.DEFAULT_LISTING_LOG_FILE
 
 
+def _check_no_errors(captured):
+    """Check that no errors were produced in output"""
+    assert not captured.err
+    assert "Traceback" not in captured.out
+    assert "Traceback" not in captured.err
+
+
 def test_list_converters(capsys):
     """Test the option to list available converters
     """
@@ -197,8 +204,7 @@ def test_list_converters(capsys):
         converter_name = get_registered_converter_class(converter_rname).name
         assert converter_name in captured.out, converter_name
 
-    # Check that no errors were produced
-    assert not captured.err
+    _check_no_errors(captured)
 
 
 def test_detail_converter(capsys):
@@ -239,8 +245,7 @@ def test_detail_converter(capsys):
             input_allowed = "yes" if out_format in l_allowed_in_formats else "no"
             assert string_is_present_in_out(f"{out_format.disambiguated_name}{input_allowed}yes{out_format.note}")
 
-        # Check that no errors were produced
-        assert not captured.err
+        _check_no_errors(captured)
 
     # Test we do get a simple error for a bad converter name
     with pytest.raises(SystemExit):
@@ -253,7 +258,7 @@ def test_detail_converter(capsys):
     # Test that we can also provide the converter name with -w/--with
     run_with_arg_string(f"-l -w {CONVERTER_C2X}")
     captured = capsys.readouterr()
-    assert not captured.err
+    _check_no_errors(captured)
     assert CONVERTER_C2X in captured.out
     assert const.CONVERTER_DEFAULT not in captured.out
 
@@ -272,7 +277,7 @@ def test_get_conversions(capsys):
     def string_is_present_in_out(s: str) -> bool:
         return s.replace("\n", " ").replace(" ", "") in compressed_out
 
-    assert not captured.err
+    _check_no_errors(captured)
 
     assert bool(l_conversions) == string_is_present_in_out("The following registered converters can convert from "
                                                            f"{in_format} to {out_format}:")
@@ -301,7 +306,7 @@ def test_get_chained(capsys):
     def string_is_present_in_out(s: str) -> bool:
         return s.replace("\n", " ").replace(" ", "") in compressed_out
 
-    assert not captured.err
+    _check_no_errors(captured)
 
     assert string_is_present_in_out(f"No direct conversions are possible from {in_format} to {out_format}")
 
@@ -326,6 +331,8 @@ def test_get_chained(capsys):
     # Check that igraph's warning is suppressed
     assert not string_is_present_in_out("Couldn't reach some vertices")
 
+    _check_no_errors(captured)
+
 
 def test_conversion_info(capsys):
     """Test the option to provide detail on degree of success and arguments a converter allows for a given conversion
@@ -345,7 +352,7 @@ def test_conversion_info(capsys):
     def string_is_present_in_out(s: str) -> bool:
         return s.replace("\n", " ").replace(" ", "") in compressed_out
 
-    assert not captured.err
+    _check_no_errors(captured)
 
     # Check that conversion quality details are in the output as expected
     assert string_is_present_in_out(f"Conversion from '{in_format}' to '{out_format}' with {converter_name} is "
@@ -383,7 +390,7 @@ def test_conversion_info(capsys):
         captured = capsys.readouterr()
         compressed_out: str = captured.out.replace("\n", "").replace(" ", "")
 
-        assert not captured.err
+        _check_no_errors(captured)
 
 
 def test_format_info(capsys):
@@ -402,11 +409,11 @@ def test_format_info(capsys):
     def string_is_present_in_out(s: str) -> bool:
         return s.replace("\n", " ").replace(" ", "") in compressed_out
 
-    assert not captured.err
+    _check_no_errors(captured)
 
     # Check for basic format information
-    assert string_is_present_in_out(f"{in_format_info.id}: {in_format_info.name} "
-                                    f"({in_format_info.note})")
+    assert string_is_present_in_out(f"{in_format_info.disambiguated_name} (ID: {in_format_info.id}): " +
+                                    in_format_info.note)
 
     # Check for property information
     for attr, label in FormatInfo.D_PROPERTY_ATTRS.items():
@@ -427,13 +434,13 @@ def test_format_info(capsys):
     captured = capsys.readouterr()
     compressed_out: str = captured.out.replace("\n", "").replace(" ", "")
 
-    assert not captured.err
+    _check_no_errors(captured)
 
     assert string_is_present_in_out(f"WARNING: Format '{out_format}' is ambiguous")
 
     for out_format_info in l_out_format_info:
-        assert string_is_present_in_out(f"{out_format_info.id}: {out_format_info.disambiguated_name} "
-                                        f"({out_format_info.note})")
+        assert string_is_present_in_out(f"{out_format_info.disambiguated_name} (ID: {out_format_info.id}): " +
+                                        out_format_info.note)
 
     # Test we get expected errors for unrecognised formats
 

@@ -10,6 +10,7 @@ from __future__ import annotations
 import json
 import os
 import sys
+import warnings
 from copy import copy
 from dataclasses import dataclass, field
 from functools import lru_cache
@@ -183,10 +184,14 @@ class ConverterInfo:
         self._arg_info: dict[str, list[dict[str, int | str]]] = {}
 
         # Placeholders for members that are generated when needed
-        self._l_in_flag_info: list[FlagInfo] | None = None
-        self._l_out_flag_info: list[FlagInfo] | None = None
-        self._l_in_option_info: list[OptionInfo] | None = None
-        self._l_out_option_info: list[OptionInfo] | None = None
+        self._d_in_flag_info: dict[int, FlagInfo] | None = None
+        self._l_unsorted_in_flag_info: list[FlagInfo] | None = None
+        self._d_out_flag_info: dict[int, FlagInfo] | None = None
+        self._l_unsorted_out_flag_info: list[FlagInfo] | None = None
+        self._d_in_option_info: dict[int, OptionInfo] | None = None
+        self._l_unsorted_in_option_info: list[FlagInfo] | None = None
+        self._d_out_option_info: dict[int, OptionInfo] | None = None
+        self._l_unsorted_out_option_info: list[FlagInfo] | None = None
 
         self._d_in_format_flags: dict[str | int, set[str]] | None = None
         self._d_out_format_flags: dict[str | int, set[str]] | None = None
@@ -206,8 +211,8 @@ class ConverterInfo:
                          DB_OUT_OPTIONS_FORMATS_KEY_BASE):
             self._arg_info[key_base] = d_data.get(self._key_prefix + key_base)
 
-    def _create_l_arg_info(self, subclass: type[ArgInfo]) -> tuple[list[ArgInfo], list[ArgInfo]]:
-        """Creates either the flag or option info list
+    def _create_d_arg_info(self, subclass: type[ArgInfo]):
+        """Creates either the flag or option info dicts when needed
         """
 
         # Set values based on whether we're working with flags or options
@@ -226,13 +231,12 @@ class ConverterInfo:
             out_formats_key_base = DB_OUT_OPTIONS_FORMATS_KEY_BASE
             out_args_id_key_base = DB_OUT_OPTIONS_ID_KEY_BASE
         else:
-            raise FileConverterDatabaseException(f"Unrecognised subclass passed to `_create_l_arg_info`: {subclass}")
+            raise FileConverterDatabaseException(f"Unrecognised subclass passed to `_create_d_arg_info`: {subclass}")
 
         for key_base, in_or_out in ((in_key_base, "in"),
                                     (out_key_base, "out")):
 
-            max_id = max([x[DB_ID_KEY] for x in self._arg_info[key_base]])
-            l_arg_info: list[ArgInfo] = [None]*(max_id+1)
+            d_arg_info: dict[int, ArgInfo] = {}
 
             for d_single_arg_info in self._arg_info[key_base]:
                 name: str = d_single_arg_info[DB_FLAG_KEY]
@@ -247,7 +251,7 @@ class ConverterInfo:
                                     description=d_single_arg_info[DB_DESC_KEY],
                                     info=d_single_arg_info[DB_INFO_KEY],
                                     **optional_arg_info_kwargs)
-                l_arg_info[arg_id] = arg_info
+                d_arg_info[arg_id] = arg_info
 
                 # Get a list of all in and formats applicable to this flag, and add them to the flag info's sets
                 if in_or_out == "in":
@@ -261,48 +265,139 @@ class ConverterInfo:
                                      if x[self._key_prefix + out_args_id_key_base] == arg_id]
                     arg_info.s_out_formats.update(l_out_formats)
 
-            if in_or_out == "in":
-                l_in_arg_info = l_arg_info
+            if in_or_out == "in" and issubclass(subclass, FlagInfo):
+                self._d_in_flag_info = d_arg_info
+                self._l_unsorted_in_flag_info = list(d_arg_info.values())
+            elif in_or_out == "out" and issubclass(subclass, FlagInfo):
+                self._d_out_flag_info = d_arg_info
+                self._l_unsorted_out_flag_info = list(d_arg_info.values())
+            elif in_or_out == "in" and issubclass(subclass, OptionInfo):
+                self._d_in_option_info = d_arg_info
+                self._l_unsorted_in_option_info = list(d_arg_info.values())
+            elif in_or_out == "out" and issubclass(subclass, OptionInfo):
+                self._d_out_option_info = d_arg_info
+                self._l_unsorted_out_option_info = list(d_arg_info.values())
             else:
-                l_out_arg_info = l_arg_info
+                raise FileConverterDatabaseException(
+                    f"Unrecognised subclass passed to `_create_d_arg_info`: {subclass}")
 
-        return l_in_arg_info, l_out_arg_info
+        return
 
     @property
-    def l_in_flag_info(self) -> list[FlagInfo | None]:
-        """Generate the input flag info list (indexed by ID) when needed. Returns None if the converter has no flag info
+    def d_in_flag_info(self) -> dict[int, FlagInfo] | None:
+        """Generate the input flag info dict (indexed by ID) when needed. Returns None if the converter has no flag info
         in the database
         """
-        if self._l_in_flag_info is None and self._key_prefix is not None:
-            self._l_in_flag_info, self._l_out_flag_info = self._create_l_arg_info(FlagInfo)
-        return self._l_in_flag_info
+        if self._d_in_flag_info is None and self._key_prefix is not None:
+            self._create_d_arg_info(FlagInfo)
+        return self._d_in_flag_info
 
     @property
-    def l_out_flag_info(self) -> list[FlagInfo | None]:
-        """Generate the output flag info list (indexed by ID) when needed. Returns None if the converter has no flag
-        info in the database
+    def l_in_flag_info(self):
+        """DEPRECATED: Generate the input flag info list (indexed by ID) when needed. Returns None if the converter has
+        no flag info in the database
         """
-        if self._l_out_flag_info is None and self._key_prefix is not None:
-            self._l_in_flag_info, self._l_out_flag_info = self._create_l_arg_info(FlagInfo)
-        return self._l_out_flag_info
+        deprecation_msg = ("`l_in_flag_info` is deprecated as of version 0.4.0 and due to be removed in a future "
+                           "release. To get an input FlagInfo from the format UUID, use `d_in_flag_info`. To "
+                           "get an unsorted list of input FlagInfo, use `l_unsorted_in_flag_info`.")
+        warnings.warn(deprecation_msg, DeprecationWarning)
+        raise AttributeError(deprecation_msg)
 
     @property
-    def l_in_option_info(self) -> list[OptionInfo | None]:
-        """Generate the input option info list (indexed by ID) when needed. Returns None if the converter has no option
-        info in the database
+    def l_unsorted_in_flag_info(self) -> list[FlagInfo] | None:
+        """Generate the unsorted input flag info list when needed. Returns None if the converter has
+        no flag info in the database
         """
-        if self._l_in_option_info is None and self._key_prefix is not None:
-            self._l_in_option_info, self._l_out_option_info = self._create_l_arg_info(OptionInfo)
-        return self._l_in_option_info
+        if self._l_unsorted_in_flag_info is None and self._key_prefix is not None:
+            self._create_d_arg_info(FlagInfo)
+        return self._l_unsorted_in_flag_info
 
     @property
-    def l_out_option_info(self) -> list[OptionInfo | None]:
-        """Generate the output option info list (indexed by ID) when needed. Returns None if the converter has no option
+    def d_out_flag_info(self) -> dict[int, FlagInfo] | None:
+        """Generate the input flag info dict (indexed by ID) when needed. Returns None if the converter has no flag info
+        in the database
+        """
+        if self._d_out_flag_info is None and self._key_prefix is not None:
+            self._create_d_arg_info(FlagInfo)
+        return self._d_out_flag_info
+
+    @property
+    def l_out_flag_info(self):
+        """DEPRECATED: Generate the input flag info list (indexed by ID) when needed. Returns None if the converter has
+        no flag info in the database
+        """
+        deprecation_msg = ("`l_out_flag_info` is deprecated as of version 0.4.0 and due to be removed in a future "
+                           "release. To get an input FlagInfo from the format UUID, use `d_out_flag_info`. To "
+                           "get an unsorted list of input FlagInfo, use `l_unsorted_out_flag_info`.")
+        warnings.warn(deprecation_msg, DeprecationWarning)
+        raise AttributeError(deprecation_msg)
+
+    @property
+    def l_unsorted_out_flag_info(self) -> list[FlagInfo] | None:
+        """Generate the unsorted input flag info list when needed. Returns None if the converter has
+        no flag info in the database
+        """
+        if self._l_unsorted_out_flag_info is None and self._key_prefix is not None:
+            self._create_d_arg_info(FlagInfo)
+        return self._l_unsorted_out_flag_info
+
+    @property
+    def d_in_option_info(self) -> dict[int, OptionInfo] | None:
+        """Generate the input option info dict (indexed by ID) when needed. Returns None if the converter has no option
         info in the database
         """
-        if self._l_out_option_info is None and self._key_prefix is not None:
-            self._l_in_option_info, self._l_out_option_info = self._create_l_arg_info(OptionInfo)
-        return self._l_out_option_info
+        if self._d_in_option_info is None and self._key_prefix is not None:
+            self._create_d_arg_info(OptionInfo)
+        return self._d_in_option_info
+
+    @property
+    def l_in_option_info(self):
+        """DEPRECATED: Generate the input option info list (indexed by ID) when needed. Returns None if the converter
+        has no option info in the database
+        """
+        deprecation_msg = ("`l_in_option_info` is deprecated as of version 0.4.0 and due to be removed in a future "
+                           "release. To get an input OptionInfo from the format UUID, use `d_in_option_info`. To "
+                           "get an unsorted list of input OptionInfo, use `l_unsorted_in_option_info`.")
+        warnings.warn(deprecation_msg, DeprecationWarning)
+        raise AttributeError(deprecation_msg)
+
+    @property
+    def l_unsorted_in_option_info(self) -> list[OptionInfo] | None:
+        """Generate the unsorted input option info list when needed. Returns None if the converter has
+        no option info in the database
+        """
+        if self._l_unsorted_in_option_info is None and self._key_prefix is not None:
+            self._create_d_arg_info(OptionInfo)
+        return self._l_unsorted_in_option_info
+
+    @property
+    def d_out_option_info(self) -> dict[int, OptionInfo] | None:
+        """Generate the input option info dict (indexed by ID) when needed. Returns None if the converter has no option
+        info in the database
+        """
+        if self._d_out_option_info is None and self._key_prefix is not None:
+            self._create_d_arg_info(OptionInfo)
+        return self._d_out_option_info
+
+    @property
+    def l_out_option_info(self):
+        """DEPRECATED: Generate the input option info list (indexed by ID) when needed. Returns None if the converter
+        has no option info in the database
+        """
+        deprecation_msg = ("`l_out_option_info` is deprecated as of version 0.4.0 and due to be removed in a future "
+                           "release. To get an input OptionInfo from the format UUID, use `d_out_option_info`. To "
+                           "get an unsorted list of input OptionInfo, use `l_unsorted_out_option_info`.")
+        warnings.warn(deprecation_msg, DeprecationWarning)
+        raise AttributeError(deprecation_msg)
+
+    @property
+    def l_unsorted_out_option_info(self) -> list[OptionInfo] | None:
+        """Generate the unsorted input option info list when needed. Returns None if the converter has
+        no option info in the database
+        """
+        if self._l_unsorted_out_option_info is None and self._key_prefix is not None:
+            self._create_d_arg_info(OptionInfo)
+        return self._l_unsorted_out_option_info
 
     def _create_d_format_args(self,
                               subclass: type[ArgInfo],
@@ -316,15 +411,15 @@ class ConverterInfo:
 
         # Set values based on whether we're working with flags or options, and input or output
         if issubclass(subclass, FlagInfo):
-            l_arg_info = self.l_in_flag_info if in_or_out == "in" else self.l_out_flag_info
+            l_arg_info = self.l_unsorted_in_flag_info if in_or_out == "in" else self.l_unsorted_out_flag_info
         elif issubclass(subclass, OptionInfo):
-            l_arg_info = self.l_in_option_info if in_or_out == "in" else self.l_out_option_info
+            l_arg_info = self.l_unsorted_in_option_info if in_or_out == "in" else self.l_unsorted_out_option_info
         else:
             raise FileConverterDatabaseException(
                 f"Unrecognised subclass passed to `_create_d_format_args`: {subclass}")
 
         d_format_args: dict[str | int, set[ArgInfo]] = {}
-        l_parent_format_info = self.parent.l_format_info
+        d_parent_format_info_from_id = self.parent.d_format_info_from_id
 
         # If the converter doesn't provide argument info, set l_arg_info to an empty list so it can be iterated in
         # the next step, rather than None
@@ -340,7 +435,7 @@ class ConverterInfo:
                 s_formats = arg_info.s_in_formats
             else:
                 s_formats = arg_info.s_out_formats
-            l_format_info = [l_parent_format_info[format_id] for format_id in s_formats]
+            l_format_info = [d_parent_format_info_from_id[format_id] for format_id in s_formats]
             for format_info in l_format_info:
                 format_name = format_info.name
                 format_id = format_info.id
@@ -417,11 +512,11 @@ class ConverterInfo:
 
         l_flag_ids = list(s_flag_ids)
         l_flag_ids.sort()
-        l_flag_info = [self.l_in_flag_info[x] for x in l_flag_ids]
+        l_flag_info = [self.d_in_flag_info[x] for x in l_flag_ids]
 
         l_option_ids = list(s_option_ids)
         l_option_ids.sort()
-        l_option_info = [self.l_in_option_info[x] for x in l_option_ids]
+        l_option_info = [self.d_in_option_info[x] for x in l_option_ids]
 
         return l_flag_info, l_option_info
 
@@ -451,11 +546,11 @@ class ConverterInfo:
 
         l_flag_ids = list(s_flag_ids)
         l_flag_ids.sort()
-        l_flag_info = [self.l_out_flag_info[x] for x in l_flag_ids]
+        l_flag_info = [self.d_out_flag_info[x] for x in l_flag_ids]
 
         l_option_ids = list(s_option_ids)
         l_option_ids.sort()
-        l_option_info = [self.l_out_option_info[x] for x in l_option_ids]
+        l_option_info = [self.d_out_option_info[x] for x in l_option_ids]
 
         return l_flag_info, l_option_info
 
@@ -525,7 +620,7 @@ class FormatInfo:
         """A unique name for this format which can be used to distinguish it from others which share the same extension,
         by appending the name of each with a unique index"""
         if self._disambiguated_name is None:
-            l_formats_with_same_name = [x for x in self.parent.l_format_info
+            l_formats_with_same_name = [x for x in self.parent.l_unsorted_format_info
                                         if x and x._lower_name == self._lower_name]
             if len(l_formats_with_same_name) == 1:
                 self._disambiguated_name = self._lower_name
@@ -652,11 +747,18 @@ class ConversionsTable:
 
         self.parent = parent
 
-        # Store references to needed data
-        self._l_converts_to = l_converts_to
-
         # Build the conversion graphs - each format is a vertex, each conversion is an edge
+
         num_formats = len(parent.formats)
+
+        # igraph doesn't support int128s (used for UUIDs) for indices, so associate each format with an index
+        self.d_indices_from_uuids: dict[int, int] = {}
+        self.d_uuids_from_indices: dict[int, int] = {}
+
+        for i, format in enumerate(parent.formats):
+            uuid = format[DB_ID_KEY]
+            self.d_indices_from_uuids[uuid] = i
+            self.d_uuids_from_indices[i] = uuid
 
         l_supported_conversions = [x for x in l_converts_to if
                                    self.parent.get_converter_info(x[DB_CONV_ID_KEY]).name in L_SUPPORTED_CONVERTERS]
@@ -677,8 +779,9 @@ class ConversionsTable:
                              directed=True,
                              # Each vertex stores the disambiguated name of the format
                              vertex_attrs={DB_NAME_KEY: [x.disambiguated_name if x is not None else None
-                                                         for x in parent.l_format_info]},
-                             edges=[(x[DB_IN_ID_KEY], x[DB_OUT_ID_KEY]) for x in l_conversions],
+                                                         for x in parent.l_unsorted_format_info]},
+                             edges=[(self.d_indices_from_uuids[x[DB_IN_ID_KEY]],
+                                     self.d_indices_from_uuids[x[DB_OUT_ID_KEY]]) for x in l_conversions],
                              # Each edge stores the id and name of the converter used for the conversion
                              edge_attrs={DB_CONV_ID_KEY: [x[DB_CONV_ID_KEY] for x in l_conversions],
                                          DB_NAME_KEY: [self.parent.get_converter_info(x[DB_CONV_ID_KEY]).name
@@ -701,7 +804,8 @@ class ConversionsTable:
         """Get a list of all converters which can convert from one format to another
         """
         graph = self._get_desired_graph(only)
-        l_edges = graph.es.select(_source=in_format_info.id, _target=out_format_info.id)
+        l_edges = graph.es.select(_source=self.d_indices_from_uuids[in_format_info.id],
+                                  _target=self.d_indices_from_uuids[out_format_info.id])
         return [x[DB_NAME_KEY] for x in l_edges]
 
     @lru_cache(maxsize=None)
@@ -837,11 +941,11 @@ class ConversionsTable:
         return l_possible_conversions
 
     @lru_cache
-    def _get_shared_attrs(self, source_format, target_format):
+    def _get_shared_attrs(self, source_format_index, target_format_index):
         """Get a list of attributes that both the source and target format feature
         """
-        source_format_info = self.parent.get_format_info(source_format)
-        target_format_info = self.parent.get_format_info(target_format)
+        source_format_info = self.parent.get_format_info(self.d_uuids_from_indices[source_format_index])
+        target_format_info = self.parent.get_format_info(self.d_uuids_from_indices[target_format_index])
 
         l_shared_attrs: list[str] = []
 
@@ -862,7 +966,7 @@ class ConversionsTable:
 
         l_kept_attrs = copy(l_shared_attrs)
         for i in range(len(path)-1):
-            target_format_info = self.parent.get_format_info(i+1)
+            target_format_info = self.parent.get_format_info(self.d_uuids_from_indices[path[i+1]])
 
             # Check if each attr still in the shared list is kept here
             for attr in l_kept_attrs:
@@ -901,7 +1005,8 @@ class ConversionsTable:
         # Query the graph for the shortest paths to perform this conversion. If no conversions are possible, igraph
         # will print a warning, which we catch and suppress here
         with catch_warnings(record=True) as l_warnings:
-            l_paths: list[list[int]] = graph.get_shortest_paths(in_format_info.id, to=out_format_info.id)
+            l_paths: list[list[int]] = graph.get_shortest_paths(self.d_indices_from_uuids[in_format_info.id],
+                                                                to=self.d_indices_from_uuids[out_format_info.id])
             for warning in l_warnings:
                 if "Couldn't reach some vertices" not in str(warning.message):
                     print(warning, file=sys.stderr)
@@ -925,9 +1030,11 @@ class ConversionsTable:
         # Output the best path in the desired format
         l_steps: list[tuple[str, FormatInfo, FormatInfo]] = []
         for i in range(len(best_path)-1):
-            source_id: int = best_path[i]
-            target_id: int = best_path[i+1]
-            converter_name: str = graph.es.select(_source=source_id, _target=target_id)[0][DB_NAME_KEY]
+            source_index = best_path[i]
+            source_id: int = self.d_uuids_from_indices[source_index]
+            target_index: int = best_path[i+1]
+            target_id: int = self.d_uuids_from_indices[target_index]
+            converter_name: str = graph.es.select(_source=source_index, _target=target_index)[0][DB_NAME_KEY]
             l_steps.append((get_converter_info(converter_name),
                             self.parent.get_format_info(source_id),
                             self.parent.get_format_info(target_id)))
@@ -950,8 +1057,8 @@ class ConversionsTable:
         conv_id: int = self.parent.get_converter_info(converter_name).id
 
         l_conversion_edges = self.graph.es.select(**{DB_CONV_ID_KEY: conv_id})
-        l_possible_in_format_ids = list({x.source for x in l_conversion_edges})
-        l_possible_out_format_ids = list({x.target for x in l_conversion_edges})
+        l_possible_in_format_ids = list({self.d_uuids_from_indices[x.source] for x in l_conversion_edges})
+        l_possible_out_format_ids = list({self.d_uuids_from_indices[x.target] for x in l_conversion_edges})
 
         # Get the name for each format ID, and return lists of the names
         return ([self.parent.get_format_info(x) for x in l_possible_in_format_ids],
@@ -980,63 +1087,124 @@ class DataConversionDatabase:
         self.converts_to: list[dict[str, bool | int | str | None]] = d_data[DB_CONVERTS_TO_KEY]
 
         # Placeholders for properties that are generated when needed
-        self._d_converter_info: dict[str, ConverterInfo] | None = None
-        self._l_converter_info: list[ConverterInfo] | None = None
-        self._d_format_info: dict[str, FormatInfo] | None = None
-        self._l_format_info: list[FormatInfo] | None = None
+        self._d_converter_info_from_name: dict[str, ConverterInfo] | None = None
+        self._d_converter_info_from_id: dict[int, ConverterInfo] | None = None
+        self._l_unsorted_converter_info: list[ConverterInfo] | None = None
+        self._d_format_info_from_id: dict[int, FormatInfo] | None = None
+        self._d_format_info_from_name: dict[str, FormatInfo] | None = None
+        self._l_unsorted_format_info: list[FormatInfo] | None = None
         self._conversions_table: ConversionsTable | None = None
+
+    def _init_converter_info(self):
+        """Initialises the private dicts and lists for converter info
+        """
+        self._d_converter_info_from_name: dict[str, ConverterInfo] = {}
+        self._d_converter_info_from_id: dict[int, ConverterInfo] = {}
+        self._l_unsorted_converter_info: list[ConverterInfo] = []
+        for d_single_converter_info in self.converters:
+            name: str = regularize_name(d_single_converter_info[DB_NAME_KEY])
+            if name in self._d_converter_info_from_name:
+                logger.warning(f"Converter '{name}' appears more than once in the database. Only the first instance"
+                               " will be used.")
+                continue
+
+            single_converter_info = ConverterInfo(name=name,
+                                                  parent=self,
+                                                  d_single_converter_info=d_single_converter_info,
+                                                  d_data=self._d_data)
+            self._d_converter_info_from_name[name] = single_converter_info
+            self._d_converter_info_from_id[single_converter_info.id] = single_converter_info
+            self._l_unsorted_converter_info.append(single_converter_info)
+
+    @property
+    def d_converter_info_from_name(self) -> dict[str, ConverterInfo]:
+        """Generate the converter info dict (indexed by name) when needed
+        """
+        if self._d_converter_info_from_name is None:
+            self._init_converter_info()
+
+        return self._d_converter_info_from_name
+
+    @property
+    def d_converter_info_from_id(self) -> dict[int, ConverterInfo]:
+        """Generate the converter info dict (indexed by ID) when needed
+        """
+        if self._d_converter_info_from_id is None:
+            self._init_converter_info()
+
+        return self._d_converter_info_from_id
 
     @property
     def d_converter_info(self) -> dict[str, ConverterInfo]:
-        """Generate the converter info dict (indexed by name) when needed
-        """
-        if self._d_converter_info is None:
-            self._d_converter_info: dict[str, ConverterInfo] = {}
-            for d_single_converter_info in self.converters:
-                name: str = regularize_name(d_single_converter_info[DB_NAME_KEY])
-                if name in self._d_converter_info:
-                    logger.warning(f"Converter '{name}' appears more than once in the database. Only the first instance"
-                                   " will be used.")
-                    continue
-
-                self._d_converter_info[name] = ConverterInfo(name=name,
-                                                             parent=self,
-                                                             d_single_converter_info=d_single_converter_info,
-                                                             d_data=self._d_data)
-        return self._d_converter_info
+        """DEPRECATED: Get a dict of converter info keyed by name"""
+        warnings.warn("`d_converter_info` is deprecated as of version 0.4.0 and due to be removed in a future release. "
+                      "To get a ConverterInfo from the converter name (the previous functionality of this), use "
+                      "`d_converter_info_from_name`. To get a FormatInfo from the format UUID, use "
+                      "`d_converter_info_from_id`.", DeprecationWarning)
+        return self.d_converter_info_from_name
 
     @property
-    def l_converter_info(self) -> list[ConverterInfo | None]:
-        """Generate the converter info list (indexed by ID) when needed
+    def l_unsorted_converter_info(self) -> list[ConverterInfo]:
+        """Generate the unsorted converter info list when needed
         """
-        if self._l_converter_info is None:
-            # Pre-size a list based on the maximum ID plus 1 (since IDs are 1-indexed)
-            max_id: int = max([x[DB_ID_KEY] for x in self.converters])
-            self._l_converter_info: list[ConverterInfo] = [None] * (max_id+1)
+        if self._l_unsorted_converter_info is None:
+            self._init_converter_info()
 
-            # Fill the list with all converters in the dict
-            for single_converter_info in self.d_converter_info.values():
-                self._l_converter_info[single_converter_info.id] = single_converter_info
+        return self._l_unsorted_converter_info
 
-        return self._l_converter_info
+    @property
+    def l_converter_info(self):
+        """DEPRECATED: Get a list of converter info keyed by ID"""
+        deprecation_msg = ("`l_converter_info` is deprecated as of version 0.4.0 and due to be removed in a future "
+                           "release. To get a ConverterInfo from the format UUID, use `d_converter_info_from_id`. To "
+                           "get an unsorted list of ConverterInfos, use `l_unsorted_converter_info`.")
+        warnings.warn(deprecation_msg, DeprecationWarning)
+        raise AttributeError(deprecation_msg)
+
+    @property
+    def d_format_info_from_name(self) -> dict[str, list[FormatInfo]]:
+        """Generate the format info from format name dict when needed
+        """
+        if self._d_format_info_from_name is None:
+            self._init_formats_and_conversions()
+
+        return self._d_format_info_from_name
+
+    @property
+    def d_format_info_from_id(self) -> dict[int, FormatInfo]:
+        """Generate the format info from format ID dict when needed
+        """
+        if self._d_format_info_from_id is None:
+            self._init_formats_and_conversions()
+
+        return self._d_format_info_from_id
 
     @property
     def d_format_info(self) -> dict[str, list[FormatInfo]]:
-        """Generate the format info dict when needed
-        """
-        if self._d_format_info is None:
-            self._init_formats_and_conversions()
-
-        return self._d_format_info
+        """DEPRECATED: Get a dict of format info keyed by format name"""
+        warnings.warn("`d_format_info` is deprecated as of version 0.4.0 and due to be removed in a future release. "
+                      "To get a FormatInfo from the format name (the previous functionality of this), use "
+                      "`d_format_info_from_name`. To get a FormatInfo from the format UUID, use "
+                      "`d_format_info_from_id`.", DeprecationWarning)
+        return self.d_format_info_from_name
 
     @property
-    def l_format_info(self) -> list[FormatInfo | None]:
-        """Generate the format info list (indexed by ID) when needed
+    def l_unsorted_format_info(self) -> list[FormatInfo]:
+        """Generate the unsorted format info list when needed
         """
-        if self._l_format_info is None:
+        if self._l_unsorted_format_info is None:
             self._init_formats_and_conversions()
 
-        return self._l_format_info
+        return self._l_unsorted_format_info
+
+    @property
+    def l_format_info(self):
+        """DEPRECATED: Get a list of format info keyed by ID"""
+        deprecation_msg = ("`l_format_info` is deprecated as of version 0.4.0 and due to be removed in a future "
+                           "release. To get a FormatInfo from the format UUID, use `d_format_info_from_id`. To get an "
+                           "unsorted list of FormatInfos, use `l_unsorted_format_info`.")
+        warnings.warn(deprecation_msg, DeprecationWarning)
+        raise AttributeError(deprecation_msg)
 
     @property
     def conversions_table(self) -> ConversionsTable:
@@ -1053,9 +1221,8 @@ class DataConversionDatabase:
 
         # Start by initializing the list of conversions
 
-        # Pre-size a list based on the maximum ID plus 1 (since IDs are 1-indexed)
-        max_id: int = max([x[DB_ID_KEY] for x in self.formats])
-        self._l_format_info: list[FormatInfo | None] = [None] * (max_id+1)
+        # Make the dict of format info keyed by ID
+        self._d_format_info_from_id: dict[int, FormatInfo] = {}
 
         for d_single_format_info in self.formats:
             lc_name: str = d_single_format_info[DB_FORMAT_EXT_KEY]
@@ -1064,7 +1231,11 @@ class DataConversionDatabase:
                                      parent=self,
                                      d_single_format_info=d_single_format_info)
 
-            self._l_format_info[format_info.id] = format_info
+            self._d_format_info_from_id[format_info.id] = format_info
+
+        # Create a temporary version of the unsorted format info list. We'll create a pruned version later, but the
+        # unpruned version is needed to create the conversions table, which is needed before we can prune it
+        self._l_unsorted_format_info = list(self._d_format_info_from_id.values())
 
         # Initialize the conversions table now
         self._conversions_table = ConversionsTable(l_converts_to=self.converts_to,
@@ -1074,46 +1245,80 @@ class DataConversionDatabase:
 
         # Get a slice of the table which only includes supported converters
         supported_graph = self._conversions_table.supported_graph
+        d_indices_from_uuids: dict[int, int] = self._conversions_table.d_indices_from_uuids
 
-        for format_id, format_info in enumerate(self._l_format_info):
-            if not format_info:
-                continue
+        l_ids_to_remove: list[int] = []
+        for format_id, format_info in self._d_format_info_from_id.items():
+            if not format_info or supported_graph.degree(d_indices_from_uuids[format_id]) == 0:
+                # The format isn't supported for any conversions, so mark it to be removed from the dict
+                # (Can't remove while we're iterating over the dict)
+                l_ids_to_remove.append(format_id)
+        for id in l_ids_to_remove:
+            del self._d_format_info_from_id[id]
 
-            # Check if the format is supported as the input or output format for any conversion
-            if supported_graph.degree(format_id) > 0:
-                continue
+        # Now create the formats from name dict
+        self._d_format_info_from_name: dict[str, list[FormatInfo]] = {}
 
-            # If we get here, the format isn't supported for any conversions, so remove it from our list
-            self._l_format_info[format_id] = None
-
-        # Now create the formats dict, with only the pruned list of formats
-        self._d_format_info: dict[str, list[FormatInfo]] = {}
-
-        for format_info in self.l_format_info:
-
-            if not format_info:
-                continue
+        for format_info in self._d_format_info_from_id.values():
 
             lc_name = format_info.name.lower()
 
             # Each name may correspond to multiple formats, so we use a list for each entry to list all possible
             # formats for each name
-            if lc_name not in self._d_format_info:
-                self._d_format_info[lc_name] = []
+            if lc_name not in self._d_format_info_from_name:
+                self._d_format_info_from_name[lc_name] = []
 
-            self._d_format_info[lc_name].append(format_info)
+            self._d_format_info_from_name[lc_name].append(format_info)
 
-    def get_converter_info(self, converter_name_or_id: str | int) -> ConverterInfo:
-        """Get a converter's info from either its name or ID
+        # Finally, create a list of format infos (with arbitrary index)
+        self._l_unsorted_format_info = list(self._d_format_info_from_id.values())
+
+    @overload
+    def get_converter_info(self, converter_name_or_id: str | int | ConverterInfo) -> ConverterInfo: ...
+
+    @overload
+    def get_converter_info(self, converter_name_or_id: None) -> list[ConverterInfo]: ...
+
+    @overload
+    def get_converter_info(self) -> list[ConverterInfo]: ...
+
+    def get_converter_info(self, converter_name_or_id: str | int | ConverterInfo | None = None) -> (
+            ConverterInfo | list[ConverterInfo]):
+        """Gets the information on converters or a given converter stored in the database
+
+        Parameters
+        ----------
+        converter_name_or_id : str | int | ConverterInfo | None
+            The name or UUID of the converter to get info for. Default None, which results in a list being returned of
+            the info for all converters in the database
+
+        Returns
+        -------
+        ConverterInfo | list[ConverterInfo]
+            If `converter_name_or_id` is provided, will return a single `ConverterInfo` (or raise an exception if the
+            name is invalid). If not provided, a list of all `ConverterInfo` objects in the database will be returned
+
+        Raises
+        ------
+        FileConverterDatabaseException
+        If `name` is provided but does not match the name of a converter in the database
         """
+
         if isinstance(converter_name_or_id, str):
             try:
-                return self.d_converter_info[converter_name_or_id]
+                return self.d_converter_info_from_name[regularize_name(converter_name_or_id)]
             except KeyError:
-                raise FileConverterDatabaseException(f"Converter name '{converter_name_or_id}' not recognised",
+                raise FileConverterDatabaseException(f"Converter name '{converter_name_or_id}' not found in database. "
+                                                     "Known converter names are (case and space-insensitive):" +
+                                                     ", ".join([x.pretty_name for x in self.l_unsorted_converter_info]),
                                                      help=True)
         elif isinstance(converter_name_or_id, int):
-            return self.l_converter_info[converter_name_or_id]
+            return self.d_converter_info_from_id[converter_name_or_id]
+        elif isinstance(converter_name_or_id, ConverterInfo):
+            # Silently return if it's already a ConverterInfo
+            return converter_name_or_id
+        elif converter_name_or_id is None:
+            return self.l_unsorted_converter_info
         else:
             raise FileConverterDatabaseException(f"Invalid key passed to `get_converter_info`: '{converter_name_or_id}'"
                                                  f" of type '{type(converter_name_or_id)}'. Type must be `str` or "
@@ -1179,7 +1384,7 @@ class DataConversionDatabase:
                 format_name_or_id = l_name_segments[0]
                 which = int(l_name_segments[1])
 
-            l_possible_format_info = self.d_format_info.get(format_name_or_id, [])
+            l_possible_format_info = self.d_format_info_from_name.get(format_name_or_id, [])
 
             if which == "all":
                 return l_possible_format_info
@@ -1195,17 +1400,17 @@ class DataConversionDatabase:
                 format_info = l_possible_format_info[which]
 
             else:
-                msg = (f"Extension '{format_name_or_id}' is ambiguous and must be defined by ID. Possible formats "
-                       "and their IDs are:")
+                msg = (f"Extension '{format_name_or_id}' is ambiguous and must be defined by disambiguated name or ID. "
+                       "Possible formats are:")
                 for possible_format_info in l_possible_format_info:
-                    msg += (f"\n{possible_format_info.id}: {possible_format_info.disambiguated_name} "
-                            f"({possible_format_info.note})")
+                    msg += (f"\n{possible_format_info.disambiguated_name} (ID: {possible_format_info.id}): " +
+                            possible_format_info.note)
                 raise FileConverterDatabaseException(msg, help=True)
 
         elif isinstance(format_name_or_id, int):
             try:
-                format_info = self.l_format_info[format_name_or_id]
-            except IndexError:
+                format_info = self.d_format_info_from_id[format_name_or_id]
+            except KeyError:
                 if return_as_list:
                     return []
                 raise FileConverterDatabaseException(f"Format ID '{format_name_or_id}' not recognised",
@@ -1275,28 +1480,32 @@ def get_database() -> DataConversionDatabase:
 
 
 @overload
-def get_converter_info(name: str) -> ConverterInfo: ...
+def get_converter_info(converter_name_or_id: str | int | ConverterInfo) -> ConverterInfo: ...
+
+
+@overload
+def get_converter_info(converter_name_or_id: None) -> list[ConverterInfo]: ...
 
 
 @overload
 def get_converter_info() -> list[ConverterInfo]: ...
 
 
-def get_converter_info(name: str | None = None) -> ConverterInfo | list[ConverterInfo]:
+def get_converter_info(converter_name_or_id: str | int | ConverterInfo | None = None) -> (
+        ConverterInfo | list[ConverterInfo]):
     """Gets the information on converters or a given converter stored in the database
 
     Parameters
     ----------
-    name : str | None
-        The name of the converter to get info for. Default None, which results in a list being returned of the info for
-        all converters in the database
+    converter_name_or_id : str | int | ConverterInfo | None
+        The name or UUID of the converter to get info for. Default None, which results in a list being returned of the
+        info for all converters in the database
 
     Returns
     -------
     ConverterInfo | list[ConverterInfo]
-        If `name` is provided, will return a single `ConverterInfo` (or raise an exception if the name is invalid). If
-        not provided, a list of all `ConverterInfo` objects in the database will be returned
-
+        If `converter_name_or_id` is provided, will return a single `ConverterInfo` (or raise an exception if the name
+        is invalid). If not provided, a list of all `ConverterInfo` objects in the database will be returned
 
     Raises
     ------
@@ -1304,20 +1513,7 @@ def get_converter_info(name: str | None = None) -> ConverterInfo | list[Converte
         If `name` is provided but does not match the name of a converter in the database
     """
 
-    database = get_database()
-    if name is None:
-        return database.l_converter_info
-
-    regularized_name = regularize_name(name)
-    d_converter_info = database.d_converter_info
-
-    if regularized_name not in d_converter_info:
-        raise FileConverterDatabaseException(f"Converter name '{name}' not found in database. Known converter names " +
-                                             "are (case and space-insensitive):" +
-                                             ", ".join([x.pretty_name for x in database.l_converter_info]),
-                                             help=True)
-
-    return d_converter_info[regularized_name]
+    return get_database().get_converter_info(converter_name_or_id)
 
 
 @overload

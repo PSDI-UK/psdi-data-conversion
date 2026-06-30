@@ -1,0 +1,150 @@
+{
+    "converter": {
+        "id": null,
+        "name": "Example",
+        "desc": "Example converter plugin",
+        "url": "https://www.example.com",
+        "supports_ambiguous_extensions": null,
+        "database_key_prefix": null
+    },
+    "extra_formats": [
+        {
+            "id": 0,
+            "extension": "ex",
+            "format": "ex0",
+            "note": "Example format 0",
+            "composition": true,
+            "connections": true,
+            "two_dim": true,
+            "three_dim": true
+        },
+        {
+            "id": 1,
+            "extension": "ex",
+            "format": "ex1",
+            "note": "Example format 1",
+            "composition": true,
+            "connections": true,
+            "two_dim": true,
+            "three_dim": true
+        },
+        {
+            "id": 2,
+            "extension": "ex",
+            "format": "ex2",
+            "note": "Example format 2",
+            "composition": true,
+            "connections": true,
+            "two_dim": false,
+            "three_dim": false
+        },
+        {
+            "id": 3,
+            "extension": "ex",
+            "format": "ex3",
+            "note": "Example format 3",
+            "composition": true,
+            "connections": true,
+            "two_dim": false,
+            "three_dim": false
+        },
+        {
+            "id": 4,
+            "extension": "ex",
+            "format": "ex4",
+            "note": "Example format 4",
+            "composition": true,
+            "connections": true,
+            "two_dim": false,
+            "three_dim": false
+        }
+    ],
+    "supported_formats": [
+        1,
+        2,
+        236401322426558278145678337727531963580,
+        105366393418923336757704429387316843406
+    ],
+    "in_only_formats": [
+        0
+    ],
+    "out_only_formats": [
+        3
+    ],
+    "supported_conversions": [
+        {
+            "in_id": 1,
+            "out_id": 2,
+            "degree_of_success": "low"
+        },
+        {
+            "in_id": 2,
+            "out_id": 4,
+            "degree_of_success": "high"
+        }
+    ],
+    "unsupported_conversions": [
+        {
+            "in_id": 0,
+            "out_id": 2
+        }
+    ],
+    "in_flags": [
+        {
+            "flag": "a",
+            "description": "Example flag a",
+            "further_info": "N/A",
+            "format_ids": [
+                0,
+                1
+            ]
+        },
+        {
+            "flag": "1",
+            "description": "Example flag 1",
+            "further_info": "N/A",
+            "format_ids": [
+                0,
+                2
+            ]
+        }
+    ],
+    "out_flags": [
+        {
+            "flag": "b",
+            "description": "Example flag b",
+            "further_info": "N/A",
+            "format_ids": [
+                1,
+                2
+            ]
+        }
+    ],
+    "in_options": [
+        {
+            "option": "A",
+            "description": "Example option A",
+            "brief": "optionA",
+            "further_info": "N/A",
+            "format_ids": [
+                1,
+                3
+            ]
+        }
+    ],
+    "out_options": [
+        {
+            "option": "B",
+            "description": "Example option B",
+            "brief": "optionB",
+            "further_info": "N/A",
+            "format_ids": [
+                0,
+                1,
+                2,
+                3,
+                4
+            ]
+        }
+    ]
+}
