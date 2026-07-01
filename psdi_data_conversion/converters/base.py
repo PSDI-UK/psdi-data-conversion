@@ -125,7 +125,7 @@ class FileConverterMeta:
             raise FileConverterSetupException(f"Expected converter data file {data_path} does not exist")
 
         try:
-            data: dict[str, Any] = json.load(open(data_path))
+            data: dict[str, Any] = json.load(open(data_path))["converter"]
         except json.JSONDecodeError as e:
             raise FileConverterSetupException(f"Converter data file {data_path} could not be parsed. Error: {e}")
 
