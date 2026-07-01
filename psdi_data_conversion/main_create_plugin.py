@@ -9,7 +9,16 @@ Entry-point file for the script to create a new converter plugin.
 """
 
 import logging
+import os
+import sys
 from argparse import ArgumentParser
+
+from psdi_data_conversion.converters import base as converters_base
+
+PLUGIN_TEMPLATE = "template"
+PLUGIN_SCRIPT_TEMPLATE = "script_template"
+PLUGIN_PYFILE = "converter.py"
+PLUGIN_DATAFILE = "data.json"
 
 logger = logging.getLogger(__name__)
 
@@ -24,6 +33,17 @@ def get_argument_parser():
     """
 
     parser = ArgumentParser()
+
+    parser.add_argument("name", type=str, nargs="+",
+                        help="The name of the plugin to be created, e.g. 'Open Babel'")
+
+    parser.add_argument("--label", type=str, default=None,
+                        help="The label for the package (i.e. Python-compatible package name). By default, will "
+                        "convert `name` to snake_case (e.g. 'Open Babel' -> 'open_babel')")
+
+    parser.add_argument("--script", action="store_true",
+                        help="If set, will create the plugin using the 'ScriptFileConverter' base class, which uses "
+                        "a script to run the conversion. The script will by default be named `{label}.sh`")
 
     parser.add_argument("--log-level", type=str, default="WARNING",
                         help="The desired level to log at. Allowed values are: 'DEBUG', 'INFO', 'WARNING', 'ERROR, "
@@ -59,7 +79,25 @@ def run_from_args(args):
 
     logger.debug("# Entering function `run_from_args`")
 
-    print("This is currently a dummy executable, with functionality TBD.")
+    # Get the name and label from input arguments
+    name: str = args.name
+    label: str | None = args.label
+    if label:
+        # Check that the label appears to be properly in snake_case
+        if label != label.lower().replace(" ", "_"):
+            print(f"ERROR: Label '{label}' is invalid. The label should be in snake_case: All lower-case with "
+                  "underscores in place of spaces", file=sys.stderr)
+            exit(1)
+    else:
+        # Create the label by converting the name to snake_case
+        label = name.lower().replace(" ", "_")
+
+    # Determine the PascalCase name of the converter (to be used for classes)
+    l_name_words = name.split(" ")
+    pascal_name = "".join(map(lambda x: x.capitalize(), l_name_words))
+
+    # Get the directory containing converter plugins
+    conv_path = os.path.realpath(converters_base.__file__)
 
     logger.debug("# Exiting function `run_from_args`")
 
