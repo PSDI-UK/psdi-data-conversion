@@ -113,7 +113,10 @@ class FileConverterMeta:
     id: int
     name: str
     desc: str
+    info: str
     url: str
+    supports_ambiguous_extensions: bool | None = None
+    database_key_prefix: str | None = None
 
     @staticmethod
     def load(converter_path: str):
@@ -131,7 +134,7 @@ class FileConverterMeta:
 
         meta_kwargs: dict[str, str] = {}
         try:
-            for key in "id", "name", "desc", "url":
+            for key in "id", "name", "desc", "info", "url", "supports_ambiguous_extensions", "database_key_prefix":
                 meta_kwargs[key] = data[key]
         except KeyError as e:
             raise FileConverterSetupException(f"Converter data file {data_path} is missing required data. Error: {e}")

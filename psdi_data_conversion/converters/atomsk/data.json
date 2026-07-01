@@ -1,10 +1,11 @@
 {
     "converter": {
-        "id": null,
+        "id": 191460133701473311458813494619316474031,
         "name": "Atomsk",
-        "desc": "Atomsk converter plugin",
-        "url": "",
-        "supports_ambiguous_extensions": null,
+        "desc": "University of Lille",
+        "info": "Atomsk binaries compiled for 64-bit Linux and MacOS systems are distributed with this package. It may be registered on other systems by compiling it locally and adding the compiled 'atomsk' binary (with this exact name - rename it or make a symbolic link to it if necessary) to your $PATH.\n\nAtomsk is licensed under GPLv3, the full text of which may be found at https://www.gnu.org/licenses/gpl-3.0.en.html. Its binaries are redistributed here under the terms of this license, and any further redistribution must also follow these terms. Its corresponding source code may be found at https://github.com/pierrehirel/atomsk/",
+        "url": "https://atomsk.univ-lille.fr",
+        "supports_ambiguous_extensions": false,
         "database_key_prefix": null
     },
     "extra_formats": [],

@@ -1,11 +1,12 @@
 {
     "converter": {
-        "id": null,
+        "id": 322794523490578343580442401142062932365,
         "name": "Open Babel",
-        "desc": "Open Babel converter plugin",
-        "url": "",
-        "supports_ambiguous_extensions": null,
-        "database_key_prefix": null
+        "desc": "Comprehensive converter",
+        "info": "",
+        "url": "https://open-babel.readthedocs.io/en/latest/",
+        "supports_ambiguous_extensions": false,
+        "database_key_prefix": "ob"
     },
     "extra_formats": [],
     "supported_formats": [],

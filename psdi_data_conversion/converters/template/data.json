@@ -3,6 +3,7 @@
         "id": null,
         "name": "Template",
         "desc": "Template converter plugin",
+        "info": "",
         "url": "",
         "supports_ambiguous_extensions": null,
         "database_key_prefix": null

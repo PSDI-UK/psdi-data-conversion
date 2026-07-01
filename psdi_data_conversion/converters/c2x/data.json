@@ -1,10 +1,11 @@
 {
     "converter": {
-        "id": null,
+        "id": 80044686994611744455636263468222948252,
         "name": "c2x",
-        "desc": "c2x converter plugin",
-        "url": "",
-        "supports_ambiguous_extensions": null,
+        "desc": "DFT electronic structure, University of Cambridge",
+        "info": "c2x binaries compiled for 64-bit Linux and MacOS systems are distributed with this package. It may be registered on other systems by compiling it locally and adding the compiled 'c2x' binary (with this exact name - rename it or make a symbolic link to it if necessary) to your $PATH.\n\nc2x is licensed under GPLv3, the full text of which may be found at https://www.gnu.org/licenses/gpl-3.0.en.html. Its binaries are redistributed here under the terms of this license, and any further redistribution must also follow these terms. Its corresponding source code may be downloaded from https://www.c2x.org.uk/downloads/",
+        "url": "https://www.c2x.org.uk",
+        "supports_ambiguous_extensions": true,
         "database_key_prefix": null
     },
     "extra_formats": [],

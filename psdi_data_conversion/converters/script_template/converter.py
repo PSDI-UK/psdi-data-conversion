@@ -20,6 +20,15 @@ class ScriptTemplateFileConverter(ScriptFileConverter):
     allowed_flags = ()
     allowed_options = ()
 
+    def _get_script_args(self):
+        """Optional override: Override the standard script arguments
+        """
+        l_script_args = super()._get_script_args()
+
+        # Modify the arguments here
+
+        return l_script_args
+
     def _create_message(self) -> str:
         """Optional override: Create a log of options passed to the converter"""
         return ""

@@ -3,6 +3,7 @@
         "id": null,
         "name": "ScriptTemplate",
         "desc": "ScriptTemplate converter plugin",
+        "info": "",
         "url": "",
         "supports_ambiguous_extensions": null,
         "database_key_prefix": null

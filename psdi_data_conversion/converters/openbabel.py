@@ -127,7 +127,6 @@ class OBFileConverter(FileConverter):
     name = CONVERTER_OB
     has_in_format_flags_or_options = True
     has_out_format_flags_or_options = True
-    database_key_prefix = "ob"
 
     allowed_flags = ()
     allowed_options = (("--coord-gen",
