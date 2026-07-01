@@ -156,7 +156,7 @@ def run_from_args(args):
     print(f"Success! The plugin has been created at {plugin_path}. Next steps:\n"
           f"- Edit the '{PLUGIN_PYFILE}' and '{PLUGIN_DATAFILE}' files in this directory to contain all necessary "
           "information about this converter and how to run it\n"
-          f"- Run the script `psdi-data-convert-install-plugin {label}` to install it (RODO: script under "
+          f"- Run the script `psdi-data-convert-install-plugin {label}` to install it (TODO: script under "
           "development)\n"
           "- If this script highlights that formats provided by this plugin may already be in the database,"
           "follow the provided instructions to resolve this and then run it again")
