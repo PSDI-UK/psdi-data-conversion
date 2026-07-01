@@ -149,6 +149,9 @@ def run_from_args(args):
         if filename == PLUGIN_DATAFILE:
             text = text.replace(template_str, name.replace(r'"', r'\"'))
         else:
+            # Where the template string appears alone as part of a word, replace it with the name, otherwise replace it
+            # with the Pascal-case name
+            text = re.sub(f"\b{template_str}\b", name, text)
             text = text.replace(template_str, pascal_name)
 
         open(os.path.join(plugin_path, filename), "w").write(text)
