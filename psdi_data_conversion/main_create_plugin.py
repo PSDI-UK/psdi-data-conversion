@@ -24,7 +24,7 @@ PLUGIN_SCRIPT_TEMPLATEDIR = "script_template"
 PLUGIN_PYFILE = "converter.py"
 PLUGIN_DATAFILE = "data.json"
 
-NON_SNAKE_CASE_CHAR_RE = re.compile(r"[^\w_]")
+NON_SNAKE_CASE_CHAR_RE = re.compile(r"[^a-zA-Z0-9_]")
 
 
 def import_from_path(module_name, file_path):
@@ -94,8 +94,8 @@ def run_from_args(args):
         # Check that the label appears to be properly in snake_case
         if label != label.lower().replace(" ", "_") or NON_SNAKE_CASE_CHAR_RE.search(label):
             print(f"{TextColors.FAIL}ERROR:{TextColors.ENDC} Label '{label}' is invalid. The label should be in "
-                  "snake_case (all lower-case with underscores in place of spaces), containing only letters and "
-                  "underscores", file=sys.stderr)
+                  "snake_case (all lower-case with underscores in place of spaces), containing only letters, digits, "
+                  "and underscores", file=sys.stderr)
             exit(1)
     else:
         # Create the label by converting the name to snake_case and stripping invalid characters
@@ -103,8 +103,8 @@ def run_from_args(args):
         if not label:
             print(f"{TextColors.FAIL}ERROR:{TextColors.ENDC} A valid label could not be generated from converter name "
                   f"'{name}'. Please specify a label directly with '--label ...'. The label should be in "
-                  "snake_case (all lower-case with underscores in place of spaces), containing only letters and "
-                  "underscores", file=sys.stderr)
+                  "snake_case (all lower-case with underscores in place of spaces), containing only letters, digits, "
+                  "and underscores", file=sys.stderr)
             exit(1)
 
     # Determine the PascalCase name of the converter (to be used for classes)
