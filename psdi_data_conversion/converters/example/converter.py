@@ -20,7 +20,7 @@ def process_example_option(l_opts: list[str] | None) -> dict[str, str]:
 class ExampleFileConverter(FileConverter):
     """File converter specialised to use Example for conversions"""
 
-    meta = FileConverterMeta.load(__file__)
+    meta: FileConverterMeta = FileConverterMeta.load(__file__)
     has_in_format_flags_or_options = True
     has_out_format_flags_or_options = True
 

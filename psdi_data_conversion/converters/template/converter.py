@@ -9,7 +9,7 @@ from psdi_data_conversion.converters.base import FileConverter, FileConverterMet
 class TemplateFileConverter(FileConverter):
     """File converter specialised to use Template for conversions"""
 
-    meta = FileConverterMeta.load(__file__)
+    meta: FileConverterMeta = FileConverterMeta.load(__file__)
     has_in_format_flags_or_options = False
     has_out_format_flags_or_options = False
 

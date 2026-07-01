@@ -9,7 +9,7 @@ from psdi_data_conversion.converters.base import FileConverterMeta, ScriptFileCo
 class ScriptTemplateFileConverter(ScriptFileConverter):
     """File converter specialised to use ScriptTemplate for conversions"""
 
-    meta = FileConverterMeta.load(__file__)
+    meta: FileConverterMeta = FileConverterMeta.load(__file__)
 
     script = ""
     required_bin = ""
