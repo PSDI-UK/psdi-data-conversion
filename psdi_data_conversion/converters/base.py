@@ -115,7 +115,7 @@ class FileConverterMeta:
     desc: str
     url: str
 
-    @classmethod
+    @staticmethod
     def load(converter_path: str):
         """Factory method to create a `FileConverterMeta` object for a converter by loading the `data.json` file
         contained in the same folder as the provided filename

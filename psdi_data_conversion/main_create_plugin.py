@@ -24,6 +24,14 @@ PLUGIN_PYFILE = "converter.py"
 PLUGIN_DATAFILE = "data.json"
 
 
+def import_from_path(module_name, file_path):
+    spec = importlib.util.spec_from_file_location(module_name, file_path)
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[module_name] = module
+    spec.loader.exec_module(module)
+    return module
+
+
 def get_argument_parser():
     """Get an argument parser for this script.
 
@@ -76,12 +84,14 @@ def run_from_args(args):
 
     # Get the name and label from input arguments
     name: str = " ".join(args.name)
+    name = name.strip("'\"")
+
     label: str | None = args.label
     if label:
         # Check that the label appears to be properly in snake_case
         if label != label.lower().replace(" ", "_"):
             print(f"{TextColors.FAIL}ERROR:{TextColors.ENDC} Label '{label}' is invalid. The label should be in "
-                  "snake_case: All lower-case with underscores in place of spaces", file=sys.stderr)
+                  "snake_case (all lower-case with underscores in place of spaces)", file=sys.stderr)
             exit(1)
     else:
         # Create the label by converting the name to snake_case
@@ -96,14 +106,15 @@ def run_from_args(args):
 
     # Check for any name clashes with existing converters
     for dir in os.listdir(conv_path):
-        if not os.path.isfile(os.path.join(dir, "__init__.py")):
+        qual_dir = os.path.join(conv_path, dir)
+        if not os.path.isdir(qual_dir) or not os.path.isfile(os.path.join(qual_dir, "__init__.py")):
             continue
         if label == dir:
             print(f"{TextColors.FAIL}ERROR:{TextColors.ENDC} Label '{label}' clashes with the label of an existing "
                   "converter plugin. Please choose a different label (or different name if this was determined from "
                   "the name)", file=sys.stderr)
             exit(1)
-        conv_module = importlib.import_module(os.path.join(dir, PLUGIN_PYFILE))
+        conv_module = import_from_path(label, os.path.join(qual_dir, PLUGIN_PYFILE))
         if name == conv_module.converter.meta.name:
             print(f"{TextColors.FAIL}ERROR:{TextColors.ENDC} Name '{name}' clashes with the name of an existing "
                   "converter plugin. Please choose a different name", file=sys.stderr)
