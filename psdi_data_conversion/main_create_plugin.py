@@ -10,6 +10,7 @@ Entry-point file for the script to create a new converter plugin.
 
 import importlib
 import os
+import re
 import shutil
 import sys
 from argparse import ArgumentParser
@@ -89,9 +90,10 @@ def run_from_args(args):
     label: str | None = args.label
     if label:
         # Check that the label appears to be properly in snake_case
-        if label != label.lower().replace(" ", "_"):
+        if label != label.lower().replace(" ", "_") or not re.compile(r"[\w_]+").fullmatch(label):
             print(f"{TextColors.FAIL}ERROR:{TextColors.ENDC} Label '{label}' is invalid. The label should be in "
-                  "snake_case (all lower-case with underscores in place of spaces)", file=sys.stderr)
+                  "snake_case (all lower-case with underscores in place of spaces), containing only letters and "
+                  "underscores", file=sys.stderr)
             exit(1)
     else:
         # Create the label by converting the name to snake_case
@@ -137,7 +139,7 @@ def run_from_args(args):
 
         # Replace template info as appropriate
         if filename == PLUGIN_DATAFILE:
-            text = text.replace(template_str, name)
+            text = text.replace(template_str, name.replace(r'"', r'\"'))
         else:
             text = text.replace(template_str, pascal_name)
 
