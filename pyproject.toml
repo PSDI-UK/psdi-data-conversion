@@ -76,6 +76,7 @@ plots = ["matplotlib"]
 [project.scripts]
 psdi-data-convert = "psdi_data_conversion.main:main"
 psdi-data-convert-gui = "psdi_data_conversion.main_gui:main"
+psdi-data-convert-create-plugin = "psdi_data_conversion.main_create_plugin:main"
 
 [project.urls]
 Homepage = "https://data-conversion.psdi.ac.uk/"
