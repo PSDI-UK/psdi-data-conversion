@@ -17,6 +17,7 @@ from functools import lru_cache
 from itertools import product
 from logging import getLogger
 from typing import Any, Literal, overload
+from uuid import UUID
 from warnings import catch_warnings
 
 import igraph as ig
@@ -1273,8 +1274,11 @@ class DataConversionDatabase:
         # Finally, create a list of format infos (with arbitrary index)
         self._l_unsorted_format_info = list(self._d_format_info_from_id.values())
 
+    def _get_converter_list(self) -> str:
+        return "\n".join([f"{x.pretty_name} (ID: {UUID(x.id)} / {UUID(x.id)})" for x in self.l_unsorted_converter_info])
+
     @overload
-    def get_converter_info(self, converter_name_or_id: str | int | ConverterInfo) -> ConverterInfo: ...
+    def get_converter_info(self, converter_name_or_id: str | int | UUID | ConverterInfo) -> ConverterInfo: ...
 
     @overload
     def get_converter_info(self, converter_name_or_id: None) -> list[ConverterInfo]: ...
@@ -1282,13 +1286,13 @@ class DataConversionDatabase:
     @overload
     def get_converter_info(self) -> list[ConverterInfo]: ...
 
-    def get_converter_info(self, converter_name_or_id: str | int | ConverterInfo | None = None) -> (
+    def get_converter_info(self, converter_name_or_id: str | int | UUID | ConverterInfo | None = None) -> (
             ConverterInfo | list[ConverterInfo]):
         """Gets the information on converters or a given converter stored in the database
 
         Parameters
         ----------
-        converter_name_or_id : str | int | ConverterInfo | None
+        converter_name_or_id : str | int | UUID | ConverterInfo | None
             The name or UUID of the converter to get info for. Default None, which results in a list being returned of
             the info for all converters in the database
 
@@ -1308,12 +1312,30 @@ class DataConversionDatabase:
             try:
                 return self.d_converter_info_from_name[regularize_name(converter_name_or_id)]
             except KeyError:
-                raise FileConverterDatabaseException(f"Converter name '{converter_name_or_id}' not found in database. "
-                                                     "Known converter names are (case and space-insensitive):" +
-                                                     ", ".join([x.pretty_name for x in self.l_unsorted_converter_info]),
-                                                     help=True)
+                try:
+                    return self.d_converter_info_from_id[UUID(converter_name_or_id).int]
+                except (KeyError, ValueError):
+                    raise FileConverterDatabaseException(f"Converter '{converter_name_or_id}' not found as a name in "
+                                                         "the database and/or was not recognised as a value UUID. "
+                                                         "Known converters are:" +
+                                                         self._get_converter_list(),
+                                                         help=True)
         elif isinstance(converter_name_or_id, int):
-            return self.d_converter_info_from_id[converter_name_or_id]
+            try:
+                return self.d_converter_info_from_id[converter_name_or_id]
+            except KeyError:
+                raise FileConverterDatabaseException(f"Converter ID '{converter_name_or_id}' not found in the database."
+                                                     "Known converters are:" +
+                                                     self._get_converter_list(),
+                                                     help=True)
+        elif isinstance(converter_name_or_id, UUID):
+            try:
+                return self.d_converter_info_from_id[converter_name_or_id.int]
+            except KeyError:
+                raise FileConverterDatabaseException(f"Converter ID '{converter_name_or_id}' not found in the database."
+                                                     "Known converters are:" +
+                                                     self._get_converter_list(),
+                                                     help=True)
         elif isinstance(converter_name_or_id, ConverterInfo):
             # Silently return if it's already a ConverterInfo
             return converter_name_or_id
@@ -1321,8 +1343,8 @@ class DataConversionDatabase:
             return self.l_unsorted_converter_info
         else:
             raise FileConverterDatabaseException(f"Invalid key passed to `get_converter_info`: '{converter_name_or_id}'"
-                                                 f" of type '{type(converter_name_or_id)}'. Type must be `str` or "
-                                                 "`int`")
+                                                 f" of type '{type(converter_name_or_id)}'. Type must be `str`, "
+                                                 "`int`, or `UUID`")
 
     @overload
     def get_format_info(self,
@@ -1480,7 +1502,7 @@ def get_database() -> DataConversionDatabase:
 
 
 @overload
-def get_converter_info(converter_name_or_id: str | int | ConverterInfo) -> ConverterInfo: ...
+def get_converter_info(converter_name_or_id: str | int | UUID | ConverterInfo) -> ConverterInfo: ...
 
 
 @overload
@@ -1491,13 +1513,13 @@ def get_converter_info(converter_name_or_id: None) -> list[ConverterInfo]: ...
 def get_converter_info() -> list[ConverterInfo]: ...
 
 
-def get_converter_info(converter_name_or_id: str | int | ConverterInfo | None = None) -> (
+def get_converter_info(converter_name_or_id: str | int | UUID | ConverterInfo | None = None) -> (
         ConverterInfo | list[ConverterInfo]):
     """Gets the information on converters or a given converter stored in the database
 
     Parameters
     ----------
-    converter_name_or_id : str | int | ConverterInfo | None
+    converter_name_or_id : str | int | UUID | ConverterInfo | None
         The name or UUID of the converter to get info for. Default None, which results in a list being returned of the
         info for all converters in the database
 
