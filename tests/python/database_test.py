@@ -229,9 +229,15 @@ def test_conversion_table():
     assert get_conversion_quality(CONVERTER_ATO, "xyz", "inchi") is None
 
     # Do some detailed checks on one conversion
-    qual = get_conversion_quality(CONVERTER_OB, "xyz", "inchi")
+    xyz_format_info = get_format_info(50135205643343990489495467470022579507)
+    inchi_format_info = get_format_info("inchi")
+
+    # "xyz" is ambiguous, but only one possibility has a valid conversion here, so check that we get that one
+    qual = get_conversion_quality(CONVERTER_OB, "xyz", inchi_format_info)
 
     assert qual.qual_str == const.QUAL_OKAY
+    assert qual.in_format is get_format_info(xyz_format_info)
+    assert qual.out_format is get_format_info(inchi_format_info)
 
     details = qual.details
 
