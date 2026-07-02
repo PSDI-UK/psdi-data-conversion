@@ -147,6 +147,11 @@ DEFAULT_LISTING_LOG_FILE = "data-convert-list" + LOG_EXT
 # Default converter - this must match the name of one of the registered converters
 CONVERTER_DEFAULT = 'Open Babel'
 
+# Converter names
+CONVERTER_OB = 'Open Babel'
+CONVERTER_C2X = 'c2x'
+CONVERTER_ATO = 'Atomsk'
+
 # File format properties which are used to judge conversion quality - KEY is the key for it in the database, and LABEL
 # is how we want to print it out for the user
 QUAL_COMP_KEY = "composition"

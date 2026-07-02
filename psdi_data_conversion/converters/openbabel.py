@@ -10,11 +10,10 @@ from copy import deepcopy
 import py
 from openbabel import openbabel
 
+from psdi_data_conversion.constants import CONVERTER_OB
 from psdi_data_conversion.converters.base import FileConverter, FileConverterInputException
 from psdi_data_conversion.security import SAFE_STRING_RE, string_is_safe
 from psdi_data_conversion.utils import print_wrap
-
-CONVERTER_OB = 'Open Babel'
 
 # Constants related to command-line and library arguments unique to this converter
 L_ALLOWED_COORD_GENS = ["Gen2D", "Gen3D", "neither"]

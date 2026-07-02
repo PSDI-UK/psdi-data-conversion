@@ -20,7 +20,6 @@ from typing import Any, Literal, NamedTuple
 from psdi_data_conversion import constants as const
 from psdi_data_conversion import log_utility
 from psdi_data_conversion.converters import base
-from psdi_data_conversion.converters.openbabel import CONVERTER_OB
 from psdi_data_conversion.file_io import (is_archive, is_supported_archive, pack_zip_or_tar, split_archive_ext,
                                           unpack_zip_or_tar)
 from psdi_data_conversion.utils import regularize_name
@@ -412,7 +411,7 @@ def run_converter(filename: str,
     # Set the maximum file size based on permission level and which converter is being used, if it isn't explicitly
     # specified
     if max_file_size is None:
-        if name == CONVERTER_OB:
+        if name == const.CONVERTER_OB:
             max_file_size == const.DEFAULT_MAX_FILE_SIZE_OB/const.MEGABYTE
         elif permission_level >= const.PERMISSION_LOCAL:
             max_file_size = const.DEFAULT_MAX_FILE_SIZE/const.MEGABYTE

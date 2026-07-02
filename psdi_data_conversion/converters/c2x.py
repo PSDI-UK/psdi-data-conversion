@@ -5,9 +5,8 @@ Created 2025-01-23 by Bryan Gillis.
 c2x FileConverter
 """
 
+from psdi_data_conversion.constants import CONVERTER_C2X
 from psdi_data_conversion.converters.base import ScriptFileConverter
-
-CONVERTER_C2X = 'c2x'
 
 
 class C2xFileConverter(ScriptFileConverter):
