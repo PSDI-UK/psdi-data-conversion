@@ -72,17 +72,17 @@ def run_from_args(args):
         # Get the formats supported by the converter as input-output, input-only, and output-only
         in_formats, out_formats = get_possible_formats(d_in_data["converter"]["name"])
         s_in_formats, s_out_formats = {*in_formats}, {*out_formats}
-        l_supported_formats = [*s_in_formats.union(s_out_formats)]
-        l_in_only_formats = [*s_in_formats.difference(s_out_formats)]
-        l_out_only_formats = [*s_out_formats.difference(s_in_formats)]
+        l_supported_format_ids = [x.id for x in s_in_formats.intersection(s_out_formats)]
+        l_in_only_format_ids = [x.id for x in s_in_formats.difference(s_out_formats)]
+        l_out_only_format_ids = [x.id for x in s_out_formats.difference(s_in_formats)]
 
-        l_supported_formats.sort(), l_in_only_formats.sort(), l_out_only_formats.sort()
+        l_supported_format_ids.sort(), l_in_only_format_ids.sort(), l_out_only_format_ids.sort()
 
-        d_out_data["supported_formats"] = [x.id for x in l_supported_formats]
-        d_out_data["in_only_formats"] = [x.id for x in l_in_only_formats]
-        d_out_data["out_only_formats"] = [x.id for x in l_out_only_formats]
+        d_out_data["supported_formats"] = l_supported_format_ids
+        d_out_data["in_only_formats"] = l_in_only_format_ids
+        d_out_data["out_only_formats"] = l_out_only_format_ids
 
-        json.dump(open(datafile, "w"))
+        json.dump(d_out_data, open(datafile, "w"))
 
 
 def main():

@@ -28,7 +28,7 @@ from psdi_data_conversion.utils import regularize_name
 logLock = Lock()
 
 # Find all modules for specific converters
-l_converter_modules = glob.glob(os.path.dirname(base.__file__) + "/*.py")
+l_converter_modules = glob.glob(os.path.dirname(base.__file__) + "/*/converter.py")
 
 try:
 
@@ -38,32 +38,32 @@ try:
 
     def get_converter_name_and_class(module_path: str) -> NameAndClass | None:
 
-        module_name = os.path.splitext(os.path.basename(module_path))[0]
+        package_subname = os.path.split(os.path.split(module_path)[0])[1]
 
         # Skip the base module and the package __init__
-        if module_name in ("base", "__init__"):
+        if package_subname in ["example", "template", "script_template"]:
             return None
 
-        package_name = "psdi_data_conversion.converters"
-        module = importlib.import_module(f".{module_name}", package=package_name)
+        package_name = f"psdi_data_conversion.converters.{package_subname}"
+        module = importlib.import_module(".converter", package=package_name)
 
         # Check that the module defines a converter
         if not hasattr(module, "converter") or not issubclass(module.converter, base.FileConverter):
-            print(f"ERROR: Module `{module_name}` in package `{package_name}` fails to define a converter to the "
+            print(f"ERROR: Module `{package_name}` in package `{package_name}` fails to define a converter to the "
                   "variable `converter` which is a subclass of `FileConverter`.", file=sys.stderr)
             return None
 
         converter_class = module.converter
 
         # To make querying case/space-insensitive, we store all names in lowercase with spaces stripped
-        name = converter_class.name.lower().replace(" ", "")
+        name = converter_class.meta.name.lower().replace(" ", "")
 
         return NameAndClass(name, converter_class)
 
     # Get a list of all converter names and FileConverter subclasses
     l_converter_names_and_classes = [get_converter_name_and_class(module_name) for
                                      module_name in l_converter_modules]
-    # Remove the None entry from the list, which corresponds to the 'base' module
+    # Remove the None entries from the list, which correspond to the example and template modules
     l_converter_names_and_classes = [x for x in l_converter_names_and_classes if x is not None]
 
     # Make constant dict and list of supported converters
