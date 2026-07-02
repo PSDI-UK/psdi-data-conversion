@@ -499,7 +499,7 @@ class ConverterInfo:
             self._d_out_format_options = self._create_d_format_args(OptionInfo, "out")
         return self._d_out_format_options
 
-    def get_in_format_args(self, in_format: str | int | FormatInfo) -> tuple[list[FlagInfo], list[OptionInfo]]:
+    def get_in_format_args(self, in_format: str | int | UUID | FormatInfo) -> tuple[list[FlagInfo], list[OptionInfo]]:
         """Get the input flags and options supported for a given format (provided as its extension)
 
         Parameters
@@ -533,7 +533,7 @@ class ConverterInfo:
 
         return l_flag_info, l_option_info
 
-    def get_out_format_args(self, out_format: str | int | FormatInfo) -> tuple[list[FlagInfo], list[OptionInfo]]:
+    def get_out_format_args(self, out_format: str | int | UUID | FormatInfo) -> tuple[list[FlagInfo], list[OptionInfo]]:
         """Get the output flags and options supported for a given format (provided as its extension)
 
         Parameters
@@ -698,11 +698,11 @@ class ConversionQualityInfo:
     converter_name: str
     """The name of the converter"""
 
-    in_format: str
-    """The extension of the input file format"""
+    in_format: FormatInfo
+    """The info for the input file format"""
 
-    out_format: str
-    """The extension of the output file format"""
+    out_format: FormatInfo
+    """The info for the output file format"""
 
     qual_str: str
     """A string describing the quality of the conversion"""
@@ -830,17 +830,17 @@ class ConversionsTable:
     @lru_cache(maxsize=None)
     def get_conversion_quality(self,
                                converter_name: str,
-                               in_format: str | int,
-                               out_format: str | int) -> ConversionQualityInfo | None:
+                               in_format: str | int | UUID | FormatInfo,
+                               out_format: str | int | UUID | FormatInfo) -> ConversionQualityInfo | None:
         """Get an indication of the quality of a conversion from one format to another, or if it's not possible
 
         Parameters
         ----------
         converter_name : str
             The name of the converter
-        in_format : str | int
+        in_format : str | int | UUID | FormatInfo
             The extension or ID of the input file format
-        out_format : str | int
+        out_format : str | int | UUID | FormatInfo
             The extension or ID of the output file format
 
         Returns
@@ -859,7 +859,7 @@ class ConversionsTable:
 
         # Get the full format info for each format
         in_format_info = self.parent.get_format_info(in_format, which_format)
-        out_format_info: int = self.parent.get_format_info(out_format, which_format)
+        out_format_info = self.parent.get_format_info(out_format, which_format)
 
         # First check if the conversion is possible
         if converter_name not in self._get_possible_converters(in_format_info, out_format_info):
@@ -913,15 +913,15 @@ class ConversionsTable:
         details = "\n".join([d_prop_conversion_info[x].note for x in l_props if d_prop_conversion_info[x].note])
 
         return ConversionQualityInfo(converter_name=converter_name,
-                                     in_format=in_format,
-                                     out_format=out_format,
+                                     in_format=in_format_info,
+                                     out_format=out_format_info,
                                      qual_str=qual_str,
                                      details=details,
                                      d_prop_conversion_info=d_prop_conversion_info)
 
     def get_possible_conversions(self,
-                                 in_format: str | int,
-                                 out_format: str | int,
+                                 in_format: str | int | UUID | FormatInfo,
+                                 out_format: str | int | UUID | FormatInfo,
                                  only: Literal["all"] | Literal["supported"] | Literal["registered"] = "all"
                                  ) -> list[tuple[ConverterInfo, FormatInfo, FormatInfo]]:
         """Get a list of converters which can perform a conversion from one format to another, disambiguating in the
@@ -929,9 +929,9 @@ class ConversionsTable:
 
         Parameters
         ----------
-        in_format : str | int
+        in_format : str | int | UUID | FormatInfo
             The extension or ID of the input file format
-        out_format : str | int
+        out_format : str | int | UUID | FormatInfo
             The extension or ID of the output file format
 
         Returns
@@ -999,8 +999,8 @@ class ConversionsTable:
         return num_lost_attrs
 
     def get_conversion_pathway(self,
-                               in_format: str | int | FormatInfo,
-                               out_format: str | int | FormatInfo,
+                               in_format: str | int | UUID | FormatInfo,
+                               out_format: str | int | UUID | FormatInfo,
                                only: Literal["all"] | Literal["supported"] | Literal["registered"] = "all"
                                ) -> list[tuple[ConverterInfo, FormatInfo, FormatInfo]] | None:
         """Gets a pathway to convert from one format to another
@@ -1614,17 +1614,17 @@ def get_format_info(format_name_or_id: str | int | UUID | FormatInfo,
 
 
 def get_conversion_quality(converter_name: str,
-                           in_format: str | int,
-                           out_format: str | int) -> ConversionQualityInfo | None:
+                           in_format: str | int | UUID | FormatInfo,
+                           out_format: str | int | UUID | FormatInfo) -> ConversionQualityInfo | None:
     """Get an indication of the quality of a conversion from one format to another, or if it's not possible
 
     Parameters
     ----------
     converter_name : str
         The name of the converter
-    in_format : str | int
+    in_format : str | int | UUID | FormatInfo
         The extension or ID of the input file format
-    out_format : str | int
+    out_format : str | int | UUID | FormatInfo
         The extension or ID of the output file format
 
     Returns
@@ -1639,16 +1639,17 @@ def get_conversion_quality(converter_name: str,
                                                                    out_format=out_format)
 
 
-def get_possible_conversions(in_format: str | int,
-                             out_format: str | int) -> list[tuple[ConverterInfo, FormatInfo, FormatInfo]]:
+def get_possible_conversions(in_format: str | int | UUID | FormatInfo,
+                             out_format: str | int | UUID | FormatInfo) -> list[
+                                 tuple[ConverterInfo, FormatInfo, FormatInfo]]:
     """Get a list of converters which can perform a conversion from one format to another and disambiguate in the case
     of ambiguous input/output formats
 
     Parameters
     ----------
-    in_format : str | int
+    in_format : str | int | UUID | FormatInfo
         The extension or ID of the input file format
-    out_format : str | int
+    out_format : str | int | UUID | FormatInfo
         The extension or ID of the output file format
 
     Returns
@@ -1663,8 +1664,8 @@ def get_possible_conversions(in_format: str | int,
                                                                      out_format=out_format)
 
 
-def get_conversion_pathway(in_format: str | int | FormatInfo,
-                           out_format: str | int | FormatInfo,
+def get_conversion_pathway(in_format: str | int | UUID | FormatInfo,
+                           out_format: str | int | UUID | FormatInfo,
                            only: Literal["all"] | Literal["supported"] | Literal["registered"] = "all"
                            ) -> list[tuple[ConverterInfo, FormatInfo, FormatInfo]] | None:
     """Get a list of conversions that can be performed to convert one format to another. This is primarily used when a
@@ -1674,10 +1675,10 @@ def get_conversion_pathway(in_format: str | int | FormatInfo,
 
     Parameters
     ----------
-    in_format : str | int
+    in_format : str | int | UUID | FormatInfo
         The input file format. For this function, the format must be defined uniquely, either by using a disambiguated
         extension, ID, or FormatInfo
-    out_format : str | int
+    out_format : str | int | UUID | FormatInfo
         The output file format. For this function, the format must be defined uniquely, either by using a disambiguated
         extension, ID, or FormatInfo
     only : Literal["all"] | Literal["supported"] | Literal["registered"], optional
@@ -1709,8 +1710,8 @@ def get_conversion_pathway(in_format: str | int | FormatInfo,
 
 
 def disambiguate_formats(converter_name: str,
-                         in_format: str | int | FormatInfo,
-                         out_format: str | int | FormatInfo) -> tuple[FormatInfo, FormatInfo]:
+                         in_format: str | int | UUID | FormatInfo,
+                         out_format: str | int | UUID | FormatInfo) -> tuple[FormatInfo, FormatInfo]:
     """Try to disambiguate formats by seeing if there's only one possible conversion between formats matching those
     provided.
 
@@ -1718,9 +1719,9 @@ def disambiguate_formats(converter_name: str,
     ----------
     converter_name : str
         The name of the converter
-    in_format : str | int
+    in_format : str | int | UUID | FormatInfo
         The extension or ID of the input file format
-    out_format : str | int
+    out_format : str | int | UUID | FormatInfo
         The extension or ID of the output file format
 
     Returns

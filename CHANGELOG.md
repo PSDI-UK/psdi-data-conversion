@@ -19,14 +19,16 @@
   - Since the graphs of the `ConversionsTable` class (`graph`, `supported_graph`, and `registered_graph`) don't support UUIDs as vertex IDs, they internally use indices for these vertices, which are generated at runtime. To support converting between UUIDs and vertex indices, the following dicts have been added to this class:
     - `d_indices_from_uuids`
     - `d_uuids_from_indices`
+- The `ConversionQualityInfo` object returned by the method `psdi_data_conversion.database.get_conversion_quality` will now have attributes `in_format` and `out_format` always be `FormatInfo` objects, rather than the types of these matching the types of the formats input to this method
 
 ### New and Changed Functionality
 
-- The database method `get_converter_info` in can now be called without a `name` argument, and will return a list of info on all converters
+- The database method `get_converter_info` can now be called without a `name` argument, and will return a list of info on all converters
 - The converter info provided by queries to the database methods now contains member variables `supported` and `registered` indicating the status of the converter:
   - Both `False`: The converter is known to exist, but we currently provide no support for it
   - `supported==True`, `registered==False`: This package has a plugin ready to support this converter, but it cannot currently be used due to e.g. a required binary being missing which must be provided by the user
   - Both `True`: The converter is supported and ready to use
+- `ConverterInfo`, `FormatInfo`, `FlagInfo`, and `OptionInfo` now have a `uuid` property which provides the ID converted to a UUID class
 
 ### Bugfixes
 
