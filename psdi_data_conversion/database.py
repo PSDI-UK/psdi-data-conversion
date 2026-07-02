@@ -1366,22 +1366,22 @@ class DataConversionDatabase:
 
     @overload
     def get_format_info(self,
-                        format_name_or_id: str | int | FormatInfo,
+                        format_name_or_id: str | int | UUID | FormatInfo,
                         which: int | None = None) -> FormatInfo: ...
 
     @overload
     def get_format_info(self,
-                        format_name_or_id: str | int | FormatInfo,
+                        format_name_or_id: str | int | UUID | FormatInfo,
                         which: Literal["all"]) -> list[FormatInfo]: ...
 
     def get_format_info(self,
-                        format_name_or_id: str | int | FormatInfo,
+                        format_name_or_id: str | int | UUID | FormatInfo,
                         which: int | Literal["all"] | None = None) -> FormatInfo | list[FormatInfo]:
         """Gets the information on a given file format stored in the database
 
         Parameters
         ----------
-        format_name_or_id : str | int | FormatInfo
+        format_name_or_id : str | int | UUID | FormatInfo
             The name (extension) of the format, or its ID. In the case of ambiguous extensions which could apply to
             multiple formats, the ID must be used here or a FileConverterDatabaseException will be raised. This also
             allows passing a FormatInfo to this, in which case that object will be silently returned, to allow
@@ -1404,6 +1404,18 @@ class DataConversionDatabase:
             return_as_list = False
 
         if isinstance(format_name_or_id, str):
+            # Check first if it's a UUID
+            try:
+                format_info = self.d_format_info_from_id[UUID(format_name_or_id).int]
+                if which == "all":
+                    return [format_info]
+                return format_info
+            except KeyError:
+                raise FileConverterDatabaseException(f"Format ID '{format_name_or_id}' not recognised",
+                                                     help=True)
+            except ValueError:
+                pass
+
             # Silently strip leading period
             if format_name_or_id.startswith("."):
                 format_name_or_id = format_name_or_id[1:]
@@ -1450,6 +1462,15 @@ class DataConversionDatabase:
         elif isinstance(format_name_or_id, int):
             try:
                 format_info = self.d_format_info_from_id[format_name_or_id]
+            except KeyError:
+                if return_as_list:
+                    return []
+                raise FileConverterDatabaseException(f"Format ID '{format_name_or_id}' not recognised",
+                                                     help=True)
+
+        elif isinstance(format_name_or_id, UUID):
+            try:
+                format_info = self.d_format_info_from_id[format_name_or_id.int]
             except KeyError:
                 if return_as_list:
                     return []
@@ -1557,22 +1578,22 @@ def get_converter_info(converter_name_or_id: str | int | UUID | ConverterInfo | 
 
 
 @overload
-def get_format_info(format_name_or_id: str | int | FormatInfo,
+def get_format_info(format_name_or_id: str | int | UUID | FormatInfo,
                     which: int | None = None) -> FormatInfo: ...
 
 
 @overload
-def get_format_info(format_name_or_id: str | int | FormatInfo,
+def get_format_info(format_name_or_id: str | int | UUID | FormatInfo,
                     which: Literal["all"]) -> list[FormatInfo]: ...
 
 
-def get_format_info(format_name_or_id: str | int | FormatInfo,
+def get_format_info(format_name_or_id: str | int | UUID | FormatInfo,
                     which: int | Literal["all"] | None = None) -> FormatInfo | list[FormatInfo]:
     """Gets the information on a given file format stored in the database
 
     Parameters
     ----------
-    format_name_or_id : str | int | FormatInfo
+    format_name_or_id : str | int | UUID | FormatInfo
         The name (extension) of the format, or its ID. In the case of ambiguous extensions which could apply to multiple
         formats, the ID must be used here or a FileConverterDatabaseException will be raised. This also allows passing a
         FormatInfo to this, in which case that object will be silently returned, to allow normalising the input to
