@@ -134,6 +134,15 @@ def test_format_info():
         # Check that the UUID is constructed appropriately
         assert format_info.uuid == UUID(int=format_info.id)
 
+        # Check that this format's info can be retrieved through all supported methods
+        assert format_info is get_format_info(format_info)
+        assert format_info is get_format_info(format_info.id)
+        assert format_info is get_format_info(UUID(int=format_info.id))
+        assert format_info is get_format_info(str(UUID(int=format_info.id)))
+        assert format_info is get_format_info(UUID(int=format_info.id).hex)
+        assert format_info is get_format_info(format_info.name, which=0)
+        assert format_info is get_format_info(format_info.disambiguated_name)
+
         # Check properties are as expected
 
         if name in ("pdb", "mmcif", "inchi", "molreport"):
