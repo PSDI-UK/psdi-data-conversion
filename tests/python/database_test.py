@@ -5,6 +5,8 @@ Created 2025-02-03 by Bryan Gillis.
 Unit tests relating to using the database
 """
 
+from uuid import UUID
+
 import pytest
 
 from psdi_data_conversion import constants as const
@@ -43,7 +45,7 @@ def test_converter_info():
     for name in L_SUPPORTED_CONVERTERS:
         assert name in l_converter_names
 
-    for id, converter_info in enumerate(get_converter_info()):
+    for converter_info in l_converter_info:
 
         if converter_info is None:
             continue
@@ -69,6 +71,15 @@ def test_converter_info():
         # Check URL appears reasonable
         assert isinstance(converter_info.url, str)
         assert "http" in converter_info.url
+
+        # Check that this converter's info can be retrieved through all supported methods
+        assert converter_info is get_converter_info(converter_info)
+        assert converter_info is get_converter_info(converter_info.id)
+        assert converter_info is get_converter_info(UUID(int=converter_info.id))
+        assert converter_info is get_converter_info(str(UUID(int=converter_info.id)))
+        assert converter_info is get_converter_info(UUID(int=converter_info.id).hex)
+        assert converter_info is get_converter_info(converter_info.name)
+        assert converter_info is get_converter_info(converter_info.pretty_name)
 
 
 def test_format_args():
