@@ -64,6 +64,9 @@ def test_converter_info():
         assert isinstance(converter_info.id, int)
         assert converter_info.id > 0
 
+        # Check that the UUID matches the ID
+        assert converter_info.uuid == UUID(int=converter_info.id)
+
         # Check description has some text in it
         assert isinstance(converter_info.description, str)
         assert len(converter_info.description) > 0
