@@ -5,6 +5,8 @@ Created 2025-02-03 by Bryan Gillis.
 Unit tests relating to using the database
 """
 
+from uuid import UUID
+
 import pytest
 
 from psdi_data_conversion import constants as const
@@ -43,7 +45,7 @@ def test_converter_info():
     for name in L_SUPPORTED_CONVERTERS:
         assert name in l_converter_names
 
-    for id, converter_info in enumerate(get_converter_info()):
+    for converter_info in l_converter_info:
 
         if converter_info is None:
             continue
@@ -62,6 +64,9 @@ def test_converter_info():
         assert isinstance(converter_info.id, int)
         assert converter_info.id > 0
 
+        # Check that the UUID matches the ID
+        assert converter_info.uuid == UUID(int=converter_info.id)
+
         # Check description has some text in it
         assert isinstance(converter_info.description, str)
         assert len(converter_info.description) > 0
@@ -69,6 +74,15 @@ def test_converter_info():
         # Check URL appears reasonable
         assert isinstance(converter_info.url, str)
         assert "http" in converter_info.url
+
+        # Check that this converter's info can be retrieved through all supported methods
+        assert converter_info is get_converter_info(converter_info)
+        assert converter_info is get_converter_info(converter_info.id)
+        assert converter_info is get_converter_info(UUID(int=converter_info.id))
+        assert converter_info is get_converter_info(str(UUID(int=converter_info.id)))
+        assert converter_info is get_converter_info(UUID(int=converter_info.id).hex)
+        assert converter_info is get_converter_info(converter_info.name)
+        assert converter_info is get_converter_info(converter_info.pretty_name)
 
 
 def test_format_args():
@@ -96,6 +110,10 @@ def test_format_args():
     out_flag_info_0 = l_out_flags[0]
     assert get_out_format_args(converter_name, out_format, out_flag_info_0.flag) is out_flag_info_0
 
+    # Check that the UUID is constructed appropriately for the info objects
+    assert in_flag_info_0.uuid == UUID(int=in_flag_info_0.id)
+    assert out_flag_info_0.uuid == UUID(int=out_flag_info_0.id)
+
 
 def test_format_info():
     """Test that we can get the expected information on a few test formats
@@ -112,6 +130,18 @@ def test_format_info():
 
         # Check name matches
         assert format_info.name == name
+
+        # Check that the UUID is constructed appropriately
+        assert format_info.uuid == UUID(int=format_info.id)
+
+        # Check that this format's info can be retrieved through all supported methods
+        assert format_info is get_format_info(format_info)
+        assert format_info is get_format_info(format_info.id)
+        assert format_info is get_format_info(UUID(int=format_info.id))
+        assert format_info is get_format_info(str(UUID(int=format_info.id)))
+        assert format_info is get_format_info(UUID(int=format_info.id).hex)
+        assert format_info is get_format_info(format_info.name, which=0)
+        assert format_info is get_format_info(format_info.disambiguated_name)
 
         # Check properties are as expected
 
@@ -199,9 +229,15 @@ def test_conversion_table():
     assert get_conversion_quality(CONVERTER_ATO, "xyz", "inchi") is None
 
     # Do some detailed checks on one conversion
-    qual = get_conversion_quality(CONVERTER_OB, "xyz", "inchi")
+    xyz_format_info = get_format_info(50135205643343990489495467470022579507)
+    inchi_format_info = get_format_info("inchi")
+
+    # "xyz" is ambiguous, but only one possibility has a valid conversion here, so check that we get that one
+    qual = get_conversion_quality(CONVERTER_OB, "xyz", inchi_format_info)
 
     assert qual.qual_str == const.QUAL_OKAY
+    assert qual.in_format is get_format_info(xyz_format_info)
+    assert qual.out_format is get_format_info(inchi_format_info)
 
     details = qual.details
 
