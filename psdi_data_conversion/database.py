@@ -212,6 +212,12 @@ class ConverterInfo:
                          DB_OUT_OPTIONS_FORMATS_KEY_BASE):
             self._arg_info[key_base] = d_data.get(self._key_prefix + key_base)
 
+    @property
+    def uuid(self):
+        """Returns the ID as a UUID object
+        """
+        return UUID(int=self.id)
+
     def _create_d_arg_info(self, subclass: type[ArgInfo]):
         """Creates either the flag or option info dicts when needed
         """
