@@ -110,6 +110,10 @@ def test_format_args():
     out_flag_info_0 = l_out_flags[0]
     assert get_out_format_args(converter_name, out_format, out_flag_info_0.flag) is out_flag_info_0
 
+    # Check that the UUID is constructed appropriately for the info objects
+    assert in_flag_info_0.uuid == UUID(int=in_flag_info_0.id)
+    assert out_flag_info_0.uuid == UUID(int=out_flag_info_0.id)
+
 
 def test_format_info():
     """Test that we can get the expected information on a few test formats
@@ -126,6 +130,9 @@ def test_format_info():
 
         # Check name matches
         assert format_info.name == name
+
+        # Check that the UUID is constructed appropriately
+        assert format_info.uuid == UUID(int=format_info.id)
 
         # Check properties are as expected
 

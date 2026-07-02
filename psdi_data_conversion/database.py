@@ -98,6 +98,12 @@ class ArgInfo:
     s_in_formats: set[int] = field(default_factory=set)
     s_out_formats: set[int] = field(default_factory=set)
 
+    @property
+    def uuid(self):
+        """Returns the ID as a UUID object
+        """
+        return UUID(int=self.id)
+
 
 @dataclass
 class FlagInfo(ArgInfo):
@@ -621,6 +627,12 @@ class FormatInfo:
         """The format name all in lower-case"""
 
         self._disambiguated_name: str | None = None
+
+    @property
+    def uuid(self):
+        """Returns the ID as a UUID object
+        """
+        return UUID(int=self.id)
 
     @property
     def disambiguated_name(self) -> str:
