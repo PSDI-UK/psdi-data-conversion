@@ -199,6 +199,34 @@ class FileConverter:
     argument parser's `add_argument` method, and callable function to get a dict of needed info for them.
     As with flags, an empty tuple should be provided if the converter does not accept any options"""
 
+    @property
+    def id(self):
+        return self.meta.id
+
+    @property
+    def name(self):
+        return self.meta.name
+
+    @property
+    def desc(self):
+        return self.meta.desc
+
+    @property
+    def info(self):
+        return self.meta.info
+
+    @property
+    def url(self):
+        return self.meta.url
+
+    @property
+    def supports_ambiguous_extensions(self):
+        return self.meta.supports_ambiguous_extensions
+
+    @property
+    def database_key_prefix(self):
+        return self.meta.database_key_prefix
+
     @abc.abstractmethod
     def _convert(self):
         """Run the conversion with the desired converter. This must be implemented for each converter class.

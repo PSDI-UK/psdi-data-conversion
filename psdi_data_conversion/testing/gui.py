@@ -24,8 +24,9 @@ from selenium.webdriver.support.ui import WebDriverWait
 from psdi_data_conversion.constants import STATUS_CODE_GENERAL
 from psdi_data_conversion.converters.base import (FileConverterAbortException, FileConverterException,
                                                   FileConverterInputException)
-from psdi_data_conversion.converters.openbabel import (COORD_GEN_KEY, COORD_GEN_QUAL_KEY, DEFAULT_COORD_GEN_QUAL,
-                                                       L_ALLOWED_COORD_GEN_QUALS, L_ALLOWED_COORD_GENS)
+from psdi_data_conversion.converters.openbabel.converter import (COORD_GEN_KEY, COORD_GEN_QUAL_KEY,
+                                                                 DEFAULT_COORD_GEN_QUAL, L_ALLOWED_COORD_GEN_QUALS,
+                                                                 L_ALLOWED_COORD_GENS)
 from psdi_data_conversion.database import get_format_info
 from psdi_data_conversion.file_io import split_archive_ext
 from psdi_data_conversion.testing.constants import DEFAULT_ORIGIN
