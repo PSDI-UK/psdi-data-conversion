@@ -17,6 +17,7 @@ from collections.abc import Callable
 from copy import deepcopy
 from dataclasses import dataclass
 from typing import Any
+from uuid import UUID
 
 from psdi_data_conversion import constants as const
 from psdi_data_conversion import log_utility
@@ -118,6 +119,13 @@ class FileConverterMeta:
     supports_ambiguous_extensions: bool | None = None
     database_key_prefix: str | None = None
 
+    @property
+    def uuid(self):
+        try:
+            return UUID(int=self.id)
+        except ValueError:
+            return None
+
     @staticmethod
     def load(converter_path: str):
         """Factory method to create a `FileConverterMeta` object for a converter by loading the `data.json` file
@@ -201,30 +209,42 @@ class FileConverter:
 
     @property
     def id(self):
+        """The converter ID, which will be taken from its `data.json` file"""
         return self.meta.id
 
     @property
+    def uuid(self):
+        """The converter UUID, which will be taken from its `data.json` file"""
+        return self.meta.uuid
+
+    @property
     def name(self):
+        """The converter name, which will be taken from its `data.json` file"""
         return self.meta.name
 
     @property
     def desc(self):
+        """The converter description, which will be taken from its `data.json` file"""
         return self.meta.desc
 
     @property
     def info(self):
+        """The converter info, which will be taken from its `data.json` file"""
         return self.meta.info
 
     @property
     def url(self):
+        """The converter url, which will be taken from its `data.json` file"""
         return self.meta.url
 
     @property
     def supports_ambiguous_extensions(self):
+        """Whether or not the converter supports ambiguous extensions, which will be taken from its `data.json` file"""
         return self.meta.supports_ambiguous_extensions
 
     @property
     def database_key_prefix(self):
+        """The converter database key prefix, which will be taken from its `data.json` file"""
         return self.meta.database_key_prefix
 
     @abc.abstractmethod
