@@ -1790,17 +1790,17 @@ def _find_arg(tl_args: tuple[list[FlagInfo], list[OptionInfo]],
                                          "conversion")
 
 
-def get_in_format_args(converter_name: str,
-                       format_name: str,
+def get_in_format_args(converter_name: str | int | UUID | ConverterInfo,
+                       format_name: str | int | UUID | FormatInfo,
                        arg: str | None = None) -> tuple[list[FlagInfo], list[OptionInfo]] | ArgInfo:
     """Get the input flags and options supported by a given converter for a given format (provided as its extension).
     Optionally will provide information on just a single flag or option if its value is provided as an optional argument
 
     Parameters
     ----------
-    converter_name : str
+    converter_name : str | int | UUID | ConverterInfo
         The converter name
-    format_name : str
+    format_name : str | int | UUID | FormatInfo
         The file format name (extension)
     arg : str | None
         If provided, only information on this flag or option will be provided
@@ -1819,18 +1819,18 @@ def get_in_format_args(converter_name: str,
     return _find_arg(tl_args, arg)
 
 
-def get_out_format_args(converter_name: str,
-                        format_name: str,
+def get_out_format_args(converter_name: str | int | UUID | ConverterInfo,
+                        format_name: str | int | UUID | FormatInfo,
                         arg: str | None = None) -> tuple[list[FlagInfo], list[OptionInfo]]:
     """Get the output flags and options supported by a given converter for a given format (provided as its extension).
     Optionally will provide information on just a single flag or option if its value is provided as an optional argument
 
     Parameters
     ----------
-    converter_name : str
-        The converter name
-    format_name : str
-        The file format name (extension)
+    converter_name : str | int | UUID | ConverterInfo
+        The converter
+    format_name : str | int | UUID | FormatInfo
+        The file format (extension)
     arg : str | None
         If provided, only information on this flag or option will be provided
 
