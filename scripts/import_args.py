@@ -101,8 +101,12 @@ def run_from_args(args):
                 arg_str = "flag"
             else:
                 arg_str = "option"
+
             l_applies_to.sort()
-            d_out_data[f"{in_out_str}_{arg_str}"] = l_applies_to
+
+            d_out_data[f"{in_out_str}_{arg_str}"] = d_in_data[f"{db_key_prefix}{arg_str}s_{in_out_str}"]
+
+            d_out_data[f"{in_out_str}_{arg_str}"]["format_ids"] = l_applies_to
 
         json.dump(d_out_data, open(datafile, "w"))
 

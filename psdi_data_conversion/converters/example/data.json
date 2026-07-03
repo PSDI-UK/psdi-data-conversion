@@ -92,6 +92,7 @@
     ],
     "in_flags": [
         {
+            "id": null,
             "flag": "a",
             "description": "Example flag a",
             "further_info": "N/A",
@@ -101,6 +102,7 @@
             ]
         },
         {
+            "id": null,
             "flag": "1",
             "description": "Example flag 1",
             "further_info": "N/A",
@@ -112,6 +114,7 @@
     ],
     "out_flags": [
         {
+            "id": null,
             "flag": "b",
             "description": "Example flag b",
             "further_info": "N/A",
@@ -123,6 +126,7 @@
     ],
     "in_options": [
         {
+            "id": null,
             "option": "A",
             "description": "Example option A",
             "brief": "optionA",
@@ -135,6 +139,7 @@
     ],
     "out_options": [
         {
+            "id": null,
             "option": "B",
             "description": "Example option B",
             "brief": "optionB",
