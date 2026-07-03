@@ -22,7 +22,7 @@ import pytest
 
 from psdi_data_conversion.constants import CONVERTER_DEFAULT, GLOBAL_LOG_FILENAME, LOG_NONE, OUTPUT_LOG_EXT
 from psdi_data_conversion.converter import run_converter
-from psdi_data_conversion.converters.openbabel import COORD_GEN_KEY, COORD_GEN_QUAL_KEY
+from psdi_data_conversion.converters.openbabel.converter import COORD_GEN_KEY, COORD_GEN_QUAL_KEY
 from psdi_data_conversion.database import get_format_info
 from psdi_data_conversion.dist import LINUX_LABEL, get_dist
 from psdi_data_conversion.file_io import get_package_path, is_archive, split_archive_ext

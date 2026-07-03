@@ -110,11 +110,11 @@ class FileConverterUnsupportedException(FileConverterInputException):
 class FileConverterMeta:
     """Class containing meta information for a file converter
     """
-    id: int
-    name: str
-    desc: str
-    info: str
-    url: str
+    id: int | None = None
+    name: str | None = None
+    desc: str | None = None
+    info: str | None = None
+    url: str | None = None
     supports_ambiguous_extensions: bool | None = None
     database_key_prefix: str | None = None
 
@@ -180,15 +180,11 @@ class FileConverter:
     """Class to handle conversion of files from one type to another
     """
 
+    meta = FileConverterMeta()
+    """Metadata about the converter"""
+
     # Class variables and methods which must/can be overridden by subclasses
     # ----------------------------------------------------------------------
-
-    name: str | None = None
-    """Name of the converter - must be overridden in each subclass to name each converter uniquely"""
-
-    info: str | None = None
-    """General info about the converter - can be overridden in a subclass to add information about a converter which
-    isn't covered in its database entry, such as notes on its support."""
 
     allowed_flags: tuple[tuple[str, dict, Callable], ...] | None = None
     """List of flags allowed for the converter (flags are arguments that are set by being present, and don't require a
@@ -202,13 +198,6 @@ class FileConverter:
     - should be overridden with a tuple of tuples containing the option names, a dict of kwargs to be passed to the
     argument parser's `add_argument` method, and callable function to get a dict of needed info for them.
     As with flags, an empty tuple should be provided if the converter does not accept any options"""
-
-    database_key_prefix: str | None = None
-    """The prefix used in the database for keys related to this converter"""
-
-    supports_ambiguous_extensions: bool = False
-    """Whether or not this converter supports formats which share the same extension. This is used to enforce stricter
-    but less user-friendly requirements on format specification"""
 
     @abc.abstractmethod
     def _convert(self):
@@ -335,8 +324,7 @@ class FileConverter:
         try:
 
             if max_file_size is None:
-                from psdi_data_conversion.converters.openbabel import CONVERTER_OB
-                if self.name == CONVERTER_OB:
+                if self.meta.name == const.CONVERTER_OB:
                     self.max_file_size = const.DEFAULT_MAX_FILE_SIZE_OB
                 else:
                     self.max_file_size = const.DEFAULT_MAX_FILE_SIZE
@@ -346,8 +334,7 @@ class FileConverter:
             # Set values from envvars if desired
             if use_envvars:
                 # Get the maximum allowed size from the envvar for it
-                from psdi_data_conversion.converters.openbabel import CONVERTER_OB
-                if self.name == CONVERTER_OB:
+                if self.meta.name == const.CONVERTER_OB:
                     ev_max_file_size = os.environ.get(const.MAX_FILESIZE_OB_EV)
                 else:
                     ev_max_file_size = os.environ.get(const.MAX_FILESIZE_EV)
@@ -419,7 +406,7 @@ class FileConverter:
                 if not qual:
                     raise FileConverterUnsupportedException(f"Conversion from {self.from_format_info.name} to "
                                                             f"{self.to_format_info.name} "
-                                                            f"with {self.name} is not supported.", help=True)
+                                                            f"with {self.meta.name} is not supported.", help=True)
                 if qual.details:
                     msg = (":\nPotential data loss or extrapolation issues with the conversion from "
                            f"{self.from_format_info.name} to {self.to_format_info.name}:\n")

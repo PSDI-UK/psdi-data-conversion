@@ -154,7 +154,7 @@ class ConverterInfo:
 
         try:
             self.converter_class = get_registered_converter_class(self.name)
-            self.pretty_name = self.converter_class.name
+            self.pretty_name = self.converter_class.meta.name
         except KeyError:
             self.converter_class = None
             self.pretty_name = name
@@ -182,7 +182,7 @@ class ConverterInfo:
         """Whether or not the converter is ready to be used by this package"""
 
         try:
-            self._key_prefix = get_registered_converter_class(name).database_key_prefix
+            self._key_prefix = get_registered_converter_class(name).meta.database_key_prefix
         except KeyError:
             # We'll get a KeyError for converters in the database that don't yet have their own class, which we can
             # safely ignore
@@ -852,7 +852,7 @@ class ConversionsTable:
 
         # Check if this converter deals with ambiguous formats, so we know if we need to be strict about getting format
         # info
-        if get_registered_converter_class(converter_name).supports_ambiguous_extensions:
+        if get_registered_converter_class(converter_name).meta.supports_ambiguous_extensions:
             which_format = None
         else:
             which_format = 0
