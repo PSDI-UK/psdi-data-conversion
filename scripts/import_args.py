@@ -78,17 +78,17 @@ def run_from_args(args):
         conv_name = d_in_data["converter"]["name"]
 
         l_in_formats, l_out_formats = get_possible_formats(conv_name)
+        l_formats = list({*l_in_formats}.union({*l_out_formats}))
         l_arg_types = (("flag", 0), ("option", 1))
-        l_in_out = (("in", get_in_format_args, 0), ("out", get_out_format_args, 1))
+        l_in_out = (("in", get_in_format_args), ("out", get_out_format_args))
 
         d_arg_applies_to: dict[tuple[ArgInfo, str], list[int]] = {}
 
-        for (l_format_info,
+        for (format_info,
              (arg_type_str, arg_type_index),
-             (in_out_str, in_out_func, in_out_index)) in product(zip(l_in_formats, l_out_formats),
-                                                                 l_arg_types,
-                                                                 l_in_out):
-            format_info = l_format_info[in_out_index]
+             (in_out_str, in_out_func)) in product(l_formats,
+                                                   l_arg_types,
+                                                   l_in_out):
             l_args = in_out_func(conv_name, format_info)[arg_type_index]
             for arg in l_args:
                 if not d_arg_applies_to.get((arg, in_out_str)):
