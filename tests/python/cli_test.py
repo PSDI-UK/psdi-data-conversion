@@ -16,10 +16,8 @@ import pytest
 
 from psdi_data_conversion import constants as const
 from psdi_data_conversion.converter import D_CONVERTER_ARGS, L_REGISTERED_CONVERTERS, get_registered_converter_class
-from psdi_data_conversion.converters.atomsk import CONVERTER_ATO
-from psdi_data_conversion.converters.c2x import CONVERTER_C2X
-from psdi_data_conversion.converters.openbabel import (CONVERTER_OB, COORD_GEN_KEY, COORD_GEN_QUAL_KEY,
-                                                       DEFAULT_COORD_GEN, DEFAULT_COORD_GEN_QUAL)
+from psdi_data_conversion.converters.openbabel.converter import (COORD_GEN_KEY, COORD_GEN_QUAL_KEY, DEFAULT_COORD_GEN,
+                                                                 DEFAULT_COORD_GEN_QUAL)
 from psdi_data_conversion.database import (FormatInfo, get_conversion_pathway, get_conversion_quality,
                                            get_converter_info, get_format_info, get_in_format_args,
                                            get_out_format_args, get_possible_conversions, get_possible_formats)
@@ -84,7 +82,7 @@ def test_input_validity():
 
     # Test that we get what we put in for a standard execution
     cwd = os.getcwd()
-    args = get_parsed_args(f"file1 file2 -f mmcif -i {cwd} -t pdb -o {cwd}/.. -w '{CONVERTER_C2X}' " +
+    args = get_parsed_args(f"file1 file2 -f mmcif -i {cwd} -t pdb -o {cwd}/.. -w '{const.CONVERTER_C2X}' " +
                            r"--delete-input --from-flags '\-ab \-c \--example' --to-flags '\-d' " +
                            r"--from-options '-x xval --xopt xoptval' --to-options '-y yval --yopt yoptval' "
                            "--strict --nc --coord-gen Gen3D best -q --log-file text.log")
@@ -93,7 +91,7 @@ def test_input_validity():
     assert args.input_dir == cwd
     assert args.to_format == "pdb"
     assert args.output_dir == f"{cwd}/.."
-    assert args.name == CONVERTER_C2X
+    assert args.name == const.CONVERTER_C2X
     assert args.no_check is True
     assert args.strict is True
     assert args.delete_input is True
@@ -106,7 +104,7 @@ def test_input_validity():
     assert args.log_mode == const.LOG_NONE
 
     # Test Open-Babel-specific arguments
-    args = get_parsed_args(f"file1 -t pdb -w '{CONVERTER_OB}' --coord-gen Gen3D best")
+    args = get_parsed_args(f"file1 -t pdb -w '{const.CONVERTER_OB}' --coord-gen Gen3D best")
     assert args.d_converter_args[COORD_GEN_KEY] == "Gen3D"
     assert args.d_converter_args[COORD_GEN_QUAL_KEY] == "best"
 
@@ -256,10 +254,10 @@ def test_detail_converter(capsys):
     assert "Traceback" not in captured.err
 
     # Test that we can also provide the converter name with -w/--with
-    run_with_arg_string(f"-l -w {CONVERTER_C2X}")
+    run_with_arg_string(f"-l -w {const.CONVERTER_C2X}")
     captured = capsys.readouterr()
     _check_no_errors(captured)
-    assert CONVERTER_C2X in captured.out
+    assert const.CONVERTER_C2X in captured.out
     assert const.CONVERTER_DEFAULT not in captured.out
 
 
@@ -338,7 +336,7 @@ def test_conversion_info(capsys):
     """Test the option to provide detail on degree of success and arguments a converter allows for a given conversion
     """
 
-    converter_name = CONVERTER_OB
+    converter_name = const.CONVERTER_OB
 
     in_format = "xyz"
     out_format = "inchi"
@@ -383,7 +381,7 @@ def test_conversion_info(capsys):
 
     in_format = "pdb-0"
     out_format = "cif"
-    for converter_name in [CONVERTER_C2X, CONVERTER_ATO]:
+    for converter_name in [const.CONVERTER_C2X, const.CONVERTER_ATO]:
         qual = get_conversion_quality(converter_name, in_format, out_format)
 
         run_with_arg_string(f"-l {converter_name} -f {in_format} -t {out_format}")
