@@ -199,7 +199,7 @@ def test_list_converters(capsys):
     captured = capsys.readouterr()
     assert "Available converters:" in captured.out
     for converter_rname in L_REGISTERED_CONVERTERS:
-        converter_name = get_registered_converter_class(converter_rname).name
+        converter_name = get_registered_converter_class(converter_rname).meta.name
         assert converter_name in captured.out, converter_name
 
     _check_no_errors(captured)
@@ -213,7 +213,7 @@ def test_detail_converter(capsys):
     for name in L_REGISTERED_CONVERTERS:
 
         converter_info = get_converter_info(name)
-        converter_name = get_registered_converter_class(name).name
+        converter_name = get_registered_converter_class(name).meta.name
 
         run_with_arg_string(f"--list {converter_name}")
         captured = capsys.readouterr()
