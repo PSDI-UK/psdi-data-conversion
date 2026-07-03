@@ -28,7 +28,7 @@
   - Both `False`: The converter is known to exist, but we currently provide no support for it
   - `supported==True`, `registered==False`: This package has a plugin ready to support this converter, but it cannot currently be used due to e.g. a required binary being missing which must be provided by the user
   - Both `True`: The converter is supported and ready to use
-- `ConverterInfo`, `FormatInfo`, `FlagInfo`, and `OptionInfo` now have a `uuid` property which provides the ID converted to a UUID class
+- `ConverterInfo`, `FormatInfo`, `FlagInfo`, `OptionInfo`, and individual converter classes now have a `uuid` property which provides the ID converted to a UUID class
 
 ### Bugfixes
 
