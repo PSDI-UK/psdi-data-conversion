@@ -142,7 +142,7 @@ class ConvertArgs:
             msg += f"\n\n{get_supported_converters()}"
             raise FileConverterInputException(msg, help=True, msg_preformatted=True)
         elif not converter_is_registered(self.name):
-            converter_name = get_supported_converter_class(self.name).name
+            converter_name = get_supported_converter_class(self.name).meta.name
             msg = textwrap.fill(f"ERROR: Converter '{converter_name}' is not registered. It may be possible to "
                                 "register it by installing an appropriate binary for your platform.", width=TERM_WIDTH)
             msg += f"\n\n{get_supported_converters()}"
@@ -341,13 +341,13 @@ def detail_converter_use(args: ConvertArgs):
 
     converter_info = get_converter_info(args.name)
     converter_class = get_supported_converter_class(args.name)
-    converter_name = converter_class.name
+    converter_name = converter_class.meta.name
 
     print_wrap(f"{converter_name}: {converter_info.description} ({converter_info.url})", break_long_words=False,
                break_on_hyphens=False, newline=True)
 
-    if converter_class.info:
-        print_wrap(converter_class.info, break_long_words=False, break_on_hyphens=False, newline=True)
+    if converter_class.meta.info:
+        print_wrap(converter_class.meta.info, break_long_words=False, break_on_hyphens=False, newline=True)
 
     # If both an input and output format are specified, provide the degree of success for this conversion. Otherwise
     # list possible input/output formats
@@ -716,7 +716,7 @@ def get_supported_converters():
     l_converters: list[str] = []
     any_not_registered = False
     for converter_name in L_SUPPORTED_CONVERTERS:
-        converter_text = get_supported_converter_class(converter_name).name
+        converter_text = get_supported_converter_class(converter_name).meta.name
         if converter_name not in L_REGISTERED_CONVERTERS:
             converter_text += f" {MSG_NOT_REGISTERED}"
             any_not_registered = True

@@ -17,6 +17,7 @@ from collections.abc import Callable
 from copy import deepcopy
 from dataclasses import dataclass
 from typing import Any
+from uuid import UUID
 
 from psdi_data_conversion import constants as const
 from psdi_data_conversion import log_utility
@@ -110,12 +111,22 @@ class FileConverterUnsupportedException(FileConverterInputException):
 class FileConverterMeta:
     """Class containing meta information for a file converter
     """
-    id: int
-    name: str
-    desc: str
-    url: str
+    id: int | None = None
+    name: str | None = None
+    desc: str | None = None
+    info: str | None = None
+    url: str | None = None
+    supports_ambiguous_extensions: bool | None = None
+    database_key_prefix: str | None = None
 
-    @classmethod
+    @property
+    def uuid(self):
+        try:
+            return UUID(int=self.id)
+        except ValueError:
+            return None
+
+    @staticmethod
     def load(converter_path: str):
         """Factory method to create a `FileConverterMeta` object for a converter by loading the `data.json` file
         contained in the same folder as the provided filename
@@ -125,13 +136,13 @@ class FileConverterMeta:
             raise FileConverterSetupException(f"Expected converter data file {data_path} does not exist")
 
         try:
-            data: dict[str, Any] = json.load(open(data_path))
+            data: dict[str, Any] = json.load(open(data_path))["converter"]
         except json.JSONDecodeError as e:
             raise FileConverterSetupException(f"Converter data file {data_path} could not be parsed. Error: {e}")
 
         meta_kwargs: dict[str, str] = {}
         try:
-            for key in "id", "name", "desc", "url":
+            for key in "id", "name", "desc", "info", "url", "supports_ambiguous_extensions", "database_key_prefix":
                 meta_kwargs[key] = data[key]
         except KeyError as e:
             raise FileConverterSetupException(f"Converter data file {data_path} is missing required data. Error: {e}")
@@ -177,15 +188,11 @@ class FileConverter:
     """Class to handle conversion of files from one type to another
     """
 
+    meta = FileConverterMeta()
+    """Metadata about the converter"""
+
     # Class variables and methods which must/can be overridden by subclasses
     # ----------------------------------------------------------------------
-
-    name: str | None = None
-    """Name of the converter - must be overridden in each subclass to name each converter uniquely"""
-
-    info: str | None = None
-    """General info about the converter - can be overridden in a subclass to add information about a converter which
-    isn't covered in its database entry, such as notes on its support."""
 
     allowed_flags: tuple[tuple[str, dict, Callable], ...] | None = None
     """List of flags allowed for the converter (flags are arguments that are set by being present, and don't require a
@@ -200,12 +207,45 @@ class FileConverter:
     argument parser's `add_argument` method, and callable function to get a dict of needed info for them.
     As with flags, an empty tuple should be provided if the converter does not accept any options"""
 
-    database_key_prefix: str | None = None
-    """The prefix used in the database for keys related to this converter"""
+    @property
+    def id(self):
+        """The converter ID, which will be taken from its `data.json` file"""
+        return self.meta.id
 
-    supports_ambiguous_extensions: bool = False
-    """Whether or not this converter supports formats which share the same extension. This is used to enforce stricter
-    but less user-friendly requirements on format specification"""
+    @property
+    def uuid(self):
+        """The converter UUID, which will be taken from its `data.json` file"""
+        return self.meta.uuid
+
+    @property
+    def name(self):
+        """The converter name, which will be taken from its `data.json` file"""
+        return self.meta.name
+
+    @property
+    def desc(self):
+        """The converter description, which will be taken from its `data.json` file"""
+        return self.meta.desc
+
+    @property
+    def info(self):
+        """The converter info, which will be taken from its `data.json` file"""
+        return self.meta.info
+
+    @property
+    def url(self):
+        """The converter url, which will be taken from its `data.json` file"""
+        return self.meta.url
+
+    @property
+    def supports_ambiguous_extensions(self):
+        """Whether or not the converter supports ambiguous extensions, which will be taken from its `data.json` file"""
+        return self.meta.supports_ambiguous_extensions
+
+    @property
+    def database_key_prefix(self):
+        """The converter database key prefix, which will be taken from its `data.json` file"""
+        return self.meta.database_key_prefix
 
     @abc.abstractmethod
     def _convert(self):
@@ -332,8 +372,7 @@ class FileConverter:
         try:
 
             if max_file_size is None:
-                from psdi_data_conversion.converters.openbabel import CONVERTER_OB
-                if self.name == CONVERTER_OB:
+                if self.meta.name == const.CONVERTER_OB:
                     self.max_file_size = const.DEFAULT_MAX_FILE_SIZE_OB
                 else:
                     self.max_file_size = const.DEFAULT_MAX_FILE_SIZE
@@ -343,8 +382,7 @@ class FileConverter:
             # Set values from envvars if desired
             if use_envvars:
                 # Get the maximum allowed size from the envvar for it
-                from psdi_data_conversion.converters.openbabel import CONVERTER_OB
-                if self.name == CONVERTER_OB:
+                if self.meta.name == const.CONVERTER_OB:
                     ev_max_file_size = os.environ.get(const.MAX_FILESIZE_OB_EV)
                 else:
                     ev_max_file_size = os.environ.get(const.MAX_FILESIZE_EV)
@@ -416,7 +454,7 @@ class FileConverter:
                 if not qual:
                     raise FileConverterUnsupportedException(f"Conversion from {self.from_format_info.name} to "
                                                             f"{self.to_format_info.name} "
-                                                            f"with {self.name} is not supported.", help=True)
+                                                            f"with {self.meta.name} is not supported.", help=True)
                 if qual.details:
                     msg = (":\nPotential data loss or extrapolation issues with the conversion from "
                            f"{self.from_format_info.name} to {self.to_format_info.name}:\n")

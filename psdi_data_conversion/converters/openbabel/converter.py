@@ -1,8 +1,6 @@
-"""@file psdi_data_conversion/converters/obenbabel.py
+"""@file psdi_data_conversion/converters/template/converter.py
 
-Created 2025-01-23 by Bryan Gillis.
-
-Open Babel FileConverter
+OpenBabel file converter
 """
 
 from copy import deepcopy
@@ -10,11 +8,9 @@ from copy import deepcopy
 import py
 from openbabel import openbabel
 
-from psdi_data_conversion.converters.base import FileConverter, FileConverterInputException
+from psdi_data_conversion.converters.base import FileConverter, FileConverterInputException, FileConverterMeta
 from psdi_data_conversion.security import SAFE_STRING_RE, string_is_safe
 from psdi_data_conversion.utils import print_wrap
-
-CONVERTER_OB = 'Open Babel'
 
 # Constants related to command-line and library arguments unique to this converter
 L_ALLOWED_COORD_GENS = ["Gen2D", "Gen3D", "neither"]
@@ -77,7 +73,8 @@ def get_coord_gen(l_opts: list[str] | None) -> dict[str, str]:
             COORD_GEN_QUAL_KEY: coord_gen_qual}
 
 
-class OBFileConverter(FileConverter):
+class OpenBabelFileConverter(FileConverter):
+
     """File Converter specialized to use Open Babel for conversions.
 
     This converter supports some additional configuration options which can be provided at class init or call to
@@ -124,10 +121,9 @@ class OBFileConverter(FileConverter):
     Note that some other keys are supported for compatibility purposes, but these may be deprecated in the future.
     """
 
-    name = CONVERTER_OB
+    meta: FileConverterMeta = FileConverterMeta.load(__file__)
     has_in_format_flags_or_options = True
     has_out_format_flags_or_options = True
-    database_key_prefix = "ob"
 
     allowed_flags = ()
     allowed_options = (("--coord-gen",
@@ -347,4 +343,4 @@ class OBFileConverter(FileConverter):
 
 # Assign this converter to the `converter` variable - this lets the psdi_data_conversion.converter module detect and
 # register it, making it available for use by the CLI and web app
-converter = OBFileConverter
+converter = OpenBabelFileConverter
