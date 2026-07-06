@@ -10,13 +10,14 @@ Import supported arguments and formats they apply to into new database format
 
 import json
 import os
+import sys
 from argparse import ArgumentParser
 from copy import deepcopy
-from inspect import ArgInfo
 from itertools import product
 
 from psdi_data_conversion.converters import base as converters_base
-from psdi_data_conversion.database import FlagInfo, get_in_format_args, get_out_format_args, get_possible_formats
+from psdi_data_conversion.database import (get_database_path, get_in_format_args, get_out_format_args,
+                                           get_possible_formats)
 
 
 def get_argument_parser():
@@ -60,6 +61,7 @@ def run_from_args(args):
 
     # Get the directory containing converter plugins
     conv_path = os.path.split(os.path.realpath(converters_base.__file__))[0]
+    d_db_data = json.load(open(get_database_path()))
 
     # Loop through plugins
     for dir in os.listdir(conv_path):
@@ -82,7 +84,7 @@ def run_from_args(args):
         l_arg_types = (("flag", 0), ("option", 1))
         l_in_out = (("in", get_in_format_args), ("out", get_out_format_args))
 
-        d_arg_applies_to: dict[tuple[ArgInfo, str], list[int]] = {}
+        d_arg_applies_to: dict[tuple[str, int, int, str], list[int]] = {}
 
         for (format_info,
              (arg_type_str, arg_type_index),
@@ -91,22 +93,28 @@ def run_from_args(args):
                                                    l_in_out):
             l_args = in_out_func(conv_name, format_info)[arg_type_index]
             for arg in l_args:
-                if not d_arg_applies_to.get((arg, in_out_str)):
-                    d_arg_applies_to[(arg, in_out_str)] = []
-                d_arg_applies_to[(arg, in_out_str)].append(format_info.id)
+                if not d_arg_applies_to.get((arg_type_str, arg_type_index, arg.id, in_out_str)):
+                    d_arg_applies_to[(arg_type_str, arg_type_index, arg.id, in_out_str)] = []
+                d_arg_applies_to[(arg_type_str, arg_type_index, arg.id, in_out_str)].append(format_info.id)
 
-        for (arg, in_out_str), l_applies_to in d_arg_applies_to.items():
-            arg_str: str
-            if isinstance(arg, FlagInfo):
-                arg_str = "flag"
-            else:
-                arg_str = "option"
-
+        for (arg_type_str, arg_type_index, arg_id, in_out_str), l_applies_to in d_arg_applies_to.items():
             l_applies_to.sort()
 
-            d_out_data[f"{in_out_str}_{arg_str}"] = d_in_data[f"{db_key_prefix}{arg_str}s_{in_out_str}"]
+            db_arg_type_str: str = "flag"
+            if arg_type_str == "option":
+                db_arg_type_str = "argflag"
+            if not d_out_data.get(f"{in_out_str}_{arg_type_str}"):
+                d_out_data[f"{in_out_str}_{arg_type_str}"] = d_db_data[
+                    f"{db_key_prefix}{db_arg_type_str}s_{in_out_str}"]
 
-            d_out_data[f"{in_out_str}_{arg_str}"]["format_ids"] = l_applies_to
+            for d_out_arg_info in d_out_data[f"{in_out_str}_{arg_type_str}"]:
+                if not d_out_arg_info["id"] == arg_id:
+                    continue
+                d_out_arg_info["format_ids"] = l_applies_to
+                break
+            else:
+                print(f"Arg ID {arg_id} not found. {arg_type_str=}, {arg_type_index=}, {in_out_str=}", file=sys.stderr)
+                exit(1)
 
         json.dump(d_out_data, open(datafile, "w"))
 

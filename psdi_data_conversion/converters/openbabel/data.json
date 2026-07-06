@@ -208,5 +208,2191 @@
     "in_flags": [],
     "out_flags": [],
     "in_options": [],
-    "out_options": []
+    "out_options": [],
+    "out_flag": [
+        {
+            "id": 63232154335561457138515817153613372608,
+            "flag": "3",
+            "description": "Write atom types for the MM3 forcefield.",
+            "further_info": "N/A",
+            "format_ids": [
+                32043555312713639025957046122919489996
+            ]
+        },
+        {
+            "id": 53260294137840422176167097400919861319,
+            "flag": "4",
+            "description": "Write a POSCAR using the VASP 4.x specification.",
+            "further_info": "The default is to use the VASP 5.x specification.",
+            "format_ids": [
+                109334830415080040083849964670968869182,
+                178002885945313670724373494495586011145,
+                318487010089456902950008675463492717371
+            ]
+        },
+        {
+            "id": 311952541379828546179284345862326720717,
+            "flag": "a",
+            "description": "Output atomclass like [C:2], if available.",
+            "further_info": "N/A",
+            "format_ids": [
+                20320184528576299830358586785865096672,
+                242351412810482127667305401957656993421,
+                297419025361599384272733241121809134667
+            ]
+        },
+        {
+            "id": 7098606666132222858799649052484888086,
+            "flag": "m",
+            "description": "Write an input file for the CNDO/INDO program.",
+            "further_info": "N/A",
+            "format_ids": [
+                32043555312713639025957046122919489996
+            ]
+        },
+        {
+            "id": 220953381197371399374439445553535314575,
+            "flag": "A",
+            "description": "Output in Alias form, e.g. Ph, if present.",
+            "further_info": "N/A",
+            "format_ids": [
+                14163986051707882465586360841029029139,
+                76950252569365882150732917449041895032,
+                84896050381326444273888468929459347256,
+                275917740769777784072805688195146073430,
+                292727325821381794107846543252288100244
+            ]
+        },
+        {
+            "id": 173979202570901138225369715131487947386,
+            "flag": "u",
+            "description": "Write the crystallographic unit cell, if present.",
+            "further_info": "N/A",
+            "format_ids": [
+                81476428634656558428219224353277334564,
+                101147546724837741856431551717329312040,
+                109159716603777158625728697344624728603,
+                115284935565942077012093254807694312333,
+                229442134277031918831436837871492179909,
+                295483664287131059634825273652142233679,
+                313957455269055695592006295660574290653
+            ]
+        },
+        {
+            "id": 108641355479577677778383252126264316547,
+            "flag": "w",
+            "description": "Sort atoms by atomic number.",
+            "further_info": "N/A",
+            "format_ids": [
+                98261525007525135735251046647244654113,
+                109334830415080040083849964670968869182,
+                178002885945313670724373494495586011145,
+                195740799786273524362341124474008908118,
+                300796939547901577812626686286774265749,
+                318487010089456902950008675463492717371
+            ]
+        },
+        {
+            "id": 256711748537826651428298974827138222110,
+            "flag": "S",
+            "description": "Do not store cis/trans stereochemistry in 0D MOL files.",
+            "further_info": "N/A",
+            "format_ids": [
+                14163986051707882465586360841029029139,
+                84896050381326444273888468929459347256,
+                275917740769777784072805688195146073430,
+                292727325821381794107846543252288100244
+            ]
+        },
+        {
+            "id": 317419820733671108069413053203990327622,
+            "flag": "r",
+            "description": "Radicals lower case e.g. ethyl is Cc",
+            "further_info": "N/A",
+            "format_ids": [
+                20320184528576299830358586785865096672,
+                242351412810482127667305401957656993421,
+                288653554956822251052461047133224607221,
+                297419025361599384272733241121809134667
+            ]
+        },
+        {
+            "id": 24843262367600368205125238581314641287,
+            "flag": "m",
+            "description": "Write no properties.",
+            "further_info": "N/A",
+            "format_ids": [
+                14163986051707882465586360841029029139,
+                84896050381326444273888468929459347256,
+                275917740769777784072805688195146073430,
+                292727325821381794107846543252288100244
+            ]
+        },
+        {
+            "id": 162471789993950996502900324751107693574,
+            "flag": "H",
+            "description": "Use HYD extension (always on if mol contains zero-order bonds).",
+            "further_info": "N/A",
+            "format_ids": [
+                14163986051707882465586360841029029139,
+                84896050381326444273888468929459347256,
+                275917740769777784072805688195146073430,
+                292727325821381794107846543252288100244
+            ]
+        },
+        {
+            "id": 208920672333380751480072659031468285145,
+            "flag": "E",
+            "description": "Add an ASCII depiction of the molecule as a property.",
+            "further_info": "N/A",
+            "format_ids": [
+                14163986051707882465586360841029029139,
+                84896050381326444273888468929459347256,
+                275917740769777784072805688195146073430,
+                292727325821381794107846543252288100244
+            ]
+        },
+        {
+            "id": 269833666421061839525256345065916094975,
+            "flag": "b",
+            "description": "Output includes bonds.",
+            "further_info": "N/A",
+            "format_ids": [
+                81476428634656558428219224353277334564,
+                101147546724837741856431551717329312040,
+                229442134277031918831436837871492179909,
+                295483664287131059634825273652142233679
+            ]
+        },
+        {
+            "id": 101675246992000417821724471853877179123,
+            "flag": "a",
+            "description": "Write atomclass if available.",
+            "further_info": "N/A",
+            "format_ids": [
+                14163986051707882465586360841029029139,
+                84896050381326444273888468929459347256,
+                275917740769777784072805688195146073430,
+                292727325821381794107846543252288100244
+            ]
+        },
+        {
+            "id": 179095596091047442540663868540060407378,
+            "flag": "3",
+            "description": "Output V3000 not V2000 (used for > 999 atoms/bonds).",
+            "further_info": "N/A",
+            "format_ids": [
+                14163986051707882465586360841029029139,
+                84896050381326444273888468929459347256,
+                275917740769777784072805688195146073430,
+                292727325821381794107846543252288100244
+            ]
+        },
+        {
+            "id": 180808029873380823464965660571127691001,
+            "flag": "1",
+            "description": "Write CML1 (rather than CML2).",
+            "further_info": "N/A",
+            "format_ids": [
+                17662494363313796187301246917012434805,
+                149780019444182511271858992398277910115,
+                232798684620226777149726409841452987070
+            ]
+        },
+        {
+            "id": 88960782043528474610828243029135770224,
+            "flag": "a",
+            "description": "Write array format for atoms and bonds.",
+            "further_info": "N/A",
+            "format_ids": [
+                17662494363313796187301246917012434805,
+                149780019444182511271858992398277910115,
+                232798684620226777149726409841452987070
+            ]
+        },
+        {
+            "id": 39101076609384201014824644442973785794,
+            "flag": "c",
+            "description": "Write UCSF Dock scores saved in comments preceding molecules.",
+            "further_info": "N/A",
+            "format_ids": [
+                143425445942253368938814885806318269174,
+                253646697262577575373378065419268181033,
+                318851989183477540453947203371966440690
+            ]
+        },
+        {
+            "id": 332063927797679969664763566335359816194,
+            "flag": "i",
+            "description": "Do not include isotopic or chiral markings.",
+            "further_info": "N/A",
+            "format_ids": [
+                20320184528576299830358586785865096672,
+                242351412810482127667305401957656993421,
+                297419025361599384272733241121809134667
+            ]
+        },
+        {
+            "id": 59972313385267007328695107208786859301,
+            "flag": "i",
+            "description": "Write IONS.POT file.",
+            "further_info": "N/A",
+            "format_ids": [
+                98261525007525135735251046647244654113,
+                195740799786273524362341124474008908118,
+                300796939547901577812626686286774265749
+            ]
+        },
+        {
+            "id": 8115087370450145153996913384908684234,
+            "flag": "l",
+            "description": "Output ignores residue information (only ligands).",
+            "further_info": "N/A",
+            "format_ids": [
+                143425445942253368938814885806318269174,
+                253646697262577575373378065419268181033,
+                318851989183477540453947203371966440690
+            ]
+        },
+        {
+            "id": 110720882075138080544478535827920732272,
+            "flag": "n",
+            "description": "No molecule name.",
+            "further_info": "N/A",
+            "format_ids": [
+                20320184528576299830358586785865096672,
+                242351412810482127667305401957656993421,
+                297419025361599384272733241121809134667
+            ]
+        },
+        {
+            "id": 69030891636817399496349599262842204575,
+            "flag": "n",
+            "description": "Omit title and comments.",
+            "further_info": "N/A",
+            "format_ids": [
+                118484790870718437043272623986523152493,
+                127325448333808099218652406615021461466,
+                205237936785857655978529626512927794188
+            ]
+        },
+        {
+            "id": 63410916501630137435545811370443366562,
+            "flag": "t",
+            "description": "Molecule name only.",
+            "further_info": "N/A",
+            "format_ids": [
+                20320184528576299830358586785865096672,
+                242351412810482127667305401957656993421,
+                297419025361599384272733241121809134667
+            ]
+        },
+        {
+            "id": 237228391929065673681510718923333639622,
+            "flag": "u",
+            "description": "Do not write formal charge information in UNITY records.",
+            "further_info": "N/A",
+            "format_ids": [
+                143425445942253368938814885806318269174,
+                253646697262577575373378065419268181033,
+                318851989183477540453947203371966440690
+            ]
+        },
+        {
+            "id": 121217157919424090477467739444432091914,
+            "flag": "v",
+            "description": "Always specify the valence in the valence field.",
+            "further_info": "The default behaviour is to specify the valence if it is not consistent with the MDL valence model. So, for CH4 we do not specify it, but we do for CH3. This option may be useful to preserve the correct number of implicit hydrogens if a downstream tool does not correctly implement the MDL valence model (but does honour the valence field).",
+            "format_ids": [
+                14163986051707882465586360841029029139,
+                84896050381326444273888468929459347256,
+                275917740769777784072805688195146073430,
+                292727325821381794107846543252288100244
+            ]
+        },
+        {
+            "id": 308089712253779433732695057006580892244,
+            "flag": "w",
+            "description": "Use wedge and hash bonds from input (2D only).",
+            "further_info": "N/A",
+            "format_ids": [
+                14163986051707882465586360841029029139,
+                84896050381326444273888468929459347256,
+                275917740769777784072805688195146073430,
+                292727325821381794107846543252288100244
+            ]
+        },
+        {
+            "id": 189079632300668625324978428824468364937,
+            "flag": "a",
+            "description": "Draw all carbon atoms.",
+            "further_info": "So propane would display as H3C-CH2-CH3",
+            "format_ids": [
+                11534748775667962669015007545803037652,
+                281078610809857855124590786515545964119
+            ]
+        },
+        {
+            "id": 152007989876880327541391697382889296591,
+            "flag": "A",
+            "description": "Write aromatic bonds as such, not Kekule form.",
+            "further_info": "N/A",
+            "format_ids": [
+                17662494363313796187301246917012434805,
+                232798684620226777149726409841452987070
+            ]
+        },
+        {
+            "id": 246592337063020898666336590487923815198,
+            "flag": "c",
+            "description": "Continuous output: no formatting.",
+            "further_info": "N/A",
+            "format_ids": [
+                17662494363313796187301246917012434805,
+                232798684620226777149726409841452987070
+            ]
+        },
+        {
+            "id": 214602014553706019284092921468646832210,
+            "flag": "c",
+            "description": "Output in canonical form.",
+            "further_info": "N/A",
+            "format_ids": [
+                20320184528576299830358586785865096672,
+                297419025361599384272733241121809134667
+            ]
+        },
+        {
+            "id": 219608462415405051561764357693892128156,
+            "flag": "C",
+            "description": "'Anti-canonical' random order (mostly for testing).",
+            "further_info": "N/A",
+            "format_ids": [
+                20320184528576299830358586785865096672,
+                297419025361599384272733241121809134667
+            ]
+        },
+        {
+            "id": 182107894324322704576381467930848840342,
+            "flag": "C",
+            "description": "Do not draw terminal C (and attached H) explicitly.",
+            "further_info": "The default is to draw all hetero atoms and terminal C explicitly, together with their attached hydrogens.",
+            "format_ids": [
+                11534748775667962669015007545803037652,
+                281078610809857855124590786515545964119
+            ]
+        },
+        {
+            "id": 256392198299217731944164040115547912386,
+            "flag": "A",
+            "description": "Display aliases, if present.",
+            "further_info": "Extremely long explanation: please see Open Babel documentation for PNG.",
+            "format_ids": [
+                11534748775667962669015007545803037652,
+                281078610809857855124590786515545964119
+            ]
+        },
+        {
+            "id": 88925784606524205090256655407027931087,
+            "flag": "d",
+            "description": "Do not display molecule name.",
+            "further_info": "N/A",
+            "format_ids": [
+                11534748775667962669015007545803037652,
+                281078610809857855124590786515545964119
+            ]
+        },
+        {
+            "id": 298759980306768543762625489432034140285,
+            "flag": "I",
+            "description": "Inchified SMILES.",
+            "further_info": "N/A",
+            "format_ids": [
+                20320184528576299830358586785865096672,
+                297419025361599384272733241121809134667
+            ]
+        },
+        {
+            "id": 244039738469442674137547587458642721859,
+            "flag": "k",
+            "description": "Create Kekule SMILES instead of aromatic.",
+            "further_info": "N/A",
+            "format_ids": [
+                20320184528576299830358586785865096672,
+                297419025361599384272733241121809134667
+            ]
+        },
+        {
+            "id": 313369998339297410716393465109966682983,
+            "flag": "m",
+            "description": "Write metadata.",
+            "further_info": "N/A",
+            "format_ids": [
+                17662494363313796187301246917012434805,
+                232798684620226777149726409841452987070
+            ]
+        },
+        {
+            "id": 161618054892640547842629076856781140099,
+            "flag": "m",
+            "description": "Minified output formatting, with no line breaks or indents.",
+            "further_info": "N/A",
+            "format_ids": [
+                20753642385669108430387120717727783064,
+                266049478114000494937814324865758516629
+            ]
+        },
+        {
+            "id": 40301942369267212291290426100138912469,
+            "flag": "n",
+            "description": "Do not write duplicate CONECT records to indicate bond order.",
+            "further_info": "N/A",
+            "format_ids": [
+                32103794576339723026923590371300680498,
+                178366529166858241161075106138867206788
+            ]
+        },
+        {
+            "id": 78081551509642987726952702595727198863,
+            "flag": "o",
+            "description": "Write origin in space group label (CRYST1 section).",
+            "further_info": "N/A",
+            "format_ids": [
+                32103794576339723026923590371300680498,
+                178366529166858241161075106138867206788
+            ]
+        },
+        {
+            "id": 127021936520068793309313041620636596453,
+            "flag": "O",
+            "description": "Store the SMILES atom order as a space-separated string.",
+            "further_info": "The string is stored as an OBPairData with the name 'SMILES Atom Order'.",
+            "format_ids": [
+                20320184528576299830358586785865096672,
+                297419025361599384272733241121809134667
+            ]
+        },
+        {
+            "id": 115452661670000251940126071085319695626,
+            "flag": "p",
+            "description": "Write properties.",
+            "further_info": "N/A",
+            "format_ids": [
+                17662494363313796187301246917012434805,
+                232798684620226777149726409841452987070
+            ]
+        },
+        {
+            "id": 286671328503825127846157349657809039359,
+            "flag": "R",
+            "description": "Do not reuse bond closure symbols.",
+            "further_info": "N/A",
+            "format_ids": [
+                20320184528576299830358586785865096672,
+                297419025361599384272733241121809134667
+            ]
+        },
+        {
+            "id": 252818309180272160574107976878982749412,
+            "flag": "s",
+            "description": "Use asymmetric double bonds.",
+            "further_info": "N/A",
+            "format_ids": [
+                11534748775667962669015007545803037652,
+                281078610809857855124590786515545964119
+            ]
+        },
+        {
+            "id": 61254097782597776183356120574755870791,
+            "flag": "t",
+            "description": "Use thicker lines.",
+            "further_info": "N/A",
+            "format_ids": [
+                11534748775667962669015007545803037652,
+                281078610809857855124590786515545964119
+            ]
+        },
+        {
+            "id": 24869607479967974965154496934453274435,
+            "flag": "u",
+            "description": "No element-specific atom colouring.",
+            "further_info": "Use this option to produce a black and white diagram.",
+            "format_ids": [
+                11534748775667962669015007545803037652,
+                281078610809857855124590786515545964119
+            ]
+        },
+        {
+            "id": 76252478894214676433789399356230931889,
+            "flag": "U",
+            "description": "Universal SMILES.",
+            "further_info": "N/A",
+            "format_ids": [
+                20320184528576299830358586785865096672,
+                297419025361599384272733241121809134667
+            ]
+        },
+        {
+            "id": 316016697550699234726997606024532197480,
+            "flag": "U",
+            "description": "Do not use internally-specified colour.",
+            "further_info": "For example, atom colour read from CML or generated by internal code.",
+            "format_ids": [
+                11534748775667962669015007545803037652,
+                281078610809857855124590786515545964119
+            ]
+        },
+        {
+            "id": 213269644750193012975504752192695233291,
+            "flag": "x",
+            "description": "Omit XML and namespace declarations.",
+            "further_info": "N/A",
+            "format_ids": [
+                17662494363313796187301246917012434805,
+                232798684620226777149726409841452987070
+            ]
+        },
+        {
+            "id": 63107951310593388930845184858586770177,
+            "flag": "x",
+            "description": "Append X/Y coordinates in canonical SMILES order.",
+            "further_info": "N/A",
+            "format_ids": [
+                20320184528576299830358586785865096672,
+                297419025361599384272733241121809134667
+            ]
+        },
+        {
+            "id": 157151988967937608811103458217101650668,
+            "flag": "a",
+            "description": "Output auxiliary information.",
+            "further_info": "N/A",
+            "format_ids": [
+                279751716690019374171243961730825953031
+            ]
+        },
+        {
+            "id": 329006231085957445236070327908835247424,
+            "flag": "a",
+            "description": "Write input in atomic units instead of angstroms.",
+            "further_info": "N/A",
+            "format_ids": [
+                158727458119477299327944664210408884296
+            ]
+        },
+        {
+            "id": 104139208504870532696524091573720135817,
+            "flag": "a",
+            "description": "Output angstroms.",
+            "further_info": "N/A",
+            "format_ids": [
+                30665022909691561325779745793193814283
+            ]
+        },
+        {
+            "id": 144772075591090298655501276253181221723,
+            "flag": "a",
+            "description": "Aspect ratio of image (height to width, default is 1.5).",
+            "further_info": "N/A",
+            "format_ids": [
+                140040321967105212767875377418986133540
+            ]
+        },
+        {
+            "id": 243560957267343841742531976852804058669,
+            "flag": "a",
+            "description": "Output atom names.",
+            "further_info": "N/A",
+            "format_ids": [
+                13237656873337728718765342346201990149
+            ]
+        },
+        {
+            "id": 163857283739401332605107925670295464738,
+            "flag": "b",
+            "description": "Write input using the ATOMBASIS format.",
+            "further_info": "N/A",
+            "format_ids": [
+                158727458119477299327944664210408884296
+            ]
+        },
+        {
+            "id": 35979551317304788420938333055644989887,
+            "flag": "b",
+            "description": "Enable automatic bonding.",
+            "further_info": "N/A",
+            "format_ids": [
+                23086914704772561252272100468075652414
+            ]
+        },
+        {
+            "id": 29920280145108775853611041626689267777,
+            "flag": "c",
+            "description": "Write an input file for the CNDO/INDO program.",
+            "further_info": "N/A",
+            "format_ids": [
+                110063328763770889730093328255943162230
+            ]
+        },
+        {
+            "id": 97849236731809341731455849627867569262,
+            "flag": "c",
+            "description": "Combine separate molecular pieces of input into a single rigid molecule (requires 'r' option or will have no effect).",
+            "further_info": "N/A",
+            "format_ids": [
+                23086914704772561252272100468075652414
+            ]
+        },
+        {
+            "id": 62006905699526623210382890567306923257,
+            "flag": "c",
+            "description": "Add a black and white checkerboard.",
+            "further_info": "N/A",
+            "format_ids": [
+                196510774020677087699004467179660353979
+            ]
+        },
+        {
+            "id": 174987789976160850857997342681633601589,
+            "flag": "c",
+            "description": "Write atom types using custom atom classes, if available.",
+            "further_info": "N/A",
+            "format_ids": [
+                32043555312713639025957046122919489996
+            ]
+        },
+        {
+            "id": 325775373668677703520491909373952369566,
+            "flag": "c",
+            "description": "Add CPK colours.",
+            "further_info": "N/A",
+            "format_ids": [
+                68669533866597814414817631521755643473
+            ]
+        },
+        {
+            "id": 284818209234738331407224479506430392625,
+            "flag": "c",
+            "description": "Use XML style separators instead.",
+            "further_info": "N/A",
+            "format_ids": [
+                256698568770506760516294464206589507935
+            ]
+        },
+        {
+            "id": 158696046020408895151027692719899046327,
+            "flag": "e",
+            "description": "Compare first molecule to others.",
+            "further_info": "N/A",
+            "format_ids": [
+                279751716690019374171243961730825953031
+            ]
+        },
+        {
+            "id": 190365589186177442853758532208839818646,
+            "flag": "e",
+            "description": "Treat this reaction as an equilibrium reaction.",
+            "further_info": "Layer 5 of the generated RInChI will have /d=",
+            "format_ids": [
+                187855126437857317514615572300346542595
+            ]
+        },
+        {
+            "id": 50774179009293246676598420555381452168,
+            "flag": "e",
+            "description": "Embed molecule as CML.",
+            "further_info": "Open Babel can read the resulting SVG file as a CML file.",
+            "format_ids": [
+                11534748775667962669015007545803037652
+            ]
+        },
+        {
+            "id": 21029117522310313754289641144559120706,
+            "flag": "e",
+            "description": "Add the charge to the output file.",
+            "further_info": "N/A",
+            "format_ids": [
+                240273221595392696792114943248305349240
+            ]
+        },
+        {
+            "id": 47336955818685987054139911191053088354,
+            "flag": "f",
+            "description": "Add a mirror sphere.",
+            "further_info": "N/A",
+            "format_ids": [
+                196510774020677087699004467179660353979
+            ]
+        },
+        {
+            "id": 136786625935547817155469801028408430508,
+            "flag": "F",
+            "description": "Include fixed hydrogen layer (produces non-standard InChI).",
+            "further_info": "N/A",
+            "format_ids": [
+                279751716690019374171243961730825953031
+            ]
+        },
+        {
+            "id": 63973775657622652477584872359135207105,
+            "flag": "g",
+            "description": "Write bonds using _geom_bond_etc fields.",
+            "further_info": "N/A",
+            "format_ids": [
+                214908995963617485636855366710271712886
+            ]
+        },
+        {
+            "id": 67555805864493628261396389443375254740,
+            "flag": "h",
+            "description": "Hex output when multiple molecules.",
+            "further_info": "N/A",
+            "format_ids": [
+                203455324937141831266205930173305911236
+            ]
+        },
+        {
+            "id": 146982529780012377897551402417252047755,
+            "flag": "h",
+            "description": "Use hydrogenCount for all hydrogens.",
+            "further_info": "N/A",
+            "format_ids": [
+                149780019444182511271858992398277910115
+            ]
+        },
+        {
+            "id": 127434402919410481138024467922209896313,
+            "flag": "h",
+            "description": "Preserve hydrogens.",
+            "further_info": "N/A",
+            "format_ids": [
+                23086914704772561252272100468075652414
+            ]
+        },
+        {
+            "id": 139261117030255094002574716229192921208,
+            "flag": "i",
+            "description": "Add index to each atom.",
+            "further_info": "These indices are those in SD or MOL files and correspond to the order of atoms in a SMILES string.",
+            "format_ids": [
+                11534748775667962669015007545803037652
+            ]
+        },
+        {
+            "id": 137304088518906553849968202628922226744,
+            "flag": "i",
+            "description": "Use IDX atom types of babel internal.",
+            "further_info": "N/A",
+            "format_ids": [
+                256698568770506760516294464206589507935
+            ]
+        },
+        {
+            "id": 63603563981660075533378591303000291315,
+            "flag": "j",
+            "description": "Do not embed JavaScript.",
+            "further_info": "JavaScript is not usually embedded if there is only one molecule, but it is if the rows and columns have been specified as 1: -xr1 -xc1",
+            "format_ids": [
+                11534748775667962669015007545803037652
+            ]
+        },
+        {
+            "id": 175860123509528953445012343251522064791,
+            "flag": "K",
+            "description": "Output InChIKey only.",
+            "further_info": "N/A",
+            "format_ids": [
+                279751716690019374171243961730825953031
+            ]
+        },
+        {
+            "id": 120884468247242776869745274828340846016,
+            "flag": "l",
+            "description": "Display InChI log.",
+            "further_info": "N/A",
+            "format_ids": [
+                279751716690019374171243961730825953031
+            ]
+        },
+        {
+            "id": 83006007064040867713723445681341053602,
+            "flag": "l",
+            "description": "Molecules NOT in MoleculeList.",
+            "further_info": "N/A",
+            "format_ids": [
+                149780019444182511271858992398277910115
+            ]
+        },
+        {
+            "id": 122247808552548424199723262560313305328,
+            "flag": "l",
+            "description": "Draw grid lines.",
+            "further_info": "N/A",
+            "format_ids": [
+                11534748775667962669015007545803037652
+            ]
+        },
+        {
+            "id": 304126288085833440046073458483882086710,
+            "flag": "m",
+            "description": "Include a margin around the depiction.",
+            "further_info": "N/A",
+            "format_ids": [
+                140040321967105212767875377418986133540
+            ]
+        },
+        {
+            "id": 262531191007685628831413720441816874733,
+            "flag": "m",
+            "description": "Do not add margins to the image.",
+            "further_info": "This only applies if there is a single molecule to depict. Implies -d.",
+            "format_ids": [
+                281078610809857855124590786515545964119
+            ]
+        },
+        {
+            "id": 134744488507010462939228773505569131213,
+            "flag": "M",
+            "description": "Include bonds to metal (produces non-standard InChI).",
+            "further_info": "N/A",
+            "format_ids": [
+                279751716690019374171243961730825953031
+            ]
+        },
+        {
+            "id": 59811787134491899886578491914305898647,
+            "flag": "M",
+            "description": "Add obr prefix on non-CMLReact elements.",
+            "further_info": "N/A",
+            "format_ids": [
+                149780019444182511271858992398277910115
+            ]
+        },
+        {
+            "id": 303639373172068859238945355374838703188,
+            "flag": "M",
+            "description": "Do not include a margin around the depiction.",
+            "further_info": "N/A",
+            "format_ids": [
+                113868783398416612169698405548476096841
+            ]
+        },
+        {
+            "id": 126129920802391763593911554708126619127,
+            "flag": "n",
+            "description": "Preserve atom names.",
+            "further_info": "N/A",
+            "format_ids": [
+                23086914704772561252272100468075652414
+            ]
+        },
+        {
+            "id": 236922326237001629846356672660857664310,
+            "flag": "n",
+            "description": "Output nm (not angstroms).",
+            "further_info": "N/A",
+            "format_ids": [
+                56822921110267315109685573823552074593
+            ]
+        },
+        {
+            "id": 89494434522253283597697895841167456923,
+            "flag": "n",
+            "description": "Prefix molecule names with name of file.",
+            "further_info": "N/A",
+            "format_ids": [
+                256698568770506760516294464206589507935
+            ]
+        },
+        {
+            "id": 309045002818230730456892853489443852635,
+            "flag": "o",
+            "description": "Hex output only.",
+            "further_info": "N/A",
+            "format_ids": [
+                203455324937141831266205930173305911236
+            ]
+        },
+        {
+            "id": 86313140573859030720950372125013288198,
+            "flag": "p",
+            "description": "Use full input path as source, not just filename.",
+            "further_info": "N/A",
+            "format_ids": [
+                311727220817052319413740496112655834385
+            ]
+        },
+        {
+            "id": 308677533455468693916758355945661444155,
+            "flag": "p",
+            "description": "Add properties to molecules.",
+            "further_info": "N/A",
+            "format_ids": [
+                149780019444182511271858992398277910115
+            ]
+        },
+        {
+            "id": 131217407651723856720972033343078329701,
+            "flag": "p",
+            "description": "Preserve atom indices from input file (default is to renumber atoms sequentially).",
+            "further_info": "N/A",
+            "format_ids": [
+                23086914704772561252272100468075652414
+            ]
+        },
+        {
+            "id": 19218105326181330931275636521700799883,
+            "flag": "r",
+            "description": "Recalculate InChI. Normally an input InChI is reused.",
+            "further_info": "N/A",
+            "format_ids": [
+                279751716690019374171243961730825953031
+            ]
+        },
+        {
+            "id": 24440367225062703451304294974282119347,
+            "flag": "r",
+            "description": "Omit rate constant data.",
+            "further_info": "N/A",
+            "format_ids": [
+                149780019444182511271858992398277910115
+            ]
+        },
+        {
+            "id": 246091703217624221074619528096628651740,
+            "flag": "r",
+            "description": "Output as a rigid molecule (i.e., no branches or torsion tree).",
+            "further_info": "N/A",
+            "format_ids": [
+                23086914704772561252272100468075652414
+            ]
+        },
+        {
+            "id": 289702308725016233026891739553627433316,
+            "flag": "s",
+            "description": "Recalculate wedge and hash bonds (2D structures only).",
+            "further_info": "N/A",
+            "format_ids": [
+                279751716690019374171243961730825953031
+            ]
+        },
+        {
+            "id": 256901109077471769418898812215241739663,
+            "flag": "s",
+            "description": "Describe each set bit.",
+            "further_info": "N/A",
+            "format_ids": [
+                203455324937141831266205930173305911236
+            ]
+        },
+        {
+            "id": 17029594550801016479712654957317094020,
+            "flag": "s",
+            "description": "Display a square. This is useful for correcting the aspect ratio.",
+            "further_info": "N/A",
+            "format_ids": [
+                140040321967105212767875377418986133540
+            ]
+        },
+        {
+            "id": 11087075838088903675095287050747185141,
+            "flag": "s",
+            "description": "Add a sky (with clouds).",
+            "further_info": "N/A",
+            "format_ids": [
+                196510774020677087699004467179660353979
+            ]
+        },
+        {
+            "id": 276200328373685135353651463730086828244,
+            "flag": "s",
+            "description": "Simple output (reactions only).",
+            "further_info": "N/A",
+            "format_ids": [
+                29911246111224779837663677976272255692
+            ]
+        },
+        {
+            "id": 215492260968708615533832062470265180461,
+            "flag": "s",
+            "description": "Output as a flexible residue.",
+            "further_info": "N/A",
+            "format_ids": [
+                23086914704772561252272100468075652414
+            ]
+        },
+        {
+            "id": 16091649529141969044286457111311269226,
+            "flag": "S",
+            "description": "Ball and stick depiction of molecules.",
+            "further_info": "Depicts molecules as balls and sticks instead of the normal line style.",
+            "format_ids": [
+                11534748775667962669015007545803037652
+            ]
+        },
+        {
+            "id": 319929269149658897260976492575836189628,
+            "flag": "t",
+            "description": "Add molecule name after InChI.",
+            "further_info": "N/A",
+            "format_ids": [
+                279751716690019374171243961730825953031
+            ]
+        },
+        {
+            "id": 299441202466713557674201907041659079810,
+            "flag": "t",
+            "description": "Write the output molecule index and title.",
+            "further_info": "N/A",
+            "format_ids": [
+                140040321967105212767875377418986133540
+            ]
+        },
+        {
+            "id": 126986306497084964473267092045190466592,
+            "flag": "t",
+            "description": "Use transparent textures.",
+            "further_info": "N/A",
+            "format_ids": [
+                196510774020677087699004467179660353979
+            ]
+        },
+        {
+            "id": 293265594326276708993453074899127521945,
+            "flag": "t",
+            "description": "Do not include species thermo data.",
+            "further_info": "N/A",
+            "format_ids": [
+                29911246111224779837663677976272255692
+            ]
+        },
+        {
+            "id": 96555813303498019337790769148514987322,
+            "flag": "u",
+            "description": "Output only unique molecules.",
+            "further_info": "N/A",
+            "format_ids": [
+                279751716690019374171243961730825953031
+            ]
+        },
+        {
+            "id": 196612938348755525072764140385656159919,
+            "flag": "u",
+            "description": "Update an existing index.",
+            "further_info": "N/A",
+            "format_ids": [
+                229718938459220525539470386349907318524
+            ]
+        },
+        {
+            "id": 128667645269192415290014684322691866329,
+            "flag": "u",
+            "description": "Describe each unset bit.",
+            "further_info": "N/A",
+            "format_ids": [
+                203455324937141831266205930173305911236
+            ]
+        },
+        {
+            "id": 64562309551068792580746857847166153107,
+            "flag": "U",
+            "description": "Output only unique molecules and sort them.",
+            "further_info": "N/A",
+            "format_ids": [
+                279751716690019374171243961730825953031
+            ]
+        },
+        {
+            "id": 327931732470590039555251716350167053311,
+            "flag": "v",
+            "description": "Verbose output (include default values).",
+            "further_info": "N/A",
+            "format_ids": [
+                20753642385669108430387120717727783064
+            ]
+        },
+        {
+            "id": 16464986491588196546801807693010933911,
+            "flag": "w",
+            "description": "Ignore less important warnings.",
+            "further_info": "Less important warnings are 'Omitted undefined stereo,' 'Charges were rearranged,' 'Proton(s) added/removed' and 'Metal was disconnected.'",
+            "format_ids": [
+                279751716690019374171243961730825953031
+            ]
+        },
+        {
+            "id": 265985793743885219948979036651148487588,
+            "flag": "w",
+            "description": "Use wedge/hash bonds from input instead of perceived stereochemistry.",
+            "further_info": "N/A",
+            "format_ids": [
+                20753642385669108430387120717727783064
+            ]
+        },
+        {
+            "id": 235503880080499429186539312190724717281,
+            "flag": "w",
+            "description": "Use bond styles from input instead of perceived stereochemistry.",
+            "further_info": "N/A",
+            "format_ids": [
+                266049478114000494937814324865758516629
+            ]
+        },
+        {
+            "id": 295425023157178486257920156285467499261,
+            "flag": "x",
+            "description": "Omit XML declaration.",
+            "further_info": "N/A",
+            "format_ids": [
+                149780019444182511271858992398277910115
+            ]
+        },
+        {
+            "id": 269035759873780843070631609504501925090,
+            "flag": "x",
+            "description": "Omit XML declaration (not displayed in GUI).",
+            "further_info": "Useful if the output is to be embedded in another XML file.",
+            "format_ids": [
+                11534748775667962669015007545803037652
+            ]
+        },
+        {
+            "id": 153056535118546525951417821738453041040,
+            "flag": "x",
+            "description": "Output in XYZ format.",
+            "further_info": "N/A",
+            "format_ids": [
+                258869049190979492248849245557152339882
+            ]
+        },
+        {
+            "id": 185179595549045389666715185315533375892,
+            "flag": "X",
+            "description": "All atoms are explicitly declared.",
+            "further_info": "Useful if we do not want any extra hydrogens drawn to fill the valence.",
+            "format_ids": [
+                11534748775667962669015007545803037652
+            ]
+        },
+        {
+            "id": 292949778859097492488249851740597693496,
+            "flag": "h",
+            "description": "Output explicit hydrogens as such.",
+            "further_info": "N/A",
+            "format_ids": [
+                20320184528576299830358586785865096672,
+                242351412810482127667305401957656993421,
+                297419025361599384272733241121809134667
+            ]
+        }
+    ],
+    "out_option": [
+        {
+            "id": 105184455730336140044842445001895339047,
+            "flag": "f",
+            "brief": "atomno",
+            "description": "Specify the first atom.",
+            "further_info": "This atom will be used to begin the SMILES string.",
+            "format_ids": [
+                20320184528576299830358586785865096672
+            ]
+        },
+        {
+            "id": 250227397955262514763751103269649255166,
+            "flag": "l",
+            "brief": "atomno",
+            "description": "Specify the last atom.",
+            "further_info": "The output will be rearranged so that any additional SMILES added to the end will be attached to this atom.",
+            "format_ids": [
+                20320184528576299830358586785865096672
+            ]
+        },
+        {
+            "id": 40139984520616070383782793672838718932,
+            "flag": "F",
+            "brief": "atom numbers",
+            "description": "Generate SMILES for a fragment.",
+            "further_info": "The atom numbers should be specified like 1 2 4 7.",
+            "format_ids": [
+                20320184528576299830358586785865096672
+            ]
+        },
+        {
+            "id": 93181372742419186168469107127813195629,
+            "flag": "b",
+            "brief": "colour",
+            "description": "Background colour (default is white).",
+            "further_info": "For example, 'yellow' or '#88ff00' ('none' is transparent and leaving blank is black with white bonds). The atom symbol colours work with black and white backgrounds, but may not with other colours.",
+            "format_ids": [
+                11534748775667962669015007545803037652,
+                281078610809857855124590786515545964119
+            ]
+        },
+        {
+            "id": 97084403334073705414476187091722909316,
+            "flag": "B",
+            "brief": "colour",
+            "description": "Bond colour (default is black).",
+            "further_info": "For example, 'yellow' or '#88ff00.'",
+            "format_ids": [
+                11534748775667962669015007545803037652,
+                281078610809857855124590786515545964119
+            ]
+        },
+        {
+            "id": 323599753065386983926207489964392974822,
+            "flag": "c",
+            "brief": "num",
+            "description": "Number of columns in table.",
+            "further_info": "N/A",
+            "format_ids": [
+                11534748775667962669015007545803037652,
+                281078610809857855124590786515545964119
+            ]
+        },
+        {
+            "id": 162285304569404001719475102706361935181,
+            "flag": "c",
+            "brief": "num",
+            "description": "Coordinate multiplier (default is 20).",
+            "further_info": "N/A",
+            "format_ids": [
+                20753642385669108430387120717727783064
+            ]
+        },
+        {
+            "id": 138747749753282344854037471677246972969,
+            "flag": "c",
+            "brief": "vectorcells",
+            "description": "Set the cell vectors if not present.",
+            "further_info": "For example, 10.0,0.0,0.0,10.0,0.0,0.0,0.0,20.0",
+            "format_ids": [
+                240273221595392696792114943248305349240
+            ]
+        },
+        {
+            "id": 336516441309818026539881668400659335986,
+            "flag": "d",
+            "brief": "length",
+            "description": "Set the length of the boundary box around the molecule.",
+            "further_info": "The default is to make a cube around the molecule, adding 50% to the most positive and negative cartesian coordinate.",
+            "format_ids": [
+                175100776358975770796098627875387083204
+            ]
+        },
+        {
+            "id": 225235816327043734615447715076841125296,
+            "flag": "d",
+            "brief": "densities",
+            "description": "For each surface, specify the point density (default is 1.0 angstrom^2).",
+            "further_info": "A comma-separated list of densities.",
+            "format_ids": [
+                258869049190979492248849245557152339882
+            ]
+        },
+        {
+            "id": 10609525677933720530598472175259051076,
+            "flag": "f",
+            "brief": "id",
+            "description": "Fingerprint type.",
+            "further_info": "N/A",
+            "format_ids": [
+                311727220817052319413740496112655834385
+            ]
+        },
+        {
+            "id": 232276570872254564769599161092120188157,
+            "flag": "f",
+            "brief": "num",
+            "description": "Fingerprint type.",
+            "further_info": "If not specified, the default fingerprint (currently FP2) is used.",
+            "format_ids": [
+                229718938459220525539470386349907318524
+            ]
+        },
+        {
+            "id": 40402304534510400591402387827996970048,
+            "flag": "f",
+            "brief": "num",
+            "description": "Indicate the level of the output file: 0 (default), 1 or 2.",
+            "further_info": "N/A",
+            "format_ids": [
+                240273221595392696792114943248305349240
+            ]
+        },
+        {
+            "id": 325330637633227574923724053679373055916,
+            "flag": "F",
+            "brief": "atom numbers",
+            "description": "Generate Canonical SMILES for a fragment.",
+            "further_info": "The atom numbers should be specified like 1 2 4 7.",
+            "format_ids": [
+                242351412810482127667305401957656993421
+            ]
+        },
+        {
+            "id": 244915029481966975939602977628138769471,
+            "flag": "h",
+            "brief": "characters",
+            "description": "Image height in characters (default is width/aspect).",
+            "further_info": "N/A",
+            "format_ids": [
+                140040321967105212767875377418986133540
+            ]
+        },
+        {
+            "id": 301970072866725320100402691631052307210,
+            "flag": "h",
+            "brief": "pixels",
+            "description": "Image height (or from image size).",
+            "further_info": "N/A",
+            "format_ids": [
+                281078610809857855124590786515545964119
+            ]
+        },
+        {
+            "id": 8762485185995092936479413497870376998,
+            "flag": "h",
+            "brief": "condition",
+            "description": "Highlight mol if condition is met.",
+            "further_info": "The condition can use descriptors and properties. See documentation on --filter option for details. To highlight in a particular colour, follow the condition by a colour.",
+            "format_ids": [
+                11534748775667962669015007545803037652
+            ]
+        },
+        {
+            "id": 17234240716048427625873321154642898811,
+            "flag": "k",
+            "brief": "basis",
+            "description": "Specify basis set to use.",
+            "further_info": "For example, ST0-3G.",
+            "format_ids": [
+                158727458119477299327944664210408884296
+            ]
+        },
+        {
+            "id": 196374543695238003712344328419864749021,
+            "flag": "k",
+            "brief": "keywords",
+            "description": "Use the specified keywords for input.",
+            "further_info": "N/A",
+            "format_ids": [
+                428890912438433496853978570015087835,
+                32583490387263496417347059827950455926,
+                55451110043223884478910162348924549409,
+                81476428634656558428219224353277334564,
+                87697213745282142848233051847868519529,
+                101147546724837741856431551717329312040,
+                109159716603777158625728697344624728603,
+                115284935565942077012093254807694312333,
+                229442134277031918831436837871492179909,
+                274304641201508541381149396456354573916,
+                295483664287131059634825273652142233679,
+                313957455269055695592006295660574290653,
+                318966972984405186439296793455936172061
+            ]
+        },
+        {
+            "id": 23708333195782037081070065942223277719,
+            "flag": "L",
+            "brief": "num",
+            "description": "Levels (default is 2).",
+            "further_info": "N/A",
+            "format_ids": [
+                71134613119509213904394171293615511768
+            ]
+        },
+        {
+            "id": 156032533081064231066416777159027677258,
+            "flag": "m",
+            "brief": "model-type",
+            "description": "BAS (ball-and-stick), SPF (space-fill) or CST (capped sticks).",
+            "further_info": "The default option is ball-and-stick.",
+            "format_ids": [
+                196510774020677087699004467179660353979
+            ]
+        },
+        {
+            "id": 31073431934879301448296753862169903674,
+            "flag": "m",
+            "brief": "num",
+            "description": "Indicate the mode for level 2 output files.",
+            "further_info": "0 (default) is for acceleration and 1 for forces.",
+            "format_ids": [
+                240273221595392696792114943248305349240
+            ]
+        },
+        {
+            "id": 232830303725816416830160369534645374651,
+            "flag": "N",
+            "brief": "prefix",
+            "description": "Add namespace prefix to elements.",
+            "further_info": "N/A",
+            "format_ids": [
+                17662494363313796187301246917012434805,
+                149780019444182511271858992398277910115,
+                232798684620226777149726409841452987070
+            ]
+        },
+        {
+            "id": 258971809916342333902809833091148443613,
+            "flag": "N",
+            "brief": "num",
+            "description": "Fold to specified number of bits, 32, 64, 128, etc.",
+            "further_info": "N/A",
+            "format_ids": [
+                203455324937141831266205930173305911236,
+                229718938459220525539470386349907318524,
+                311727220817052319413740496112655834385
+            ]
+        },
+        {
+            "id": 282607743693161351483751880808396394123,
+            "flag": "N",
+            "brief": "num",
+            "description": "Maximum number of objects to be output.",
+            "further_info": "N/A",
+            "format_ids": [
+                11534748775667962669015007545803037652,
+                281078610809857855124590786515545964119
+            ]
+        },
+        {
+            "id": 332842487290809689527585333154553577312,
+            "flag": "o",
+            "brief": "ordering",
+            "description": "Output in user-specified order.",
+            "further_info": "Ordering should be specified like 4-2-1-3 for a 4-atom molecule. This gives canonical labels 1,2,3,4 to atoms 4,2,1,3 respectively, so that atom 4 will be visited first and the remaining atoms visited in a depth-first manner following the lowest canonical labels.",
+            "format_ids": [
+                20320184528576299830358586785865096672,
+                297419025361599384272733241121809134667
+            ]
+        },
+        {
+            "id": 20411944908981846635902818032756448865,
+            "flag": "p",
+            "brief": "pixels",
+            "description": "Image size (default is 300).",
+            "further_info": "N/A",
+            "format_ids": [
+                281078610809857855124590786515545964119
+            ]
+        },
+        {
+            "id": 173861797168679163945786714659971312212,
+            "flag": "p",
+            "brief": "num",
+            "description": "px Scale to bond length (single mol only).",
+            "further_info": "N/A",
+            "format_ids": [
+                11534748775667962669015007545803037652
+            ]
+        },
+        {
+            "id": 328023308422144570004275306596113671778,
+            "flag": "p",
+            "brief": "radius",
+            "description": "Radius of the probe atom in angstroms (default is 0.0).",
+            "further_info": "N/A",
+            "format_ids": [
+                258869049190979492248849245557152339882
+            ]
+        },
+        {
+            "id": 44781744047971876590449378183239499514,
+            "flag": "p",
+            "brief": "radius",
+            "description": "Radius of the probe particle in angstroms (default is 0.0).",
+            "further_info": "N/A",
+            "format_ids": [
+                68669533866597814414817631521755643473
+            ]
+        },
+        {
+            "id": 288910274501513475855764567764030344674,
+            "flag": "P",
+            "brief": "num",
+            "description": "px Single mol in defined size image.",
+            "further_info": "N/A",
+            "format_ids": [
+                11534748775667962669015007545803037652
+            ]
+        },
+        {
+            "id": 301950271895209060435173535328946706433,
+            "flag": "q",
+            "brief": "water-model",
+            "description": "Set atomic charges for water.",
+            "further_info": "The two options are SPC (default) or SPCE.",
+            "format_ids": [
+                175100776358975770796098627875387083204
+            ]
+        },
+        {
+            "id": 195938460682957678042993474187599478335,
+            "flag": "r",
+            "brief": "radii",
+            "description": "Create a surface for each VDW radius (default is 1.0).",
+            "further_info": "A comma-separated list of VDW radius multiples.",
+            "format_ids": [
+                258869049190979492248849245557152339882
+            ]
+        },
+        {
+            "id": 315307018273561474481017911810292352005,
+            "flag": "r",
+            "brief": "num",
+            "description": "Number of rows in table.",
+            "further_info": "N/A",
+            "format_ids": [
+                11534748775667962669015007545803037652,
+                281078610809857855124590786515545964119
+            ]
+        },
+        {
+            "id": 242398111523456983753082153571839494769,
+            "flag": "s",
+            "brief": "scale",
+            "description": "Scale-factor for VDW radius in angstroms (default is 1.0).",
+            "further_info": "N/A",
+            "format_ids": [
+                68669533866597814414817631521755643473
+            ]
+        },
+        {
+            "id": 156857766143400107745848147309922585201,
+            "flag": "t",
+            "brief": "text",
+            "description": "Use 'text' as source in header.",
+            "further_info": "N/A",
+            "format_ids": [
+                311727220817052319413740496112655834385
+            ]
+        },
+        {
+            "id": 321688130672467743573935950687520488073,
+            "flag": "T",
+            "brief": "max seconds",
+            "description": "Specify the canonicalisation timeout.",
+            "further_info": "Canonicalisation can take a while for symmetrical molecules and so a timeout is used. The default is 5 seconds.",
+            "format_ids": [
+                20320184528576299830358586785865096672,
+                297419025361599384272733241121809134667
+            ]
+        },
+        {
+            "id": 24584209870757418954399238411192592037,
+            "flag": "u",
+            "brief": "element list",
+            "description": "Sort atoms by list of element symbols provided in comma-separated string without spaces.",
+            "further_info": "N/A",
+            "format_ids": [
+                98261525007525135735251046647244654113,
+                195740799786273524362341124474008908118,
+                300796939547901577812626686286774265749
+            ]
+        },
+        {
+            "id": 333697690061226017510916056129192021268,
+            "flag": "w",
+            "brief": "characters",
+            "description": "Image width in characters (default is 79).",
+            "further_info": "N/A",
+            "format_ids": [
+                140040321967105212767875377418986133540
+            ]
+        },
+        {
+            "id": 211968172269513986092002223396145590160,
+            "flag": "w",
+            "brief": "pixels",
+            "description": "Image width (or from image size).",
+            "further_info": "N/A",
+            "format_ids": [
+                281078610809857855124590786515545964119
+            ]
+        },
+        {
+            "id": 32103657256870147412387310216723726582,
+            "flag": "y",
+            "brief": "additional chunk ID",
+            "description": "Write to a chunk with specified ID.",
+            "further_info": "N/A",
+            "format_ids": [
+                281078610809857855124590786515545964119
+            ]
+        },
+        {
+            "id": 249686303728268315167896865047224593082,
+            "flag": "z",
+            "brief": "list of atoms",
+            "description": "Specify the order to write out atoms.",
+            "further_info": "atom1 atom2 ... (atom1 first, atom2 second, etc.). The remaining atoms are written in the default order or (if option w is specified) in order of atomic number.",
+            "format_ids": [
+                109334830415080040083849964670968869182,
+                178002885945313670724373494495586011145,
+                318487010089456902950008675463492717371
+            ]
+        },
+        {
+            "id": 165664503965286629347311391458795051275,
+            "flag": "T",
+            "brief": "param",
+            "description": "Truncate InChI according to various parameters.",
+            "further_info": "/formula (formula only). /connect (formula and connectivity only). /nostereo (ignore E/Z and sp3 stereochemistry). /nosp3 (ignore sp3 stereochemistry). /noEZ (ignore E/Z stereochemistry). /nochg (ignore charge and protonation). /noiso (ignore isotopes). Note that these can be combined (e.g., /nochg/noiso).",
+            "format_ids": [
+                279751716690019374171243961730825953031
+            ]
+        }
+    ],
+    "in_flag": [
+        {
+            "id": 299022213298829954373625923739104377462,
+            "flag": "1",
+            "description": "Output single-stranded DNA.",
+            "further_info": "N/A",
+            "format_ids": [
+                118484790870718437043272623986523152493,
+                127325448333808099218652406615021461466,
+                205237936785857655978529626512927794188
+            ]
+        },
+        {
+            "id": 306059120916135689421152639515130655620,
+            "flag": "2",
+            "description": "Read 2D rather than 3D coordinates if both provided.",
+            "further_info": "N/A",
+            "format_ids": [
+                17662494363313796187301246917012434805,
+                232798684620226777149726409841452987070
+            ]
+        },
+        {
+            "id": 307677508455861999262285905105604637534,
+            "flag": "a",
+            "description": "Preserve aromaticity present in the SMILES.",
+            "further_info": "This option should only be used if reading aromatic SMILES generated by the same version of Open Babel. Any other use will lead to undefined behaviour. The advantage of this option is that it avoids aromaticity perception, thus speeding up reading SMILES.",
+            "format_ids": [
+                20320184528576299830358586785865096672,
+                297419025361599384272733241121809134667
+            ]
+        },
+        {
+            "id": 200577143237734129616281252905106679051,
+            "flag": "S",
+            "description": "Clean stereochemistry.",
+            "further_info": "By default, stereochemistry is accepted as given. If you wish to clean up stereochemistry (e.g., by removing tetrahedral stereochemistry where two of the substituents are identical) then specifying this option will reperceive stereocentres.",
+            "format_ids": [
+                20320184528576299830358586785865096672,
+                297419025361599384272733241121809134667
+            ]
+        },
+        {
+            "id": 20585269122968790621835107352594730529,
+            "flag": "a",
+            "description": "Add InChI string to molecule name.",
+            "further_info": "N/A",
+            "format_ids": [
+                279751716690019374171243961730825953031
+            ]
+        },
+        {
+            "id": 5442553681543985846842094268698476902,
+            "flag": "a",
+            "description": "Input in angstroms.",
+            "further_info": "N/A",
+            "format_ids": [
+                30665022909691561325779745793193814283
+            ]
+        },
+        {
+            "id": 158695141528127947215731573627328634106,
+            "flag": "a",
+            "description": "Add Tanimoto coeff to title in similarity search.",
+            "further_info": "N/A",
+            "format_ids": [
+                229718938459220525539470386349907318524
+            ]
+        },
+        {
+            "id": 311131121289578998931336487750512776923,
+            "flag": "b",
+            "description": "Disable bonding entirely.",
+            "further_info": "N/A",
+            "format_ids": [
+                6145128555743823019270948617290459229,
+                14197590732937287881456998945687225790,
+                18060400445211778284339610808960164493,
+                23082963749979422604700127676877572562,
+                30665022909691561325779745793193814283,
+                32103794576339723026923590371300680498,
+                32583490387263496417347059827950455926,
+                35457974918221409620446215629229917674,
+                42929030948607777034721872659909207659,
+                50135205643343990489495467470022579507,
+                64062233841191714942741004810469827032,
+                65584369182938890525958810956722032863,
+                75256735368296090982827896104660949364,
+                90045086629918350146740817174978261587,
+                98087358648240724707595803459265028120,
+                107828280388478511951026387228740011485,
+                109159716603777158625728697344624728603,
+                109334830415080040083849964670968869182,
+                111142745790695896928946860948434358952,
+                115284935565942077012093254807694312333,
+                118484790870718437043272623986523152493,
+                127325448333808099218652406615021461466,
+                131324783833441752657122447631530332915,
+                134569736213287218538320956840196678451,
+                140802954064900569091310859702143140268,
+                143057463165023442074484263410041915913,
+                152269619056269653625250260620024171468,
+                157948546461387970602767851984261258376,
+                158727458119477299327944664210408884296,
+                162103299763807380500131326958816874604,
+                164043074007521460393631826491715850867,
+                165118644531950273804723468281726017540,
+                165446354456708261838226408395697033526,
+                173779925106285252203277380892095079434,
+                178002885945313670724373494495586011145,
+                178051250684404333864853326144004349070,
+                178366529166858241161075106138867206788,
+                183079669871823796614849308541253271232,
+                186021132297894598022399782271060075282,
+                186421497653501599634628674311337579442,
+                205237936785857655978529626512927794188,
+                208260153018670683990484459978815300545,
+                208901672612172989347321953871049279705,
+                211332162782481593381835124460353798951,
+                211437754021283042845632230934286368125,
+                211724617318004434893467139293681820081,
+                212341502249074142074023390346112242006,
+                214908995963617485636855366710271712886,
+                215712837579064454423947286281714090418,
+                240273221595392696792114943248305349240,
+                244932917611111266006197115678561122005,
+                245583399082158185307315960291944621157,
+                250228181914271190098048137007707135404,
+                258624728267775991998580718445137455374,
+                259412489246290481355693631081480691731,
+                263465866558940061620786987109970249688,
+                265228661700132434943151283693896395164,
+                266121539119077795673797287845096591518,
+                277528275937225967448335816787802602344,
+                286338901044606364215112067935541989577,
+                286603189554790672310398833408923852963,
+                293892807975145609373743919186598379172,
+                307669102354654522010722369882037488386,
+                313957455269055695592006295660574290653,
+                317461235989458158100553047391214580851,
+                318487010089456902950008675463492717371,
+                327200745458547092709635496941629709670,
+                337115475730854156794260244459774479188
+            ]
+        },
+        {
+            "id": 254747053566566306155215411762883548209,
+            "flag": "b",
+            "description": "No bond perception.",
+            "further_info": "N/A",
+            "format_ids": [
+                49120600658416108974876735403084537009,
+                187391399687884167703843132511072812833,
+                248906788879831668235784512182957495786
+            ]
+        },
+        {
+            "id": 54696511821603989426468761717854729170,
+            "flag": "b",
+            "description": "No bonds.",
+            "further_info": "N/A",
+            "format_ids": [
+                22556641855344674493163123090473605751,
+                71979496514962592580628060526162033302,
+                74371210293607487710428162012724232274,
+                214513980779548429541384975889898482960,
+                315876805348576818877952809238961067299
+            ]
+        },
+        {
+            "id": 281254207925446263008924641741513859444,
+            "flag": "c",
+            "description": "Ignore CONECT records.",
+            "further_info": "N/A",
+            "format_ids": [
+                32103794576339723026923590371300680498,
+                178366529166858241161075106138867206788
+            ]
+        },
+        {
+            "id": 17778186409547307032631860814479864503,
+            "flag": "c",
+            "description": "Read UCSF Dock scores saved in comments preceding molecules.",
+            "further_info": "N/A",
+            "format_ids": [
+                143425445942253368938814885806318269174,
+                253646697262577575373378065419268181033,
+                318851989183477540453947203371966440690
+            ]
+        },
+        {
+            "id": 165455693503392556831483894151509056478,
+            "flag": "c",
+            "description": "Read multiple conformers.",
+            "further_info": "N/A",
+            "format_ids": [
+                35457974918221409620446215629229917674,
+                186421497653501599634628674311337579442,
+                286603189554790672310398833408923852963
+            ]
+        },
+        {
+            "id": 207771637444402300228730661775863491419,
+            "flag": "e",
+            "description": "Terminate on 'END'.",
+            "further_info": "N/A",
+            "format_ids": [
+                19536313315451808034724544445668548700,
+                101389313506856235208299705705909774321
+            ]
+        },
+        {
+            "id": 2374422802342215519176555103981514475,
+            "flag": "p",
+            "description": "Apply periodic boundary conditions for bonds.",
+            "further_info": "N/A",
+            "format_ids": [
+                111142745790695896928946860948434358952,
+                211332162782481593381835124460353798951
+            ]
+        },
+        {
+            "id": 96891791953650652176672264612617087533,
+            "flag": "P",
+            "description": "Read title and properties only.",
+            "further_info": "When filtering an sdf file on title or properties only, avoid lengthy chemical interpretation by using the T or P option together with the copy format.",
+            "format_ids": [
+                14163986051707882465586360841029029139,
+                84896050381326444273888468929459347256,
+                275917740769777784072805688195146073430,
+                292727325821381794107846543252288100244
+            ]
+        },
+        {
+            "id": 223216822226011300719813103992578199478,
+            "flag": "s",
+            "description": "Determine chirality from atom parity flags.",
+            "further_info": "The default setting for 2D and 3D is to ignore atom parity and work out the chirality based on the bond stereochemistry (2D) or coordinates (3D). For 0D the default is already to determine the chirality from the atom parity.",
+            "format_ids": [
+                14163986051707882465586360841029029139,
+                84896050381326444273888468929459347256,
+                275917740769777784072805688195146073430,
+                292727325821381794107846543252288100244
+            ]
+        },
+        {
+            "id": 37637315793063861422597722377217129197,
+            "flag": "s",
+            "description": "Consider single bonds only.",
+            "further_info": "N/A",
+            "format_ids": [
+                42467827704295123803800080524419079706,
+                250228181914271190098048137007707135404,
+                259412489246290481355693631081480691731
+            ]
+        },
+        {
+            "id": 61573024957038856216881719968339301194,
+            "flag": "s",
+            "description": "Single bonds only.",
+            "further_info": "N/A",
+            "format_ids": [
+                49120600658416108974876735403084537009,
+                187391399687884167703843132511072812833,
+                248906788879831668235784512182957495786
+            ]
+        },
+        {
+            "id": 186115135465723968671190770600667337743,
+            "flag": "s",
+            "description": "No multiple bonds.",
+            "further_info": "N/A",
+            "format_ids": [
+                22556641855344674493163123090473605751,
+                71979496514962592580628060526162033302,
+                74371210293607487710428162012724232274,
+                214513980779548429541384975889898482960,
+                315876805348576818877952809238961067299
+            ]
+        },
+        {
+            "id": 248104208613490541038447617727429410954,
+            "flag": "S",
+            "description": "Do not read stereochemistry from 0D MOL files.",
+            "further_info": "Open Babel supports reading and writing cis/trans and tetrahedral stereochemistry to 0D MOL files. This is an extension to the standard which you can turn off using this option.",
+            "format_ids": [
+                14163986051707882465586360841029029139,
+                84896050381326444273888468929459347256,
+                275917740769777784072805688195146073430,
+                292727325821381794107846543252288100244
+            ]
+        },
+        {
+            "id": 327752538317964197051647170315707093872,
+            "flag": "T",
+            "description": "Read title only.",
+            "further_info": "N/A",
+            "format_ids": [
+                14163986051707882465586360841029029139,
+                84896050381326444273888468929459347256,
+                275917740769777784072805688195146073430,
+                292727325821381794107846543252288100244
+            ]
+        },
+        {
+            "id": 9519732209431424212885893837751962310,
+            "flag": "w",
+            "description": "Wrap atomic coordinates into unit cell box.",
+            "further_info": "N/A",
+            "format_ids": [
+                111142745790695896928946860948434358952,
+                211332162782481593381835124460353798951
+            ]
+        },
+        {
+            "id": 34381516514681533930830632238249077801,
+            "flag": "b",
+            "description": "Disable automatic bonding.",
+            "further_info": "N/A",
+            "format_ids": [
+                23086914704772561252272100468075652414
+            ]
+        },
+        {
+            "id": 262671351674199708345160328619604410797,
+            "flag": "B",
+            "description": "Use bonds listed in CIF file from _geom_bond_etc records (overrides option b).",
+            "further_info": "N/A",
+            "format_ids": [
+                214908995963617485636855366710271712886
+            ]
+        },
+        {
+            "id": 287969279524522146062524523652310888187,
+            "flag": "d",
+            "description": "Input file is in DLG (AutoDock docking log) format.",
+            "further_info": "N/A",
+            "format_ids": [
+                23086914704772561252272100468075652414
+            ]
+        },
+        {
+            "id": 42361417708711044034649815312033823280,
+            "flag": "e",
+            "description": "Exact match.",
+            "further_info": "Alternative to using 'exact' with option s.",
+            "format_ids": [
+                229718938459220525539470386349907318524
+            ]
+        },
+        {
+            "id": 261595510437321178103159718519937532289,
+            "flag": "f",
+            "description": "Overwrite molecule if more than one.",
+            "further_info": "Calculation with different molecules is present in the output file (last calculation will be preferred).",
+            "format_ids": [
+                134569736213287218538320956840196678451
+            ]
+        },
+        {
+            "id": 166471049421350755535015729816337348303,
+            "flag": "L",
+            "description": "Reactions have labels (usually optional).",
+            "further_info": "N/A",
+            "format_ids": [
+                29911246111224779837663677976272255692
+            ]
+        },
+        {
+            "id": 307388254265907634267321459504961279192,
+            "flag": "n",
+            "description": "Molecule name follows InChI on same line.",
+            "further_info": "N/A",
+            "format_ids": [
+                279751716690019374171243961730825953031
+            ]
+        },
+        {
+            "id": 216172545596508608558510171065530253318,
+            "flag": "n",
+            "description": "No further SMARTS filtering after fingerprint phase.",
+            "further_info": "N/A",
+            "format_ids": [
+                229718938459220525539470386349907318524
+            ]
+        },
+        {
+            "id": 290437930360227172169070951416764755005,
+            "flag": "n",
+            "description": "Read objects of first namespace only.",
+            "further_info": "N/A",
+            "format_ids": [
+                146631832032801319084080695122229884754
+            ]
+        },
+        {
+            "id": 167971048992412330846849043994306677020,
+            "flag": "s",
+            "description": "Output single bonds only.",
+            "further_info": "N/A",
+            "format_ids": [
+                6145128555743823019270948617290459229,
+                14197590732937287881456998945687225790,
+                18060400445211778284339610808960164493,
+                23082963749979422604700127676877572562,
+                30665022909691561325779745793193814283,
+                32103794576339723026923590371300680498,
+                32583490387263496417347059827950455926,
+                35457974918221409620446215629229917674,
+                42929030948607777034721872659909207659,
+                50135205643343990489495467470022579507,
+                64062233841191714942741004810469827032,
+                65584369182938890525958810956722032863,
+                75256735368296090982827896104660949364,
+                90045086629918350146740817174978261587,
+                98087358648240724707595803459265028120,
+                107828280388478511951026387228740011485,
+                109159716603777158625728697344624728603,
+                109334830415080040083849964670968869182,
+                111142745790695896928946860948434358952,
+                115284935565942077012093254807694312333,
+                118484790870718437043272623986523152493,
+                127325448333808099218652406615021461466,
+                131324783833441752657122447631530332915,
+                134569736213287218538320956840196678451,
+                140802954064900569091310859702143140268,
+                143057463165023442074484263410041915913,
+                152269619056269653625250260620024171468,
+                157948546461387970602767851984261258376,
+                158727458119477299327944664210408884296,
+                162103299763807380500131326958816874604,
+                164043074007521460393631826491715850867,
+                165118644531950273804723468281726017540,
+                165446354456708261838226408395697033526,
+                173779925106285252203277380892095079434,
+                178002885945313670724373494495586011145,
+                178051250684404333864853326144004349070,
+                178366529166858241161075106138867206788,
+                183079669871823796614849308541253271232,
+                186021132297894598022399782271060075282,
+                186421497653501599634628674311337579442,
+                205237936785857655978529626512927794188,
+                208260153018670683990484459978815300545,
+                208901672612172989347321953871049279705,
+                211332162782481593381835124460353798951,
+                211724617318004434893467139293681820081,
+                212341502249074142074023390346112242006,
+                214908995963617485636855366710271712886,
+                215712837579064454423947286281714090418,
+                240273221595392696792114943248305349240,
+                244932917611111266006197115678561122005,
+                245583399082158185307315960291944621157,
+                258624728267775991998580718445137455374,
+                263465866558940061620786987109970249688,
+                265228661700132434943151283693896395164,
+                266121539119077795673797287845096591518,
+                277528275937225967448335816787802602344,
+                286338901044606364215112067935541989577,
+                286603189554790672310398833408923852963,
+                293892807975145609373743919186598379172,
+                307669102354654522010722369882037488386,
+                313957455269055695592006295660574290653,
+                317461235989458158100553047391214580851,
+                318487010089456902950008675463492717371,
+                327200745458547092709635496941629709670,
+                337115475730854156794260244459774479188
+            ]
+        },
+        {
+            "id": 274121476082475608267110811962529942847,
+            "flag": "s",
+            "description": "Generate single bonds only.",
+            "further_info": "N/A",
+            "format_ids": [
+                32043555312713639025957046122919489996
+            ]
+        },
+        {
+            "id": 92945947047194058192905516210711707910,
+            "flag": "s",
+            "description": "Disable stereo perception and just read stereo information from input.",
+            "further_info": "N/A",
+            "format_ids": [
+                266049478114000494937814324865758516629
+            ]
+        },
+        {
+            "id": 237757612530029606112978285847482754564,
+            "flag": "z",
+            "description": "Use standard thermo only.",
+            "further_info": "N/A",
+            "format_ids": [
+                29911246111224779837663677976272255692
+            ]
+        }
+    ],
+    "in_option": [
+        {
+            "id": 307298893005999866130753798302957692822,
+            "flag": "c",
+            "brief": "num",
+            "description": "Coordinate multiplier (default is 20).",
+            "further_info": "N/A",
+            "format_ids": [
+                20753642385669108430387120717727783064
+            ]
+        },
+        {
+            "id": 192855153980161316622359567269445528469,
+            "flag": "f",
+            "brief": "num",
+            "description": "Maximum number of candidates (default is 4000).",
+            "further_info": "N/A",
+            "format_ids": [
+                229718938459220525539470386349907318524
+            ]
+        },
+        {
+            "id": 115723218418544284537282841775285983782,
+            "flag": "t",
+            "brief": "num",
+            "description": "Do similarity search ('num' mols or 'num' as min Tanimoto).",
+            "further_info": "N/A",
+            "format_ids": [
+                229718938459220525539470386349907318524
+            ]
+        },
+        {
+            "id": 243033570723819111525765645545920420234,
+            "flag": "t",
+            "brief": "turns",
+            "description": "Use the specified number of base pairs per turn (e.g., 10).",
+            "further_info": "N/A",
+            "format_ids": [
+                118484790870718437043272623986523152493,
+                127325448333808099218652406615021461466,
+                205237936785857655978529626512927794188
+            ]
+        },
+        {
+            "id": 144867398679247106238542183291019112754,
+            "flag": "y",
+            "brief": "additional chunk ID",
+            "description": "Look also in chunks with specified ID.",
+            "further_info": "N/A",
+            "format_ids": [
+                281078610809857855124590786515545964119
+            ]
+        }
+    ]
 }
