@@ -20,6 +20,9 @@
     - `d_indices_from_uuids`
     - `d_uuids_from_indices`
 - The `ConversionQualityInfo` object returned by the method `psdi_data_conversion.database.get_conversion_quality` will now have attributes `in_format` and `out_format` always be `FormatInfo` objects, rather than the types of these matching the types of the formats input to this method
+- The internals of the `FileConverter` base class from `psdi_data_conversion.converters.base` have been reworked alongside database changes. This results in most data about an individual converter being stored within its `meta` attribute now, which is of the new `FileConverterMeta` class. The old attributes remain as properties which reference these to avoid breaking existing code as much as possible, but as it's to be deprecated for properties to also be class methods, these will not be accessible from the class itself, and instead must be accessed from the `meta` attribute. That is:
+  - `FileConverter.name` used to work, but now won't. Use `FileConverter.meta.name` instead (or equivalent with any subclass of `FileConverter`)
+  - `x = FileConverter(); x.name` still works. `x.meta.name` can be equivalently be used, but isn't needed
 
 ### New and Changed Functionality
 
