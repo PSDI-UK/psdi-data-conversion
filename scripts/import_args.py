@@ -103,11 +103,11 @@ def run_from_args(args):
             db_arg_type_str: str = "flag"
             if arg_type_str == "option":
                 db_arg_type_str = "argflag"
-            if not d_out_data.get(f"{in_out_str}_{arg_type_str}"):
-                d_out_data[f"{in_out_str}_{arg_type_str}"] = d_db_data[
+            if not d_out_data.get(f"{in_out_str}_{arg_type_str}s"):
+                d_out_data[f"{in_out_str}_{arg_type_str}s"] = d_db_data[
                     f"{db_key_prefix}{db_arg_type_str}s_{in_out_str}"]
 
-            for d_out_arg_info in d_out_data[f"{in_out_str}_{arg_type_str}"]:
+            for d_out_arg_info in d_out_data[f"{in_out_str}_{arg_type_str}s"]:
                 if not d_out_arg_info["id"] == arg_id:
                     continue
                 d_out_arg_info["format_ids"] = l_applies_to

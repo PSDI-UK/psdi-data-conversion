@@ -205,11 +205,7 @@
     ],
     "supported_conversions": [],
     "unsupported_conversions": [],
-    "in_flags": [],
-    "out_flags": [],
-    "in_options": [],
-    "out_options": [],
-    "out_flag": [
+    "out_flags": [
         {
             "id": 63232154335561457138515817153613372608,
             "flag": "3",
@@ -1386,7 +1382,7 @@
             ]
         }
     ],
-    "out_option": [
+    "out_options": [
         {
             "id": 105184455730336140044842445001895339047,
             "flag": "f",
@@ -1845,7 +1841,7 @@
             ]
         }
     ],
-    "in_flag": [
+    "in_flags": [
         {
             "id": 299022213298829954373625923739104377462,
             "flag": "1",
@@ -2341,7 +2337,7 @@
             ]
         }
     ],
-    "in_option": [
+    "in_options": [
         {
             "id": 307298893005999866130753798302957692822,
             "flag": "c",
