@@ -72,7 +72,7 @@ def run_from_args(args):
 
     # Get the main database directory and load the formats dict from it into the output dict
     db_path = db.get_database_path()
-    formats_path = os.path.join(os.path.split(db_path), FORMATS_DATAFILE)
+    formats_path = os.path.join(os.path.split(db_path)[0], FORMATS_DATAFILE)
     db_out[db.DB_FORMATS_KEY] = json.load(open(formats_path))[db.DB_FORMATS_KEY]
 
     # Create initial entries for the rest of the output dict
@@ -90,8 +90,8 @@ def run_from_args(args):
             continue
 
         # Load data about the converter and add it to the database
-        db_conv: JsonMainDict = json.load(os.path.join(qual_dir, PLUGIN_DATAFILE))
-        conv_id: int = db_conv[db.DB_ID_KEY]
+        db_conv: JsonMainDict = json.load(open(os.path.join(qual_dir, PLUGIN_DATAFILE)))
+        conv_id: int = db_conv[db.DB_CONVERTER_KEY][db.DB_ID_KEY]
         l_db_converters.append(db_conv[db.DB_CONVERTER_KEY])
 
         # Determine possible conversions and add them all to the database
@@ -125,7 +125,7 @@ def run_from_args(args):
         # TODO: Add argument info here
 
     # Save the database
-    json.dump(db_out, open(db_path), sort_keys=True, indent=4)
+    json.dump(db_out, open(db_path.replace(".json", "2.json"), "w"), sort_keys=True, indent=4)
 
 
 def main():
