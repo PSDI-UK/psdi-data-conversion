@@ -29,6 +29,24 @@ from psdi_data_conversion.converters.base import FileConverter, FileConverterExc
 from psdi_data_conversion.file_io import get_package_path
 from psdi_data_conversion.utils import regularize_name
 
+# Keys for converter-specific databases
+DB_CONVERTER_KEY = "converter"
+
+DB_EXTRA_FORMATS_KEY = "extra_formats"
+
+DB_SUPPORTED_FORMATS_KEY = "supported_formats"
+DB_IN_ONLY_FORMATS_KEY = "in_only_formats"
+DB_OUT_ONLY_FORMATS_KEY = "out_only_formats"
+
+DB_SUPPORTED_CONVERSIONS_KEY = "supported_conversions"
+DB_UNSUPPORTED_CONVERSIONS_KEY = "unsupported_conversions"
+
+DB_IN_FLAGS_KEY = "in_flags"
+DB_OUT_FLAGS_KEY = "out_flags"
+DB_IN_OPTIONS_KEY = "in_options"
+DB_OUT_OPTIONS_KEY = "out_options"
+
+
 # Keys for top-level and general items in the database
 DB_FORMATS_KEY = "formats"
 DB_CONVERTERS_KEY = "converters"
