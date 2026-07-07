@@ -83,6 +83,10 @@ def run_from_args(args):
         open(os.path.join(db_dir, UNSUPPORTED_CONVERTERS_DATAFILE)))[db.DB_CONVERTERS_KEY]
     db_out[db.DB_CONVERTERS_KEY] = l_db_converters
     for d_conv_info in l_db_converters:
+        if db.DB_DESC_KEY in d_conv_info:
+            d_conv_info[db.DB_DESCRIPTION_KEY] = d_conv_info.pop(db.DB_DESC_KEY)
+        if db.DB_INFO_KEY in d_conv_info:
+            d_conv_info[db.DB_FURTHER_INFO_KEY] = d_conv_info.pop(db.DB_INFO_KEY)
         for key, default in ((db.DB_KEY_PREFIX_KEY, None),
                              (db.DB_DESCRIPTION_KEY, ""),
                              (db.DB_FURTHER_INFO_KEY, ""),
