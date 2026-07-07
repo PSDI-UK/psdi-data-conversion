@@ -1,0 +1,46 @@
+{
+    "converters": [
+        {
+            "description": "SCM Software for Chemistry & Materials",
+            "further_info": "",
+            "id": 80655077739724378181443159113906720339,
+            "name": "Amsterdam Modeling Suite",
+            "url": "https://www.scm.com"
+        },
+        {
+            "description": "University of Rennes",
+            "further_info": "",
+            "id": 314520102903760985481871418805567142726,
+            "name": "CRYSCALC",
+            "url": "https://cdifx.univ-rennes1.fr/progs/cryscalc/cryscalc_main.htm"
+        },
+        {
+            "description": "Chemaxon",
+            "further_info": "",
+            "id": 64881419031212790365828101506563058404,
+            "name": "Molconverter",
+            "url": "https://docs.chemaxon.com/display/docs/molecule-file-conversion-with-molconverter.md"
+        },
+        {
+            "description": "Lablicate. Primarily for analysis and visualisation of mass spectrographic and chromatographic data",
+            "further_info": "",
+            "id": 36182616775051183823587687284218519553,
+            "name": "OpenChrom",
+            "url": "https://lablicate.com/platform/openchrom"
+        },
+        {
+            "description": "JP-Minerals",
+            "further_info": "",
+            "id": 13190734803326644929172373502360888440,
+            "name": "VESTA",
+            "url": "https://jp-minerals.org/vesta/en/"
+        },
+        {
+            "description": "Web-based converter",
+            "further_info": "",
+            "id": 223236145467004160362135646344483306999,
+            "name": "WebMO",
+            "url": "https://www.webmo.net"
+        }
+    ]
+}

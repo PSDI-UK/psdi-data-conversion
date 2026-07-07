@@ -18,6 +18,7 @@ from psdi_data_conversion.converters import base as converters_base
 
 PLUGIN_DATAFILE = "data.json"
 FORMATS_DATAFILE = "formats.json"
+UNSUPPORTED_CONVERTERS_DATAFILE = "unsupported_converters.json"
 
 MSG_DOS_NOT_TESTED = "not tested"
 
@@ -70,13 +71,27 @@ def run_from_args(args):
 
     db_out: JsonMainDict = {}
 
-    # Get the main database directory and load the formats dict from it into the output dict
+    # Get the main database path and directory
     db_path = db.get_database_path()
-    formats_path = os.path.join(os.path.split(db_path)[0], FORMATS_DATAFILE)
-    db_out[db.DB_FORMATS_KEY] = json.load(open(formats_path))[db.DB_FORMATS_KEY]
+    db_dir = os.path.split(db_path)[0]
+
+    # Load the formats data into the output dict
+    db_out[db.DB_FORMATS_KEY] = json.load(open(os.path.join(db_dir, FORMATS_DATAFILE)))[db.DB_FORMATS_KEY]
+
+    # Load data on unsupported converters into the output dict, and fill in missing items
+    l_db_converters = json.load(
+        open(os.path.join(db_dir, UNSUPPORTED_CONVERTERS_DATAFILE)))[db.DB_CONVERTERS_KEY]
+    db_out[db.DB_CONVERTERS_KEY] = l_db_converters
+    for d_conv_info in l_db_converters:
+        for key, default in ((db.DB_KEY_PREFIX_KEY, None),
+                             (db.DB_DESCRIPTION_KEY, ""),
+                             (db.DB_FURTHER_INFO_KEY, ""),
+                             (db.DB_SUPPORT_AMBIG_EXT_KEY, False),
+                             (db.DB_URL_KEY, "")):
+            if key not in d_conv_info:
+                d_conv_info[key] = default
 
     # Create initial entries for the rest of the output dict
-    l_db_converters: list[JsonDict] = []
     db_out[db.DB_CONVERTERS_KEY] = l_db_converters
     l_db_converts_to: list[JsonDict] = []
     db_out[db.DB_CONVERTS_TO_KEY] = l_db_converts_to
@@ -85,6 +100,9 @@ def run_from_args(args):
     conv_path = os.path.split(os.path.realpath(converters_base.__file__))[0]
 
     for dir in os.listdir(conv_path):
+        if dir in ("example", "template", "script_template"):
+            continue
+
         qual_dir = os.path.join(conv_path, dir)
         if not os.path.isdir(qual_dir) or not os.path.isfile(os.path.join(qual_dir, "__init__.py")):
             continue

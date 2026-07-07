@@ -31,8 +31,10 @@ from psdi_data_conversion.utils import regularize_name
 
 # Keys for converter-specific databases
 DB_CONVERTER_KEY = "converter"
+DB_KEY_PREFIX_KEY = "database_key_prefix"
 DB_DESC_KEY = "desc"
 DB_INFO_KEY = "info"
+DB_SUPPORT_AMBIG_EXT_KEY = "supports_ambiguous_extensions"
 
 DB_EXTRA_FORMATS_KEY = "extra_formats"
 
