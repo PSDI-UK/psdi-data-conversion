@@ -1,0 +1,2844 @@
+{
+    "formats": [
+        {
+            "id": 214908995963617485636855366710271712886,
+            "extension": "cif",
+            "format": "cif",
+            "note": "Crystallographic Information File",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 28432815592399480094962454902300990984,
+            "extension": "ins",
+            "format": "ins",
+            "note": "RIETAN-FP",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 265228661700132434943151283693896395164,
+            "extension": "ins",
+            "format": "ins",
+            "note": "ShelX",
+            "composition": true,
+            "connections": true,
+            "two_dim": true,
+            "three_dim": true
+        },
+        {
+            "id": 327200745458547092709635496941629709670,
+            "extension": "res",
+            "format": "shelx",
+            "note": "ShelX (specifically ShelX-97 for c2x)",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 281078610809857855124590786515545964119,
+            "extension": "png",
+            "format": "png",
+            "note": "Portable Network Graphics",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 275917740769777784072805688195146073430,
+            "extension": "sdf",
+            "format": "mol",
+            "note": "MDL MOL",
+            "composition": true,
+            "connections": true,
+            "two_dim": true,
+            "three_dim": true
+        },
+        {
+            "id": 17662494363313796187301246917012434805,
+            "extension": "cml",
+            "format": "cml",
+            "note": "Chemical Markup Language",
+            "composition": true,
+            "connections": true,
+            "two_dim": true,
+            "three_dim": true
+        },
+        {
+            "id": 279751716690019374171243961730825953031,
+            "extension": "inchi",
+            "format": "inchi",
+            "note": "InChI",
+            "composition": true,
+            "connections": true,
+            "two_dim": false,
+            "three_dim": false
+        },
+        {
+            "id": 178366529166858241161075106138867206788,
+            "extension": "pdb",
+            "format": "pdb",
+            "note": "Protein Data Bank",
+            "composition": true,
+            "connections": true,
+            "two_dim": false,
+            "three_dim": true
+        },
+        {
+            "id": 48746576185426937819153906173748998767,
+            "extension": "RAW",
+            "format": "RAW",
+            "note": "Thermo MSD",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 305287394663687882056493561777756932843,
+            "extension": "ocb",
+            "format": "ocb",
+            "note": "Open Chromatography Binary",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 99515903324256349316585347569509460199,
+            "extension": "CDF",
+            "format": "CDF",
+            "note": "ANDI/AIA Chromatogram",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 182937675088317554679813770978148294902,
+            "extension": "animl",
+            "format": "animl",
+            "note": "AnIML MSD Chromatogram",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 333171647576875444434880943922184533624,
+            "extension": "JDX",
+            "format": "JDX",
+            "note": "JCAMP-DX MSD Chromatogram",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 172087761777071222663803962906497280843,
+            "extension": "mgf",
+            "format": "mgf",
+            "note": "MGF Chromatogram",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 292995839363572365153169041723817126664,
+            "extension": "mzML",
+            "format": "mzML",
+            "note": "Chromatogram",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 428890912438433496853978570015087835,
+            "extension": "gamin",
+            "format": "gamin",
+            "note": "GAMESS Input",
+            "composition": true,
+            "connections": false,
+            "two_dim": true,
+            "three_dim": true
+        },
+        {
+            "id": 14163986051707882465586360841029029139,
+            "extension": "mol",
+            "format": "mol",
+            "note": "MDL MOL",
+            "composition": true,
+            "connections": true,
+            "two_dim": true,
+            "three_dim": true
+        },
+        {
+            "id": 20320184528576299830358586785865096672,
+            "extension": "smi",
+            "format": "smi",
+            "note": "SMILES",
+            "composition": true,
+            "connections": true,
+            "two_dim": false,
+            "three_dim": false
+        },
+        {
+            "id": 50135205643343990489495467470022579507,
+            "extension": "xyz",
+            "format": "xyz",
+            "note": "XYZ cartesian coordinates",
+            "composition": true,
+            "connections": false,
+            "two_dim": true,
+            "three_dim": true
+        },
+        {
+            "id": 143425445942253368938814885806318269174,
+            "extension": "mol2",
+            "format": "mol2",
+            "note": "Sybyl Mol2",
+            "composition": true,
+            "connections": true,
+            "two_dim": false,
+            "three_dim": true
+        },
+        {
+            "id": 189891380312144085475327814775915515817,
+            "extension": "castep",
+            "format": "castep",
+            "note": "CASTEP",
+            "composition": true,
+            "connections": true,
+            "two_dim": true,
+            "three_dim": true
+        },
+        {
+            "id": 211437754021283042845632230934286368125,
+            "extension": "adf",
+            "format": "adf",
+            "note": "ADF cartesian input",
+            "composition": true,
+            "connections": false,
+            "two_dim": true,
+            "three_dim": true
+        },
+        {
+            "id": 170457162688838195372672545558705867976,
+            "extension": "csr",
+            "format": "csr",
+            "note": "Accelrys/MSI Quanta CSR",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 275355553275831646102330921285438643953,
+            "extension": "mcdl",
+            "format": "mcdl",
+            "note": "MCDL",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 34144918507016723002656952883188490287,
+            "extension": "pc",
+            "format": "pc",
+            "note": "PubChem",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 57208371217313378767434864947416222129,
+            "extension": "wln",
+            "format": "wln",
+            "note": "Wiswesser Line Notation",
+            "composition": true,
+            "connections": true,
+            "two_dim": false,
+            "three_dim": false
+        },
+        {
+            "id": 98087358648240724707595803459265028120,
+            "extension": "abinit",
+            "format": "abinit",
+            "note": "ABINIT output",
+            "composition": false,
+            "connections": false,
+            "two_dim": false,
+            "three_dim": false
+        },
+        {
+            "id": 323447212051753230497722740221560061230,
+            "extension": "acesin",
+            "format": "acesin",
+            "note": "ACES input",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 178051250684404333864853326144004349070,
+            "extension": "acesout",
+            "format": "acesout",
+            "note": "ACES output",
+            "composition": true,
+            "connections": true,
+            "two_dim": true,
+            "three_dim": true
+        },
+        {
+            "id": 164015717479405861925048938802415089264,
+            "extension": "adfband",
+            "format": "adfband",
+            "note": "ADF Band output",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 55421721184724190199255663875579141514,
+            "extension": "adfdftb",
+            "format": "adfdftb",
+            "note": "ADF DFTB output",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 102468372446585383013217809274092405247,
+            "extension": "msi",
+            "format": "msi",
+            "note": "Accelrys/MSI Cerius II MSI",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 244932917611111266006197115678561122005,
+            "extension": "adfout",
+            "format": "adfout",
+            "note": "ADF output",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 98944406755041640472793572415551378898,
+            "extension": "smy",
+            "format": "smy",
+            "note": "SMILES using Smiley parser",
+            "composition": true,
+            "connections": true,
+            "two_dim": false,
+            "three_dim": false
+        },
+        {
+            "id": 250228181914271190098048137007707135404,
+            "extension": "c09out",
+            "format": "c09out",
+            "note": "Crystal 09 output",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 158727458119477299327944664210408884296,
+            "extension": "dalmol",
+            "format": "dalmol",
+            "note": "DALTON input",
+            "composition": true,
+            "connections": false,
+            "two_dim": true,
+            "three_dim": true
+        },
+        {
+            "id": 65584369182938890525958810956722032863,
+            "extension": "dallog",
+            "format": "dallog",
+            "note": "DALTON output",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 165446354456708261838226408395697033526,
+            "extension": "dmol",
+            "format": "dmol",
+            "note": "DMol3 coordinates",
+            "composition": true,
+            "connections": false,
+            "two_dim": true,
+            "three_dim": true
+        },
+        {
+            "id": 211724617318004434893467139293681820081,
+            "extension": "exyz",
+            "format": "exyz",
+            "note": "Extended XYZ cartesian coordinates",
+            "composition": true,
+            "connections": false,
+            "two_dim": true,
+            "three_dim": true
+        },
+        {
+            "id": 42929030948607777034721872659909207659,
+            "extension": "fhiaims",
+            "format": "fhiaims",
+            "note": "FHIaims XYZ",
+            "composition": true,
+            "connections": false,
+            "two_dim": true,
+            "three_dim": true
+        },
+        {
+            "id": 60722064820726607749884055707632192589,
+            "extension": "fh",
+            "format": "fh",
+            "note": "Fenske-Hall Z-Matrix",
+            "composition": true,
+            "connections": false,
+            "two_dim": true,
+            "three_dim": true
+        },
+        {
+            "id": 150818025371172174302673570014764021474,
+            "extension": "c3d2",
+            "format": "c3d2",
+            "note": "Chem3D Cartesian 2",
+            "composition": true,
+            "connections": true,
+            "two_dim": false,
+            "three_dim": true
+        },
+        {
+            "id": 186421497653501599634628674311337579442,
+            "extension": "gam",
+            "format": "gam",
+            "note": "GAMESS Output",
+            "composition": true,
+            "connections": true,
+            "two_dim": true,
+            "three_dim": true
+        },
+        {
+            "id": 312416361991399498569569403187572586585,
+            "extension": "gukin",
+            "format": "gukin",
+            "note": "GAMESS-UK Input",
+            "composition": true,
+            "connections": false,
+            "two_dim": true,
+            "three_dim": true
+        },
+        {
+            "id": 245799431846755329366656443042300021644,
+            "extension": "gukout",
+            "format": "gukout",
+            "note": "GAMESS-UK Output",
+            "composition": true,
+            "connections": true,
+            "two_dim": true,
+            "three_dim": true
+        },
+        {
+            "id": 219090304970120911658441172508085968139,
+            "extension": "got",
+            "format": "got",
+            "note": "General Utility Lattice Package (GULP)",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 229442134277031918831436837871492179909,
+            "extension": "gau",
+            "format": "gau",
+            "note": "Gaussian Input",
+            "composition": true,
+            "connections": false,
+            "two_dim": true,
+            "three_dim": true
+        },
+        {
+            "id": 186021132297894598022399782271060075282,
+            "extension": "gal",
+            "format": "gal",
+            "note": "Gaussian Output",
+            "composition": true,
+            "connections": false,
+            "two_dim": true,
+            "three_dim": true
+        },
+        {
+            "id": 32583490387263496417347059827950455926,
+            "extension": "gzmat",
+            "format": "gzmat",
+            "note": "Gaussian Z-Matrix Input",
+            "composition": true,
+            "connections": false,
+            "two_dim": true,
+            "three_dim": true
+        },
+        {
+            "id": 49120600658416108974876735403084537009,
+            "extension": "fch",
+            "format": "fch",
+            "note": "Gaussian formatted checkpoint file",
+            "composition": true,
+            "connections": false,
+            "two_dim": true,
+            "three_dim": true
+        },
+        {
+            "id": 203233969061717138723802621663778516756,
+            "extension": "cof",
+            "format": "cof",
+            "note": "Culgi object file",
+            "composition": true,
+            "connections": true,
+            "two_dim": false,
+            "three_dim": true
+        },
+        {
+            "id": 285920280369953151466217874528695330246,
+            "extension": "hin",
+            "format": "hin",
+            "note": "HyperChem HIN",
+            "composition": true,
+            "connections": true,
+            "two_dim": true,
+            "three_dim": true
+        },
+        {
+            "id": 337115475730854156794260244459774479188,
+            "extension": "jin",
+            "format": "jin",
+            "note": "Jaguar input",
+            "composition": true,
+            "connections": false,
+            "two_dim": true,
+            "three_dim": true
+        },
+        {
+            "id": 165118644531950273804723468281726017540,
+            "extension": "jout",
+            "format": "jout",
+            "note": "Jaguar output",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 109159716603777158625728697344624728603,
+            "extension": "mop",
+            "format": "mop",
+            "note": "MOPAC Cartesian",
+            "composition": true,
+            "connections": false,
+            "two_dim": true,
+            "three_dim": true
+        },
+        {
+            "id": 274304641201508541381149396456354573916,
+            "extension": "mopin",
+            "format": "mopin",
+            "note": "MOPAC Internal",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 263465866558940061620786987109970249688,
+            "extension": "moo",
+            "format": "moo",
+            "note": "MOPAC Output",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 317461235989458158100553047391214580851,
+            "extension": "mpqc",
+            "format": "mpqc",
+            "note": "MPQC output",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 9694191781361711494655474144372280276,
+            "extension": "mpqcin",
+            "format": "mpqcin",
+            "note": "MPQC simplified input",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 7080563899215913382069699620796584379,
+            "extension": "mp",
+            "format": "mp",
+            "note": "Molpro input",
+            "composition": true,
+            "connections": false,
+            "two_dim": true,
+            "three_dim": true
+        },
+        {
+            "id": 258624728267775991998580718445137455374,
+            "extension": "mpo",
+            "format": "mpo",
+            "note": "Molpro output",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 50336342536900357140464268639125220199,
+            "extension": "nw",
+            "format": "nw",
+            "note": "NWChem input",
+            "composition": true,
+            "connections": false,
+            "two_dim": true,
+            "three_dim": true
+        },
+        {
+            "id": 134569736213287218538320956840196678451,
+            "extension": "nwo",
+            "format": "nwo",
+            "note": "NWChem output",
+            "composition": true,
+            "connections": false,
+            "two_dim": true,
+            "three_dim": true
+        },
+        {
+            "id": 318966972984405186439296793455936172061,
+            "extension": "orcainp",
+            "format": "orcainp",
+            "note": "ORCA input",
+            "composition": true,
+            "connections": false,
+            "two_dim": true,
+            "three_dim": true
+        },
+        {
+            "id": 14197590732937287881456998945687225790,
+            "extension": "orca",
+            "format": "orca",
+            "note": "ORCA output",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 216602765834382192531047521289669115174,
+            "extension": "pwscf",
+            "format": "pwscf",
+            "note": "PWscf",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 224385136222948748152544834393042297814,
+            "extension": "pqs",
+            "format": "pqs",
+            "note": "Parallel Quantum Solutions",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 87697213745282142848233051847868519529,
+            "extension": "qcin",
+            "format": "qcin",
+            "note": "Q-Chem input",
+            "composition": true,
+            "connections": false,
+            "two_dim": true,
+            "three_dim": true
+        },
+        {
+            "id": 208260153018670683990484459978815300545,
+            "extension": "qcout",
+            "format": "qcout",
+            "note": "Q-Chem output",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 30665022909691561325779745793193814283,
+            "extension": "tmol",
+            "format": "tmol",
+            "note": "TurboMole Coordinate",
+            "composition": true,
+            "connections": false,
+            "two_dim": true,
+            "three_dim": true
+        },
+        {
+            "id": 333584033541916537473635267800498264692,
+            "extension": "aoforce",
+            "format": "aoforce",
+            "note": "TurboMole AOFORCE output",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 318487010089456902950008675463492717371,
+            "extension": "POSCAR",
+            "format": "vasp",
+            "note": "VASP atomic positions",
+            "composition": true,
+            "connections": false,
+            "two_dim": true,
+            "three_dim": true
+        },
+        {
+            "id": 110063328763770889730093328255943162230,
+            "extension": "zin",
+            "format": "zin",
+            "note": "ZINDO input",
+            "composition": true,
+            "connections": false,
+            "two_dim": true,
+            "three_dim": true
+        },
+        {
+            "id": 311727220817052319413740496112655834385,
+            "extension": "fps",
+            "format": "fps",
+            "note": "FPS text fingerprint (Dalke)",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 229718938459220525539470386349907318524,
+            "extension": "fs",
+            "format": "fs",
+            "note": "Fastsearch",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 203455324937141831266205930173305911236,
+            "extension": "fpt",
+            "format": "fpt",
+            "note": "Fingerprint",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 42467827704295123803800080524419079706,
+            "extension": "acr",
+            "format": "acr",
+            "note": "CaRIne ASCII Crystal (ACR)",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 25831407526637982590123066275877258938,
+            "extension": "cssr",
+            "format": "cssr",
+            "note": "CSD CSSR",
+            "composition": true,
+            "connections": true,
+            "two_dim": true,
+            "three_dim": true
+        },
+        {
+            "id": 189799672843271148469061621940850020290,
+            "extension": "alc",
+            "format": "alc",
+            "note": "Alchemy",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 107828280388478511951026387228740011485,
+            "extension": "fract",
+            "format": "fract",
+            "note": "Free Form Fractional",
+            "composition": true,
+            "connections": false,
+            "two_dim": true,
+            "three_dim": true
+        },
+        {
+            "id": 211332162782481593381835124460353798951,
+            "extension": "mcif",
+            "format": "mcif",
+            "note": "Macromolecular Crystallography Info",
+            "composition": true,
+            "connections": false,
+            "two_dim": true,
+            "three_dim": true
+        },
+        {
+            "id": 157948546461387970602767851984261258376,
+            "extension": "pos",
+            "format": "pos",
+            "note": "POS cartesian coordinates",
+            "composition": true,
+            "connections": false,
+            "two_dim": true,
+            "three_dim": true
+        },
+        {
+            "id": 45029271004934808890870232253397407470,
+            "extension": "box",
+            "format": "box",
+            "note": "Dock 3.5 Box",
+            "composition": false,
+            "connections": true,
+            "two_dim": false,
+            "three_dim": true
+        },
+        {
+            "id": 317814353048046495813489963855304475337,
+            "extension": "bs",
+            "format": "bs",
+            "note": "Ball and Stick",
+            "composition": true,
+            "connections": true,
+            "two_dim": false,
+            "three_dim": true
+        },
+        {
+            "id": 149780019444182511271858992398277910115,
+            "extension": "cmlr",
+            "format": "cmlr",
+            "note": "CML Reaction",
+            "composition": true,
+            "connections": true,
+            "two_dim": true,
+            "three_dim": true
+        },
+        {
+            "id": 76950252569365882150732917449041895032,
+            "extension": "rxn",
+            "format": "rxn",
+            "note": "MDL RXN",
+            "composition": true,
+            "connections": true,
+            "two_dim": true,
+            "three_dim": true
+        },
+        {
+            "id": 187855126437857317514615572300346542595,
+            "extension": "rinchi",
+            "format": "rinchi",
+            "note": "RInChI",
+            "composition": true,
+            "connections": true,
+            "two_dim": false,
+            "three_dim": false
+        },
+        {
+            "id": 288653554956822251052461047133224607221,
+            "extension": "rsmi",
+            "format": "rsmi",
+            "note": "Reaction SMILES",
+            "composition": true,
+            "connections": true,
+            "two_dim": false,
+            "three_dim": false
+        },
+        {
+            "id": 140040321967105212767875377418986133540,
+            "extension": "ascii",
+            "format": "ascii",
+            "note": "ASCII",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 312584323884034023873281721717428436828,
+            "extension": "c3d1",
+            "format": "c3d1",
+            "note": "Chem3D Cartesian 1",
+            "composition": true,
+            "connections": true,
+            "two_dim": false,
+            "three_dim": true
+        },
+        {
+            "id": 196510774020677087699004467179660353979,
+            "extension": "pov",
+            "format": "pov",
+            "note": "POV-Ray input",
+            "composition": true,
+            "connections": true,
+            "two_dim": true,
+            "three_dim": true
+        },
+        {
+            "id": 113868783398416612169698405548476096841,
+            "extension": "paint",
+            "format": "paint",
+            "note": "Painter",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 11534748775667962669015007545803037652,
+            "extension": "svg",
+            "format": "svg",
+            "note": "Scalable Vector Graphics",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 266389324323103918149718987713882163586,
+            "extension": "cdxml",
+            "format": "cdxml",
+            "note": "ChemDraw CDXML",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 330459666519421422796365239431590788791,
+            "extension": "ct",
+            "format": "ct",
+            "note": "ChemDraw Connection Table",
+            "composition": true,
+            "connections": true,
+            "two_dim": true,
+            "three_dim": true
+        },
+        {
+            "id": 49482451423421542032360443871728802396,
+            "extension": "crk2d",
+            "format": "crk2d",
+            "note": "Chemical Resource Kit diagram (2D)",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 87014304383029942899933088834669674427,
+            "extension": "crk3d",
+            "format": "crk3d",
+            "note": "Chemical Resource Kit diagram (3D)",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 156669175214092075619518460468546822755,
+            "extension": "gpr",
+            "format": "gpr",
+            "note": "Ghemical",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 155123015621914684110197289247932260345,
+            "extension": "mae",
+            "format": "mae",
+            "note": "Maestro (Schr\u00f6dinger Software)",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 214513980779548429541384975889898482960,
+            "extension": "mold",
+            "format": "mold",
+            "note": "Molden",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 207134527900237063775216459175322595183,
+            "extension": "pcm",
+            "format": "pcm",
+            "note": "PCModel",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 266121539119077795673797287845096591518,
+            "extension": "unixyz",
+            "format": "unixyz",
+            "note": "UniChem XYZ",
+            "composition": true,
+            "connections": false,
+            "two_dim": true,
+            "three_dim": true
+        },
+        {
+            "id": 293892807975145609373743919186598379172,
+            "extension": "vmol",
+            "format": "vmol",
+            "note": "ViewMol",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 215712837579064454423947286281714090418,
+            "extension": "xsf",
+            "format": "xsf",
+            "note": "XCrySDen Structure Format",
+            "composition": true,
+            "connections": false,
+            "two_dim": true,
+            "three_dim": true
+        },
+        {
+            "id": 84911821147220874565420273190129740994,
+            "extension": "yob",
+            "format": "yob",
+            "note": "YASARA.org YOB",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 29911246111224779837663677976272255692,
+            "extension": "ck",
+            "format": "ck",
+            "note": "ChemKin",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 101389313506856235208299705705909774321,
+            "extension": "tdd",
+            "format": "tdd",
+            "note": "Thermo (NASA polynomials)",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 164043074007521460393631826491715850867,
+            "extension": "prep",
+            "format": "prep",
+            "note": "Amber Prep",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 23086914704772561252272100468075652414,
+            "extension": "pdbqt",
+            "format": "pdbqt",
+            "note": "AutoDock PDBQT",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 18507187996847391187387603320218018984,
+            "extension": "CONFIG",
+            "format": "CONFIG",
+            "note": "DL-POLY CONFIG",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 160647954093856970511721540768817864026,
+            "extension": "HISTORY",
+            "format": "HISTORY",
+            "note": "DL-POLY HISTORY",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 259412489246290481355693631081480691731,
+            "extension": "gro",
+            "format": "gro",
+            "note": "GRO (Gromacs)",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 56822921110267315109685573823552074593,
+            "extension": "gr96",
+            "format": "gr96",
+            "note": "GROMOS96",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 240273221595392696792114943248305349240,
+            "extension": "lpmd",
+            "format": "lpmd",
+            "note": "LPMD (atomic configuration)",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 300796939547901577812626686286774265749,
+            "extension": "POSFF",
+            "format": "POSFF",
+            "note": "MDFF",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 209270548670355987654501666350378390701,
+            "extension": "mmd",
+            "format": "mmd",
+            "note": "MacroModel",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 173011178275454186790850669502908321129,
+            "extension": "siesta",
+            "format": "siesta",
+            "note": "SIESTA",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 175100776358975770796098627875387083204,
+            "extension": "lmpdat",
+            "format": "lmpdat",
+            "note": "LAMMPS data",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 32043555312713639025957046122919489996,
+            "extension": "txyz",
+            "format": "txyz",
+            "note": "TINKER XYZ (molecular mechanics)",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 266720717934161798645966059338667710342,
+            "extension": "xtc",
+            "format": "xtc",
+            "note": "XTC (GROMACS trajectories)",
+            "composition": false,
+            "connections": false,
+            "two_dim": true,
+            "three_dim": true
+        },
+        {
+            "id": 307669102354654522010722369882037488386,
+            "extension": "t41",
+            "format": "t41",
+            "note": "ADF TAPE41 text files",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 74371210293607487710428162012724232274,
+            "extension": "cub",
+            "format": "cube",
+            "note": "Gaussian cube",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 75460676248923577289028894017366295279,
+            "extension": "dx",
+            "format": "dx",
+            "note": "APBS OpenDX cube (IBM)",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 258869049190979492248849245557152339882,
+            "extension": "pointcloud",
+            "format": "pointcloud",
+            "note": "Point cloud on VDW surface",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 68669533866597814414817631521755643473,
+            "extension": "stl",
+            "format": "stl",
+            "note": "STL 3D-printing (STereoLithography)",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 20753642385669108430387120717727783064,
+            "extension": "cdjson",
+            "format": "cdjson",
+            "note": "ChemDoodle JSON",
+            "composition": true,
+            "connections": true,
+            "two_dim": false,
+            "three_dim": true
+        },
+        {
+            "id": 266049478114000494937814324865758516629,
+            "extension": "pcjson",
+            "format": "pcjson",
+            "note": "PubChem JSON (PUG REST service)",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 13237656873337728718765342346201990149,
+            "extension": "msms",
+            "format": "msms",
+            "note": "M.F. Sanner's MSMS input",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 127325448333808099218652406615021461466,
+            "extension": "fa",
+            "format": "fa",
+            "note": "FASTA (genetic sequences)",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 245583399082158185307315960291944621157,
+            "extension": "pqr",
+            "format": "pqr",
+            "note": "PQR",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 208901672612172989347321953871049279705,
+            "extension": "feat",
+            "format": "feat",
+            "note": "Feature",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 51142977921990733275801310770649363498,
+            "extension": "fix",
+            "format": "fix",
+            "note": "SMILES FIX",
+            "composition": true,
+            "connections": true,
+            "two_dim": false,
+            "three_dim": false
+        },
+        {
+            "id": 176872839012100431393241970930677331892,
+            "extension": "xed",
+            "format": "xed",
+            "note": "XED",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 292762928275445737958548863767378891151,
+            "extension": "copy",
+            "format": "copy",
+            "note": "Copy raw text",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 146631832032801319084080695122229884754,
+            "extension": "xml",
+            "format": "xml",
+            "note": "General XML",
+            "composition": true,
+            "connections": true,
+            "two_dim": true,
+            "three_dim": true
+        },
+        {
+            "id": 18060400445211778284339610808960164493,
+            "extension": "dat",
+            "format": "dat",
+            "note": "Generic Output file",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 256698568770506760516294464206589507935,
+            "extension": "mpd",
+            "format": "mpd",
+            "note": "MolPrint2D",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 71134613119509213904394171293615511768,
+            "extension": "mna",
+            "format": "mna",
+            "note": "Multilevel Neighborhoods of Atoms (MNA)",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 7238200498577848480656953899431052311,
+            "extension": "molreport",
+            "format": "molreport",
+            "note": "Open Babel molecule report",
+            "composition": true,
+            "connections": true,
+            "two_dim": true,
+            "three_dim": false
+        },
+        {
+            "id": 207721787859699505128237502842370868073,
+            "extension": "report",
+            "format": "report",
+            "note": "Open Babel report",
+            "composition": true,
+            "connections": true,
+            "two_dim": true,
+            "three_dim": true
+        },
+        {
+            "id": 205237936785857655978529626512927794188,
+            "extension": "fsa",
+            "format": "fsa",
+            "note": "FASTA (genetic sequences)",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 62016663647194334312509700476122091687,
+            "extension": "text",
+            "format": "text",
+            "note": "Read and write raw text",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 8563602249591148809320941026257500044,
+            "extension": "txt",
+            "format": "txt",
+            "note": "Title",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 158276203633767196761066483229331702996,
+            "extension": "cacint",
+            "format": "cacint",
+            "note": "Cacao Internal",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 232798684620226777149726409841452987070,
+            "extension": "mrv",
+            "format": "cml",
+            "note": "Chemical Markup Language",
+            "composition": true,
+            "connections": true,
+            "two_dim": true,
+            "three_dim": true
+        },
+        {
+            "id": 292727325821381794107846543252288100244,
+            "extension": "mdl",
+            "format": "mol",
+            "note": "MDL MOL",
+            "composition": true,
+            "connections": true,
+            "two_dim": true,
+            "three_dim": true
+        },
+        {
+            "id": 84896050381326444273888468929459347256,
+            "extension": "sd",
+            "format": "mol",
+            "note": "MDL MOL",
+            "composition": true,
+            "connections": true,
+            "two_dim": true,
+            "three_dim": true
+        },
+        {
+            "id": 32103794576339723026923590371300680498,
+            "extension": "ent",
+            "format": "pdb",
+            "note": "Protein Data Bank",
+            "composition": true,
+            "connections": true,
+            "two_dim": false,
+            "three_dim": true
+        },
+        {
+            "id": 297419025361599384272733241121809134667,
+            "extension": "smiles",
+            "format": "smiles",
+            "note": "SMILES",
+            "composition": true,
+            "connections": true,
+            "two_dim": false,
+            "three_dim": false
+        },
+        {
+            "id": 253646697262577575373378065419268181033,
+            "extension": "ml2",
+            "format": "ml2",
+            "note": "Sybyl Mol2",
+            "composition": true,
+            "connections": true,
+            "two_dim": false,
+            "three_dim": true
+        },
+        {
+            "id": 318851989183477540453947203371966440690,
+            "extension": "sy2",
+            "format": "sy2",
+            "note": "Sybyl Mol2",
+            "composition": true,
+            "connections": true,
+            "two_dim": false,
+            "three_dim": true
+        },
+        {
+            "id": 162103299763807380500131326958816874604,
+            "extension": "log",
+            "format": "log",
+            "note": "Generic Output file",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 140802954064900569091310859702143140268,
+            "extension": "out",
+            "format": "out",
+            "note": "Generic Output file",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 152269619056269653625250260620024171468,
+            "extension": "output",
+            "format": "output",
+            "note": "Generic Output file",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 183079669871823796614849308541253271232,
+            "extension": "arc",
+            "format": "arc",
+            "note": "Accelrys/MSI Biosym/Insight II CAR",
+            "composition": true,
+            "connections": true,
+            "two_dim": false,
+            "three_dim": false
+        },
+        {
+            "id": 208024302292990741610418031867256143245,
+            "extension": "cac",
+            "format": "cac",
+            "note": "CAChe MolStruct",
+            "composition": true,
+            "connections": true,
+            "two_dim": true,
+            "three_dim": true
+        },
+        {
+            "id": 23082963749979422604700127676877572562,
+            "extension": "outmol",
+            "format": "outmol",
+            "note": "DMol3 coordinates",
+            "composition": true,
+            "connections": false,
+            "two_dim": true,
+            "three_dim": true
+        },
+        {
+            "id": 55451110043223884478910162348924549409,
+            "extension": "inp",
+            "format": "inp",
+            "note": "GAMESS Input",
+            "composition": true,
+            "connections": false,
+            "two_dim": true,
+            "three_dim": true
+        },
+        {
+            "id": 35457974918221409620446215629229917674,
+            "extension": "gamess",
+            "format": "gamess",
+            "note": "GAMESS Output",
+            "composition": true,
+            "connections": true,
+            "two_dim": true,
+            "three_dim": true
+        },
+        {
+            "id": 286603189554790672310398833408923852963,
+            "extension": "gamout",
+            "format": "gamout",
+            "note": "GAMESS Output",
+            "composition": true,
+            "connections": true,
+            "two_dim": true,
+            "three_dim": true
+        },
+        {
+            "id": 101147546724837741856431551717329312040,
+            "extension": "com",
+            "format": "com",
+            "note": "Gaussian Input",
+            "composition": true,
+            "connections": false,
+            "two_dim": true,
+            "three_dim": true
+        },
+        {
+            "id": 295483664287131059634825273652142233679,
+            "extension": "gjc",
+            "format": "gjc",
+            "note": "Gaussian Input",
+            "composition": true,
+            "connections": false,
+            "two_dim": true,
+            "three_dim": true
+        },
+        {
+            "id": 81476428634656558428219224353277334564,
+            "extension": "gjf",
+            "format": "gjf",
+            "note": "Gaussian Input",
+            "composition": true,
+            "connections": false,
+            "two_dim": true,
+            "three_dim": true
+        },
+        {
+            "id": 212341502249074142074023390346112242006,
+            "extension": "g03",
+            "format": "g03",
+            "note": "Gaussian Output",
+            "composition": true,
+            "connections": false,
+            "two_dim": true,
+            "three_dim": true
+        },
+        {
+            "id": 131324783833441752657122447631530332915,
+            "extension": "g09",
+            "format": "g09",
+            "note": "Gaussian Output",
+            "composition": true,
+            "connections": false,
+            "two_dim": true,
+            "three_dim": true
+        },
+        {
+            "id": 90045086629918350146740817174978261587,
+            "extension": "g16",
+            "format": "g16",
+            "note": "Gaussian Output",
+            "composition": true,
+            "connections": false,
+            "two_dim": true,
+            "three_dim": true
+        },
+        {
+            "id": 277528275937225967448335816787802602344,
+            "extension": "g92",
+            "format": "g92",
+            "note": "Gaussian Output",
+            "composition": true,
+            "connections": false,
+            "two_dim": true,
+            "three_dim": true
+        },
+        {
+            "id": 75256735368296090982827896104660949364,
+            "extension": "g94",
+            "format": "g94",
+            "note": "Gaussian Output",
+            "composition": true,
+            "connections": false,
+            "two_dim": true,
+            "three_dim": true
+        },
+        {
+            "id": 286338901044606364215112067935541989577,
+            "extension": "g98",
+            "format": "g98",
+            "note": "Gaussian Output",
+            "composition": true,
+            "connections": false,
+            "two_dim": true,
+            "three_dim": true
+        },
+        {
+            "id": 248906788879831668235784512182957495786,
+            "extension": "fchk",
+            "format": "fchk",
+            "note": "Gaussian formatted checkpoint file",
+            "composition": true,
+            "connections": false,
+            "two_dim": true,
+            "three_dim": true
+        },
+        {
+            "id": 187391399687884167703843132511072812833,
+            "extension": "fck",
+            "format": "fck",
+            "note": "Gaussian formatted checkpoint file",
+            "composition": true,
+            "connections": false,
+            "two_dim": true,
+            "three_dim": true
+        },
+        {
+            "id": 115284935565942077012093254807694312333,
+            "extension": "mopcrt",
+            "format": "mopcrt",
+            "note": "MOPAC Cartesian",
+            "composition": true,
+            "connections": false,
+            "two_dim": true,
+            "three_dim": true
+        },
+        {
+            "id": 313957455269055695592006295660574290653,
+            "extension": "mpc",
+            "format": "mpc",
+            "note": "MOPAC Cartesian",
+            "composition": true,
+            "connections": false,
+            "two_dim": true,
+            "three_dim": true
+        },
+        {
+            "id": 143057463165023442074484263410041915913,
+            "extension": "mopout",
+            "format": "mopout",
+            "note": "MOPAC Output",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 109334830415080040083849964670968869182,
+            "extension": "CONTCAR",
+            "format": "CONTCAR",
+            "note": "VASP",
+            "composition": true,
+            "connections": false,
+            "two_dim": true,
+            "three_dim": true
+        },
+        {
+            "id": 178002885945313670724373494495586011145,
+            "extension": "VASP",
+            "format": "VASP",
+            "note": "VASP",
+            "composition": true,
+            "connections": false,
+            "two_dim": true,
+            "three_dim": true
+        },
+        {
+            "id": 111142745790695896928946860948434358952,
+            "extension": "mmcif",
+            "format": "mmcif",
+            "note": "Macromolecular Crystallographic Info",
+            "composition": true,
+            "connections": false,
+            "two_dim": true,
+            "three_dim": true
+        },
+        {
+            "id": 335147988236017971853140345093921986037,
+            "extension": "maegz",
+            "format": "maegz",
+            "note": "Maestro (Schr\u00f6dinger Software)",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 315876805348576818877952809238961067299,
+            "extension": "molden",
+            "format": "molden",
+            "note": "Molden",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 71979496514962592580628060526162033302,
+            "extension": "molf",
+            "format": "molf",
+            "note": "Molden",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 173779925106285252203277380892095079434,
+            "extension": "axsf",
+            "format": "axsf",
+            "note": "XCrySDen Structure Format",
+            "composition": true,
+            "connections": false,
+            "two_dim": true,
+            "three_dim": true
+        },
+        {
+            "id": 19536313315451808034724544445668548700,
+            "extension": "therm",
+            "format": "therm",
+            "note": "Thermo (NASA polynomials)",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 98261525007525135735251046647244654113,
+            "extension": "CONTFF",
+            "format": "CONTFF",
+            "note": "MDFF",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 195740799786273524362341124474008908118,
+            "extension": "MDFF",
+            "format": "MDFF",
+            "note": "MDFF",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 160182656203062481907997569754307662257,
+            "extension": "mmod",
+            "format": "mmod",
+            "note": "MacroModel",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 22556641855344674493163123090473605751,
+            "extension": "cube",
+            "format": "cube",
+            "note": "Gaussian cube",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 118484790870718437043272623986523152493,
+            "extension": "fasta",
+            "format": "fasta",
+            "note": "FASTA (genetic sequences)",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 325840160163908231938743647024402836534,
+            "extension": "bgf",
+            "format": "bgf",
+            "note": "MSI BGF",
+            "composition": true,
+            "connections": true,
+            "two_dim": true,
+            "three_dim": true
+        },
+        {
+            "id": 6145128555743823019270948617290459229,
+            "extension": "car",
+            "format": "car",
+            "note": "Accelrys/MSI Biosym/Insight II CAR",
+            "composition": true,
+            "connections": true,
+            "two_dim": false,
+            "three_dim": false
+        },
+        {
+            "id": 123529051998589748016662810804240503287,
+            "extension": "ccc",
+            "format": "ccc",
+            "note": "CCC",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 127485749647936769291874690541987585037,
+            "extension": "cht",
+            "format": "cht",
+            "note": "Chemtool",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 64062233841191714942741004810469827032,
+            "extension": "caccrt",
+            "format": "caccrt",
+            "note": "Cacao Cartesian",
+            "composition": true,
+            "connections": true,
+            "two_dim": false,
+            "three_dim": true
+        },
+        {
+            "id": 242351412810482127667305401957656993421,
+            "extension": "can",
+            "format": "can",
+            "note": "Canonical SMILES",
+            "composition": true,
+            "connections": true,
+            "two_dim": false,
+            "three_dim": false
+        },
+        {
+            "id": 187115540466110696028917706488390027467,
+            "extension": "cache",
+            "format": "cache",
+            "note": "CAChe MolStruct",
+            "composition": true,
+            "connections": true,
+            "two_dim": true,
+            "three_dim": true
+        },
+        {
+            "id": 314639788394343741317480440361585042427,
+            "extension": "inchikey",
+            "format": "inchikey",
+            "note": "InChIKey",
+            "composition": false,
+            "connections": false,
+            "two_dim": false,
+            "three_dim": false
+        },
+        {
+            "id": 314975333346287622848999788387812296808,
+            "extension": "cfg",
+            "format": "cfg",
+            "note": "AtomEye configuration (and QSTEM input)",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 222250545692291421935357553590750113357,
+            "extension": "dd",
+            "format": "dd",
+            "note": "ddplot",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 111283682628362087403484652806626156130,
+            "extension": "vesta",
+            "format": "vesta",
+            "note": "VESTA",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 253343490648404254749979894649590884729,
+            "extension": "in",
+            "format": "abinit",
+            "note": "ABINIT Input",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 264277346924135332200965633422943552618,
+            "extension": "COORAT",
+            "format": "COORAT",
+            "note": "Mixed-Basis Pseudopotential (MBPP)",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 121685503541113979184368410529619495052,
+            "extension": "d12",
+            "format": "d12",
+            "note": "CRYSTAL input",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 193799457757271265438878454922205770762,
+            "extension": "OUTCAR",
+            "format": "OUTCAR",
+            "note": "VASP output",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 61724174897851796696713316640210484673,
+            "extension": "pw",
+            "format": "pw",
+            "note": "Quantum Espresso PWscf input",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 75812523089448185333036219943662697581,
+            "extension": "out",
+            "format": "out",
+            "note": "Quantum Espresso PWscf output",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 11984171992240423209861542561953763988,
+            "extension": "fdf",
+            "format": "fdf",
+            "note": "SIESTA Flexible Data Format",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 106192524664603598885327722572354670435,
+            "extension": "xv",
+            "format": "xv",
+            "note": "SIESTA XV",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 220358918386701381820357488974029301998,
+            "extension": "bop",
+            "format": "bop",
+            "note": "Bond-Order Potential (BOP)",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 338455088290125731933866377611878397677,
+            "extension": "bx",
+            "format": "bx",
+            "note": "BOPfox",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 13086459403769357130721208417443942017,
+            "extension": "gin",
+            "format": "gin",
+            "note": "General Utility Lattice Package (GULP) input",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 282398400740300644480006008550688677189,
+            "extension": "grs",
+            "format": "grs",
+            "note": "General Utility Lattice Package (GULP) input",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 314940860974188633296163260180092764046,
+            "extension": "res",
+            "format": "res",
+            "note": "General Utility Lattice Package (GULP) input",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 174121638000092743411747550133835439716,
+            "extension": "imd",
+            "format": "imd",
+            "note": "IMD (Molecular Dynamics configuration)",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 308083614046311250415363426651623608042,
+            "extension": "lmc",
+            "format": "lmc",
+            "note": "LAMMPS custom dump",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 166687571138146369614453555512491210906,
+            "extension": "lmp",
+            "format": "lmp",
+            "note": "LAMMPS data",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 72959745128074324821901268400337732406,
+            "extension": "mol",
+            "format": "mol",
+            "note": "MOLDY",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 136927725276907773739503422731206082806,
+            "extension": "xmd",
+            "format": "xmd",
+            "note": "XMD",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 221620849055615673318908285996095221762,
+            "extension": "cel",
+            "format": "cel",
+            "note": "Dr Probe Cell",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 137156397971608857269487452262953602068,
+            "extension": "txt",
+            "format": "txt",
+            "note": "JEMS",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 116410197399891681871045547733567540740,
+            "extension": "atsk",
+            "format": "atsk",
+            "note": "Atomsk binary",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 205338358281299342826360683193152046762,
+            "extension": "csv",
+            "format": "csv",
+            "note": "Comma-separated values",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 90292567403848917083702366510226590346,
+            "extension": "dat",
+            "format": "dat",
+            "note": "Data columns",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 17777839427830598944569931729743162767,
+            "extension": "str",
+            "format": "str",
+            "note": "PDFFIT structure",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 177668124975025263585376901037169630110,
+            "extension": "stru",
+            "format": "stru",
+            "note": "PDFFIT structure",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 222610172317530966501505361564720053204,
+            "extension": "sxyz",
+            "format": "sxyz",
+            "note": "Special XYZ cartesian coordinates",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 27718082287045194982410453597576697893,
+            "extension": "abi",
+            "format": "abinit",
+            "note": "ABINIT input",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 125067293545008288351887372417679001026,
+            "extension": "bands",
+            "format": "bands",
+            "note": "CASTEP",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 225072396696944137412919788166507374857,
+            "extension": "cst_esp",
+            "format": "cst_esp",
+            "note": "CASTEP potential",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 106604922889016866443254809912892634662,
+            "extension": "dat",
+            "format": "one",
+            "note": "Onetep cartesian and fractional",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 319357043641216258430959002270827292266,
+            "extension": "den_fmt",
+            "format": "den_fmt",
+            "note": "CASTEP formatted density",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 9219717492294838706481921227877751503,
+            "extension": "EIG",
+            "format": "EIG",
+            "note": "ABINIT eigenvalues",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 211586371454243106141491845714248362862,
+            "extension": "EIG",
+            "format": "EIG",
+            "note": "SIESTA eigenvalues",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 329546574412725588695734304710408979242,
+            "extension": "elf",
+            "format": "elf",
+            "note": "CASTEP ELF",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 149436938344174473784523768380469429102,
+            "extension": "elf_fmt",
+            "format": "elf_fmt",
+            "note": "CASTEP ELF",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 125131925452180257808193967505847258441,
+            "extension": "geom",
+            "format": "geom",
+            "note": "CASTEP",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 16401435532908578802619204052203273729,
+            "extension": "in",
+            "format": "qe",
+            "note": "Quantum Espresso input",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 117199674045377163862916769568005613800,
+            "extension": "kp",
+            "format": "kp",
+            "note": "SIESTA kpoints",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 76181586533071159723534401061100519819,
+            "extension": "KP",
+            "format": "KP",
+            "note": "SIESTA kpoints",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 202765373841098224425903645089118536801,
+            "extension": "pdbx",
+            "format": "pdbx",
+            "note": "PDBx",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 275279032356469659937690391154454154632,
+            "extension": "pot_fmt",
+            "format": "pot_fmt",
+            "note": "CASTEP",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 204026270898157960263419294745963492043,
+            "extension": "rho",
+            "format": "rho",
+            "note": "SIESTA RHO",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 9341813283313499894827098056751533226,
+            "extension": "RHO",
+            "format": "RHO",
+            "note": "SIESTA RHO",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 236849952644879792685414451091539623326,
+            "extension": "vh",
+            "format": "vh",
+            "note": "SIESTA potential",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 232433607655743852600774327210554861314,
+            "extension": "VH",
+            "format": "VH",
+            "note": "SIESTA potential",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 313839798342916429693228538721402371701,
+            "extension": "vt",
+            "format": "vt",
+            "note": "SIESTA potential",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 175685838324049260543232548803595503379,
+            "extension": "VT",
+            "format": "VT",
+            "note": "SIESTA potential",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 301598072342801950763513121261746178173,
+            "extension": "xml",
+            "format": "xml",
+            "note": "Quantum Espresso PWscf output",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 31515889798523375759424628754076569174,
+            "extension": "XV",
+            "format": "XV",
+            "note": "SIESTA XV",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 337522090618642577855256330195391248369,
+            "extension": "in",
+            "format": "abinit8",
+            "note": "Abinit version 8",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 57613520080952269289996483215922849422,
+            "extension": "cell",
+            "format": "cell",
+            "note": "CASTEP cartesian and fractional",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 20372931890239360786503697941300304833,
+            "extension": "cell",
+            "format": "cell_abc",
+            "note": "CASTEP abc and fractional",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 133487180118952304055280048276459430438,
+            "extension": "cell",
+            "format": "cell_abs",
+            "note": "CASTEP cartesian and absolute",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 222080616471449104299074435141381830940,
+            "extension": "cell",
+            "format": "cell_abc_abs",
+            "note": "CASTEP abc and absolute",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 30228856871438450511552644541554222714,
+            "extension": "mocube",
+            "format": "mocube",
+            "note": "Gaussian molecular orbital cube, single dataset",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 220339121559229275877388298072679935301,
+            "extension": "npy",
+            "format": "npy",
+            "note": "NumPy array, single dataset as doubles with -15",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 324093895757821997340319691750654893533,
+            "extension": "dat",
+            "format": "one_abc",
+            "note": "Onetep abc and fractional",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 73649908297938704803746273638823233891,
+            "extension": "dat",
+            "format": "one_abs",
+            "note": "Onetep cartesian and absolute",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 322151902182452722756656414099200578404,
+            "extension": "dat",
+            "format": "one_abc_abs",
+            "note": "Onetep abc and absolute",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 325652524238156842953511960586864188646,
+            "extension": "pdb",
+            "format": "pdbn",
+            "note": "Protein Data Bank with atoms numbered",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 220271908623477008776967765306791783037,
+            "extension": "py",
+            "format": "py",
+            "note": "Python dictionary",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 125835046132321594743371619195082583629,
+            "extension": "py",
+            "format": "pya",
+            "note": "Python ASE Atoms",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 326377472459096428974266623447465656364,
+            "extension": "in",
+            "format": "qef",
+            "note": "Quantum Espresso input, fractional atomic coords",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 39018050936831198912390595227922911301,
+            "extension": "CHG",
+            "format": "vasp",
+            "note": "VASP atomic positions",
+            "composition": true,
+            "connections": false,
+            "two_dim": true,
+            "three_dim": true
+        },
+        {
+            "id": 288024965803696203581215793292670580620,
+            "extension": "CHGCAR",
+            "format": "chgcar",
+            "note": "VASP",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 184908393568743128335003113560992231759,
+            "extension": "verts",
+            "format": "verts",
+            "note": "Vertices of FBZ/IBZ, cartesian coords",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 54564101680105421861709602143549217352,
+            "extension": "verts",
+            "format": "verts_frac",
+            "note": "Vertices of FBZ/IBZ, fractional coords",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 231483434023456697276320312599067828968,
+            "extension": "WAVECAR",
+            "format": "wavecar",
+            "note": "VASP WAVECAR output",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 289644940844589840653367490226325419159,
+            "extension": "WAVECAR",
+            "format": "wavecar45",
+            "note": "VASP WAVECAR output, VASP 4.5-compatible",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 75586451786068810256834901287390596125,
+            "extension": "xplor",
+            "format": "xplor",
+            "note": "Xplor",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 211056812011868110306382952789990064716,
+            "extension": "INCAR",
+            "format": "incar",
+            "note": "VASP INCAR, spin and magmom only",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 259786594746360057510396273830671147551,
+            "extension": "gnu",
+            "format": "gnu",
+            "note": "Gnuplot",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 79022529440861258891142015413324091343,
+            "extension": "ccp4",
+            "format": "ccp4",
+            "note": "CCP4 electron density (grid data only, no atoms)",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 233962464625289803979867692820427844248,
+            "extension": "dat",
+            "format": "dat",
+            "note": "Onetep",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 130679921781181273958805620134665691036,
+            "extension": "DEN",
+            "format": "DEN",
+            "note": "ABINIT binary",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 124558377380307881696200887013671419227,
+            "extension": "POT",
+            "format": "POT",
+            "note": "ABINIT binary",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 235600286985704646610835316923881218069,
+            "extension": "VCLMB",
+            "format": "VCLMB",
+            "note": "ABINIT binary",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 108918259024333191697510639374573512453,
+            "extension": "WFK",
+            "format": "WFK",
+            "note": "ABINIT binary",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 141643545588668217058038693546002476983,
+            "extension": "LOCPOT",
+            "format": "LOCPOT",
+            "note": "VASP",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 78614132369687965067998454009306650613,
+            "extension": "EIGENVAL",
+            "format": "EIGENVAL",
+            "note": "VASP",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 294805227422729825621567070597511048862,
+            "extension": "12",
+            "format": "12",
+            "note": "Crystal",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 239600444474180475217200154056412071052,
+            "extension": "bxsf",
+            "format": "bxsf",
+            "note": "XCrySDen Structure Format",
+            "composition": true,
+            "connections": false,
+            "two_dim": true,
+            "three_dim": true
+        },
+        {
+            "id": 235366349304489206067601717435021864779,
+            "extension": "in",
+            "format": "qef",
+            "note": "Quantum Espresso input (fractional atomic coords)",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 284486036241533200418281249136751184168,
+            "extension": "vmd_recip",
+            "format": "vmd_recip",
+            "note": "VMD output of reciprocal cell, BZs etc.",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        },
+        {
+            "id": 46290705721393589047128301807650178748,
+            "extension": "xyz",
+            "format": "xyze",
+            "note": "Extended XYZ (adds lattice vectors)",
+            "composition": null,
+            "connections": null,
+            "two_dim": null,
+            "three_dim": null
+        }
+    ]
+}
