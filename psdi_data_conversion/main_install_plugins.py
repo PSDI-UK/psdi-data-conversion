@@ -92,7 +92,13 @@ def run_from_args(args):
         # Load data about the converter and add it to the database
         db_conv: JsonMainDict = json.load(open(os.path.join(qual_dir, PLUGIN_DATAFILE)))
         conv_id: int = db_conv[db.DB_CONVERTER_KEY][db.DB_ID_KEY]
-        l_db_converters.append(db_conv[db.DB_CONVERTER_KEY])
+        d_conv_info: JsonDict = db_conv[db.DB_CONVERTER_KEY]
+
+        # Rename keys as appropriate
+        d_conv_info[db.DB_DESCRIPTION_KEY] = d_conv_info.pop(db.DB_DESC_KEY)
+        d_conv_info[db.DB_FURTHER_INFO_KEY] = d_conv_info.pop(db.DB_INFO_KEY)
+
+        l_db_converters.append(d_conv_info)
 
         # Determine possible conversions and add them all to the database
         s_in_formats = {*db_conv[db.DB_SUPPORTED_FORMATS_KEY]}.union({*db_conv[db.DB_IN_ONLY_FORMATS_KEY]})

@@ -31,6 +31,8 @@ from psdi_data_conversion.utils import regularize_name
 
 # Keys for converter-specific databases
 DB_CONVERTER_KEY = "converter"
+DB_DESC_KEY = "desc"
+DB_INFO_KEY = "info"
 
 DB_EXTRA_FORMATS_KEY = "extra_formats"
 
@@ -55,8 +57,8 @@ DB_ID_KEY = "id"
 DB_NAME_KEY = "name"
 
 # Keys for converter general info in the database
-DB_DESC_KEY = "description"
-DB_INFO_KEY = "further_info"
+DB_DESCRIPTION_KEY = "description"
+DB_FURTHER_INFO_KEY = "further_info"
 DB_URL_KEY = "url"
 
 # Keys for format general info in the database
@@ -184,7 +186,7 @@ class ConverterInfo:
         self.id: int = d_single_converter_info.get(DB_ID_KEY, -1)
         """The converter's ID"""
 
-        self.description: str = d_single_converter_info.get(DB_DESC_KEY, "")
+        self.description: str = d_single_converter_info.get(DB_DESCRIPTION_KEY, "")
         """A description of the converter"""
 
         self.url: str = d_single_converter_info.get(DB_URL_KEY, "")
@@ -279,8 +281,8 @@ class ConverterInfo:
                 arg_info = subclass(parent=self,
                                     id=arg_id,
                                     flag=name,
-                                    description=d_single_arg_info[DB_DESC_KEY],
-                                    info=d_single_arg_info[DB_INFO_KEY],
+                                    description=d_single_arg_info[DB_DESCRIPTION_KEY],
+                                    info=d_single_arg_info[DB_FURTHER_INFO_KEY],
                                     **optional_arg_info_kwargs)
                 d_arg_info[arg_id] = arg_info
 
