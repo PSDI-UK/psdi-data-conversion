@@ -48,7 +48,7 @@ def sort_json_list(l_d: list[JsonDict], l_order: list | None = None):
     keys in sorting
     """
     def get_key(d: JsonDict):
-        l_key = [d[x] for x in l_order]
+        l_key = [d[x] for x in l_order if x in d]
         for i, key in enumerate(l_key):
             if isinstance(key, str):
                 l_key[i] = (key.lower(), key)
@@ -85,9 +85,32 @@ def parse_args():
 
     parser = get_argument_parser()
 
+    parser.add_argument("--sort-only", action="store_true", help="If set, will not install plugins, and will only "
+                        "apply sorting to the currently-installed database file.")
+
     args = parser.parse_args()
 
     return args
+
+
+def sort_db(db_path: str):
+    """Sort the existing database"""
+    db_out: JsonMainDict = json.load(open(db_path))
+    db_out = get_sorted_dict(db_out)
+
+    sort_json_list(db_out[db.DB_FORMATS_KEY], L_FORMATS_SORT_ORDER)
+    for i, d in enumerate(db_out[db.DB_FORMATS_KEY]):
+        db_out[db.DB_FORMATS_KEY][i] = get_sorted_dict(d, L_FORMATS_SORT_ORDER)
+
+    sort_json_list(db_out[db.DB_CONVERTERS_KEY], L_CONVERTER_SORT_ORDER)
+    for i, d in enumerate(db_out[db.DB_CONVERTERS_KEY]):
+        db_out[db.DB_CONVERTERS_KEY][i] = get_sorted_dict(d, L_CONVERTER_SORT_ORDER)
+
+    sort_json_list(db_out[db.DB_CONVERTS_TO_KEY], L_CONVERTS_TO_SORT_ORDER)
+    for i, d in enumerate(db_out[db.DB_CONVERTS_TO_KEY]):
+        db_out[db.DB_CONVERTS_TO_KEY][i] = get_sorted_dict(d, L_CONVERTS_TO_SORT_ORDER)
+
+    json.dump(db_out, open(db_path, "w"), indent=4)
 
 
 def run_from_args(args):
@@ -104,6 +127,9 @@ def run_from_args(args):
     # Get the main database path and directory
     db_path = db.get_database_path()
     db_dir = os.path.split(db_path)[0]
+
+    if args.sort_only:
+        return sort_db(db_path)
 
     # Load the formats data into the output dict
     l_format_info: list[JsonDict] = json.load(open(os.path.join(db_dir, FORMATS_DATAFILE)))[db.DB_FORMATS_KEY]
