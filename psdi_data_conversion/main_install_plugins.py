@@ -219,7 +219,9 @@ def run_from_args(args):
                          db.DB_SUCCESS_KEY: dos}
             l_db_converts_to.append(get_sorted_dict(d_conv_to, L_CONVERTS_TO_SORT_ORDER))
 
-        # Add the info on input/output arguments and which formats support them
+        # Add the info on input/output arguments and which formats support them, if applicable
+        if not conv_prefix:
+            continue
         for args_str, in_or_out in product(("flags", "options"), ("in", "out")):
             out_args_str = args_str
             if args_str == "options":
@@ -236,11 +238,11 @@ def run_from_args(args):
             l_arg_format_sort_order = [x if x != REPLACEME_ARG_IN_OUT_ID else arg_in_out_id
                                        for x in l_arg_format_sort_order]
 
-            for d_in_arg_info in d_conv_info[in_key]:
+            for d_in_arg_info in db_conv[in_key]:
                 d_out_arg_info: JsonDict = {
-                    db.DB_DESCRIPTION_KEY: d_in_arg_info[db.DB_DESC_KEY],
+                    db.DB_DESCRIPTION_KEY: d_in_arg_info[db.DB_DESCRIPTION_KEY],
                     db.DB_FLAG_KEY: d_in_arg_info[db.DB_FLAG_KEY],
-                    db.DB_FURTHER_INFO_KEY: d_in_arg_info[db.DB_INFO_KEY],
+                    db.DB_FURTHER_INFO_KEY: d_in_arg_info[db.DB_FURTHER_INFO_KEY],
                     db.DB_ID_KEY: d_in_arg_info[db.DB_ID_KEY],
                 }
                 if db.DB_BRIEF_KEY in d_in_arg_info:
