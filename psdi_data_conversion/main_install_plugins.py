@@ -115,6 +115,44 @@ def sort_db(db_path: str):
     for i, d in enumerate(db_out[db.DB_CONVERTS_TO_KEY]):
         db_out[db.DB_CONVERTS_TO_KEY][i] = get_sorted_dict(d, L_CONVERTS_TO_SORT_ORDER)
 
+    # Get the directory containing converter plugins
+    conv_path = os.path.split(os.path.realpath(converters_base.__file__))[0]
+    for dir in os.listdir(conv_path):
+        if dir in ("example", "template", "script_template"):
+            continue
+
+        qual_dir = os.path.join(conv_path, dir)
+        if not os.path.isdir(qual_dir) or not os.path.isfile(os.path.join(qual_dir, PLUGIN_DATAFILE)):
+            continue
+
+        # Load data about the converter and add it to the database
+        db_conv: JsonMainDict = json.load(open(os.path.join(qual_dir, PLUGIN_DATAFILE)))
+        d_conv_info: JsonDict = db_conv[db.DB_CONVERTER_KEY]
+        conv_prefix: str = d_conv_info[db.DB_KEY_PREFIX_KEY]
+
+        if not conv_prefix:
+            continue
+        for args_str, in_or_out in product(("flags", "options"), ("in", "out")):
+            out_args_str = args_str
+            if args_str == "options":
+                out_args_str = "argflags"
+            out_key = f"{conv_prefix}{out_args_str}_{in_or_out}"
+            out_format_key = f"{conv_prefix}format_to_{out_args_str}_{in_or_out}"
+
+            arg_in_out_id = f"{conv_prefix}{out_args_str}_{in_or_out}_id"
+
+            l_arg_format_order = deepcopy(L_ARG_FORMATS_INFO_ORDER)
+            l_arg_format_order = [x if x != REPLACEME_ARG_IN_OUT_ID else arg_in_out_id
+                                  for x in l_arg_format_order]
+
+            sort_json_list(db_out[out_key], L_ARG_INFO_ORDER)
+            for i, d in enumerate(db_out[out_key]):
+                db_out[out_key][i] = get_sorted_dict(d, L_ARG_INFO_ORDER)
+
+            sort_json_list(db_out[out_format_key], l_arg_format_order)
+            for i, d in enumerate(db_out[out_format_key]):
+                db_out[out_format_key][i] = get_sorted_dict(d, l_arg_format_order)
+
     json.dump(db_out, open(db_path, "w"), indent=4)
 
 
@@ -174,7 +212,7 @@ def run_from_args(args):
             continue
 
         qual_dir = os.path.join(conv_path, dir)
-        if not os.path.isdir(qual_dir) or not os.path.isfile(os.path.join(qual_dir, "__init__.py")):
+        if not os.path.isdir(qual_dir) or not os.path.isfile(os.path.join(qual_dir, PLUGIN_DATAFILE)):
             continue
 
         # Load data about the converter and add it to the database
@@ -225,7 +263,7 @@ def run_from_args(args):
         for args_str, in_or_out in product(("flags", "options"), ("in", "out")):
             out_args_str = args_str
             if args_str == "options":
-                out_args_str == "argflags"
+                out_args_str = "argflags"
             in_key = f"{in_or_out}_{args_str}"
             out_key = f"{conv_prefix}{out_args_str}_{in_or_out}"
             out_format_key = f"{conv_prefix}format_to_{out_args_str}_{in_or_out}"
@@ -234,9 +272,9 @@ def run_from_args(args):
             l_arg_formats: list[JsonDict] = []
             arg_in_out_id = f"{conv_prefix}{out_args_str}_{in_or_out}_id"
 
-            l_arg_format_sort_order = deepcopy(L_ARG_FORMATS_INFO_ORDER)
-            l_arg_format_sort_order = [x if x != REPLACEME_ARG_IN_OUT_ID else arg_in_out_id
-                                       for x in l_arg_format_sort_order]
+            l_arg_format_order = deepcopy(L_ARG_FORMATS_INFO_ORDER)
+            l_arg_format_order = [x if x != REPLACEME_ARG_IN_OUT_ID else arg_in_out_id
+                                  for x in l_arg_format_order]
 
             for d_in_arg_info in db_conv[in_key]:
                 d_out_arg_info: JsonDict = {
@@ -255,13 +293,13 @@ def run_from_args(args):
                         db.DB_FORMAT_ID_KEY: format_id,
                         arg_in_out_id: d_in_arg_info[db.DB_ID_KEY]
                     }
-                    d_out_arg_format = get_sorted_dict(d_out_arg_format, l_arg_format_sort_order)
+                    d_out_arg_format = get_sorted_dict(d_out_arg_format, l_arg_format_order)
                     l_arg_formats.append(d_out_arg_format)
 
             sort_json_list(l_arg_info, L_ARG_INFO_ORDER)
             db_out[out_key] = l_arg_info
 
-            sort_json_list(l_arg_formats, l_arg_format_sort_order)
+            sort_json_list(l_arg_formats, l_arg_format_order)
             db_out[out_format_key] = l_arg_formats
 
     # Sort the top-level dict and lists, then save the database
