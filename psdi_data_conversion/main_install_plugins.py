@@ -11,19 +11,36 @@ Entry-point file for the script to install converter plugins.
 import json
 import os
 from argparse import ArgumentParser
+from collections import OrderedDict
 from itertools import product
 
 from psdi_data_conversion import database as db
 from psdi_data_conversion.converters import base as converters_base
 
+# Constants
 PLUGIN_DATAFILE = "data.json"
 FORMATS_DATAFILE = "formats.json"
 UNSUPPORTED_CONVERTERS_DATAFILE = "unsupported_converters.json"
 
 MSG_DOS_NOT_TESTED = "not tested"
 
+# Sorting orders for dicts in the JSON output
+L_CONVERTER_SORT_ORDER = [db.DB_NAME_KEY, db.DB_ID_KEY, db.DB_DESCRIPTION_KEY, db.DB_FURTHER_INFO_KEY,
+                          db.DB_URL_KEY, db.DB_KEY_PREFIX_KEY, db.DB_SUPPORT_AMBIG_EXT_KEY]
+L_CONVERTS_TO_SORT_ORDER = [db.DB_CONV_ID_KEY, db.DB_IN_ID_KEY, db.DB_OUT_ID_KEY, db.DB_SUCCESS_KEY]
+L_FORMATS_SORT_ORDER = [db.DB_FORMAT_EXT_KEY, db.DB_ID_KEY, db.DB_FORMAT_NOTE_KEY, db.DB_FORMAT_C2X_KEY,
+                        db.DB_FORMAT_COMP_KEY, db.DB_FORMAT_CONN_KEY, db.DB_FORMAT_2D_KEY, db.DB_FORMAT_3D_KEY]
+
+# Common types
 JsonDict = dict[str, None | int | str | bool | dict | list]
 JsonMainDict = dict[str, None | int | str | bool | JsonDict | list[JsonDict]]
+
+
+def get_sorted_dict(d: dict, l_order: list | None = None):
+    """Returns an ordered dict with a provided sorting order"""
+    if l_order is None:
+        return OrderedDict(sorted(d.items(), key=lambda item: item[0]))
+    return OrderedDict(sorted(d.items(), key=lambda item: l_order.index(item[0])))
 
 
 def get_argument_parser():
@@ -76,13 +93,16 @@ def run_from_args(args):
     db_dir = os.path.split(db_path)[0]
 
     # Load the formats data into the output dict
-    db_out[db.DB_FORMATS_KEY] = json.load(open(os.path.join(db_dir, FORMATS_DATAFILE)))[db.DB_FORMATS_KEY]
+    l_format_info: list[JsonDict] = json.load(open(os.path.join(db_dir, FORMATS_DATAFILE)))[db.DB_FORMATS_KEY]
+    l_format_info = [get_sorted_dict(x, L_FORMATS_SORT_ORDER) for x in l_format_info]
+
+    db_out[db.DB_FORMATS_KEY] = l_format_info
 
     # Load data on unsupported converters into the output dict, and fill in missing items
-    l_db_converters = json.load(
+    l_db_converters: list[JsonDict] = json.load(
         open(os.path.join(db_dir, UNSUPPORTED_CONVERTERS_DATAFILE)))[db.DB_CONVERTERS_KEY]
     db_out[db.DB_CONVERTERS_KEY] = l_db_converters
-    for d_conv_info in l_db_converters:
+    for i, d_conv_info in enumerate(l_db_converters):
         if db.DB_DESC_KEY in d_conv_info:
             d_conv_info[db.DB_DESCRIPTION_KEY] = d_conv_info.pop(db.DB_DESC_KEY)
         if db.DB_INFO_KEY in d_conv_info:
@@ -94,6 +114,7 @@ def run_from_args(args):
                              (db.DB_URL_KEY, "")):
             if key not in d_conv_info:
                 d_conv_info[key] = default
+        l_db_converters[i] = get_sorted_dict(d_conv_info, L_CONVERTER_SORT_ORDER)
 
     # Create initial entries for the rest of the output dict
     db_out[db.DB_CONVERTERS_KEY] = l_db_converters
@@ -120,7 +141,7 @@ def run_from_args(args):
         d_conv_info[db.DB_DESCRIPTION_KEY] = d_conv_info.pop(db.DB_DESC_KEY)
         d_conv_info[db.DB_FURTHER_INFO_KEY] = d_conv_info.pop(db.DB_INFO_KEY)
 
-        l_db_converters.append(d_conv_info)
+        l_db_converters.append(get_sorted_dict(d_conv_info, L_CONVERTER_SORT_ORDER))
 
         # Determine possible conversions and add them all to the database
         s_in_formats = {*db_conv[db.DB_SUPPORTED_FORMATS_KEY]}.union({*db_conv[db.DB_IN_ONLY_FORMATS_KEY]})
@@ -138,22 +159,25 @@ def run_from_args(args):
             if (in_id == out_id or (in_id, out_id) in s_unsupported_conversions or
                     (in_id, out_id) in d_supported_conversions):
                 continue
-            l_db_converts_to.append({db.DB_CONV_ID_KEY: conv_id,
-                                     db.DB_IN_ID_KEY: in_id,
-                                     db.DB_OUT_ID_KEY: out_id,
-                                     db.DB_SUCCESS_KEY: MSG_DOS_NOT_TESTED})
+            d_conv_to = {db.DB_CONV_ID_KEY: conv_id,
+                         db.DB_IN_ID_KEY: in_id,
+                         db.DB_OUT_ID_KEY: out_id,
+                         db.DB_SUCCESS_KEY: MSG_DOS_NOT_TESTED}
+            l_db_converts_to.append(get_sorted_dict(d_conv_to, L_CONVERTS_TO_SORT_ORDER))
 
         # Now add any conversions which are explicitly labelled as supported
         for (in_id, out_id), dos in d_supported_conversions.items():
-            l_db_converts_to.append({db.DB_CONV_ID_KEY: conv_id,
-                                     db.DB_IN_ID_KEY: in_id,
-                                     db.DB_OUT_ID_KEY: out_id,
-                                     db.DB_SUCCESS_KEY: dos})
+            d_conv_to = {db.DB_CONV_ID_KEY: conv_id,
+                         db.DB_IN_ID_KEY: in_id,
+                         db.DB_OUT_ID_KEY: out_id,
+                         db.DB_SUCCESS_KEY: dos}
+            l_db_converts_to.append(get_sorted_dict(d_conv_to, L_CONVERTS_TO_SORT_ORDER))
 
         # TODO: Add argument info here
 
-    # Save the database
-    json.dump(db_out, open(db_path.replace(".json", "2.json"), "w"), sort_keys=True, indent=4)
+    # Sort the top-level dict, then save the database
+    db_out = get_sorted_dict(db_out)
+    json.dump(db_out, open(db_path.replace(".json", "2.json"), "w"), indent=4)
 
 
 def main():
