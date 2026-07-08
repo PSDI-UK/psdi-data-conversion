@@ -25,10 +25,10 @@ UNSUPPORTED_CONVERTERS_DATAFILE = "unsupported_converters.json"
 MSG_DOS_NOT_TESTED = "not tested"
 
 # Sorting orders for dicts in the JSON output
-L_CONVERTER_SORT_ORDER = [db.DB_NAME_KEY, db.DB_ID_KEY, db.DB_DESCRIPTION_KEY, db.DB_FURTHER_INFO_KEY,
+L_CONVERTER_SORT_ORDER = [db.DB_NAME_KEY, db.DB_DESCRIPTION_KEY, db.DB_FURTHER_INFO_KEY, db.DB_ID_KEY,
                           db.DB_URL_KEY, db.DB_KEY_PREFIX_KEY, db.DB_SUPPORT_AMBIG_EXT_KEY]
 L_CONVERTS_TO_SORT_ORDER = [db.DB_CONV_ID_KEY, db.DB_IN_ID_KEY, db.DB_OUT_ID_KEY, db.DB_SUCCESS_KEY]
-L_FORMATS_SORT_ORDER = [db.DB_FORMAT_EXT_KEY, db.DB_ID_KEY, db.DB_FORMAT_NOTE_KEY, db.DB_FORMAT_C2X_KEY,
+L_FORMATS_SORT_ORDER = [db.DB_FORMAT_EXT_KEY, db.DB_FORMAT_NOTE_KEY, db.DB_ID_KEY, db.DB_FORMAT_C2X_KEY,
                         db.DB_FORMAT_COMP_KEY, db.DB_FORMAT_CONN_KEY, db.DB_FORMAT_2D_KEY, db.DB_FORMAT_3D_KEY]
 
 # Common types
@@ -41,6 +41,19 @@ def get_sorted_dict(d: dict, l_order: list | None = None):
     if l_order is None:
         return OrderedDict(sorted(d.items(), key=lambda item: item[0]))
     return OrderedDict(sorted(d.items(), key=lambda item: l_order.index(item[0])))
+
+
+def sort_json_list(l_d: list[JsonDict], l_order: list | None = None):
+    """Sorts a list of JSON dicts based on values of keys, using the provided list of descending-order importance of
+    keys in sorting
+    """
+    def get_key(d: JsonDict):
+        l_key = [d[x] for x in l_order]
+        for i, key in enumerate(l_key):
+            if isinstance(key, str):
+                l_key[i] = (key.lower(), key)
+        return tuple(l_key)
+    l_d.sort(key=get_key)
 
 
 def get_argument_parser():
@@ -95,6 +108,7 @@ def run_from_args(args):
     # Load the formats data into the output dict
     l_format_info: list[JsonDict] = json.load(open(os.path.join(db_dir, FORMATS_DATAFILE)))[db.DB_FORMATS_KEY]
     l_format_info = [get_sorted_dict(x, L_FORMATS_SORT_ORDER) for x in l_format_info]
+    sort_json_list(l_format_info, L_FORMATS_SORT_ORDER)
 
     db_out[db.DB_FORMATS_KEY] = l_format_info
 
@@ -175,8 +189,10 @@ def run_from_args(args):
 
         # TODO: Add argument info here
 
-    # Sort the top-level dict, then save the database
+    # Sort the top-level dict and lists, then save the database
     db_out = get_sorted_dict(db_out)
+    sort_json_list(l_db_converters, L_CONVERTER_SORT_ORDER)
+    sort_json_list(l_db_converts_to, L_CONVERTS_TO_SORT_ORDER)
     json.dump(db_out, open(db_path.replace(".json", "2.json"), "w"), indent=4)
 
 
