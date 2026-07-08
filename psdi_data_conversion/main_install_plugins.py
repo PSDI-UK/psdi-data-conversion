@@ -12,6 +12,7 @@ import json
 import os
 from argparse import ArgumentParser
 from collections import OrderedDict
+from copy import deepcopy
 from itertools import product
 
 from psdi_data_conversion import database as db
@@ -30,6 +31,10 @@ L_CONVERTER_SORT_ORDER = [db.DB_NAME_KEY, db.DB_DESCRIPTION_KEY, db.DB_FURTHER_I
 L_CONVERTS_TO_SORT_ORDER = [db.DB_CONV_ID_KEY, db.DB_IN_ID_KEY, db.DB_OUT_ID_KEY, db.DB_SUCCESS_KEY]
 L_FORMATS_SORT_ORDER = [db.DB_FORMAT_EXT_KEY, db.DB_FORMAT_NOTE_KEY, db.DB_ID_KEY, db.DB_FORMAT_C2X_KEY,
                         db.DB_FORMAT_COMP_KEY, db.DB_FORMAT_CONN_KEY, db.DB_FORMAT_2D_KEY, db.DB_FORMAT_3D_KEY]
+L_ARG_INFO_ORDER = [db.DB_FLAG_KEY, db.DB_BRIEF_KEY, db.DB_DESCRIPTION_KEY, db.DB_FURTHER_INFO_KEY, db.DB_ID_KEY]
+
+REPLACEME_ARG_IN_OUT_ID = "REPLACEME_ARG_IN_OR_OUT_ID"
+L_ARG_FORMATS_INFO_ORDER = [db.DB_FORMAT_ID_KEY, REPLACEME_ARG_IN_OUT_ID]
 
 # Common types
 JsonDict = dict[str, None | int | str | bool | dict | list]
@@ -174,8 +179,9 @@ def run_from_args(args):
 
         # Load data about the converter and add it to the database
         db_conv: JsonMainDict = json.load(open(os.path.join(qual_dir, PLUGIN_DATAFILE)))
-        conv_id: int = db_conv[db.DB_CONVERTER_KEY][db.DB_ID_KEY]
         d_conv_info: JsonDict = db_conv[db.DB_CONVERTER_KEY]
+        conv_id: int = d_conv_info[db.DB_ID_KEY]
+        conv_prefix: str = d_conv_info[db.DB_KEY_PREFIX_KEY]
 
         # Rename keys as appropriate
         d_conv_info[db.DB_DESCRIPTION_KEY] = d_conv_info.pop(db.DB_DESC_KEY)
@@ -213,7 +219,48 @@ def run_from_args(args):
                          db.DB_SUCCESS_KEY: dos}
             l_db_converts_to.append(get_sorted_dict(d_conv_to, L_CONVERTS_TO_SORT_ORDER))
 
-        # TODO: Add argument info here
+        # Add the info on input/output arguments and which formats support them
+        for args_str, in_or_out in product(("flags", "options"), ("in", "out")):
+            out_args_str = args_str
+            if args_str == "options":
+                out_args_str == "argflags"
+            in_key = f"{in_or_out}_{args_str}"
+            out_key = f"{conv_prefix}{out_args_str}_{in_or_out}"
+            out_format_key = f"{conv_prefix}format_to_{out_args_str}_{in_or_out}"
+
+            l_arg_info: list[JsonDict] = []
+            l_arg_formats: list[JsonDict] = []
+            arg_in_out_id = f"{conv_prefix}{out_args_str}_{in_or_out}_id"
+
+            l_arg_format_sort_order = deepcopy(L_ARG_FORMATS_INFO_ORDER)
+            l_arg_format_sort_order = [x if x != REPLACEME_ARG_IN_OUT_ID else arg_in_out_id
+                                       for x in l_arg_format_sort_order]
+
+            for d_in_arg_info in d_conv_info[in_key]:
+                d_out_arg_info: JsonDict = {
+                    db.DB_DESCRIPTION_KEY: d_in_arg_info[db.DB_DESC_KEY],
+                    db.DB_FLAG_KEY: d_in_arg_info[db.DB_FLAG_KEY],
+                    db.DB_FURTHER_INFO_KEY: d_in_arg_info[db.DB_INFO_KEY],
+                    db.DB_ID_KEY: d_in_arg_info[db.DB_ID_KEY],
+                }
+                if db.DB_BRIEF_KEY in d_in_arg_info:
+                    d_out_arg_info[db.DB_BRIEF_KEY] = d_in_arg_info[db.DB_BRIEF_KEY]
+                d_out_arg_info = get_sorted_dict(d_out_arg_info, L_ARG_INFO_ORDER)
+                l_arg_info.append(d_out_arg_info)
+
+                for format_id in d_in_arg_info[db.DB_FORMAT_ID_LIST_KEY]:
+                    d_out_arg_format: JsonDict = {
+                        db.DB_FORMAT_ID_KEY: format_id,
+                        arg_in_out_id: d_in_arg_info[db.DB_ID_KEY]
+                    }
+                    d_out_arg_format = get_sorted_dict(d_out_arg_format, l_arg_format_sort_order)
+                    l_arg_formats.append(d_out_arg_format)
+
+            sort_json_list(l_arg_info, L_ARG_INFO_ORDER)
+            db_out[out_key] = l_arg_info
+
+            sort_json_list(l_arg_formats, l_arg_format_sort_order)
+            db_out[out_format_key] = l_arg_formats
 
     # Sort the top-level dict and lists, then save the database
     db_out = get_sorted_dict(db_out)

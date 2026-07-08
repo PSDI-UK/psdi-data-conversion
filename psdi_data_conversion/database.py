@@ -50,6 +50,8 @@ DB_OUT_FLAGS_KEY = "out_flags"
 DB_IN_OPTIONS_KEY = "in_options"
 DB_OUT_OPTIONS_KEY = "out_options"
 
+DB_FORMAT_ID_LIST_KEY = "format_ids"
+
 
 # Keys for top-level and general items in the database
 DB_FORMATS_KEY = "formats"
