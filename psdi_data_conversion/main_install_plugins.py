@@ -332,7 +332,7 @@ def run_from_args(args):
     db_out = get_sorted_dict(db_out)
     sort_json_list(l_db_converters, L_CONVERTER_SORT_ORDER)
     sort_json_list(l_db_converts_to, L_CONVERTS_TO_SORT_ORDER)
-    json.dump(db_out, open(db_path.replace(".json", "2.json"), "w"), indent=4)
+    json.dump(db_out, open(db_path, "w"), indent=4)
 
 
 def main():
