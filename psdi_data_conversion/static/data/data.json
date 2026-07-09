@@ -3,56 +3,83 @@
         {
             "name": "Amsterdam Modeling Suite",
             "description": "SCM Software for Chemistry & Materials",
+            "further_info": "",
             "id": 80655077739724378181443159113906720339,
-            "url": "https://www.scm.com"
+            "url": "https://www.scm.com",
+            "database_key_prefix": null,
+            "supports_ambiguous_extensions": false
         },
         {
             "name": "Atomsk",
             "description": "University of Lille",
+            "further_info": "Atomsk binaries compiled for 64-bit Linux and MacOS systems are distributed with this package. It may be registered on other systems by compiling it locally and adding the compiled 'atomsk' binary (with this exact name - rename it or make a symbolic link to it if necessary) to your $PATH.\n\nAtomsk is licensed under GPLv3, the full text of which may be found at https://www.gnu.org/licenses/gpl-3.0.en.html. Its binaries are redistributed here under the terms of this license, and any further redistribution must also follow these terms. Its corresponding source code may be found at https://github.com/pierrehirel/atomsk/",
             "id": 191460133701473311458813494619316474031,
-            "url": "https://atomsk.univ-lille.fr"
+            "url": "https://atomsk.univ-lille.fr",
+            "database_key_prefix": null,
+            "supports_ambiguous_extensions": false
         },
         {
             "name": "c2x",
             "description": "DFT electronic structure, University of Cambridge",
+            "further_info": "c2x binaries compiled for 64-bit Linux and MacOS systems are distributed with this package. It may be registered on other systems by compiling it locally and adding the compiled 'c2x' binary (with this exact name - rename it or make a symbolic link to it if necessary) to your $PATH.\n\nc2x is licensed under GPLv3, the full text of which may be found at https://www.gnu.org/licenses/gpl-3.0.en.html. Its binaries are redistributed here under the terms of this license, and any further redistribution must also follow these terms. Its corresponding source code may be downloaded from https://www.c2x.org.uk/downloads/",
             "id": 80044686994611744455636263468222948252,
-            "url": "https://www.c2x.org.uk"
+            "url": "https://www.c2x.org.uk",
+            "database_key_prefix": null,
+            "supports_ambiguous_extensions": true
         },
         {
             "name": "CRYSCALC",
             "description": "University of Rennes",
+            "further_info": "",
             "id": 314520102903760985481871418805567142726,
-            "url": "https://cdifx.univ-rennes1.fr/progs/cryscalc/cryscalc_main.htm"
+            "url": "https://cdifx.univ-rennes1.fr/progs/cryscalc/cryscalc_main.htm",
+            "database_key_prefix": null,
+            "supports_ambiguous_extensions": false
         },
         {
             "name": "Molconverter",
             "description": "Chemaxon",
+            "further_info": "",
             "id": 64881419031212790365828101506563058404,
-            "url": "https://docs.chemaxon.com/display/docs/molecule-file-conversion-with-molconverter.md"
+            "url": "https://docs.chemaxon.com/display/docs/molecule-file-conversion-with-molconverter.md",
+            "database_key_prefix": null,
+            "supports_ambiguous_extensions": false
         },
         {
             "name": "Open Babel",
             "description": "Comprehensive converter",
+            "further_info": "",
             "id": 322794523490578343580442401142062932365,
-            "url": "https://open-babel.readthedocs.io/en/latest/"
+            "url": "https://open-babel.readthedocs.io/en/latest/",
+            "database_key_prefix": "ob",
+            "supports_ambiguous_extensions": false
         },
         {
             "name": "OpenChrom",
             "description": "Lablicate. Primarily for analysis and visualisation of mass spectrographic and chromatographic data",
+            "further_info": "",
             "id": 36182616775051183823587687284218519553,
-            "url": "https://lablicate.com/platform/openchrom"
+            "url": "https://lablicate.com/platform/openchrom",
+            "database_key_prefix": null,
+            "supports_ambiguous_extensions": false
         },
         {
             "name": "VESTA",
             "description": "JP-Minerals",
+            "further_info": "",
             "id": 13190734803326644929172373502360888440,
-            "url": "https://jp-minerals.org/vesta/en/"
+            "url": "https://jp-minerals.org/vesta/en/",
+            "database_key_prefix": null,
+            "supports_ambiguous_extensions": true
         },
         {
             "name": "WebMO",
             "description": "Web-based converter",
+            "further_info": "",
             "id": 223236145467004160362135646344483306999,
-            "url": "https://www.webmo.net"
+            "url": "https://www.webmo.net",
+            "database_key_prefix": null,
+            "supports_ambiguous_extensions": false
         }
     ],
     "converts_to": [
@@ -4943,12 +4970,6 @@
         {
             "converters_id": 80044686994611744455636263468222948252,
             "in_id": 109334830415080040083849964670968869182,
-            "out_id": 301598072342801950763513121261746178173,
-            "degree_of_success": "not tested"
-        },
-        {
-            "converters_id": 80044686994611744455636263468222948252,
-            "in_id": 109334830415080040083849964670968869182,
             "out_id": 318487010089456902950008675463492717371,
             "degree_of_success": "not tested"
         },
@@ -12504,12 +12525,6 @@
             "converters_id": 80044686994611744455636263468222948252,
             "in_id": 292727325821381794107846543252288100244,
             "out_id": 289644940844589840653367490226325419159,
-            "degree_of_success": "not tested"
-        },
-        {
-            "converters_id": 80044686994611744455636263468222948252,
-            "in_id": 292727325821381794107846543252288100244,
-            "out_id": 301598072342801950763513121261746178173,
             "degree_of_success": "not tested"
         },
         {
