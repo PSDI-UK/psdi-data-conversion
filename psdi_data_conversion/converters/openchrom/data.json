@@ -1,0 +1,61 @@
+{
+    "converter": {
+        "name": "OpenChrom",
+        "desc": "Lablicate. Primarily for analysis and visualisation of mass spectrographic and chromatographic data",
+        "info": "",
+        "id": 36182616775051183823587687284218519553,
+        "url": "https://lablicate.com/platform/openchrom",
+        "database_key_prefix": null,
+        "supports_ambiguous_extensions": null
+    },
+    "extra_formats": [],
+    "supported_formats": [],
+    "in_only_formats": [
+        48746576185426937819153906173748998767
+    ],
+    "out_only_formats": [
+        99515903324256349316585347569509460199,
+        172087761777071222663803962906497280843,
+        182937675088317554679813770978148294902,
+        292995839363572365153169041723817126664,
+        305287394663687882056493561777756932843,
+        333171647576875444434880943922184533624
+    ],
+    "supported_conversions": [
+        {
+            "in_id": 48746576185426937819153906173748998767,
+            "out_id": 99515903324256349316585347569509460199,
+            "degree_of_success": "complete"
+        },
+        {
+            "in_id": 48746576185426937819153906173748998767,
+            "out_id": 172087761777071222663803962906497280843,
+            "degree_of_success": "complete"
+        },
+        {
+            "in_id": 48746576185426937819153906173748998767,
+            "out_id": 182937675088317554679813770978148294902,
+            "degree_of_success": "complete"
+        },
+        {
+            "in_id": 48746576185426937819153906173748998767,
+            "out_id": 292995839363572365153169041723817126664,
+            "degree_of_success": "complete"
+        },
+        {
+            "in_id": 48746576185426937819153906173748998767,
+            "out_id": 305287394663687882056493561777756932843,
+            "degree_of_success": "complete"
+        },
+        {
+            "in_id": 48746576185426937819153906173748998767,
+            "out_id": 333171647576875444434880943922184533624,
+            "degree_of_success": "complete"
+        }
+    ],
+    "unsupported_conversions": [],
+    "in_flags": [],
+    "in_options": [],
+    "out_flags": [],
+    "out_options": []
+}

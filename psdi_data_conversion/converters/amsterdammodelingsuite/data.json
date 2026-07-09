@@ -1,0 +1,33 @@
+{
+    "converter": {
+        "name": "Amsterdam Modeling Suite",
+        "desc": "SCM Software for Chemistry & Materials",
+        "info": "",
+        "id": 80655077739724378181443159113906720339,
+        "url": "https://www.scm.com",
+        "database_key_prefix": null,
+        "supports_ambiguous_extensions": null
+    },
+    "extra_formats": [],
+    "supported_formats": [
+        14163986051707882465586360841029029139,
+        50135205643343990489495467470022579507,
+        214908995963617485636855366710271712886
+    ],
+    "in_only_formats": [
+        143425445942253368938814885806318269174,
+        178366529166858241161075106138867206788
+    ],
+    "out_only_formats": [],
+    "supported_conversions": [],
+    "unsupported_conversions": [
+        {
+            "in_id": 143425445942253368938814885806318269174,
+            "out_id": 214908995963617485636855366710271712886
+        }
+    ],
+    "in_flags": [],
+    "in_options": [],
+    "out_flags": [],
+    "out_options": []
+}
