@@ -9,7 +9,6 @@ Script to import database information on unsupported converters
 """
 
 import json
-import logging
 import os
 from argparse import ArgumentParser
 from collections import OrderedDict
@@ -23,7 +22,7 @@ s_exclude_convs = {"atomsk", "c2x", "example", "openbabel", "template", "script_
 # Sorting orders for dicts in the JSON output
 L_CONVERTER_META_SORT_ORDER = [db.DB_NAME_KEY, db.DB_DESC_KEY, db.DB_INFO_KEY, db.DB_ID_KEY,
                                db.DB_URL_KEY, db.DB_KEY_PREFIX_KEY, db.DB_SUPPORT_AMBIG_EXT_KEY]
-L_CONVERTER_SORT_ORDER = ["extra_formats", "supported_formats", "in_only_formats", "out_only_formats",
+L_CONVERTER_SORT_ORDER = ["converter", "extra_formats", "supported_formats", "in_only_formats", "out_only_formats",
                           "supported_conversions", "unsupported_conversions", "in_flags", "in_options", "out_flags",
                           "out_options"]
 L_CONVERSION_SORT_ORDER = ["in_id", "out_id", "degree_of_success"]
@@ -124,9 +123,9 @@ def run_from_args(args):
             "out_options": []
         }
 
-        s_in_formats: set[int] = {}
-        s_out_formats: set[int] = {}
-        s_supported_conversions: set[tuple[int, int]] = {}
+        s_in_formats: set[int] = set()
+        s_out_formats: set[int] = set()
+        s_supported_conversions: set[tuple[int, int]] = set()
 
         l_conversions: list[JsonDict] = []
 
@@ -172,13 +171,13 @@ def run_from_args(args):
 
         l_unsupported_conversions: list[JsonDict] = []
         for in_id, out_id in product(s_in_formats, s_out_formats):
-            if (in_id, out_id) in s_supported_conversions:
+            if in_id == out_id or (in_id, out_id) in s_supported_conversions:
                 continue
             d_conversion = {
                 "in_id": in_id,
                 "out_id": out_id
             }
-            d_conversion = get_sorted_dict(d_conversion_in, L_CONVERSION_SORT_ORDER)
+            d_conversion = get_sorted_dict(d_conversion, L_CONVERSION_SORT_ORDER)
             l_unsupported_conversions.append(d_conversion)
 
         sort_json_list(l_unsupported_conversions, L_CONVERSION_SORT_ORDER)
@@ -188,7 +187,7 @@ def run_from_args(args):
         d_conv_out = get_sorted_dict(d_conv_out, L_CONVERTER_SORT_ORDER)
 
         db_out_path = os.path.join(conv_path, "data.json")
-        json.dump(d_conv_out, open(db_out_path), indent=4)
+        json.dump(d_conv_out, open(db_out_path, "w"), indent=4)
 
 
 def main():
@@ -196,8 +195,6 @@ def main():
     """
 
     args = parse_args()
-
-    logging.basicConfig(level=args.log_level)
 
     run_from_args(args)
 
