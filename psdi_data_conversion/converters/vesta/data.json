@@ -6,7 +6,7 @@
         "id": 13190734803326644929172373502360888440,
         "url": "https://jp-minerals.org/vesta/en/",
         "database_key_prefix": null,
-        "supports_ambiguous_extensions": null
+        "supports_ambiguous_extensions": true
     },
     "extra_formats": [],
     "supported_formats": [

@@ -14,6 +14,7 @@ from argparse import ArgumentParser
 from collections import OrderedDict
 from copy import deepcopy
 from itertools import product
+from uuid import uuid4
 
 from psdi_data_conversion import database as db
 from psdi_data_conversion.converters import base as converters_base
@@ -157,6 +158,31 @@ def sort_db(db_path: str):
     json.dump(db_out, open(db_path, "w"), indent=4)
 
 
+def get_support_ambig_ext(db_conv: JsonMainDict, db_out: JsonMainDict):
+    """Determine whether or not the converter supports any ambiguous extensions"""
+    s_in_formats: set[int] = set(db_conv[db.DB_SUPPORTED_FORMATS_KEY] + db_conv[db.DB_IN_ONLY_FORMATS_KEY])
+    s_out_formats: set[int] = set(db_conv[db.DB_SUPPORTED_FORMATS_KEY] + db_conv[db.DB_OUT_ONLY_FORMATS_KEY])
+
+    l_formats: list[JsonDict] = db_out[db.DB_FORMATS_KEY]
+
+    s_in_format_exts: set[str] = set()
+    s_out_format_exts: set[str] = set()
+
+    for d_format_info in l_formats:
+        id: int = d_format_info[db.DB_ID_KEY]
+        ext: str = d_format_info[db.DB_FORMAT_EXT_KEY]
+        if id in s_in_formats:
+            if ext in s_in_format_exts:
+                return True
+            s_in_format_exts.add(ext)
+        if id in s_out_formats:
+            if ext in s_out_format_exts:
+                return True
+            s_out_format_exts.add(ext)
+
+    return False
+
+
 def run_from_args(args):
     """Workhorse function to perform primary execution of this script, using the provided parsed arguments.
 
@@ -189,21 +215,37 @@ def run_from_args(args):
     db_out[db.DB_CONVERTS_TO_KEY] = l_db_converts_to
 
     # Get the directory containing converter plugins
-    conv_path = os.path.split(os.path.realpath(converters_base.__file__))[0]
+    conv_parent_path = os.path.split(os.path.realpath(converters_base.__file__))[0]
 
-    for dir in os.listdir(conv_path):
+    for dir in os.listdir(conv_parent_path):
         if dir in L_CONVERTER_EXCLUDE_DIRS:
             continue
 
-        qual_dir = os.path.join(conv_path, dir)
-        if not os.path.isdir(qual_dir) or not os.path.isfile(os.path.join(qual_dir, PLUGIN_DATAFILE)):
+        conv_path = os.path.join(conv_parent_path, dir)
+        if not os.path.isdir(conv_path) or not os.path.isfile(os.path.join(conv_path, PLUGIN_DATAFILE)):
             continue
 
         # Load data about the converter and add it to the database
-        db_conv: JsonMainDict = json.load(open(os.path.join(qual_dir, PLUGIN_DATAFILE)))
+        conv_db_path = os.path.join(conv_path, PLUGIN_DATAFILE)
+        db_conv: JsonMainDict = json.load(open(conv_db_path))
         d_conv_info: JsonDict = db_conv[db.DB_CONVERTER_KEY]
+        conv_prefix: str | None = d_conv_info[db.DB_KEY_PREFIX_KEY]
+
+        # Generate any missing data
+        conv_db_changed = False
+
+        if d_conv_info[db.DB_ID_KEY] is None:
+            conv_db_changed = True
+            d_conv_info[db.DB_ID_KEY] = uuid4().int
+
+        if d_conv_info[db.DB_SUPPORT_AMBIG_EXT_KEY] is None:
+            conv_db_changed = True
+            d_conv_info[db.DB_SUPPORT_AMBIG_EXT_KEY] = get_support_ambig_ext(db_conv, db_out)
+
+        if conv_db_changed:
+            json.dump(db_conv, open(conv_db_path, "w"), indent=4)
+
         conv_id: int = d_conv_info[db.DB_ID_KEY]
-        conv_prefix: str = d_conv_info[db.DB_KEY_PREFIX_KEY]
 
         # Rename keys as appropriate
         d_conv_info[db.DB_DESCRIPTION_KEY] = d_conv_info.pop(db.DB_DESC_KEY)

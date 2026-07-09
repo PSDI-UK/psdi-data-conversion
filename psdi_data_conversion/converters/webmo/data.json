@@ -6,7 +6,7 @@
         "id": 223236145467004160362135646344483306999,
         "url": "https://www.webmo.net",
         "database_key_prefix": null,
-        "supports_ambiguous_extensions": null
+        "supports_ambiguous_extensions": false
     },
     "extra_formats": [],
     "supported_formats": [

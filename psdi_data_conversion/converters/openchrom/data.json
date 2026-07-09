@@ -6,7 +6,7 @@
         "id": 36182616775051183823587687284218519553,
         "url": "https://lablicate.com/platform/openchrom",
         "database_key_prefix": null,
-        "supports_ambiguous_extensions": null
+        "supports_ambiguous_extensions": false
     },
     "extra_formats": [],
     "supported_formats": [],

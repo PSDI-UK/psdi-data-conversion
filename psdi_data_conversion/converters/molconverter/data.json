@@ -6,7 +6,7 @@
         "id": 64881419031212790365828101506563058404,
         "url": "https://docs.chemaxon.com/display/docs/molecule-file-conversion-with-molconverter.md",
         "database_key_prefix": null,
-        "supports_ambiguous_extensions": null
+        "supports_ambiguous_extensions": false
     },
     "extra_formats": [],
     "supported_formats": [

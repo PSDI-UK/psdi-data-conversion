@@ -6,7 +6,7 @@
         "id": 80655077739724378181443159113906720339,
         "url": "https://www.scm.com",
         "database_key_prefix": null,
-        "supports_ambiguous_extensions": null
+        "supports_ambiguous_extensions": false
     },
     "extra_formats": [],
     "supported_formats": [

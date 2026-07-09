@@ -6,7 +6,7 @@
         "id": 314520102903760985481871418805567142726,
         "url": "https://cdifx.univ-rennes1.fr/progs/cryscalc/cryscalc_main.htm",
         "database_key_prefix": null,
-        "supports_ambiguous_extensions": null
+        "supports_ambiguous_extensions": false
     },
     "extra_formats": [],
     "supported_formats": [
