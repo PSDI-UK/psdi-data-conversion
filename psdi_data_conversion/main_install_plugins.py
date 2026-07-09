@@ -257,10 +257,10 @@ def run_from_args(args):
         s_in_formats = {*db_conv[db.DB_SUPPORTED_FORMATS_KEY]}.union({*db_conv[db.DB_IN_ONLY_FORMATS_KEY]})
         s_out_formats = {*db_conv[db.DB_SUPPORTED_FORMATS_KEY]}.union({*db_conv[db.DB_OUT_ONLY_FORMATS_KEY]})
 
-        d_supported_conversions: dict[tuple[int, int], str] = {(x[db.DB_IN_ID_KEY], x[db.DB_IN_ID_KEY]):
+        d_supported_conversions: dict[tuple[int, int], str] = {(x[db.DB_IN_ID_KEY], x[db.DB_OUT_ID_KEY]):
                                                                x[db.DB_SUCCESS_KEY]
                                                                for x in db_conv[db.DB_SUPPORTED_CONVERSIONS_KEY]}
-        s_unsupported_conversions: set[tuple[int, int]] = {(x[db.DB_IN_ID_KEY], x[db.DB_IN_ID_KEY])
+        s_unsupported_conversions: set[tuple[int, int]] = {(x[db.DB_IN_ID_KEY], x[db.DB_OUT_ID_KEY])
                                                            for x in db_conv[db.DB_UNSUPPORTED_CONVERSIONS_KEY]}
 
         for in_id, out_id in product(s_in_formats, s_out_formats):
