@@ -264,7 +264,7 @@ def test_detail_converter(capsys):
 def test_get_conversions(capsys):
     """Test the option to get information on converters which can perform a desired conversion
     """
-    in_format = "xyz-0"
+    in_format = "xyz-1"
     out_format = "inchi"
     l_conversions = get_possible_conversions(in_format, out_format)
 
