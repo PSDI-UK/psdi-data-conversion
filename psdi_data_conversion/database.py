@@ -1293,7 +1293,7 @@ class DataConversionDatabase:
         self._l_unsorted_format_info = list(self._d_format_info_from_id.values())
 
     def _get_converter_list(self) -> str:
-        return "\n".join([f"{x.pretty_name} (ID: {UUID(x.id)} / {UUID(x.id)})" for x in self.l_unsorted_converter_info])
+        return "\n".join([f"{x.pretty_name} (ID: {x.id} / {UUID(int=x.id)})" for x in self.l_unsorted_converter_info])
 
     @overload
     def get_converter_info(self, converter_name_or_id: str | int | UUID | ConverterInfo) -> ConverterInfo: ...
@@ -1335,23 +1335,23 @@ class DataConversionDatabase:
                 except (KeyError, ValueError):
                     raise FileConverterDatabaseException(f"Converter '{converter_name_or_id}' not found as a name in "
                                                          "the database and/or was not recognised as a value UUID. "
-                                                         "Known converters are:" +
+                                                         "Known converters are:\n" +
                                                          self._get_converter_list(),
                                                          help=True)
         elif isinstance(converter_name_or_id, int):
             try:
                 return self.d_converter_info_from_id[converter_name_or_id]
             except KeyError:
-                raise FileConverterDatabaseException(f"Converter ID '{converter_name_or_id}' not found in the database."
-                                                     "Known converters are:" +
+                raise FileConverterDatabaseException(f"Converter ID '{converter_name_or_id}' not found in the "
+                                                     "database. Known converters are:\n" +
                                                      self._get_converter_list(),
                                                      help=True)
         elif isinstance(converter_name_or_id, UUID):
             try:
                 return self.d_converter_info_from_id[converter_name_or_id.int]
             except KeyError:
-                raise FileConverterDatabaseException(f"Converter ID '{converter_name_or_id}' not found in the database."
-                                                     "Known converters are:" +
+                raise FileConverterDatabaseException(f"Converter ID '{converter_name_or_id}' not found in the "
+                                                     "database. Known converters are:\n" +
                                                      self._get_converter_list(),
                                                      help=True)
         elif isinstance(converter_name_or_id, ConverterInfo):
