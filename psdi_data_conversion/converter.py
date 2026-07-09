@@ -289,15 +289,8 @@ def check_from_format(filename: str,
     """
 
     # Get the name of the format
-    if isinstance(from_format, str):
-        from_format_name = from_format
-    else:
-        from psdi_data_conversion.database import get_format_info
-        from_format_name = get_format_info(from_format).name
-
-    # Silently make sure `from_format` starts with a dot
-    if not from_format_name.startswith("."):
-        from_format_name = f".{from_format}"
+    from psdi_data_conversion.database import get_format_info
+    from_format_name = "." + get_format_info(from_format).name
 
     if filename.endswith(from_format_name):
         return True
@@ -550,7 +543,11 @@ def run_converter(filename: str,
 
             # Create new names for the archive file and log file
             filename_base, ext = split_archive_ext(os.path.basename(filename))
-            run_output.output_filename = os.path.join(downloads_dir, f"{filename_base}-{to_format}{ext}")
+
+            from psdi_data_conversion.database import get_format_info
+            to_format_name = get_format_info(to_format).name
+
+            run_output.output_filename = os.path.join(downloads_dir, f"{filename_base}-{to_format_name}{ext}")
 
             # Pack the output files into an archive, cleaning them up afterwards
             pack_zip_or_tar(run_output.output_filename,
