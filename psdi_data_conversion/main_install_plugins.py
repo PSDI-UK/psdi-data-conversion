@@ -21,9 +21,10 @@ from psdi_data_conversion.converters import base as converters_base
 # Constants
 PLUGIN_DATAFILE = "data.json"
 FORMATS_DATAFILE = "formats.json"
-UNSUPPORTED_CONVERTERS_DATAFILE = "unsupported_converters.json"
 
 MSG_DOS_NOT_TESTED = "not tested"
+
+L_CONVERTER_EXCLUDE_DIRS = ["example", "template", "script_template"]
 
 # Sorting orders for dicts in the JSON output
 L_CONVERTER_SORT_ORDER = [db.DB_NAME_KEY, db.DB_DESCRIPTION_KEY, db.DB_FURTHER_INFO_KEY, db.DB_ID_KEY,
@@ -181,25 +182,8 @@ def run_from_args(args):
 
     db_out[db.DB_FORMATS_KEY] = l_format_info
 
-    # Load data on unsupported converters into the output dict, and fill in missing items
-    l_db_converters: list[JsonDict] = json.load(
-        open(os.path.join(db_dir, UNSUPPORTED_CONVERTERS_DATAFILE)))[db.DB_CONVERTERS_KEY]
-    db_out[db.DB_CONVERTERS_KEY] = l_db_converters
-    for i, d_conv_info in enumerate(l_db_converters):
-        if db.DB_DESC_KEY in d_conv_info:
-            d_conv_info[db.DB_DESCRIPTION_KEY] = d_conv_info.pop(db.DB_DESC_KEY)
-        if db.DB_INFO_KEY in d_conv_info:
-            d_conv_info[db.DB_FURTHER_INFO_KEY] = d_conv_info.pop(db.DB_INFO_KEY)
-        for key, default in ((db.DB_KEY_PREFIX_KEY, None),
-                             (db.DB_DESCRIPTION_KEY, ""),
-                             (db.DB_FURTHER_INFO_KEY, ""),
-                             (db.DB_SUPPORT_AMBIG_EXT_KEY, False),
-                             (db.DB_URL_KEY, "")):
-            if key not in d_conv_info:
-                d_conv_info[key] = default
-        l_db_converters[i] = get_sorted_dict(d_conv_info, L_CONVERTER_SORT_ORDER)
-
-    # Create initial entries for the rest of the output dict
+    # Create initial entries for the output dict
+    l_db_converters: list[JsonDict] = []
     db_out[db.DB_CONVERTERS_KEY] = l_db_converters
     l_db_converts_to: list[JsonDict] = []
     db_out[db.DB_CONVERTS_TO_KEY] = l_db_converts_to
@@ -208,7 +192,7 @@ def run_from_args(args):
     conv_path = os.path.split(os.path.realpath(converters_base.__file__))[0]
 
     for dir in os.listdir(conv_path):
-        if dir in ("example", "template", "script_template"):
+        if dir in L_CONVERTER_EXCLUDE_DIRS:
             continue
 
         qual_dir = os.path.join(conv_path, dir)
