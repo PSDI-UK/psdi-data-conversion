@@ -874,20 +874,33 @@ class ConversionsTable:
             `ConversionQualityInfo` object with info on the conversion
         """
 
-        # Check if this converter deals with ambiguous formats, so we know if we need to be strict about getting format
-        # info
-        if get_registered_converter_class(converter_name).meta.supports_ambiguous_extensions:
-            which_format = None
-        else:
-            which_format = 0
+        # Get all possible format infos for each format
+        l_in_format_info = self.parent.get_format_info(in_format, "all")
+        l_out_format_info = self.parent.get_format_info(out_format, "all")
 
-        # Get the full format info for each format
-        in_format_info = self.parent.get_format_info(in_format, which_format)
-        out_format_info = self.parent.get_format_info(out_format, which_format)
-
-        # First check if the conversion is possible
-        if converter_name not in self._get_possible_converters(in_format_info, out_format_info):
+        # First check if the conversion is possible for at least one combination
+        l_found_combinations: list[tuple[FormatInfo, FormatInfo]] = []
+        for in_format_info, out_format_info in product(l_in_format_info, l_out_format_info):
+            if converter_name in self._get_possible_converters(in_format_info, out_format_info):
+                l_found_combinations.append((in_format_info, out_format_info))
+        if len(l_found_combinations) == 0:
             return None
+
+        # Check if the conversion is ambiguous
+        if len(l_found_combinations) > 1:
+            msg = (f"Conversion from {in_format} to {out_format} with converter {converter_name} is ambiguous. Please "
+                   "Use the ID or disambiguated name (listed below) of the desired conversion. Possible matching "
+                   "conversions are:\n")
+            for possible_in_format, possible_out_format in l_found_combinations:
+                msg += (f"    {possible_in_format.id}: {possible_in_format.disambiguated_name} "
+                        f"({possible_in_format.note}) to "
+                        f"{possible_out_format.id}: {possible_out_format.disambiguated_name} "
+                        f"({possible_out_format.note})\n")
+            # Trim the final newline from the message
+            msg = msg[:-1]
+            raise FileConverterDatabaseException(msg, help=True)
+
+        in_format_info, out_format_info = l_found_combinations[0]
 
         # The conversion is possible. Now determine how many properties of the output format are not in the input
         # format and might end up being extrapolated
