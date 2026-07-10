@@ -27,6 +27,9 @@
 
 ### New and Changed Functionality
 
+- The database structure has been reworked so that now converter plugins "own" all data specifically relevant to them, stored in the `data.json` file in their plugin folder. For the time being, the singular database file is still used on runtime, but rather than this file being maintained manually, it is now generated from the new script `psdi_data_conversion_install_plugins`
+  - The one piece of database information which isn't "owned" by converter plugins is the list of formats, since multiple converters can handle the same format in many cases, and allowing converters to own this information could result in different converters using different UUIDs for the same format. This is now stored in the file `psdi_data_conversion/static/data/formats.json`
+    - TODO: Allow support for "extra_formats" in a converter's `data.json` file, so support for new formats can be added by only editing the files in the converter plugin's directory.
 - The database method `get_converter_info` can now be called without a `name` argument, and will return a list of info on all converters
 - The converter info provided by queries to the database methods now contains member variables `supported` and `registered` indicating the status of the converter:
   - Both `False`: The converter is known to exist, but we currently provide no support for it
@@ -43,6 +46,10 @@
 
 - Fixed incorrect output type in documentation for database methods `get_in_format_args` and `get_out_format_args`
 - Improved the error output for the database method `get_converter_info` if the converter name is not recognised, providing a list of known names
+
+### Testing Changes
+
+- Tests which reference specific formats have been changed to reference format IDs to avoid potentially breaking in the future if/when new formats are added with clashing names (with the exception of tests where the specific goal is to test using other methods of referencing formats)
 
 ## v0.3.23
 
