@@ -1,0 +1,349 @@
+#!/usr/bin/env python3
+
+"""psdi_data_conversion/main_install_plugins.py
+=============
+
+Created 2026-07-07 by Bryan Gillis.
+
+Entry-point file for the script to install converter plugins.
+"""
+
+import json
+import os
+from argparse import ArgumentParser
+from collections import OrderedDict
+from copy import deepcopy
+from itertools import product
+from uuid import uuid4
+
+from psdi_data_conversion import database as db
+from psdi_data_conversion.converters import base as converters_base
+
+# Constants
+PLUGIN_DATAFILE = "data.json"
+FORMATS_DATAFILE = "formats.json"
+
+MSG_DOS_NOT_TESTED = "not tested"
+
+L_CONVERTER_EXCLUDE_DIRS = ["example", "template", "script_template"]
+
+# Sorting orders for dicts in the JSON output
+L_CONVERTER_SORT_ORDER = [db.DB_NAME_KEY, db.DB_DESCRIPTION_KEY, db.DB_FURTHER_INFO_KEY, db.DB_ID_KEY,
+                          db.DB_URL_KEY, db.DB_KEY_PREFIX_KEY, db.DB_SUPPORT_AMBIG_EXT_KEY]
+L_CONVERTS_TO_SORT_ORDER = [db.DB_CONV_ID_KEY, db.DB_IN_ID_KEY, db.DB_OUT_ID_KEY, db.DB_SUCCESS_KEY]
+L_FORMATS_SORT_ORDER = [db.DB_FORMAT_EXT_KEY, db.DB_FORMAT_NOTE_KEY, db.DB_ID_KEY, db.DB_FORMAT_C2X_KEY,
+                        db.DB_FORMAT_COMP_KEY, db.DB_FORMAT_CONN_KEY, db.DB_FORMAT_2D_KEY, db.DB_FORMAT_3D_KEY]
+L_ARG_INFO_ORDER = [db.DB_FLAG_KEY, db.DB_BRIEF_KEY, db.DB_DESCRIPTION_KEY, db.DB_FURTHER_INFO_KEY, db.DB_ID_KEY]
+
+REPLACEME_ARG_IN_OUT_ID = "REPLACEME_ARG_IN_OR_OUT_ID"
+L_ARG_FORMATS_INFO_ORDER = [db.DB_FORMAT_ID_KEY, REPLACEME_ARG_IN_OUT_ID]
+
+# Common types
+JsonDict = dict[str, None | int | str | bool | dict | list]
+JsonMainDict = dict[str, None | int | str | bool | JsonDict | list[JsonDict]]
+
+
+def get_sorted_dict(d: dict, l_order: list | None = None):
+    """Returns an ordered dict with a provided sorting order"""
+    if l_order is None:
+        return OrderedDict(sorted(d.items(), key=lambda item: item[0]))
+    return OrderedDict(sorted(d.items(), key=lambda item: l_order.index(item[0])))
+
+
+def sort_json_list(l_d: list[JsonDict], l_order: list | None = None):
+    """Sorts a list of JSON dicts based on values of keys, using the provided list of descending-order importance of
+    keys in sorting
+    """
+    def get_key(d: JsonDict):
+        l_key = [d[x] for x in l_order if x in d]
+        for i, key in enumerate(l_key):
+            if isinstance(key, str):
+                l_key[i] = (key.lower(), key)
+        return tuple(l_key)
+    l_d.sort(key=get_key)
+
+
+def get_argument_parser():
+    """Get an argument parser for this script.
+
+    Returns
+    -------
+    parser : ArgumentParser
+        An argument parser set up with the allowed command-line arguments for this script.
+    """
+
+    parser = ArgumentParser()
+
+    parser.add_argument("-f", "--force", type=str, default=None,
+                        help="Assume that all provided formats are new and don't ask for confirmation if they resemble "
+                        "any existing formats")
+
+    return parser
+
+
+def parse_args():
+    """Parses arguments for this executable.
+
+    Returns
+    -------
+    args : Namespace
+        The parsed arguments.
+    """
+
+    parser = get_argument_parser()
+
+    parser.add_argument("--sort-only", action="store_true", help="If set, will not install plugins, and will only "
+                        "apply sorting to the currently-installed database file.")
+
+    args = parser.parse_args()
+
+    return args
+
+
+def sort_db(db_path: str):
+    """Sort the existing database"""
+    db_out: JsonMainDict = json.load(open(db_path))
+    db_out = get_sorted_dict(db_out)
+
+    sort_json_list(db_out[db.DB_FORMATS_KEY], L_FORMATS_SORT_ORDER)
+    for i, d in enumerate(db_out[db.DB_FORMATS_KEY]):
+        db_out[db.DB_FORMATS_KEY][i] = get_sorted_dict(d, L_FORMATS_SORT_ORDER)
+
+    sort_json_list(db_out[db.DB_CONVERTERS_KEY], L_CONVERTER_SORT_ORDER)
+    for i, d in enumerate(db_out[db.DB_CONVERTERS_KEY]):
+        db_out[db.DB_CONVERTERS_KEY][i] = get_sorted_dict(d, L_CONVERTER_SORT_ORDER)
+
+    sort_json_list(db_out[db.DB_CONVERTS_TO_KEY], L_CONVERTS_TO_SORT_ORDER)
+    for i, d in enumerate(db_out[db.DB_CONVERTS_TO_KEY]):
+        db_out[db.DB_CONVERTS_TO_KEY][i] = get_sorted_dict(d, L_CONVERTS_TO_SORT_ORDER)
+
+    # Get the directory containing converter plugins
+    conv_path = os.path.split(os.path.realpath(converters_base.__file__))[0]
+    for dir in os.listdir(conv_path):
+        if dir in ("example", "template", "script_template"):
+            continue
+
+        qual_dir = os.path.join(conv_path, dir)
+        if not os.path.isdir(qual_dir) or not os.path.isfile(os.path.join(qual_dir, PLUGIN_DATAFILE)):
+            continue
+
+        # Load data about the converter and add it to the database
+        db_conv: JsonMainDict = json.load(open(os.path.join(qual_dir, PLUGIN_DATAFILE)))
+        d_conv_info: JsonDict = db_conv[db.DB_CONVERTER_KEY]
+        conv_prefix: str = d_conv_info[db.DB_KEY_PREFIX_KEY]
+
+        if not conv_prefix:
+            continue
+        for args_str, in_or_out in product(("flags", "options"), ("in", "out")):
+            out_args_str = args_str
+            if args_str == "options":
+                out_args_str = "argflags"
+            out_key = f"{conv_prefix}{out_args_str}_{in_or_out}"
+            out_format_key = f"{conv_prefix}format_to_{out_args_str}_{in_or_out}"
+
+            arg_in_out_id = f"{conv_prefix}{out_args_str}_{in_or_out}_id"
+
+            l_arg_format_order = deepcopy(L_ARG_FORMATS_INFO_ORDER)
+            l_arg_format_order = [x if x != REPLACEME_ARG_IN_OUT_ID else arg_in_out_id
+                                  for x in l_arg_format_order]
+
+            sort_json_list(db_out[out_key], L_ARG_INFO_ORDER)
+            for i, d in enumerate(db_out[out_key]):
+                db_out[out_key][i] = get_sorted_dict(d, L_ARG_INFO_ORDER)
+
+            sort_json_list(db_out[out_format_key], l_arg_format_order)
+            for i, d in enumerate(db_out[out_format_key]):
+                db_out[out_format_key][i] = get_sorted_dict(d, l_arg_format_order)
+
+    json.dump(db_out, open(db_path, "w"), indent=4)
+
+
+def get_support_ambig_ext(db_conv: JsonMainDict, db_out: JsonMainDict):
+    """Determine whether or not the converter supports any ambiguous extensions"""
+    s_in_formats: set[int] = set(db_conv[db.DB_SUPPORTED_FORMATS_KEY] + db_conv[db.DB_IN_ONLY_FORMATS_KEY])
+    s_out_formats: set[int] = set(db_conv[db.DB_SUPPORTED_FORMATS_KEY] + db_conv[db.DB_OUT_ONLY_FORMATS_KEY])
+
+    l_formats: list[JsonDict] = db_out[db.DB_FORMATS_KEY]
+
+    s_in_format_exts: set[str] = set()
+    s_out_format_exts: set[str] = set()
+
+    for d_format_info in l_formats:
+        id: int = d_format_info[db.DB_ID_KEY]
+        ext: str = d_format_info[db.DB_FORMAT_EXT_KEY]
+        if id in s_in_formats:
+            if ext in s_in_format_exts:
+                return True
+            s_in_format_exts.add(ext)
+        if id in s_out_formats:
+            if ext in s_out_format_exts:
+                return True
+            s_out_format_exts.add(ext)
+
+    return False
+
+
+def run_from_args(args):
+    """Workhorse function to perform primary execution of this script, using the provided parsed arguments.
+
+    Parameters
+    ----------
+    args : Namespace
+        The parsed arguments for this script.
+    """
+
+    db_out: JsonMainDict = {}
+
+    # Get the main database path and directory
+    db_path = db.get_database_path()
+    db_dir = os.path.split(db_path)[0]
+
+    if args.sort_only:
+        return sort_db(db_path)
+
+    # Load the formats data into the output dict
+    l_format_info: list[JsonDict] = json.load(open(os.path.join(db_dir, FORMATS_DATAFILE)))[db.DB_FORMATS_KEY]
+    l_format_info = [get_sorted_dict(x, L_FORMATS_SORT_ORDER) for x in l_format_info]
+    sort_json_list(l_format_info, L_FORMATS_SORT_ORDER)
+
+    db_out[db.DB_FORMATS_KEY] = l_format_info
+
+    # Create initial entries for the output dict
+    l_db_converters: list[JsonDict] = []
+    db_out[db.DB_CONVERTERS_KEY] = l_db_converters
+    l_db_converts_to: list[JsonDict] = []
+    db_out[db.DB_CONVERTS_TO_KEY] = l_db_converts_to
+
+    # Get the directory containing converter plugins
+    conv_parent_path = os.path.split(os.path.realpath(converters_base.__file__))[0]
+
+    for dir in os.listdir(conv_parent_path):
+        if dir in L_CONVERTER_EXCLUDE_DIRS:
+            continue
+
+        conv_path = os.path.join(conv_parent_path, dir)
+        if not os.path.isdir(conv_path) or not os.path.isfile(os.path.join(conv_path, PLUGIN_DATAFILE)):
+            continue
+
+        # Load data about the converter and add it to the database
+        conv_db_path = os.path.join(conv_path, PLUGIN_DATAFILE)
+        db_conv: JsonMainDict = json.load(open(conv_db_path))
+        d_conv_info: JsonDict = db_conv[db.DB_CONVERTER_KEY]
+        conv_prefix: str | None = d_conv_info[db.DB_KEY_PREFIX_KEY]
+
+        # Generate any missing data
+        conv_db_changed = False
+
+        if d_conv_info[db.DB_ID_KEY] is None:
+            conv_db_changed = True
+            d_conv_info[db.DB_ID_KEY] = uuid4().int
+
+        if d_conv_info[db.DB_SUPPORT_AMBIG_EXT_KEY] is None:
+            conv_db_changed = True
+            d_conv_info[db.DB_SUPPORT_AMBIG_EXT_KEY] = get_support_ambig_ext(db_conv, db_out)
+
+        if conv_db_changed:
+            json.dump(db_conv, open(conv_db_path, "w"), indent=4)
+
+        conv_id: int = d_conv_info[db.DB_ID_KEY]
+
+        # Rename keys as appropriate
+        d_conv_info[db.DB_DESCRIPTION_KEY] = d_conv_info.pop(db.DB_DESC_KEY)
+        d_conv_info[db.DB_FURTHER_INFO_KEY] = d_conv_info.pop(db.DB_INFO_KEY)
+
+        l_db_converters.append(get_sorted_dict(d_conv_info, L_CONVERTER_SORT_ORDER))
+
+        # Determine possible conversions and add them all to the database
+        s_in_formats = {*db_conv[db.DB_SUPPORTED_FORMATS_KEY]}.union({*db_conv[db.DB_IN_ONLY_FORMATS_KEY]})
+        s_out_formats = {*db_conv[db.DB_SUPPORTED_FORMATS_KEY]}.union({*db_conv[db.DB_OUT_ONLY_FORMATS_KEY]})
+
+        d_supported_conversions: dict[tuple[int, int], str] = {(x[db.DB_IN_ID_KEY], x[db.DB_OUT_ID_KEY]):
+                                                               x[db.DB_SUCCESS_KEY]
+                                                               for x in db_conv[db.DB_SUPPORTED_CONVERSIONS_KEY]}
+        s_unsupported_conversions: set[tuple[int, int]] = {(x[db.DB_IN_ID_KEY], x[db.DB_OUT_ID_KEY])
+                                                           for x in db_conv[db.DB_UNSUPPORTED_CONVERSIONS_KEY]}
+
+        for in_id, out_id in product(s_in_formats, s_out_formats):
+            # Skip conversions of any format to itself, any that are labeled as unsupported or supported (the latter
+            # will be added in a separate loop to avoid duplicates)
+            if (in_id == out_id or (in_id, out_id) in s_unsupported_conversions or
+                    (in_id, out_id) in d_supported_conversions):
+                continue
+            d_conv_to = {db.DB_CONV_ID_KEY: conv_id,
+                         db.DB_IN_ID_KEY: in_id,
+                         db.DB_OUT_ID_KEY: out_id,
+                         db.DB_SUCCESS_KEY: MSG_DOS_NOT_TESTED}
+            l_db_converts_to.append(get_sorted_dict(d_conv_to, L_CONVERTS_TO_SORT_ORDER))
+
+        # Now add any conversions which are explicitly labelled as supported
+        for (in_id, out_id), dos in d_supported_conversions.items():
+            d_conv_to = {db.DB_CONV_ID_KEY: conv_id,
+                         db.DB_IN_ID_KEY: in_id,
+                         db.DB_OUT_ID_KEY: out_id,
+                         db.DB_SUCCESS_KEY: dos}
+            l_db_converts_to.append(get_sorted_dict(d_conv_to, L_CONVERTS_TO_SORT_ORDER))
+
+        # Add the info on input/output arguments and which formats support them, if applicable
+        if not conv_prefix:
+            continue
+        for args_str, in_or_out in product(("flags", "options"), ("in", "out")):
+            out_args_str = args_str
+            if args_str == "options":
+                out_args_str = "argflags"
+            in_key = f"{in_or_out}_{args_str}"
+            out_key = f"{conv_prefix}{out_args_str}_{in_or_out}"
+            out_format_key = f"{conv_prefix}format_to_{out_args_str}_{in_or_out}"
+
+            l_arg_info: list[JsonDict] = []
+            l_arg_formats: list[JsonDict] = []
+            arg_in_out_id = f"{conv_prefix}{out_args_str}_{in_or_out}_id"
+
+            l_arg_format_order = deepcopy(L_ARG_FORMATS_INFO_ORDER)
+            l_arg_format_order = [x if x != REPLACEME_ARG_IN_OUT_ID else arg_in_out_id
+                                  for x in l_arg_format_order]
+
+            for d_in_arg_info in db_conv[in_key]:
+                d_out_arg_info: JsonDict = {
+                    db.DB_DESCRIPTION_KEY: d_in_arg_info[db.DB_DESCRIPTION_KEY],
+                    db.DB_FLAG_KEY: d_in_arg_info[db.DB_FLAG_KEY],
+                    db.DB_FURTHER_INFO_KEY: d_in_arg_info[db.DB_FURTHER_INFO_KEY],
+                    db.DB_ID_KEY: d_in_arg_info[db.DB_ID_KEY],
+                }
+                if db.DB_BRIEF_KEY in d_in_arg_info:
+                    d_out_arg_info[db.DB_BRIEF_KEY] = d_in_arg_info[db.DB_BRIEF_KEY]
+                d_out_arg_info = get_sorted_dict(d_out_arg_info, L_ARG_INFO_ORDER)
+                l_arg_info.append(d_out_arg_info)
+
+                for format_id in d_in_arg_info[db.DB_FORMAT_ID_LIST_KEY]:
+                    d_out_arg_format: JsonDict = {
+                        db.DB_FORMAT_ID_KEY: format_id,
+                        arg_in_out_id: d_in_arg_info[db.DB_ID_KEY]
+                    }
+                    d_out_arg_format = get_sorted_dict(d_out_arg_format, l_arg_format_order)
+                    l_arg_formats.append(d_out_arg_format)
+
+            sort_json_list(l_arg_info, L_ARG_INFO_ORDER)
+            db_out[out_key] = l_arg_info
+
+            sort_json_list(l_arg_formats, l_arg_format_order)
+            db_out[out_format_key] = l_arg_formats
+
+    # Sort the top-level dict and lists, then save the database
+    db_out = get_sorted_dict(db_out)
+    sort_json_list(l_db_converters, L_CONVERTER_SORT_ORDER)
+    sort_json_list(l_db_converts_to, L_CONVERTS_TO_SORT_ORDER)
+    json.dump(db_out, open(db_path, "w"), indent=4)
+
+
+def main():
+    """Standard entry-point function for this script.
+    """
+
+    args = parse_args()
+
+    run_from_args(args)
+
+
+if __name__ == "__main__":
+
+    main()

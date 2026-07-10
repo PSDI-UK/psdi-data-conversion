@@ -16,7 +16,7 @@ from psdi_data_conversion import constants as const
 from psdi_data_conversion.converter import L_REGISTERED_CONVERTERS
 from psdi_data_conversion.converters.c2x.converter import C2xFileConverter
 from psdi_data_conversion.converters.openbabel.converter import OpenBabelFileConverter
-from psdi_data_conversion.database import get_format_info
+from psdi_data_conversion.testing import constants as tc
 from psdi_data_conversion.testing.conversion_test_specs import l_library_test_specs
 from psdi_data_conversion.testing.utils import run_test_conversion_with_library
 from psdi_data_conversion.utils import regularize_name
@@ -57,27 +57,25 @@ def test_envvars():
     test_file_size = 1234
     os.environ[const.MAX_FILESIZE_EV] = str(test_file_size)
 
-    pdb_format_id = get_format_info("pdb", which=0).id
-
     converter = C2xFileConverter(filename="1NE6.mmcif",
-                                 to_format=pdb_format_id,
+                                 to_format=tc.FORMAT_PDB_0,
                                  use_envvars=True,)
     assert math.isclose(converter.max_file_size, test_file_size*const.MEGABYTE)
 
     # And also check it isn't applied if we don't ask it to use envvars
     converter_no_ev = C2xFileConverter(filename="1NE6.mmcif",
-                                       to_format=pdb_format_id,
+                                       to_format=tc.FORMAT_PDB_0,
                                        use_envvars=False,)
     assert not math.isclose(converter_no_ev.max_file_size, test_file_size*const.MEGABYTE)
 
     # And check that OB uses its own EV
     converter = OpenBabelFileConverter(filename="1NE6.mmcif",
-                                       to_format=pdb_format_id,
+                                       to_format=tc.FORMAT_PDB_0,
                                        use_envvars=True,)
     assert not math.isclose(converter.max_file_size, test_file_size*const.MEGABYTE)
 
     os.environ[const.MAX_FILESIZE_OB_EV] = str(test_file_size)
     converter = OpenBabelFileConverter(filename="1NE6.mmcif",
-                                       to_format=pdb_format_id,
+                                       to_format=tc.FORMAT_PDB_0,
                                        use_envvars=True,)
     assert math.isclose(converter.max_file_size, test_file_size*const.MEGABYTE)

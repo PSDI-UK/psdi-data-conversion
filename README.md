@@ -40,6 +40,7 @@ This project provides utilities to assist in converting files between the many d
 - [Running the Python/Flask app locally](#running-the-pythonflask-app-locally)
   - [Installation and Setup](#installation-and-setup)
   - [Running the App](#running-the-app)
+- [Extending Functionality](#extending-functionality)
 - [Testing](#testing)
 - [Troubleshooting](#troubleshooting)
   - [Unable to convert archives of files](#unable-to-convert-archives-of-files)
@@ -64,17 +65,24 @@ This project provides utilities to assist in converting files between the many d
 - `psdi_data_conversion` (Primary source directory)
   - `bin`
     - (Precompiled binaries for running file format converters)
+  - `converters`
+    - `base.py` (Base class for converter plugins)
+    - (Folders for converter plugins, each with the below structure)
+    - `example` (Example converter plugin)
+      - `converter.py` (Executable code to run the converter)
+      - `data.json` (Data on the converter, the formats it supports, and the conversions it can perform)
   - `static` (Static code and assets for the web app)
-    - `content`
-      - (HTML assets for the web app)
-    - `downloads` (created by app.py if not extant)
+    - `data`
+      - `formats.json`
+      - `data.json` (Generated singular database file, read by the library, CLI, and web app for information on converters, formats, and conversions)
+    - `downloads` (created by the web app if not extant)
     - `img`
       - (image assets for the web app)
     - `javascript`
       - (JavaScript code for the web app)
     - `styles`
       - (CSS stylesheets for the web app)
-    - `uploads` (created by app.py if not extant)
+    - `uploads` (created by the web app if not extant)
   - `templates`
     - (HTML assets rendered by Flask for the web app)
   - `__init.py__`
@@ -407,15 +415,7 @@ The local version has some customisable options for running it, which can can be
 
 ## Extending Functionality
 
-The Python library and CLA are written to make it easy to extend the functionality of this package to use other file format converters. This can be done by downloading or cloning the project's source from it's GitHub Repository (https://github.com/PSDI-UK/psdi-data-conversion), editing the code to add your converter following the guidance in the "[Adding File Format Converters](https://github.com/PSDI-UK/psdi-data-conversion/blob/main/CONTRIBUTING.md#adding-file-format-converters)" section of CONTRIBUTING.md to integrate it with the Python code, and installing the modified package on your system via:
-
-```bash
-pip install --editable '.[test]'
-```
-
-(This command uses the `--editable` option and optional `test` dependencies to ease the process of testing and debugging your changes.)
-
-Note that when adding a converter in this manner, information on its possible conversions will not be added to the database, and so these will not show up when you run the CLA with the `-l/--list` option. You will also need to add the `--nc/--no-check` option when running conversions to skip the database check that the conversion is allowed.
+The Python library and CLA are written to make it easy to extend the functionality of this package to use other file format converters. This can be done by downloading or cloning the project's source from it's GitHub Repository (https://github.com/PSDI-UK/psdi-data-conversion), editing the code to add your converter following the guidance in the "[Adding File Format Converters](https://github.com/PSDI-UK/psdi-data-conversion/blob/main/CONTRIBUTING.md#adding-file-format-converters)" section of CONTRIBUTING.md.
 
 ## Testing
 
@@ -517,38 +517,39 @@ To remedy this, try explicitly specifying the format, rather than letting the ap
 ```base
 $ psdi-data-convert -l -f mol -t xyz
 WARNING: Format 'mol' is ambiguous and could refer to multiple formats. It may be necessary to explicitly specify which
-you want to use when calling this script, e.g. with '-f mol-0' - see the disambiguated names in the list below:
+you want to use when calling this script, e.g. with '-f mol-0' or using its ID - see the disambiguated names and IDs in
+the list below:
 
-14163986051707882465586360841029029139: mol-0 (MDL MOL)
+mol-0 (ID: 14163986051707882465586360841029029139): MDL MOL
 - Atomic composition is supported
 - Atomic connections are supported
 - 2D atomic coordinates are supported
 - 3D atomic coordinates are supported
 
-72959745128074324821901268400337732406: mol-1 (MOLDY)
+mol-1 (ID: 72959745128074324821901268400337732406): MOLDY
 - Atomic composition is unknown whether or not to be supported
 - Atomic connections are unknown whether or not to be supported
 - 2D atomic coordinates are unknown whether or not to be supported
 - 3D atomic coordinates are unknown whether or not to be supported
 
 WARNING: Format 'xyz' is ambiguous and could refer to multiple formats. It may be necessary to explicitly specify which
-you want to use when calling this script, e.g. with '-f xyz-0' - see the disambiguated names in the list below:
+you want to use when calling this script, e.g. with '-f xyz-0' or using its ID - see the disambiguated names and IDs in
+the list below:
 
-50135205643343990489495467470022579507: xyz-0 (XYZ cartesian coordinates)
-- Atomic composition is supported
-- Atomic connections are not supported
-- 2D atomic coordinates are supported
-- 3D atomic coordinates are supported
-
-46290705721393589047128301807650178748: xyz-1 (Extended XYZ (adds lattice vectors))
+xyz-0 (ID: 46290705721393589047128301807650178748): Extended XYZ (adds lattice vectors)
 - Atomic composition is unknown whether or not to be supported
 - Atomic connections are unknown whether or not to be supported
 - 2D atomic coordinates are unknown whether or not to be supported
 - 3D atomic coordinates are unknown whether or not to be supported
 
+xyz-1 (ID: 50135205643343990489495467470022579507): XYZ cartesian coordinates
+- Atomic composition is supported
+- Atomic connections are not supported
+- 2D atomic coordinates are supported
+- 3D atomic coordinates are supported
+
 The following registered converters can convert from mol-0 to xyz-0:
 
-    Open Babel
     c2x
 
 For details on input/output flags and options allowed by a converter for this conversion, call:
@@ -557,27 +558,28 @@ psdi-data-convert -l <converter name> -f mol-0 -t xyz-0
 The following registered converters can convert from mol-0 to xyz-1:
 
     c2x
+    Open Babel
 
 For details on input/output flags and options allowed by a converter for this conversion, call:
 psdi-data-convert -l <converter name> -f mol-0 -t xyz-1
 
-The following registered converters can convert from mol-1 to xyz-0:
+No converters are available which can perform a conversion from mol-1 to xyz-0
+
+The following registered converters can convert from mol-1 to xyz-1:
 
     Atomsk
 
 For details on input/output flags and options allowed by a converter for this conversion, call:
-psdi-data-convert -l <converter name> -f mol-1 -t xyz-0
-
-No converters are available which can perform a conversion from mol-1 to xyz-1
+psdi-data-convert -l <converter name> -f mol-1 -t xyz-1
 ```
 
 This output indicates that the application is aware of two formats which share the `mol` extension: MDL MOL and MOLDY. It lists the ID, disambiguated name, and description of each: ID `14163986051707882465586360841029029139` and disambiguated name `mol-0` for MDL MOL, and ID `72959745128074324821901268400337732406216` and disambiguated name `mol-1` for MOLDY. The XYZ format similarly has two variants which can be converted to.
 
-The program then lists converters which can handle the requested conversion, revealing a potential pitfall: The Open Babel and c2x converters can convert from MDL MOL to XYZ, which the Atomsk converter can convert from MOLDY to XYZ. If you don't specify which format you're converting from, the script might assume you meant to use the other one, if that's the only one compatible with the converter you've requested (or with the default converter, Open Babel, if you didn't explicitly request one). So to be careful here, it's best to specify this input format unambiguously.
+The program then lists converters which can handle the requested conversion, revealing a potential pitfall: The Open Babel and c2x converters can convert from MDL MOL to XYZ, while the Atomsk converter can convert from MOLDY to XYZ. If you don't specify which format you're converting from, the script might assume you meant to use the other one, if that's the only one compatible with the converter you've requested (or with the default converter, Open Babel, if you didn't explicitly request one). So to be careful here, it's best to specify this input format unambiguously.
 
 Since in this example you have an MDL MOL file, you would use `-f 14163986051707882465586360841029029139` or `-f mol-0` to explicitly specify it in the command-line, or similarly provide one of these to the `from_format` argument of `run_converter` within Python. The application will then properly handle it, including alerting you if you request a conversion that isn't supported by your requested converter (e.g. if you request a conversion of the MDL MOL file to XYZ with Atomsk).
 
-Important note: The disambiguated name is generated dynamically and isn't stored in the database, and in rare cases may change for some formats in future versions of this application which expand support to more formats and conversions. For uses which require forward-compatibility with future versions of this application, the ID should be used instead. You can obtain the ID for any format via the command: `psdi-data-convert -l -f <format-name>`.
+Important note: The disambiguated name is generated dynamically and isn't stored in the database, and may change for some formats in future versions of this application which rework the database or expand support to more formats and conversions. For uses which require forward-compatibility with future versions of this application, the ID should be used instead. You can obtain the ID for any format via the command: `psdi-data-convert -l -f <format-name>`.
 
 #### Other known issues
 

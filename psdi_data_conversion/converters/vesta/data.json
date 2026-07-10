@@ -1,0 +1,218 @@
+{
+    "converter": {
+        "name": "VESTA",
+        "desc": "JP-Minerals",
+        "info": "",
+        "id": 13190734803326644929172373502360888440,
+        "url": "https://jp-minerals.org/vesta/en/",
+        "database_key_prefix": null,
+        "supports_ambiguous_extensions": true
+    },
+    "extra_formats": [],
+    "supported_formats": [
+        28432815592399480094962454902300990984,
+        50135205643343990489495467470022579507,
+        178366529166858241161075106138867206788,
+        214908995963617485636855366710271712886,
+        265228661700132434943151283693896395164
+    ],
+    "in_only_formats": [
+        14163986051707882465586360841029029139,
+        327200745458547092709635496941629709670
+    ],
+    "out_only_formats": [
+        281078610809857855124590786515545964119
+    ],
+    "supported_conversions": [
+        {
+            "in_id": 14163986051707882465586360841029029139,
+            "out_id": 28432815592399480094962454902300990984,
+            "degree_of_success": "complete"
+        },
+        {
+            "in_id": 14163986051707882465586360841029029139,
+            "out_id": 50135205643343990489495467470022579507,
+            "degree_of_success": "complete"
+        },
+        {
+            "in_id": 14163986051707882465586360841029029139,
+            "out_id": 178366529166858241161075106138867206788,
+            "degree_of_success": "complete"
+        },
+        {
+            "in_id": 14163986051707882465586360841029029139,
+            "out_id": 214908995963617485636855366710271712886,
+            "degree_of_success": "complete"
+        },
+        {
+            "in_id": 14163986051707882465586360841029029139,
+            "out_id": 265228661700132434943151283693896395164,
+            "degree_of_success": "output file does not open in VESTA, but opens in Jmol"
+        },
+        {
+            "in_id": 14163986051707882465586360841029029139,
+            "out_id": 281078610809857855124590786515545964119,
+            "degree_of_success": "well rendered 3D"
+        },
+        {
+            "in_id": 28432815592399480094962454902300990984,
+            "out_id": 50135205643343990489495467470022579507,
+            "degree_of_success": "complete - might encode multiple molecules"
+        },
+        {
+            "in_id": 28432815592399480094962454902300990984,
+            "out_id": 178366529166858241161075106138867206788,
+            "degree_of_success": "complete - might encode multiple molecules"
+        },
+        {
+            "in_id": 28432815592399480094962454902300990984,
+            "out_id": 214908995963617485636855366710271712886,
+            "degree_of_success": "incomplete"
+        },
+        {
+            "in_id": 28432815592399480094962454902300990984,
+            "out_id": 265228661700132434943151283693896395164,
+            "degree_of_success": "incomplete"
+        },
+        {
+            "in_id": 28432815592399480094962454902300990984,
+            "out_id": 281078610809857855124590786515545964119,
+            "degree_of_success": "well rendered 3D, possibly showing multiple molecules"
+        },
+        {
+            "in_id": 50135205643343990489495467470022579507,
+            "out_id": 28432815592399480094962454902300990984,
+            "degree_of_success": "complete"
+        },
+        {
+            "in_id": 50135205643343990489495467470022579507,
+            "out_id": 178366529166858241161075106138867206788,
+            "degree_of_success": "complete"
+        },
+        {
+            "in_id": 50135205643343990489495467470022579507,
+            "out_id": 214908995963617485636855366710271712886,
+            "degree_of_success": "complete"
+        },
+        {
+            "in_id": 50135205643343990489495467470022579507,
+            "out_id": 265228661700132434943151283693896395164,
+            "degree_of_success": "output file does not open in VESTA, but opens in Jmol"
+        },
+        {
+            "in_id": 50135205643343990489495467470022579507,
+            "out_id": 281078610809857855124590786515545964119,
+            "degree_of_success": "well rendered 3D"
+        },
+        {
+            "in_id": 178366529166858241161075106138867206788,
+            "out_id": 28432815592399480094962454902300990984,
+            "degree_of_success": "complete"
+        },
+        {
+            "in_id": 178366529166858241161075106138867206788,
+            "out_id": 50135205643343990489495467470022579507,
+            "degree_of_success": "complete"
+        },
+        {
+            "in_id": 178366529166858241161075106138867206788,
+            "out_id": 214908995963617485636855366710271712886,
+            "degree_of_success": "complete"
+        },
+        {
+            "in_id": 178366529166858241161075106138867206788,
+            "out_id": 265228661700132434943151283693896395164,
+            "degree_of_success": "output file does not open in VESTA, but opens in Jmol"
+        },
+        {
+            "in_id": 178366529166858241161075106138867206788,
+            "out_id": 281078610809857855124590786515545964119,
+            "degree_of_success": "well rendered 3D"
+        },
+        {
+            "in_id": 214908995963617485636855366710271712886,
+            "out_id": 28432815592399480094962454902300990984,
+            "degree_of_success": "complete"
+        },
+        {
+            "in_id": 214908995963617485636855366710271712886,
+            "out_id": 50135205643343990489495467470022579507,
+            "degree_of_success": "complete - might encode multiple molecules"
+        },
+        {
+            "in_id": 214908995963617485636855366710271712886,
+            "out_id": 178366529166858241161075106138867206788,
+            "degree_of_success": "complete - might encode multiple molecules"
+        },
+        {
+            "in_id": 214908995963617485636855366710271712886,
+            "out_id": 265228661700132434943151283693896395164,
+            "degree_of_success": "complete"
+        },
+        {
+            "in_id": 214908995963617485636855366710271712886,
+            "out_id": 281078610809857855124590786515545964119,
+            "degree_of_success": "well rendered 3D, possibly showing multiple molecules"
+        },
+        {
+            "in_id": 265228661700132434943151283693896395164,
+            "out_id": 28432815592399480094962454902300990984,
+            "degree_of_success": "incomplete"
+        },
+        {
+            "in_id": 265228661700132434943151283693896395164,
+            "out_id": 50135205643343990489495467470022579507,
+            "degree_of_success": "might encode multiple molecules with too many connections between atoms"
+        },
+        {
+            "in_id": 265228661700132434943151283693896395164,
+            "out_id": 178366529166858241161075106138867206788,
+            "degree_of_success": "might encode multiple molecules with too many connections between atoms"
+        },
+        {
+            "in_id": 265228661700132434943151283693896395164,
+            "out_id": 214908995963617485636855366710271712886,
+            "degree_of_success": "incomplete"
+        },
+        {
+            "in_id": 265228661700132434943151283693896395164,
+            "out_id": 281078610809857855124590786515545964119,
+            "degree_of_success": "well rendered 3D, possibly showing multiple molecules"
+        },
+        {
+            "in_id": 327200745458547092709635496941629709670,
+            "out_id": 28432815592399480094962454902300990984,
+            "degree_of_success": "incomplete"
+        },
+        {
+            "in_id": 327200745458547092709635496941629709670,
+            "out_id": 50135205643343990489495467470022579507,
+            "degree_of_success": "might encode multiple molecules with too many connections between atoms"
+        },
+        {
+            "in_id": 327200745458547092709635496941629709670,
+            "out_id": 178366529166858241161075106138867206788,
+            "degree_of_success": "might encode multiple molecules with too many connections between atoms"
+        },
+        {
+            "in_id": 327200745458547092709635496941629709670,
+            "out_id": 214908995963617485636855366710271712886,
+            "degree_of_success": "incomplete"
+        },
+        {
+            "in_id": 327200745458547092709635496941629709670,
+            "out_id": 265228661700132434943151283693896395164,
+            "degree_of_success": "incomplete"
+        },
+        {
+            "in_id": 327200745458547092709635496941629709670,
+            "out_id": 281078610809857855124590786515545964119,
+            "degree_of_success": "well rendered 3D, possibly showing multiple molecules"
+        }
+    ],
+    "unsupported_conversions": [],
+    "in_flags": [],
+    "in_options": [],
+    "out_flags": [],
+    "out_options": []
+}

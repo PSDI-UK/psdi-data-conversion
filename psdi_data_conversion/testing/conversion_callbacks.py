@@ -13,6 +13,7 @@ from dataclasses import dataclass, field
 from tempfile import TemporaryDirectory
 
 from psdi_data_conversion.constants import DATETIME_RE_RAW
+from psdi_data_conversion.database import get_format_info
 from psdi_data_conversion.file_io import unpack_zip_or_tar
 from psdi_data_conversion.log_utility import string_with_placeholders_matches
 from psdi_data_conversion.testing.constants import OUTPUT_TEST_DATA_LOC_IN_PROJECT
@@ -126,6 +127,10 @@ class CheckArchiveContents:
 
     to_format: str
     """Format (extension) that all files in the archive should have"""
+
+    def __post_init__(self):
+        """Make sure that however the to_format was provided, it's changed into the extension"""
+        self.to_format = get_format_info(self.to_format).name
 
     def __call__(self, test_info: ConversionTestInfo):
         """Run the check on archive contents"""
