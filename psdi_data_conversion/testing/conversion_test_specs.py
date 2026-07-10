@@ -11,6 +11,7 @@ from psdi_data_conversion.converters.base import (FileConverterAbortException, F
                                                   FileConverterSizeException)
 from psdi_data_conversion.converters.openbabel.converter import COORD_GEN_KEY, COORD_GEN_QUAL_KEY
 from psdi_data_conversion.database import FileConverterDatabaseException
+from psdi_data_conversion.testing import constants as tc
 from psdi_data_conversion.testing.conversion_callbacks import (CheckArchiveContents, CheckException, CheckFileStatus,
                                                                CheckLogContents, CheckLogContentsSuccess,
                                                                CheckStderrContents, CheckStdoutContents,
@@ -18,31 +19,12 @@ from psdi_data_conversion.testing.conversion_callbacks import (CheckArchiveConte
 from psdi_data_conversion.testing.conversion_callbacks import MultiCallback as MCB
 from psdi_data_conversion.testing.utils import ConversionTestSpec as Spec
 
-# Format IDs
-FORMAT_ABI = 27718082287045194982410453597576697893
-FORMAT_BANDS = 125067293545008288351887372417679001026
-FORMAT_CDJSON = 20753642385669108430387120717727783064
-FORMAT_CIF = 214908995963617485636855366710271712886
-FORMAT_CML = 17662494363313796187301246917012434805
-FORMAT_DMOL = 165446354456708261838226408395697033526
-FORMAT_INCHI = 279751716690019374171243961730825953031
-FORMAT_INS = 265228661700132434943151283693896395164
-FORMAT_MOL_0 = 14163986051707882465586360841029029139
-FORMAT_MOL2 = 143425445942253368938814885806318269174
-FORMAT_MMCIF = 111142745790695896928946860948434358952
-FORMAT_PDB_0 = 178366529166858241161075106138867206788
-FORMAT_POSCAR = 318487010089456902950008675463492717371
-FORMAT_RES_1 = 327200745458547092709635496941629709670
-FORMAT_SMI = 20320184528576299830358586785865096672
-FORMAT_XYZ_0 = 46290705721393589047128301807650178748
-FORMAT_XYZ_1 = 50135205643343990489495467470022579507
-
 l_all_test_specs: list[Spec] = []
 """All test specs defined in this file"""
 
 l_all_test_specs.append(Spec(name="Standard Single Test",
                              filename="standard_test.cdxml",
-                             to_format=FORMAT_INCHI,
+                             to_format=tc.FORMAT_INCHI,
                              callback=MCB(CheckFileStatus(),
                                           CheckLogContentsSuccess(),
                                           MatchOutputFile("standard_test.inchi")),
@@ -56,16 +38,16 @@ l_all_test_specs.append(Spec(name="Standard Multiple Tests",
                                        "hemoglobin.pdb", "hemoglobin.pdb", "nacl.cif",
                                        "hemoglobin.pdb", "hemoglobin.pdb", "nacl.cif",
                                        "ethanol.xyz"],
-                             to_format=[FORMAT_PDB_0,
-                                        FORMAT_CIF, FORMAT_MOL2, FORMAT_XYZ_1,
-                                        FORMAT_CIF, FORMAT_XYZ_1, FORMAT_XYZ_1,
-                                        FORMAT_CIF, FORMAT_XYZ_0, FORMAT_XYZ_0,
-                                        FORMAT_CML],
+                             to_format=[tc.FORMAT_PDB_0,
+                                        tc.FORMAT_CIF, tc.FORMAT_MOL2, tc.FORMAT_XYZ_1,
+                                        tc.FORMAT_CIF, tc.FORMAT_XYZ_1, tc.FORMAT_XYZ_1,
+                                        tc.FORMAT_CIF, tc.FORMAT_XYZ_0, tc.FORMAT_XYZ_0,
+                                        tc.FORMAT_CML],
                              from_format=[None,
                                           None, None, None,
                                           None, None, None,
-                                          FORMAT_PDB_0, FORMAT_PDB_0, None,
-                                          FORMAT_XYZ_1],
+                                          tc.FORMAT_PDB_0, tc.FORMAT_PDB_0, None,
+                                          tc.FORMAT_XYZ_1],
                              converter_name=[const.CONVERTER_OB,
                                              const.CONVERTER_OB, const.CONVERTER_OB, const.CONVERTER_OB,
                                              const.CONVERTER_ATO, const.CONVERTER_ATO, const.CONVERTER_ATO,
@@ -77,7 +59,7 @@ l_all_test_specs.append(Spec(name="Standard Multiple Tests",
 Open Babel, Atomsk, and c2x converters"""
 
 l_all_test_specs.append(Spec(name="c2x Formats Tests",
-                             to_format=[FORMAT_RES_1, FORMAT_ABI, FORMAT_POSCAR, FORMAT_CML],
+                             to_format=[tc.FORMAT_RES_1, tc.FORMAT_ABI, tc.FORMAT_POSCAR, tc.FORMAT_CML],
                              converter_name=const.CONVERTER_C2X,
                              callback=simple_success_callback,
                              compatible_with_gui=False,
@@ -88,7 +70,7 @@ caught in others."""
 
 l_all_test_specs.append(Spec(name="Converter Name Sensitivity Tests",
                              converter_name=["open babel", "oPeNbaBEL", "C2X", "atomsk"],
-                             to_format=FORMAT_XYZ_1,
+                             to_format=tc.FORMAT_XYZ_1,
                              callback=simple_success_callback,
                              compatible_with_gui=False,
                              ))
@@ -101,22 +83,22 @@ archive_callback = MCB(CheckFileStatus(),
                                                               "caffeine-ia-okx",
                                                               "caffeine-ia-okx-oof4",
                                                               "caffeine-ia-okx-oof4l5",],
-                                            to_format=FORMAT_INCHI))
+                                            to_format=tc.FORMAT_INCHI))
 
 l_all_test_specs.append(Spec(name="Archive",
                              filename=["caffeine-smi.zip",
                                        "caffeine-smi.tar",
                                        "caffeine-smi.tar.gz"],
-                             from_format=FORMAT_SMI,
-                             to_format=FORMAT_INCHI,
+                             from_format=tc.FORMAT_SMI,
+                             to_format=tc.FORMAT_INCHI,
                              callback=archive_callback,
                              ))
 """A test of converting a archives of files"""
 
 l_all_test_specs.append(Spec(name="Archive (wrong format) - Library and CLA",
                              filename="caffeine-smi.zip",
-                             to_format=FORMAT_INCHI,
-                             from_format=[FORMAT_PDB_0, FORMAT_PDB_0],
+                             to_format=tc.FORMAT_INCHI,
+                             from_format=[tc.FORMAT_PDB_0, tc.FORMAT_PDB_0],
                              conversion_kwargs=[{}, {"strict": True}],
                              expect_success=[True, False],
                              callback=[CheckStderrContents(const.ERR_WRONG_EXTENSIONS),
@@ -129,8 +111,8 @@ l_all_test_specs.append(Spec(name="Archive (wrong format) - Library and CLA",
 
 l_all_test_specs.append(Spec(name="Archive (wrong format) - GUI",
                              filename="caffeine-smi.zip",
-                             to_format=FORMAT_INCHI,
-                             from_format=[FORMAT_PDB_0, FORMAT_PDB_0],
+                             to_format=tc.FORMAT_INCHI,
+                             from_format=[tc.FORMAT_PDB_0, tc.FORMAT_PDB_0],
                              conversion_kwargs=[{}, {"strict": True}],
                              expect_success=[False, False],
                              callback=CheckException(ex_type=FileConverterInputException,
@@ -192,8 +174,8 @@ Not compatible with GUI tests, since the GUI doesn't support quiet mode
 
 l_all_test_specs.append(Spec(name="Open Babel Warning",
                              filename="1NE6.mmcif",
-                             from_format=FORMAT_MMCIF,
-                             to_format=FORMAT_PDB_0,
+                             from_format=tc.FORMAT_MMCIF,
+                             to_format=tc.FORMAT_PDB_0,
                              callback=CheckLogContentsSuccess(["Open Babel Warning",
                                                                "Failed to kekulize aromatic bonds",])
                              ))
@@ -226,8 +208,8 @@ hemoglobin_quality_note_callback = CheckLogContentsSuccess(["WARNING",
                                                             const.QUAL_NOTE_OUT_MISSING.format(const.QUAL_CONN_LABEL)])
 l_all_test_specs.append(Spec(name="Quality note",
                              filename=["quartz.xyz", "ethanol.xyz", "hemoglobin.pdb"],
-                             from_format=[FORMAT_XYZ_1, FORMAT_XYZ_1, FORMAT_PDB_0],
-                             to_format=[FORMAT_INCHI, FORMAT_CML, FORMAT_XYZ_1],
+                             from_format=[tc.FORMAT_XYZ_1, tc.FORMAT_XYZ_1, tc.FORMAT_PDB_0],
+                             to_format=[tc.FORMAT_INCHI, tc.FORMAT_CML, tc.FORMAT_XYZ_1],
                              callback=[quartz_quality_note_callback,
                                        ethanol_quality_note_callback,
                                        hemoglobin_quality_note_callback],
@@ -250,12 +232,12 @@ l_all_test_specs.append(Spec(name="Failed conversion - bad input file",
                              filename=["quartz_err.xyz", "quartz_err.xyz",
                                        "quartz_err.xyz",
                                        "cyclopropane_err.mol", "nacl.cif"],
-                             to_format=[FORMAT_INCHI, FORMAT_MOL_0,
-                                        FORMAT_PDB_0,
-                                        FORMAT_XYZ_1, FORMAT_BANDS],
-                             from_format=[FORMAT_XYZ_1, FORMAT_XYZ_1,
-                                          FORMAT_XYZ_1,
-                                          FORMAT_MOL_0, None],
+                             to_format=[tc.FORMAT_INCHI, tc.FORMAT_MOL_0,
+                                        tc.FORMAT_PDB_0,
+                                        tc.FORMAT_XYZ_1, tc.FORMAT_BANDS],
+                             from_format=[tc.FORMAT_XYZ_1, tc.FORMAT_XYZ_1,
+                                          tc.FORMAT_XYZ_1,
+                                          tc.FORMAT_MOL_0, None],
                              expect_success=[False, True,
                                              True,
                                              False, True],
@@ -287,8 +269,8 @@ quartz_error_ob_callback = CheckLogContents(["ERROR",
                                              "Problems reading an XYZ file: Could not read line #11, file error"])
 l_all_test_specs.append(Spec(name="Errors in logs - Library and CLA",
                              filename="quartz_err.xyz",
-                             from_format=FORMAT_XYZ_1,
-                             to_format=FORMAT_INCHI,
+                             from_format=tc.FORMAT_XYZ_1,
+                             to_format=tc.FORMAT_INCHI,
                              converter_name=const.CONVERTER_OB,
                              expect_success=False,
                              callback=quartz_error_ob_callback,
@@ -299,8 +281,8 @@ message"""
 
 l_all_test_specs.append(Spec(name="Errors in logs - GUI",
                              filename="quartz_err.xyz",
-                             from_format=FORMAT_XYZ_1,
-                             to_format=FORMAT_INCHI,
+                             from_format=tc.FORMAT_XYZ_1,
+                             to_format=tc.FORMAT_INCHI,
                              converter_name=const.CONVERTER_OB,
                              expect_success=False,
                              callback=CheckException(ex_type=FileConverterAbortException,
@@ -313,8 +295,8 @@ l_all_test_specs.append(Spec(name="Errors in logs - GUI",
 
 l_all_test_specs.append(Spec(name="Failed conversion - invalid conversion",
                              filename=["Fapatite.ins", "nacl.mol"],
-                             from_format=[FORMAT_INS, FORMAT_MOL_0],
-                             to_format=[FORMAT_CML, FORMAT_XYZ_1],
+                             from_format=[tc.FORMAT_INS, tc.FORMAT_MOL_0],
+                             to_format=[tc.FORMAT_CML, tc.FORMAT_XYZ_1],
                              expect_success=False,
                              converter_name=[const.CONVERTER_C2X, const.CONVERTER_ATO],
                              callback=MCB(CheckFileStatus(expect_output_exists=False,
@@ -330,8 +312,8 @@ Not compatible with the GUI, since the GUI only offers valid conversions.
 
 l_all_test_specs.append(Spec(name="Blocked conversion - wrong input type",
                              filename="1NE6.mmcif",
-                             from_format=FORMAT_PDB_0,
-                             to_format=FORMAT_CIF,
+                             from_format=tc.FORMAT_PDB_0,
+                             to_format=tc.FORMAT_CIF,
                              conversion_kwargs={"strict": True},
                              expect_success=False,
                              callback=MCB(CheckFileStatus(expect_output_exists=False,
@@ -346,8 +328,8 @@ l_all_test_specs.append(Spec(name="Blocked conversion - wrong input type",
 
 l_all_test_specs.append(Spec(name="Failed conversion - wrong input type",
                              filename="1NE6.mmcif",
-                             from_format=FORMAT_PDB_0,
-                             to_format=FORMAT_CIF,
+                             from_format=tc.FORMAT_PDB_0,
+                             to_format=tc.FORMAT_CIF,
                              conversion_kwargs={"strict": False},
                              expect_success=False,
                              callback=MCB(CheckFileStatus(expect_output_exists=False,
@@ -360,8 +342,8 @@ l_all_test_specs.append(Spec(name="Failed conversion - wrong input type",
 l_all_test_specs.append(Spec(name="Large files - Library and CLA",
                              filename=["ch3cl-esp.cub", "benzyne.molden", "periodic_dmol3.outmol",
                                        "fullRhinovirus.pdb"],
-                             from_format=[None, None, None, FORMAT_PDB_0],
-                             to_format=[FORMAT_CDJSON, FORMAT_DMOL, FORMAT_MOL_0, FORMAT_CIF],
+                             from_format=[None, None, None, tc.FORMAT_PDB_0],
+                             to_format=[tc.FORMAT_CDJSON, tc.FORMAT_DMOL, tc.FORMAT_MOL_0, tc.FORMAT_CIF],
                              conversion_kwargs=[{}, {}, {}, {"strict": False}],
                              converter_name=[const.CONVERTER_OB, const.CONVERTER_OB,
                                              const.CONVERTER_OB, const.CONVERTER_C2X],
@@ -373,8 +355,8 @@ l_all_test_specs.append(Spec(name="Large files - Library and CLA",
 l_all_test_specs.append(Spec(name="Large files - GUI",
                              filename=["ch3cl-esp.cub", "benzyne.molden",
                                        "periodic_dmol3.outmol", "fullRhinovirus.pdb"],
-                             to_format=[FORMAT_CDJSON, FORMAT_DMOL, FORMAT_MOL_0, FORMAT_CIF],
-                             from_format=[None, None, None, FORMAT_PDB_0],
+                             to_format=[tc.FORMAT_CDJSON, tc.FORMAT_DMOL, tc.FORMAT_MOL_0, tc.FORMAT_CIF],
+                             from_format=[None, None, None, tc.FORMAT_PDB_0],
                              converter_name=[const.CONVERTER_OB, const.CONVERTER_OB,
                                              const.CONVERTER_OB, const.CONVERTER_C2X],
                              expect_success=[False, False, False, True],
@@ -394,7 +376,7 @@ max_size_callback = MCB(CheckFileStatus(expect_output_exists=False),
                                        ex_status_code=const.STATUS_CODE_SIZE))
 l_all_test_specs.append(Spec(name="Max size exceeded",
                              filename=["1NE6.mmcif", "caffeine-smi.tar.gz"],
-                             to_format=FORMAT_PDB_0,
+                             to_format=tc.FORMAT_PDB_0,
                              conversion_kwargs=[{"max_file_size": 0.0001}, {"max_file_size": 0.0005}],
                              expect_success=False,
                              callback=max_size_callback,
@@ -420,13 +402,13 @@ l_all_test_specs.append(Spec(name="Format args",
                                        "caffeine.inchi",
                                        "caffeine.inchi",
                                        "standard_test.cdjson"],
-                             to_format=[FORMAT_SMI,
-                                        FORMAT_SMI,
-                                        FORMAT_SMI,
-                                        FORMAT_SMI,
-                                        FORMAT_SMI,
-                                        FORMAT_SMI,
-                                        FORMAT_INCHI],
+                             to_format=[tc.FORMAT_SMI,
+                                        tc.FORMAT_SMI,
+                                        tc.FORMAT_SMI,
+                                        tc.FORMAT_SMI,
+                                        tc.FORMAT_SMI,
+                                        tc.FORMAT_SMI,
+                                        tc.FORMAT_INCHI],
                              conversion_kwargs=[{},
                                                 {"data": {"from_flags": "a"}},
                                                 {"data": {"from_flags": "a", "to_flags": "x"}},
@@ -455,7 +437,7 @@ correctly, by matching tests using them to expected output files"""
 
 l_all_test_specs.append(Spec(name="Coord gen",
                              filename="caffeine.inchi",
-                             to_format=FORMAT_XYZ_1,
+                             to_format=tc.FORMAT_XYZ_1,
                              conversion_kwargs=[{},
                                                 {"data": {COORD_GEN_KEY: "Gen2D",
                                                           COORD_GEN_QUAL_KEY: "fastest"}},

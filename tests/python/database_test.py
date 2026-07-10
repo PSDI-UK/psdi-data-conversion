@@ -15,6 +15,7 @@ from psdi_data_conversion.database import (FileConverterDatabaseException, disam
                                            get_conversion_pathway, get_conversion_quality, get_converter_info,
                                            get_database, get_format_info, get_in_format_args, get_out_format_args,
                                            get_possible_conversions, get_possible_formats)
+from psdi_data_conversion.testing import constants as tc
 from psdi_data_conversion.utils import regularize_name
 
 
@@ -86,8 +87,8 @@ def test_format_args():
     """Test that we can get the flags and options allowed for specific formats for a given converter
     """
     converter_name = const.CONVERTER_OB
-    in_format = "pdb"
-    out_format = "cif"
+    in_format = tc.FORMAT_PDB_0
+    out_format = tc.FORMAT_CIF
 
     l_in_flags, _ = get_in_format_args(converter_name, in_format)
     l_out_flags, _ = get_out_format_args(converter_name, out_format)
@@ -118,9 +119,10 @@ def test_format_info():
 
     database = get_database()
 
-    for name in ("pdb", "cif", "mmcif", "inchi", "molreport"):
+    for name, id in (("pdb", tc.FORMAT_PDB_0), ("cif", tc.FORMAT_CIF), ("mmcif", tc.FORMAT_MMCIF),
+                     ("inchi", tc.FORMAT_INCHI), ("molreport", tc.FORMAT_MOLREPORT)):
 
-        format_info = get_format_info(name, which=0)
+        format_info = get_format_info(id)
 
         # Check database is properly set as parent
         assert format_info.parent == database
@@ -199,8 +201,8 @@ def test_disambiguate_format():
 
     # Test that we can disambiguate the right pdb format
     in_format, out_format = disambiguate_formats(const.CONVERTER_OB, "pdb", "cif")
-    assert in_format == get_format_info("pdb-0")
-    assert out_format == get_format_info("cif")
+    assert in_format == get_format_info(tc.FORMAT_PDB_0)
+    assert out_format == get_format_info(tc.FORMAT_CIF)
 
     # Test we get the expected exception if no conversion is possible
     with pytest.raises(FileConverterDatabaseException, match="is not supported"):
@@ -222,12 +224,12 @@ def test_conversion_table():
     assert conversions_table.parent is database
 
     # Check we can get the correct conversion quality
-    assert get_conversion_quality(const.CONVERTER_OB, "pdb", "cif").qual_str == const.QUAL_UNKNOWN
-    assert get_conversion_quality(const.CONVERTER_ATO, "xyz", "inchi") is None
+    assert get_conversion_quality(const.CONVERTER_OB, tc.FORMAT_PDB_0, tc.FORMAT_CIF).qual_str == const.QUAL_UNKNOWN
+    assert get_conversion_quality(const.CONVERTER_ATO, tc.FORMAT_XYZ_1, tc.FORMAT_INCHI) is None
 
     # Do some detailed checks on one conversion
-    xyz_format_info = get_format_info(50135205643343990489495467470022579507)
-    inchi_format_info = get_format_info("inchi")
+    xyz_format_info = get_format_info(tc.FORMAT_XYZ_1)
+    inchi_format_info = get_format_info(tc.FORMAT_INCHI)
 
     # "xyz" is ambiguous, but only one possibility has a valid conversion here, so check that we get that one
     qual = get_conversion_quality(const.CONVERTER_OB, "xyz", inchi_format_info)
@@ -263,8 +265,8 @@ def test_conversion_table():
 
     # Check that we can get a list of possible input/outpat formats for a given converter
     l_in_formats, l_out_formats = get_possible_formats(const.CONVERTER_OB)
-    assert get_format_info("pdb", which=0) in l_in_formats
-    assert get_format_info("cif", which=0) in l_out_formats
+    assert get_format_info(tc.FORMAT_PDB_0) in l_in_formats
+    assert get_format_info(tc.FORMAT_CIF) in l_out_formats
 
 
 def test_conversion_pathways():
@@ -272,26 +274,25 @@ def test_conversion_pathways():
     """
 
     # Check that we get `None` for converting from one format to itself
-    assert get_conversion_pathway("cif", "cif") is None
+    assert get_conversion_pathway(tc.FORMAT_CIF, tc.FORMAT_CIF) is None
 
     # Check that we get `None` for an impossible conversion
-    assert get_conversion_pathway("cif", "abinit") is None
+    assert get_conversion_pathway(tc.FORMAT_CIF, tc.FORMAT_ABINIT) is None
 
     # Check that we get the expected single-step conversion for a known direct conversion
-    cif_to_inchi_path = get_conversion_pathway("cif", "inchi", only="registered")
+    cif_to_inchi_path = get_conversion_pathway(tc.FORMAT_CIF, tc.FORMAT_INCHI, only="registered")
     assert len(cif_to_inchi_path) == 1
     converter_info, in_format_info, out_format_info = cif_to_inchi_path[0]
     assert converter_info.name == regularize_name(const.CONVERTER_OB)
-    assert in_format_info.name == "cif"
-    assert out_format_info.name == "inchi"
+    assert in_format_info.id == tc.FORMAT_CIF
+    assert out_format_info.id == tc.FORMAT_INCHI
 
     # Test getting a multi-step conversion - it's possible this will become direct in the future if a new converter is
     # added, so the test is a bit loose here
-    inchi_to_moldy_path = get_conversion_pathway("inchi",
-                                                 72959745128074324821901268400337732406)
+    inchi_to_moldy_path = get_conversion_pathway(tc.FORMAT_INCHI, tc.FORMAT_MOLDY)
     assert len(inchi_to_moldy_path) <= 2
-    assert inchi_to_moldy_path[0][1].name == "inchi"
-    assert inchi_to_moldy_path[-1][2].id == 72959745128074324821901268400337732406
+    assert inchi_to_moldy_path[0][1].id == tc.FORMAT_INCHI
+    assert inchi_to_moldy_path[-1][2].id == tc.FORMAT_MOLDY
     for i in range(len(inchi_to_moldy_path)-1):
         # Output format of each step should match input of next
         assert inchi_to_moldy_path[i][2] is inchi_to_moldy_path[i+1][1]
