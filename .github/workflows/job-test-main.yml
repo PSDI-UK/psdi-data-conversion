@@ -89,7 +89,7 @@ jobs:
           echo "### Total coverage: ${TOTAL}%" >> $GITHUB_STEP_SUMMARY
 
       - name: Make coverage badge
-        uses: schneegans/dynamic-badges-action@v1.8.0
+        uses: schneegans/dynamic-badges-action@v1.9.0
         with:
           auth: ${{ secrets.COVERAGE_GIST_TOKEN }}
           gistID: dbd938192dc4de9b7779978e515c0e79
