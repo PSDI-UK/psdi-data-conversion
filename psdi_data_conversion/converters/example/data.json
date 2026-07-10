@@ -3,7 +3,7 @@
         "id": null,
         "name": "Example",
         "desc": "Example converter plugin",
-        "info": "",
+        "info": "Further, even more detailed information on this example converter plugin, such as specific usage instructions",
         "url": "https://www.example.com",
         "supports_ambiguous_extensions": null,
         "database_key_prefix": null

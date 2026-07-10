@@ -16,7 +16,6 @@ This project uses a version of [GitLab Flow](https://about.gitlab.com/topics/ver
 The following tasks should be completed before merging a release candidate branch to `release`:
 
 - Determine the target version based on the changes made:
-
   - If any breaking changes have been made (after version 1.0.0), the version will advance to the next major version - `X.Y.Z` to `(X+1).0.0`
   - Otherwise, if any features are added, or any breaking changes are made before version 1.0.0, the version will advance to the next minor version - `X.Y.Z` to `X.(Y+1).0`.
   - Otherwise, the version will advance to the next bugfix version - `X.Y.Z` to `X.Y.(Z+1)`.
@@ -24,7 +23,6 @@ The following tasks should be completed before merging a release candidate branc
 - Create a release candidate branch with the name `rc-<target-version>` (e.g. `rc-1.2.3`), branched off of `main`. This should trigger an automated workflow to create a Pull Request from this branch to `release`. You may wish to edit the PR's name and/or description.
 
 - Tagging of the release is handled by an automated workflow which determines the new version based on the previous version and the commit history, looking for any commits which indicate a feature addition or breaking change using [Angular convention](https://github.com/conventional-changelog/conventional-changelog/tree/master/packages/conventional-changelog-angular#commit-message-format). Since we don't practice this regularly, you'll need to make a commit with this style to indicate any feature additions or breaking changes (this can be done when updating the version in the next step):
-
   - If there are any breaking changes **after version 1.0.0 is first published**, start the commit's first line with "feat(release): ", followed by a brief description of the release in a single line, then a blank line, then start the third line with "BREAKING CHANGE: ", followed by a description of the breaking change(s). Use manual newlines if necessary to keep lines in this description to a maximum of 50 characters. E.g.:
 
     ```
@@ -47,7 +45,6 @@ The following tasks should be completed before merging a release candidate branc
   - Otherwise, no special formatting is needed for a commit - the workflow will default to assuming a bugfix version incrementation when it doesn't see one of the two patterns above.
 
 - Check that the project version is updated to the desired new version in all places it appears:
-
   - `CHANGELOG.md` (The top section should reflect the new version)
 
 - Update the release date at the top of `README.md`
@@ -55,7 +52,6 @@ The following tasks should be completed before merging a release candidate branc
 - Ensure that all automated tests and checks pass - these should be run automatically on the PR opened above
 
 - Manually test the web interface. At this stage, it should be deployed to dev at https://data-conversion-dev.psdi.ac.uk/ (requires VPN to access), and it can be run locally as well
-
   - If there have been any changes to the Python backend, run a test that a file can be converted successfully and produces a proper log
   - If there have been any changes to the web frontend, check the appearance of the site to ensure that it looks as desired. Test the Accessibility page to ensure that changes there work properly, are saved when requested and apply to other pages
 
@@ -146,83 +142,54 @@ If you wish to make a converter accessible by the CLI, you only need to follow t
 
 #### Python Integration
 
-In the Python layer of the code, each file format converter is defined in its own module in the `psdi_data_conversion.converters` package, as a subclass of the `FileConverter` class defined in `psdi_data_conversion.converters.base`. A new converter can be integrated with the Python layer of the code by:
+In the Python layer of the code, each file format converter is defined in its own package in the `psdi_data_conversion.converters` package. This package contains the following files:
 
-1. Create a new module in the `psdi_data_conversion.converters` for the converter.
+- `__init__.py`
+- `converter.py` (Defines a new converter class as a subclass of the `FileConverter` class defined in `psdi_data_conversion.converters.base`. This class has a `run` method which performs the conversion)
+- `data.json` (Information about the converter and conversions it can perform)
 
-2. Define a new class for this converter, as a subclass of `FileConverter`.
+See the `example` package here or one of the extant converter plugins for how this looks in practice.
 
-3. Set the class variable `name` for the converter to be the name you want to use for this converter. This will be what needs to be specified in the command-line to request this converter.
+A new converter can be integrated with the Python layer of the code by:
 
-4. (Optional) Set the class variables `info`, `allowed_flags`, and `allowed_options` to provide further information about the converter and its use - see the documentation of these variables in the `psdi_data_conversion.converters.base` module for further info on their structure and use.
+1. Install the project locally by cloning it or downloading the source, then installing by running the following command in the root directory of the project (ideally in a venv): `pip install --editable .[test]`. Installing in `--editable` mode is necessary here so the project source can be detected in the proper place by the scripts used in later steps. Installing the `[test]` dependencies is not strictly necessary, but will be if you want to run tests to ensure you don't break anything.
 
-5. Implement the `_convert(self)` method of the class with a call to the converter. This method must create the converted file at the location specified by the variable `self.out_filename` (which is provided fully qualified) and set the variables `self.out` and `self.err` with normal output and error output respectively (at minimum they must be set to empty strings).
+2. Run the script `psdi-data-convert-create-plugin <Plugin Name> [--label <label>] [--script]` to create a a basic plugin folder for the converter, when `<Plugin Name>` is the name of the converter plugin (e.g. "Open Babel"), `<label>` is the label for it (which will be used for the package name, among other things, e.g. `openbabel`), and the `--script` option will set it up to call a bash script to perform the conversion. To determine if you should use this option:
+   - If the converter can be run through a Python library, don't add the `--script` option.
+   - If the converter must be run through a separate executable, add the `--script` option. When a converter is defined this way, the `_convert(self)` method will be defined to execute a subprocess call to run the script defined in the class's `script` class variable, searching for it in the `psdi_data_conversion/scripts` directory. It will pass to it the fully-qualified input filename (`self.in_filename`) as the first argument, the fully-qualified output filename (`self.out_filename`) as the second argument, and then any flags defined in `self.data["to_flags"]` and `self.data["from_flags"]`.
 
-6. (Optional) If the converter might not be usable on all platforms (e.g. it requires a binary that only works on Linux), override the `can_be_registered(cls` class method to implement an appropriate test on if the converter is usable - e.g. `return sys.platform.startswith("linux")` in the case of a converter that only works on Linux platforms.
+3. (Optional) Set the class variables `info`, `allowed_flags`, and `allowed_options` to provide further information about the converter and its use - see the documentation of these variables in the `psdi_data_conversion.converters.base` module for further info on their structure and use.
+
+4. Implement the `_convert(self)` method of the class with a call to the converter. This method must create the converted file at the location specified by the variable `self.out_filename` (which is provided fully qualified) and set the variables `self.out` and `self.err` with normal output and error output respectively (at minimum they must be set to empty strings).
+
+5. (Optional) If the converter uses a script to run, add it in the `psdi_data_conversion/scripts` directory of the project, and set the `script` attribute of the converter class to the (unqualified) name of this script. If it requires an executable as well, add that to the `psdi_data_conversion/bin/<platform>` directory for the platform(s) you've compiled it for, and set the `required_bin` attribute of the converter class to the (unqualified) name of this executable.
+   - If you include the binary and intend to redistribute the project with the binary installed, ensure you're in compliance with its licensing terms, which may require you to include a copy of the license, provide a means to access the source code, etc.
+
+6. (Optional) If the converter might not be usable on all platforms (e.g. it requires a binary that only works on Linux), override the `can_be_registered(cls)` class method to implement an appropriate test on if the converter is usable - e.g. `return sys.platform.startswith("linux")` in the case of a converter that only works on Linux platforms.
 
 7. After defining the converter's class, set the module-level variable `converter` to the class.
 
-This will look something like:
+8. Next, edit the `data.json` file in the package to set information about the converter. Start by filling in the `converter.name`, `converter.desc`, `converter.info`, and `converter.url` entries. The `name` attribute of the class is the most important, as it will be what needs to be specified in the command-line to request this converter. `desc` is a brief description of the converter, `info` is more detailed information and usage notes, and `url` is an appropriate URL for it
 
-```python
-import sys
-from psdi_data_conversion.converters.base import FileConverter
+9. (TODO: Implement functionality to support this) If this converter supports any formats which are not listed in the `psdi_data_conversion/static/data/formats.json` database file, add information on them here. Assign them IDs in the range 0-9999 and reference them using these IDs when filling out the rest of this file. The installation script will replace these with UUIDs when it's run.
 
-CONVERTER_MY = 'My Converter'
+10. Add lists of the IDs or UUIDs (in integer form) of the formats this converter fully supports (can be used as both input and output), supports as input only, and supports as output only to the `supported_formats`, `in_only_formats`, and `out_only_formats` entries respectively.
 
-class MyFileConverter(FileConverter):
-    """File Converter specialized to use my method for conversions
-    """
+11. (Optional) The above step will cover the most common scenario for a converter's support for formats, allowing support for conversions of any of the `supported_formats` or `in_only_formats` to any of the `supported_formats` or `out_only_formats` (except for converting a format to itself). However, there may be cases where this is insufficient, e.g. there's one specific pair of formats the converter can't convert between.
+    - For any conversions that would be covered by this mapping but aren't actually possible, add an entry for them in the `unsupported_conversions` list (see the example plugin's `data.json` for the structure of these entries).
+    - For any conversions that aren't covered by this mapping but are possible, or any conversions where you want to add a `degree_of_success` note to be displayed when the user queries it, add an entry for them to the `supported_conversions` list (see the example plugin's `data.json` for the structure of these entries).
 
-    name = CONVERTER_MY
-    info = "My converter's info"
-    allowed_flags = ()
-    allowed_options = ()
+12. (Optional) If the converter (or the script used to run it) supports any flags or options ("flags" don't take arguments while "options" do) which apply only to some input/output formats, add information on them to the `in_flags`, `out_flags`, `in_options`, and `out_options` entries, along with lists of the IDs/UUIDs of formats each flag or option applies to (see the example plugin's `data.json` for the structure of these entries).
 
-    def _convert(self):
+13. Once everything is set up, run the script `psdi-data-convert-install-plugins`, which will parse the information you've provided and add it to the primary datafile at `psdi_data_conversion/static/data/data.json` as well as update it as appropriate (e.g. assigning a UUID to the converter if you didn't already give it one)
 
-        # Run whatever steps are necessary to perform the conversion
-        load_input_file_from(self.in_filename)
-        create_my_converted_file_at(self.out_filename)
-
-        self.out = "Standard output goes here"
-        self.err = "Errors go here"
-
-    @classmethod
-    def can_be_registered(cls):
-        return sys.platform.startswith("linux")
-
-# Assign this converter to the `converter` variable - this lets the psdi_data_conversion.converter module detect and
-# register it, making it available for use by the CLI and web app
-converter = MyFileConverter
-```
-
-That's all you need to do! The `psdi_data_conversion.converter` module parses all modules in the `converters` package to find converters, so if you've done everything correctly, it will find the new converter and register it for you. You can test that it is properly registered by using the CLI to run:
+It should now be functional for both the Python library and the CLI. The `psdi_data_conversion.converter` module parses all modules in the `converters` package to find converters, so if you've done everything correctly, it will find the new converter and register it for you. You can test that it is properly registered by using the CLI to run:
 
 ```bash
 psdi-data-convert -l
 ```
 
-Your new converter should appear, or else you will probably see an error message which will detail an exception raised when trying to register it. Note that until the converter's information is added to the database (the file `psdi_data_conversion/static/data/data.json`), the CLI will show that it is unable to perform any conversions, and it will fail on any conversion (believing it to be impossible) unless you provide the `--nc/--no-check` command-line flag.
-
-For file converters which can be run with a call to a script, this can be streamlined even further by taking advantage of the `ScriptFileConverter` subclass. With this, the converter's subclass can be defined even more succinctly:
-
-```python
-from psdi_data_conversion.converters.base import ScriptFileConverter
-
-CONVERTER_MY_SCRIPT = 'My Script Converter'
-
-class MyScriptFileConverter(ScriptFileConverter):
-    """File Converter specialized to use my script for conversions
-    """
-
-    name = CONVERTER_MY_SCRIPT
-    script = "my_script.sh"
-
-converter = MyScriptFileConverter
-```
-
-When a converter is defined this way, the `_convert(self)` method will be defined to execute a subprocess call to run the script defined in the class's `script` class variable, searching for it in the `psdi_data_conversion/scripts` directory. It will pass to it the fully-qualified input filename (`self.in_filename`) as the first argument, the fully-qualified output filename (`self.out_filename`) as the second argument, and then any flags defined in `self.data["to_flags"]` and `self.data["from_flags"]`.
+Your new converter should appear, or else you will probably see an error message which will detail an exception raised when trying to register it.
 
 Finally, it's good practice to add a unit test of the converter. You can do this by following the example of tests in `tests/converter_test.py`. If necessary, add a (small) file it can convert to the `test_data` folder, and implement a test that it can convert it to another format by adding a new method to the `TestConverter` class in this file. At its simplest, this method should look something like:
 
@@ -269,15 +236,7 @@ It may also be useful to add a test that the converter fails when you expect it 
 
 If the test is more complicated that this, you can implement a modified version of `self.run_converter` within the test method to perform the desired test. You can also check that output logs include the desired information by either opening the log filenames or using PyTest's `capsys` feature, which captures output to logs, stdout, and stderr.
 
-You can then run the any tests you added, plus the existing test suite, through running the following commands from the project's root directory:
-
-```bash
-source .venv/bin/activate # Create a venv first if necessary with `python -m venv .venv`
-pip install --editable '.[test]'
-pytest
-```
-
-This installs the project in a virtual environment in "editable" mode (which means the source files will be used from where they are rather than being copied, so any changes to them will be directly reflected in tests and uses of the CLI) and then calls `pytest` to run the unit tests in the project. `pytest` will automatically pick up any extra tests you add and run them as well.
+You can then run the any tests you added, plus the existing test suite, through running the `pytest` command from the project's root directory.
 
 #### Web App Integration
 
@@ -285,9 +244,6 @@ TODO: Write guide for adding converter to the web app.
 
 List of necessary steps:
 
-- Update 'converters' table in database.
-- Update 'formats' table in database.
-- Update 'converts_to' table in database.
 - Find/compile suitable Linux binary and upload it
 - Write script to call binary
 - New HTML file for conversion page.

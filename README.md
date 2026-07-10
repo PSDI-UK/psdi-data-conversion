@@ -40,6 +40,7 @@ This project provides utilities to assist in converting files between the many d
 - [Running the Python/Flask app locally](#running-the-pythonflask-app-locally)
   - [Installation and Setup](#installation-and-setup)
   - [Running the App](#running-the-app)
+- [Extending Functionality](#extending-functionality)
 - [Testing](#testing)
 - [Troubleshooting](#troubleshooting)
   - [Unable to convert archives of files](#unable-to-convert-archives-of-files)
@@ -64,17 +65,24 @@ This project provides utilities to assist in converting files between the many d
 - `psdi_data_conversion` (Primary source directory)
   - `bin`
     - (Precompiled binaries for running file format converters)
+  - `converters`
+    - `base.py` (Base class for converter plugins)
+    - (Folders for converter plugins, each with the below structure)
+    - `example` (Example converter plugin)
+      - `converter.py` (Executable code to run the converter)
+      - `data.json` (Data on the converter, the formats it supports, and the conversions it can perform)
   - `static` (Static code and assets for the web app)
-    - `content`
-      - (HTML assets for the web app)
-    - `downloads` (created by app.py if not extant)
+    - `data`
+      - `formats.json`
+      - `data.json` (Generated singular database file, read by the library, CLI, and web app for information on converters, formats, and conversions)
+    - `downloads` (created by the web app if not extant)
     - `img`
       - (image assets for the web app)
     - `javascript`
       - (JavaScript code for the web app)
     - `styles`
       - (CSS stylesheets for the web app)
-    - `uploads` (created by app.py if not extant)
+    - `uploads` (created by the web app if not extant)
   - `templates`
     - (HTML assets rendered by Flask for the web app)
   - `__init.py__`
@@ -407,15 +415,7 @@ The local version has some customisable options for running it, which can can be
 
 ## Extending Functionality
 
-The Python library and CLA are written to make it easy to extend the functionality of this package to use other file format converters. This can be done by downloading or cloning the project's source from it's GitHub Repository (https://github.com/PSDI-UK/psdi-data-conversion), editing the code to add your converter following the guidance in the "[Adding File Format Converters](https://github.com/PSDI-UK/psdi-data-conversion/blob/main/CONTRIBUTING.md#adding-file-format-converters)" section of CONTRIBUTING.md to integrate it with the Python code, and installing the modified package on your system via:
-
-```bash
-pip install --editable '.[test]'
-```
-
-(This command uses the `--editable` option and optional `test` dependencies to ease the process of testing and debugging your changes.)
-
-Note that when adding a converter in this manner, information on its possible conversions will not be added to the database, and so these will not show up when you run the CLA with the `-l/--list` option. You will also need to add the `--nc/--no-check` option when running conversions to skip the database check that the conversion is allowed.
+The Python library and CLA are written to make it easy to extend the functionality of this package to use other file format converters. This can be done by downloading or cloning the project's source from it's GitHub Repository (https://github.com/PSDI-UK/psdi-data-conversion), editing the code to add your converter following the guidance in the "[Adding File Format Converters](https://github.com/PSDI-UK/psdi-data-conversion/blob/main/CONTRIBUTING.md#adding-file-format-converters)" section of CONTRIBUTING.md.
 
 ## Testing
 
