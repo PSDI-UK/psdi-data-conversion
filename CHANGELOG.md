@@ -1,5 +1,11 @@
 # Changelog for PSDI Data Conversion
 
+## v0.3.25
+
+### Miscellaneous Changes:
+
+- Removed outage banner
+
 ## v0.3.23
 
 ### Bugfixes
