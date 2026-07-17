@@ -51,6 +51,12 @@
 
 - Tests which reference specific formats have been changed to reference format IDs to avoid potentially breaking in the future if/when new formats are added with clashing names (with the exception of tests where the specific goal is to test using other methods of referencing formats)
 
+## v0.3.25
+
+### Miscellaneous Changes:
+
+- Removed outage banner
+
 ## v0.3.23
 
 ### Bugfixes
