@@ -230,6 +230,7 @@ def run_from_args(args):
     d_format_info_for_ext: dict[str, list[JsonDict]] = {}
     for format_info in l_format_info:
         d_format_info_for_ext[format_info[db.DB_FORMAT_EXT_KEY]] = format_info
+    format_info_updated = False
 
     questionable_formats_found = False
     first_questionable_format_found = True
@@ -312,8 +313,11 @@ def run_from_args(args):
         if d_format_id_changes:
             s_changed_conv_dbs.add(qual_conv_path)
 
-        # TODO: Add all extra formats to the database now
-        pass
+        # Add all extra formats to the database now
+        for format_info in l_extra_format_info:
+            assert format_info[db.DB_ID_KEY] <= THRESHOLD_FORMAT_ID
+            l_format_info.append(format_info)
+        db_conv[db.DB_EXTRA_FORMATS_KEY] = []
 
     # If we found any questionable formats, end execution here to let the user deal with them appropriately
     if questionable_formats_found:
@@ -323,6 +327,11 @@ def run_from_args(args):
     l_format_info = [get_sorted_dict(x, L_FORMATS_SORT_ORDER) for x in l_format_info]
     sort_json_list(l_format_info, L_FORMATS_SORT_ORDER)
     db_out[db.DB_FORMATS_KEY] = l_format_info
+
+    # Update the main format info file if any changes have been made to it
+    if format_info_updated:
+        json.dump({db.DB_FORMATS_KEY: l_format_info},
+                  open(os.path.join(db_dir, FORMATS_DATAFILE), "w"))
 
     # Create initial entries for the output dict
     l_db_converters: list[JsonDict] = []
