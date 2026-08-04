@@ -1,10 +1,10 @@
 {
     "converter": {
         "id": null,
-        "name": "Test",
-        "desc": "Test converter plugin",
-        "info": "Further, even more detailed information on this test converter plugin, such as specific usage instructions",
-        "url": "https://www.example.com",
+        "name": "TestQuestionable",
+        "desc": "TestQuestionable desc",
+        "info": "TestQuestionable note",
+        "url": "https://github.com/PSDI-UK/psdi-data-conversion",
         "supports_ambiguous_extensions": null,
         "database_key_prefix": null
     },
@@ -58,7 +58,7 @@
             "connections": true,
             "two_dim": false,
             "three_dim": false,
-            "confirmed_new": false
+            "confirmed_new": true
         }
     ],
     "supported_formats": [

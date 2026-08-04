@@ -1,6 +1,6 @@
-"""@file test_data/test_converter/converter.py
+"""@file test_data/test_converter_complex/converter.py
 
-Example file converter
+Test file converter, a complex case
 """
 
 from psdi_data_conversion.converters.base import FileConverter, FileConverterArgException, FileConverterMeta
@@ -17,7 +17,7 @@ def process_example_option(l_opts: list[str] | None) -> dict[str, str]:
     raise FileConverterArgException("Invalid number of arguments for option '--example-opt'")
 
 
-class TestFileConverter(FileConverter):
+class TestFileConverterComplex(FileConverter):
     """File converter specialised to use Example for conversions"""
 
     meta: FileConverterMeta = FileConverterMeta.load(__file__)
@@ -46,4 +46,4 @@ class TestFileConverter(FileConverter):
 
 # Assign this converter to the `converter` variable - this lets the psdi_data_conversion.converter module detect and
 # register it, making it available for use by the CLI and web app
-converter = TestFileConverter
+converter = TestFileConverterComplex
