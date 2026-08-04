@@ -16,6 +16,7 @@ import sys
 from argparse import ArgumentParser
 
 from psdi_data_conversion.converters import base as converters_base
+from psdi_data_conversion.testing.utils import get_test_data_loc
 from psdi_data_conversion.utils import TextColors
 
 PLUGIN_EXAMPLEDIR = "example"
@@ -138,7 +139,10 @@ def run_from_args(args):
             exit(1)
 
     # Determine which template directory to use and other related info
-    if args.script:
+    if args.test:
+        template_path = os.path.join(get_test_data_loc(), name)
+        template_str: str = "Template"
+    elif args.script:
         template_path = os.path.join(conv_path, PLUGIN_SCRIPT_TEMPLATEDIR)
         template_str: str = "ScriptTemplate"
     else:
@@ -152,22 +156,22 @@ def run_from_args(args):
     for filename in (PLUGIN_PYFILE, PLUGIN_DATAFILE):
         text = open(os.path.join(template_path, filename)).read()
 
-        # Replace template info as appropriate
-        if filename == PLUGIN_DATAFILE:
-            text = text.replace(template_str, name.replace(r'"', r'\"'))
-        else:
-            # Where the template string appears alone as part of a word, replace it with the name, otherwise replace it
-            # with the Pascal-case name
-            text = re.sub(f"\b{template_str}\b", name, text)
-            text = text.replace(template_str, pascal_name)
+        if not args.test:
+            # Replace template info as appropriate
+            if filename == PLUGIN_DATAFILE:
+                text = text.replace(template_str, name.replace(r'"', r'\"'))
+            else:
+                # Where the template string appears alone as part of a word, replace it with the name, otherwise
+                # replace it with the Pascal-case name
+                text = re.sub(f"\b{template_str}\b", name, text)
+                text = text.replace(template_str, pascal_name)
 
         open(os.path.join(plugin_path, filename), "w").write(text)
 
     print(f"Success! The plugin has been created at {plugin_path}. Next steps:\n"
           f"- Edit the '{PLUGIN_PYFILE}' and '{PLUGIN_DATAFILE}' files in this directory to contain all necessary "
           "information about this converter and how to run it\n"
-          f"- Run the script `psdi-data-convert-install-plugin {label}` to install it (TODO: script under "
-          "development)\n"
+          f"- Run the script `psdi-data-convert-install-plugin {label}` to install it\n"
           "- If this script highlights that formats provided by this plugin may already be in the database,"
           "follow the provided instructions to resolve this and then run it again")
 
