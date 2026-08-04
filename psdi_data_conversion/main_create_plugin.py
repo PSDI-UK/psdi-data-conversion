@@ -128,10 +128,14 @@ def run_from_args(args):
         if not os.path.isdir(qual_dir) or not os.path.isfile(os.path.join(qual_dir, "__init__.py")):
             continue
         if label == dir:
-            print(f"{TextColors.FAIL}ERROR:{TextColors.ENDC} Label '{label}' clashes with the label of an existing "
-                  "converter plugin. Please choose a different label (or different name if this was determined from "
-                  "the name)", file=sys.stderr)
-            exit(1)
+            if args.test:
+                # In test mode, don't worry if it already exists, just delete it so it doesn't clash
+                shutil.rmtree(qual_dir)
+            else:
+                print(f"{TextColors.FAIL}ERROR:{TextColors.ENDC} Label '{label}' clashes with the label of an existing "
+                      "converter plugin. Please choose a different label (or different name if this was determined "
+                      "from the name)", file=sys.stderr)
+                exit(1)
         conv_module = import_from_path(label, os.path.join(qual_dir, PLUGIN_PYFILE))
         if name == conv_module.converter.meta.name:
             print(f"{TextColors.FAIL}ERROR:{TextColors.ENDC} Name '{name}' clashes with the name of an existing "
