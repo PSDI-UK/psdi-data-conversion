@@ -57,6 +57,13 @@ def get_argument_parser():
                         help="If set, will create the plugin using the 'ScriptFileConverter' base class, which uses "
                         "a script to run the conversion. The script will by default be named `{label}.sh`")
 
+    parser.add_argument("--test", action="store_true",
+                        help="Used for testing purposes. When set, will alter functionality of this script to retrieve "
+                        "a premade test converter plugin from the `test_data` folder. In this "
+                        "mode, the required `plugin_name` argument will instead be used as the name of the subfolder "
+                        "for the test plugin within `test_data`, e.g. arguments `test_converter --test` will "
+                        "retrieve the test plugin at `test_data/test_converter`.")
+
     return parser
 
 
