@@ -1,4 +1,4 @@
-"""@file psdi_data_conversion/test_data/test_converter.py
+"""@file test_data/test_converter/converter.py
 
 Example file converter
 """
