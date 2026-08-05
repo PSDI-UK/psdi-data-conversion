@@ -313,6 +313,8 @@ def run_from_args(args):
                 if current_out_id in d_format_id_changes:
                     d_conversion_info[db.DB_OUT_ID_KEY] = d_format_id_changes[current_out_id]
 
+        # TODO: Update for flags and options
+
         # Mark if this converter DB has changed from any format IDs changing
         if d_format_id_changes:
             s_changed_conv_dbs.add(qual_conv_path)
