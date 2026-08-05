@@ -315,7 +315,7 @@ def run_from_args(args):
 
         # Add all extra formats to the database now
         for format_info in l_extra_format_info:
-            assert format_info[db.DB_ID_KEY] <= THRESHOLD_FORMAT_ID
+            assert format_info[db.DB_ID_KEY] > THRESHOLD_FORMAT_ID
             l_format_info.append(format_info)
         db_conv[db.DB_EXTRA_FORMATS_KEY] = []
 
