@@ -131,6 +131,7 @@ def run_from_args(args):
             if args.test:
                 # In test mode, don't worry if it already exists, just delete it so it doesn't clash
                 shutil.rmtree(qual_dir)
+                break
             else:
                 print(f"{TextColors.FAIL}ERROR:{TextColors.ENDC} Label '{label}' clashes with the label of an existing "
                       "converter plugin. Please choose a different label (or different name if this was determined "
@@ -155,7 +156,7 @@ def run_from_args(args):
 
     # Create a new folder for the plugin by copying/modifying from the template appropriately
     plugin_path = os.path.join(conv_path, label)
-    os.makedirs(plugin_path)
+    os.makedirs(plugin_path, exist_ok=True)
     shutil.copy(os.path.join(template_path, "__init__.py"), plugin_path)
     for filename in (PLUGIN_PYFILE, PLUGIN_DATAFILE):
         text = open(os.path.join(template_path, filename)).read()
