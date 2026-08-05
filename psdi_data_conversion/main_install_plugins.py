@@ -251,8 +251,9 @@ def run_from_args(args):
                 d_questionable_formats[format_id] = (extra_format_info, d_format_info_for_ext[ext])
                 continue
 
-            # This format is new, so generate a UUID for it
-            d_format_id_changes[format_id] = uuid4().int
+            # This format is new, so generate a UUID for it if necessary
+            if format_id <= THRESHOLD_FORMAT_ID:
+                d_format_id_changes[format_id] = uuid4().int
 
         # If we found any questionable formats for this converter, report them now
         if d_questionable_formats:
@@ -286,6 +287,9 @@ def run_from_args(args):
 
         # If we get here, all formats look good. Now update the IDs of any formats to UUIDs wherever they appear, if
         # necessary
+
+        if len(l_extra_format_info) > 0:
+            format_info_updated = True
 
         for extra_format_info in l_extra_format_info:
             current_id: int = extra_format_info[db.DB_ID_KEY]
@@ -331,7 +335,7 @@ def run_from_args(args):
     # Update the main format info file if any changes have been made to it
     if format_info_updated:
         json.dump({db.DB_FORMATS_KEY: l_format_info},
-                  open(os.path.join(db_dir, FORMATS_DATAFILE), "w"))
+                  open(os.path.join(db_dir, FORMATS_DATAFILE), "w"), indent=4)
 
     # Create initial entries for the output dict
     l_db_converters: list[JsonDict] = []
