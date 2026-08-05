@@ -223,8 +223,7 @@ def run_from_args(args):
         if not os.path.isdir(qual_conv_path) or not os.path.isfile(os.path.join(qual_conv_path, PLUGIN_DATAFILE)):
             continue
 
-        conv_db_path = os.path.join(qual_conv_path, PLUGIN_DATAFILE)
-        d_conv_db[qual_conv_path] = json.load(open(conv_db_path))
+        d_conv_db[qual_conv_path] = json.load(open(os.path.join(qual_conv_path, PLUGIN_DATAFILE)))
 
     # Load the formats data and check and process new formats
     l_format_info: list[JsonDict] = json.load(open(os.path.join(db_dir, FORMATS_DATAFILE)))[db.DB_FORMATS_KEY]
@@ -356,7 +355,7 @@ def run_from_args(args):
             d_conv_info[db.DB_SUPPORT_AMBIG_EXT_KEY] = get_support_ambig_ext(db_conv, db_out)
 
         if qual_conv_path in s_changed_conv_dbs:
-            json.dump(db_conv, open(conv_db_path, "w"), indent=4)
+            json.dump(db_conv, open(os.path.join(qual_conv_path, PLUGIN_DATAFILE), "w"), indent=4)
 
         conv_id: int = d_conv_info[db.DB_ID_KEY]
 
