@@ -73,7 +73,7 @@ DB_FORMAT_COMP_KEY = "composition"
 DB_FORMAT_CONN_KEY = "connections"
 DB_FORMAT_2D_KEY = "two_dim"
 DB_FORMAT_3D_KEY = "three_dim"
-DB_FORMAT_CONFIRMED_NEW = "confirmed_new"
+DB_FORMAT_CONFIRMED_NEW_KEY = "confirmed_new"
 
 # Keys for converts_to info in the database
 DB_CONV_ID_KEY = "converters_id"
