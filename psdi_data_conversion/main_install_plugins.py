@@ -269,11 +269,12 @@ def run_from_args(args):
                            "The following formats provided by the converter "
                            f"'{db_conv[db.DB_CONVERTER_KEY][db.DB_NAME_KEY]}' might already exist in the database. For "
                            "each, please check against the provided list of possible matches.\n")
-                print_wrap("- If it is indeed one of those, remove it from the list of extra formats in the converter "
-                           f"database file ({TextColors.OKCYAN}{os.path.join(qual_conv_path, PLUGIN_DATAFILE)}"
-                           f"{TextColors.ENDC}) and update references to "
-                           "its ID in that file to instead use the ID of its entry in the database\n",
-                           initial_indent="", subsequent_indent=" "*2)
+                print(get_wrapped_str("- If it is indeed one of those, remove it from the list of extra formats in the "
+                                      "converter database file", initial_indent="", subsequent_indent=" "*2) +
+                      f" {TextColors.OKCYAN}{os.path.join(qual_conv_path, PLUGIN_DATAFILE)}{TextColors.ENDC}\n" +
+                      get_wrapped_str("and update references to its ID in that file to instead use the ID of its "
+                                      "entry in the database\n", initial_indent=" "*2, subsequent_indent=" "*2)
+                      )
                 print_wrap(f"- If it is not one of those, add a line '{TextColors.WARNING}\"confirmed_new\": "
                            f"true{TextColors.ENDC}' to its entry in the converter database file\n",
                            initial_indent="", subsequent_indent=" "*2)
