@@ -57,8 +57,7 @@
             "composition": true,
             "connections": true,
             "two_dim": false,
-            "three_dim": false,
-            "confirmed_new": true
+            "three_dim": false
         }
     ],
     "supported_formats": [
