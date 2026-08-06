@@ -18,6 +18,7 @@ from uuid import uuid4
 
 from psdi_data_conversion import database as db
 from psdi_data_conversion.converters import base as converters_base
+from psdi_data_conversion.utils import TextColors
 
 # Constants
 PLUGIN_DATAFILE = "data.json"
@@ -229,7 +230,11 @@ def run_from_args(args):
     l_format_info: list[JsonDict] = json.load(open(os.path.join(db_dir, FORMATS_DATAFILE)))[db.DB_FORMATS_KEY]
     d_format_info_for_ext: dict[str, list[JsonDict]] = {}
     for format_info in l_format_info:
-        d_format_info_for_ext[format_info[db.DB_FORMAT_EXT_KEY]] = format_info
+        ext = format_info[db.DB_FORMAT_EXT_KEY]
+        if ext not in d_format_info_for_ext:
+            d_format_info_for_ext[ext] = [format_info]
+        else:
+            d_format_info_for_ext[ext].append(format_info)
     format_info_updated = False
 
     questionable_formats_found = False
@@ -259,8 +264,9 @@ def run_from_args(args):
         if d_questionable_formats:
             if first_questionable_format_found:
                 first_questionable_format_found = False
-                print("The following formats provided by the converter "
-                      f"{db_conv[[db.DB_CONVERTER_KEY][db.DB_NAME_KEY]]} might already exist in the database. For "
+                print(f"{TextColors.WARNING}!!! ALERT !!!{TextColors.ENDC}\n"
+                      "The following formats provided by the converter "
+                      f"{db_conv[db.DB_CONVERTER_KEY][db.DB_NAME_KEY]} might already exist in the database. For "
                       "each, please check against the provided list of possible matches.\n"
                       "- If it is indeed one of those, remove it from the list of extra formats in the converter "
                       f"database file ({os.path.join(qual_conv_path, PLUGIN_DATAFILE)})\n"
@@ -268,10 +274,11 @@ def run_from_args(args):
                       "database file\n"
                       "Once this is done for all formats listed here, rerun this script. Alternatively, if you confirm "
                       "that all listed formats are new, you can rerun the script with the '-f/--force' flag."
-                      "\n\n---\n\n")
+                      "\n\n---\n")
             else:
                 print(f"\n\n------\n\nThe following formats provided by the converter "
-                      f"{db_conv[[db.DB_CONVERTER_KEY][db.DB_NAME_KEY]]} might already exist in the database:")
+                      f"{db_conv[db.DB_CONVERTER_KEY][db.DB_NAME_KEY]} might already exist in the database:"
+                      "\n\n---\n")
 
             l_format_matches_strings: list[str] = []
             for extra_format_info, l_matching_format_info in d_questionable_formats.values():
