@@ -319,7 +319,7 @@ def run_from_args(args):
                        db_conv[db.DB_OUT_OPTIONS_KEY]):
             for d_arg_info in l_args:
                 l_format_ids: list[int] = d_arg_info[db.DB_FORMAT_ID_LIST_KEY]
-                for i, current_id in l_format_ids:
+                for i, current_id in enumerate(l_format_ids):
                     if current_id in d_format_id_changes:
                         l_format_ids[i] = d_format_id_changes[current_id]
 
