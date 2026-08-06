@@ -18,7 +18,7 @@ from uuid import uuid4
 
 from psdi_data_conversion import database as db
 from psdi_data_conversion.converters import base as converters_base
-from psdi_data_conversion.utils import TextColors
+from psdi_data_conversion.utils import TextColors, get_wrapped_str, print_wrap
 
 # Constants
 PLUGIN_DATAFILE = "data.json"
@@ -87,7 +87,7 @@ def parse_args():
 
 def get_format_info_str(format_info: JsonDict):
     """Returns a string which details information about a format"""
-    return (f".{format_info[db.DB_FORMAT_EXT_KEY]} (ID: {format_info[db.DB_ID_KEY]}): "
+    return (f"{format_info[db.DB_FORMAT_EXT_KEY]} (ID: {format_info[db.DB_ID_KEY]}): "
             f"{format_info[db.DB_FORMAT_NOTE_KEY]}")
 
 
@@ -264,31 +264,38 @@ def run_from_args(args):
         if d_questionable_formats:
             if first_questionable_format_found:
                 first_questionable_format_found = False
-                print(f"{TextColors.WARNING}!!! ALERT !!!{TextColors.ENDC}\n"
-                      "The following formats provided by the converter "
-                      f"{db_conv[db.DB_CONVERTER_KEY][db.DB_NAME_KEY]} might already exist in the database. For "
-                      "each, please check against the provided list of possible matches.\n"
-                      "- If it is indeed one of those, remove it from the list of extra formats in the converter "
-                      f"database file ({os.path.join(qual_conv_path, PLUGIN_DATAFILE)})\n"
-                      "- If it is not one of those, add a line '\"confirmed_new\": true' to its entry in the converter "
-                      "database file\n"
-                      "Once this is done for all formats listed here, rerun this script. Alternatively, if you confirm "
-                      "that all listed formats are new, you can rerun the script with the '-f/--force' flag."
-                      "\n\n---\n")
+                print_wrap(f"{TextColors.WARNING}!!! ALERT !!!{TextColors.ENDC}\n"
+                           f"{TextColors.WARNING}-------------{TextColors.ENDC}\n"
+                           "The following formats provided by the converter "
+                           f"'{db_conv[db.DB_CONVERTER_KEY][db.DB_NAME_KEY]}' might already exist in the database. For "
+                           "each, please check against the provided list of possible matches.\n")
+                print_wrap("- If it is indeed one of those, remove it from the list of extra formats in the converter "
+                           f"database file ({TextColors.OKCYAN}{os.path.join(qual_conv_path, PLUGIN_DATAFILE)}"
+                           f"{TextColors.ENDC}) and update references to "
+                           "its ID in that file to instead use the ID of its entry in the database\n",
+                           initial_indent="", subsequent_indent=" "*2)
+                print_wrap(f"- If it is not one of those, add a line '{TextColors.WARNING}\"confirmed_new\": "
+                           f"true{TextColors.ENDC}' to its entry in the converter database file\n",
+                           initial_indent="", subsequent_indent=" "*2)
+                print_wrap("Once this is done for all formats listed here, rerun this script. Alternatively, if you "
+                           "confirm that all listed formats are new, you can rerun the script with the "
+                           f"'{TextColors.WARNING}-f/--force{TextColors.ENDC}' flag.\n\n---\n")
             else:
-                print(f"\n\n------\n\nThe following formats provided by the converter "
-                      f"{db_conv[db.DB_CONVERTER_KEY][db.DB_NAME_KEY]} might already exist in the database:"
-                      "\n\n---\n")
+                print_wrap(f"\n\n------\n\nThe following formats provided by the converter "
+                           f"'{db_conv[db.DB_CONVERTER_KEY][db.DB_NAME_KEY]}' might already exist in the database:"
+                           "\n\n---\n")
 
             l_format_matches_strings: list[str] = []
             for extra_format_info, l_matching_format_info in d_questionable_formats.values():
                 format_matches_string = ("Extra format:\n"
-                                         f"{get_format_info_str(extra_format_info)}\n\n"
-                                         "Potentially matches:\n")
-                format_matches_string += "\n".join([get_format_info_str(format_info)
+                                         f"- {get_wrapped_str(get_format_info_str(extra_format_info),
+                                                              initial_indent="", subsequent_indent=" "*2)}\n\n"
+                                         "Potential matches:\n")
+                format_matches_string += "\n".join(["- " + get_wrapped_str(get_format_info_str(format_info),
+                                                                           initial_indent="", subsequent_indent=" "*2)
                                                    for format_info in l_matching_format_info])
                 l_format_matches_strings.append(format_matches_string)
-            print("\n\n---\n\n".join(l_format_matches_strings))
+            print_wrap("\n\n---\n\n".join(l_format_matches_strings))
 
             continue
 

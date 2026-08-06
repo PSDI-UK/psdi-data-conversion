@@ -23,6 +23,11 @@ class TextColors:
     UNDERLINE = '\033[4m'
 
 
+def get_wrapped_str(s: str, **kwargs):
+    """Get a string wrapped to the terminal width"""
+    return textwrap.fill(s, width=TERM_WIDTH, **kwargs)
+
+
 def print_wrap(s: str, newline=False, err=False, **kwargs):
     """Print a string wrapped to the terminal width
     """
@@ -31,7 +36,7 @@ def print_wrap(s: str, newline=False, err=False, **kwargs):
     else:
         file = sys.stdout
     for line in s.split("\n"):
-        print(textwrap.fill(line, width=TERM_WIDTH, **kwargs), file=file)
+        print(get_wrapped_str(line, **kwargs), file=file)
     if newline:
         print("")
 
