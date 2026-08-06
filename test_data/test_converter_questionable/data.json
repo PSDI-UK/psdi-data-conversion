@@ -1,10 +1,10 @@
 {
     "converter": {
         "id": null,
-        "name": "Example",
-        "desc": "Example converter plugin",
-        "info": "Further, even more detailed information on this example converter plugin, such as specific usage instructions",
-        "url": "https://www.example.com",
+        "name": "TestQuestionable",
+        "desc": "TestQuestionable desc",
+        "info": "TestQuestionable note",
+        "url": "https://github.com/PSDI-UK/psdi-data-conversion",
         "supports_ambiguous_extensions": null,
         "database_key_prefix": null
     },
@@ -51,14 +51,13 @@
         },
         {
             "id": 4,
-            "extension": "ex",
-            "format": "ex4",
-            "note": "Example format 4 - This one is marked as 'confirmed_new', which indicates that the existing formats in the database have been checked and this isn't already there.",
+            "extension": "mol",
+            "format": "newmol",
+            "note": "Example format 4 - new format with the 'mol' extension",
             "composition": true,
             "connections": true,
             "two_dim": false,
-            "three_dim": false,
-            "confirmed_new": true
+            "three_dim": false
         }
     ],
     "supported_formats": [

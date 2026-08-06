@@ -16,7 +16,8 @@ import sys
 from argparse import ArgumentParser
 
 from psdi_data_conversion.converters import base as converters_base
-from psdi_data_conversion.utils import TextColors
+from psdi_data_conversion.testing.utils import get_test_data_loc
+from psdi_data_conversion.utils import TextColors, print_wrap
 
 PLUGIN_EXAMPLEDIR = "example"
 PLUGIN_TEMPLATEDIR = "template"
@@ -57,6 +58,13 @@ def get_argument_parser():
                         help="If set, will create the plugin using the 'ScriptFileConverter' base class, which uses "
                         "a script to run the conversion. The script will by default be named `{label}.sh`")
 
+    parser.add_argument("--test", action="store_true",
+                        help="Used for testing purposes. When set, will alter functionality of this script to retrieve "
+                        "a premade test converter plugin from the `test_data` folder. In this "
+                        "mode, the required `plugin_name` argument will instead be used as the name of the subfolder "
+                        "for the test plugin within `test_data`, e.g. arguments `test_converter --test` will "
+                        "retrieve the test plugin at `test_data/test_converter`.")
+
     return parser
 
 
@@ -93,18 +101,18 @@ def run_from_args(args):
     if label:
         # Check that the label appears to be properly in snake_case
         if label != label.lower().replace(" ", "_") or NON_SNAKE_CASE_CHAR_RE.search(label):
-            print(f"{TextColors.FAIL}ERROR:{TextColors.ENDC} Label '{label}' is invalid. The label should be in "
-                  "snake_case (all lower-case with underscores in place of spaces), containing only letters, digits, "
-                  "and underscores", file=sys.stderr)
+            print_wrap(f"{TextColors.FAIL}ERROR:{TextColors.ENDC} Label '{label}' is invalid. The label should be in "
+                       "snake_case (all lower-case with underscores in place of spaces), containing only letters,"
+                       "digits, and underscores", err=True)
             exit(1)
     else:
         # Create the label by converting the name to snake_case and stripping invalid characters
         label = NON_SNAKE_CASE_CHAR_RE.sub("", name.lower().replace(" ", "_"))
         if not label:
-            print(f"{TextColors.FAIL}ERROR:{TextColors.ENDC} A valid label could not be generated from converter name "
-                  f"'{name}'. Please specify a label directly with '--label ...'. The label should be in "
-                  "snake_case (all lower-case with underscores in place of spaces), containing only letters, digits, "
-                  "and underscores", file=sys.stderr)
+            print_wrap(f"{TextColors.FAIL}ERROR:{TextColors.ENDC} A valid label could not be generated from converter "
+                       f"name '{name}'. Please specify a label directly with '--label ...'. The label should be in "
+                       "snake_case (all lower-case with underscores in place of spaces), containing only letters, "
+                       "digits, and underscores", err=True)
             exit(1)
 
     # Determine the PascalCase name of the converter (to be used for classes)
@@ -120,18 +128,26 @@ def run_from_args(args):
         if not os.path.isdir(qual_dir) or not os.path.isfile(os.path.join(qual_dir, "__init__.py")):
             continue
         if label == dir:
-            print(f"{TextColors.FAIL}ERROR:{TextColors.ENDC} Label '{label}' clashes with the label of an existing "
-                  "converter plugin. Please choose a different label (or different name if this was determined from "
-                  "the name)", file=sys.stderr)
-            exit(1)
+            if args.test:
+                # In test mode, don't worry if it already exists, just delete it so it doesn't clash
+                shutil.rmtree(qual_dir)
+                break
+            else:
+                print_wrap(f"{TextColors.FAIL}ERROR:{TextColors.ENDC} Label '{label}' clashes with the label of an "
+                           "existing converter plugin. Please choose a different label (or different name if this was "
+                           "determined from the name)", err=True)
+                exit(1)
         conv_module = import_from_path(label, os.path.join(qual_dir, PLUGIN_PYFILE))
         if name == conv_module.converter.meta.name:
-            print(f"{TextColors.FAIL}ERROR:{TextColors.ENDC} Name '{name}' clashes with the name of an existing "
-                  "converter plugin. Please choose a different name", file=sys.stderr)
+            print_wrap(f"{TextColors.FAIL}ERROR:{TextColors.ENDC} Name '{name}' clashes with the name of an existing "
+                       "converter plugin. Please choose a different name", err=True)
             exit(1)
 
     # Determine which template directory to use and other related info
-    if args.script:
+    if args.test:
+        template_path = os.path.join(get_test_data_loc(), name)
+        template_str: str = "Template"
+    elif args.script:
         template_path = os.path.join(conv_path, PLUGIN_SCRIPT_TEMPLATEDIR)
         template_str: str = "ScriptTemplate"
     else:
@@ -140,29 +156,35 @@ def run_from_args(args):
 
     # Create a new folder for the plugin by copying/modifying from the template appropriately
     plugin_path = os.path.join(conv_path, label)
-    os.makedirs(plugin_path)
+    os.makedirs(plugin_path, exist_ok=True)
     shutil.copy(os.path.join(template_path, "__init__.py"), plugin_path)
     for filename in (PLUGIN_PYFILE, PLUGIN_DATAFILE):
         text = open(os.path.join(template_path, filename)).read()
 
-        # Replace template info as appropriate
-        if filename == PLUGIN_DATAFILE:
-            text = text.replace(template_str, name.replace(r'"', r'\"'))
-        else:
-            # Where the template string appears alone as part of a word, replace it with the name, otherwise replace it
-            # with the Pascal-case name
-            text = re.sub(f"\b{template_str}\b", name, text)
-            text = text.replace(template_str, pascal_name)
+        if not args.test:
+            # Replace template info as appropriate
+            if filename == PLUGIN_DATAFILE:
+                text = text.replace(template_str, name.replace(r'"', r'\"'))
+            else:
+                # Where the template string appears alone as part of a word, replace it with the name, otherwise
+                # replace it with the Pascal-case name
+                text = re.sub(f"\b{template_str}\b", name, text)
+                text = text.replace(template_str, pascal_name)
 
         open(os.path.join(plugin_path, filename), "w").write(text)
 
-    print(f"Success! The plugin has been created at {plugin_path}. Next steps:\n"
-          f"- Edit the '{PLUGIN_PYFILE}' and '{PLUGIN_DATAFILE}' files in this directory to contain all necessary "
-          "information about this converter and how to run it\n"
-          f"- Run the script `psdi-data-convert-install-plugin {label}` to install it (TODO: script under "
-          "development)\n"
-          "- If this script highlights that formats provided by this plugin may already be in the database,"
-          "follow the provided instructions to resolve this and then run it again")
+    print(f"{TextColors.OKGREEN}Success!{TextColors.ENDC} The plugin has been created at "
+          f"{TextColors.OKCYAN}{plugin_path}{TextColors.ENDC}\nNext steps:\n")
+    print_wrap(f"- Edit the '{TextColors.OKCYAN}{PLUGIN_PYFILE}{TextColors.ENDC}' and "
+               f"'{TextColors.OKCYAN}{PLUGIN_DATAFILE}{TextColors.ENDC}' files in this directory to contain all "
+               "necessary information about this converter and how to run it\n",
+               initial_indent="", subsequent_indent=" "*2)
+    print_wrap(f"- Run the script '{TextColors.WARNING}psdi-data-convert-install-plugins{TextColors.ENDC}' to install "
+               "it\n",
+               initial_indent="", subsequent_indent=" "*2)
+    print_wrap("- If this script highlights that formats provided by this plugin may already be in the database,"
+               "follow the provided instructions to resolve this and then run it again",
+               initial_indent="", subsequent_indent=" "*2)
 
 
 def main():

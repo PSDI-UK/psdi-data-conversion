@@ -18,6 +18,7 @@ from uuid import uuid4
 
 from psdi_data_conversion import database as db
 from psdi_data_conversion.converters import base as converters_base
+from psdi_data_conversion.utils import TextColors, get_wrapped_str, print_wrap
 
 # Constants
 PLUGIN_DATAFILE = "data.json"
@@ -27,12 +28,16 @@ MSG_DOS_NOT_TESTED = "not tested"
 
 L_CONVERTER_EXCLUDE_DIRS = ["example", "template", "script_template"]
 
+# The maximum ID of an extra format which we assume is a manually-assigned ID rather than a UUID
+THRESHOLD_FORMAT_ID = 9999
+
 # Sorting orders for dicts in the JSON output
 L_CONVERTER_SORT_ORDER = [db.DB_NAME_KEY, db.DB_DESCRIPTION_KEY, db.DB_FURTHER_INFO_KEY, db.DB_ID_KEY,
                           db.DB_URL_KEY, db.DB_KEY_PREFIX_KEY, db.DB_SUPPORT_AMBIG_EXT_KEY]
 L_CONVERTS_TO_SORT_ORDER = [db.DB_CONV_ID_KEY, db.DB_IN_ID_KEY, db.DB_OUT_ID_KEY, db.DB_SUCCESS_KEY]
 L_FORMATS_SORT_ORDER = [db.DB_FORMAT_EXT_KEY, db.DB_FORMAT_NOTE_KEY, db.DB_ID_KEY, db.DB_FORMAT_C2X_KEY,
-                        db.DB_FORMAT_COMP_KEY, db.DB_FORMAT_CONN_KEY, db.DB_FORMAT_2D_KEY, db.DB_FORMAT_3D_KEY]
+                        db.DB_FORMAT_COMP_KEY, db.DB_FORMAT_CONN_KEY, db.DB_FORMAT_2D_KEY, db.DB_FORMAT_3D_KEY,
+                        db.DB_FORMAT_CONFIRMED_NEW_KEY]
 L_ARG_INFO_ORDER = [db.DB_FLAG_KEY, db.DB_BRIEF_KEY, db.DB_DESCRIPTION_KEY, db.DB_FURTHER_INFO_KEY, db.DB_ID_KEY]
 
 REPLACEME_ARG_IN_OUT_ID = "REPLACEME_ARG_IN_OR_OUT_ID"
@@ -41,26 +46,6 @@ L_ARG_FORMATS_INFO_ORDER = [db.DB_FORMAT_ID_KEY, REPLACEME_ARG_IN_OUT_ID]
 # Common types
 JsonDict = dict[str, None | int | str | bool | dict | list]
 JsonMainDict = dict[str, None | int | str | bool | JsonDict | list[JsonDict]]
-
-
-def get_sorted_dict(d: dict, l_order: list | None = None):
-    """Returns an ordered dict with a provided sorting order"""
-    if l_order is None:
-        return OrderedDict(sorted(d.items(), key=lambda item: item[0]))
-    return OrderedDict(sorted(d.items(), key=lambda item: l_order.index(item[0])))
-
-
-def sort_json_list(l_d: list[JsonDict], l_order: list | None = None):
-    """Sorts a list of JSON dicts based on values of keys, using the provided list of descending-order importance of
-    keys in sorting
-    """
-    def get_key(d: JsonDict):
-        l_key = [d[x] for x in l_order if x in d]
-        for i, key in enumerate(l_key):
-            if isinstance(key, str):
-                l_key[i] = (key.lower(), key)
-        return tuple(l_key)
-    l_d.sort(key=get_key)
 
 
 def get_argument_parser():
@@ -98,6 +83,32 @@ def parse_args():
     args = parser.parse_args()
 
     return args
+
+
+def get_format_info_str(format_info: JsonDict):
+    """Returns a string which details information about a format"""
+    return (f"{format_info[db.DB_FORMAT_EXT_KEY]} (ID: {format_info[db.DB_ID_KEY]}): "
+            f"{format_info[db.DB_FORMAT_NOTE_KEY]}")
+
+
+def get_sorted_dict(d: dict, l_order: list | None = None):
+    """Returns an ordered dict with a provided sorting order"""
+    if l_order is None:
+        return OrderedDict(sorted(d.items(), key=lambda item: item[0]))
+    return OrderedDict(sorted(d.items(), key=lambda item: l_order.index(item[0])))
+
+
+def sort_json_list(l_d: list[JsonDict], l_order: list | None = None):
+    """Sorts a list of JSON dicts based on values of keys, using the provided list of descending-order importance of
+    keys in sorting
+    """
+    def get_key(d: JsonDict):
+        l_key = [d[x] for x in l_order if x in d]
+        for i, key in enumerate(l_key):
+            if isinstance(key, str):
+                l_key[i] = (key.lower(), key)
+        return tuple(l_key)
+    l_d.sort(key=get_key)
 
 
 def sort_db(db_path: str):
@@ -201,12 +212,157 @@ def run_from_args(args):
     if args.sort_only:
         return sort_db(db_path)
 
-    # Load the formats data into the output dict
+    # Make a dict of converter paths and DBs we want to process
+    conv_parent_path = os.path.split(os.path.realpath(converters_base.__file__))[0]
+    d_conv_db: dict[str, JsonMainDict] = {}
+    s_changed_conv_dbs: set[str] = set()
+    for dir in os.listdir(conv_parent_path):
+        if dir in L_CONVERTER_EXCLUDE_DIRS:
+            continue
+
+        qual_conv_path = os.path.join(conv_parent_path, dir)
+        if not os.path.isdir(qual_conv_path) or not os.path.isfile(os.path.join(qual_conv_path, PLUGIN_DATAFILE)):
+            continue
+
+        d_conv_db[qual_conv_path] = json.load(open(os.path.join(qual_conv_path, PLUGIN_DATAFILE)))
+
+    # Load the formats data and check and process new formats
     l_format_info: list[JsonDict] = json.load(open(os.path.join(db_dir, FORMATS_DATAFILE)))[db.DB_FORMATS_KEY]
+    d_format_info_for_ext: dict[str, list[JsonDict]] = {}
+    for format_info in l_format_info:
+        ext = format_info[db.DB_FORMAT_EXT_KEY]
+        if ext not in d_format_info_for_ext:
+            d_format_info_for_ext[ext] = [format_info]
+        else:
+            d_format_info_for_ext[ext].append(format_info)
+    format_info_updated = False
+
+    questionable_formats_found = False
+    first_questionable_format_found = True
+    for qual_conv_path, db_conv in d_conv_db.items():
+
+        d_format_id_changes: dict[int, int] = {}
+        d_questionable_formats: dict[int, tuple[JsonDict, list[JsonDict]]] = {}
+        l_extra_format_info: list[JsonDict] = db_conv[db.DB_EXTRA_FORMATS_KEY]
+
+        for extra_format_info in l_extra_format_info:
+
+            # Check if this format is questionable as to if it already exists in the database
+            format_id: int = extra_format_info[db.DB_ID_KEY]
+            ext: str = extra_format_info[db.DB_FORMAT_EXT_KEY]
+            if (not args.force and format_id <= THRESHOLD_FORMAT_ID and ext in d_format_info_for_ext
+                    and not extra_format_info.get(db.DB_FORMAT_CONFIRMED_NEW_KEY)):
+                questionable_formats_found = True
+                d_questionable_formats[format_id] = (extra_format_info, d_format_info_for_ext[ext])
+                continue
+
+            # This format is new, so generate a UUID for it if necessary
+            if format_id <= THRESHOLD_FORMAT_ID:
+                d_format_id_changes[format_id] = uuid4().int
+
+        # If we found any questionable formats for this converter, report them now
+        if d_questionable_formats:
+            if first_questionable_format_found:
+                first_questionable_format_found = False
+                print_wrap(f"{TextColors.WARNING}!!! ALERT !!!{TextColors.ENDC}\n"
+                           f"{TextColors.WARNING}-------------{TextColors.ENDC}\n"
+                           "The following formats provided by the converter "
+                           f"'{db_conv[db.DB_CONVERTER_KEY][db.DB_NAME_KEY]}' might already exist in the database. For "
+                           "each, please check against the provided list of possible matches.\n")
+                print(get_wrapped_str("- If it is indeed one of those, remove it from the list of extra formats in the "
+                                      "converter database file", initial_indent="", subsequent_indent=" "*2) +
+                      f" {TextColors.OKCYAN}{os.path.join(qual_conv_path, PLUGIN_DATAFILE)}{TextColors.ENDC}\n" +
+                      get_wrapped_str("and update references to its ID in that file to instead use the ID of its "
+                                      "entry in the database\n", initial_indent=" "*2, subsequent_indent=" "*2)
+                      )
+                print_wrap(f"- If it is not one of those, add a line '{TextColors.WARNING}\"confirmed_new\": "
+                           f"true{TextColors.ENDC}' to its entry in the converter database file\n",
+                           initial_indent="", subsequent_indent=" "*2)
+                print_wrap("Once this is done for all formats listed here, rerun this script. Alternatively, if you "
+                           "confirm that all listed formats are new, you can rerun the script with the "
+                           f"'{TextColors.WARNING}-f/--force{TextColors.ENDC}' flag.\n\n---\n")
+            else:
+                print_wrap(f"\n\n------\n\nThe following formats provided by the converter "
+                           f"'{db_conv[db.DB_CONVERTER_KEY][db.DB_NAME_KEY]}' might already exist in the database:"
+                           "\n\n---\n")
+
+            l_format_matches_strings: list[str] = []
+            for extra_format_info, l_matching_format_info in d_questionable_formats.values():
+                format_matches_string = ("Extra format:\n"
+                                         f"- {get_wrapped_str(get_format_info_str(extra_format_info),
+                                                              initial_indent="", subsequent_indent=" "*2)}\n\n"
+                                         "Potential matches:\n")
+                format_matches_string += "\n".join(["- " + get_wrapped_str(get_format_info_str(format_info),
+                                                                           initial_indent="", subsequent_indent=" "*2)
+                                                   for format_info in l_matching_format_info])
+                l_format_matches_strings.append(format_matches_string)
+            print_wrap("\n\n---\n\n".join(l_format_matches_strings))
+
+            continue
+
+        # If we get here, all formats look good. Now update the IDs of any formats to UUIDs wherever they appear, if
+        # necessary
+
+        if len(l_extra_format_info) > 0:
+            format_info_updated = True
+
+        for extra_format_info in l_extra_format_info:
+            current_id: int = extra_format_info[db.DB_ID_KEY]
+            if current_id in d_format_id_changes:
+                extra_format_info[db.DB_ID_KEY] = d_format_id_changes[current_id]
+
+        for l_format_ids in (db_conv[db.DB_SUPPORTED_FORMATS_KEY],
+                             db_conv[db.DB_IN_ONLY_FORMATS_KEY],
+                             db_conv[db.DB_OUT_ONLY_FORMATS_KEY]):
+            for i, current_id in enumerate(l_format_ids):
+                if current_id in d_format_id_changes:
+                    l_format_ids[i] = d_format_id_changes[current_id]
+
+        for l_conversions in (db_conv[db.DB_SUPPORTED_CONVERSIONS_KEY],
+                              db_conv[db.DB_UNSUPPORTED_CONVERSIONS_KEY],):
+            for d_conversion_info in l_conversions:
+                current_in_id: int = d_conversion_info[db.DB_IN_ID_KEY]
+                if current_in_id in d_format_id_changes:
+                    d_conversion_info[db.DB_IN_ID_KEY] = d_format_id_changes[current_in_id]
+                current_out_id: int = d_conversion_info[db.DB_OUT_ID_KEY]
+                if current_out_id in d_format_id_changes:
+                    d_conversion_info[db.DB_OUT_ID_KEY] = d_format_id_changes[current_out_id]
+
+        for l_args in (db_conv[db.DB_IN_FLAGS_KEY],
+                       db_conv[db.DB_OUT_FLAGS_KEY],
+                       db_conv[db.DB_IN_OPTIONS_KEY],
+                       db_conv[db.DB_OUT_OPTIONS_KEY]):
+            for d_arg_info in l_args:
+                l_format_ids: list[int] = d_arg_info[db.DB_FORMAT_ID_LIST_KEY]
+                for i, current_id in enumerate(l_format_ids):
+                    if current_id in d_format_id_changes:
+                        l_format_ids[i] = d_format_id_changes[current_id]
+
+        # Mark if this converter DB has changed from any format IDs changing
+        if d_format_id_changes:
+            s_changed_conv_dbs.add(qual_conv_path)
+
+        # Add all extra formats to the database now
+        for format_info in l_extra_format_info:
+            assert format_info[db.DB_ID_KEY] > THRESHOLD_FORMAT_ID
+            if db.DB_FORMAT_CONFIRMED_NEW_KEY in format_info:
+                del format_info[db.DB_FORMAT_CONFIRMED_NEW_KEY]
+            l_format_info.append(format_info)
+        db_conv[db.DB_EXTRA_FORMATS_KEY] = []
+
+    # If we found any questionable formats, end execution here to let the user deal with them appropriately
+    if questionable_formats_found:
+        return
+
+    # Sort the format info and add it to the output database
     l_format_info = [get_sorted_dict(x, L_FORMATS_SORT_ORDER) for x in l_format_info]
     sort_json_list(l_format_info, L_FORMATS_SORT_ORDER)
-
     db_out[db.DB_FORMATS_KEY] = l_format_info
+
+    # Update the main format info file if any changes have been made to it
+    if format_info_updated:
+        json.dump({db.DB_FORMATS_KEY: l_format_info},
+                  open(os.path.join(db_dir, FORMATS_DATAFILE), "w"), indent=4)
 
     # Create initial entries for the output dict
     l_db_converters: list[JsonDict] = []
@@ -214,36 +370,23 @@ def run_from_args(args):
     l_db_converts_to: list[JsonDict] = []
     db_out[db.DB_CONVERTS_TO_KEY] = l_db_converts_to
 
-    # Get the directory containing converter plugins
-    conv_parent_path = os.path.split(os.path.realpath(converters_base.__file__))[0]
-
-    for dir in os.listdir(conv_parent_path):
-        if dir in L_CONVERTER_EXCLUDE_DIRS:
-            continue
-
-        conv_path = os.path.join(conv_parent_path, dir)
-        if not os.path.isdir(conv_path) or not os.path.isfile(os.path.join(conv_path, PLUGIN_DATAFILE)):
-            continue
+    for qual_conv_path, db_conv in d_conv_db.items():
 
         # Load data about the converter and add it to the database
-        conv_db_path = os.path.join(conv_path, PLUGIN_DATAFILE)
-        db_conv: JsonMainDict = json.load(open(conv_db_path))
         d_conv_info: JsonDict = db_conv[db.DB_CONVERTER_KEY]
         conv_prefix: str | None = d_conv_info[db.DB_KEY_PREFIX_KEY]
 
         # Generate any missing data
-        conv_db_changed = False
-
         if d_conv_info[db.DB_ID_KEY] is None:
-            conv_db_changed = True
+            s_changed_conv_dbs.add(qual_conv_path)
             d_conv_info[db.DB_ID_KEY] = uuid4().int
 
         if d_conv_info[db.DB_SUPPORT_AMBIG_EXT_KEY] is None:
-            conv_db_changed = True
+            s_changed_conv_dbs.add(qual_conv_path)
             d_conv_info[db.DB_SUPPORT_AMBIG_EXT_KEY] = get_support_ambig_ext(db_conv, db_out)
 
-        if conv_db_changed:
-            json.dump(db_conv, open(conv_db_path, "w"), indent=4)
+        if qual_conv_path in s_changed_conv_dbs:
+            json.dump(db_conv, open(os.path.join(qual_conv_path, PLUGIN_DATAFILE), "w"), indent=4)
 
         conv_id: int = d_conv_info[db.DB_ID_KEY]
 
