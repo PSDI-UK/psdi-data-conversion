@@ -313,7 +313,15 @@ def run_from_args(args):
                 if current_out_id in d_format_id_changes:
                     d_conversion_info[db.DB_OUT_ID_KEY] = d_format_id_changes[current_out_id]
 
-        # TODO: Update for flags and options
+        for l_args in (db_conv[db.DB_IN_FLAGS_KEY],
+                       db_conv[db.DB_OUT_FLAGS_KEY],
+                       db_conv[db.DB_IN_OPTIONS_KEY],
+                       db_conv[db.DB_OUT_OPTIONS_KEY]):
+            for d_arg_info in l_args:
+                l_format_ids: list[int] = d_arg_info[db.DB_FORMAT_ID_LIST_KEY]
+                for i, current_id in l_format_ids:
+                    if current_id in d_format_id_changes:
+                        l_format_ids[i] = d_format_id_changes[current_id]
 
         # Mark if this converter DB has changed from any format IDs changing
         if d_format_id_changes:
