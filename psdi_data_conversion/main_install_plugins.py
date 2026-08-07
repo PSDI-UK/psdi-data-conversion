@@ -18,7 +18,7 @@ from uuid import uuid4
 
 from psdi_data_conversion import database as db
 from psdi_data_conversion.converters import base as converters_base
-from psdi_data_conversion.utils import TextColors, get_wrapped_str, print_wrap
+from psdi_data_conversion.utils import TextColors, get_wrapped_str, in_editable_mode, print_wrap
 
 # Constants
 PLUGIN_DATAFILE = "data.json"
@@ -202,6 +202,12 @@ def run_from_args(args):
     args : Namespace
         The parsed arguments for this script.
     """
+
+    # Check if the package is installed in editable mode
+    if not in_editable_mode():
+        print_wrap(f"{TextColors.FAIL}ERROR:{TextColors.ENDC} To run this script, the package must be installed in "
+                   f"editable mode. Please reinstall with '{TextColors.WARNING}pip install --editable ."
+                   f"{TextColors.ENDC} and re-run this script.")
 
     db_out: JsonMainDict = {}
 

@@ -17,7 +17,7 @@ from argparse import ArgumentParser
 
 from psdi_data_conversion.converters import base as converters_base
 from psdi_data_conversion.testing.utils import get_test_data_loc
-from psdi_data_conversion.utils import TextColors, print_wrap
+from psdi_data_conversion.utils import TextColors, in_editable_mode, print_wrap
 
 PLUGIN_EXAMPLEDIR = "example"
 PLUGIN_TEMPLATEDIR = "template"
@@ -92,6 +92,12 @@ def run_from_args(args):
     args : Namespace
         The parsed arguments for this script.
     """
+
+    # Check if the package is installed in editable mode
+    if not in_editable_mode():
+        print_wrap(f"{TextColors.FAIL}ERROR:{TextColors.ENDC} To run this script, the package must be installed in "
+                   f"editable mode. Please reinstall with '{TextColors.WARNING}pip install --editable ."
+                   f"{TextColors.ENDC} and re-run this script.")
 
     # Get the name and label from input arguments
     name: str = " ".join(args.plugin_name)
