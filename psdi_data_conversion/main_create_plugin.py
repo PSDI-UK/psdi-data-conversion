@@ -96,8 +96,10 @@ def run_from_args(args):
     # Check if the package is installed in editable mode
     if not in_editable_mode():
         print_wrap(f"{TextColors.FAIL}ERROR:{TextColors.ENDC} To run this script, the package must be installed in "
-                   f"editable mode. Please reinstall with '{TextColors.WARNING}pip install --editable ."
-                   f"{TextColors.ENDC} and re-run this script.")
+                   f"editable mode. Please reinstall with:")
+        print(f"{TextColors.WARNING}pip install --editable .{TextColors.ENDC}")
+        print_wrap("and re-run this script.")
+        exit(1)
 
     # Get the name and label from input arguments
     name: str = " ".join(args.plugin_name)
