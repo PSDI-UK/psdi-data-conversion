@@ -67,3 +67,14 @@ def in_editable_mode():
     is_editable: bool = json.loads(direct_url).get("dir_info", {}).get("editable", False)
 
     return is_editable
+
+
+def confirm_editable_mode():
+    """Checks if the `psdi_data_conversion` module is installed in editable mode, and exits the program if not
+    """
+    if not in_editable_mode():
+        print_wrap(f"{TextColors.FAIL}ERROR:{TextColors.ENDC} To run this script, the package must be installed in "
+                   f"editable mode. Please reinstall with:\n")
+        print(f"{TextColors.WARNING}pip install --editable .{TextColors.ENDC}\n")
+        print_wrap("and re-run this script.")
+        exit(1)
