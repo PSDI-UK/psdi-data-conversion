@@ -150,7 +150,7 @@ In the Python layer of the code, each file format converter is defined in its ow
 
 See the `example` package here or one of the extant converter plugins for how this looks in practice.
 
-A new converter can be integrated with the Python layer of the code by:
+A new converter can be integrated with the Python layer of the code through the following steps:
 
 1. Install the project locally by cloning it or downloading the source, then installing by running the following command in the root directory of the project (ideally in a venv): `pip install --editable .[test]`. Installing in `--editable` mode is necessary here so the project source can be detected in the proper place by the scripts used in later steps. Installing the `[test]` dependencies is not strictly necessary, but will be if you want to run tests to ensure you don't break anything.
 
@@ -171,7 +171,7 @@ A new converter can be integrated with the Python layer of the code by:
 
 8. Next, edit the `data.json` file in the package to set information about the converter. Start by filling in the `converter.name`, `converter.desc`, `converter.info`, and `converter.url` entries. The `name` attribute of the class is the most important, as it will be what needs to be specified in the command-line to request this converter. `desc` is a brief description of the converter, `info` is more detailed information and usage notes, and `url` is an appropriate URL for it
 
-9. (TODO: Implement functionality to support this) If this converter supports any formats which are not listed in the `psdi_data_conversion/static/data/formats.json` database file, add information on them here. Assign them IDs in the range 0-9999 and reference them using these IDs when filling out the rest of this file. The installation script will replace these with UUIDs when it's run.
+9. If this converter supports any formats which are not listed in the `psdi_data_conversion/static/data/formats.json` database file, add information on them here. Assign them IDs in the range 0-9999 and reference them using these IDs when filling out the rest of this file. The installation script will replace these with UUIDs when it's run.
 
 10. Add lists of the IDs or UUIDs (in integer form) of the formats this converter fully supports (can be used as both input and output), supports as input only, and supports as output only to the `supported_formats`, `in_only_formats`, and `out_only_formats` entries respectively.
 
@@ -182,6 +182,8 @@ A new converter can be integrated with the Python layer of the code by:
 12. (Optional) If the converter (or the script used to run it) supports any flags or options ("flags" don't take arguments while "options" do) which apply only to some input/output formats, add information on them to the `in_flags`, `out_flags`, `in_options`, and `out_options` entries, along with lists of the IDs/UUIDs of formats each flag or option applies to (see the example plugin's `data.json` for the structure of these entries).
 
 13. Once everything is set up, run the script `psdi-data-convert-install-plugins`, which will parse the information you've provided and add it to the primary datafile at `psdi_data_conversion/static/data/data.json` as well as update it as appropriate (e.g. assigning a UUID to the converter if you didn't already give it one)
+
+14. The installation script will check if any extra formats added by a converter plugin share an extension with any formats already in the database, to check in case the format you're adding is in fact already in the database. If it detects that this is the case (and you haven't yet signalled that you're sure they're new), the installation step will not complete, and it will provide information on how to resolve this. If this happens, follow the provided steps, and then re-run the installation script.
 
 It should now be functional for both the Python library and the CLI. The `psdi_data_conversion.converter` module parses all modules in the `converters` package to find converters, so if you've done everything correctly, it will find the new converter and register it for you. You can test that it is properly registered by using the CLI to run:
 

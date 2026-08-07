@@ -18,7 +18,7 @@ from uuid import uuid4
 
 from psdi_data_conversion import database as db
 from psdi_data_conversion.converters import base as converters_base
-from psdi_data_conversion.utils import TextColors, get_wrapped_str, print_wrap
+from psdi_data_conversion.utils import TextColors, confirm_editable_mode, get_wrapped_str, print_wrap
 
 # Constants
 PLUGIN_DATAFILE = "data.json"
@@ -202,6 +202,9 @@ def run_from_args(args):
     args : Namespace
         The parsed arguments for this script.
     """
+
+    # Check if the package is installed in editable mode
+    confirm_editable_mode()
 
     db_out: JsonMainDict = {}
 
