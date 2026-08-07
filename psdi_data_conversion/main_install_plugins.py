@@ -291,10 +291,10 @@ def run_from_args(args):
 
             l_format_matches_strings: list[str] = []
             for extra_format_info, l_matching_format_info in d_questionable_formats.values():
-                format_matches_string = ("Extra format:\n"
-                                         f"- {get_wrapped_str(get_format_info_str(extra_format_info),
-                                                              initial_indent="", subsequent_indent=" "*2)}\n\n"
-                                         "Potential matches:\n")
+                format_matches_string = ("Extra format:\n- " +
+                                         get_wrapped_str(get_format_info_str(extra_format_info),
+                                                         initial_indent="", subsequent_indent=" "*2) +
+                                         "\n\nPotential matches:\n")
                 format_matches_string += "\n".join(["- " + get_wrapped_str(get_format_info_str(format_info),
                                                                            initial_indent="", subsequent_indent=" "*2)
                                                    for format_info in l_matching_format_info])
