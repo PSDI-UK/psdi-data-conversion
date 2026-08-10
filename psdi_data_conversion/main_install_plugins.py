@@ -18,7 +18,8 @@ from uuid import uuid4
 
 from psdi_data_conversion import database as db
 from psdi_data_conversion.converters import base as converters_base
-from psdi_data_conversion.utils import TextColors, confirm_editable_mode, get_wrapped_str, print_wrap
+from psdi_data_conversion.utils import (JsonDict, JsonMainDict, TextColors, confirm_editable_mode, get_wrapped_str,
+                                        print_wrap)
 
 # Constants
 PLUGIN_DATAFILE = "data.json"
@@ -42,10 +43,6 @@ L_ARG_INFO_ORDER = [db.DB_FLAG_KEY, db.DB_BRIEF_KEY, db.DB_DESCRIPTION_KEY, db.D
 
 REPLACEME_ARG_IN_OUT_ID = "REPLACEME_ARG_IN_OR_OUT_ID"
 L_ARG_FORMATS_INFO_ORDER = [db.DB_FORMAT_ID_KEY, REPLACEME_ARG_IN_OUT_ID]
-
-# Common types
-JsonDict = dict[str, None | int | str | bool | dict | list]
-JsonMainDict = dict[str, None | int | str | bool | JsonDict | list[JsonDict]]
 
 
 def get_argument_parser():

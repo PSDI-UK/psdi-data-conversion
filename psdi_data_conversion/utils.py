@@ -15,6 +15,10 @@ from importlib.metadata import Distribution
 from psdi_data_conversion.constants import TERM_WIDTH
 from psdi_data_conversion.file_io import get_package_path
 
+# Common types
+JsonDict = dict[str, None | int | str | bool | dict | list]
+JsonMainDict = dict[str, None | int | str | bool | JsonDict | list[JsonDict]]
+
 
 class TextColors:
     HEADER = '\033[95m'
