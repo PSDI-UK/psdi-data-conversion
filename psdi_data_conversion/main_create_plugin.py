@@ -102,7 +102,7 @@ def run_from_args(args):
 
     # Get the name and label from input arguments
     name: str = " ".join(args.plugin_name)
-    name = name.strip("'\"")
+    name = name.strip("'\"").strip()
 
     label: str | None = args.label
     if label:

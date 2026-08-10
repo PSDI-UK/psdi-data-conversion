@@ -51,12 +51,17 @@ class TestCreatePlugin:
     PLUGIN_NAME = "Test Plugin Name"
     PLUGIN_NAME_2 = "Test Plugin Name 2"
     PLUGIN_NAME_3 = "Test Plugin Name 3"
+    PLUGIN_NAME_4 = "Test Plugin Name 4"
     SCRIPT_PLUGIN_NAME = "Test Script Plugin Name"
     SCRIPT_PLUGIN_NAME_2 = "Test Script Plugin Name 2"
+    UNCONVERTABLE_NAME = "++"
 
     # Test label we'll use for the plugin, differing from that generated from the name
     TEST_PLUGIN_LABEL = "test_plugin_label"
+    TEST_PLUGIN_LABEL_2 = "test_plugin_label_2"
     TEST_SCRIPT_PLUGIN_LABEL = "test_script_plugin_label"
+    INVALID_LABEL_CAPS = "Label"
+    INVALID_LABEL_CHAR = "label++"
 
     # Values set during execution
     mock_repo: str | None = None
@@ -183,3 +188,14 @@ class TestCreatePlugin:
         self._run_create_plugin(self.PLUGIN_NAME_2, label=self.TEST_PLUGIN_LABEL, check=False)
         process = self._run_create_plugin(self.PLUGIN_NAME_3, label=self.TEST_PLUGIN_LABEL, expect_fail=True)
         assert f"Label '{self.TEST_PLUGIN_LABEL}' clashes"
+
+        # Test we get a failure if the name can't be converted to a valid label, but not if we provide a valid label
+        process = self._run_create_plugin(self.UNCONVERTABLE_NAME, expect_fail=True)
+        assert f"A valid label could not be generated from converter name '{self.UNCONVERTABLE_NAME}'" in process.stderr
+        self._run_create_plugin(self.UNCONVERTABLE_NAME, label=self.TEST_PLUGIN_LABEL_2)
+
+        # Test we get a failure if the provided label is invalid
+        process = self._run_create_plugin(self.PLUGIN_NAME_4, label=self.INVALID_LABEL_CAPS, expect_fail=True)
+        assert f"Label '{self.INVALID_LABEL_CAPS}' is invalid" in process.stderr
+        process = self._run_create_plugin(self.PLUGIN_NAME_4, label=self.INVALID_LABEL_CHAR, expect_fail=True)
+        assert f"Label '{self.INVALID_LABEL_CHAR}' is invalid" in process.stderr
