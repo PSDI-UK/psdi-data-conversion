@@ -6,11 +6,14 @@ Miscellaneous utility functions used by this project
 
 
 import json
+import os
 import sys
 import textwrap
+from functools import lru_cache
 from importlib.metadata import Distribution
 
 from psdi_data_conversion.constants import TERM_WIDTH
+from psdi_data_conversion.file_io import get_package_path
 
 
 class TextColors:
@@ -78,3 +81,19 @@ def confirm_editable_mode():
         print(f"{TextColors.WARNING}pip install --editable .{TextColors.ENDC}\n")
         print_wrap("and re-run this script.")
         exit(1)
+
+
+@lru_cache(maxsize=1)
+def get_project_path() -> str:
+    """Gets the absolute path to where the project is on disk, using the package path to find it and checking that it
+    contains the expected files
+    """
+
+    project_path = os.path.abspath(os.path.join(get_package_path(), ".."))
+
+    # Check that the project path contains the expected test_data folder
+    if not os.path.isfile(os.path.join(project_path, "pyproject.toml")):
+        raise FileNotFoundError(f"Project path was expected to be '{project_path}', but this does not contain the "
+                                f"expected file 'pyproject.toml'")
+
+    return project_path

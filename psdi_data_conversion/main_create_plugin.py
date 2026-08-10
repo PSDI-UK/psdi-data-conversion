@@ -15,9 +15,9 @@ import shutil
 import sys
 from argparse import ArgumentParser
 
-from psdi_data_conversion.converters import base as converters_base
 from psdi_data_conversion.testing.utils import get_test_data_loc
-from psdi_data_conversion.utils import TextColors, confirm_editable_mode, print_wrap
+from psdi_data_conversion.utils import TextColors as TC
+from psdi_data_conversion.utils import confirm_editable_mode, get_project_path, print_wrap
 
 PLUGIN_EXAMPLEDIR = "example"
 PLUGIN_TEMPLATEDIR = "template"
@@ -58,11 +58,15 @@ def get_argument_parser():
                         help="If set, will create the plugin using the 'ScriptFileConverter' base class, which uses "
                         "a script to run the conversion. The script will by default be named `{label}.sh`")
 
-    parser.add_argument("--test", action="store_true",
+    parser.add_argument("--test-path", type=str, default=None,
+                        help="Used for testing purposes. When set, will perform the installation in a copy of the "
+                        "project (which must already exist) at the provided path, so as not to change the actual repo.")
+
+    parser.add_argument("--test-data", action="store_true",
                         help="Used for testing purposes. When set, will alter functionality of this script to retrieve "
                         "a premade test converter plugin from the `test_data` folder. In this "
                         "mode, the required `plugin_name` argument will instead be used as the name of the subfolder "
-                        "for the test plugin within `test_data`, e.g. arguments `test_converter --test` will "
+                        "for the test plugin within `test_data`, e.g. arguments `test_converter --test-data` will "
                         "retrieve the test plugin at `test_data/test_converter`.")
 
     return parser
@@ -104,26 +108,37 @@ def run_from_args(args):
     if label:
         # Check that the label appears to be properly in snake_case
         if label != label.lower().replace(" ", "_") or NON_SNAKE_CASE_CHAR_RE.search(label):
-            print_wrap(f"{TextColors.FAIL}ERROR:{TextColors.ENDC} Label '{label}' is invalid. The label should be in "
-                       "snake_case (all lower-case with underscores in place of spaces), containing only letters,"
-                       "digits, and underscores", err=True)
+            print_wrap(f"{TC.FAIL}ERROR:{TC.ENDC} Label '{label}' is invalid. The label should be in snake_case (all "
+                       "lower-case with underscores in place of spaces), containing only letters, digits, "
+                       "and underscores", err=True)
             exit(1)
     else:
         # Create the label by converting the name to snake_case and stripping invalid characters
         label = NON_SNAKE_CASE_CHAR_RE.sub("", name.lower().replace(" ", "_"))
         if not label:
-            print_wrap(f"{TextColors.FAIL}ERROR:{TextColors.ENDC} A valid label could not be generated from converter "
-                       f"name '{name}'. Please specify a label directly with '--label ...'. The label should be in "
-                       "snake_case (all lower-case with underscores in place of spaces), containing only letters, "
-                       "digits, and underscores", err=True)
+            print_wrap(f"{TC.FAIL}ERROR:{TC.ENDC} A valid label could not be generated from converter name '{name}'. "
+                       f"Please specify a label directly with '{TC.WARNING}--label LABEL{TC.ENDC}'. The label should "
+                       "be in snake_case (all lower-case with underscores in place of spaces), containing only "
+                       "letters, digits, and underscores", err=True)
             exit(1)
 
     # Determine the PascalCase name of the converter (to be used for classes)
     l_name_words = name.split(" ")
     pascal_name = "".join(map(lambda x: x.capitalize(), l_name_words))
 
+    # Get the project path to use based on if we're using a test path or not
+    if args.test_path:
+        project_path: str = os.path.realpath(args.test_path)
+        if not os.path.isdir(project_path):
+            print_wrap(f"{TC.FAIL}ERROR:{TC.ENDC} When running this script with '{TC.WARNING}--test-path TEST_PATH" +
+                       f"{TC.ENDC}', the provided path ({TC.OKCYAN}{project_path}{TC.ENDC}) must already exist.",
+                       err=True)
+            exit(1)
+    else:
+        project_path = get_project_path()
+
     # Get the directory containing converter plugins
-    conv_path = os.path.split(os.path.realpath(converters_base.__file__))[0]
+    conv_path = os.path.join(project_path, "psdi_data_conversion", "converters")
 
     # Check for any name clashes with existing converters
     for dir in os.listdir(conv_path):
@@ -131,24 +146,24 @@ def run_from_args(args):
         if not os.path.isdir(qual_dir) or not os.path.isfile(os.path.join(qual_dir, "__init__.py")):
             continue
         if label == dir:
-            if args.test:
+            if args.test_data:
                 # In test mode, don't worry if it already exists, just delete it so it doesn't clash
                 shutil.rmtree(qual_dir)
                 break
             else:
-                print_wrap(f"{TextColors.FAIL}ERROR:{TextColors.ENDC} Label '{label}' clashes with the label of an "
+                print_wrap(f"{TC.FAIL}ERROR:{TC.ENDC} Label '{label}' clashes with the label of an "
                            "existing converter plugin. Please choose a different label (or different name if this was "
                            "determined from the name)", err=True)
                 exit(1)
         conv_module = import_from_path(label, os.path.join(qual_dir, PLUGIN_PYFILE))
         if name == conv_module.converter.meta.name:
-            print_wrap(f"{TextColors.FAIL}ERROR:{TextColors.ENDC} Name '{name}' clashes with the name of an existing "
+            print_wrap(f"{TC.FAIL}ERROR:{TC.ENDC} Name '{name}' clashes with the name of an existing "
                        "converter plugin. Please choose a different name", err=True)
             exit(1)
 
     # Determine which template directory to use and other related info
-    if args.test:
-        template_path = os.path.join(get_test_data_loc(), name)
+    if args.test_data:
+        template_path = os.path.join(get_test_data_loc(args.test_path), name)
         template_str: str = "Template"
     elif args.script:
         template_path = os.path.join(conv_path, PLUGIN_SCRIPT_TEMPLATEDIR)
@@ -164,7 +179,7 @@ def run_from_args(args):
     for filename in (PLUGIN_PYFILE, PLUGIN_DATAFILE):
         text = open(os.path.join(template_path, filename)).read()
 
-        if not args.test:
+        if not args.test_data:
             # Replace template info as appropriate
             if filename == PLUGIN_DATAFILE:
                 text = text.replace(template_str, name.replace(r'"', r'\"'))
@@ -176,13 +191,13 @@ def run_from_args(args):
 
         open(os.path.join(plugin_path, filename), "w").write(text)
 
-    print(f"{TextColors.OKGREEN}Success!{TextColors.ENDC} The plugin has been created at "
-          f"{TextColors.OKCYAN}{plugin_path}{TextColors.ENDC}\nNext steps:\n")
-    print_wrap(f"- Edit the '{TextColors.OKCYAN}{PLUGIN_PYFILE}{TextColors.ENDC}' and "
-               f"'{TextColors.OKCYAN}{PLUGIN_DATAFILE}{TextColors.ENDC}' files in this directory to contain all "
+    print(f"{TC.OKGREEN}Success!{TC.ENDC} The plugin has been created at "
+          f"{TC.OKCYAN}{plugin_path}{TC.ENDC}\nNext steps:\n")
+    print_wrap(f"- Edit the '{TC.OKCYAN}{PLUGIN_PYFILE}{TC.ENDC}' and "
+               f"'{TC.OKCYAN}{PLUGIN_DATAFILE}{TC.ENDC}' files in this directory to contain all "
                "necessary information about this converter and how to run it\n",
                initial_indent="", subsequent_indent=" "*2)
-    print_wrap(f"- Run the script '{TextColors.WARNING}psdi-data-convert-install-plugins{TextColors.ENDC}' to install "
+    print_wrap(f"- Run the script '{TC.WARNING}psdi-data-convert-install-plugins{TC.ENDC}' to install "
                "it\n",
                initial_indent="", subsequent_indent=" "*2)
     print_wrap("- If this script highlights that formats provided by this plugin may already be in the database,"

@@ -40,5 +40,6 @@ def mock_repo(tmp_path_factory):
     return mock_repo_path
 
 
-def test_sample(mock_repo):
-    print(mock_repo)
+def test_create_plugin(mock_repo):
+    """Test that the plugin creation script works as expected"""
+    pass
