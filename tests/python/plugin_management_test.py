@@ -47,14 +47,15 @@ class TestCreatePlugin:
 
     # Constants
 
-    # Test name we'll use for the plugin
+    # Test names we'll use for the plugins
     PLUGIN_NAME = "Test Plugin Name"
-
-    # Expected label generated for the plugin based on the above name
-    EX_PLUGIN_LABEL = "test_plugin_name"
+    PLUGIN_NAME_2 = "Test Plugin Name 2"
+    SCRIPT_PLUGIN_NAME = "Test Script Plugin Name"
+    SCRIPT_PLUGIN_NAME_2 = "Test Script Plugin Name 2"
 
     # Test label we'll use for the plugin, differing from that generated from the name
     TEST_PLUGIN_LABEL = "test_plugin_label"
+    TEST_SCRIPT_PLUGIN_LABEL = "test_script_plugin_label"
 
     # Values set during execution
     mock_repo: str | None = None
@@ -97,7 +98,7 @@ class TestCreatePlugin:
             self._conv_data = json.load(open(self.data_path))
         return self._conv_data
 
-    def _run_create_plugin(self, name: str, label: str | None = None, script=False):
+    def _run_create_plugin(self, name: str, label: str | None = None, script=False, expect_fail=False, check=True):
         """Calls the script to create a plugin"""
 
         l_args = ["psdi-data-convert-create-plugin", name, "--test-path", self.mock_repo]
@@ -106,35 +107,44 @@ class TestCreatePlugin:
         if script:
             l_args.append("--script")
 
-        return subprocess.run(l_args, capture_output=True, text=True)
+        process = subprocess.run(l_args, capture_output=True, text=True)
 
-    def test_create_plugin(self):
-        """Test that the plugin creation script works as expected"""
-        process = self._run_create_plugin(self.PLUGIN_NAME)
-
-        # Check there was no error in execution
-        if process.returncode:
+        if not expect_fail and process.returncode:
             pytest.fail(f"Plugin creation failed with return code {process.returncode} and stderr:\n{process.stderr}")
+        elif expect_fail and not process.returncode:
+            pytest.fail(f"Plugin creation succeeded when failure was expected with stdout:\n{process.stdout}")
 
-        # Check that the plugin was created as expected
-        self.plugin_path: str = os.path.join(self.conv_path, self.EX_PLUGIN_LABEL)
+        if check:
+            self._check_plugin(name, label=label, script=script)
+
+        return process
+
+    def _check_plugin(self, name: str, label: str | None = None, script=False):
+
+        if label is None:
+            label = "_".join(name.split()).lower()
+
+        self.plugin_path: str = os.path.join(self.conv_path, label)
         assert os.path.isdir(self.plugin_path)
         assert os.path.isfile(os.path.join(self.plugin_path, "__init__.py"))
         assert os.path.isfile(self.conv_module_path)
         assert os.path.isfile(self.data_path)
 
         # Check that the converter module was created as expected
-        assert f"{self.PLUGIN_NAME.replace(" ", "")} file converter" in self.conv_module_text
-        assert f"class {self.PLUGIN_NAME.replace(" ", "")}FileConverter(FileConverter)" in self.conv_module_text
-        assert (f"File converter specialised to use {self.PLUGIN_NAME.replace(" ", "")} for conversions"
-                in self.conv_module_text)
-        assert f"converter = {self.PLUGIN_NAME.replace(" ", "")}FileConverter" in self.conv_module_text
+        pascal_name = "".join([x.capitalize() for x in name.split(" ")]).replace(" ", "")
+        assert f"{pascal_name} file converter" in self.conv_module_text
+        if not script:
+            assert f"class {pascal_name}FileConverter(FileConverter)" in self.conv_module_text
+        else:
+            assert f"class {pascal_name}FileConverter(ScriptFileConverter)" in self.conv_module_text
+        assert f"File converter specialised to use {pascal_name} for conversions" in self.conv_module_text
+        assert f"converter = {pascal_name}FileConverter" in self.conv_module_text
 
         # Check that the data was created as expected
         conv_meta: utils.JsonDict = self.conv_data[db.DB_CONVERTER_KEY]
         assert conv_meta[db.DB_ID_KEY] is None
-        assert conv_meta[db.DB_NAME_KEY] == self.PLUGIN_NAME
-        assert conv_meta[db.DB_DESC_KEY] == f"{self.PLUGIN_NAME} converter plugin"
+        assert conv_meta[db.DB_NAME_KEY] == name
+        assert conv_meta[db.DB_DESC_KEY] == f"{name} converter plugin"
         assert conv_meta[db.DB_INFO_KEY] == ""
         assert conv_meta[db.DB_URL_KEY] == ""
         assert conv_meta[db.DB_SUPPORT_AMBIG_EXT_KEY] is None
@@ -146,3 +156,16 @@ class TestCreatePlugin:
             val: list = self.conv_data[key]
             assert isinstance(self.conv_data[key], list)
             assert len(val) == 0
+
+    def test_create_plugin_simple(self):
+        """Test that the plugin creation script works as expected in simple cases"""
+
+        # Test a simple case where just a name is supplied
+        self._run_create_plugin(self.PLUGIN_NAME)
+
+        # Test a case where we provide a separate label that isn't generated from the name
+        self._run_create_plugin(self.PLUGIN_NAME_2, label=self.TEST_PLUGIN_LABEL)
+
+        # Then repeat these with a script plugin
+        self._run_create_plugin(self.SCRIPT_PLUGIN_NAME, script=True)
+        self._run_create_plugin(self.SCRIPT_PLUGIN_NAME_2, label=self.TEST_SCRIPT_PLUGIN_LABEL, script=True)
