@@ -7,6 +7,7 @@ Tests of the scripts to create and install converter plugins
 
 import os
 import shutil
+from pathlib import Path
 
 import pytest
 
@@ -25,9 +26,19 @@ def check_editable_mode():
 
 @pytest.fixture()
 def mock_repo(tmp_path_factory):
-    """A fixture that provides a temporary copy of the project repo
+    """A fixture that provides a temporary copy of the project repo, ignoring various files and folders that are
+    unneeded for this test
     """
-    with tmp_path_factory.mktemp("mock-repo") as tmp_path:
-        mock_repo_path = os.path.join(tmp_path, "psdi-data-conversion")
-        shutil.copytree(PROJECT_PATH, mock_repo_path)
-        yield mock_repo_path
+    tmp_path: Path = tmp_path_factory.mktemp("mock-repo")
+    mock_repo_path = os.path.join(tmp_path, "psdi-data-conversion")
+    shutil.copytree(PROJECT_PATH, mock_repo_path, symlinks=True,
+                    ignore=shutil.ignore_patterns(".*", "bin", "gui", "templates", "scripts", "tests", "doc", "html",
+                                                  "*.md", "*.html", "*.toml", "Dockerfile", "LICENSE", "__pycache__",
+                                                  "testing", "output", "*.mmcif", "*.cif", "*.ins", "*.mol",
+                                                  "*.molden", "*.tar", "*.tar.gz", "*.zip", "*.inchi", "*.cub", "*.xyz",
+                                                  "*.pdb", "*.outmol", "*.cdxml", "*.cdjson", "*:Zone.Identifier"))
+    return mock_repo_path
+
+
+def test_sample(mock_repo):
+    print(mock_repo)
