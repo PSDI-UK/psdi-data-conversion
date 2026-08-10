@@ -50,6 +50,7 @@ class TestCreatePlugin:
     # Test names we'll use for the plugins
     PLUGIN_NAME = "Test Plugin Name"
     PLUGIN_NAME_2 = "Test Plugin Name 2"
+    PLUGIN_NAME_3 = "Test Plugin Name 3"
     SCRIPT_PLUGIN_NAME = "Test Script Plugin Name"
     SCRIPT_PLUGIN_NAME_2 = "Test Script Plugin Name 2"
 
@@ -114,7 +115,7 @@ class TestCreatePlugin:
         elif expect_fail and not process.returncode:
             pytest.fail(f"Plugin creation succeeded when failure was expected with stdout:\n{process.stdout}")
 
-        if check:
+        if check and not expect_fail:
             self._check_plugin(name, label=label, script=script)
 
         return process
@@ -169,3 +170,16 @@ class TestCreatePlugin:
         # Then repeat these with a script plugin
         self._run_create_plugin(self.SCRIPT_PLUGIN_NAME, script=True)
         self._run_create_plugin(self.SCRIPT_PLUGIN_NAME_2, label=self.TEST_SCRIPT_PLUGIN_LABEL, script=True)
+
+    def test_create_plugin_fail_cases(self):
+        """Test that the plugin creation script fails when expected to"""
+
+        # Test that we get a failure when there's a name clash
+        self._run_create_plugin(self.PLUGIN_NAME, check=False)
+        process = self._run_create_plugin(self.PLUGIN_NAME, label=self.TEST_PLUGIN_LABEL, expect_fail=True)
+        assert f"Name '{self.PLUGIN_NAME}' clashes" in process.stderr
+
+        # Test that we get a failure when there's a label clash
+        self._run_create_plugin(self.PLUGIN_NAME_2, label=self.TEST_PLUGIN_LABEL, check=False)
+        process = self._run_create_plugin(self.PLUGIN_NAME_3, label=self.TEST_PLUGIN_LABEL, expect_fail=True)
+        assert f"Label '{self.TEST_PLUGIN_LABEL}' clashes"
