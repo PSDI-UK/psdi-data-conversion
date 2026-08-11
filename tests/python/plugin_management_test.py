@@ -287,9 +287,33 @@ class TestInstallPlugins(PluginManagementBase):
         """Test installing a plugin where it's questionable whether one of the formats in it might already be in the
         database"""
         self._create_test_plugin("questionable")
+
+        # Save a copy of the database from before installing to ensure it isn't changed
+        self.plugin_path = os.path.join(self.conv_path, "test_converter_questionable")
+        conv_data_init = self.conv_data
+
         process = self._run_install_plugins(expect_fail=True)
         assert process.returncode == 2
-        # TODO - implement checks that the plugin has not been installed
+
+        # Check that the converter's data hasn't been changed
+        self.plugin_path = os.path.join(self.conv_path, "test_converter_questionable")
+        conv_data_post_install = self.conv_data
+
+        assert conv_data_init == conv_data_post_install
+
+        # Now try setting the questionable format as confirmed new, and check that we can install after doing so
+        format_data: utils.JsonDict = self.conv_data[db.DB_EXTRA_FORMATS_KEY][4]
+
+        # Check that we have the right format, in case the index of it changes, so we catch it explictly here
+        assert format_data[db.DB_FORMAT_EXT_KEY] == "mol"
+
+        # Set it as confirmed new and save it
+        format_data[db.DB_FORMAT_CONFIRMED_NEW_KEY] = True
+        json.dump(self.conv_data, open(self.data_path, "w"))
+
+        # And check that it works if we run again
+        self._run_install_plugins()
+        self._check_plugin_installed("questionable")
 
     def test_questionable_install_force(self):
         """Test installing a plugin where it's questionable whether one of the formats in it might already be in the
