@@ -15,6 +15,7 @@ import pytest
 
 from psdi_data_conversion import database as db
 from psdi_data_conversion import utils
+from psdi_data_conversion.main_install_plugins import THRESHOLD_FORMAT_ID
 
 PROJECT_PATH = os.path.realpath(os.path.join(utils.__file__, "../.."))
 
@@ -222,20 +223,53 @@ class TestInstallPlugins(PluginManagementBase):
 
         return process
 
-    def _run_install_plugins(self, expect_fail=False):
+    def _run_install_plugins(self, force=False, expect_fail=False):
         """Calls the script to install plugins"""
 
         l_args: list[str] = ["psdi-data-convert-install-plugins", "--test-path", self.mock_repo]
 
+        if force:
+            l_args.append("-f")
+
         process = subprocess.run(l_args, capture_output=True, text=True)
 
         if not expect_fail and process.returncode:
-            pytest.fail(
-                f"Plugin installation failed with return code {process.returncode} and stderr:\n{process.stderr}")
+            pytest.fail(f"Plugin installation failed with return code {process.returncode}, stdout:\n{process.stdout}\n"
+                        f"and stderr:\n{process.stderr}")
         elif expect_fail and not process.returncode:
             pytest.fail(f"Plugin installation succeeded when failure was expected with stdout:\n{process.stdout}")
 
         return process
+
+    def _check_plugin_installed(self, which: str):
+        """Checks that a test plugin has been successfully installed"""
+
+        # Set the name of the plugin and get its JSON data
+        self.plugin_path: str = os.path.join(self.conv_path, f"test_converter_{which}")
+        conv_data = self.conv_data
+
+        # Look through the converter's data to check that it all appears to be installed
+        conv_meta: utils.JsonDict = conv_data[db.DB_CONVERTER_KEY]
+        assert conv_meta[db.DB_ID_KEY] > THRESHOLD_FORMAT_ID
+        assert conv_meta[db.DB_SUPPORT_AMBIG_EXT_KEY] is not None
+
+        # Check that no extra formats remain in the converter's data
+        assert len(conv_data[db.DB_EXTRA_FORMATS_KEY]) == 0
+
+        # Check that all referenced format IDs have been converted to UUIDs
+        for key in (db.DB_SUPPORTED_FORMATS_KEY, db.DB_IN_ONLY_FORMATS_KEY, db.DB_OUT_ONLY_FORMATS_KEY):
+            for format_id in conv_data[key]:
+                assert format_id > THRESHOLD_FORMAT_ID
+
+        for key in (db.DB_SUPPORTED_CONVERSIONS_KEY, db.DB_UNSUPPORTED_CONVERSIONS_KEY):
+            for d_conversion in conv_data[key]:
+                assert d_conversion[db.DB_IN_ID_KEY] > THRESHOLD_FORMAT_ID
+                assert d_conversion[db.DB_OUT_ID_KEY] > THRESHOLD_FORMAT_ID
+
+        for key in (db.DB_IN_FLAGS_KEY, db.DB_OUT_FLAGS_KEY, db.DB_IN_OPTIONS_KEY, db.DB_OUT_OPTIONS_KEY):
+            for d_flag in conv_data[key]:
+                for format_id in d_flag[db.DB_FORMATS_KEY]:
+                    assert format_id > THRESHOLD_FORMAT_ID
 
     def test_simple_install(self):
         """Test installing a simple plugin"""
@@ -253,5 +287,6 @@ class TestInstallPlugins(PluginManagementBase):
         """Test installing a plugin where it's questionable whether one of the formats in it might already be in the
         database"""
         self._create_test_plugin("questionable")
-        self._run_install_plugins(expect_fail=True)
+        process = self._run_install_plugins(expect_fail=True)
+        assert process.returncode == 2
         # TODO - implement checks that the plugin has not been installed

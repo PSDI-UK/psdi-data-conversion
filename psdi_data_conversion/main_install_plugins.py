@@ -17,9 +17,9 @@ from itertools import product
 from uuid import uuid4
 
 from psdi_data_conversion import database as db
-from psdi_data_conversion.converters import base as converters_base
-from psdi_data_conversion.utils import (JsonDict, JsonMainDict, TextColors, confirm_editable_mode, get_wrapped_str,
-                                        print_wrap)
+from psdi_data_conversion.utils import JsonDict, JsonMainDict
+from psdi_data_conversion.utils import TextColors as TC
+from psdi_data_conversion.utils import confirm_editable_mode, get_project_path, get_wrapped_str, print_wrap
 
 # Constants
 PLUGIN_DATAFILE = "data.json"
@@ -59,6 +59,10 @@ def get_argument_parser():
     parser.add_argument("-f", "--force", type=str, default=None,
                         help="Assume that all provided formats are new and don't ask for confirmation if they resemble "
                         "any existing formats")
+
+    parser.add_argument("--test-path", type=str, default=None,
+                        help="Used for testing purposes. When set, will perform the installation in a copy of the "
+                        "project (which must already exist) at the provided path, so as not to change the actual repo.")
 
     return parser
 
@@ -108,7 +112,7 @@ def sort_json_list(l_d: list[JsonDict], l_order: list | None = None):
     l_d.sort(key=get_key)
 
 
-def sort_db(db_path: str):
+def sort_db(db_path: str, project_path: str):
     """Sort the existing database"""
     db_out: JsonMainDict = json.load(open(db_path))
     db_out = get_sorted_dict(db_out)
@@ -126,7 +130,7 @@ def sort_db(db_path: str):
         db_out[db.DB_CONVERTS_TO_KEY][i] = get_sorted_dict(d, L_CONVERTS_TO_SORT_ORDER)
 
     # Get the directory containing converter plugins
-    conv_path = os.path.split(os.path.realpath(converters_base.__file__))[0]
+    conv_path = os.path.join(project_path, "psdi_data_conversion", "converters")
     for dir in os.listdir(conv_path):
         if dir in ("example", "template", "script_template"):
             continue
@@ -205,15 +209,26 @@ def run_from_args(args):
 
     db_out: JsonMainDict = {}
 
-    # Get the main database path and directory
-    db_path = db.get_database_path()
+    # Get the project and database paths to use based on if we're using a test path or not
+    if args.test_path:
+        project_path: str = os.path.realpath(args.test_path)
+        if not os.path.isdir(project_path):
+            print_wrap(f"{TC.FAIL}ERROR:{TC.ENDC} When running this script with '{TC.WARNING}--test-path TEST_PATH" +
+                       f"{TC.ENDC}', the provided path ({TC.OKCYAN}{project_path}{TC.ENDC}) must already exist.",
+                       err=True)
+            exit(1)
+        db_path = os.path.join(project_path, "psdi_data_conversion", "static", "data", "data.json")
+    else:
+        db_path: str = db.get_database_path()
+        project_path = get_project_path()
+
     db_dir = os.path.split(db_path)[0]
 
     if args.sort_only:
-        return sort_db(db_path)
+        return sort_db(db_path, project_path)
 
     # Make a dict of converter paths and DBs we want to process
-    conv_parent_path = os.path.split(os.path.realpath(converters_base.__file__))[0]
+    conv_parent_path = os.path.join(project_path, "psdi_data_conversion", "converters")
     d_conv_db: dict[str, JsonMainDict] = {}
     s_changed_conv_dbs: set[str] = set()
     for dir in os.listdir(conv_parent_path):
@@ -264,23 +279,23 @@ def run_from_args(args):
         if d_questionable_formats:
             if first_questionable_format_found:
                 first_questionable_format_found = False
-                print_wrap(f"{TextColors.WARNING}!!! ALERT !!!{TextColors.ENDC}\n"
-                           f"{TextColors.WARNING}-------------{TextColors.ENDC}\n"
+                print_wrap(f"{TC.WARNING}!!! ALERT !!!{TC.ENDC}\n"
+                           f"{TC.WARNING}-------------{TC.ENDC}\n"
                            "The following formats provided by the converter "
                            f"'{db_conv[db.DB_CONVERTER_KEY][db.DB_NAME_KEY]}' might already exist in the database. For "
                            "each, please check against the provided list of possible matches.\n")
                 print(get_wrapped_str("- If it is indeed one of those, remove it from the list of extra formats in the "
                                       "converter database file", initial_indent="", subsequent_indent=" "*2) +
-                      f" {TextColors.OKCYAN}{os.path.join(qual_conv_path, PLUGIN_DATAFILE)}{TextColors.ENDC}\n" +
+                      f" {TC.OKCYAN}{os.path.join(qual_conv_path, PLUGIN_DATAFILE)}{TC.ENDC}\n" +
                       get_wrapped_str("and update references to its ID in that file to instead use the ID of its "
                                       "entry in the database\n", initial_indent=" "*2, subsequent_indent=" "*2)
                       )
-                print_wrap(f"- If it is not one of those, add a line '{TextColors.WARNING}\"confirmed_new\": "
-                           f"true{TextColors.ENDC}' to its entry in the converter database file\n",
+                print_wrap(f"- If it is not one of those, add a line '{TC.WARNING}\"confirmed_new\": "
+                           f"true{TC.ENDC}' to its entry in the converter database file\n",
                            initial_indent="", subsequent_indent=" "*2)
                 print_wrap("Once this is done for all formats listed here, rerun this script. Alternatively, if you "
                            "confirm that all listed formats are new, you can rerun the script with the "
-                           f"'{TextColors.WARNING}-f/--force{TextColors.ENDC}' flag.\n\n---\n")
+                           f"'{TC.WARNING}-f/--force{TC.ENDC}' flag.\n\n---\n")
             else:
                 print_wrap(f"\n\n------\n\nThe following formats provided by the converter "
                            f"'{db_conv[db.DB_CONVERTER_KEY][db.DB_NAME_KEY]}' might already exist in the database:"
@@ -352,7 +367,7 @@ def run_from_args(args):
 
     # If we found any questionable formats, end execution here to let the user deal with them appropriately
     if questionable_formats_found:
-        return
+        exit(2)
 
     # Sort the format info and add it to the output database
     l_format_info = [get_sorted_dict(x, L_FORMATS_SORT_ORDER) for x in l_format_info]
