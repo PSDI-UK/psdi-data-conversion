@@ -43,7 +43,54 @@ def mock_repo(tmp_path_factory):
     return mock_repo_path
 
 
-class TestCreatePlugin:
+class PluginManagementBase:
+
+    # Values set during execution
+    mock_repo: str | None = None
+    conv_path: str | None = None
+    _plugin_path: str | None = None
+    conv_module_path: str | None = None
+    data_path: str | None = None
+    _conv_module_text: str | None = None
+    _conv_data: utils.JsonMainDict | None = None
+
+    @pytest.fixture(autouse=True)
+    def _setup(self, mock_repo):
+        """Setup for each test"""
+        self.mock_repo = mock_repo
+        self.conv_path = os.path.join(self.mock_repo, "psdi_data_conversion", "converters")
+
+    def _reset_plugin_info(self):
+        self._conv_module_text = None
+        self._conv_data = None
+
+    @property
+    def plugin_path(self):
+        return self._plugin_path
+
+    @plugin_path.setter
+    def plugin_path(self, val: str):
+        self._plugin_path = val
+        self.conv_module_path = os.path.join(self._plugin_path, "converter.py")
+        self.data_path = os.path.join(self._plugin_path, "data.json")
+
+        # Reset private variables that depend on this
+        self._reset_plugin_info()
+
+    @property
+    def conv_module_text(self) -> str:
+        if not self._conv_module_text:
+            self._conv_module_text = open(self.conv_module_path).read()
+        return self._conv_module_text
+
+    @property
+    def conv_data(self) -> utils.JsonMainDict:
+        if not self._conv_data:
+            self._conv_data = json.load(open(self.data_path))
+        return self._conv_data
+
+
+class TestCreatePlugin(PluginManagementBase):
 
     # Constants
 
@@ -62,47 +109,6 @@ class TestCreatePlugin:
     TEST_SCRIPT_PLUGIN_LABEL = "test_script_plugin_label"
     INVALID_LABEL_CAPS = "Label"
     INVALID_LABEL_CHAR = "label++"
-
-    # Values set during execution
-    mock_repo: str | None = None
-    conv_path: str | None = None
-    _plugin_path: str | None = None
-    conv_module_path: str | None = None
-    data_path: str | None = None
-    _conv_module_text: str | None = None
-    _conv_data: utils.JsonMainDict | None = None
-
-    @pytest.fixture(autouse=True)
-    def _setup(self, mock_repo):
-        """Setup for each test"""
-        self.mock_repo = mock_repo
-        self.conv_path = os.path.join(self.mock_repo, "psdi_data_conversion", "converters")
-
-    @property
-    def plugin_path(self):
-        return self._plugin_path
-
-    @plugin_path.setter
-    def plugin_path(self, val: str):
-        self._plugin_path = val
-        self.conv_module_path = os.path.join(self._plugin_path, "converter.py")
-        self.data_path = os.path.join(self._plugin_path, "data.json")
-
-        # Reset private variables that depend on this
-        self._conv_module_text = None
-        self._conv_data = None
-
-    @property
-    def conv_module_text(self) -> str:
-        if not self._conv_module_text:
-            self._conv_module_text = open(self.conv_module_path).read()
-        return self._conv_module_text
-
-    @property
-    def conv_data(self) -> utils.JsonMainDict:
-        if not self._conv_data:
-            self._conv_data = json.load(open(self.data_path))
-        return self._conv_data
 
     def _run_create_plugin(self, name: str, label: str | None = None, script=False, expect_fail=False, check=True):
         """Calls the script to create a plugin"""
@@ -199,3 +205,53 @@ class TestCreatePlugin:
         assert f"Label '{self.INVALID_LABEL_CAPS}' is invalid" in process.stderr
         process = self._run_create_plugin(self.PLUGIN_NAME_4, label=self.INVALID_LABEL_CHAR, expect_fail=True)
         assert f"Label '{self.INVALID_LABEL_CHAR}' is invalid" in process.stderr
+
+
+class TestInstallPlugins(PluginManagementBase):
+
+    def _create_test_plugin(self, which: str):
+        """Calls the plugin creation script in test mode """
+
+        l_args: list[str] = ["psdi-data-convert-create-plugin", f"test_converter_{which}", "--test-data", "--test-path",
+                             self.mock_repo]
+
+        process = subprocess.run(l_args, capture_output=True, text=True)
+        if process.returncode:
+            pytest.fail(
+                f"Test plugin creation failed with return code {process.returncode} and stderr:\n{process.stderr}")
+
+        return process
+
+    def _run_install_plugins(self, expect_fail=False):
+        """Calls the script to install plugins"""
+
+        l_args: list[str] = ["psdi-data-convert-install-plugins", "--test-path", self.mock_repo]
+
+        process = subprocess.run(l_args, capture_output=True, text=True)
+
+        if not expect_fail and process.returncode:
+            pytest.fail(
+                f"Plugin installation failed with return code {process.returncode} and stderr:\n{process.stderr}")
+        elif expect_fail and not process.returncode:
+            pytest.fail(f"Plugin installation succeeded when failure was expected with stdout:\n{process.stdout}")
+
+        return process
+
+    def test_simple_install(self):
+        """Test installing a simple plugin"""
+        self._create_test_plugin("simple")
+        self._run_install_plugins()
+        # TODO - implement checks that the plugin has indeed been installed
+
+    def test_complex_install(self):
+        """Test installing a complex plugin"""
+        self._create_test_plugin("complex")
+        self._run_install_plugins()
+        # TODO - implement checks that the plugin has indeed been installed
+
+    def test_questionable_install(self):
+        """Test installing a plugin where it's questionable whether one of the formats in it might already be in the
+        database"""
+        self._create_test_plugin("questionable")
+        self._run_install_plugins(expect_fail=True)
+        # TODO - implement checks that the plugin has not been installed
