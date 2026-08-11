@@ -268,20 +268,20 @@ class TestInstallPlugins(PluginManagementBase):
 
         for key in (db.DB_IN_FLAGS_KEY, db.DB_OUT_FLAGS_KEY, db.DB_IN_OPTIONS_KEY, db.DB_OUT_OPTIONS_KEY):
             for d_flag in conv_data[key]:
-                for format_id in d_flag[db.DB_FORMATS_KEY]:
+                for format_id in d_flag[db.DB_FORMAT_ID_LIST_KEY]:
                     assert format_id > THRESHOLD_FORMAT_ID
 
     def test_simple_install(self):
         """Test installing a simple plugin"""
         self._create_test_plugin("simple")
         self._run_install_plugins()
-        # TODO - implement checks that the plugin has indeed been installed
+        self._check_plugin_installed("simple")
 
     def test_complex_install(self):
         """Test installing a complex plugin"""
         self._create_test_plugin("complex")
         self._run_install_plugins()
-        # TODO - implement checks that the plugin has indeed been installed
+        self._check_plugin_installed("complex")
 
     def test_questionable_install(self):
         """Test installing a plugin where it's questionable whether one of the formats in it might already be in the
@@ -290,3 +290,10 @@ class TestInstallPlugins(PluginManagementBase):
         process = self._run_install_plugins(expect_fail=True)
         assert process.returncode == 2
         # TODO - implement checks that the plugin has not been installed
+
+    def test_questionable_install_force(self):
+        """Test installing a plugin where it's questionable whether one of the formats in it might already be in the
+        database"""
+        self._create_test_plugin("questionable")
+        self._run_install_plugins(force=True)
+        self._check_plugin_installed("questionable")

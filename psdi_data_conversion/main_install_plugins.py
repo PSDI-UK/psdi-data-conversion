@@ -56,7 +56,7 @@ def get_argument_parser():
 
     parser = ArgumentParser()
 
-    parser.add_argument("-f", "--force", type=str, default=None,
+    parser.add_argument("-f", "--force", action="store_true", default=None,
                         help="Assume that all provided formats are new and don't ask for confirmation if they resemble "
                         "any existing formats")
 
