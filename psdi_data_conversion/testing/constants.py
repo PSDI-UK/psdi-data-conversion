@@ -9,6 +9,9 @@ import os
 # Locations relative to the root directory of the project - to ensure the files are found, tests should chdir to this
 # directory before searching for files
 
+# Environmental variable which sets this to use a mock version of the repo at the provided location
+TEST_PATH_KEY = "TEST_PATH"
+
 TEST_DATA_LOC_IN_PROJECT = "test_data"
 
 INPUT_TEST_DATA_LOC_IN_PROJECT = TEST_DATA_LOC_IN_PROJECT

@@ -11,7 +11,6 @@ import shlex
 import sys
 from collections.abc import Callable, Iterable
 from dataclasses import dataclass, field
-from functools import lru_cache
 from math import isclose
 from tempfile import TemporaryDirectory
 from typing import Any
@@ -25,51 +24,37 @@ from psdi_data_conversion.converter import run_converter
 from psdi_data_conversion.converters.openbabel.converter import COORD_GEN_KEY, COORD_GEN_QUAL_KEY
 from psdi_data_conversion.database import get_format_info
 from psdi_data_conversion.dist import LINUX_LABEL, get_dist
-from psdi_data_conversion.file_io import get_package_path, is_archive, split_archive_ext
+from psdi_data_conversion.file_io import is_archive, split_archive_ext
 from psdi_data_conversion.main import main as data_convert_main
 from psdi_data_conversion.testing.constants import (INPUT_TEST_DATA_LOC_IN_PROJECT, OUTPUT_TEST_DATA_LOC_IN_PROJECT,
                                                     TEST_DATA_LOC_IN_PROJECT)
+from psdi_data_conversion.utils import get_project_path
 
 
-@lru_cache(maxsize=1)
-def get_project_path() -> str:
-    """Gets the absolute path to where the project is on disk, using the package path to find it and checking that it
-    contains the expected files
-
-    Returns
-    -------
-    str
-    """
-
-    project_path = os.path.abspath(os.path.join(get_package_path(), ".."))
-
-    # Check that the project path contains the expected test_data folder
-    if not os.path.isdir(os.path.join(project_path, TEST_DATA_LOC_IN_PROJECT)):
-        raise FileNotFoundError(f"Project path was expected to be '{project_path}', but this does not contain the "
-                                f"expected directory '{TEST_DATA_LOC_IN_PROJECT}'")
-
-    return project_path
-
-
-def get_path_in_project(filename):
+def get_path_in_project(filename, test_path: str | None = None):
     """Get the realpath to a file contained within the project, given its project-relative path"""
 
-    abs_path = os.path.abspath(os.path.join(get_project_path(), filename))
+    if test_path:
+        project_path: str = test_path
+    else:
+        project_path = get_project_path()
+
+    abs_path = os.path.abspath(os.path.join(project_path, filename))
 
     return abs_path
 
 
-def get_test_data_loc():
+def get_test_data_loc(test_path: str | None = None):
     """Get the realpath of the base directory containing all data for tests"""
     return get_path_in_project(TEST_DATA_LOC_IN_PROJECT)
 
 
-def get_input_test_data_loc():
+def get_input_test_data_loc(test_path: str | None = None):
     """Get the realpath of the base directory containing input data for tests"""
     return get_path_in_project(INPUT_TEST_DATA_LOC_IN_PROJECT)
 
 
-def get_output_test_data_loc():
+def get_output_test_data_loc(test_path: str | None = None):
     """Get the realpath of the base directory containing expected output data for tests"""
     return get_path_in_project(OUTPUT_TEST_DATA_LOC_IN_PROJECT)
 
