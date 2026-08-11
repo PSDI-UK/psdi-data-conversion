@@ -15,7 +15,9 @@ import pytest
 
 from psdi_data_conversion import database as db
 from psdi_data_conversion import utils
-from psdi_data_conversion.main_install_plugins import TEST_PATH_KEY, THRESHOLD_FORMAT_ID
+from psdi_data_conversion.main_create_plugin import TEST_DATA_KEY
+from psdi_data_conversion.main_install_plugins import THRESHOLD_FORMAT_ID
+from psdi_data_conversion.testing.constants import TEST_PATH_KEY
 
 PROJECT_PATH = os.path.realpath(os.path.join(utils.__file__, "../.."))
 
@@ -114,13 +116,15 @@ class TestCreatePlugin(PluginManagementBase):
     def _run_create_plugin(self, name: str, label: str | None = None, script=False, expect_fail=False, check=True):
         """Calls the script to create a plugin"""
 
-        l_args = ["psdi-data-convert-create-plugin", name, "--test-path", self.mock_repo]
+        l_args = ["psdi-data-convert-create-plugin", name]
         if label:
             l_args += ["--label", label]
         if script:
             l_args.append("--script")
+        env = {**os.environ,
+               TEST_PATH_KEY: self.mock_repo}
 
-        process = subprocess.run(l_args, capture_output=True, text=True)
+        process = subprocess.run(l_args, capture_output=True, text=True, env=env)
 
         if not expect_fail and process.returncode:
             pytest.fail(f"Plugin creation failed with return code {process.returncode} and stderr:\n{process.stderr}")
@@ -213,10 +217,12 @@ class TestInstallPlugins(PluginManagementBase):
     def _create_test_plugin(self, which: str):
         """Calls the plugin creation script in test mode """
 
-        l_args: list[str] = ["psdi-data-convert-create-plugin", f"test_converter_{which}", "--test-data", "--test-path",
-                             self.mock_repo]
+        l_args: list[str] = ["psdi-data-convert-create-plugin", f"test_converter_{which}"]
+        env = {**os.environ,
+               TEST_PATH_KEY: self.mock_repo,
+               TEST_DATA_KEY: "True"}
 
-        process = subprocess.run(l_args, capture_output=True, text=True)
+        process = subprocess.run(l_args, capture_output=True, text=True, env=env)
         if process.returncode:
             pytest.fail(
                 f"Test plugin creation failed with return code {process.returncode} and stderr:\n{process.stderr}")

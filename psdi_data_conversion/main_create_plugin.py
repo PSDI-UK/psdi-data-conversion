@@ -15,6 +15,7 @@ import shutil
 import sys
 from argparse import ArgumentParser
 
+from psdi_data_conversion.testing.constants import TEST_PATH_KEY
 from psdi_data_conversion.testing.utils import get_test_data_loc
 from psdi_data_conversion.utils import TextColors as TC
 from psdi_data_conversion.utils import confirm_editable_mode, get_project_path, print_wrap
@@ -26,6 +27,12 @@ PLUGIN_PYFILE = "converter.py"
 PLUGIN_DATAFILE = "data.json"
 
 NON_SNAKE_CASE_CHAR_RE = re.compile(r"[^a-zA-Z0-9_]")
+
+# Environmental variable to alter functionality of this script to retrieve a premade test converter plugin from the
+# `test_data` folder. In this mode, the required `plugin_name` argument will instead be used as the name of the
+# subfolder for the test plugin within `test_data`, e.g. `TEST_DATA=true psdi-data-convert-create-plugin test_converter`
+# will retrieve the test plugin at `test_data/test_converter`."
+TEST_DATA_KEY = "TEST_DATA"
 
 
 def import_from_path(module_name, file_path):
@@ -57,17 +64,6 @@ def get_argument_parser():
     parser.add_argument("--script", action="store_true",
                         help="If set, will create the plugin using the 'ScriptFileConverter' base class, which uses "
                         "a script to run the conversion. The script will by default be named `{label}.sh`")
-
-    parser.add_argument("--test-path", type=str, default=None,
-                        help="Used for testing purposes. When set, will perform the installation in a copy of the "
-                        "project (which must already exist) at the provided path, so as not to change the actual repo.")
-
-    parser.add_argument("--test-data", action="store_true",
-                        help="Used for testing purposes. When set, will alter functionality of this script to retrieve "
-                        "a premade test converter plugin from the `test_data` folder. In this "
-                        "mode, the required `plugin_name` argument will instead be used as the name of the subfolder "
-                        "for the test plugin within `test_data`, e.g. arguments `test_converter --test-data` will "
-                        "retrieve the test plugin at `test_data/test_converter`.")
 
     return parser
 
@@ -127,8 +123,8 @@ def run_from_args(args):
     pascal_name = "".join(map(lambda x: x.capitalize(), l_name_words))
 
     # Get the project path to use based on if we're using a test path or not
-    if args.test_path:
-        project_path: str = os.path.realpath(args.test_path)
+    if os.environ[TEST_PATH_KEY]:
+        project_path: str = os.path.realpath(os.environ[TEST_PATH_KEY])
         if not os.path.isdir(project_path):
             print_wrap(f"{TC.FAIL}ERROR:{TC.ENDC} When running this script with '{TC.WARNING}--test-path TEST_PATH" +
                        f"{TC.ENDC}', the provided path ({TC.OKCYAN}{project_path}{TC.ENDC}) must already exist.",
@@ -146,7 +142,7 @@ def run_from_args(args):
         if not os.path.isdir(qual_dir) or not os.path.isfile(os.path.join(qual_dir, "__init__.py")):
             continue
         if label == dir:
-            if args.test_data:
+            if os.environ.get(TEST_DATA_KEY):
                 # In test mode, don't worry if it already exists, just delete it so it doesn't clash
                 shutil.rmtree(qual_dir)
                 break
@@ -162,8 +158,8 @@ def run_from_args(args):
             exit(1)
 
     # Determine which template directory to use and other related info
-    if args.test_data:
-        template_path = os.path.join(get_test_data_loc(args.test_path), name)
+    if os.environ.get(TEST_DATA_KEY):
+        template_path = os.path.join(get_test_data_loc(os.environ[TEST_DATA_KEY]), name)
         template_str: str = "Template"
     elif args.script:
         template_path = os.path.join(conv_path, PLUGIN_SCRIPT_TEMPLATEDIR)
@@ -179,7 +175,7 @@ def run_from_args(args):
     for filename in (PLUGIN_PYFILE, PLUGIN_DATAFILE):
         text = open(os.path.join(template_path, filename)).read()
 
-        if not args.test_data:
+        if not os.environ.get(TEST_DATA_KEY):
             # Replace template info as appropriate
             if filename == PLUGIN_DATAFILE:
                 text = text.replace(template_str, name.replace(r'"', r'\"'))

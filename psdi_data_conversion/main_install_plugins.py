@@ -17,6 +17,7 @@ from itertools import product
 from uuid import uuid4
 
 from psdi_data_conversion import database as db
+from psdi_data_conversion.testing.constants import TEST_PATH_KEY
 from psdi_data_conversion.utils import JsonDict, JsonMainDict
 from psdi_data_conversion.utils import TextColors as TC
 from psdi_data_conversion.utils import confirm_editable_mode, get_project_path, get_wrapped_str, print_wrap
@@ -43,9 +44,6 @@ L_ARG_INFO_ORDER = [db.DB_FLAG_KEY, db.DB_BRIEF_KEY, db.DB_DESCRIPTION_KEY, db.D
 
 REPLACEME_ARG_IN_OUT_ID = "REPLACEME_ARG_IN_OR_OUT_ID"
 L_ARG_FORMATS_INFO_ORDER = [db.DB_FORMAT_ID_KEY, REPLACEME_ARG_IN_OUT_ID]
-
-# Environmental variable which sets this to use a mock version of the repo at the provided location
-TEST_PATH_KEY = "TEST_PATH"
 
 
 def get_argument_parser():
