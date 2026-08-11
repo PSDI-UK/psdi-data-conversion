@@ -27,9 +27,10 @@
 
 ### New and Changed Functionality
 
-- The database structure has been reworked so that now converter plugins "own" all data specifically relevant to them, stored in the `data.json` file in their plugin folder. For the time being, the singular database file is still used on runtime, but rather than this file being maintained manually, it is now generated from the new script `psdi_data_conversion_install_plugins`
+- The database structure has been reworked so that now converter plugins "own" all data specifically relevant to them, stored in the `data.json` file in their plugin folder. For the time being, the singular database file is still used on runtime, but rather than this file being maintained manually, it is now generated from the new script `psdi-data-convert-install-plugins`
   - The one piece of database information which isn't "owned" by converter plugins is the list of formats, since multiple converters can handle the same format in many cases, and allowing converters to own this information could result in different converters using different UUIDs for the same format. This is now stored in the file `psdi_data_conversion/static/data/formats.json`
-    - TODO: Allow support for "extra_formats" in a converter's `data.json` file, so support for new formats can be added by only editing the files in the converter plugin's directory.
+    - For formats which the converter supports but which do not already exist in the database, these can be provided in the "extra_formats" entry in its `data.json` file. The installation script will check in case any of these share an extension with a format already in the database. If any are found, the script will abort with an alert to double-check that these formats are new, and confirm if so
+- The convenience script `psdi-data-convert-create-plugin` has been added to create a stub for a new converter plugin
 - The database method `get_converter_info` can now be called without a `name` argument, and will return a list of info on all converters
 - The converter info provided by queries to the database methods now contains member variables `supported` and `registered` indicating the status of the converter:
   - Both `False`: The converter is known to exist, but we currently provide no support for it
