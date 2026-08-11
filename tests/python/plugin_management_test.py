@@ -22,12 +22,9 @@ from psdi_data_conversion.testing.constants import TEST_PATH_KEY
 PROJECT_PATH = os.path.realpath(os.path.join(utils.__file__, "../.."))
 
 
-@pytest.fixture(autouse=True, scope="module")
-def check_editable_mode():
-    """An autouse fixture for all tests in this module which causes them to fail if the package isn't installed in
-    "editable" mode.
-    """
-    utils.confirm_editable_mode()
+if not utils.in_editable_mode():
+    pytest.skip(reason="Plugin management scripts can only be tested when the project is installed in --editable mode",
+                allow_module_level=True)
 
 
 @pytest.fixture()
