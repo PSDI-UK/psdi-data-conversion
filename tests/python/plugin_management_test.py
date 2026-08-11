@@ -15,7 +15,7 @@ import pytest
 
 from psdi_data_conversion import database as db
 from psdi_data_conversion import utils
-from psdi_data_conversion.main_install_plugins import THRESHOLD_FORMAT_ID
+from psdi_data_conversion.main_install_plugins import TEST_PATH_KEY, THRESHOLD_FORMAT_ID
 
 PROJECT_PATH = os.path.realpath(os.path.join(utils.__file__, "../.."))
 
@@ -226,12 +226,14 @@ class TestInstallPlugins(PluginManagementBase):
     def _run_install_plugins(self, force=False, expect_fail=False):
         """Calls the script to install plugins"""
 
-        l_args: list[str] = ["psdi-data-convert-install-plugins", "--test-path", self.mock_repo]
+        l_args: list[str] = ["psdi-data-convert-install-plugins"]
 
         if force:
             l_args.append("-f")
 
-        process = subprocess.run(l_args, capture_output=True, text=True)
+        env = {**os.environ, TEST_PATH_KEY: self.mock_repo}
+
+        process = subprocess.run(l_args, capture_output=True, text=True, env=env)
 
         if not expect_fail and process.returncode:
             pytest.fail(f"Plugin installation failed with return code {process.returncode}, stdout:\n{process.stdout}\n"

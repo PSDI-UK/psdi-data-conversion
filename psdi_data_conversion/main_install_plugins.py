@@ -44,6 +44,9 @@ L_ARG_INFO_ORDER = [db.DB_FLAG_KEY, db.DB_BRIEF_KEY, db.DB_DESCRIPTION_KEY, db.D
 REPLACEME_ARG_IN_OUT_ID = "REPLACEME_ARG_IN_OR_OUT_ID"
 L_ARG_FORMATS_INFO_ORDER = [db.DB_FORMAT_ID_KEY, REPLACEME_ARG_IN_OUT_ID]
 
+# Environmental variable which sets this to use a mock version of the repo at the provided location
+TEST_PATH_KEY = "TEST_PATH"
+
 
 def get_argument_parser():
     """Get an argument parser for this script.
@@ -59,10 +62,6 @@ def get_argument_parser():
     parser.add_argument("-f", "--force", action="store_true", default=None,
                         help="Assume that all provided formats are new and don't ask for confirmation if they resemble "
                         "any existing formats")
-
-    parser.add_argument("--test-path", type=str, default=None,
-                        help="Used for testing purposes. When set, will perform the installation in a copy of the "
-                        "project (which must already exist) at the provided path, so as not to change the actual repo.")
 
     return parser
 
@@ -210,10 +209,10 @@ def run_from_args(args):
     db_out: JsonMainDict = {}
 
     # Get the project and database paths to use based on if we're using a test path or not
-    if args.test_path:
-        project_path: str = os.path.realpath(args.test_path)
+    if os.environ[TEST_PATH_KEY]:
+        project_path: str = os.path.realpath(os.environ[TEST_PATH_KEY])
         if not os.path.isdir(project_path):
-            print_wrap(f"{TC.FAIL}ERROR:{TC.ENDC} When running this script with '{TC.WARNING}--test-path TEST_PATH" +
+            print_wrap(f"{TC.FAIL}ERROR:{TC.ENDC} When running this script with '{TC.WARNING}{TEST_PATH_KEY}=$TEST_PATH"
                        f"{TC.ENDC}', the provided path ({TC.OKCYAN}{project_path}{TC.ENDC}) must already exist.",
                        err=True)
             exit(1)
