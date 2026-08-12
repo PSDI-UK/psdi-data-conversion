@@ -8,7 +8,6 @@ Python module provide utilities for accessing the converter database
 from __future__ import annotations
 
 import json
-import os
 import sys
 import warnings
 from copy import copy
@@ -16,6 +15,7 @@ from dataclasses import dataclass, field
 from functools import lru_cache
 from itertools import product
 from logging import getLogger
+from pathlib import Path
 from typing import Any, Literal, overload
 from uuid import UUID
 from warnings import catch_warnings
@@ -1533,16 +1533,10 @@ class DataConversionDatabase:
 _database: DataConversionDatabase | None = None
 
 
-def get_database_path() -> str:
+def get_database_path() -> Path:
     """Get the absolute path to the database file
-
-    Returns
-    -------
-    str
     """
-
-    qualified_database_filename = os.path.join(get_package_path(), const.DATABASE_FILENAME)
-
+    qualified_database_filename = get_package_path() / const.DATABASE_FILENAME
     return qualified_database_filename
 
 

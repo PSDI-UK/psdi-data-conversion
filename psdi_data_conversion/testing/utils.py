@@ -12,6 +12,7 @@ import sys
 from collections.abc import Callable, Iterable
 from dataclasses import dataclass, field
 from math import isclose
+from pathlib import Path
 from tempfile import TemporaryDirectory
 from typing import Any
 from unittest.mock import patch
@@ -31,32 +32,32 @@ from psdi_data_conversion.testing.constants import (INPUT_TEST_DATA_LOC_IN_PROJE
 from psdi_data_conversion.utils import get_project_path
 
 
-def get_path_in_project(filename, test_path: str | None = None):
+def get_path_in_project(filename: str, test_path: Path | None = None):
     """Get the realpath to a file contained within the project, given its project-relative path"""
 
     if test_path:
-        project_path: str = test_path
+        project_path: Path = test_path
     else:
         project_path = get_project_path()
 
-    abs_path = os.path.abspath(os.path.join(project_path, filename))
+    abs_path = (project_path / filename).resolve()
 
     return abs_path
 
 
-def get_test_data_loc(test_path: str | None = None):
+def get_test_data_loc(test_path: Path | None = None):
     """Get the realpath of the base directory containing all data for tests"""
-    return get_path_in_project(TEST_DATA_LOC_IN_PROJECT)
+    return get_path_in_project(TEST_DATA_LOC_IN_PROJECT, test_path=test_path)
 
 
-def get_input_test_data_loc(test_path: str | None = None):
+def get_input_test_data_loc(test_path: Path | None = None):
     """Get the realpath of the base directory containing input data for tests"""
-    return get_path_in_project(INPUT_TEST_DATA_LOC_IN_PROJECT)
+    return get_path_in_project(INPUT_TEST_DATA_LOC_IN_PROJECT, test_path=test_path)
 
 
-def get_output_test_data_loc(test_path: str | None = None):
+def get_output_test_data_loc(test_path: Path | None = None):
     """Get the realpath of the base directory containing expected output data for tests"""
-    return get_path_in_project(OUTPUT_TEST_DATA_LOC_IN_PROJECT)
+    return get_path_in_project(OUTPUT_TEST_DATA_LOC_IN_PROJECT, test_path=test_path)
 
 
 @dataclass

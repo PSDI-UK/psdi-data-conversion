@@ -134,7 +134,7 @@ def run_from_args(args):
                        err=True)
             exit(1)
     else:
-        project_path = Path(get_project_path())
+        project_path = get_project_path()
 
     # Get the directory containing converter plugins
     conv_path = project_path / "psdi_data_conversion/converters"
@@ -162,7 +162,7 @@ def run_from_args(args):
 
     # Determine which template directory to use and other related info
     if os.environ.get(TEST_DATA_KEY):
-        template_path = Path(get_test_data_loc(os.environ[TEST_DATA_KEY])) / name
+        template_path = get_test_data_loc(Path(os.environ[TEST_PATH_KEY])) / name
         template_str: str = "Template"
     elif args.script:
         template_path = conv_path / PLUGIN_SCRIPT_TEMPLATEDIR

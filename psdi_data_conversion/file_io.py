@@ -8,6 +8,7 @@ Functions and classes related to general filesystem input/output
 import glob
 import os
 from functools import lru_cache
+from pathlib import Path
 from shutil import copyfile, make_archive, unpack_archive
 from tempfile import TemporaryDirectory
 
@@ -15,7 +16,7 @@ from psdi_data_conversion import constants as const
 
 
 @lru_cache(maxsize=1)
-def get_package_path() -> str:
+def get_package_path() -> Path:
     """Gets the absolute path to where the `psdi_data_conversion` package is on disk
 
     Returns
@@ -24,9 +25,9 @@ def get_package_path() -> str:
     """
 
     # For an interactive shell, __file__ won't be defined for this module, so use the constants module instead
-    reference_file = os.path.realpath(const.__file__)
+    reference_file = Path(const.__file__).resolve()
 
-    package_path = os.path.dirname(reference_file)
+    package_path = reference_file.parent
 
     return package_path
 

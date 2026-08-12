@@ -217,8 +217,8 @@ def run_from_args(args):
             exit(1)
         db_path = project_path / "psdi_data_conversion/static/data/data.json"
     else:
-        db_path = Path(db.get_database_path())
-        project_path = Path(get_project_path())
+        db_path = db.get_database_path()
+        project_path = get_project_path()
 
     db_dir: Path = db_path.parent
 

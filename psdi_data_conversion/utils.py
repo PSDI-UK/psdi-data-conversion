@@ -6,11 +6,11 @@ Miscellaneous utility functions used by this project
 
 
 import json
-import os
 import sys
 import textwrap
 from functools import lru_cache
 from importlib.metadata import Distribution
+from pathlib import Path
 
 from psdi_data_conversion.constants import TERM_WIDTH
 from psdi_data_conversion.file_io import get_package_path
@@ -88,15 +88,15 @@ def confirm_editable_mode():
 
 
 @lru_cache(maxsize=1)
-def get_project_path() -> str:
+def get_project_path() -> Path:
     """Gets the absolute path to where the project is on disk, using the package path to find it and checking that it
     contains the expected files
     """
 
-    project_path = os.path.abspath(os.path.join(get_package_path(), ".."))
+    project_path = (get_package_path() / "..").resolve()
 
     # Check that the project path contains the expected test_data folder
-    if not os.path.isfile(os.path.join(project_path, "pyproject.toml")):
+    if not (project_path / "pyproject.toml").is_file():
         raise FileNotFoundError(f"Project path was expected to be '{project_path}', but this does not contain the "
                                 f"expected file 'pyproject.toml'")
 
