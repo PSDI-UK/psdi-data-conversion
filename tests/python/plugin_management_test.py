@@ -19,7 +19,7 @@ from psdi_data_conversion.main_create_plugin import TEST_DATA_KEY
 from psdi_data_conversion.main_install_plugins import THRESHOLD_FORMAT_ID
 from psdi_data_conversion.testing.constants import TEST_PATH_KEY
 
-PROJECT_PATH = os.path.realpath(os.path.join(utils.__file__, "../.."))
+PROJECT_PATH = (Path(utils.__file__) / "../..").resolve()
 
 
 if not utils.in_editable_mode():
@@ -28,12 +28,12 @@ if not utils.in_editable_mode():
 
 
 @pytest.fixture()
-def mock_repo(tmp_path_factory):
+def mock_repo(tmp_path_factory) -> Path:
     """A fixture that provides a temporary copy of the project repo, ignoring various files and folders that are
     unneeded for this test
     """
     tmp_path: Path = tmp_path_factory.mktemp("mock-repo")
-    mock_repo_path = os.path.join(tmp_path, "psdi-data-conversion")
+    mock_repo_path: Path = tmp_path / "psdi-data-conversion"
     shutil.copytree(PROJECT_PATH, mock_repo_path, symlinks=True,
                     ignore=shutil.ignore_patterns(".*", "bin", "gui", "templates", "scripts", "tests", "doc", "html",
                                                   "*.md", "*.html", "*.toml", "Dockerfile", "LICENSE", "__pycache__",
@@ -47,10 +47,10 @@ class PluginManagementBase:
 
     # Values set during execution
     mock_repo: str | None = None
-    conv_path: str | None = None
-    _plugin_path: str | None = None
-    conv_module_path: str | None = None
-    data_path: str | None = None
+    conv_path: Path | None = None
+    _plugin_path: Path | None = None
+    conv_module_path: Path | None = None
+    data_path: Path | None = None
     _conv_module_text: str | None = None
     _conv_data: utils.JsonMainDict | None = None
 
@@ -58,21 +58,21 @@ class PluginManagementBase:
     def _setup(self, mock_repo):
         """Setup for each test"""
         self.mock_repo = mock_repo
-        self.conv_path = os.path.join(self.mock_repo, "psdi_data_conversion", "converters")
+        self.conv_path = self.mock_repo / "psdi_data_conversion/converters"
 
     def _reset_plugin_info(self):
         self._conv_module_text = None
         self._conv_data = None
 
     @property
-    def plugin_path(self):
+    def plugin_path(self) -> Path:
         return self._plugin_path
 
     @plugin_path.setter
-    def plugin_path(self, val: str):
+    def plugin_path(self, val: Path):
         self._plugin_path = val
-        self.conv_module_path = os.path.join(self._plugin_path, "converter.py")
-        self.data_path = os.path.join(self._plugin_path, "data.json")
+        self.conv_module_path = self._plugin_path / "converter.py"
+        self.data_path = self._plugin_path / "data.json"
 
         # Reset private variables that depend on this
         self._reset_plugin_info()
@@ -118,8 +118,7 @@ class TestCreatePlugin(PluginManagementBase):
             l_args += ["--label", label]
         if script:
             l_args.append("--script")
-        env = {**os.environ,
-               TEST_PATH_KEY: self.mock_repo}
+        env = {**os.environ, TEST_PATH_KEY: str(self.mock_repo)}
 
         process = subprocess.run(l_args, capture_output=True, text=True, env=env)
 
@@ -138,11 +137,11 @@ class TestCreatePlugin(PluginManagementBase):
         if label is None:
             label = "_".join(name.split()).lower()
 
-        self.plugin_path: str = os.path.join(self.conv_path, label)
-        assert os.path.isdir(self.plugin_path)
-        assert os.path.isfile(os.path.join(self.plugin_path, "__init__.py"))
-        assert os.path.isfile(self.conv_module_path)
-        assert os.path.isfile(self.data_path)
+        self.plugin_path: Path = self.conv_path / label
+        assert self.plugin_path.is_dir()
+        assert (self.plugin_path / "__init__.py").is_file()
+        assert self.conv_module_path.is_file()
+        assert self.data_path.is_file()
 
         # Check that the converter module was created as expected
         pascal_name = "".join([x.capitalize() for x in name.split(" ")]).replace(" ", "")
@@ -216,7 +215,7 @@ class TestInstallPlugins(PluginManagementBase):
 
         l_args: list[str] = ["psdi-data-convert-create-plugin", f"test_converter_{which}"]
         env = {**os.environ,
-               TEST_PATH_KEY: self.mock_repo,
+               TEST_PATH_KEY: str(self.mock_repo),
                TEST_DATA_KEY: "True"}
 
         process = subprocess.run(l_args, capture_output=True, text=True, env=env)
@@ -234,7 +233,7 @@ class TestInstallPlugins(PluginManagementBase):
         if force:
             l_args.append("-f")
 
-        env = {**os.environ, TEST_PATH_KEY: self.mock_repo}
+        env = {**os.environ, TEST_PATH_KEY: str(self.mock_repo)}
 
         process = subprocess.run(l_args, capture_output=True, text=True, env=env)
 
@@ -250,7 +249,7 @@ class TestInstallPlugins(PluginManagementBase):
         """Checks that a test plugin has been successfully installed"""
 
         # Set the name of the plugin and get its JSON data
-        self.plugin_path: str = os.path.join(self.conv_path, f"test_converter_{which}")
+        self.plugin_path: Path = self.conv_path / f"test_converter_{which}"
         conv_data = self.conv_data
 
         # Look through the converter's data to check that it all appears to be installed
@@ -294,14 +293,14 @@ class TestInstallPlugins(PluginManagementBase):
         self._create_test_plugin("questionable")
 
         # Save a copy of the database from before installing to ensure it isn't changed
-        self.plugin_path = os.path.join(self.conv_path, "test_converter_questionable")
+        self.plugin_path = self.conv_path / "test_converter_questionable"
         conv_data_init = self.conv_data
 
         process = self._run_install_plugins(expect_fail=True)
         assert process.returncode == 2
 
         # Check that the converter's data hasn't been changed
-        self.plugin_path = os.path.join(self.conv_path, "test_converter_questionable")
+        self.plugin_path = self.conv_path / "test_converter_questionable"
         conv_data_post_install = self.conv_data
 
         assert conv_data_init == conv_data_post_install
