@@ -14,6 +14,7 @@ import re
 import shutil
 import sys
 from argparse import ArgumentParser
+from pathlib import Path
 
 from psdi_data_conversion.testing.constants import TEST_PATH_KEY
 from psdi_data_conversion.testing.utils import get_test_data_loc
@@ -36,6 +37,8 @@ TEST_DATA_KEY = "TEST_DATA"
 
 
 def import_from_path(module_name, file_path):
+    """Import a Python module from a path within code"""
+
     spec = importlib.util.spec_from_file_location(module_name, file_path)
     module = importlib.util.module_from_spec(spec)
     sys.modules[module_name] = module
@@ -124,22 +127,22 @@ def run_from_args(args):
 
     # Get the project path to use based on if we're using a test path or not
     if os.environ[TEST_PATH_KEY]:
-        project_path: str = os.path.realpath(os.environ[TEST_PATH_KEY])
-        if not os.path.isdir(project_path):
+        project_path: Path = Path(os.environ[TEST_PATH_KEY]).resolve()
+        if not project_path.is_dir():
             print_wrap(f"{TC.FAIL}ERROR:{TC.ENDC} When running this script with '{TC.WARNING}--test-path TEST_PATH" +
                        f"{TC.ENDC}', the provided path ({TC.OKCYAN}{project_path}{TC.ENDC}) must already exist.",
                        err=True)
             exit(1)
     else:
-        project_path = get_project_path()
+        project_path = Path(get_project_path())
 
     # Get the directory containing converter plugins
-    conv_path = os.path.join(project_path, "psdi_data_conversion", "converters")
+    conv_path = project_path / "psdi_data_conversion/converters"
 
     # Check for any name clashes with existing converters
-    for dir in os.listdir(conv_path):
-        qual_dir = os.path.join(conv_path, dir)
-        if not os.path.isdir(qual_dir) or not os.path.isfile(os.path.join(qual_dir, "__init__.py")):
+    for qual_dir in conv_path.iterdir():
+        dir = qual_dir.parts[-1]
+        if not qual_dir.is_dir() or not (qual_dir / "__init__.py").is_file():
             continue
         if label == dir:
             if os.environ.get(TEST_DATA_KEY):
@@ -151,7 +154,7 @@ def run_from_args(args):
                            "existing converter plugin. Please choose a different label (or different name if this was "
                            "determined from the name)", err=True)
                 exit(1)
-        conv_module = import_from_path(label, os.path.join(qual_dir, PLUGIN_PYFILE))
+        conv_module = import_from_path(label, qual_dir / PLUGIN_PYFILE)
         if name == conv_module.converter.meta.name:
             print_wrap(f"{TC.FAIL}ERROR:{TC.ENDC} Name '{name}' clashes with the name of an existing "
                        "converter plugin. Please choose a different name", err=True)
@@ -159,21 +162,21 @@ def run_from_args(args):
 
     # Determine which template directory to use and other related info
     if os.environ.get(TEST_DATA_KEY):
-        template_path = os.path.join(get_test_data_loc(os.environ[TEST_DATA_KEY]), name)
+        template_path = Path(get_test_data_loc(os.environ[TEST_DATA_KEY])) / name
         template_str: str = "Template"
     elif args.script:
-        template_path = os.path.join(conv_path, PLUGIN_SCRIPT_TEMPLATEDIR)
+        template_path = conv_path / PLUGIN_SCRIPT_TEMPLATEDIR
         template_str: str = "ScriptTemplate"
     else:
-        template_path = os.path.join(conv_path, PLUGIN_TEMPLATEDIR)
+        template_path = conv_path / PLUGIN_TEMPLATEDIR
         template_str: str = "Template"
 
     # Create a new folder for the plugin by copying/modifying from the template appropriately
-    plugin_path = os.path.join(conv_path, label)
-    os.makedirs(plugin_path, exist_ok=True)
-    shutil.copy(os.path.join(template_path, "__init__.py"), plugin_path)
+    plugin_path = conv_path / label
+    plugin_path.mkdir(exist_ok=True)
+    shutil.copy(template_path / "__init__.py", plugin_path)
     for filename in (PLUGIN_PYFILE, PLUGIN_DATAFILE):
-        text = open(os.path.join(template_path, filename)).read()
+        text = open(template_path / filename).read()
 
         if not os.environ.get(TEST_DATA_KEY):
             # Replace template info as appropriate
@@ -185,7 +188,7 @@ def run_from_args(args):
                 text = re.sub(f"\b{template_str}\b", name, text)
                 text = text.replace(template_str, pascal_name)
 
-        open(os.path.join(plugin_path, filename), "w").write(text)
+        open(plugin_path / filename, "w").write(text)
 
     print(f"{TC.OKGREEN}Success!{TC.ENDC} The plugin has been created at "
           f"{TC.OKCYAN}{plugin_path}{TC.ENDC}\nNext steps:\n")

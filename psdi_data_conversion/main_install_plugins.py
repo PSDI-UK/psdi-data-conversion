@@ -14,6 +14,7 @@ from argparse import ArgumentParser
 from collections import OrderedDict
 from copy import deepcopy
 from itertools import product
+from pathlib import Path
 from uuid import uuid4
 
 from psdi_data_conversion import database as db
@@ -109,7 +110,7 @@ def sort_json_list(l_d: list[JsonDict], l_order: list | None = None):
     l_d.sort(key=get_key)
 
 
-def sort_db(db_path: str, project_path: str):
+def sort_db(db_path: Path, project_path: Path):
     """Sort the existing database"""
     db_out: JsonMainDict = json.load(open(db_path))
     db_out = get_sorted_dict(db_out)
@@ -127,17 +128,17 @@ def sort_db(db_path: str, project_path: str):
         db_out[db.DB_CONVERTS_TO_KEY][i] = get_sorted_dict(d, L_CONVERTS_TO_SORT_ORDER)
 
     # Get the directory containing converter plugins
-    conv_path = os.path.join(project_path, "psdi_data_conversion", "converters")
-    for dir in os.listdir(conv_path):
+    conv_path = project_path / "psdi_data_conversion/converters"
+    for qual_dir in conv_path.iterdir():
+        dir = qual_dir.parts[-1]
         if dir in ("example", "template", "script_template"):
             continue
 
-        qual_dir = os.path.join(conv_path, dir)
-        if not os.path.isdir(qual_dir) or not os.path.isfile(os.path.join(qual_dir, PLUGIN_DATAFILE)):
+        if not qual_dir.is_dir() or not (qual_dir / PLUGIN_DATAFILE).is_file():
             continue
 
         # Load data about the converter and add it to the database
-        db_conv: JsonMainDict = json.load(open(os.path.join(qual_dir, PLUGIN_DATAFILE)))
+        db_conv: JsonMainDict = json.load(open(qual_dir / PLUGIN_DATAFILE))
         d_conv_info: JsonDict = db_conv[db.DB_CONVERTER_KEY]
         conv_prefix: str = d_conv_info[db.DB_KEY_PREFIX_KEY]
 
@@ -208,38 +209,38 @@ def run_from_args(args):
 
     # Get the project and database paths to use based on if we're using a test path or not
     if os.environ[TEST_PATH_KEY]:
-        project_path: str = os.path.realpath(os.environ[TEST_PATH_KEY])
-        if not os.path.isdir(project_path):
+        project_path = Path(os.environ[TEST_PATH_KEY]).resolve()
+        if not project_path.is_dir():
             print_wrap(f"{TC.FAIL}ERROR:{TC.ENDC} When running this script with '{TC.WARNING}{TEST_PATH_KEY}=$TEST_PATH"
                        f"{TC.ENDC}', the provided path ({TC.OKCYAN}{project_path}{TC.ENDC}) must already exist.",
                        err=True)
             exit(1)
-        db_path = os.path.join(project_path, "psdi_data_conversion", "static", "data", "data.json")
+        db_path = project_path / "psdi_data_conversion/static/data/data.json"
     else:
-        db_path: str = db.get_database_path()
-        project_path = get_project_path()
+        db_path = Path(db.get_database_path())
+        project_path = Path(get_project_path())
 
-    db_dir = os.path.split(db_path)[0]
+    db_dir: Path = db_path.parent
 
     if args.sort_only:
         return sort_db(db_path, project_path)
 
     # Make a dict of converter paths and DBs we want to process
-    conv_parent_path = os.path.join(project_path, "psdi_data_conversion", "converters")
+    conv_parent_path = project_path / "psdi_data_conversion/converters"
     d_conv_db: dict[str, JsonMainDict] = {}
     s_changed_conv_dbs: set[str] = set()
     for dir in os.listdir(conv_parent_path):
         if dir in L_CONVERTER_EXCLUDE_DIRS:
             continue
 
-        qual_conv_path = os.path.join(conv_parent_path, dir)
-        if not os.path.isdir(qual_conv_path) or not os.path.isfile(os.path.join(qual_conv_path, PLUGIN_DATAFILE)):
+        qual_conv_path = conv_parent_path / dir
+        if not qual_conv_path.is_dir() or not (qual_conv_path / PLUGIN_DATAFILE).is_file():
             continue
 
-        d_conv_db[qual_conv_path] = json.load(open(os.path.join(qual_conv_path, PLUGIN_DATAFILE)))
+        d_conv_db[qual_conv_path] = json.load(open(qual_conv_path / PLUGIN_DATAFILE))
 
     # Load the formats data and check and process new formats
-    l_format_info: list[JsonDict] = json.load(open(os.path.join(db_dir, FORMATS_DATAFILE)))[db.DB_FORMATS_KEY]
+    l_format_info: list[JsonDict] = json.load(open(db_dir / FORMATS_DATAFILE))[db.DB_FORMATS_KEY]
     d_format_info_for_ext: dict[str, list[JsonDict]] = {}
     for format_info in l_format_info:
         ext = format_info[db.DB_FORMAT_EXT_KEY]
@@ -283,7 +284,7 @@ def run_from_args(args):
                            "each, please check against the provided list of possible matches.\n")
                 print(get_wrapped_str("- If it is indeed one of those, remove it from the list of extra formats in the "
                                       "converter database file", initial_indent="", subsequent_indent=" "*2) +
-                      f" {TC.OKCYAN}{os.path.join(qual_conv_path, PLUGIN_DATAFILE)}{TC.ENDC}\n" +
+                      f" {TC.OKCYAN}{qual_conv_path / PLUGIN_DATAFILE}{TC.ENDC}\n" +
                       get_wrapped_str("and update references to its ID in that file to instead use the ID of its "
                                       "entry in the database\n", initial_indent=" "*2, subsequent_indent=" "*2)
                       )
@@ -374,7 +375,7 @@ def run_from_args(args):
     # Update the main format info file if any changes have been made to it
     if format_info_updated:
         json.dump({db.DB_FORMATS_KEY: l_format_info},
-                  open(os.path.join(db_dir, FORMATS_DATAFILE), "w"), indent=4)
+                  open(db_dir / FORMATS_DATAFILE, "w"), indent=4)
 
     # Create initial entries for the output dict
     l_db_converters: list[JsonDict] = []
@@ -398,7 +399,7 @@ def run_from_args(args):
             d_conv_info[db.DB_SUPPORT_AMBIG_EXT_KEY] = get_support_ambig_ext(db_conv, db_out)
 
         if qual_conv_path in s_changed_conv_dbs:
-            json.dump(db_conv, open(os.path.join(qual_conv_path, PLUGIN_DATAFILE), "w"), indent=4)
+            json.dump(db_conv, open(qual_conv_path / PLUGIN_DATAFILE, "w"), indent=4)
 
         conv_id: int = d_conv_info[db.DB_ID_KEY]
 
