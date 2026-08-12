@@ -32,27 +32,21 @@ def get_package_path() -> Path:
     return package_path
 
 
-def is_archive(filename: Path | str) -> bool:
+def is_archive(filename: str) -> bool:
     """Uses a file's extension to check if it's an archive or not
     """
-    # Silently coerce filename to a str
-    filename = str(filename)
     return any([filename.endswith(x) for x in const.L_ALL_ARCHIVE_EXTENSIONS])
 
 
-def is_supported_archive(filename: Path | str) -> bool:
+def is_supported_archive(filename: str) -> bool:
     """Uses a file's extension to check if it's an archive of a supported type or not
     """
-    # Silently coerce filename to a str
-    filename = str(filename)
     return any([filename.endswith(x) for x in const.D_SUPPORTED_ARCHIVE_FORMATS])
 
 
-def split_archive_ext(filename: Path | str) -> tuple[str, str]:
+def split_archive_ext(filename: str) -> tuple[str, str]:
     """Splits a file into a base and an extension, with handling for compound .tar.* extensions
     """
-    # Silently coerce filename to a str
-    filename = str(filename)
     base, ext = os.path.splitext(filename)
     if base.endswith(const.TAR_EXTENSION):
         base, pre_ext = os.path.splitext(base)
