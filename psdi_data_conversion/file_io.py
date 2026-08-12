@@ -60,15 +60,15 @@ def split_archive_ext(filename: Path | str) -> tuple[str, str]:
     return base, ext
 
 
-def unpack_zip_or_tar(archive_filename: str,
-                      extract_dir: str = ".") -> list[str]:
+def unpack_zip_or_tar(archive_filename: Path | str,
+                      extract_dir: Path | str = ".") -> list[str]:
     """Unpack a zip or tar archive into a temporary directory and return a list of the extracted files
 
     Parameters
     ----------
-    archive_filename : str
+    archive_filename : Path | str
         Filename of the archive to unpack, either relative or fully-qualified
-    extract_dir : str
+    extract_dir : Path | str
         The directory to extract the contents of the archive to. By default, the current working directory will
         be used
 
@@ -80,7 +80,10 @@ def unpack_zip_or_tar(archive_filename: str,
         temporary directory for each thread
     """
 
-    qual_archive_filename = os.path.realpath(archive_filename)
+    # Resolve input into absolute paths
+    archive_path = Path(archive_filename).resolve()
+    qual_archive_filename = str(archive_path)
+    extract_dir = Path(extract_dir).resolve()
 
     # Determine if the file is of a known (un)supported archive type, and if it is, whether it's a zip or tar, and
     # set up arguments appropriately to ensure security
@@ -108,15 +111,15 @@ def unpack_zip_or_tar(archive_filename: str,
     # To determine the names of extracted files, we call `os.listdir` before and after unpacking and look for the new
     # elements
 
-    s_dir_before = set(os.listdir(extract_dir))
+    s_dir_before = set(extract_dir.iterdir())
     unpack_archive(qual_archive_filename, extract_dir=extract_dir, **unpack_kwargs)
-    s_dir_after = set(os.listdir(extract_dir))
+    s_dir_after = set(extract_dir.iterdir())
 
     # Get the new files, and in case they're in a directory, use glob to get their contents
     s_new_files = s_dir_after.difference(s_dir_before)
-    l_qual_new_files = [os.path.join(extract_dir, x) for x in s_new_files]
-    l_new_globs = [glob.glob(x) if os.path.isfile(x)
-                   else glob.glob(os.path.join(x, "**"))
+    l_qual_new_files = [extract_dir / x for x in s_new_files]
+    l_new_globs = [glob.glob(str(x)) if x.is_file()
+                   else glob.glob(str(x / "**"))
                    for x in l_qual_new_files]
 
     # This gives us a list of globs (individual files are set up as globs for consistency), so we unpack to a single
