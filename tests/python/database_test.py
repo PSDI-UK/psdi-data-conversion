@@ -300,9 +300,6 @@ def test_conversion_pathways():
         # Each step should use a different converter
         assert inchi_to_moldy_path[i][0] != inchi_to_moldy_path[i+1][0]
 
-# Tests of get_conversion_prop_weight to ensure it calculates weight correctly for whether a format property is retained
-# or not in a conversion
-
 
 @pytest.fixture()
 def format_all(scope="module"):
@@ -320,6 +317,11 @@ def format_unknown(database):
 
 
 @pytest.fixture(scope="module")
+def min_prop_weight():
+    return db.STEP_WEIGHT
+
+
+@pytest.fixture(scope="module")
 def max_prop_weight():
     max_weight = db.STEP_WEIGHT
     for bit in db.D_PROP_BITS.values():
@@ -327,24 +329,21 @@ def max_prop_weight():
     return max_weight
 
 
-def test_get_conversion_prop_weight_all_to_all(format_all):
-    assert get_conversion_prop_weight(format_all, format_all) == db.STEP_WEIGHT
-
-
-def test_get_conversion_prop_weight_all_to_unknown(format_all, format_unknown, max_prop_weight):
-    assert get_conversion_prop_weight(format_all, format_unknown) == max_prop_weight
-
-
-def test_get_conversion_prop_weight_all_to_none(format_all, format_none, max_prop_weight):
-    assert get_conversion_prop_weight(format_all, format_none) == max_prop_weight
-
-
-def test_get_conversion_prop_weight_none_to_unknown(format_none, format_unknown):
-    assert get_conversion_prop_weight(format_none, format_unknown) == db.STEP_WEIGHT
-
-
-def test_get_conversion_prop_weight_none_to_none(format_none):
-    assert get_conversion_prop_weight(format_none, format_none) == db.STEP_WEIGHT
+@pytest.mark.parametrize("in_format, out_format, ex_weight", [("format_all", "format_all", "min_prop_weight"),
+                                                              ("format_all", "format_none", "max_prop_weight"),
+                                                              ("format_all", "format_unknown", "max_prop_weight"),
+                                                              ("format_none", "format_all", "min_prop_weight"),
+                                                              ("format_none", "format_none", "min_prop_weight"),
+                                                              ("format_none", "format_unknown", "min_prop_weight"),
+                                                              ("format_unknown", "format_all", "min_prop_weight"),
+                                                              ("format_unknown", "format_none", "max_prop_weight"),
+                                                              ("format_unknown", "format_unknown", "max_prop_weight"),])
+def test_get_conversion_prop_weight(in_format, out_format, ex_weight, request):
+    """Tests of get_conversion_prop_weight to ensure it calculates weight correctly for whether a format property is
+    retained or not in a conversion, with all variations of all properties existing in input and output formats
+    """
+    assert get_conversion_prop_weight(request.getfixturevalue(in_format),
+                                      request.getfixturevalue(out_format)) == request.getfixturevalue(ex_weight)
 
 
 # Test each property individually when it's lost to ensure the right bit is set for each
