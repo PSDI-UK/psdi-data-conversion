@@ -138453,7 +138453,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "abi",
@@ -138463,7 +138464,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "abinit",
@@ -138473,7 +138475,8 @@
             "composition": false,
             "connections": false,
             "two_dim": false,
-            "three_dim": false
+            "three_dim": false,
+            "precision": null
         },
         {
             "extension": "acesin",
@@ -138483,7 +138486,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "acesout",
@@ -138493,7 +138497,8 @@
             "composition": true,
             "connections": true,
             "two_dim": true,
-            "three_dim": true
+            "three_dim": true,
+            "precision": null
         },
         {
             "extension": "acr",
@@ -138503,7 +138508,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "adf",
@@ -138513,7 +138519,8 @@
             "composition": true,
             "connections": false,
             "two_dim": true,
-            "three_dim": true
+            "three_dim": true,
+            "precision": null
         },
         {
             "extension": "adfband",
@@ -138523,7 +138530,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "adfdftb",
@@ -138533,7 +138541,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "adfout",
@@ -138543,7 +138552,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "alc",
@@ -138553,7 +138563,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "animl",
@@ -138563,7 +138574,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "aoforce",
@@ -138573,7 +138585,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "arc",
@@ -138583,7 +138596,8 @@
             "composition": true,
             "connections": true,
             "two_dim": false,
-            "three_dim": false
+            "three_dim": false,
+            "precision": null
         },
         {
             "extension": "ascii",
@@ -138593,7 +138607,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "atsk",
@@ -138603,7 +138618,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "axsf",
@@ -138613,7 +138629,8 @@
             "composition": true,
             "connections": false,
             "two_dim": true,
-            "three_dim": true
+            "three_dim": true,
+            "precision": null
         },
         {
             "extension": "bands",
@@ -138623,7 +138640,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "bgf",
@@ -138633,7 +138651,8 @@
             "composition": true,
             "connections": true,
             "two_dim": true,
-            "three_dim": true
+            "three_dim": true,
+            "precision": null
         },
         {
             "extension": "bop",
@@ -138643,7 +138662,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "box",
@@ -138653,7 +138673,8 @@
             "composition": false,
             "connections": true,
             "two_dim": false,
-            "three_dim": true
+            "three_dim": true,
+            "precision": null
         },
         {
             "extension": "bs",
@@ -138663,7 +138684,8 @@
             "composition": true,
             "connections": true,
             "two_dim": false,
-            "three_dim": true
+            "three_dim": true,
+            "precision": null
         },
         {
             "extension": "bx",
@@ -138673,7 +138695,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "bxsf",
@@ -138683,7 +138706,8 @@
             "composition": true,
             "connections": false,
             "two_dim": true,
-            "three_dim": true
+            "three_dim": true,
+            "precision": null
         },
         {
             "extension": "c09out",
@@ -138693,7 +138717,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "c3d1",
@@ -138703,7 +138728,8 @@
             "composition": true,
             "connections": true,
             "two_dim": false,
-            "three_dim": true
+            "three_dim": true,
+            "precision": null
         },
         {
             "extension": "c3d2",
@@ -138713,7 +138739,8 @@
             "composition": true,
             "connections": true,
             "two_dim": false,
-            "three_dim": true
+            "three_dim": true,
+            "precision": null
         },
         {
             "extension": "cac",
@@ -138723,7 +138750,8 @@
             "composition": true,
             "connections": true,
             "two_dim": true,
-            "three_dim": true
+            "three_dim": true,
+            "precision": null
         },
         {
             "extension": "caccrt",
@@ -138733,7 +138761,8 @@
             "composition": true,
             "connections": true,
             "two_dim": false,
-            "three_dim": true
+            "three_dim": true,
+            "precision": null
         },
         {
             "extension": "cache",
@@ -138743,7 +138772,8 @@
             "composition": true,
             "connections": true,
             "two_dim": true,
-            "three_dim": true
+            "three_dim": true,
+            "precision": null
         },
         {
             "extension": "cacint",
@@ -138753,7 +138783,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "can",
@@ -138763,7 +138794,8 @@
             "composition": true,
             "connections": true,
             "two_dim": false,
-            "three_dim": false
+            "three_dim": false,
+            "precision": null
         },
         {
             "extension": "car",
@@ -138773,7 +138805,8 @@
             "composition": true,
             "connections": true,
             "two_dim": false,
-            "three_dim": false
+            "three_dim": false,
+            "precision": null
         },
         {
             "extension": "castep",
@@ -138783,7 +138816,8 @@
             "composition": true,
             "connections": true,
             "two_dim": true,
-            "three_dim": true
+            "three_dim": true,
+            "precision": null
         },
         {
             "extension": "ccc",
@@ -138793,7 +138827,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "ccp4",
@@ -138803,7 +138838,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "CDF",
@@ -138813,7 +138849,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "cdjson",
@@ -138823,7 +138860,8 @@
             "composition": true,
             "connections": true,
             "two_dim": false,
-            "three_dim": true
+            "three_dim": true,
+            "precision": null
         },
         {
             "extension": "cdxml",
@@ -138833,7 +138871,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "cel",
@@ -138843,7 +138882,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "cell",
@@ -138853,7 +138893,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "cell",
@@ -138863,7 +138904,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "cell",
@@ -138873,7 +138915,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "cell",
@@ -138883,7 +138926,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "cfg",
@@ -138893,7 +138937,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "CHG",
@@ -138903,7 +138948,8 @@
             "composition": true,
             "connections": false,
             "two_dim": true,
-            "three_dim": true
+            "three_dim": true,
+            "precision": null
         },
         {
             "extension": "CHGCAR",
@@ -138913,7 +138959,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "cht",
@@ -138923,7 +138970,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "cif",
@@ -138933,7 +138981,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "ck",
@@ -138943,7 +138992,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "cml",
@@ -138953,7 +139003,8 @@
             "composition": true,
             "connections": true,
             "two_dim": true,
-            "three_dim": true
+            "three_dim": true,
+            "precision": null
         },
         {
             "extension": "cmlr",
@@ -138963,7 +139014,8 @@
             "composition": true,
             "connections": true,
             "two_dim": true,
-            "three_dim": true
+            "three_dim": true,
+            "precision": null
         },
         {
             "extension": "cof",
@@ -138973,7 +139025,8 @@
             "composition": true,
             "connections": true,
             "two_dim": false,
-            "three_dim": true
+            "three_dim": true,
+            "precision": null
         },
         {
             "extension": "com",
@@ -138983,7 +139036,8 @@
             "composition": true,
             "connections": false,
             "two_dim": true,
-            "three_dim": true
+            "three_dim": true,
+            "precision": null
         },
         {
             "extension": "CONFIG",
@@ -138993,7 +139047,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "CONTCAR",
@@ -139003,7 +139058,8 @@
             "composition": true,
             "connections": false,
             "two_dim": true,
-            "three_dim": true
+            "three_dim": true,
+            "precision": null
         },
         {
             "extension": "CONTFF",
@@ -139013,7 +139069,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "COORAT",
@@ -139023,7 +139080,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "copy",
@@ -139033,7 +139091,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "crk2d",
@@ -139043,7 +139102,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "crk3d",
@@ -139053,7 +139113,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "csr",
@@ -139063,7 +139124,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "cssr",
@@ -139073,7 +139135,8 @@
             "composition": true,
             "connections": true,
             "two_dim": true,
-            "three_dim": true
+            "three_dim": true,
+            "precision": null
         },
         {
             "extension": "cst_esp",
@@ -139083,7 +139146,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "csv",
@@ -139093,7 +139157,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "ct",
@@ -139103,7 +139168,8 @@
             "composition": true,
             "connections": true,
             "two_dim": true,
-            "three_dim": true
+            "three_dim": true,
+            "precision": null
         },
         {
             "extension": "cub",
@@ -139113,7 +139179,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "cube",
@@ -139123,7 +139190,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "d12",
@@ -139133,7 +139201,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "dallog",
@@ -139143,7 +139212,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "dalmol",
@@ -139153,7 +139223,8 @@
             "composition": true,
             "connections": false,
             "two_dim": true,
-            "three_dim": true
+            "three_dim": true,
+            "precision": null
         },
         {
             "extension": "dat",
@@ -139163,7 +139234,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "dat",
@@ -139173,7 +139245,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "dat",
@@ -139183,7 +139256,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "dat",
@@ -139193,7 +139267,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "dat",
@@ -139203,7 +139278,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "dat",
@@ -139213,7 +139289,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "dat",
@@ -139223,7 +139300,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "dd",
@@ -139233,7 +139311,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "DEN",
@@ -139243,7 +139322,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "den_fmt",
@@ -139253,7 +139333,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "dmol",
@@ -139263,7 +139344,8 @@
             "composition": true,
             "connections": false,
             "two_dim": true,
-            "three_dim": true
+            "three_dim": true,
+            "precision": null
         },
         {
             "extension": "dx",
@@ -139273,7 +139355,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "EIG",
@@ -139283,7 +139366,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "EIG",
@@ -139293,7 +139377,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "EIGENVAL",
@@ -139303,7 +139388,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "elf",
@@ -139313,7 +139399,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "elf_fmt",
@@ -139323,7 +139410,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "ent",
@@ -139333,7 +139421,8 @@
             "composition": true,
             "connections": true,
             "two_dim": false,
-            "three_dim": true
+            "three_dim": true,
+            "precision": null
         },
         {
             "extension": "exyz",
@@ -139343,7 +139432,8 @@
             "composition": true,
             "connections": false,
             "two_dim": true,
-            "three_dim": true
+            "three_dim": true,
+            "precision": null
         },
         {
             "extension": "fa",
@@ -139353,7 +139443,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "fasta",
@@ -139363,7 +139454,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "fch",
@@ -139373,7 +139465,8 @@
             "composition": true,
             "connections": false,
             "two_dim": true,
-            "three_dim": true
+            "three_dim": true,
+            "precision": null
         },
         {
             "extension": "fchk",
@@ -139383,7 +139476,8 @@
             "composition": true,
             "connections": false,
             "two_dim": true,
-            "three_dim": true
+            "three_dim": true,
+            "precision": null
         },
         {
             "extension": "fck",
@@ -139393,7 +139487,8 @@
             "composition": true,
             "connections": false,
             "two_dim": true,
-            "three_dim": true
+            "three_dim": true,
+            "precision": null
         },
         {
             "extension": "fdf",
@@ -139403,7 +139498,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "feat",
@@ -139413,7 +139509,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "fh",
@@ -139423,7 +139520,8 @@
             "composition": true,
             "connections": false,
             "two_dim": true,
-            "three_dim": true
+            "three_dim": true,
+            "precision": null
         },
         {
             "extension": "fhiaims",
@@ -139433,7 +139531,8 @@
             "composition": true,
             "connections": false,
             "two_dim": true,
-            "three_dim": true
+            "three_dim": true,
+            "precision": null
         },
         {
             "extension": "fix",
@@ -139443,7 +139542,8 @@
             "composition": true,
             "connections": true,
             "two_dim": false,
-            "three_dim": false
+            "three_dim": false,
+            "precision": null
         },
         {
             "extension": "fps",
@@ -139453,7 +139553,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "fpt",
@@ -139463,7 +139564,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "fract",
@@ -139473,7 +139575,8 @@
             "composition": true,
             "connections": false,
             "two_dim": true,
-            "three_dim": true
+            "three_dim": true,
+            "precision": null
         },
         {
             "extension": "fs",
@@ -139483,7 +139586,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "fsa",
@@ -139493,7 +139597,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "g03",
@@ -139503,7 +139608,8 @@
             "composition": true,
             "connections": false,
             "two_dim": true,
-            "three_dim": true
+            "three_dim": true,
+            "precision": null
         },
         {
             "extension": "g09",
@@ -139513,7 +139619,8 @@
             "composition": true,
             "connections": false,
             "two_dim": true,
-            "three_dim": true
+            "three_dim": true,
+            "precision": null
         },
         {
             "extension": "g16",
@@ -139523,7 +139630,8 @@
             "composition": true,
             "connections": false,
             "two_dim": true,
-            "three_dim": true
+            "three_dim": true,
+            "precision": null
         },
         {
             "extension": "g92",
@@ -139533,7 +139641,8 @@
             "composition": true,
             "connections": false,
             "two_dim": true,
-            "three_dim": true
+            "three_dim": true,
+            "precision": null
         },
         {
             "extension": "g94",
@@ -139543,7 +139652,8 @@
             "composition": true,
             "connections": false,
             "two_dim": true,
-            "three_dim": true
+            "three_dim": true,
+            "precision": null
         },
         {
             "extension": "g98",
@@ -139553,7 +139663,8 @@
             "composition": true,
             "connections": false,
             "two_dim": true,
-            "three_dim": true
+            "three_dim": true,
+            "precision": null
         },
         {
             "extension": "gal",
@@ -139563,7 +139674,8 @@
             "composition": true,
             "connections": false,
             "two_dim": true,
-            "three_dim": true
+            "three_dim": true,
+            "precision": null
         },
         {
             "extension": "gam",
@@ -139573,7 +139685,8 @@
             "composition": true,
             "connections": true,
             "two_dim": true,
-            "three_dim": true
+            "three_dim": true,
+            "precision": null
         },
         {
             "extension": "gamess",
@@ -139583,7 +139696,8 @@
             "composition": true,
             "connections": true,
             "two_dim": true,
-            "three_dim": true
+            "three_dim": true,
+            "precision": null
         },
         {
             "extension": "gamin",
@@ -139593,7 +139707,8 @@
             "composition": true,
             "connections": false,
             "two_dim": true,
-            "three_dim": true
+            "three_dim": true,
+            "precision": null
         },
         {
             "extension": "gamout",
@@ -139603,7 +139718,8 @@
             "composition": true,
             "connections": true,
             "two_dim": true,
-            "three_dim": true
+            "three_dim": true,
+            "precision": null
         },
         {
             "extension": "gau",
@@ -139613,7 +139729,8 @@
             "composition": true,
             "connections": false,
             "two_dim": true,
-            "three_dim": true
+            "three_dim": true,
+            "precision": null
         },
         {
             "extension": "geom",
@@ -139623,7 +139740,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "gin",
@@ -139633,7 +139751,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "gjc",
@@ -139643,7 +139762,8 @@
             "composition": true,
             "connections": false,
             "two_dim": true,
-            "three_dim": true
+            "three_dim": true,
+            "precision": null
         },
         {
             "extension": "gjf",
@@ -139653,7 +139773,8 @@
             "composition": true,
             "connections": false,
             "two_dim": true,
-            "three_dim": true
+            "three_dim": true,
+            "precision": null
         },
         {
             "extension": "gnu",
@@ -139663,7 +139784,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "got",
@@ -139673,7 +139795,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "gpr",
@@ -139683,7 +139806,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "gr96",
@@ -139693,7 +139817,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "gro",
@@ -139703,7 +139828,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "grs",
@@ -139713,7 +139839,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "gukin",
@@ -139723,7 +139850,8 @@
             "composition": true,
             "connections": false,
             "two_dim": true,
-            "three_dim": true
+            "three_dim": true,
+            "precision": null
         },
         {
             "extension": "gukout",
@@ -139733,7 +139861,8 @@
             "composition": true,
             "connections": true,
             "two_dim": true,
-            "three_dim": true
+            "three_dim": true,
+            "precision": null
         },
         {
             "extension": "gzmat",
@@ -139743,7 +139872,8 @@
             "composition": true,
             "connections": false,
             "two_dim": true,
-            "three_dim": true
+            "three_dim": true,
+            "precision": null
         },
         {
             "extension": "hin",
@@ -139753,7 +139883,8 @@
             "composition": true,
             "connections": true,
             "two_dim": true,
-            "three_dim": true
+            "three_dim": true,
+            "precision": null
         },
         {
             "extension": "HISTORY",
@@ -139763,7 +139894,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "imd",
@@ -139773,7 +139905,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "in",
@@ -139783,7 +139916,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "in",
@@ -139793,7 +139927,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "in",
@@ -139803,7 +139938,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "in",
@@ -139813,7 +139949,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "in",
@@ -139823,7 +139960,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "INCAR",
@@ -139833,7 +139971,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "inchi",
@@ -139843,7 +139982,8 @@
             "composition": true,
             "connections": true,
             "two_dim": false,
-            "three_dim": false
+            "three_dim": false,
+            "precision": null
         },
         {
             "extension": "inchikey",
@@ -139853,7 +139993,8 @@
             "composition": false,
             "connections": false,
             "two_dim": false,
-            "three_dim": false
+            "three_dim": false,
+            "precision": null
         },
         {
             "extension": "inp",
@@ -139863,7 +140004,8 @@
             "composition": true,
             "connections": false,
             "two_dim": true,
-            "three_dim": true
+            "three_dim": true,
+            "precision": null
         },
         {
             "extension": "ins",
@@ -139873,7 +140015,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "ins",
@@ -139883,7 +140026,8 @@
             "composition": true,
             "connections": true,
             "two_dim": true,
-            "three_dim": true
+            "three_dim": true,
+            "precision": null
         },
         {
             "extension": "JDX",
@@ -139893,7 +140037,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "jin",
@@ -139903,7 +140048,8 @@
             "composition": true,
             "connections": false,
             "two_dim": true,
-            "three_dim": true
+            "three_dim": true,
+            "precision": null
         },
         {
             "extension": "jout",
@@ -139913,7 +140059,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "KP",
@@ -139923,7 +140070,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "kp",
@@ -139933,7 +140081,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "lmc",
@@ -139943,7 +140092,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "lmp",
@@ -139953,7 +140103,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "lmpdat",
@@ -139963,7 +140114,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "LOCPOT",
@@ -139973,7 +140125,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "log",
@@ -139983,7 +140136,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "lpmd",
@@ -139993,7 +140147,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "mae",
@@ -140003,7 +140158,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "maegz",
@@ -140013,7 +140169,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "mcdl",
@@ -140023,7 +140180,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "mcif",
@@ -140033,7 +140191,8 @@
             "composition": true,
             "connections": false,
             "two_dim": true,
-            "three_dim": true
+            "three_dim": true,
+            "precision": null
         },
         {
             "extension": "MDFF",
@@ -140043,7 +140202,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "mdl",
@@ -140053,7 +140213,8 @@
             "composition": true,
             "connections": true,
             "two_dim": true,
-            "three_dim": true
+            "three_dim": true,
+            "precision": null
         },
         {
             "extension": "mgf",
@@ -140063,7 +140224,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "ml2",
@@ -140073,7 +140235,8 @@
             "composition": true,
             "connections": true,
             "two_dim": false,
-            "three_dim": true
+            "three_dim": true,
+            "precision": null
         },
         {
             "extension": "mmcif",
@@ -140083,7 +140246,8 @@
             "composition": true,
             "connections": false,
             "two_dim": true,
-            "three_dim": true
+            "three_dim": true,
+            "precision": null
         },
         {
             "extension": "mmd",
@@ -140093,7 +140257,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "mmod",
@@ -140103,7 +140268,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "mna",
@@ -140113,7 +140279,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "mocube",
@@ -140123,7 +140290,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "mol",
@@ -140133,7 +140301,8 @@
             "composition": true,
             "connections": true,
             "two_dim": true,
-            "three_dim": true
+            "three_dim": true,
+            "precision": null
         },
         {
             "extension": "mol",
@@ -140143,7 +140312,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "mol2",
@@ -140153,7 +140323,8 @@
             "composition": true,
             "connections": true,
             "two_dim": false,
-            "three_dim": true
+            "three_dim": true,
+            "precision": null
         },
         {
             "extension": "mold",
@@ -140163,7 +140334,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "molden",
@@ -140173,7 +140345,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "molf",
@@ -140183,7 +140356,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "molreport",
@@ -140193,7 +140367,8 @@
             "composition": true,
             "connections": true,
             "two_dim": true,
-            "three_dim": false
+            "three_dim": false,
+            "precision": null
         },
         {
             "extension": "moo",
@@ -140203,7 +140378,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "mop",
@@ -140213,7 +140389,8 @@
             "composition": true,
             "connections": false,
             "two_dim": true,
-            "three_dim": true
+            "three_dim": true,
+            "precision": null
         },
         {
             "extension": "mopcrt",
@@ -140223,7 +140400,8 @@
             "composition": true,
             "connections": false,
             "two_dim": true,
-            "three_dim": true
+            "three_dim": true,
+            "precision": null
         },
         {
             "extension": "mopin",
@@ -140233,7 +140411,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "mopout",
@@ -140243,7 +140422,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "mp",
@@ -140253,7 +140433,8 @@
             "composition": true,
             "connections": false,
             "two_dim": true,
-            "three_dim": true
+            "three_dim": true,
+            "precision": null
         },
         {
             "extension": "mpc",
@@ -140263,7 +140444,8 @@
             "composition": true,
             "connections": false,
             "two_dim": true,
-            "three_dim": true
+            "three_dim": true,
+            "precision": null
         },
         {
             "extension": "mpd",
@@ -140273,7 +140455,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "mpo",
@@ -140283,7 +140466,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "mpqc",
@@ -140293,7 +140477,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "mpqcin",
@@ -140303,7 +140488,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "mrv",
@@ -140313,7 +140499,8 @@
             "composition": true,
             "connections": true,
             "two_dim": true,
-            "three_dim": true
+            "three_dim": true,
+            "precision": null
         },
         {
             "extension": "msi",
@@ -140323,7 +140510,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "msms",
@@ -140333,7 +140521,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "mzML",
@@ -140343,7 +140532,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "npy",
@@ -140353,7 +140543,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "nw",
@@ -140363,7 +140554,8 @@
             "composition": true,
             "connections": false,
             "two_dim": true,
-            "three_dim": true
+            "three_dim": true,
+            "precision": null
         },
         {
             "extension": "nwo",
@@ -140373,7 +140565,8 @@
             "composition": true,
             "connections": false,
             "two_dim": true,
-            "three_dim": true
+            "three_dim": true,
+            "precision": null
         },
         {
             "extension": "ocb",
@@ -140383,7 +140576,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "orca",
@@ -140393,7 +140587,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "orcainp",
@@ -140403,7 +140598,8 @@
             "composition": true,
             "connections": false,
             "two_dim": true,
-            "three_dim": true
+            "three_dim": true,
+            "precision": null
         },
         {
             "extension": "out",
@@ -140413,7 +140609,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "out",
@@ -140423,7 +140620,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "OUTCAR",
@@ -140433,7 +140631,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "outmol",
@@ -140443,7 +140642,8 @@
             "composition": true,
             "connections": false,
             "two_dim": true,
-            "three_dim": true
+            "three_dim": true,
+            "precision": null
         },
         {
             "extension": "output",
@@ -140453,7 +140653,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "paint",
@@ -140463,7 +140664,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "pc",
@@ -140473,7 +140675,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "pcjson",
@@ -140483,7 +140686,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "pcm",
@@ -140493,7 +140697,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "pdb",
@@ -140503,7 +140708,8 @@
             "composition": true,
             "connections": true,
             "two_dim": false,
-            "three_dim": true
+            "three_dim": true,
+            "precision": null
         },
         {
             "extension": "pdb",
@@ -140513,7 +140719,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "pdbqt",
@@ -140523,7 +140730,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "pdbx",
@@ -140533,7 +140741,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "png",
@@ -140543,7 +140752,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "pointcloud",
@@ -140553,7 +140763,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "pos",
@@ -140563,7 +140774,8 @@
             "composition": true,
             "connections": false,
             "two_dim": true,
-            "three_dim": true
+            "three_dim": true,
+            "precision": null
         },
         {
             "extension": "POSCAR",
@@ -140573,7 +140785,8 @@
             "composition": true,
             "connections": false,
             "two_dim": true,
-            "three_dim": true
+            "three_dim": true,
+            "precision": null
         },
         {
             "extension": "POSFF",
@@ -140583,7 +140796,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "POT",
@@ -140593,7 +140807,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "pot_fmt",
@@ -140603,7 +140818,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "pov",
@@ -140613,7 +140829,8 @@
             "composition": true,
             "connections": true,
             "two_dim": true,
-            "three_dim": true
+            "three_dim": true,
+            "precision": null
         },
         {
             "extension": "pqr",
@@ -140623,7 +140840,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "pqs",
@@ -140633,7 +140851,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "prep",
@@ -140643,7 +140862,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "pw",
@@ -140653,7 +140873,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "pwscf",
@@ -140663,7 +140884,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "py",
@@ -140673,7 +140895,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "py",
@@ -140683,7 +140906,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "qcin",
@@ -140693,7 +140917,8 @@
             "composition": true,
             "connections": false,
             "two_dim": true,
-            "three_dim": true
+            "three_dim": true,
+            "precision": null
         },
         {
             "extension": "qcout",
@@ -140703,7 +140928,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "RAW",
@@ -140713,7 +140939,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "report",
@@ -140723,7 +140950,8 @@
             "composition": true,
             "connections": true,
             "two_dim": true,
-            "three_dim": true
+            "three_dim": true,
+            "precision": null
         },
         {
             "extension": "res",
@@ -140733,7 +140961,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "res",
@@ -140743,7 +140972,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "RHO",
@@ -140753,7 +140983,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "rho",
@@ -140763,7 +140994,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "rinchi",
@@ -140773,7 +141005,8 @@
             "composition": true,
             "connections": true,
             "two_dim": false,
-            "three_dim": false
+            "three_dim": false,
+            "precision": null
         },
         {
             "extension": "rsmi",
@@ -140783,7 +141016,8 @@
             "composition": true,
             "connections": true,
             "two_dim": false,
-            "three_dim": false
+            "three_dim": false,
+            "precision": null
         },
         {
             "extension": "rxn",
@@ -140793,7 +141027,8 @@
             "composition": true,
             "connections": true,
             "two_dim": true,
-            "three_dim": true
+            "three_dim": true,
+            "precision": null
         },
         {
             "extension": "sd",
@@ -140803,7 +141038,8 @@
             "composition": true,
             "connections": true,
             "two_dim": true,
-            "three_dim": true
+            "three_dim": true,
+            "precision": null
         },
         {
             "extension": "sdf",
@@ -140813,7 +141049,8 @@
             "composition": true,
             "connections": true,
             "two_dim": true,
-            "three_dim": true
+            "three_dim": true,
+            "precision": null
         },
         {
             "extension": "siesta",
@@ -140823,7 +141060,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "smi",
@@ -140833,7 +141071,8 @@
             "composition": true,
             "connections": true,
             "two_dim": false,
-            "three_dim": false
+            "three_dim": false,
+            "precision": null
         },
         {
             "extension": "smiles",
@@ -140843,7 +141082,8 @@
             "composition": true,
             "connections": true,
             "two_dim": false,
-            "three_dim": false
+            "three_dim": false,
+            "precision": null
         },
         {
             "extension": "smy",
@@ -140853,7 +141093,8 @@
             "composition": true,
             "connections": true,
             "two_dim": false,
-            "three_dim": false
+            "three_dim": false,
+            "precision": null
         },
         {
             "extension": "stl",
@@ -140863,7 +141104,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "str",
@@ -140873,7 +141115,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "stru",
@@ -140883,7 +141126,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "svg",
@@ -140893,7 +141137,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "sxyz",
@@ -140903,7 +141148,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "sy2",
@@ -140913,7 +141159,8 @@
             "composition": true,
             "connections": true,
             "two_dim": false,
-            "three_dim": true
+            "three_dim": true,
+            "precision": null
         },
         {
             "extension": "t41",
@@ -140923,7 +141170,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "tdd",
@@ -140933,7 +141181,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "text",
@@ -140943,7 +141192,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "therm",
@@ -140953,7 +141203,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "tmol",
@@ -140963,7 +141214,8 @@
             "composition": true,
             "connections": false,
             "two_dim": true,
-            "three_dim": true
+            "three_dim": true,
+            "precision": null
         },
         {
             "extension": "txt",
@@ -140973,7 +141225,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "txt",
@@ -140983,7 +141236,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "txyz",
@@ -140993,7 +141247,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "unixyz",
@@ -141003,7 +141258,8 @@
             "composition": true,
             "connections": false,
             "two_dim": true,
-            "three_dim": true
+            "three_dim": true,
+            "precision": null
         },
         {
             "extension": "VASP",
@@ -141013,7 +141269,8 @@
             "composition": true,
             "connections": false,
             "two_dim": true,
-            "three_dim": true
+            "three_dim": true,
+            "precision": null
         },
         {
             "extension": "VCLMB",
@@ -141023,7 +141280,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "verts",
@@ -141033,7 +141291,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "verts",
@@ -141043,7 +141302,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "vesta",
@@ -141053,7 +141313,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "VH",
@@ -141063,7 +141324,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "vh",
@@ -141073,7 +141335,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "vmd_recip",
@@ -141083,7 +141346,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "vmol",
@@ -141093,7 +141357,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "VT",
@@ -141103,7 +141368,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "vt",
@@ -141113,7 +141379,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "WAVECAR",
@@ -141123,7 +141390,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "WAVECAR",
@@ -141133,7 +141401,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "WFK",
@@ -141143,7 +141412,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "wln",
@@ -141153,7 +141423,8 @@
             "composition": true,
             "connections": true,
             "two_dim": false,
-            "three_dim": false
+            "three_dim": false,
+            "precision": null
         },
         {
             "extension": "xed",
@@ -141163,7 +141434,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "xmd",
@@ -141173,7 +141445,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "xml",
@@ -141183,7 +141456,8 @@
             "composition": true,
             "connections": true,
             "two_dim": true,
-            "three_dim": true
+            "three_dim": true,
+            "precision": null
         },
         {
             "extension": "xml",
@@ -141193,7 +141467,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "xplor",
@@ -141203,7 +141478,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "xsf",
@@ -141213,7 +141489,8 @@
             "composition": true,
             "connections": false,
             "two_dim": true,
-            "three_dim": true
+            "three_dim": true,
+            "precision": null
         },
         {
             "extension": "xtc",
@@ -141223,7 +141500,8 @@
             "composition": false,
             "connections": false,
             "two_dim": true,
-            "three_dim": true
+            "three_dim": true,
+            "precision": null
         },
         {
             "extension": "XV",
@@ -141233,7 +141511,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "xv",
@@ -141243,7 +141522,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "xyz",
@@ -141253,7 +141533,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "xyz",
@@ -141263,7 +141544,8 @@
             "composition": true,
             "connections": false,
             "two_dim": true,
-            "three_dim": true
+            "three_dim": true,
+            "precision": null
         },
         {
             "extension": "yob",
@@ -141273,7 +141555,8 @@
             "composition": null,
             "connections": null,
             "two_dim": null,
-            "three_dim": null
+            "three_dim": null,
+            "precision": null
         },
         {
             "extension": "zin",
@@ -141283,7 +141566,8 @@
             "composition": true,
             "connections": false,
             "two_dim": true,
-            "three_dim": true
+            "three_dim": true,
+            "precision": null
         }
     ],
     "obargflags_in": [

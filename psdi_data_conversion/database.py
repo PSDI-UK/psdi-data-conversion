@@ -29,6 +29,9 @@ from psdi_data_conversion.converters.base import FileConverter, FileConverterExc
 from psdi_data_conversion.file_io import get_package_path
 from psdi_data_conversion.utils import regularize_name
 
+# Database keys
+# -------------
+
 # Keys for converter-specific databases
 DB_CONVERTER_KEY = "converter"
 DB_KEY_PREFIX_KEY = "database_key_prefix"
@@ -52,7 +55,6 @@ DB_OUT_OPTIONS_KEY = "out_options"
 
 DB_FORMAT_ID_LIST_KEY = "format_ids"
 
-
 # Keys for top-level and general items in the database
 DB_FORMATS_KEY = "formats"
 DB_CONVERTERS_KEY = "converters"
@@ -65,14 +67,16 @@ DB_DESCRIPTION_KEY = "description"
 DB_FURTHER_INFO_KEY = "further_info"
 DB_URL_KEY = "url"
 
-# Keys for format general info in the database
+# Keys for format general info in the database - some are duplicated here so they're also stored in the same format as
+# other keys here
 DB_FORMAT_EXT_KEY = "extension"
 DB_FORMAT_C2X_KEY = "format"
 DB_FORMAT_NOTE_KEY = "note"
-DB_FORMAT_COMP_KEY = "composition"
-DB_FORMAT_CONN_KEY = "connections"
-DB_FORMAT_2D_KEY = "two_dim"
-DB_FORMAT_3D_KEY = "three_dim"
+DB_FORMAT_COMP_KEY = const.QUAL_COMP_KEY
+DB_FORMAT_CONN_KEY = const.QUAL_CONN_KEY
+DB_FORMAT_2D_KEY = const.QUAL_2D_KEY
+DB_FORMAT_3D_KEY = const.QUAL_3D_KEY
+DB_FORMAT_PRECISION_KEY = "precision"
 DB_FORMAT_CONFIRMED_NEW_KEY = "confirmed_new"
 
 # Keys for converts_to info in the database
@@ -99,6 +103,41 @@ DB_IN_FLAGS_ID_KEY_BASE = "flags_in_id"
 DB_OUT_FLAGS_ID_KEY_BASE = "flags_out_id"
 DB_IN_OPTIONS_ID_KEY_BASE = "argflags_in_id"
 DB_OUT_OPTIONS_ID_KEY_BASE = "argflags_out_id"
+
+# Chaining constants
+# ------------------
+
+# Each format property is assigned a weight with a different power of 2, plus a weight for taking any conversion step at
+# all, to account for miscellaneous lossiness from a conversion that can't be quantified
+D_PROP_BITS = {
+    const.QUAL_COMP_KEY: 24,
+    const.QUAL_CONN_KEY: 18,
+    const.QUAL_2D_KEY: 12,
+    const.QUAL_3D_KEY: 6
+}
+D_PROP_WEIGHTS = {key: 1 << bit for key, bit in D_PROP_BITS.items()}
+
+STEP_BIT = 0
+STEP_WEIGHT = 1 << STEP_BIT
+
+# Number of bits the property weight section is offset within the full weight when everything is combined into a single
+# 128-bit integer
+PROP_WEIGHT_BIT_OFFSET = 64
+
+# Minimum and maximum for digits of precision lost
+PREC_MIN_DIGIT_LOSS = 0
+PREC_MAX_DIGIT_LOSS = 12
+
+# Number of bits separating weight bits for different levels of precision loss
+PREC_GAP_BITS = 3
+
+# Number of bits the precision weight section is offset within the full weight when everything is combined into a single
+# 128-bit integer
+PREC_WEIGHT_BIT_OFFSET = 16
+
+# Number of bits the time weight section is offset within the full weight when everything is combined into a single
+# 128-bit integer
+TIME_WEIGHT_BIT_OFFSET = 0
 
 logger = getLogger(__name__)
 
@@ -636,17 +675,20 @@ class FormatInfo:
         self.note: str = d_single_format_info.get(DB_FORMAT_NOTE_KEY, "")
         """The description of this format"""
 
-        self.composition = d_single_format_info.get(DB_FORMAT_COMP_KEY)
+        self.composition: bool | None = d_single_format_info.get(DB_FORMAT_COMP_KEY)
         """Whether or not this format stores composition information"""
 
-        self.connections = d_single_format_info.get(DB_FORMAT_CONN_KEY)
+        self.connections: bool | None = d_single_format_info.get(DB_FORMAT_CONN_KEY)
         """Whether or not this format stores connections information"""
 
-        self.two_dim = d_single_format_info.get(DB_FORMAT_2D_KEY)
+        self.two_dim: bool | None = d_single_format_info.get(DB_FORMAT_2D_KEY)
         """Whether or not this format stores 2D structural information"""
 
-        self.three_dim = d_single_format_info.get(DB_FORMAT_3D_KEY)
+        self.three_dim: bool | None = d_single_format_info.get(DB_FORMAT_3D_KEY)
         """Whether or not this format stores 3D structural information"""
+
+        self.precision: int | None = d_single_format_info.get(DB_FORMAT_PRECISION_KEY)
+        """The precision of numeric information in the format, as the number of decimal places, or 0 if unknown"""
 
         self._lower_name: str = self.name.lower()
         """The format name all in lower-case"""
@@ -1882,3 +1924,106 @@ def get_out_format_args(converter_name: str | int | UUID | ConverterInfo,
     if not arg:
         return tl_args
     return _find_arg(tl_args, arg)
+
+
+def get_conversion_prop_weight(in_format_info: FormatInfo, out_format_info: FormatInfo) -> int:
+    """Get the property weight for a conversion from `in_format_info` to `out_format_info` (not including the offset
+    applied to it when stored in the total weight).
+
+    Parameters
+    ----------
+    in_format_info : FormatInfo
+        The source format for the conversion
+    out_format_info : FormatInfo
+        The output format for the conversion
+
+    Returns
+    -------
+    int
+        64-bit bit weight, where bits set to 1 indicate the properties lost or potentially in this conversion
+    """
+
+    # Start the weight as the minimum weight for any conversion. We'll turn on bits for each property potentially lost
+    prop_weight = STEP_WEIGHT
+
+    for prop, bit in D_PROP_BITS.items():
+        in_prop: bool | None = getattr(in_format_info, prop)
+        out_prop: bool | None = getattr(out_format_info, prop)
+
+        # Add a weight for this conversion if the input property status is True/Unknown and output is False/Unknown, to
+        # be maximally conservative
+        if (in_prop is True or in_prop is None) and not out_prop:
+            prop_weight |= 1 << bit
+
+    return prop_weight
+
+
+def get_conversion_precision_weight(in_format_info: FormatInfo, out_format_info: FormatInfo) -> int:
+    """Get the precision weight for a conversion from `in_format_info` to `out_format_info` (not including the offset
+    applied to it when stored in the total weight).
+
+    Parameters
+    ----------
+    in_format_info : FormatInfo
+        The source format for the conversion
+    out_format_info : FormatInfo
+        The output format for the conversion
+
+    Returns
+    -------
+    int
+        64-bit bit weight, where the bit 3N is set to 1, with N being the number of decimal places of precision lost,
+        bound to 0 <= N <= 12
+    """
+
+    # Calculate the precision loss, defaulting to the maximum if unknown
+    precision_loss = PREC_MAX_DIGIT_LOSS
+    if in_format_info.precision is not None and out_format_info.precision is not None:
+        precision_loss = in_format_info.precision - out_format_info.precision
+    precision_loss = min(max(precision_loss, PREC_MIN_DIGIT_LOSS), PREC_MAX_DIGIT_LOSS)
+
+    return 1 << PREC_GAP_BITS*precision_loss
+
+
+def get_conversion_time_weight(in_format_info: FormatInfo, out_format_info: FormatInfo) -> int:
+    """Get the time weight for a conversion from `in_format_info` to `out_format_info` (not including the offset
+    applied to it when stored in the total weight)
+
+    TODO: Implement properly
+
+    Parameters
+    ----------
+    in_format_info : FormatInfo
+        The source format for the conversion
+    out_format_info : FormatInfo
+        The output format for the conversion
+
+    Returns
+    -------
+    int
+        64-bit bit weight, representing the weight based on the conversion time (implementation TBD)
+    """
+    return 0
+
+
+def get_conversion_weight(in_format_info: FormatInfo, out_format_info: FormatInfo) -> int:
+    """Get the combined weight for a conversion
+
+    TODO: Implement properly
+
+    Parameters
+    ----------
+    in_format_info : FormatInfo
+        The source format for the conversion
+    out_format_info : FormatInfo
+        The output format for the conversion
+
+    Returns
+    -------
+    int
+        128-bit weight
+    """
+
+    return ((get_conversion_prop_weight(in_format_info, out_format_info) << PROP_WEIGHT_BIT_OFFSET) +
+            (get_conversion_precision_weight(in_format_info, out_format_info) << PREC_WEIGHT_BIT_OFFSET) +
+            (get_conversion_time_weight(in_format_info, out_format_info) << TIME_WEIGHT_BIT_OFFSET))

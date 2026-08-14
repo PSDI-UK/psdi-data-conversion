@@ -40,7 +40,7 @@ L_CONVERTER_SORT_ORDER = [db.DB_NAME_KEY, db.DB_DESCRIPTION_KEY, db.DB_FURTHER_I
 L_CONVERTS_TO_SORT_ORDER = [db.DB_CONV_ID_KEY, db.DB_IN_ID_KEY, db.DB_OUT_ID_KEY, db.DB_SUCCESS_KEY]
 L_FORMATS_SORT_ORDER = [db.DB_FORMAT_EXT_KEY, db.DB_FORMAT_NOTE_KEY, db.DB_ID_KEY, db.DB_FORMAT_C2X_KEY,
                         db.DB_FORMAT_COMP_KEY, db.DB_FORMAT_CONN_KEY, db.DB_FORMAT_2D_KEY, db.DB_FORMAT_3D_KEY,
-                        db.DB_FORMAT_CONFIRMED_NEW_KEY]
+                        db.DB_FORMAT_PRECISION_KEY, db.DB_FORMAT_CONFIRMED_NEW_KEY]
 L_ARG_INFO_ORDER = [db.DB_FLAG_KEY, db.DB_BRIEF_KEY, db.DB_DESCRIPTION_KEY, db.DB_FURTHER_INFO_KEY, db.DB_ID_KEY]
 
 REPLACEME_ARG_IN_OUT_ID = "REPLACEME_ARG_IN_OR_OUT_ID"
@@ -208,7 +208,7 @@ def run_from_args(args):
     db_out: JsonMainDict = {}
 
     # Get the project and database paths to use based on if we're using a test path or not
-    if os.environ[TEST_PATH_KEY]:
+    if os.environ.get(TEST_PATH_KEY):
         project_path = Path(os.environ[TEST_PATH_KEY]).resolve()
         if not project_path.is_dir():
             print_wrap(f"{TC.FAIL}ERROR:{TC.ENDC} When running this script with '{TC.WARNING}{TEST_PATH_KEY}=$TEST_PATH"
