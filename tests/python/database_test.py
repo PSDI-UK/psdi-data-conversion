@@ -346,9 +346,9 @@ def test_get_conversion_prop_weight(in_format, out_format, ex_weight, request):
                                       request.getfixturevalue(out_format)) == request.getfixturevalue(ex_weight)
 
 
-# Test each property individually when it's lost to ensure the right bit is set for each
 @pytest.mark.parametrize("prop", db.D_PROP_BITS.keys())
 def test_get_conversion_prop_weight_prop_lost(format_none, prop):
+    """Test each property individually when it's lost to ensure the right bit is set for each"""
     test_format = deepcopy(format_none)
     setattr(test_format, prop, True)
     assert get_conversion_prop_weight(test_format, format_none) == db.STEP_WEIGHT | 1 << db.D_PROP_BITS[prop]
