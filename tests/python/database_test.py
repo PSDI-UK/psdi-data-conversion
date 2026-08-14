@@ -5,7 +5,6 @@ Created 2025-02-03 by Bryan Gillis.
 Unit tests relating to using the database
 """
 
-from copy import deepcopy
 from uuid import UUID
 
 import pytest
@@ -349,6 +348,6 @@ def test_get_conversion_prop_weight(in_format, out_format, ex_weight, request):
 @pytest.mark.parametrize("prop", db.D_PROP_BITS.keys())
 def test_get_conversion_prop_weight_prop_lost(format_none, prop):
     """Test each property individually when it's lost to ensure the right bit is set for each"""
-    test_format = deepcopy(format_none)
-    setattr(test_format, prop, True)
+    test_format = FormatInfo("test", database, {key: True if key == prop else False
+                                                for key in db.D_PROP_BITS.keys()})
     assert get_conversion_prop_weight(test_format, format_none) == db.STEP_WEIGHT | 1 << db.D_PROP_BITS[prop]
