@@ -1840,8 +1840,10 @@ def get_in_format_args(converter_name: str | int | UUID | ConverterInfo,
     Returns
     -------
     tuple[list[FlagInfo], list[OptionInfo]]
-        A list of info for the allowed flags, and a set of info for the allowed options. Each list is sorted by the ID
-        of the flag or option.
+        (if `arg` not provided) A list of info for the allowed flags, and a list of info for the allowed options. Each
+        list is sorted by the ID of the flag or option.
+    ArgInfo
+        (if `arg` provided) Info on the provided flag or option
     """
 
     converter_info = get_converter_info(converter_name)
@@ -1853,7 +1855,7 @@ def get_in_format_args(converter_name: str | int | UUID | ConverterInfo,
 
 def get_out_format_args(converter_name: str | int | UUID | ConverterInfo,
                         format_name: str | int | UUID | FormatInfo,
-                        arg: str | None = None) -> tuple[list[FlagInfo], list[OptionInfo]]:
+                        arg: str | None = None) -> tuple[list[FlagInfo], list[OptionInfo]] | ArgInfo:
     """Get the output flags and options supported by a given converter for a given format (provided as its extension).
     Optionally will provide information on just a single flag or option if its value is provided as an optional argument
 
@@ -1869,8 +1871,10 @@ def get_out_format_args(converter_name: str | int | UUID | ConverterInfo,
     Returns
     -------
     tuple[list[FlagInfo], list[OptionInfo]]
-        A list of info for the allowed flags, and a set of info for the allowed options. Each list is sorted by the ID
-        of the flag or option.
+        (if `arg` not provided) A list of info for the allowed flags, and a list of info for the allowed options. Each
+        list is sorted by the ID of the flag or option.
+    ArgInfo
+        (if `arg` provided) Info on the provided flag or option
     """
 
     converter_info = get_converter_info(converter_name)
