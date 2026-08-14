@@ -124,6 +124,10 @@ STEP_WEIGHT = 1 << STEP_BIT
 # 128-bit integer
 PROP_WEIGHT_BIT_OFFSET = 64
 
+# Minimum and maximum for digits of precision lost
+PREC_MIN_DIGIT_LOSS = 0
+PREC_MAX_DIGIT_LOSS = 12
+
 # Number of bits separating weight bits for different levels of precision loss
 PREC_GAP_BITS = 3
 
@@ -671,19 +675,19 @@ class FormatInfo:
         self.note: str = d_single_format_info.get(DB_FORMAT_NOTE_KEY, "")
         """The description of this format"""
 
-        self.composition = d_single_format_info.get(DB_FORMAT_COMP_KEY)
+        self.composition: bool | None = d_single_format_info.get(DB_FORMAT_COMP_KEY)
         """Whether or not this format stores composition information"""
 
-        self.connections = d_single_format_info.get(DB_FORMAT_CONN_KEY)
+        self.connections: bool | None = d_single_format_info.get(DB_FORMAT_CONN_KEY)
         """Whether or not this format stores connections information"""
 
-        self.two_dim = d_single_format_info.get(DB_FORMAT_2D_KEY)
+        self.two_dim: bool | None = d_single_format_info.get(DB_FORMAT_2D_KEY)
         """Whether or not this format stores 2D structural information"""
 
-        self.three_dim = d_single_format_info.get(DB_FORMAT_3D_KEY)
+        self.three_dim: bool | None = d_single_format_info.get(DB_FORMAT_3D_KEY)
         """Whether or not this format stores 3D structural information"""
 
-        self.precision = d_single_format_info.get(DB_FORMAT_PRECISION_KEY)
+        self.precision: int | None = d_single_format_info.get(DB_FORMAT_PRECISION_KEY)
         """The precision of numeric information in the format, as the number of decimal places, or 0 if unknown"""
 
         self._lower_name: str = self.name.lower()
@@ -1952,3 +1956,29 @@ def get_conversion_prop_weight(in_format_info: FormatInfo, out_format_info: Form
             prop_weight |= 1 << bit
 
     return prop_weight
+
+
+def get_conversion_precision_weight(in_format_info: FormatInfo, out_format_info: FormatInfo) -> int:
+    """Get the precision weight for a conversion from `in_format_info` to `out_format_info` (not including the offset
+    applied to it when stored in the total weight).
+
+    Parameters
+    ----------
+    in_format_info : FormatInfo
+        The source format for the conversion
+    out_format_info : FormatInfo
+        The output format for the conversion
+
+    Returns
+    -------
+    int
+        64-bit bit weight, where the bit 3N is set to 1, with N being the number of decimal places of precision lost,
+        bound to 0 <= N <= 12
+    """
+
+    # Calculate the precision loss, defaulting to the maximum if unknown
+    precision_loss = PREC_MAX_DIGIT_LOSS
+    if in_format_info.precision is not None and out_format_info.precision is not None:
+        precision_loss = in_format_info.precision - out_format_info.precision
+
+    return 1 << PREC_GAP_BITS*precision_loss
