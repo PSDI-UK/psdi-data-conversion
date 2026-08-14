@@ -5,16 +5,18 @@ Created 2025-02-03 by Bryan Gillis.
 Unit tests relating to using the database
 """
 
+from copy import deepcopy
 from uuid import UUID
 
 import pytest
 
 from psdi_data_conversion import constants as const
+from psdi_data_conversion import database as db
 from psdi_data_conversion.converter import L_SUPPORTED_CONVERTERS
-from psdi_data_conversion.database import (FileConverterDatabaseException, disambiguate_formats,
-                                           get_conversion_pathway, get_conversion_quality, get_converter_info,
-                                           get_database, get_format_info, get_in_format_args, get_out_format_args,
-                                           get_possible_conversions, get_possible_formats)
+from psdi_data_conversion.database import (FileConverterDatabaseException, FormatInfo, disambiguate_formats,
+                                           get_conversion_pathway, get_conversion_prop_weight, get_conversion_quality,
+                                           get_converter_info, get_database, get_format_info, get_in_format_args,
+                                           get_out_format_args, get_possible_conversions, get_possible_formats)
 from psdi_data_conversion.testing import constants as tc
 from psdi_data_conversion.utils import regularize_name
 
@@ -30,11 +32,14 @@ def test_load():
     assert db2 is db1
 
 
-def test_converter_info():
+@pytest.fixture(scope="module")
+def database():
+    return get_database()
+
+
+def test_converter_info(database):
     """Test that we can get the expected information on each converter
     """
-
-    database = get_database()
 
     l_converter_info = get_converter_info()
     l_converter_names = [x.name for x in l_converter_info]
@@ -113,11 +118,9 @@ def test_format_args():
     assert out_flag_info_0.uuid == UUID(int=out_flag_info_0.id)
 
 
-def test_format_info():
+def test_format_info(database):
     """Test that we can get the expected information on a few test formats
     """
-
-    database = get_database()
 
     for name, id in (("pdb", tc.FORMAT_PDB_0), ("cif", tc.FORMAT_CIF), ("mmcif", tc.FORMAT_MMCIF),
                      ("inchi", tc.FORMAT_INCHI), ("molreport", tc.FORMAT_MOLREPORT)):
@@ -213,11 +216,9 @@ def test_disambiguate_format():
         disambiguate_formats(const.CONVERTER_C2X, "cif", "pdb")
 
 
-def test_conversion_table():
+def test_conversion_table(database):
     """Test that we can access data from the conversions table properly
     """
-
-    database = get_database()
 
     # Check the conversions table parent is set properly
     conversions_table = database.conversions_table
@@ -298,3 +299,57 @@ def test_conversion_pathways():
         assert inchi_to_moldy_path[i][2] is inchi_to_moldy_path[i+1][1]
         # Each step should use a different converter
         assert inchi_to_moldy_path[i][0] != inchi_to_moldy_path[i+1][0]
+
+# Tests of get_conversion_prop_weight to ensure it calculates weight correctly for whether a format property is retained
+# or not in a conversion
+
+
+@pytest.fixture()
+def format_all(scope="module"):
+    return FormatInfo("all", database, {key: True for key in db.D_PROP_BITS.keys()})
+
+
+@pytest.fixture(scope="module")
+def format_none(database):
+    return FormatInfo("none", database, {key: False for key in db.D_PROP_BITS.keys()})
+
+
+@pytest.fixture(scope="module")
+def format_unknown(database):
+    return FormatInfo("unknown", database, {key: None for key in db.D_PROP_BITS.keys()})
+
+
+@pytest.fixture(scope="module")
+def max_prop_weight():
+    max_weight = db.STEP_WEIGHT
+    for bit in db.D_PROP_BITS.values():
+        max_weight |= 1 << bit
+    return max_weight
+
+
+def test_get_conversion_prop_weight_all_to_all(format_all):
+    assert get_conversion_prop_weight(format_all, format_all) == db.STEP_WEIGHT
+
+
+def test_get_conversion_prop_weight_all_to_unknown(format_all, format_unknown, max_prop_weight):
+    assert get_conversion_prop_weight(format_all, format_unknown) == max_prop_weight
+
+
+def test_get_conversion_prop_weight_all_to_none(format_all, format_none, max_prop_weight):
+    assert get_conversion_prop_weight(format_all, format_none) == max_prop_weight
+
+
+def test_get_conversion_prop_weight_none_to_unknown(format_none, format_unknown):
+    assert get_conversion_prop_weight(format_none, format_unknown) == db.STEP_WEIGHT
+
+
+def test_get_conversion_prop_weight_none_to_none(format_none):
+    assert get_conversion_prop_weight(format_none, format_none) == db.STEP_WEIGHT
+
+
+# Test each property individually when it's lost to ensure the right bit is set for each
+@pytest.mark.parametrize("prop", db.D_PROP_BITS.keys())
+def test_get_conversion_prop_weight_prop_lost(format_none, prop):
+    test_format = deepcopy(format_none)
+    setattr(test_format, prop, True)
+    assert get_conversion_prop_weight(test_format, format_none) == db.STEP_WEIGHT | 1 << db.D_PROP_BITS[prop]

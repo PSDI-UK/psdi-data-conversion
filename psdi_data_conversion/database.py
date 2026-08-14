@@ -1938,11 +1938,13 @@ def get_conversion_prop_weight(in_format_info: FormatInfo, out_format_info: Form
     # Start the weight as the minimum weight for any conversion. We'll turn on bits for each property potentially lost
     prop_weight = STEP_WEIGHT
 
-    for prop, bit in D_PROP_BITS:
+    for prop, bit in D_PROP_BITS.items():
         in_prop: bool | None = getattr(in_format_info, prop)
         out_prop: bool | None = getattr(out_format_info, prop)
 
         # Add a weight for this conversion if the input property status is True/Unknown and output is False/Unknown, to
         # be maximally conservative
         if (in_prop is True or in_prop is None) and not out_prop:
-            prop_weight &= 1 << D_PROP_BITS[bit]
+            prop_weight |= 1 << bit
+
+    return prop_weight
