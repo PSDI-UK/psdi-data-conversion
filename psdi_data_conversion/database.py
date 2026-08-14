@@ -1980,5 +1980,6 @@ def get_conversion_precision_weight(in_format_info: FormatInfo, out_format_info:
     precision_loss = PREC_MAX_DIGIT_LOSS
     if in_format_info.precision is not None and out_format_info.precision is not None:
         precision_loss = in_format_info.precision - out_format_info.precision
+    precision_loss = min(max(precision_loss, PREC_MIN_DIGIT_LOSS), PREC_MAX_DIGIT_LOSS)
 
     return 1 << PREC_GAP_BITS*precision_loss

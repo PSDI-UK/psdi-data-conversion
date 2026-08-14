@@ -13,9 +13,9 @@ from psdi_data_conversion import constants as const
 from psdi_data_conversion import database as db
 from psdi_data_conversion.converter import L_SUPPORTED_CONVERTERS
 from psdi_data_conversion.database import (FileConverterDatabaseException, FormatInfo, disambiguate_formats,
-                                           get_conversion_pathway, get_conversion_prop_weight, get_conversion_quality,
-                                           get_converter_info, get_database, get_format_info, get_in_format_args,
-                                           get_out_format_args, get_possible_conversions, get_possible_formats)
+                                           get_conversion_pathway, get_conversion_quality, get_converter_info,
+                                           get_database, get_format_info, get_in_format_args, get_out_format_args,
+                                           get_possible_conversions, get_possible_formats)
 from psdi_data_conversion.testing import constants as tc
 from psdi_data_conversion.utils import regularize_name
 
@@ -341,8 +341,8 @@ def test_get_conversion_prop_weight(in_format, out_format, ex_weight, request):
     """Tests of get_conversion_prop_weight to ensure it calculates weight correctly for whether a format property is
     retained or not in a conversion, with all variations of all properties existing in input and output formats
     """
-    assert get_conversion_prop_weight(request.getfixturevalue(in_format),
-                                      request.getfixturevalue(out_format)) == request.getfixturevalue(ex_weight)
+    assert db.get_conversion_prop_weight(request.getfixturevalue(in_format),
+                                         request.getfixturevalue(out_format)) == request.getfixturevalue(ex_weight)
 
 
 @pytest.mark.parametrize("prop", db.D_PROP_BITS.keys())
@@ -350,4 +350,17 @@ def test_get_conversion_prop_weight_prop_lost(format_none, prop):
     """Test each property individually when it's lost to ensure the right bit is set for each"""
     test_format = FormatInfo("test", database, {key: True if key == prop else False
                                                 for key in db.D_PROP_BITS.keys()})
-    assert get_conversion_prop_weight(test_format, format_none) == db.STEP_WEIGHT | 1 << db.D_PROP_BITS[prop]
+    assert db.get_conversion_prop_weight(test_format, format_none) == db.STEP_WEIGHT | 1 << db.D_PROP_BITS[prop]
+
+
+@pytest.mark.parametrize("in_prec, out_prec, ex_weight", [(None, None, 1 << db.PREC_MAX_DIGIT_LOSS*db.PREC_GAP_BITS),
+                                                          (24, None, 1 << db.PREC_MAX_DIGIT_LOSS*db.PREC_GAP_BITS),
+                                                          (None, 24, 1 << db.PREC_MAX_DIGIT_LOSS*db.PREC_GAP_BITS),
+                                                          (24, 24, 1 << 0*db.PREC_GAP_BITS),
+                                                          (24, 18, 1 << 6*db.PREC_GAP_BITS),
+                                                          (24, 30, 1 << 0*db.PREC_GAP_BITS),
+                                                          (24, 6, 1 << db.PREC_MAX_DIGIT_LOSS*db.PREC_GAP_BITS)])
+def test_get_conversion_precision_weight(database, in_prec, out_prec, ex_weight):
+    in_format = FormatInfo("in", database, {db.DB_FORMAT_PRECISION_KEY: in_prec})
+    out_format = FormatInfo("in", database, {db.DB_FORMAT_PRECISION_KEY: out_prec})
+    assert db.get_conversion_precision_weight(in_format, out_format) == ex_weight
