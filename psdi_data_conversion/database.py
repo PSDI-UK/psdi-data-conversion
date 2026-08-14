@@ -29,6 +29,9 @@ from psdi_data_conversion.converters.base import FileConverter, FileConverterExc
 from psdi_data_conversion.file_io import get_package_path
 from psdi_data_conversion.utils import regularize_name
 
+# Database keys
+# -------------
+
 # Keys for converter-specific databases
 DB_CONVERTER_KEY = "converter"
 DB_KEY_PREFIX_KEY = "database_key_prefix"
@@ -52,7 +55,6 @@ DB_OUT_OPTIONS_KEY = "out_options"
 
 DB_FORMAT_ID_LIST_KEY = "format_ids"
 
-
 # Keys for top-level and general items in the database
 DB_FORMATS_KEY = "formats"
 DB_CONVERTERS_KEY = "converters"
@@ -65,14 +67,15 @@ DB_DESCRIPTION_KEY = "description"
 DB_FURTHER_INFO_KEY = "further_info"
 DB_URL_KEY = "url"
 
-# Keys for format general info in the database
+# Keys for format general info in the database - some are duplicated here so they're also stored in the same format as
+# other keys here
 DB_FORMAT_EXT_KEY = "extension"
 DB_FORMAT_C2X_KEY = "format"
 DB_FORMAT_NOTE_KEY = "note"
-DB_FORMAT_COMP_KEY = "composition"
-DB_FORMAT_CONN_KEY = "connections"
-DB_FORMAT_2D_KEY = "two_dim"
-DB_FORMAT_3D_KEY = "three_dim"
+DB_FORMAT_COMP_KEY = const.QUAL_COMP_KEY
+DB_FORMAT_CONN_KEY = const.QUAL_CONN_KEY
+DB_FORMAT_2D_KEY = const.QUAL_2D_KEY
+DB_FORMAT_3D_KEY = const.QUAL_3D_KEY
 DB_FORMAT_CONFIRMED_NEW_KEY = "confirmed_new"
 
 # Keys for converts_to info in the database
@@ -99,6 +102,37 @@ DB_IN_FLAGS_ID_KEY_BASE = "flags_in_id"
 DB_OUT_FLAGS_ID_KEY_BASE = "flags_out_id"
 DB_IN_OPTIONS_ID_KEY_BASE = "argflags_in_id"
 DB_OUT_OPTIONS_ID_KEY_BASE = "argflags_out_id"
+
+# Chaining constants
+# ------------------
+
+# Each format property is assigned a weight with a different power of 2, plus a weight for taking any conversion step at
+# all, to account for miscellaneous lossiness from a conversion that can't be quantified
+D_PROP_BITS = {
+    const.QUAL_COMP_KEY: 24,
+    const.QUAL_CONN_KEY: 18,
+    const.QUAL_2D_KEY: 12,
+    const.QUAL_3D_KEY: 6
+}
+D_PROP_WEIGHTS = {key: 1 << bit for key, bit in D_PROP_BITS.items()}
+
+STEP_BIT = 0
+STEP_WEIGHT = 1 << STEP_BIT
+
+# Number of bits the property weight section is offset within the full weight when everything is combined into a single
+# 128-bit integer
+PROP_WEIGHT_BIT_OFFSET = 64
+
+# Number of bits separating weight bits for different levels of precision loss
+PREC_GAP_BITS = 3
+
+# Number of bits the precision weight section is offset within the full weight when everything is combined into a single
+# 128-bit integer
+PREC_WEIGHT_BIT_OFFSET = 16
+
+# Number of bits the time weight section is offset within the full weight when everything is combined into a single
+# 128-bit integer
+TIME_WEIGHT_BIT_OFFSET = 0
 
 logger = getLogger(__name__)
 
@@ -1882,3 +1916,33 @@ def get_out_format_args(converter_name: str | int | UUID | ConverterInfo,
     if not arg:
         return tl_args
     return _find_arg(tl_args, arg)
+
+
+def get_conversion_prop_weight(in_format_info: FormatInfo, out_format_info: FormatInfo) -> int:
+    """Get the property weight for a conversion from `in_format_info` to `out_format_info` (not including the offset
+    applied to it when stored in the total weight).
+
+    Parameters
+    ----------
+    in_format_info : FormatInfo
+        The source format for the conversion
+    out_format_info : FormatInfo
+        The output format for the conversion
+
+    Returns
+    -------
+    int
+        64-bit bit weight, where bits set to 1 indicate the properties lost or potentially in this conversion
+    """
+
+    # Start the weight as the minimum weight for any conversion. We'll turn on bits for each property potentially lost
+    prop_weight = STEP_WEIGHT
+
+    for prop, bit in D_PROP_BITS:
+        in_prop: bool | None = getattr(in_format_info, prop)
+        out_prop: bool | None = getattr(out_format_info, prop)
+
+        # Add a weight for this conversion if the input property status is True/Unknown and output is False/Unknown, to
+        # be maximally conservative
+        if (in_prop is True or in_prop is None) and not out_prop:
+            prop_weight &= 1 << D_PROP_BITS[bit]
