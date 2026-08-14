@@ -97,16 +97,10 @@ class TestCreatePlugin(PluginManagementBase):
     # Test names we'll use for the plugins
     PLUGIN_NAME = "Test Plugin Name"
     PLUGIN_NAME_2 = "Test Plugin Name 2"
-    PLUGIN_NAME_3 = "Test Plugin Name 3"
-    PLUGIN_NAME_4 = "Test Plugin Name 4"
-    SCRIPT_PLUGIN_NAME = "Test Script Plugin Name"
-    SCRIPT_PLUGIN_NAME_2 = "Test Script Plugin Name 2"
     UNCONVERTABLE_NAME = "++"
 
     # Test label we'll use for the plugin, differing from that generated from the name
     TEST_PLUGIN_LABEL = "test_plugin_label"
-    TEST_PLUGIN_LABEL_2 = "test_plugin_label_2"
-    TEST_SCRIPT_PLUGIN_LABEL = "test_script_plugin_label"
     INVALID_LABEL_CAPS = "Label"
     INVALID_LABEL_CHAR = "label++"
 
@@ -170,41 +164,51 @@ class TestCreatePlugin(PluginManagementBase):
             assert isinstance(self.conv_data[key], list)
             assert len(val) == 0
 
-    def test_create_plugin_simple(self):
-        """Test that the plugin creation script works as expected in simple cases"""
-
-        # Test a simple case where just a name is supplied
+    def test_create_plugin_name_only(self):
+        """Test creating a plugin in a simple case where just a name is supplied"""
         self._run_create_plugin(self.PLUGIN_NAME)
 
-        # Test a case where we provide a separate label that isn't generated from the name
-        self._run_create_plugin(self.PLUGIN_NAME_2, label=self.TEST_PLUGIN_LABEL)
+    def test_create_plugin_with_label(self):
+        """Test a case where we provide a separate label that isn't generated from the name"""
+        self._run_create_plugin(self.PLUGIN_NAME, label=self.TEST_PLUGIN_LABEL)
 
-        # Then repeat these with a script plugin
-        self._run_create_plugin(self.SCRIPT_PLUGIN_NAME, script=True)
-        self._run_create_plugin(self.SCRIPT_PLUGIN_NAME_2, label=self.TEST_SCRIPT_PLUGIN_LABEL, script=True)
+    def test_create_script_plugin_name_only(self):
+        """Test creating a plugin in a simple case where just a name is supplied"""
+        self._run_create_plugin(self.PLUGIN_NAME, script=True)
 
-    def test_create_plugin_fail_cases(self):
-        """Test that the plugin creation script fails when expected to"""
+    def test_create_script_plugin_with_label(self):
+        """Test a case where we provide a separate label that isn't generated from the name"""
+        self._run_create_plugin(self.PLUGIN_NAME, label=self.TEST_PLUGIN_LABEL, script=True)
 
-        # Test that we get a failure when there's a name clash
+    def test_create_plugin_name_clash(self):
+        """Test that we get a failure when there's a name clash"""
         self._run_create_plugin(self.PLUGIN_NAME, check=False)
         process = self._run_create_plugin(self.PLUGIN_NAME, label=self.TEST_PLUGIN_LABEL, expect_fail=True)
         assert f"Name '{self.PLUGIN_NAME}' clashes" in process.stderr
 
-        # Test that we get a failure when there's a label clash
-        self._run_create_plugin(self.PLUGIN_NAME_2, label=self.TEST_PLUGIN_LABEL, check=False)
-        process = self._run_create_plugin(self.PLUGIN_NAME_3, label=self.TEST_PLUGIN_LABEL, expect_fail=True)
-        assert f"Label '{self.TEST_PLUGIN_LABEL}' clashes"
+    def test_create_plugin_label_clash(self):
+        """Test that we get a failure when there's a label clash"""
+        self._run_create_plugin(self.PLUGIN_NAME, label=self.TEST_PLUGIN_LABEL, check=False)
+        process = self._run_create_plugin(self.PLUGIN_NAME_2, label=self.TEST_PLUGIN_LABEL, expect_fail=True)
+        assert f"Label '{self.TEST_PLUGIN_LABEL}' clashes" in process.stderr
 
-        # Test we get a failure if the name can't be converted to a valid label, but not if we provide a valid label
+    def test_create_plugin_unconvertable_name(self):
+        """Test we get a failure if the name can't be converted to a valid label"""
         process = self._run_create_plugin(self.UNCONVERTABLE_NAME, expect_fail=True)
         assert f"A valid label could not be generated from converter name '{self.UNCONVERTABLE_NAME}'" in process.stderr
-        self._run_create_plugin(self.UNCONVERTABLE_NAME, label=self.TEST_PLUGIN_LABEL_2)
 
-        # Test we get a failure if the provided label is invalid
-        process = self._run_create_plugin(self.PLUGIN_NAME_4, label=self.INVALID_LABEL_CAPS, expect_fail=True)
+    def test_create_plugin_unconvertable_name_with_label(self):
+        """Test that we can use an unconvertable name if we also provide a valid label"""
+        self._run_create_plugin(self.UNCONVERTABLE_NAME, label=self.TEST_PLUGIN_LABEL)
+
+    def test_create_plugin_invalid_label_caps(self):
+        """Test we get a failure if the provided label is invalid due to including capital letters"""
+        process = self._run_create_plugin(self.PLUGIN_NAME, label=self.INVALID_LABEL_CAPS, expect_fail=True)
         assert f"Label '{self.INVALID_LABEL_CAPS}' is invalid" in process.stderr
-        process = self._run_create_plugin(self.PLUGIN_NAME_4, label=self.INVALID_LABEL_CHAR, expect_fail=True)
+
+    def test_create_plugin_invalid_label_chars(self):
+        """Test we get a failure if the provided label is invalid due to including invalid characters"""
+        process = self._run_create_plugin(self.PLUGIN_NAME, label=self.INVALID_LABEL_CHAR, expect_fail=True)
         assert f"Label '{self.INVALID_LABEL_CHAR}' is invalid" in process.stderr
 
 
@@ -287,9 +291,8 @@ class TestInstallPlugins(PluginManagementBase):
         self._run_install_plugins()
         self._check_plugin_installed("complex")
 
-    def test_questionable_install(self):
-        """Test installing a plugin where it's questionable whether one of the formats in it might already be in the
-        database"""
+    def test_questionable_install_fail(self):
+        """Test that an installation with a questionable format fails if it isn't confirmed as new"""
         self._create_test_plugin("questionable")
 
         # Save a copy of the database from before installing to ensure it isn't changed
@@ -300,12 +303,19 @@ class TestInstallPlugins(PluginManagementBase):
         assert process.returncode == 2
 
         # Check that the converter's data hasn't been changed
+
+        # Set the plugin path again to force a refresh of cached data
         self.plugin_path = self.conv_path / "test_converter_questionable"
         conv_data_post_install = self.conv_data
 
         assert conv_data_init == conv_data_post_install
 
-        # Now try setting the questionable format as confirmed new, and check that we can install after doing so
+    def test_questionable_install_success(self):
+        """Test that an installation with a questionable format succeeds if it is confirmed as new"""
+        self._create_test_plugin("questionable")
+        self.plugin_path = self.conv_path / "test_converter_questionable"
+
+        # Set the questionable format as confirmed new, and check that we can install after doing so
         format_data: utils.JsonDict = self.conv_data[db.DB_EXTRA_FORMATS_KEY][4]
 
         # Check that we have the right format, in case the index of it changes, so we catch it explictly here
