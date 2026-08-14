@@ -76,6 +76,7 @@ DB_FORMAT_COMP_KEY = const.QUAL_COMP_KEY
 DB_FORMAT_CONN_KEY = const.QUAL_CONN_KEY
 DB_FORMAT_2D_KEY = const.QUAL_2D_KEY
 DB_FORMAT_3D_KEY = const.QUAL_3D_KEY
+DB_FORMAT_PRECISION_KEY = "precision"
 DB_FORMAT_CONFIRMED_NEW_KEY = "confirmed_new"
 
 # Keys for converts_to info in the database
