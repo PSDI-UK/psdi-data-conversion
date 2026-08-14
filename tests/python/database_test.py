@@ -5,6 +5,7 @@ Created 2025-02-03 by Bryan Gillis.
 Unit tests relating to using the database
 """
 
+from copy import deepcopy
 from uuid import UUID
 
 import pytest
@@ -357,6 +358,18 @@ def test_get_conversion_prop_weight_prop_lost(format_none, prop):
                                                           (24, 30, 1 << 0*db.PREC_GAP_BITS),
                                                           (24, 6, 1 << db.PREC_MAX_DIGIT_LOSS*db.PREC_GAP_BITS)])
 def test_get_conversion_precision_weight(database, in_prec, out_prec, ex_weight):
+    """Test that conversion precision weights are calculated correctly"""
     in_format = db.FormatInfo("in", database, {db.DB_FORMAT_PRECISION_KEY: in_prec})
     out_format = db.FormatInfo("in", database, {db.DB_FORMAT_PRECISION_KEY: out_prec})
     assert db.get_conversion_precision_weight(in_format, out_format) == ex_weight
+
+
+def test_get_conversion_weight(format_all, format_none, max_prop_weight):
+    """Test that getting the full conversion weight is calculated as expected"""
+    in_format: db.FormatInfo = deepcopy(format_all)
+    in_format.precision = 24
+    out_format: db.FormatInfo = deepcopy(format_none)
+    out_format.precision = 18
+
+    assert db.get_conversion_weight(in_format, out_format) == ((max_prop_weight << db.PROP_WEIGHT_BIT_OFFSET) +
+                                                               (1 << 6*db.PREC_GAP_BITS << db.PREC_WEIGHT_BIT_OFFSET))

@@ -1983,3 +1983,47 @@ def get_conversion_precision_weight(in_format_info: FormatInfo, out_format_info:
     precision_loss = min(max(precision_loss, PREC_MIN_DIGIT_LOSS), PREC_MAX_DIGIT_LOSS)
 
     return 1 << PREC_GAP_BITS*precision_loss
+
+
+def get_conversion_time_weight(in_format_info: FormatInfo, out_format_info: FormatInfo) -> int:
+    """Get the time weight for a conversion from `in_format_info` to `out_format_info` (not including the offset
+    applied to it when stored in the total weight)
+
+    TODO: Implement properly
+
+    Parameters
+    ----------
+    in_format_info : FormatInfo
+        The source format for the conversion
+    out_format_info : FormatInfo
+        The output format for the conversion
+
+    Returns
+    -------
+    int
+        64-bit bit weight, representing the weight based on the conversion time (implementation TBD)
+    """
+    return 0
+
+
+def get_conversion_weight(in_format_info: FormatInfo, out_format_info: FormatInfo) -> int:
+    """Get the combined weight for a conversion
+
+    TODO: Implement properly
+
+    Parameters
+    ----------
+    in_format_info : FormatInfo
+        The source format for the conversion
+    out_format_info : FormatInfo
+        The output format for the conversion
+
+    Returns
+    -------
+    int
+        128-bit weight
+    """
+
+    return ((get_conversion_prop_weight(in_format_info, out_format_info) << PROP_WEIGHT_BIT_OFFSET) +
+            (get_conversion_precision_weight(in_format_info, out_format_info) << PREC_WEIGHT_BIT_OFFSET) +
+            (get_conversion_time_weight(in_format_info, out_format_info) << TIME_WEIGHT_BIT_OFFSET))
