@@ -683,6 +683,9 @@ class FormatInfo:
         self.three_dim = d_single_format_info.get(DB_FORMAT_3D_KEY)
         """Whether or not this format stores 3D structural information"""
 
+        self.precision = d_single_format_info.get(DB_FORMAT_PRECISION_KEY)
+        """The precision of numeric information in the format, as the number of decimal places, or 0 if unknown"""
+
         self._lower_name: str = self.name.lower()
         """The format name all in lower-case"""
 
