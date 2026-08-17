@@ -37,7 +37,7 @@ THRESHOLD_FORMAT_ID = 9999
 # Sorting orders for dicts in the JSON output
 L_CONVERTER_SORT_ORDER = [db.DB_NAME_KEY, db.DB_DESCRIPTION_KEY, db.DB_FURTHER_INFO_KEY, db.DB_ID_KEY,
                           db.DB_URL_KEY, db.DB_KEY_PREFIX_KEY, db.DB_SUPPORT_AMBIG_EXT_KEY]
-L_CONVERTS_TO_SORT_ORDER = [db.DB_CONV_ID_KEY, db.DB_IN_ID_KEY, db.DB_OUT_ID_KEY, db.DB_SUCCESS_KEY]
+L_CONVERTS_TO_SORT_ORDER = [db.DB_CONV_ID_KEY, db.DB_IN_ID_KEY, db.DB_OUT_ID_KEY, db.DB_SUCCESS_KEY, db.DB_WEIGHT_KEY]
 L_FORMATS_SORT_ORDER = [db.DB_FORMAT_EXT_KEY, db.DB_FORMAT_NOTE_KEY, db.DB_ID_KEY, db.DB_FORMAT_C2X_KEY,
                         db.DB_FORMAT_COMP_KEY, db.DB_FORMAT_CONN_KEY, db.DB_FORMAT_2D_KEY, db.DB_FORMAT_3D_KEY,
                         db.DB_FORMAT_PRECISION_KEY, db.DB_FORMAT_CONFIRMED_NEW_KEY]
@@ -489,6 +489,29 @@ def run_from_args(args):
     sort_json_list(l_db_converters, L_CONVERTER_SORT_ORDER)
     sort_json_list(l_db_converts_to, L_CONVERTS_TO_SORT_ORDER)
     json.dump(db_out, open(db_path, "w"), indent=4)
+
+    # Calculate the conversion weights and store them in the database file
+    calc_conv_weights(db_path)
+
+
+def calc_conv_weights(db_path: Path):
+    """Calculate the weights for conversions and store them in the database file"""
+
+    # Load a new database structure, to ensure it's up-to-date and not a version loaded earlier before other changes
+    # made in this script
+    database = db.load_database()
+
+    # Read in the current database file, then update each conversion entry, adding the weight for it
+    db_json: JsonMainDict = json.load(open(db_path))
+    l_db_converts_to: list[JsonDict] = db_json[db.DB_CONVERTS_TO_KEY]
+
+    for db_converts_to in l_db_converts_to:
+        in_format = database.get_format_info(db_converts_to[db.DB_IN_ID_KEY])
+        out_format = database.get_format_info(db_converts_to[db.DB_OUT_ID_KEY])
+        db_converts_to[db.DB_WEIGHT_KEY] = db.get_conversion_weight(in_format, out_format)
+
+    sort_json_list(l_db_converts_to, L_CONVERTS_TO_SORT_ORDER)
+    json.dump(db_json, open(db_path, "w"), indent=4)
 
 
 def main():

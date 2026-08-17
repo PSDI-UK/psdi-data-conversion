@@ -84,6 +84,7 @@ DB_CONV_ID_KEY = "converters_id"
 DB_IN_ID_KEY = "in_id"
 DB_OUT_ID_KEY = "out_id"
 DB_SUCCESS_KEY = "degree_of_success"
+DB_WEIGHT_KEY = "weight"
 
 # Key bases for converter-specific items in the database
 DB_IN_FLAGS_KEY_BASE = "flags_in"
