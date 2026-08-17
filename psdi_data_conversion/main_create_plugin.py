@@ -163,6 +163,7 @@ def run_from_args(args):
     # Determine which template directory to use and other related info
     if os.environ.get(TEST_DATA_KEY):
         test_path = os.environ.get(TEST_PATH_KEY)
+        test_path = Path(test_path) if test_path else None
         template_path = get_test_data_loc(test_path) / name
         template_str: str = "Template"
     elif args.script:
