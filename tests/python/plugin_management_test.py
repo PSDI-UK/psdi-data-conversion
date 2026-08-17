@@ -347,3 +347,13 @@ class TestInstallPlugins(PluginManagementBase):
         self._create_test_plugin("questionable")
         self._run_install_plugins(force=True)
         self._check_plugin_installed("questionable")
+
+    def test_conv_weight_calcs(self):
+        """Test calculation of conversion weights"""
+        self._create_test_plugin("complex")
+        self._run_install_plugins()
+
+        os.environ[TEST_PATH_KEY] = str(self.mock_repo)
+        database = db.load_database(prune=False)
+        l_converts_to: utils.JsonDict = database.converts_to
+        # TODO Finish test
