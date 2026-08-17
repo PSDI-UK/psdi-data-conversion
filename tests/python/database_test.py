@@ -361,7 +361,7 @@ def test_get_conversion_precision_weight(database, in_prec, out_prec, ex_weight)
     """Test that conversion precision weights are calculated correctly"""
     in_format = db.FormatInfo("in", database, {db.DB_FORMAT_PRECISION_KEY: in_prec})
     out_format = db.FormatInfo("in", database, {db.DB_FORMAT_PRECISION_KEY: out_prec})
-    assert db.get_conversion_precision_weight(in_format, out_format) == ex_weight
+    assert db.get_conversion_prec_weight(in_format, out_format) == ex_weight
 
 
 def test_get_conversion_weight(format_all, format_none, max_prop_weight):
@@ -373,3 +373,14 @@ def test_get_conversion_weight(format_all, format_none, max_prop_weight):
 
     assert db.get_conversion_weight(in_format, out_format) == ((max_prop_weight << db.PROP_WEIGHT_BIT_OFFSET) +
                                                                (1 << 6*db.PREC_GAP_BITS << db.PREC_WEIGHT_BIT_OFFSET))
+
+
+@pytest.mark.parametrize("prop_weight, prec_weight, time_weight", [(0, 0, 0),
+                                                                   (65535, 65535, 65535),
+                                                                   (2788794, 1254542, 2148)])
+def test_split_conversion_weight(prop_weight, prec_weight, time_weight):
+    """Test that the function to split the conversion weight works as expected"""
+    split_weight = db.split_conversion_weight(db.calc_conversion_weight(prop_weight, prec_weight, time_weight))
+    assert split_weight.prop_weight == prop_weight
+    assert split_weight.prec_weight == prec_weight
+    assert split_weight.time_weight == time_weight

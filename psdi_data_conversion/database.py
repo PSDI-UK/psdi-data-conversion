@@ -16,7 +16,7 @@ from functools import lru_cache
 from itertools import product
 from logging import getLogger
 from pathlib import Path
-from typing import Any, Literal, overload
+from typing import Any, Literal, NamedTuple, overload
 from uuid import UUID
 from warnings import catch_warnings
 
@@ -1958,7 +1958,7 @@ def get_conversion_prop_weight(in_format_info: FormatInfo, out_format_info: Form
     return prop_weight
 
 
-def get_conversion_precision_weight(in_format_info: FormatInfo, out_format_info: FormatInfo) -> int:
+def get_conversion_prec_weight(in_format_info: FormatInfo, out_format_info: FormatInfo) -> int:
     """Get the precision weight for a conversion from `in_format_info` to `out_format_info` (not including the offset
     applied to it when stored in the total weight).
 
@@ -1977,12 +1977,12 @@ def get_conversion_precision_weight(in_format_info: FormatInfo, out_format_info:
     """
 
     # Calculate the precision loss, defaulting to the maximum if unknown
-    precision_loss = PREC_MAX_DIGIT_LOSS
+    prec_loss = PREC_MAX_DIGIT_LOSS
     if in_format_info.precision is not None and out_format_info.precision is not None:
-        precision_loss = in_format_info.precision - out_format_info.precision
-    precision_loss = min(max(precision_loss, PREC_MIN_DIGIT_LOSS), PREC_MAX_DIGIT_LOSS)
+        prec_loss = in_format_info.precision - out_format_info.precision
+    prec_loss = min(max(prec_loss, PREC_MIN_DIGIT_LOSS), PREC_MAX_DIGIT_LOSS)
 
-    return 1 << PREC_GAP_BITS*precision_loss
+    return 1 << PREC_GAP_BITS*prec_loss
 
 
 def get_conversion_time_weight(in_format_info: FormatInfo, out_format_info: FormatInfo) -> int:
@@ -2009,8 +2009,6 @@ def get_conversion_time_weight(in_format_info: FormatInfo, out_format_info: Form
 def get_conversion_weight(in_format_info: FormatInfo, out_format_info: FormatInfo) -> int:
     """Get the combined weight for a conversion
 
-    TODO: Implement properly
-
     Parameters
     ----------
     in_format_info : FormatInfo
@@ -2024,6 +2022,60 @@ def get_conversion_weight(in_format_info: FormatInfo, out_format_info: FormatInf
         128-bit weight
     """
 
-    return ((get_conversion_prop_weight(in_format_info, out_format_info) << PROP_WEIGHT_BIT_OFFSET) +
-            (get_conversion_precision_weight(in_format_info, out_format_info) << PREC_WEIGHT_BIT_OFFSET) +
-            (get_conversion_time_weight(in_format_info, out_format_info) << TIME_WEIGHT_BIT_OFFSET))
+    return calc_conversion_weight(get_conversion_prop_weight(in_format_info, out_format_info),
+                                  get_conversion_prec_weight(in_format_info, out_format_info),
+                                  get_conversion_time_weight(in_format_info, out_format_info))
+
+
+def calc_conversion_weight(prop_weight: int, prec_weight: int, time_weight: int):
+    """Calculate the combined weight for a conversion from its component weights. The weights must be in the provided
+    range, or else the output will have undefined behaviour
+
+    Parameters
+    ----------
+    prop_weight : int
+        The conversion property weight, in the range 0 < prop_weight < 2**64
+    prec_weight : int
+        The conversion precision weight, in the range 0 < prop_weight < 2**48
+    time_weight : int
+        The conversion time weight, in the range 0 < prop_weight < 2**16
+
+    Returns
+    -------
+    int
+        The combined conversion weight
+    """
+    return ((prop_weight << PROP_WEIGHT_BIT_OFFSET) +
+            (prec_weight << PREC_WEIGHT_BIT_OFFSET) +
+            (time_weight << TIME_WEIGHT_BIT_OFFSET))
+
+
+class ConversionWeightParts(NamedTuple):
+    prop_weight: int
+    prec_weight: int
+    time_weight: int
+
+
+def split_conversion_weight(conversion_weight: int):
+    """Splits the total conversion weight into the parts for each component weight
+
+    Parameters
+    ----------
+    conversion_weight : int
+        The total conversion weight
+
+    Returns
+    -------
+    ConversionWeightParts
+        NamedTuple of prop_weight, prec_weight, and time_weight
+    """
+
+    prop_weight = conversion_weight >> PROP_WEIGHT_BIT_OFFSET
+    conversion_weight -= prop_weight << PROP_WEIGHT_BIT_OFFSET
+
+    prec_weight = conversion_weight >> PREC_WEIGHT_BIT_OFFSET
+    conversion_weight -= prec_weight << PREC_WEIGHT_BIT_OFFSET
+
+    time_weight = conversion_weight >> TIME_WEIGHT_BIT_OFFSET
+
+    return ConversionWeightParts(prop_weight, prec_weight, time_weight)
