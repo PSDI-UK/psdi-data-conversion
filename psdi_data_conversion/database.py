@@ -1499,9 +1499,10 @@ class DataConversionDatabase:
                 if which == "all":
                     return [format_info]
                 return format_info
-            except KeyError:
-                raise FileConverterDatabaseException(f"Format ID '{format_name_or_id}' not recognised",
-                                                     help=True)
+            except KeyError as e:
+                if e.args[0] == UUID(format_name_or_id).int:
+                    raise FileConverterDatabaseException(f"Format ID '{format_name_or_id}' not recognised",
+                                                         help=True)
             except ValueError:
                 pass
 
@@ -1551,7 +1552,9 @@ class DataConversionDatabase:
         elif isinstance(format_name_or_id, int):
             try:
                 format_info = self.d_format_info_from_id[format_name_or_id]
-            except KeyError:
+            except KeyError as e:
+                if e.args[0] != format_name_or_id:
+                    raise
                 if return_as_list:
                     return []
                 raise FileConverterDatabaseException(f"Format ID '{format_name_or_id}' not recognised",
@@ -1560,7 +1563,9 @@ class DataConversionDatabase:
         elif isinstance(format_name_or_id, UUID):
             try:
                 format_info = self.d_format_info_from_id[format_name_or_id.int]
-            except KeyError:
+            except KeyError as e:
+                if e.args[0] != format_name_or_id.int:
+                    raise
                 if return_as_list:
                     return []
                 raise FileConverterDatabaseException(f"Format ID '{format_name_or_id}' not recognised",
