@@ -222,7 +222,7 @@ class ConverterInfo:
             self.pretty_name = self.converter_class.meta.name
         except KeyError:
             self.converter_class = None
-            self.pretty_name = name
+            self.pretty_name = d_single_converter_info[DB_NAME_KEY]
 
         self.parent = parent
         """The parent database"""
@@ -232,6 +232,9 @@ class ConverterInfo:
         """The converter's ID"""
 
         self.description: str = d_single_converter_info.get(DB_DESCRIPTION_KEY, "")
+        """A description of the converter"""
+
+        self.info: str = d_single_converter_info.get(DB_INFO_KEY, "")
         """A description of the converter"""
 
         self.url: str = d_single_converter_info.get(DB_URL_KEY, "")
