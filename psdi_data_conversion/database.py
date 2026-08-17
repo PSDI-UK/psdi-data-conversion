@@ -1169,17 +1169,21 @@ class DataConversionDatabase:
     """Class providing interface for information contained in the PSDI Data Conversion database
     """
 
-    def __init__(self, d_data: dict[str, Any]):
+    def __init__(self, d_data: dict[str, Any], prune=True):
         """Initialise the DataConversionDatabase object
 
         Parameters
         ----------
         d_data : dict[str, Any]
             The dict of the database, as loaded in from the JSON file
+        prune : bool
+            Whether or not any formats with no supported conversions should be pruned from the database, default True
         """
 
         # Store the database dict internally for debugging purposes
         self._d_data = d_data
+
+        self._prune = prune
 
         # Store top-level items not tied to a specific converter
         self.formats: list[dict[str, bool | int | str | None]] = d_data[DB_FORMATS_KEY]
@@ -1347,14 +1351,15 @@ class DataConversionDatabase:
         supported_graph = self._conversions_table.supported_graph
         d_indices_from_uuids: dict[int, int] = self._conversions_table.d_indices_from_uuids
 
-        l_ids_to_remove: list[int] = []
-        for format_id, format_info in self._d_format_info_from_id.items():
-            if not format_info or supported_graph.degree(d_indices_from_uuids[format_id]) == 0:
-                # The format isn't supported for any conversions, so mark it to be removed from the dict
-                # (Can't remove while we're iterating over the dict)
-                l_ids_to_remove.append(format_id)
-        for id in l_ids_to_remove:
-            del self._d_format_info_from_id[id]
+        if self._prune:
+            l_ids_to_remove: list[int] = []
+            for format_id, format_info in self._d_format_info_from_id.items():
+                if not format_info or supported_graph.degree(d_indices_from_uuids[format_id]) == 0:
+                    # The format isn't supported for any conversions, so mark it to be removed from the dict
+                    # (Can't remove while we're iterating over the dict)
+                    l_ids_to_remove.append(format_id)
+            for id in l_ids_to_remove:
+                del self._d_format_info_from_id[id]
 
         # Now create the formats from name dict
         self._d_format_info_from_name: dict[str, list[FormatInfo]] = {}
@@ -1583,10 +1588,16 @@ def get_database_path() -> Path:
     return qualified_database_filename
 
 
-def load_database() -> DataConversionDatabase:
+def load_database(prune=True) -> DataConversionDatabase:
     """Load and return a new instance of the data conversion database from the JSON database file in this package. This
     function should not be called directly unless you specifically need a new instance of the database object and can't
-    deepcopy the database returned by `get_database()`, as it's expensive to load it in.
+    deepcopy the database returned by `get_database()` or you need an unpruned database, as it's expensive to load it
+    in.
+
+    Parameters
+    ----------
+    prune : bool
+        Whether or not to prune from the database any formats which have no supported conversions, default True
 
     Returns
     -------
@@ -1596,7 +1607,7 @@ def load_database() -> DataConversionDatabase:
     # Find and load the database JSON file
     d_data: dict = json.load(open(get_database_path(), "r"))
 
-    return DataConversionDatabase(d_data)
+    return DataConversionDatabase(d_data, prune)
 
 
 def get_database() -> DataConversionDatabase:

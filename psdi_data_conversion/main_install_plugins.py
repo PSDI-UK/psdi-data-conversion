@@ -497,9 +497,8 @@ def run_from_args(args):
 def calc_conv_weights(db_path: Path):
     """Calculate the weights for conversions and store them in the database file"""
 
-    # Load a new database structure, to ensure it's up-to-date and not a version loaded earlier before other changes
-    # made in this script
-    database = db.load_database()
+    # Load an unpruned database, so we can get data on all conversions, even if unsupported
+    database = db.load_database(prune=False)
 
     # Read in the current database file, then update each conversion entry, adding the weight for it
     db_json: JsonMainDict = json.load(open(db_path))
