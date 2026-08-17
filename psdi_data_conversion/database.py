@@ -786,9 +786,25 @@ class ConversionQualityInfo:
     input and output file formats and a note on the implications
     """
 
+    weight: int
+    """The full weight for the conversion, for the purpose of determining optimal conversion pathways. As this is a
+    128-bit integer, it can't be used directly by igraph, and the below specific weights must be used separately instead
+    """
+
+    prop_weight: int | None = None
+    """The property weight for the conversion, based on how many format properties are/might be lost"""
+
+    prec_weight: int | None = None
+    """The precision weight for the conversion, based on how much precision is/might be lost"""
+
+    time_weight: int | None = None
+    """The time weight for the conversion, based on the estimated time to perform it"""
+
     def __post_init__(self):
         """Regularize the converter name"""
         self.converter_name = regularize_name(self.converter_name)
+
+        self.prop_weight, self.prec_weight, self.time_weight = split_conversion_weight(self.weight)
 
 
 class ConversionsTable:
@@ -996,12 +1012,15 @@ class ConversionsTable:
 
         details = "\n".join([d_prop_conversion_info[x].note for x in l_props if d_prop_conversion_info[x].note])
 
+        weight = get_conversion_weight(in_format_info, out_format_info)
+
         return ConversionQualityInfo(converter_name=converter_name,
                                      in_format=in_format_info,
                                      out_format=out_format_info,
                                      qual_str=qual_str,
                                      details=details,
-                                     d_prop_conversion_info=d_prop_conversion_info)
+                                     d_prop_conversion_info=d_prop_conversion_info,
+                                     weight=weight)
 
     def get_possible_conversions(self,
                                  in_format: str | int | UUID | FormatInfo,
