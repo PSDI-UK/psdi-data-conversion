@@ -879,9 +879,9 @@ class ConversionsTable:
                                             ("registered_", l_registered_conversions)):
             # Calculate conversion weights if they aren't already stored in the database
             l_conv_weights = [x[DB_WEIGHT_KEY] if x.get(DB_WEIGHT_KEY) else
-                              calc_conversion_weight(self.parent.get_format_info(x[DB_IN_ID_KEY]),
-                                                     self.parent.get_format_info(x[DB_OUT_ID_KEY]),
-                                                     self.parent.get_converter_info(x[DB_CONV_ID_KEY]))
+                              calc_conversion_weight(self.parent.get_converter_info(x[DB_CONV_ID_KEY]),
+                                                     self.parent.get_format_info(x[DB_IN_ID_KEY]),
+                                                     self.parent.get_format_info(x[DB_OUT_ID_KEY]))
                               for x in l_conversions]
             graph = ig.Graph(n=num_formats,
                              directed=True,
@@ -1017,8 +1017,8 @@ class ConversionsTable:
 
         details = "\n".join([d_prop_conversion_info[x].note for x in l_props if d_prop_conversion_info[x].note])
 
-        weight = calc_conversion_weight(in_format_info, out_format_info,
-                                        self.parent.get_converter_info(converter_name))
+        weight = calc_conversion_weight(self.parent.get_converter_info(converter_name),
+                                        in_format_info, out_format_info)
 
         return ConversionQualityInfo(converter_name=converter_name,
                                      in_format=in_format_info,
@@ -2030,19 +2030,20 @@ def get_out_format_args(converter_name: str | int | UUID | ConverterInfo,
     return _find_arg(tl_args, arg)
 
 
-def calc_conversion_prop_weight(in_format_info: FormatInfo, out_format_info: FormatInfo,
-                                converter_info: ConverterInfo | None = None) -> int:
+def calc_conversion_prop_weight(converter_info: ConverterInfo, in_format_info: FormatInfo,
+                                out_format_info: FormatInfo) -> int:
     """Get the property weight for a conversion from `in_format_info` to `out_format_info` (not including the offset
     applied to it when stored in the total weight).
 
     Parameters
     ----------
+    converter_info : ConverterInfo
+        The converter used for the conversion (unused at present, but may be used in the future if found to be
+        necessary, so needed here for consistent syntax)
     in_format_info : FormatInfo
         The source format for the conversion
     out_format_info : FormatInfo
         The output format for the conversion
-    converter_info : ConverterInfo | None
-        The converter used (unused at present, but may be used in the future if found to be necessary)
 
     Returns
     -------
@@ -2065,19 +2066,20 @@ def calc_conversion_prop_weight(in_format_info: FormatInfo, out_format_info: For
     return prop_weight
 
 
-def calc_conversion_prec_weight(in_format_info: FormatInfo, out_format_info: FormatInfo,
-                                converter_info: ConverterInfo | None = None) -> int:
+def calc_conversion_prec_weight(converter_info: ConverterInfo, in_format_info: FormatInfo,
+                                out_format_info: FormatInfo) -> int:
     """Get the precision weight for a conversion from `in_format_info` to `out_format_info` (not including the offset
     applied to it when stored in the total weight).
 
     Parameters
     ----------
+    converter_info : ConverterInfo
+        The converter used for the conversion (unused at present, but may be used in the future if found to be
+        necessary, so needed here for consistent syntax)
     in_format_info : FormatInfo
         The source format for the conversion
     out_format_info : FormatInfo
         The output format for the conversion
-    converter_info : ConverterInfo | None
-        The converter used (unused at present, but may be used in the future if found to be necessary)
 
     Returns
     -------
@@ -2095,8 +2097,8 @@ def calc_conversion_prec_weight(in_format_info: FormatInfo, out_format_info: For
     return 1 << PREC_GAP_BITS*prec_loss
 
 
-def calc_conversion_time_weight(in_format_info: FormatInfo, out_format_info: FormatInfo,
-                                converter_info: ConverterInfo) -> int:
+def calc_conversion_time_weight(converter_info: ConverterInfo, in_format_info: FormatInfo,
+                                out_format_info: FormatInfo) -> int:
     """Get the time weight for a conversion from `in_format_info` to `out_format_info` (not including the offset
     applied to it when stored in the total weight)
 
@@ -2104,12 +2106,13 @@ def calc_conversion_time_weight(in_format_info: FormatInfo, out_format_info: For
 
     Parameters
     ----------
+    converter_info : ConverterInfo
+        The converter used for the conversion (unused at present, but may be used in the future if found to be
+        necessary, so needed here for consistent syntax)
     in_format_info : FormatInfo
         The source format for the conversion
     out_format_info : FormatInfo
         The output format for the conversion
-    converter_info : ConverterInfo
-        The converter used
 
     Returns
     -------
@@ -2119,18 +2122,18 @@ def calc_conversion_time_weight(in_format_info: FormatInfo, out_format_info: For
     return 0
 
 
-def calc_conversion_weight(in_format_info: FormatInfo, out_format_info: FormatInfo,
-                           converter_info: ConverterInfo) -> int:
+def calc_conversion_weight(converter_info: ConverterInfo, in_format_info: FormatInfo,
+                           out_format_info: FormatInfo) -> int:
     """Get the combined weight for a conversion
 
     Parameters
     ----------
+    converter_info : ConverterInfo
+        The converter used
     in_format_info : FormatInfo
         The source format for the conversion
     out_format_info : FormatInfo
         The output format for the conversion
-    converter_info : ConverterInfo
-        The converter used
 
     Returns
     -------
@@ -2138,9 +2141,9 @@ def calc_conversion_weight(in_format_info: FormatInfo, out_format_info: FormatIn
         64-bit weight
     """
 
-    return combine_conversion_weight(calc_conversion_prop_weight(in_format_info, out_format_info, converter_info),
-                                     calc_conversion_prec_weight(in_format_info, out_format_info, converter_info),
-                                     calc_conversion_time_weight(in_format_info, out_format_info, converter_info))
+    return combine_conversion_weight(calc_conversion_prop_weight(converter_info, in_format_info, out_format_info),
+                                     calc_conversion_prec_weight(converter_info, in_format_info, out_format_info),
+                                     calc_conversion_time_weight(converter_info, in_format_info, out_format_info))
 
 
 def combine_conversion_weight(prop_weight: int, prec_weight: int, time_weight: int):

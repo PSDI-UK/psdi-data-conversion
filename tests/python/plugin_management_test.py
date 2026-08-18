@@ -361,4 +361,4 @@ class TestInstallPlugins(PluginManagementBase):
             in_format = database.get_format_info(d_converts_to[db.DB_IN_ID_KEY])
             out_format = database.get_format_info(d_converts_to[db.DB_OUT_ID_KEY])
             assert (database.conversions_table.get_conversion_weight(converter, in_format, out_format) ==
-                    db.calc_conversion_weight(in_format, out_format, converter))
+                    db.calc_conversion_weight(converter, in_format, out_format))

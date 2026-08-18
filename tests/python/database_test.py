@@ -344,9 +344,9 @@ def test_calc_conversion_prop_weight(in_format, out_format, ex_weight,
     """Tests of get_conversion_prop_weight to ensure it calculates weight correctly for whether a format property is
     retained or not in a conversion, with all variations of all properties existing in input and output formats
     """
-    assert db.calc_conversion_prop_weight(request.getfixturevalue(in_format),
-                                          request.getfixturevalue(out_format),
-                                          converter_ob) == request.getfixturevalue(ex_weight)
+    assert db.calc_conversion_prop_weight(converter_ob,
+                                          request.getfixturevalue(in_format),
+                                          request.getfixturevalue(out_format)) == request.getfixturevalue(ex_weight)
 
 
 @pytest.mark.parametrize("prop", db.D_PROP_BITS.keys())
@@ -354,8 +354,8 @@ def test_calc_conversion_prop_weight_prop_lost(format_none, prop, converter_ob):
     """Test each property individually when it's lost to ensure the right bit is set for each"""
     test_format = db.FormatInfo("test", database, {key: True if key == prop else False
                                                    for key in db.D_PROP_BITS.keys()})
-    assert db.calc_conversion_prop_weight(test_format, format_none,
-                                          converter_ob) == db.STEP_WEIGHT | 1 << db.D_PROP_BITS[prop]
+    assert db.calc_conversion_prop_weight(converter_ob, test_format,
+                                          format_none) == db.STEP_WEIGHT | 1 << db.D_PROP_BITS[prop]
 
 
 @pytest.mark.parametrize("in_prec, out_prec, ex_weight", [(None, None, 1 << db.PREC_MAX_DIGIT_LOSS*db.PREC_GAP_BITS),
@@ -369,7 +369,7 @@ def test_calc_conversion_precision_weight(database, in_prec, out_prec, ex_weight
     """Test that conversion precision weights are calculated correctly"""
     in_format = db.FormatInfo("in", database, {db.DB_FORMAT_PRECISION_KEY: in_prec})
     out_format = db.FormatInfo("in", database, {db.DB_FORMAT_PRECISION_KEY: out_prec})
-    assert db.calc_conversion_prec_weight(in_format, out_format, converter_ob) == ex_weight
+    assert db.calc_conversion_prec_weight(converter_ob, in_format, out_format) == ex_weight
 
 
 def test_calc_conversion_weight(format_all, format_none, max_prop_weight, converter_ob):
@@ -379,9 +379,9 @@ def test_calc_conversion_weight(format_all, format_none, max_prop_weight, conver
     out_format: db.FormatInfo = deepcopy(format_none)
     out_format.precision = 18
 
-    assert db.calc_conversion_weight(in_format, out_format,
-                                     converter_ob) == ((max_prop_weight << db.PROP_WEIGHT_BIT_OFFSET) +
-                                                       (1 << 6*db.PREC_GAP_BITS << db.PREC_WEIGHT_BIT_OFFSET))
+    assert db.calc_conversion_weight(converter_ob, in_format,
+                                     out_format,) == ((max_prop_weight << db.PROP_WEIGHT_BIT_OFFSET) +
+                                                      (1 << 6*db.PREC_GAP_BITS << db.PREC_WEIGHT_BIT_OFFSET))
 
 
 @pytest.mark.parametrize("prop_weight, prec_weight, time_weight", [(0, 0, 0),
