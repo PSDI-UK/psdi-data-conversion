@@ -1032,7 +1032,27 @@ class ConversionsTable:
                               converter: str | int | UUID | ConverterInfo,
                               in_format: str | int | UUID | FormatInfo,
                               out_format: str | int | UUID | FormatInfo):
-        """Get the weight for a desired conversion"""
+        """Get the weight for a desired conversion.
+
+        Parameters
+        ----------
+        converter : str | int | UUID | ConverterInfo
+            The name or ID of the converter used for this conversion
+        in_format : str | int | UUID | FormatInfo
+            The extension or ID of the input file format
+        out_format : str | int | UUID | FormatInfo
+            The extension or ID of the output file format
+
+        Returns
+        -------
+        int
+            The 64-bit combined weight of this conversion
+
+        Raises
+        ------
+        FileConverterDatabaseException
+            If the requested conversion is not possible
+        """
         converter_info = self.parent.get_converter_info(converter)
         in_format_info = self.parent.get_format_info(in_format)
         out_format_info = self.parent.get_format_info(out_format)
@@ -1768,6 +1788,33 @@ def get_conversion_quality(converter_name: str,
     return get_database().conversions_table.get_conversion_quality(converter_name=regularize_name(converter_name),
                                                                    in_format=in_format,
                                                                    out_format=out_format)
+
+
+def get_conversion_weight(converter: str | int | UUID | ConverterInfo,
+                          in_format: str | int | UUID | FormatInfo,
+                          out_format: str | int | UUID | FormatInfo):
+    """Get the weight for a desired conversion.
+
+    Parameters
+    ----------
+    converter : str | int | UUID | ConverterInfo
+        The name or ID of the converter used for this conversion
+    in_format : str | int | UUID | FormatInfo
+        The extension or ID of the input file format
+    out_format : str | int | UUID | FormatInfo
+        The extension or ID of the output file format
+
+    Returns
+    -------
+    int
+        The 64-bit combined weight of this conversion
+
+    Raises
+    ------
+    FileConverterDatabaseException
+        If the requested conversion is not possible
+    """
+    return get_database().conversions_table.get_conversion_weight(converter, in_format, out_format)
 
 
 def get_possible_conversions(in_format: str | int | UUID | FormatInfo,
