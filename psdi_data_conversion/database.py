@@ -10,7 +10,6 @@ from __future__ import annotations
 import json
 import sys
 import warnings
-from copy import copy
 from dataclasses import dataclass, field
 from functools import lru_cache
 from itertools import product
@@ -1107,45 +1106,6 @@ class ConversionsTable:
                                                in_format_info, out_format_info))
 
         return l_possible_conversions
-
-    @lru_cache
-    def _get_shared_attrs(self, source_format_index, target_format_index):
-        """Get a list of attributes that both the source and target format feature
-        """
-        source_format_info = self.parent.get_format_info(self.d_uuids_from_indices[source_format_index])
-        target_format_info = self.parent.get_format_info(self.d_uuids_from_indices[target_format_index])
-
-        l_shared_attrs: list[str] = []
-
-        for attr in FormatInfo.D_PROPERTY_ATTRS:
-            if getattr(source_format_info, attr) and getattr(target_format_info, attr):
-                l_shared_attrs.append(attr)
-
-        return l_shared_attrs
-
-    def _get_info_loss(self, path):
-        """Get the number of attributes in both the first and last format which would be lost if a conversion path
-        is traversed
-        """
-        l_shared_attrs = self._get_shared_attrs(path[0], path[-1])
-
-        if len(l_shared_attrs) == 0:
-            return 0
-
-        l_kept_attrs = copy(l_shared_attrs)
-        for i in range(len(path)-1):
-            target_format_info = self.parent.get_format_info(self.d_uuids_from_indices[path[i+1]])
-
-            # Check if each attr still in the shared list is kept here
-            for attr in l_kept_attrs:
-                if not getattr(target_format_info, attr):
-                    l_kept_attrs.remove(attr)
-                    if len(l_kept_attrs) == 0:
-                        break
-
-        num_lost_attrs = len(l_shared_attrs) - len(l_kept_attrs)
-
-        return num_lost_attrs
 
     def get_conversion_pathway(self,
                                in_format: str | int | UUID | FormatInfo,
