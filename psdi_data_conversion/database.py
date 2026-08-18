@@ -877,9 +877,7 @@ class ConversionsTable:
         for support_type, l_conversions in (("", l_converts_to),
                                             ("supported_", l_supported_conversions),
                                             ("registered_", l_registered_conversions)):
-
-            setattr(self, support_type+"graph",
-                    ig.Graph(n=num_formats,
+            graph = ig.Graph(n=num_formats,
                              directed=True,
                              # Each vertex stores the disambiguated name of the format
                              vertex_attrs={DB_NAME_KEY: [x.disambiguated_name if x is not None else None
@@ -889,7 +887,15 @@ class ConversionsTable:
                              # Each edge stores the id and name of the converter used for the conversion
                              edge_attrs={DB_CONV_ID_KEY: [x[DB_CONV_ID_KEY] for x in l_conversions],
                                          DB_NAME_KEY: [self.parent.get_converter_info(x[DB_CONV_ID_KEY]).name
-                                                       for x in l_conversions]}))
+                                                       for x in l_conversions],
+                                         "weight": [
+                                 calc_conversion_weight(self.parent.get_format_info(x[DB_IN_ID_KEY]),
+                                                        self.parent.get_format_info(x[DB_OUT_ID_KEY]),
+                                                        self.parent.get_converter_info(x[DB_CONV_ID_KEY]))
+                                 for x in l_conversions]
+                             })
+
+            setattr(self, support_type+"graph", graph)
 
     def _get_desired_graph(self,
                            only: Literal["all"] | Literal["supported"] | Literal["registered"] = "all") -> ig.Graph:
@@ -1137,17 +1143,8 @@ class ConversionsTable:
         if not l_paths or not l_paths[0]:
             return None
 
-        # Check each path to find the first which doesn't lose any unnecessary info, or else the one which loses the
-        # least
-        best_path: list[int] | None = None
-        best_info_loss: int | None = None
-        for path in l_paths:
-            info_loss = self._get_info_loss(path)
-            if best_info_loss is None or info_loss < best_info_loss:
-                best_path = path
-                best_info_loss = info_loss
-                if best_info_loss == 0:
-                    break
+        # Any paths returned here are equally valid, so just pick the first returned
+        best_path: list[int] = l_paths[0]
 
         # Output the best path in the desired format
         l_steps: list[tuple[str, FormatInfo, FormatInfo]] = []
