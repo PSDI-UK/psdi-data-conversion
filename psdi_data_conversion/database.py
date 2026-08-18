@@ -111,10 +111,10 @@ DB_OUT_OPTIONS_ID_KEY_BASE = "argflags_out_id"
 # Each format property is assigned a weight with a different power of 2, plus a weight for taking any conversion step at
 # all, to account for miscellaneous lossiness from a conversion that can't be quantified
 D_PROP_BITS = {
-    const.QUAL_COMP_KEY: 24,
-    const.QUAL_CONN_KEY: 18,
-    const.QUAL_2D_KEY: 12,
-    const.QUAL_3D_KEY: 6
+    const.QUAL_COMP_KEY: 12,
+    const.QUAL_CONN_KEY: 9,
+    const.QUAL_2D_KEY: 6,
+    const.QUAL_3D_KEY: 3
 }
 D_PROP_WEIGHTS = {key: 1 << bit for key, bit in D_PROP_BITS.items()}
 
@@ -122,22 +122,22 @@ STEP_BIT = 0
 STEP_WEIGHT = 1 << STEP_BIT
 
 # Number of bits the property weight section is offset within the full weight when everything is combined into a single
-# 128-bit integer
-PROP_WEIGHT_BIT_OFFSET = 64
+# 64-bit integer
+PROP_WEIGHT_BIT_OFFSET = 48
 
 # Minimum and maximum for digits of precision lost
 PREC_MIN_DIGIT_LOSS = 0
 PREC_MAX_DIGIT_LOSS = 12
 
 # Number of bits separating weight bits for different levels of precision loss
-PREC_GAP_BITS = 3
+PREC_GAP_BITS = 2
 
 # Number of bits the precision weight section is offset within the full weight when everything is combined into a single
-# 128-bit integer
+# 64-bit integer
 PREC_WEIGHT_BIT_OFFSET = 16
 
 # Number of bits the time weight section is offset within the full weight when everything is combined into a single
-# 128-bit integer
+# 64-bit integer
 TIME_WEIGHT_BIT_OFFSET = 0
 
 logger = getLogger(__name__)
@@ -787,9 +787,7 @@ class ConversionQualityInfo:
     """
 
     weight: int
-    """The full weight for the conversion, for the purpose of determining optimal conversion pathways. As this is a
-    128-bit integer, it can't be used directly by igraph, and the below specific weights must be used separately instead
-    """
+    """The full weight for the conversion, for the purpose of determining optimal conversion pathways"""
 
     prop_weight: int | None = None
     """The property weight for the conversion, based on how many format properties are/might be lost"""
@@ -2058,7 +2056,7 @@ def get_conversion_weight(in_format_info: FormatInfo, out_format_info: FormatInf
     Returns
     -------
     int
-        128-bit weight
+        64-bit weight
     """
 
     return calc_conversion_weight(get_conversion_prop_weight(in_format_info, out_format_info),
@@ -2073,11 +2071,11 @@ def calc_conversion_weight(prop_weight: int, prec_weight: int, time_weight: int)
     Parameters
     ----------
     prop_weight : int
-        The conversion property weight, in the range 0 < prop_weight < 2**64
+        The conversion property weight, in the range 0 <= prop_weight < 2**16
     prec_weight : int
-        The conversion precision weight, in the range 0 < prop_weight < 2**48
+        The conversion precision weight, in the range 0 <= prec_weight < 2**32
     time_weight : int
-        The conversion time weight, in the range 0 < prop_weight < 2**16
+        The conversion time weight, in the range 0 <= time_weight < 2**16
 
     Returns
     -------
