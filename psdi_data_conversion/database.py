@@ -877,6 +877,12 @@ class ConversionsTable:
         for support_type, l_conversions in (("", l_converts_to),
                                             ("supported_", l_supported_conversions),
                                             ("registered_", l_registered_conversions)):
+            # Calculate conversion weights if they aren't already stored in the database
+            l_conv_weights = [x[DB_WEIGHT_KEY] if x.get(DB_WEIGHT_KEY) else
+                              calc_conversion_weight(self.parent.get_format_info(x[DB_IN_ID_KEY]),
+                                                     self.parent.get_format_info(x[DB_OUT_ID_KEY]),
+                                                     self.parent.get_converter_info(x[DB_CONV_ID_KEY]))
+                              for x in l_conversions]
             graph = ig.Graph(n=num_formats,
                              directed=True,
                              # Each vertex stores the disambiguated name of the format
@@ -888,12 +894,7 @@ class ConversionsTable:
                              edge_attrs={DB_CONV_ID_KEY: [x[DB_CONV_ID_KEY] for x in l_conversions],
                                          DB_NAME_KEY: [self.parent.get_converter_info(x[DB_CONV_ID_KEY]).name
                                                        for x in l_conversions],
-                                         "weight": [
-                                 calc_conversion_weight(self.parent.get_format_info(x[DB_IN_ID_KEY]),
-                                                        self.parent.get_format_info(x[DB_OUT_ID_KEY]),
-                                                        self.parent.get_converter_info(x[DB_CONV_ID_KEY]))
-                                 for x in l_conversions]
-                             })
+                                         "weight": l_conv_weights})
 
             setattr(self, support_type+"graph", graph)
 
@@ -1027,6 +1028,26 @@ class ConversionsTable:
                                      d_prop_conversion_info=d_prop_conversion_info,
                                      weight=weight)
 
+    def get_conversion_weight(self,
+                              converter: str | int | UUID | ConverterInfo,
+                              in_format: str | int | UUID | FormatInfo,
+                              out_format: str | int | UUID | FormatInfo):
+        """Get the weight for a desired conversion"""
+        converter_info = self.parent.get_converter_info(converter)
+        in_format_info = self.parent.get_format_info(in_format)
+        out_format_info = self.parent.get_format_info(out_format)
+
+        l_edges = self.graph.es.select(_source=self.d_indices_from_uuids[in_format_info.id],
+                                       _target=self.d_indices_from_uuids[out_format_info.id],
+                                       **{DB_CONV_ID_KEY: converter_info.id})
+
+        if len(l_edges) == 0:
+            raise FileConverterDatabaseException(f"Conversion from {in_format_info.name} to {out_format_info.name} "
+                                                 f"with converter {converter_info.pretty_name} is not supported",
+                                                 help=True)
+
+        return l_edges[0]["weight"]
+
     def get_possible_conversions(self,
                                  in_format: str | int | UUID | FormatInfo,
                                  out_format: str | int | UUID | FormatInfo,
@@ -1125,7 +1146,7 @@ class ConversionsTable:
         l_possible_direct_conversions = self.get_possible_conversions(in_format=in_format, out_format=out_format)
         if l_possible_direct_conversions:
             # Use whichever conversion has the lowest weight
-            l_possible_direct_conversions.sort(key=lambda x: calc_conversion_weight(x[1], x[2], x[0]))
+            l_possible_direct_conversions.sort(key=lambda x: self.get_conversion_weight(*x))
             return [l_possible_direct_conversions[0]]
 
         graph: ig.Graph = self._get_desired_graph(only)
