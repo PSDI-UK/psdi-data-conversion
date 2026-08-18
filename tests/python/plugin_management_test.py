@@ -355,5 +355,8 @@ class TestInstallPlugins(PluginManagementBase):
 
         os.environ[TEST_PATH_KEY] = str(self.mock_repo)
         database = db.load_database(prune=False)
-        l_converts_to: utils.JsonDict = database.converts_to
-        # TODO Finish test
+        l_d_converts_to: list[utils.JsonDict] = database.converts_to
+        for d_converts_to in l_d_converts_to:
+            in_format = database.get_format_info(d_converts_to[db.DB_IN_ID_KEY])
+            out_format = database.get_format_info(d_converts_to[db.DB_OUT_ID_KEY])
+            assert d_converts_to[db.DB_WEIGHT_KEY] == db.get_conversion_weight(in_format, out_format)
