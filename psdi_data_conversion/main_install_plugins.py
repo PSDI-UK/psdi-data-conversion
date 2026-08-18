@@ -507,7 +507,7 @@ def calc_conv_weights(db_path: Path):
     for db_converts_to in l_db_converts_to:
         in_format = database.get_format_info(db_converts_to[db.DB_IN_ID_KEY])
         out_format = database.get_format_info(db_converts_to[db.DB_OUT_ID_KEY])
-        db_converts_to[db.DB_WEIGHT_KEY] = db.get_conversion_weight(in_format, out_format)
+        db_converts_to[db.DB_WEIGHT_KEY] = db.combine_conversion_weight(in_format, out_format)
 
     sort_json_list(l_db_converts_to, L_CONVERTS_TO_SORT_ORDER)
     json.dump(db_json, open(db_path, "w"), indent=4)
