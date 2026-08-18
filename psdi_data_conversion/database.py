@@ -110,6 +110,7 @@ DB_OUT_OPTIONS_ID_KEY_BASE = "argflags_out_id"
 # Each format property is assigned a weight with a different power of 2, plus a weight for taking any conversion step at
 # all, to account for miscellaneous lossiness from a conversion that can't be quantified
 D_PROP_BITS = {
+
     const.QUAL_COMP_KEY: 12,
     const.QUAL_CONN_KEY: 9,
     const.QUAL_2D_KEY: 6,
@@ -121,6 +122,7 @@ STEP_BIT = 0
 STEP_WEIGHT = 1 << STEP_BIT
 
 # Number of bits the property weight section is offset within the full weight when everything is combined into a single
+
 # 64-bit integer
 PROP_WEIGHT_BIT_OFFSET = 48
 
@@ -129,6 +131,7 @@ PREC_MIN_DIGIT_LOSS = 0
 PREC_MAX_DIGIT_LOSS = 12
 
 # Number of bits separating weight bits for different levels of precision loss
+
 PREC_GAP_BITS = 2
 
 # Number of bits the precision weight section is offset within the full weight when everything is combined into a single
@@ -1990,6 +1993,7 @@ def get_out_format_args(converter_name: str | int | UUID | ConverterInfo,
     return _find_arg(tl_args, arg)
 
 
+
 def calc_conversion_prop_weight(converter_info: ConverterInfo, in_format_info: FormatInfo,
                                 out_format_info: FormatInfo) -> int:
     """Get the property weight for a conversion from `in_format_info` to `out_format_info` (not including the offset
@@ -2024,6 +2028,7 @@ def calc_conversion_prop_weight(converter_info: ConverterInfo, in_format_info: F
             prop_weight |= 1 << bit
 
     return prop_weight
+
 
 
 def calc_conversion_prec_weight(converter_info: ConverterInfo, in_format_info: FormatInfo,
