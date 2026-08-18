@@ -10,13 +10,12 @@ from __future__ import annotations
 import json
 import sys
 import warnings
-from copy import copy
 from dataclasses import dataclass, field
 from functools import lru_cache
 from itertools import product
 from logging import getLogger
 from pathlib import Path
-from typing import Any, Literal, overload
+from typing import Any, Literal, NamedTuple, overload
 from uuid import UUID
 from warnings import catch_warnings
 
@@ -84,6 +83,7 @@ DB_CONV_ID_KEY = "converters_id"
 DB_IN_ID_KEY = "in_id"
 DB_OUT_ID_KEY = "out_id"
 DB_SUCCESS_KEY = "degree_of_success"
+DB_WEIGHT_KEY = "weight"
 
 # Key bases for converter-specific items in the database
 DB_IN_FLAGS_KEY_BASE = "flags_in"
@@ -110,10 +110,11 @@ DB_OUT_OPTIONS_ID_KEY_BASE = "argflags_out_id"
 # Each format property is assigned a weight with a different power of 2, plus a weight for taking any conversion step at
 # all, to account for miscellaneous lossiness from a conversion that can't be quantified
 D_PROP_BITS = {
-    const.QUAL_COMP_KEY: 24,
-    const.QUAL_CONN_KEY: 18,
-    const.QUAL_2D_KEY: 12,
-    const.QUAL_3D_KEY: 6
+
+    const.QUAL_COMP_KEY: 12,
+    const.QUAL_CONN_KEY: 9,
+    const.QUAL_2D_KEY: 6,
+    const.QUAL_3D_KEY: 3
 }
 D_PROP_WEIGHTS = {key: 1 << bit for key, bit in D_PROP_BITS.items()}
 
@@ -121,22 +122,24 @@ STEP_BIT = 0
 STEP_WEIGHT = 1 << STEP_BIT
 
 # Number of bits the property weight section is offset within the full weight when everything is combined into a single
-# 128-bit integer
-PROP_WEIGHT_BIT_OFFSET = 64
+
+# 64-bit integer
+PROP_WEIGHT_BIT_OFFSET = 48
 
 # Minimum and maximum for digits of precision lost
 PREC_MIN_DIGIT_LOSS = 0
 PREC_MAX_DIGIT_LOSS = 12
 
 # Number of bits separating weight bits for different levels of precision loss
-PREC_GAP_BITS = 3
+
+PREC_GAP_BITS = 2
 
 # Number of bits the precision weight section is offset within the full weight when everything is combined into a single
-# 128-bit integer
+# 64-bit integer
 PREC_WEIGHT_BIT_OFFSET = 16
 
 # Number of bits the time weight section is offset within the full weight when everything is combined into a single
-# 128-bit integer
+# 64-bit integer
 TIME_WEIGHT_BIT_OFFSET = 0
 
 logger = getLogger(__name__)
@@ -221,7 +224,7 @@ class ConverterInfo:
             self.pretty_name = self.converter_class.meta.name
         except KeyError:
             self.converter_class = None
-            self.pretty_name = name
+            self.pretty_name = d_single_converter_info[DB_NAME_KEY]
 
         self.parent = parent
         """The parent database"""
@@ -231,6 +234,9 @@ class ConverterInfo:
         """The converter's ID"""
 
         self.description: str = d_single_converter_info.get(DB_DESCRIPTION_KEY, "")
+        """A description of the converter"""
+
+        self.info: str = d_single_converter_info.get(DB_INFO_KEY, "")
         """A description of the converter"""
 
         self.url: str = d_single_converter_info.get(DB_URL_KEY, "")
@@ -782,9 +788,23 @@ class ConversionQualityInfo:
     input and output file formats and a note on the implications
     """
 
+    weight: int
+    """The full weight for the conversion, for the purpose of determining optimal conversion pathways"""
+
+    prop_weight: int | None = None
+    """The property weight for the conversion, based on how many format properties are/might be lost"""
+
+    prec_weight: int | None = None
+    """The precision weight for the conversion, based on how much precision is/might be lost"""
+
+    time_weight: int | None = None
+    """The time weight for the conversion, based on the estimated time to perform it"""
+
     def __post_init__(self):
         """Regularize the converter name"""
         self.converter_name = regularize_name(self.converter_name)
+
+        self.prop_weight, self.prec_weight, self.time_weight = split_conversion_weight(self.weight)
 
 
 class ConversionsTable:
@@ -859,9 +879,13 @@ class ConversionsTable:
         for support_type, l_conversions in (("", l_converts_to),
                                             ("supported_", l_supported_conversions),
                                             ("registered_", l_registered_conversions)):
-
-            setattr(self, support_type+"graph",
-                    ig.Graph(n=num_formats,
+            # Calculate conversion weights if they aren't already stored in the database
+            l_conv_weights = [x[DB_WEIGHT_KEY] if x.get(DB_WEIGHT_KEY) else
+                              calc_conversion_weight(self.parent.get_converter_info(x[DB_CONV_ID_KEY]),
+                                                     self.parent.get_format_info(x[DB_IN_ID_KEY]),
+                                                     self.parent.get_format_info(x[DB_OUT_ID_KEY]))
+                              for x in l_conversions]
+            graph = ig.Graph(n=num_formats,
                              directed=True,
                              # Each vertex stores the disambiguated name of the format
                              vertex_attrs={DB_NAME_KEY: [x.disambiguated_name if x is not None else None
@@ -871,7 +895,10 @@ class ConversionsTable:
                              # Each edge stores the id and name of the converter used for the conversion
                              edge_attrs={DB_CONV_ID_KEY: [x[DB_CONV_ID_KEY] for x in l_conversions],
                                          DB_NAME_KEY: [self.parent.get_converter_info(x[DB_CONV_ID_KEY]).name
-                                                       for x in l_conversions]}))
+                                                       for x in l_conversions],
+                                         "weight": l_conv_weights})
+
+            setattr(self, support_type+"graph", graph)
 
     def _get_desired_graph(self,
                            only: Literal["all"] | Literal["supported"] | Literal["registered"] = "all") -> ig.Graph:
@@ -992,12 +1019,56 @@ class ConversionsTable:
 
         details = "\n".join([d_prop_conversion_info[x].note for x in l_props if d_prop_conversion_info[x].note])
 
+        weight = calc_conversion_weight(self.parent.get_converter_info(converter_name),
+                                        in_format_info, out_format_info)
+
         return ConversionQualityInfo(converter_name=converter_name,
                                      in_format=in_format_info,
                                      out_format=out_format_info,
                                      qual_str=qual_str,
                                      details=details,
-                                     d_prop_conversion_info=d_prop_conversion_info)
+                                     d_prop_conversion_info=d_prop_conversion_info,
+                                     weight=weight)
+
+    def get_conversion_weight(self,
+                              converter: str | int | UUID | ConverterInfo,
+                              in_format: str | int | UUID | FormatInfo,
+                              out_format: str | int | UUID | FormatInfo):
+        """Get the weight for a desired conversion.
+
+        Parameters
+        ----------
+        converter : str | int | UUID | ConverterInfo
+            The name or ID of the converter used for this conversion
+        in_format : str | int | UUID | FormatInfo
+            The extension or ID of the input file format
+        out_format : str | int | UUID | FormatInfo
+            The extension or ID of the output file format
+
+        Returns
+        -------
+        int
+            The 64-bit combined weight of this conversion
+
+        Raises
+        ------
+        FileConverterDatabaseException
+            If the requested conversion is not possible
+        """
+        converter_info = self.parent.get_converter_info(converter)
+        in_format_info = self.parent.get_format_info(in_format)
+        out_format_info = self.parent.get_format_info(out_format)
+
+        l_edges = self.graph.es.select(_source=self.d_indices_from_uuids[in_format_info.id],
+                                       _target=self.d_indices_from_uuids[out_format_info.id],
+                                       **{DB_CONV_ID_KEY: converter_info.id})
+
+        if len(l_edges) == 0:
+            raise FileConverterDatabaseException(f"Conversion from {in_format_info.name} to {out_format_info.name} "
+                                                 f"with converter {converter_info.pretty_name} is not supported",
+                                                 help=True)
+
+        return l_edges[0]["weight"]
 
     def get_possible_conversions(self,
                                  in_format: str | int | UUID | FormatInfo,
@@ -1039,45 +1110,6 @@ class ConversionsTable:
 
         return l_possible_conversions
 
-    @lru_cache
-    def _get_shared_attrs(self, source_format_index, target_format_index):
-        """Get a list of attributes that both the source and target format feature
-        """
-        source_format_info = self.parent.get_format_info(self.d_uuids_from_indices[source_format_index])
-        target_format_info = self.parent.get_format_info(self.d_uuids_from_indices[target_format_index])
-
-        l_shared_attrs: list[str] = []
-
-        for attr in FormatInfo.D_PROPERTY_ATTRS:
-            if getattr(source_format_info, attr) and getattr(target_format_info, attr):
-                l_shared_attrs.append(attr)
-
-        return l_shared_attrs
-
-    def _get_info_loss(self, path):
-        """Get the number of attributes in both the first and last format which would be lost if a conversion path
-        is traversed
-        """
-        l_shared_attrs = self._get_shared_attrs(path[0], path[-1])
-
-        if len(l_shared_attrs) == 0:
-            return 0
-
-        l_kept_attrs = copy(l_shared_attrs)
-        for i in range(len(path)-1):
-            target_format_info = self.parent.get_format_info(self.d_uuids_from_indices[path[i+1]])
-
-            # Check if each attr still in the shared list is kept here
-            for attr in l_kept_attrs:
-                if not getattr(target_format_info, attr):
-                    l_kept_attrs.remove(attr)
-                    if len(l_kept_attrs) == 0:
-                        break
-
-        num_lost_attrs = len(l_shared_attrs) - len(l_kept_attrs)
-
-        return num_lost_attrs
-
     def get_conversion_pathway(self,
                                in_format: str | int | UUID | FormatInfo,
                                out_format: str | int | UUID | FormatInfo,
@@ -1096,7 +1128,8 @@ class ConversionsTable:
         # First check if direct conversion is possible
         l_possible_direct_conversions = self.get_possible_conversions(in_format=in_format, out_format=out_format)
         if l_possible_direct_conversions:
-            # TODO: When there's some better measure of conversion quality, use it to choose which converter to use
+            # Use whichever conversion has the lowest weight
+            l_possible_direct_conversions.sort(key=lambda x: self.get_conversion_weight(*x))
             return [l_possible_direct_conversions[0]]
 
         graph: ig.Graph = self._get_desired_graph(only)
@@ -1114,17 +1147,8 @@ class ConversionsTable:
         if not l_paths or not l_paths[0]:
             return None
 
-        # Check each path to find the first which doesn't lose any unnecessary info, or else the one which loses the
-        # least
-        best_path: list[int] | None = None
-        best_info_loss: int | None = None
-        for path in l_paths:
-            info_loss = self._get_info_loss(path)
-            if best_info_loss is None or info_loss < best_info_loss:
-                best_path = path
-                best_info_loss = info_loss
-                if best_info_loss == 0:
-                    break
+        # Any paths returned here are equally valid, so just pick the first returned
+        best_path: list[int] = l_paths[0]
 
         # Output the best path in the desired format
         l_steps: list[tuple[str, FormatInfo, FormatInfo]] = []
@@ -1168,17 +1192,21 @@ class DataConversionDatabase:
     """Class providing interface for information contained in the PSDI Data Conversion database
     """
 
-    def __init__(self, d_data: dict[str, Any]):
+    def __init__(self, d_data: dict[str, Any], prune=True):
         """Initialise the DataConversionDatabase object
 
         Parameters
         ----------
         d_data : dict[str, Any]
             The dict of the database, as loaded in from the JSON file
+        prune : bool
+            Whether or not any formats with no supported conversions should be pruned from the database, default True
         """
 
         # Store the database dict internally for debugging purposes
         self._d_data = d_data
+
+        self._prune = prune
 
         # Store top-level items not tied to a specific converter
         self.formats: list[dict[str, bool | int | str | None]] = d_data[DB_FORMATS_KEY]
@@ -1346,14 +1374,15 @@ class DataConversionDatabase:
         supported_graph = self._conversions_table.supported_graph
         d_indices_from_uuids: dict[int, int] = self._conversions_table.d_indices_from_uuids
 
-        l_ids_to_remove: list[int] = []
-        for format_id, format_info in self._d_format_info_from_id.items():
-            if not format_info or supported_graph.degree(d_indices_from_uuids[format_id]) == 0:
-                # The format isn't supported for any conversions, so mark it to be removed from the dict
-                # (Can't remove while we're iterating over the dict)
-                l_ids_to_remove.append(format_id)
-        for id in l_ids_to_remove:
-            del self._d_format_info_from_id[id]
+        if self._prune:
+            l_ids_to_remove: list[int] = []
+            for format_id, format_info in self._d_format_info_from_id.items():
+                if not format_info or supported_graph.degree(d_indices_from_uuids[format_id]) == 0:
+                    # The format isn't supported for any conversions, so mark it to be removed from the dict
+                    # (Can't remove while we're iterating over the dict)
+                    l_ids_to_remove.append(format_id)
+            for id in l_ids_to_remove:
+                del self._d_format_info_from_id[id]
 
         # Now create the formats from name dict
         self._d_format_info_from_name: dict[str, list[FormatInfo]] = {}
@@ -1490,9 +1519,10 @@ class DataConversionDatabase:
                 if which == "all":
                     return [format_info]
                 return format_info
-            except KeyError:
-                raise FileConverterDatabaseException(f"Format ID '{format_name_or_id}' not recognised",
-                                                     help=True)
+            except KeyError as e:
+                if e.args[0] == UUID(format_name_or_id).int:
+                    raise FileConverterDatabaseException(f"Format ID '{format_name_or_id}' not recognised",
+                                                         help=True)
             except ValueError:
                 pass
 
@@ -1542,7 +1572,9 @@ class DataConversionDatabase:
         elif isinstance(format_name_or_id, int):
             try:
                 format_info = self.d_format_info_from_id[format_name_or_id]
-            except KeyError:
+            except KeyError as e:
+                if e.args[0] != format_name_or_id:
+                    raise
                 if return_as_list:
                     return []
                 raise FileConverterDatabaseException(f"Format ID '{format_name_or_id}' not recognised",
@@ -1551,7 +1583,9 @@ class DataConversionDatabase:
         elif isinstance(format_name_or_id, UUID):
             try:
                 format_info = self.d_format_info_from_id[format_name_or_id.int]
-            except KeyError:
+            except KeyError as e:
+                if e.args[0] != format_name_or_id.int:
+                    raise
                 if return_as_list:
                     return []
                 raise FileConverterDatabaseException(f"Format ID '{format_name_or_id}' not recognised",
@@ -1582,10 +1616,16 @@ def get_database_path() -> Path:
     return qualified_database_filename
 
 
-def load_database() -> DataConversionDatabase:
+def load_database(prune=True) -> DataConversionDatabase:
     """Load and return a new instance of the data conversion database from the JSON database file in this package. This
     function should not be called directly unless you specifically need a new instance of the database object and can't
-    deepcopy the database returned by `get_database()`, as it's expensive to load it in.
+    deepcopy the database returned by `get_database()` or you need an unpruned database, as it's expensive to load it
+    in.
+
+    Parameters
+    ----------
+    prune : bool
+        Whether or not to prune from the database any formats which have no supported conversions, default True
 
     Returns
     -------
@@ -1595,7 +1635,7 @@ def load_database() -> DataConversionDatabase:
     # Find and load the database JSON file
     d_data: dict = json.load(open(get_database_path(), "r"))
 
-    return DataConversionDatabase(d_data)
+    return DataConversionDatabase(d_data, prune)
 
 
 def get_database() -> DataConversionDatabase:
@@ -1711,6 +1751,33 @@ def get_conversion_quality(converter_name: str,
     return get_database().conversions_table.get_conversion_quality(converter_name=regularize_name(converter_name),
                                                                    in_format=in_format,
                                                                    out_format=out_format)
+
+
+def get_conversion_weight(converter: str | int | UUID | ConverterInfo,
+                          in_format: str | int | UUID | FormatInfo,
+                          out_format: str | int | UUID | FormatInfo):
+    """Get the weight for a desired conversion.
+
+    Parameters
+    ----------
+    converter : str | int | UUID | ConverterInfo
+        The name or ID of the converter used for this conversion
+    in_format : str | int | UUID | FormatInfo
+        The extension or ID of the input file format
+    out_format : str | int | UUID | FormatInfo
+        The extension or ID of the output file format
+
+    Returns
+    -------
+    int
+        The 64-bit combined weight of this conversion
+
+    Raises
+    ------
+    FileConverterDatabaseException
+        If the requested conversion is not possible
+    """
+    return get_database().conversions_table.get_conversion_weight(converter, in_format, out_format)
 
 
 def get_possible_conversions(in_format: str | int | UUID | FormatInfo,
@@ -1926,12 +1993,17 @@ def get_out_format_args(converter_name: str | int | UUID | ConverterInfo,
     return _find_arg(tl_args, arg)
 
 
-def get_conversion_prop_weight(in_format_info: FormatInfo, out_format_info: FormatInfo) -> int:
+
+def calc_conversion_prop_weight(converter_info: ConverterInfo, in_format_info: FormatInfo,
+                                out_format_info: FormatInfo) -> int:
     """Get the property weight for a conversion from `in_format_info` to `out_format_info` (not including the offset
     applied to it when stored in the total weight).
 
     Parameters
     ----------
+    converter_info : ConverterInfo
+        The converter used for the conversion (unused at present, but may be used in the future if found to be
+        necessary, so needed here for consistent syntax)
     in_format_info : FormatInfo
         The source format for the conversion
     out_format_info : FormatInfo
@@ -1958,12 +2030,17 @@ def get_conversion_prop_weight(in_format_info: FormatInfo, out_format_info: Form
     return prop_weight
 
 
-def get_conversion_precision_weight(in_format_info: FormatInfo, out_format_info: FormatInfo) -> int:
+
+def calc_conversion_prec_weight(converter_info: ConverterInfo, in_format_info: FormatInfo,
+                                out_format_info: FormatInfo) -> int:
     """Get the precision weight for a conversion from `in_format_info` to `out_format_info` (not including the offset
     applied to it when stored in the total weight).
 
     Parameters
     ----------
+    converter_info : ConverterInfo
+        The converter used for the conversion (unused at present, but may be used in the future if found to be
+        necessary, so needed here for consistent syntax)
     in_format_info : FormatInfo
         The source format for the conversion
     out_format_info : FormatInfo
@@ -1977,15 +2054,16 @@ def get_conversion_precision_weight(in_format_info: FormatInfo, out_format_info:
     """
 
     # Calculate the precision loss, defaulting to the maximum if unknown
-    precision_loss = PREC_MAX_DIGIT_LOSS
+    prec_loss = PREC_MAX_DIGIT_LOSS
     if in_format_info.precision is not None and out_format_info.precision is not None:
-        precision_loss = in_format_info.precision - out_format_info.precision
-    precision_loss = min(max(precision_loss, PREC_MIN_DIGIT_LOSS), PREC_MAX_DIGIT_LOSS)
+        prec_loss = in_format_info.precision - out_format_info.precision
+    prec_loss = min(max(prec_loss, PREC_MIN_DIGIT_LOSS), PREC_MAX_DIGIT_LOSS)
 
-    return 1 << PREC_GAP_BITS*precision_loss
+    return 1 << PREC_GAP_BITS*prec_loss
 
 
-def get_conversion_time_weight(in_format_info: FormatInfo, out_format_info: FormatInfo) -> int:
+def calc_conversion_time_weight(converter_info: ConverterInfo, in_format_info: FormatInfo,
+                                out_format_info: FormatInfo) -> int:
     """Get the time weight for a conversion from `in_format_info` to `out_format_info` (not including the offset
     applied to it when stored in the total weight)
 
@@ -1993,6 +2071,9 @@ def get_conversion_time_weight(in_format_info: FormatInfo, out_format_info: Form
 
     Parameters
     ----------
+    converter_info : ConverterInfo
+        The converter used for the conversion (unused at present, but may be used in the future if found to be
+        necessary, so needed here for consistent syntax)
     in_format_info : FormatInfo
         The source format for the conversion
     out_format_info : FormatInfo
@@ -2006,13 +2087,14 @@ def get_conversion_time_weight(in_format_info: FormatInfo, out_format_info: Form
     return 0
 
 
-def get_conversion_weight(in_format_info: FormatInfo, out_format_info: FormatInfo) -> int:
+def calc_conversion_weight(converter_info: ConverterInfo, in_format_info: FormatInfo,
+                           out_format_info: FormatInfo) -> int:
     """Get the combined weight for a conversion
-
-    TODO: Implement properly
 
     Parameters
     ----------
+    converter_info : ConverterInfo
+        The converter used
     in_format_info : FormatInfo
         The source format for the conversion
     out_format_info : FormatInfo
@@ -2021,9 +2103,63 @@ def get_conversion_weight(in_format_info: FormatInfo, out_format_info: FormatInf
     Returns
     -------
     int
-        128-bit weight
+        64-bit weight
     """
 
-    return ((get_conversion_prop_weight(in_format_info, out_format_info) << PROP_WEIGHT_BIT_OFFSET) +
-            (get_conversion_precision_weight(in_format_info, out_format_info) << PREC_WEIGHT_BIT_OFFSET) +
-            (get_conversion_time_weight(in_format_info, out_format_info) << TIME_WEIGHT_BIT_OFFSET))
+    return combine_conversion_weight(calc_conversion_prop_weight(converter_info, in_format_info, out_format_info),
+                                     calc_conversion_prec_weight(converter_info, in_format_info, out_format_info),
+                                     calc_conversion_time_weight(converter_info, in_format_info, out_format_info))
+
+
+def combine_conversion_weight(prop_weight: int, prec_weight: int, time_weight: int):
+    """Calculate the combined weight for a conversion from its component weights. The weights must be in the provided
+    range, or else the output will have undefined behaviour
+
+    Parameters
+    ----------
+    prop_weight : int
+        The conversion property weight, in the range 0 <= prop_weight < 2**16
+    prec_weight : int
+        The conversion precision weight, in the range 0 <= prec_weight < 2**32
+    time_weight : int
+        The conversion time weight, in the range 0 <= time_weight < 2**16
+
+    Returns
+    -------
+    int
+        The combined conversion weight
+    """
+    return ((prop_weight << PROP_WEIGHT_BIT_OFFSET) +
+            (prec_weight << PREC_WEIGHT_BIT_OFFSET) +
+            (time_weight << TIME_WEIGHT_BIT_OFFSET))
+
+
+class ConversionWeightParts(NamedTuple):
+    prop_weight: int
+    prec_weight: int
+    time_weight: int
+
+
+def split_conversion_weight(conversion_weight: int):
+    """Splits the total conversion weight into the parts for each component weight
+
+    Parameters
+    ----------
+    conversion_weight : int
+        The total conversion weight
+
+    Returns
+    -------
+    ConversionWeightParts
+        NamedTuple of prop_weight, prec_weight, and time_weight
+    """
+
+    prop_weight = conversion_weight >> PROP_WEIGHT_BIT_OFFSET
+    conversion_weight -= prop_weight << PROP_WEIGHT_BIT_OFFSET
+
+    prec_weight = conversion_weight >> PREC_WEIGHT_BIT_OFFSET
+    conversion_weight -= prec_weight << PREC_WEIGHT_BIT_OFFSET
+
+    time_weight = conversion_weight >> TIME_WEIGHT_BIT_OFFSET
+
+    return ConversionWeightParts(prop_weight, prec_weight, time_weight)

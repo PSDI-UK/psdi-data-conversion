@@ -279,6 +279,18 @@ class TestInstallPlugins(PluginManagementBase):
                 for format_id in d_flag[db.DB_FORMAT_ID_LIST_KEY]:
                     assert format_id > THRESHOLD_FORMAT_ID
 
+        # Check that all information about the converter is now in the proper database file
+        os.environ[TEST_PATH_KEY] = str(self.mock_repo)
+        database = db.load_database(prune=False)
+        conv_info: db.ConverterInfo = database.get_converter_info(conv_meta[db.DB_ID_KEY])
+
+        assert conv_info.id == conv_meta[db.DB_ID_KEY]
+        assert conv_info.pretty_name == conv_meta[db.DB_NAME_KEY]
+        assert conv_info.description == conv_meta[db.DB_DESC_KEY]
+        assert conv_info.url == conv_meta[db.DB_URL_KEY]
+        assert conv_info.supported is False
+        assert conv_info.registered is False
+
     def test_simple_install(self):
         """Test installing a simple plugin"""
         self._create_test_plugin("simple")
@@ -335,3 +347,18 @@ class TestInstallPlugins(PluginManagementBase):
         self._create_test_plugin("questionable")
         self._run_install_plugins(force=True)
         self._check_plugin_installed("questionable")
+
+    def test_conv_weight_calcs(self):
+        """Test calculation of conversion weights"""
+        self._create_test_plugin("complex")
+        self._run_install_plugins()
+
+        os.environ[TEST_PATH_KEY] = str(self.mock_repo)
+        database = db.load_database(prune=False)
+        l_d_converts_to: list[utils.JsonDict] = database.converts_to
+        for d_converts_to in l_d_converts_to:
+            converter = database.get_converter_info(d_converts_to[db.DB_CONV_ID_KEY])
+            in_format = database.get_format_info(d_converts_to[db.DB_IN_ID_KEY])
+            out_format = database.get_format_info(d_converts_to[db.DB_OUT_ID_KEY])
+            assert (database.conversions_table.get_conversion_weight(converter, in_format, out_format) ==
+                    db.calc_conversion_weight(converter, in_format, out_format))

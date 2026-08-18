@@ -126,7 +126,7 @@ def run_from_args(args):
     pascal_name = "".join(map(lambda x: x.capitalize(), l_name_words))
 
     # Get the project path to use based on if we're using a test path or not
-    if os.environ[TEST_PATH_KEY]:
+    if os.environ.get(TEST_PATH_KEY):
         project_path: Path = Path(os.environ[TEST_PATH_KEY]).resolve()
         if not project_path.is_dir():
             print_wrap(f"{TC.FAIL}ERROR:{TC.ENDC} When running this script with '{TC.WARNING}--test-path TEST_PATH" +
@@ -162,7 +162,9 @@ def run_from_args(args):
 
     # Determine which template directory to use and other related info
     if os.environ.get(TEST_DATA_KEY):
-        template_path = get_test_data_loc(Path(os.environ[TEST_PATH_KEY])) / name
+        test_path = os.environ.get(TEST_PATH_KEY)
+        test_path = Path(test_path) if test_path else None
+        template_path = get_test_data_loc(test_path) / name
         template_str: str = "Template"
     elif args.script:
         template_path = conv_path / PLUGIN_SCRIPT_TEMPLATEDIR
