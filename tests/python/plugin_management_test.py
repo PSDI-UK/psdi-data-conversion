@@ -357,6 +357,8 @@ class TestInstallPlugins(PluginManagementBase):
         database = db.load_database(prune=False)
         l_d_converts_to: list[utils.JsonDict] = database.converts_to
         for d_converts_to in l_d_converts_to:
+            converter = database.get_converter_info(d_converts_to[db.DB_CONV_ID_KEY])
             in_format = database.get_format_info(d_converts_to[db.DB_IN_ID_KEY])
             out_format = database.get_format_info(d_converts_to[db.DB_OUT_ID_KEY])
-            assert d_converts_to[db.DB_WEIGHT_KEY] == db.combine_conversion_weight(in_format, out_format)
+            assert (database.conversions_table.get_conversion_weight(converter, in_format, out_format) ==
+                    db.calc_conversion_weight(in_format, out_format, converter))

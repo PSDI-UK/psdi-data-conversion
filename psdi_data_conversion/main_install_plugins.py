@@ -505,9 +505,10 @@ def calc_conv_weights(db_path: Path):
     l_db_converts_to: list[JsonDict] = db_json[db.DB_CONVERTS_TO_KEY]
 
     for db_converts_to in l_db_converts_to:
+        converter = database.get_converter_info(db_converts_to[db.DB_CONV_ID_KEY])
         in_format = database.get_format_info(db_converts_to[db.DB_IN_ID_KEY])
         out_format = database.get_format_info(db_converts_to[db.DB_OUT_ID_KEY])
-        db_converts_to[db.DB_WEIGHT_KEY] = db.combine_conversion_weight(in_format, out_format)
+        db_converts_to[db.DB_WEIGHT_KEY] = db.calc_conversion_weight(in_format, out_format, converter)
 
     sort_json_list(l_db_converts_to, L_CONVERTS_TO_SORT_ORDER)
     json.dump(db_json, open(db_path, "w"), indent=4)
