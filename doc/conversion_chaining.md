@@ -8,7 +8,7 @@ However, there are many pairs of formats where no direct conversion is possible,
 
 To answer this question, it helps to reframe the problem in terms of the mathematical structure known as the "graph", in particular the [directed graph](https://en.wikipedia.org/wiki/Directed_graph) (since there are some cases where conversion is only allowed in one direction - an example being the [InChIKey format](https://en.wikipedia.org/wiki/International_Chemical_Identifier#InChIKey), which is a hashed representation and thus can only be converted to, but not from), with formats represented as vertices and conversions as edges. Existing packages such as `igraph` allow us to take advantage of pre-existing code to solve problems such as this rather than needing to write our own from scratch.
 
-The full graph of formats and allowed conversions looks like the following, with black dots representing different formats and different edge colors representing different converters performing each conversion:
+The full graph of formats and allowed conversions looks like the following (at time of writing this document - it's probably gotten more complicated since!), with black dots representing different formats and different edge colors representing different converters performing each conversion:
 
 ![Graph of all conversions](img/all_conversions.png)
 
@@ -49,7 +49,7 @@ So our analogous pathfinding problem to the format conversion problem above woul
 
 An exhaustive search of all paths that don't retrace their steps would find here that the fastest route is New York to London by flight (7 hours), then London to Oxford by driving (2 hours).
 
-But an exhaustive search isn't reasonable with larger maps, as the number of possible routes scales exponentially with the number of vertices (`O(e^V)` time). Luckily, this is a solved problem in graph theory, and modern implementations of [Dijkstra's_algorithm](https://en.wikipedia.org/wiki/Dijkstra%27s_algorithm) can find the optimal route in `O(E + V log(V))` time (where E is the number of edges and V is the number of vertices), making the problem easily tractable for a graph of the size we're working with.
+But an exhaustive search isn't reasonable with larger maps, as the number of possible routes scales exponentially with the number of vertices (`O(e^V)` time). Luckily, this is a solved problem in graph theory, and modern implementations of [Dijkstra's_algorithm](https://en.wikipedia.org/wiki/Dijkstra%27s_algorithm) can find the optimal route in `O(E + V log(V))` time (where E is the number of edges and V is the number of vertices), making the problem easily tractable for a graph of the size we're working with. We can thus rely on `igraph`'s implementation of Dijkstra's algorithm for our purposes rather than needing to reinvent the wheel here.
 
 ## Determining pathfinding weights
 
@@ -140,9 +140,28 @@ Consider here the conversion from Format B to Format C, which goes from 9-digit 
 
 However, in case 2, the source format only has 4-digit precision, so although it's converted into a format with greater precision, it never actually has this precision to lose in the conversion from B to C, so it shouldn't be given a weight penalty for this. Case 3 shows the opposite issue: Although the source format does lose precision in this step, the target format doesn't support this precision, so the loss is inevitable and will have to happen at some point.
 
-This leads to an important conclusion about this problem: Edge weights are not independent, instead being dependent on the source and target formats. In particular, we can say that a weight for losing information should be applied only if both the source and target format share that information (or level of precision).
+This leads to an interesting conclusion about this problem: Edge weights are not independent, instead being dependent on the source and target formats. In particular, we can say that a weight for losing information should be applied only if both the source and target format share that information (or level of precision). And if we want to be particularly careful, we should also say that this weight should only be applied the first time this information is lost along a pathway.
 
-If we want to be particularly careful, we should also say that this weight should only be applied the first time this information is lost along a pathway. This is difficult to implement though as it would mean that an edge would have a different weight depending on the path taken to get to its source vertex, which is not standard and would require a completely different pathfinding algorithm. However, this would require a particularly long chain of conversions - which is unlikely to occur - and the impact if it did would not be significant - an already dispreferred path would be even more dispreferred - so the amount of work needed to implement this would not nearly be justified.
+All of this leads to the important question: Is it worth it to solve this problem perfectly? That is, in practice, how different would the results be between:
+
+1. Implement a weight for any edge which loses precision
+2. Implement a weight for an edge which loses precision but only if that loss of precision is not inevitable between the source and target format and also only the first time along the path when this precision is lost
+
+It's certainly possible to contrive graphs where option 2 here has better results than the much-simpler option 1, but we have to ask if this matters for the problem we're actually working with. Look again at the graph of formats and conversions:
+
+![Graph of all conversions](img/all_conversions.png)
+
+We see here a few key facts:
+
+1. Most formats are supported only by a single converter
+2. Each converter supports nearly any-to-any conversions between formats it supports
+3. There are a small number of formats that are supported by multiple converters
+
+This leads to the intuitive conclusion that most conversion pathways are only going to involve a total of 2-3 formats. Either a direct conversion is possible, or else a conversion through one of the commonly-supported formats is likely possible. Only rarely will a conversion require even a fourth format.
+
+To provide an example of how a more complicated weight for precision loss might be relevant, taking into account if the loss was inevitable between the source and target formats, I had to construct a chain of four formats. If having this many formats in the chain is already exceedingly unlikely, then this subtlety mattering is more unlikely still. And if it does occur, the impact is simply that we downweight one valid path in favour or another valid path.
+
+It's safe to say that it's not worth the effort and computational time to do this perfectly, given the exceedingly marginal benefits.
 
 ### Constraint summary
 
@@ -157,74 +176,50 @@ Putting this all together, we have the following list of properties to weight, i
 
 With the following notes:
 
-- We want to apply this importance strictly - e.g. a faster conversion isn't worth losing numerical precision
+- Most chains will be very short, with chains of even 4 formats being exceedingly rare
 - We should always apply a small weight to numerical precision for each conversion to be on the safe side
 - Not all formats currently list what information they support
-- Any loss of information should only be weighted if both the source and target format support this information, and similarly with numerical precision
 
 ### Our approach
 
-Let's look again at the graph of all conversions:
+With this in mind, we've decided to use a weighted combination approach. Given how short chains are likely to be, it's easy to construct a combination which separates factors enough within a 64-bit integer total weight to preserve our desired hierarchy, with room to add more factors in the future.
 
-![Graph of all conversions](img/all_conversions.png)
+This weight is split into three categories for the different types of factors we wish to account for:
 
-Note that the vast majority of formats are supported by only one converter, with only a small number of formats being supported by more than one and acting as bridges. Converters also tend to support any-to-any conversions of formats they support, with the only exceptions being some formats they can only convert from, and others they can only convert to.
+| Category       | Bits  |
+| -------------- | ----- |
+| Property loss  | 63-48 |
+| Precision loss | 47-16 |
+| Time           | 15-0  |
 
-This implies that in the vast majority of cases, conversion chains will be short, likely with two intermediate formats at most, and typically just one. And since there are only a relative few formats that can act as bridges, any filter on equally-short pathways (however "short" is defined, as long as there's at least some cost to each conversion) is going to result in a relatively small number of pathways.
+These categories are calculated independently, and then bit-shifted and combined into the final weight.
 
-We also face the key issue here that any weights we assign to conversions (aside from for the conversion time) will depend on what the original source format and final target format are. This means there is going to be computational overhead in updating the edge weights, which will be more costly the more edges we have to deal with.
+#### Property loss
 
-Since any initial filter will reduce the number of potential pathways so much, the additional computational overhead cost of the tiered pathfinding approach will be minimal. Meanwhile, with so many different factors to consider, the weighted combination approach could become unwieldy. Either solution is probably workable, but consideration of the factors involved leads us to the conclusion that a hybrid approach is best.
-
-Due to the computational cost of calculating weights for all conversions, we want to do this on the full set of conversions only once, and then use this to reduce the number of formats and edges we need to worry about to a manageable number. After that point, it's less costly to make more complicated weight calculations.
-
-Looking at the list the properties to weight, the first four factors (Composition, Connections, 2D Coordinates, and 3D coordinates) are all binary, the fifth (precision) requires a more complicated comparison and calculation for each conversion, and the sixth (time) is independent. This means we'll benefit most by cutting down the graph before dealing with precision. We thus apply a weighted combination approach first to the first four factors, cut down the graph, then use a second weighted combination approach for the final two.
-
-### Weighted combination 1: Types of information
-
-Since the first four factors are all binary, it can in fact be quite efficient to calculate weights for all of them at once by using bitwise operations. That is, we can use an unsigned integer where different bits represent whether or not we weight for the loss of a given property. We assign the following bits to these properties:
+The first four property in our list are the loss (or not) of a property of a format. Since this is binary, we just need one bit for each. Within the 16-bit section we've assigned for this category, we assign the following bits to each of these properties
 
 | Property       | Bit |
 | -------------- | --- |
-| Composition    | 24  |
-| Connections    | 18  |
-| 2D Coordinates | 12  |
-| 3D Coordinates | 6   |
-| (always)       | 0   |
+| Composition    | 9   |
+| Connections    | 6   |
+| 2D Coordinates | 3   |
+| 3D Coordinates | 0   |
 
-Note here that we also include an always-weight bit at bit 0. This is to impose a minimal cost for any conversion, so that the pathfinding algorithm won't end up including circuitious paths through zero-weight conversions in the list of shortest paths returned from this step.
+This set of bits was chosen so that they could all fit into 16-bits and they are spaced out enough that if used as weights there is negligible chance that any path will accrue enough weight from a lower-importance property to overcome the lack of a weight from a higher-importance property (the 3-bit difference would require 8 occurences to be overcome, which is exceedingly unlikely to cause a problem even imaging the future addition of many different specialised converters).
 
-This set of bits was chosen so that they could all fit into a 32-bit integer value and they are spaced out enough that if used as weights there is negligible chance that any path will accrue enough weight from a lower-importance property to overcome the lack of a weight from a higher-importance property (the 6-bit difference would require 64 occurences to be overcome, which is exceedingly unlikely to cause a problem even imaging the future addition of many different specialised converters).
+#### Precision weights
 
-The procedure for this step is as follows:
+When a number is expressed to a given number of digits, e.g. "$3.510$", the possible true number represented will be one that could round to it, here $3.5095$ through $3.5105$. With no other information, all values in this range are equally likely, so this can be described as a uniform distribution, which has a standard deviation proportional to the range spanned. In cases where this number is converted to another number with the same precision, this standard deviation can be used as a rough estimate of the loss of precision. It's possible that numbers will simply be copied over without any loss of precision, but it's best to be safest and impose a minimal cost for each conversion.
 
-1. For each conversion in the database, determine a bit mask, where 1 is set in the bit for a property if it's supported in the source property and not supported in the target property (if unknown for the source, assume it to be supported, and if unknown for the target, assume it to not be supported). This can be precalculated for every conversion, since this part doesn't depend on the source and target formats. For instance, take the conversion from molreport to InChI:
+If this value is stored to fewer decimal places, e.g. for "$3.51$", the range becomes $3.505$ through $3.515$, increasing the standard deviation by a factor of 10 per decimal place lost. So if we wished to represent this directly in the weight, we could impose weight of $10^N$, where $N$ is the number of decimal places lost, with a minimum value of 1.
 
-- Molreport supports Composition, Connections, and 2D Coordinates
-- InChI supports Composition and Connections
-- 2D Coordinates is thus supported only by the source format, so we set the bit for it (bit 12) to be 1, as well as the always-on bit (bit 0), getting the bit mask 00000000 00000000 00010000 00000001 (decimal representation 4,097)
+This means that practically speaking, the loss of a more significant digit will always outweigh any number of losses of less-significant digits. If we wish to capture this fact with bit weights, the small expected lengths of our chains means we don't even need to use a factor of 10 to express this - a factor of 4 (2 bits) will suffice.
 
-2. Determine a bit mask for the specific conversion requested, where 1 is set in the bit for a property if it's supported in both the original source and final target format (if unknown, consider it supported). For instance, for the conversion from MMCIF to MOLDY:
+We thus calculate the precision weight as follows:
 
-- MMCIF supports all properties
-- MOLDY has unknown support for all properties
-- We assume MOLDY has support for all properties to be on the safe side. Thus, both the original source and final target support all properties, so we set 1 for all of them, getting the bit mask 00000001 00000100 00010000 01000001 (decimal representation 17,043,521)
-
-3. Calculate the weights for all conversions by performing a bitwise "and" operation on their bit mask and the bit mask for the specific conversion requeted. This is the weight to be used for this conversion in determining a path for the conversion requested. For this example:
-
-- The molreport to InChI conversion has bit mask 00000000 00000000 00010000 00000001
-- The MMCIF to MOLDY conversion requested has bit mask 00000001 00000100 00010000 01000001
-- A bitwise "and" combination of these gives 00000000 00000000 00010000 00000001 (decimal representation 4,097)
-
-4. Run the pathfinding algorithm using these weights, collecting a list of the shortest paths
-
-### Weighted combination 2: Precision and time
-
-The first weighted combination will cut the number of possible shortest paths down to a much smaller number. In the current setup, there are likely to be fewer than 10 pathways at this point, so a full pathfinding approach might not even be necessary to determine the shortest based on loss of precision and time, with a simple search through the list potentially being faster given the lower overhead. However, this may not continue to be the case as the project expands and more converters are integrated with it, so a full pathfinding approach is probably still best here.
-
-The first step here is to prune down the graph to just the formats and conversions which are on one of the shortest paths. This is best done by constructing sets of each from the list of shortest paths, then reconstructing a smaller graph using only these. Note that this smaller graph won't include all possible conversions between formats within it, but only those which were used in one of the shortest paths determined before.
-
-Next, we have to determine a weight for precision and time for each of the edges in this new graph, prioritising the former. We'll start with the latter though, since placing an upper bound on it will let us know how much of a relative weight we need to give to precision so that differences in runtime will never dominate.
+1. Determine the number of digits lost between the two formats, $N$
+2. Bound this to the range $0 \leq N \leq 14$. The lower-bound at zero ensures there's some minimal weight applied per-conversion to account for behind-the-scenes data loss, and the upper-bound keeps this weight to within 32 bits.
+3. Set the weight as $4^N$ (i.e. set bit $2N$ of this value to 1)
 
 #### Time weights
 
@@ -254,49 +249,12 @@ Milliseconds will likely be the most useful unit for time weights, based on prel
 
 Note that as time is the lowest-priority factor in pathfinding, gathering accurate time weights is a low-priority task. In the meantime, default weights can be used.
 
-#### Precision weights
+#### Putting it all together
 
-From the previous section, we noted that time weights will be measured in milliseconds. From testing, a reasonable upper bound for the time of a conversion is 10 seconds, but the weights will be measured on smaller files and thus likely to be much less than this. Since we only have two factors to worry about for this combination, we can be sure we're well in the clear by using a base precision weight of 65,536 (equivalent to a total conversion time of ~65.5 seconds on small test files, which should never be the case). For brevity, we will omit this factor from the discussion below.
+The final procedure can then be summarised as:
 
-When a number is expressed to a given number of digits, e.g. "3.510", the possible true number represented will be one that could round to it, here 3.5095 through 3.5105. With no other information, all values in this range are equally likely, so this can be described as a uniform distribution, which has a standard deviation proportional to the range spanned. In cases where this number is converted to another number with the same precision, this standard deviation can be used as a rough estimate of the loss of precision. It's possible that numbers will simply be copied over without any loss of precision, but it's best to be safest and impose a minimal cost for each conversion.
+1. Calculate property, precision, and time weights for all conversions
+2. Combine these weights into a single 64-bit integer weight by bit-shifting each appropriately and adding them together
+3. Use `igraph`'s implementation of Dijkstra's algorithm to determine the shortest paths for desired conversion
 
-If this value is stored to fewer decimal places, e.g. for "3.51", the range becomes 3.505 through 3.515, increasing the standard deviation by a factor of 10 per decimal place lost. So if we wished to represent this directly in the weight, we could impose weight of $10^N$, where $N$ is the number of decimal places lost, with a minimum value of 1.
-
-This level of accurately representing the variance isn't necessary, however. We're free to scale the values as we wish, as long as there isn't a risk of lower-tier changes overwhelming higher-tier changes. If we were to use a similar method to the weights for types of information and use bits for each level of precision lost, we would need to reserve 3 bits (a factor of 8) for each digit to be comfortable.
-
-If we account for the values taken up by the time weight, this gives only enough room to represent 5 digits of precision loss in a 32-bit integer, which isn't likely to be enough - formats can range from just a few digits up to 16, or possibly more. It's safest to use a 64-bit integer here, giving us triple the room to store precision weight information, which should be enough for reasonable use cases.
-
-#### Putting them together
-
-Now, let's put these together into a specific procedure. The weight for this tier will be the sum of a weight for time (capped at a value of 65,535) and a weight for precision (setting bits from 2^16 = 65,536 upwards based on which digits are lost). The time weight is simply the sum of the calculated weights for the source and target formats, with the cap imposed. The precision weight is more complicated, calculated through the following procedure:
-
-1. Determine the lower precision of the original source and final target formats - call this number of digits $D_{\rm 0}$
-2. For each conversion, compare the precision of the target format $D_i$ to $D_{\rm 0}$, to get the number of digits lost $L_i = D_{\rm 0} - D_i$, constrained to the values $0 \leq L_i \leq 12$ - the minimum of 0 imposes a minimum cost for each conversion, and the maximum of 12 prevents it from overflowing a 64-bit integer.
-3. The precision weight is then determined by setting bit $16 + 3L_i$ to 1, i.e. setting the value to $2^{16 + 3L_i}$
-
-To illustrate this, let's imagine the following scenario, for the pathway A -> B -> C -> D:
-
-- Format A: 8-digit precision, source time weight 10, target time weight 11
-- Format B: 9-digit precision, source time weight 20, target time weight 25
-- Format C: 4-digit precision, source time weight 5, target time weight 6
-- Format D: 9-digit precision, source time weight 30, target time weight 35
-
-The time weights for each conversion are:
-
-- A -> B: Source time weight of A (10) + Target time weight of B (25) = 35
-- B -> C: Source time weight of B (20) + Target time weight of C (6) = 26
-- C -> D: Source time weight of C (5) + Target time weight of D (35) = 40
-
-For the precision weight, $D_{\rm 0}$ is set to the lower precision of format A (8) and D (9): 8. The precision weights for each conversion are then calculated to be:
-
-- A -> B: Target format's precision is $D_{\rm B}=9$; $D_{\rm 0} - D_{\rm B} = -1$; bounded to $L_{\rm B} = 0$; giving precision weight $2^{16+3*0}=65,536$
-- B -> C: Target format's precision is $D_{\rm C}=4$; $D_{\rm 0} - D_{\rm C} = 4$; already within bounds, so $L_{\rm C} = 4$; giving precision weight $2^{16+3*4}=268,435,456$
-- C -> D: Target format's precision is $D_{\rm D}=9$; $D_{\rm 0} - D_{\rm D} = -1$; bounded to $L_{\rm D} = 0$; giving precision weight $2^{16+3*0}=65,536$
-
-The combined precision and time weights for each conversion are then:
-
-- A -> B: Time weight (35) + Precision weight (65,536) = 65,571
-- B -> C: Time weight (26) + Precision weight (268,435,456) = 268,435,482
-- C -> D: Time weight (40) + Precision weight (65,536) = 65,576
-
-The combined precision and time weights can then be assigned to all conversions in the reduced graph, and the pathfinding algorithm run on it to find all equally-shortest paths. In the case that one shortest path is found, it's returned as the best path. If more than one is found, whichever is the first in the list can be returned.
+If more than one equally-short path is found, they can either all be presented to the user, or any can be arbitrarily chosen at this point, as they're all equally valid to the best of our determination.

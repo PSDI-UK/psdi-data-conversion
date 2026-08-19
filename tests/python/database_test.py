@@ -314,12 +314,12 @@ def format_unknown(database):
 
 @pytest.fixture(scope="module")
 def min_prop_weight():
-    return db.STEP_WEIGHT
+    return 0
 
 
 @pytest.fixture(scope="module")
 def max_prop_weight():
-    max_weight = db.STEP_WEIGHT
+    max_weight = 0
     for bit in db.D_PROP_BITS.values():
         max_weight |= 1 << bit
     return max_weight
@@ -355,7 +355,7 @@ def test_calc_conversion_prop_weight_prop_lost(format_none, prop, converter_ob):
     test_format = db.FormatInfo("test", database, {key: True if key == prop else False
                                                    for key in db.D_PROP_BITS.keys()})
     assert db.calc_conversion_prop_weight(converter_ob, test_format,
-                                          format_none) == db.STEP_WEIGHT | 1 << db.D_PROP_BITS[prop]
+                                          format_none) == 1 << db.D_PROP_BITS[prop]
 
 
 @pytest.mark.parametrize("in_prec, out_prec, ex_weight", [(None, None, 1 << db.PREC_MAX_DIGIT_LOSS*db.PREC_GAP_BITS),
