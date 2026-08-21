@@ -455,11 +455,18 @@ l_all_test_specs.append(Spec(name="Coord gen",
 """A set of tests which checks that coordinate generation options are processed correctly, by matching tests using them
 to expected output files"""
 
-l_library_test_specs = [x for x in l_all_test_specs if x.compatible_with_library and not x.skip_all]
+l_library_test_specs = [x for x in l_all_test_specs
+                        if x.compatible_with_library and x.compatible_with_single_step and not x.skip_all]
 """All test specs which are compatible with being run on the Python library"""
 
-l_cla_test_specs = [x for x in l_all_test_specs if x.compatible_with_cla and not x.skip_all]
+l_library_chain_test_specs = [x for x in l_all_test_specs
+                              if x.compatible_with_library and x.compatible_with_chain and not x.skip_all]
+"""All test specs which are compatible with being run on the Python library"""
+
+l_cla_test_specs = [x for x in l_all_test_specs
+                    if x.compatible_with_cla and x.compatible_with_single_step and not x.skip_all]
 """All test specs which are compatible with being run on the command-line application"""
 
-l_gui_test_specs = [x for x in l_all_test_specs if x.compatible_with_gui and not x.skip_all]
+l_gui_test_specs = [x for x in l_all_test_specs
+                    if x.compatible_with_gui and x.compatible_with_single_step and not x.skip_all]
 """All test specs which are compatible with being run on the GUI"""

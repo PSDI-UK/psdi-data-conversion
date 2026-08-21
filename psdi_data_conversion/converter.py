@@ -21,7 +21,6 @@ from uuid import UUID
 from psdi_data_conversion import constants as const
 from psdi_data_conversion import log_utility
 from psdi_data_conversion.converters import base
-from psdi_data_conversion.database import ConverterInfo, FormatInfo, get_conversion_pathway, get_format_info
 from psdi_data_conversion.file_io import (is_archive, is_supported_archive, pack_zip_or_tar, split_archive_ext,
                                           unpack_zip_or_tar)
 from psdi_data_conversion.utils import regularize_name
@@ -625,8 +624,8 @@ def run_converter(filename: str,
 def run_converter_chain(filename: str,
                         *args,
                         path: list[tuple] | None = None,
-                        to_format: str | int | UUID | FormatInfo | None = None,
-                        from_format: str | int | UUID | FormatInfo | None = None,
+                        to_format: str | int | UUID | Any | None = None,
+                        from_format: str | int | UUID | Any | None = None,
                         l_data: list[dict[str, Any]] | None = None,
                         **kwargs) -> list[FileConversionRunResult]:
     """_summary_
@@ -666,6 +665,8 @@ def run_converter_chain(filename: str,
     FileConverterAbortException
         If something goes wrong during the conversion process
     """
+
+    from psdi_data_conversion.database import ConverterInfo, FormatInfo, get_conversion_pathway, get_format_info
 
     # Check the input for validity
 

@@ -21,7 +21,7 @@ import py
 import pytest
 
 from psdi_data_conversion.constants import CONVERTER_DEFAULT, GLOBAL_LOG_FILENAME, LOG_NONE, OUTPUT_LOG_EXT
-from psdi_data_conversion.converter import run_converter
+from psdi_data_conversion.converter import run_converter, run_converter_chain
 from psdi_data_conversion.converters.openbabel.converter import COORD_GEN_KEY, COORD_GEN_QUAL_KEY
 from psdi_data_conversion.database import get_format_info
 from psdi_data_conversion.dist import LINUX_LABEL, get_dist
@@ -66,6 +66,9 @@ class ConversionTestInfo:
 
     run_type: str
     """One of "library", "cla", or "gui", describing which type of test run was performed"""
+
+    chain: bool
+    """Whether or not this test was run as a chain conversion"""
 
     test_spec: SingleConversionTestSpec
     """The specification of the test conversion which was run to produce this"""
@@ -286,13 +289,17 @@ class SingleConversionTestSpec:
         return GLOBAL_LOG_FILENAME
 
 
-def run_test_conversion_with_library(test_spec: ConversionTestSpec):
-    """Runs a test conversion or series thereof through a call to the python library's `run_converter` function.
+def run_test_conversion_with_library(test_spec: ConversionTestSpec,
+                                     chain=False):
+    """Runs a test conversion or series thereof through a call to the python library's `run_converter` function
+    (if `chain` is False) or `run_converter_chain` function (if `chain` is True).
 
     Parameters
     ----------
     test_spec : ConversionTestSpec
         The specification for the test or series of tests to be run
+    chain : bool
+        Whether or not to run through the chain conversion function
     """
     # Make temporary directories for the input and output files to be stored in
     with TemporaryDirectory("_input") as input_dir, TemporaryDirectory("_output") as output_dir:
@@ -304,14 +311,17 @@ def run_test_conversion_with_library(test_spec: ConversionTestSpec):
             print(f"Running single test spec: {single_test_spec}")
             _run_single_test_conversion_with_library(test_spec=single_test_spec,
                                                      input_dir=input_dir,
-                                                     output_dir=output_dir)
+                                                     output_dir=output_dir,
+                                                     chain=chain)
             print(f"Success for test spec: {single_test_spec}")
 
 
 def _run_single_test_conversion_with_library(test_spec: SingleConversionTestSpec,
                                              input_dir: str,
-                                             output_dir: str):
-    """Runs a single test conversion through a call to the python library's `run_converter` function.
+                                             output_dir: str,
+                                             chain: bool):
+    """Runs a single test conversion through a call to python library's `run_converter` function
+    (if `chain` is False) or `run_converter_chain` function (if `chain` is True).
 
     Parameters
     ----------
@@ -321,6 +331,8 @@ def _run_single_test_conversion_with_library(test_spec: SingleConversionTestSpec
         A directory which can be used to store input data
     output_dir : str
         A directory which can be used to create output data
+    chain : bool
+        Whether or not to run through the chain conversion function
     """
 
     # Symlink the input file to the input directory
@@ -331,29 +343,34 @@ def _run_single_test_conversion_with_library(test_spec: SingleConversionTestSpec
     except FileExistsError:
         pass
 
+    if chain:
+        run_func = run_converter_chain
+    else:
+        run_func = run_converter
+
     # Capture stdout and stderr while we run this test. We use a try block to stop capturing as soon as testing finishes
     try:
         stdouterr = py.io.StdCaptureFD(in_=False)
 
         exc_info: pytest.ExceptionInfo | None = None
         if test_spec.expect_success:
-            run_converter(filename=test_spec.filename,
-                          to_format=test_spec.to_format,
-                          from_format=test_spec.from_format,
-                          name=test_spec.converter_name,
-                          input_dir=input_dir,
-                          output_dir=output_dir,
-                          **test_spec.conversion_kwargs)
+            run_func(filename=test_spec.filename,
+                     to_format=test_spec.to_format,
+                     from_format=test_spec.from_format,
+                     name=test_spec.converter_name,
+                     input_dir=input_dir,
+                     output_dir=output_dir,
+                     **test_spec.conversion_kwargs)
             success = True
         else:
             with pytest.raises(Exception) as exc_info:
-                run_converter(filename=qualified_in_filename,
-                              to_format=test_spec.to_format,
-                              from_format=test_spec.from_format,
-                              name=test_spec.converter_name,
-                              input_dir=input_dir,
-                              output_dir=output_dir,
-                              **test_spec.conversion_kwargs)
+                run_func(filename=qualified_in_filename,
+                         to_format=test_spec.to_format,
+                         from_format=test_spec.from_format,
+                         name=test_spec.converter_name,
+                         input_dir=input_dir,
+                         output_dir=output_dir,
+                         **test_spec.conversion_kwargs)
             success = False
 
     finally:
@@ -364,6 +381,7 @@ def _run_single_test_conversion_with_library(test_spec: SingleConversionTestSpec
     # Compile output info for the test and call the callback function if one is provided
     if test_spec.callback:
         test_info = ConversionTestInfo(run_type="library",
+                                       chain=chain,
                                        test_spec=test_spec,
                                        input_dir=input_dir,
                                        output_dir=output_dir,
@@ -462,6 +480,7 @@ def _run_single_test_conversion_with_cla(test_spec: SingleConversionTestSpec,
     # Compile output info for the test and call the callback function if one is provided
     if test_spec.callback:
         test_info = ConversionTestInfo(run_type="cla",
+                                       chain=False,
                                        test_spec=test_spec,
                                        input_dir=input_dir,
                                        output_dir=output_dir,
