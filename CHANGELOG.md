@@ -38,6 +38,7 @@
   - Both `True`: The converter is supported and ready to use
 - `ConverterInfo`, `FormatInfo`, `FlagInfo`, `OptionInfo`, and individual converter classes now have a `uuid` property which provides the ID converted to a UUID class
 - In order to help determine optimal conversion pathways when a direct conversion is not possible, conversions are now assigned weights in the database based on information loss and expected conversion time. These are now used in the shortest-path algorithm to determine indirect conversions
+- Added method `run_converter_chain` to `psdi_data_conversion.converter`, which can run a chained conversion, either with a provided path or by determining an optimal chain from the source to target format
 
 ### Bugfixes
 
