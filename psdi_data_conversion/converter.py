@@ -16,10 +16,12 @@ from dataclasses import dataclass, field
 from multiprocessing import Lock
 from tempfile import TemporaryDirectory
 from typing import Any, Literal, NamedTuple
+from uuid import UUID
 
 from psdi_data_conversion import constants as const
 from psdi_data_conversion import log_utility
 from psdi_data_conversion.converters import base
+from psdi_data_conversion.database import ConverterInfo, FormatInfo, get_conversion_pathway, get_format_info
 from psdi_data_conversion.file_io import (is_archive, is_supported_archive, pack_zip_or_tar, split_archive_ext,
                                           unpack_zip_or_tar)
 from psdi_data_conversion.utils import regularize_name
@@ -172,7 +174,7 @@ def get_converter(*args, name=const.CONVERTER_DEFAULT, **converter_kwargs) -> ba
         determined from the extension of `filename`
     name : str
         The desired converter type, by default 'Open Babel'
-    data : dict[str | Any] | None
+    data : dict[str, Any] | None
         A dict of any other data needed by a converter or for extra logging information, default empty dict. See the
         docstring of each converter for supported keys and values that can be passed to `data` here
     abort_callback : Callable[[int], None]
@@ -618,6 +620,124 @@ def run_converter(filename: str,
                    "logging_error": "An error occurred during logging of conversion information."})
 
     return run_output
+
+
+def run_converter_chain(filename: str,
+                        *args,
+                        path: list[tuple] | None = None,
+                        to_format: str | int | UUID | FormatInfo | None = None,
+                        from_format: str | int | UUID | FormatInfo | None = None,
+                        l_data: list[dict[str, Any]] | None = None,
+                        **kwargs) -> list[FileConversionRunResult]:
+    """_summary_
+
+    Parameters
+    ----------
+    filename : str
+        The filename of the input file to be converted, either relative to current directory or fully-qualified
+    path : list[tuple] | None
+        A list of the steps to take in the conversion pathway. Each tuple in the list must take one of the following
+        formats:
+        - (Converter, Output Format)
+        - (Converter, Input Format, Output Format)
+        The converters and formats may each be provided as a string (the name), int (ID), UUID, or
+        `ConverterInfo`/`FormatInfo`. The Output format of the final step should be the desired format to ultimately
+        convert to. Only one of this and `to_format` must be provided
+    to_format : str | int | FormatInfo | None
+        The desired format to ultimately convert to. If this is provided, the conversion path will be automatically
+        determined and executed. Only one of this and `path` must be provided
+    from_format : str | int | FormatInfo | None
+        The format to convert from, as the file extension (e.g. "pdb"), ID, UUID, or FormatInfo. If not provided,
+        will be determined from the extension of `filename`
+    l_data : list[dict[str, Any] | None] | None
+        A list of `data` dicts for each step of the conversion chain, providing any other data needed by the converter
+        used for the respective step. May only be provided if `path` is also provided, and must have the same length as
+        `path`
+
+    Returns
+    -------
+    FileConversionRunResult
+        An object containing the filenames of output files and logs created, and input/output file sizes
+
+    Raises
+    ------
+    FileConverterInputException
+        If the converter isn't recognized or there's some other issue with the input
+    FileConverterAbortException
+        If something goes wrong during the conversion process
+    """
+
+    # Check the input for validity
+
+    # This function does not yet support archives
+    if is_archive(filename):
+        raise base.FileConverterInputException("`run_converter_chain` does not yet support file archives.")
+
+    # Only one of `path` and `to_format` may be provided
+    if path and to_format:
+        raise base.FileConverterArgException("Only one of `path` and `to_format` may be passed to "
+                                             "`run_converter_chain`. Pass `path` to specify a specific conversion "
+                                             "path, and `to_format` to automatically determine the best path to the "
+                                             "target format.")
+
+    # If `from_format` is provided and is also present in the path, check that they're consistent
+    if from_format and path and len(path[0] > 2):
+        from_format_info = get_format_info(from_format)
+        init_path_format_info = get_format_info(path[0][1])
+        if from_format_info is not init_path_format_info:
+            raise base.FileConverterArgException("The initial formats provided to `run_converter_chain` by "
+                                                 f"`from_format` ({from_format_info.name}, ID: {from_format_info.id}) "
+                                                 f"and the initial step in `path` ({init_path_format_info.name}, ID: "
+                                                 f"{init_path_format_info.id}) are not the same.")
+
+    # `l_data` may only be provided if `path` is also provided, and must be the same length if so
+    if l_data and (not path or len(l_data) != len(path)):
+        raise base.FileConverterArgException("`l_data` may only be provided to `run_converter_chain` if `path` is also "
+                                             "provided, and must be the same length.")
+
+    # If `to_format` was provided, determine the best path to use
+    if to_format:
+
+        to_format_info = get_format_info(to_format)
+
+        # Try to figure out the input format if not provided
+        if from_format:
+            from_format_info = get_format_info(from_format)
+        else:
+            from_format_info = get_format_info(os.path.splitext(filename))
+
+        path = get_conversion_pathway(from_format_info, to_format_info, only="registered")
+
+    # Run each step in the conversion
+    for i, conversion_step in enumerate(path):
+
+        # Check the format of the conversion step, and get info from it appropriately
+        converter_info: ConverterInfo
+        to_format_info: FormatInfo
+        from_format_info: FormatInfo | None
+        if len(conversion_step) == 2:
+            converter_info, to_format_info = conversion_step
+            from_format_info = None
+        else:
+            converter_info, from_format_info, to_format_info = conversion_step
+
+        # Get appropriate data for this step, if provided
+        data: dict[str, Any] | None = None
+        if l_data:
+            data = l_data[i]
+
+        # And run this step in the conversion chain
+        run_result = run_converter(filename,
+                                   to_format_info,
+                                   *args,
+                                   from_format=from_format_info,
+                                   name=converter_info.name,
+                                   data=data,
+                                   **kwargs)
+
+        # TODO: Combine logs of each step
+
+    return run_result
 
 
 def set_size_units(size):
