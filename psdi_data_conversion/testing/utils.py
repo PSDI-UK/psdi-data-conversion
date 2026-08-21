@@ -160,6 +160,12 @@ class ConversionTestSpec:
     compatible_with_gui: bool = True
     """Whether or not this test spec is compatible with being run through the GUI, default True"""
 
+    compatible_with_single_step: bool = True
+    """Whether or not this test spec is compatible with single-step conversions, default True"""
+
+    compatible_with_chain: bool = True
+    """Whether or not this test spec is compatible with chain conversions, default False"""
+
     def __post_init__(self):
         """Regularize the lengths of all attribute lists, in case some were provided as single values and others as
         lists, and set up initial values

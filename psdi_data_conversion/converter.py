@@ -737,6 +737,8 @@ def run_converter_chain(filename: str,
 
         # TODO: Combine logs of each step
 
+        # TODO: Keep track of file size across steps
+
     return run_result
 
 

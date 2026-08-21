@@ -92,6 +92,7 @@ l_all_test_specs.append(Spec(name="Archive",
                              from_format=tc.FORMAT_SMI,
                              to_format=tc.FORMAT_INCHI,
                              callback=archive_callback,
+                             compatible_with_chain=False,
                              ))
 """A test of converting a archives of files"""
 
@@ -105,6 +106,7 @@ l_all_test_specs.append(Spec(name="Archive (wrong format) - Library and CLA",
                                        CheckException(ex_type=FileConverterInputException,
                                                       ex_message=const.ERR_WRONG_EXTENSIONS)],
                              compatible_with_gui=False,
+                             compatible_with_chain=False,
                              ))
 """A test that if the user provides the wrong input format for files in an archive, and error will be output to stderr
 """
@@ -119,6 +121,7 @@ l_all_test_specs.append(Spec(name="Archive (wrong format) - GUI",
                                                      ex_message=const.ERR_WRONG_EXTENSIONS),
                              compatible_with_library=False,
                              compatible_with_cla=False,
+                             compatible_with_chain=False,
                              ))
 """A test that if the user provides the wrong input format for files in an archive - variant for the GUI test, which is
 more strict
