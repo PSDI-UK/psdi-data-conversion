@@ -705,7 +705,7 @@ def run_converter_chain(filename: str,
         if from_format:
             from_format_info = get_format_info(from_format)
         else:
-            from_format_info = get_format_info(os.path.splitext(filename))
+            from_format_info = get_format_info(os.path.splitext(filename)[-1])
 
         path = get_conversion_pathway(from_format_info, to_format_info, only="registered")
 

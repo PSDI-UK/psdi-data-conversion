@@ -343,8 +343,12 @@ def _run_single_test_conversion_with_library(test_spec: SingleConversionTestSpec
     except FileExistsError:
         pass
 
+    conversion_kwargs = {**test_spec.conversion_kwargs}
     if chain:
         run_func = run_converter_chain
+        if "data" in conversion_kwargs:
+            conversion_kwargs["l_data"] = [conversion_kwargs["data"]]
+            del conversion_kwargs["data"]
     else:
         run_func = run_converter
 
@@ -360,7 +364,7 @@ def _run_single_test_conversion_with_library(test_spec: SingleConversionTestSpec
                      name=test_spec.converter_name,
                      input_dir=input_dir,
                      output_dir=output_dir,
-                     **test_spec.conversion_kwargs)
+                     **conversion_kwargs)
             success = True
         else:
             with pytest.raises(Exception) as exc_info:
@@ -370,7 +374,7 @@ def _run_single_test_conversion_with_library(test_spec: SingleConversionTestSpec
                          name=test_spec.converter_name,
                          input_dir=input_dir,
                          output_dir=output_dir,
-                         **test_spec.conversion_kwargs)
+                         **conversion_kwargs)
             success = False
 
     finally:
