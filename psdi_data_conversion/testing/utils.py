@@ -23,7 +23,7 @@ import pytest
 from psdi_data_conversion.constants import CONVERTER_DEFAULT, GLOBAL_LOG_FILENAME, LOG_NONE, OUTPUT_LOG_EXT
 from psdi_data_conversion.converter import run_converter, run_converter_chain
 from psdi_data_conversion.converters.openbabel.converter import COORD_GEN_KEY, COORD_GEN_QUAL_KEY
-from psdi_data_conversion.database import get_format_info
+from psdi_data_conversion.database import get_converter_info, get_format_info
 from psdi_data_conversion.dist import LINUX_LABEL, get_dist
 from psdi_data_conversion.file_io import is_archive, split_archive_ext
 from psdi_data_conversion.main import main as data_convert_main
@@ -346,11 +346,23 @@ def _run_single_test_conversion_with_library(test_spec: SingleConversionTestSpec
     conversion_kwargs = {**test_spec.conversion_kwargs}
     if chain:
         run_func = run_converter_chain
+
+        # Modify arguments to be appropriate for a chain conversion
+
+        # Turn data into a list of data
         if "data" in conversion_kwargs:
             conversion_kwargs["l_data"] = [conversion_kwargs["data"]]
             del conversion_kwargs["data"]
+
+        # If we're provided a target format and converter, turn this into a path
+        if ("path" not in conversion_kwargs and "to_format" in conversion_kwargs and
+                test_spec.converter_name is not None):
+            conversion_kwargs["path"] = [(get_converter_info(test_spec.converter_name),
+                                          get_format_info(conversion_kwargs["to_format"]))]
+            del conversion_kwargs["to_format"]
     else:
         run_func = run_converter
+        conversion_kwargs["name"] = test_spec.converter_name
 
     # Capture stdout and stderr while we run this test. We use a try block to stop capturing as soon as testing finishes
     try:
@@ -361,7 +373,6 @@ def _run_single_test_conversion_with_library(test_spec: SingleConversionTestSpec
             run_func(filename=test_spec.filename,
                      to_format=test_spec.to_format,
                      from_format=test_spec.from_format,
-                     name=test_spec.converter_name,
                      input_dir=input_dir,
                      output_dir=output_dir,
                      **conversion_kwargs)
@@ -371,7 +382,6 @@ def _run_single_test_conversion_with_library(test_spec: SingleConversionTestSpec
                 run_func(filename=qualified_in_filename,
                          to_format=test_spec.to_format,
                          from_format=test_spec.from_format,
-                         name=test_spec.converter_name,
                          input_dir=input_dir,
                          output_dir=output_dir,
                          **conversion_kwargs)
