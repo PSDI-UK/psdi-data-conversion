@@ -710,6 +710,7 @@ def run_converter_chain(filename: str,
         path = get_conversion_pathway(from_format_info, to_format_info, only="registered")
 
     # Run each step in the conversion
+    from_filename = filename
     for i, conversion_step in enumerate(path):
 
         # Check the format of the conversion step, and get info from it appropriately
@@ -726,7 +727,7 @@ def run_converter_chain(filename: str,
             data = l_data[i]
 
         # And run this step in the conversion chain
-        run_result = run_converter(filename,
+        run_result = run_converter(from_filename,
                                    to_format_info,
                                    *args,
                                    from_format=from_format_info,
@@ -734,8 +735,9 @@ def run_converter_chain(filename: str,
                                    data=data,
                                    **kwargs)
 
-        # Update `from_format_info` for the next step
+        # Update `from_format_info` and `from_filename` for the next step
         from_format_info = to_format_info
+        from_filename = run_result.output_filename
 
         # TODO: Combine logs of each step
 
