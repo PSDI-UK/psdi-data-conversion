@@ -355,14 +355,14 @@ def _run_single_test_conversion_with_library(test_spec: SingleConversionTestSpec
             del conversion_kwargs["data"]
 
         # If we're provided a target format and converter, turn this into a path
-        if ("path" not in conversion_kwargs and "to_format" in conversion_kwargs and
+        if ("path" not in conversion_kwargs and test_spec.to_format is not None and
                 test_spec.converter_name is not None):
             conversion_kwargs["path"] = [(get_converter_info(test_spec.converter_name),
-                                          get_format_info(conversion_kwargs["to_format"]))]
-            del conversion_kwargs["to_format"]
+                                          get_format_info(test_spec.to_format))]
     else:
         run_func = run_converter
         conversion_kwargs["name"] = test_spec.converter_name
+        conversion_kwargs["to_format"] = test_spec.to_format
 
     # Capture stdout and stderr while we run this test. We use a try block to stop capturing as soon as testing finishes
     try:
@@ -371,7 +371,6 @@ def _run_single_test_conversion_with_library(test_spec: SingleConversionTestSpec
         exc_info: pytest.ExceptionInfo | None = None
         if test_spec.expect_success:
             run_func(filename=test_spec.filename,
-                     to_format=test_spec.to_format,
                      from_format=test_spec.from_format,
                      input_dir=input_dir,
                      output_dir=output_dir,
@@ -380,7 +379,6 @@ def _run_single_test_conversion_with_library(test_spec: SingleConversionTestSpec
         else:
             with pytest.raises(Exception) as exc_info:
                 run_func(filename=qualified_in_filename,
-                         to_format=test_spec.to_format,
                          from_format=test_spec.from_format,
                          input_dir=input_dir,
                          output_dir=output_dir,
