@@ -696,16 +696,16 @@ def run_converter_chain(filename: str,
         raise base.FileConverterArgException("`l_data` may only be provided to `run_converter_chain` if `path` is also "
                                              "provided, and must be the same length.")
 
+    # Try to figure out the input format if not provided
+    if from_format:
+        from_format_info = get_format_info(from_format)
+    else:
+        from_format_info = get_format_info(os.path.splitext(filename)[-1])
+
     # If `to_format` was provided, determine the best path to use
     if to_format:
 
         to_format_info = get_format_info(to_format)
-
-        # Try to figure out the input format if not provided
-        if from_format:
-            from_format_info = get_format_info(from_format)
-        else:
-            from_format_info = get_format_info(os.path.splitext(filename)[-1])
 
         path = get_conversion_pathway(from_format_info, to_format_info, only="registered")
 
@@ -715,12 +715,10 @@ def run_converter_chain(filename: str,
         # Check the format of the conversion step, and get info from it appropriately
         converter_info: ConverterInfo
         to_format_info: FormatInfo
-        from_format_info: FormatInfo | None
         if len(conversion_step) == 2:
             converter_info, to_format_info = conversion_step
-            from_format_info = None
         else:
-            converter_info, from_format_info, to_format_info = conversion_step
+            converter_info, _, to_format_info = conversion_step
 
         # Get appropriate data for this step, if provided
         data: dict[str, Any] | None = None
@@ -735,6 +733,9 @@ def run_converter_chain(filename: str,
                                    name=converter_info.name,
                                    data=data,
                                    **kwargs)
+
+        # Update `from_format_info` for the next step
+        from_format_info = to_format_info
 
         # TODO: Combine logs of each step
 
