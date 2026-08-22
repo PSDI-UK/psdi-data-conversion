@@ -17,7 +17,7 @@ from psdi_data_conversion.converter import L_REGISTERED_CONVERTERS
 from psdi_data_conversion.converters.c2x.converter import C2xFileConverter
 from psdi_data_conversion.converters.openbabel.converter import OpenBabelFileConverter
 from psdi_data_conversion.testing import constants as tc
-from psdi_data_conversion.testing.conversion_test_specs import l_library_test_specs
+from psdi_data_conversion.testing.conversion_test_specs import l_library_chain_test_specs, l_library_test_specs
 from psdi_data_conversion.testing.utils import run_test_conversion_with_library
 from psdi_data_conversion.utils import regularize_name
 
@@ -47,7 +47,15 @@ def test_default():
 def test_conversions(test_spec):
     """Run all conversion tests in the defined list of test specifications
     """
-    run_test_conversion_with_library(test_spec)
+    run_test_conversion_with_library(test_spec, chain=False)
+
+
+@pytest.mark.parametrize("test_spec", l_library_chain_test_specs,
+                         ids=lambda x: x.name)
+def test_chain_conversions(test_spec):
+    """Run all chain conversion tests in the defined list of test specifications
+    """
+    run_test_conversion_with_library(test_spec, chain=True)
 
 
 def test_envvars():

@@ -222,6 +222,7 @@ class GuiSingleTestSpecRunner:
         # Compile output info for the test and call the callback function if one is provided
         if self.single_test_spec.callback:
             test_info = ConversionTestInfo(run_type="gui",
+                                           chain=False,
                                            test_spec=self.single_test_spec,
                                            input_dir=self.input_dir,
                                            output_dir=self.output_dir,

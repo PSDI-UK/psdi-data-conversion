@@ -92,6 +92,7 @@ l_all_test_specs.append(Spec(name="Archive",
                              from_format=tc.FORMAT_SMI,
                              to_format=tc.FORMAT_INCHI,
                              callback=archive_callback,
+                             compatible_with_chain=False,
                              ))
 """A test of converting a archives of files"""
 
@@ -105,6 +106,7 @@ l_all_test_specs.append(Spec(name="Archive (wrong format) - Library and CLA",
                                        CheckException(ex_type=FileConverterInputException,
                                                       ex_message=const.ERR_WRONG_EXTENSIONS)],
                              compatible_with_gui=False,
+                             compatible_with_chain=False,
                              ))
 """A test that if the user provides the wrong input format for files in an archive, and error will be output to stderr
 """
@@ -119,6 +121,7 @@ l_all_test_specs.append(Spec(name="Archive (wrong format) - GUI",
                                                      ex_message=const.ERR_WRONG_EXTENSIONS),
                              compatible_with_library=False,
                              compatible_with_cla=False,
+                             compatible_with_chain=False,
                              ))
 """A test that if the user provides the wrong input format for files in an archive - variant for the GUI test, which is
 more strict
@@ -190,10 +193,14 @@ l_all_test_specs.append(Spec(name="Invalid Converter",
                              expect_success=False,
                              callback=invalid_converter_callback,
                              compatible_with_gui=False,
+                             compatible_with_chain=False,
                              ))
 """A test that a proper error is returned if an invalid converter is requested
 
 Not compatible with GUI tests, since the GUI only offers valid converters to choose from
+
+Not compatible with chain tests, since the test setup for that checks for converter validity with a different function
+which provides different output
 """
 
 quartz_quality_note_callback = CheckLogContentsSuccess(["WARNING",
@@ -374,23 +381,43 @@ max_size_callback = MCB(CheckFileStatus(expect_output_exists=False),
                         CheckException(ex_type=FileConverterSizeException,
                                        ex_message="exceeds maximum size",
                                        ex_status_code=const.STATUS_CODE_SIZE))
-l_all_test_specs.append(Spec(name="Max size exceeded",
-                             filename=["1NE6.mmcif", "caffeine-smi.tar.gz"],
+l_all_test_specs.append(Spec(name="Max size exceeded - single file",
+                             filename="1NE6.mmcif",
                              to_format=tc.FORMAT_PDB_0,
-                             conversion_kwargs=[{"max_file_size": 0.0001}, {"max_file_size": 0.0005}],
+                             conversion_kwargs={"max_file_size": 0.0001},
                              expect_success=False,
                              callback=max_size_callback,
                              compatible_with_cla=False,
                              compatible_with_gui=False,
                              ))
-"""A set of test conversion that the maximum size constraint is properly applied. In the first test, the input file
-will be greater than the maximum size, and the test should fail as soon as it checks it. In the second test, the input
-archive is smaller than the maximum size, but the unpacked files in it are greater, so it should fail midway through.
+"""A test conversion that the maximum size constraint is properly applied. The input file here is greater than the
+maximum size, so the test should fail immediately
+
+Not compatible with CLA tests, since the CLA doesn't allow the imposition of a maximum size
+
+Not compatible with GUI tests in current setup of test implementation, which doesn't let us set env vars to control
+things like maximum size on a per-test basis. May be possible to set up in the future though
+"""
+
+l_all_test_specs.append(Spec(name="Max size exceeded - archive",
+                             filename="caffeine-smi.tar.gz",
+                             to_format=tc.FORMAT_PDB_0,
+                             conversion_kwargs={"max_file_size": 0.0005},
+                             expect_success=False,
+                             callback=max_size_callback,
+                             compatible_with_cla=False,
+                             compatible_with_gui=False,
+                             compatible_with_chain=False,
+                             ))
+"""A test conversion that the maximum size constraint is properly applied. The inputa rchive is smaller than the maximum
+size, but the unpacked files in it are greater, so it should fail midway through.
 
 Not compatible with CLA tests, since the CLA doesn't allow the imposition of a maximum size.
 
 Not compatible with GUI tests in current setup of test implementation, which doesn't let us set env vars to control
 things like maximum size on a per-test basis. May be possible to set up in the future though
+
+Not compatible with chain tests, as the chain conversion function does not yet support archives
 """
 
 
@@ -452,11 +479,18 @@ l_all_test_specs.append(Spec(name="Coord gen",
 """A set of tests which checks that coordinate generation options are processed correctly, by matching tests using them
 to expected output files"""
 
-l_library_test_specs = [x for x in l_all_test_specs if x.compatible_with_library and not x.skip_all]
+l_library_test_specs = [x for x in l_all_test_specs
+                        if x.compatible_with_library and x.compatible_with_single_step and not x.skip_all]
 """All test specs which are compatible with being run on the Python library"""
 
-l_cla_test_specs = [x for x in l_all_test_specs if x.compatible_with_cla and not x.skip_all]
+l_library_chain_test_specs = [x for x in l_all_test_specs
+                              if x.compatible_with_library and x.compatible_with_chain and not x.skip_all]
+"""All test specs which are compatible with being run on the Python library"""
+
+l_cla_test_specs = [x for x in l_all_test_specs
+                    if x.compatible_with_cla and x.compatible_with_single_step and not x.skip_all]
 """All test specs which are compatible with being run on the command-line application"""
 
-l_gui_test_specs = [x for x in l_all_test_specs if x.compatible_with_gui and not x.skip_all]
+l_gui_test_specs = [x for x in l_all_test_specs
+                    if x.compatible_with_gui and x.compatible_with_single_step and not x.skip_all]
 """All test specs which are compatible with being run on the GUI"""
