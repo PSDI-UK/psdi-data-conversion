@@ -381,23 +381,43 @@ max_size_callback = MCB(CheckFileStatus(expect_output_exists=False),
                         CheckException(ex_type=FileConverterSizeException,
                                        ex_message="exceeds maximum size",
                                        ex_status_code=const.STATUS_CODE_SIZE))
-l_all_test_specs.append(Spec(name="Max size exceeded",
-                             filename=["1NE6.mmcif", "caffeine-smi.tar.gz"],
+l_all_test_specs.append(Spec(name="Max size exceeded - single file",
+                             filename="1NE6.mmcif",
                              to_format=tc.FORMAT_PDB_0,
-                             conversion_kwargs=[{"max_file_size": 0.0001}, {"max_file_size": 0.0005}],
+                             conversion_kwargs={"max_file_size": 0.0001},
                              expect_success=False,
                              callback=max_size_callback,
                              compatible_with_cla=False,
                              compatible_with_gui=False,
                              ))
-"""A set of test conversion that the maximum size constraint is properly applied. In the first test, the input file
-will be greater than the maximum size, and the test should fail as soon as it checks it. In the second test, the input
-archive is smaller than the maximum size, but the unpacked files in it are greater, so it should fail midway through.
+"""A test conversion that the maximum size constraint is properly applied. The input file here is greater than the
+maximum size, so the test should fail immediately
+
+Not compatible with CLA tests, since the CLA doesn't allow the imposition of a maximum size
+
+Not compatible with GUI tests in current setup of test implementation, which doesn't let us set env vars to control
+things like maximum size on a per-test basis. May be possible to set up in the future though
+"""
+
+l_all_test_specs.append(Spec(name="Max size exceeded - archive",
+                             filename="caffeine-smi.tar.gz",
+                             to_format=tc.FORMAT_PDB_0,
+                             conversion_kwargs={"max_file_size": 0.0005},
+                             expect_success=False,
+                             callback=max_size_callback,
+                             compatible_with_cla=False,
+                             compatible_with_gui=False,
+                             compatible_with_chain=False,
+                             ))
+"""A test conversion that the maximum size constraint is properly applied. The inputa rchive is smaller than the maximum
+size, but the unpacked files in it are greater, so it should fail midway through.
 
 Not compatible with CLA tests, since the CLA doesn't allow the imposition of a maximum size.
 
 Not compatible with GUI tests in current setup of test implementation, which doesn't let us set env vars to control
 things like maximum size on a per-test basis. May be possible to set up in the future though
+
+Not compatible with chain tests, as the chain conversion function does not yet support archives
 """
 
 
