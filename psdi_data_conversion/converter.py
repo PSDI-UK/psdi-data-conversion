@@ -682,7 +682,7 @@ def run_converter_chain(filename: str,
                                              "target format.")
 
     # If `from_format` is provided and is also present in the path, check that they're consistent
-    if from_format and path and len(path[0] > 2):
+    if from_format and path and len(path[0]) > 2:
         from_format_info = get_format_info(from_format)
         init_path_format_info = get_format_info(path[0][1])
         if from_format_info is not init_path_format_info:
