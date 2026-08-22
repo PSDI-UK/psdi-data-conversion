@@ -271,7 +271,10 @@ class SingleConversionTestSpec:
     @property
     def out_filename(self) -> str:
         """The unqualified name of the output file which should have been created by the conversion."""
-        to_format_name = get_format_info(self.to_format, which=0).name
+        if self.to_format:
+            to_format_name = get_format_info(self.to_format, which=0).name
+        else:
+            to_format_name = self.conversion_kwargs["path"][-1][-1].name
         if not is_archive(self.filename):
             return f"{os.path.splitext(self.filename)[0]}.{to_format_name}"
         else:

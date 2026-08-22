@@ -10,7 +10,7 @@ from psdi_data_conversion import constants as const
 from psdi_data_conversion.converters.base import (FileConverterAbortException, FileConverterInputException,
                                                   FileConverterSizeException)
 from psdi_data_conversion.converters.openbabel.converter import COORD_GEN_KEY, COORD_GEN_QUAL_KEY
-from psdi_data_conversion.database import FileConverterDatabaseException
+from psdi_data_conversion.database import FileConverterDatabaseException, get_converter_info, get_format_info
 from psdi_data_conversion.testing import constants as tc
 from psdi_data_conversion.testing.conversion_callbacks import (CheckArchiveContents, CheckException, CheckFileStatus,
                                                                CheckLogContents, CheckLogContentsSuccess,
@@ -486,13 +486,42 @@ l_all_test_specs.append(Spec(name="Chain Test - find path",
                              converter_name=None,
                              callback=MCB(CheckFileStatus(),
                                           CheckLogContentsSuccess(),
-                                          MatchOutputFile("chain_test.inchi")),
+                                          MatchOutputFile("chain_via_cif.inchi")),
                              compatible_with_chain=True,
                              compatible_with_cla=False,
                              compatible_with_gui=False,
                              compatible_with_single_step=False,
                              ))
 """A test of running a conversion chain, where the path isn't specified and the library is asked to find the best path
+"""
+
+l_all_test_specs.append(Spec(name="Chain Test - set path",
+                             filename="standard_test.mol",
+                             from_format=tc.FORMAT_MOLDY,
+                             conversion_kwargs=[{"path": [(get_converter_info("Atomsk"),
+                                                           get_format_info(tc.FORMAT_PDB_0)),
+                                                          (get_converter_info("Open Babel"),
+                                                           get_format_info(tc.FORMAT_INCHI))]},
+                                                {"path": [(get_converter_info("Atomsk"),
+                                                           get_format_info(tc.FORMAT_MOLDY),
+                                                           get_format_info(tc.FORMAT_CIF)),
+                                                          (get_converter_info("Open Babel"),
+                                                           get_format_info(tc.FORMAT_CIF),
+                                                           get_format_info(tc.FORMAT_INCHI))]}],
+                             to_format=None,
+                             converter_name=None,
+                             callback=[MCB(CheckFileStatus(),
+                                           CheckLogContentsSuccess(),
+                                           MatchOutputFile("chain_via_pdb.inchi")),
+                                       MCB(CheckFileStatus(),
+                                           CheckLogContentsSuccess(),
+                                           MatchOutputFile("chain_via_cif.inchi"))],
+                             compatible_with_chain=True,
+                             compatible_with_cla=False,
+                             compatible_with_gui=False,
+                             compatible_with_single_step=False,
+                             ))
+"""A test of running a conversion chain, where the path is explicitly provided in two manners and two different paths
 """
 
 l_library_test_specs = [x for x in l_all_test_specs
