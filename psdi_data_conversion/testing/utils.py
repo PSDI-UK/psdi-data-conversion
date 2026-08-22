@@ -359,6 +359,8 @@ def _run_single_test_conversion_with_library(test_spec: SingleConversionTestSpec
                 test_spec.converter_name is not None):
             conversion_kwargs["path"] = [(get_converter_info(test_spec.converter_name),
                                           get_format_info(test_spec.to_format))]
+        elif test_spec.to_format is not None:
+            conversion_kwargs["to_format"] = test_spec.to_format
     else:
         run_func = run_converter
         conversion_kwargs["name"] = test_spec.converter_name

@@ -479,6 +479,22 @@ l_all_test_specs.append(Spec(name="Coord gen",
 """A set of tests which checks that coordinate generation options are processed correctly, by matching tests using them
 to expected output files"""
 
+l_all_test_specs.append(Spec(name="Chain Test - find path",
+                             filename="standard_test.mol",
+                             from_format=tc.FORMAT_MOLDY,
+                             to_format=tc.FORMAT_INCHI,
+                             converter_name=None,
+                             callback=MCB(CheckFileStatus(),
+                                          CheckLogContentsSuccess(),
+                                          MatchOutputFile("standard_test.inchi")),
+                             compatible_with_chain=True,
+                             compatible_with_cla=False,
+                             compatible_with_gui=False,
+                             compatible_with_single_step=False,
+                             ))
+"""A test of running a conversion chain, where the path isn't specified and the library is asked to find the best path
+"""
+
 l_library_test_specs = [x for x in l_all_test_specs
                         if x.compatible_with_library and x.compatible_with_single_step and not x.skip_all]
 """All test specs which are compatible with being run on the Python library"""
