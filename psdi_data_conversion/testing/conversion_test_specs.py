@@ -193,10 +193,14 @@ l_all_test_specs.append(Spec(name="Invalid Converter",
                              expect_success=False,
                              callback=invalid_converter_callback,
                              compatible_with_gui=False,
+                             compatible_with_chain=False,
                              ))
 """A test that a proper error is returned if an invalid converter is requested
 
 Not compatible with GUI tests, since the GUI only offers valid converters to choose from
+
+Not compatible with chain tests, since the test setup for that checks for converter validity with a different function
+which provides different output
 """
 
 quartz_quality_note_callback = CheckLogContentsSuccess(["WARNING",
