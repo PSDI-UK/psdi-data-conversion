@@ -27,8 +27,8 @@ from psdi_data_conversion.database import get_converter_info, get_format_info
 from psdi_data_conversion.dist import LINUX_LABEL, get_dist
 from psdi_data_conversion.file_io import is_archive, split_archive_ext
 from psdi_data_conversion.main import main as data_convert_main
-from psdi_data_conversion.testing.constants import (INPUT_TEST_DATA_LOC_IN_PROJECT, OUTPUT_TEST_DATA_LOC_IN_PROJECT,
-                                                    TEST_DATA_LOC_IN_PROJECT)
+from psdi_data_conversion.testing.constants import (FORMAT_PDB_0, INPUT_TEST_DATA_LOC_IN_PROJECT,
+                                                    OUTPUT_TEST_DATA_LOC_IN_PROJECT, TEST_DATA_LOC_IN_PROJECT)
 from psdi_data_conversion.utils import get_project_path
 
 
@@ -127,7 +127,7 @@ class ConversionTestSpec:
     filename: str | Iterable[str] = "nacl.cif"
     """The name of the input file, relative to the input test data location, or a list thereof"""
 
-    to_format: str | int | Iterable[str | int] = "pdb"
+    to_format: str | int | Iterable[str | int] = FORMAT_PDB_0
     """The format to test converting the input file to, or a list thereof"""
 
     from_format: str | int | Iterable[str | int] | None = None
