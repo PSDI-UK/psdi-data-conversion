@@ -628,6 +628,7 @@ def run_converter_chain(filename: str,
                         to_format: str | int | UUID | Any | None = None,
                         from_format: str | int | UUID | Any | None = None,
                         l_data: list[dict[str, Any]] | None = None,
+                        delete_input: bool = False,
                         **kwargs) -> list[FileConversionRunResult]:
     """_summary_
 
@@ -653,6 +654,8 @@ def run_converter_chain(filename: str,
         A list of `data` dicts for each step of the conversion chain, providing any other data needed by the converter
         used for the respective step. May only be provided if `path` is also provided, and must have the same length as
         `path`
+    delete_input : bool
+        Whether or not to delete input files after conversion, default False
 
     Returns
     -------
@@ -711,16 +714,9 @@ def run_converter_chain(filename: str,
         path = get_conversion_pathway(from_format_info, to_format_info, only="registered")
 
     # Run each step in the conversion
-    last_from_filename: str | None = None
     from_filename = filename
     l_log_files = []
     for i, conversion_step in enumerate(path):
-
-        # Delete the input file from the previous step, if one exists (and not in the rare circumstance that it shares a
-        # name with the input file for this step)
-        if last_from_filename and last_from_filename != from_filename:
-            os.remove(last_from_filename)
-        last_from_filename = from_filename
 
         # Check the format of the conversion step, and get info from it appropriately
         converter_info: ConverterInfo
@@ -735,6 +731,9 @@ def run_converter_chain(filename: str,
         if l_data:
             data = l_data[i]
 
+        # Delete input for each step except the first, where we go by the user's preference
+        delete_input_for_step = delete_input if i == 0 else True
+
         # And run this step in the conversion chain
         run_result = run_converter(from_filename,
                                    to_format_info,
@@ -742,6 +741,7 @@ def run_converter_chain(filename: str,
                                    from_format=from_format_info,
                                    name=converter_info.name,
                                    data=data,
+                                   delete_input=delete_input_for_step,
                                    **kwargs)
 
         # Update `from_format_info` and `from_filename` for the next step
@@ -756,8 +756,8 @@ def run_converter_chain(filename: str,
         # TODO: Keep track of file size across steps
 
     # Compile the log files into a single file
-    with open(run_result.log_filename) as fo:
-        fo.write("\n---\n".join(f.name.read() for f in l_log_files))
+    with open(run_result.log_filename, "w") as fo:
+        fo.write("\n---\n".join(open(f.name).read() for f in l_log_files))
 
     return run_result
 
