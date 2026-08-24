@@ -512,7 +512,8 @@ def run_converter(filename: str,
                 l_run_output.append(individual_run_output)
 
                 # Reduce the file size limit by how much was used here
-                remaining_file_size -= max((individual_run_output.in_size, individual_run_output.out_size))
+                remaining_file_size -= max((individual_run_output.in_size,
+                                           individual_run_output.out_size))/const.MEGABYTE
 
             # Combine the output logs into a single log
             with open(log_file, "w") as fo:
