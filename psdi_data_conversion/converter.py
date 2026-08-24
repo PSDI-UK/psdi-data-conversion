@@ -748,16 +748,18 @@ def run_converter_chain(filename: str,
         from_format_info = to_format_info
         from_filename = run_result.output_filename
 
-        # Move the log file to a temporary location so we can combine them together later
-        log_file = NamedTemporaryFile("w+", delete_on_close=False)
-        l_log_files.append(log_file)
-        copyfile(run_result.log_filename, log_file.name)
+        # Move the log file to a temporary location so we can combine them together later, if a log file was created
+        if run_result.log_filename and os.path.isfile(run_result.log_filename):
+            log_file = NamedTemporaryFile("w+", delete_on_close=False)
+            l_log_files.append(log_file)
+            copyfile(run_result.log_filename, log_file.name)
 
         # TODO: Keep track of file size across steps
 
-    # Compile the log files into a single file
-    with open(run_result.log_filename, "w") as fo:
-        fo.write("---\n\n".join(open(f.name).read() for f in l_log_files))
+    # Compile the log files into a single file, if any exist
+    if run_result.log_filename and len(l_log_files) > 0:
+        with open(run_result.log_filename, "w") as fo:
+            fo.write("---\n\n".join(open(f.name).read() for f in l_log_files))
 
     return run_result
 
