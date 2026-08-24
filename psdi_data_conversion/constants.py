@@ -200,6 +200,8 @@ ERR_WRONG_EXTENSIONS = "Input file '{file}' does not have expected extension '{e
 ERR_EMPTY_ARCHIVE = "No files to convert were contained in archive"
 ERR_CONVERSION_FAILED = ("File conversion failed for one or more files. Lines from the output log "
                          "{} which indicate possible sources of error: ")
+ERR_CHAIN_CONVERSION_FAILED = ("Chain file conversion failed. Lines from the output log "
+                               "{} which indicate possible sources of error: ")
 
 # Misc
 # ----

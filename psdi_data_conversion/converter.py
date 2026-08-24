@@ -319,12 +319,12 @@ def run_converter(filename: str,
                   from_format: str | None = None,
                   input_dir=const.DEFAULT_INPUT_DIR,
                   output_dir=const.DEFAULT_OUTPUT_DIR,
-                  max_file_size=None,
-                  log_file: str | None = None,
-                  log_mode=const.LOG_SIMPLE,
                   strict=False,
                   permission_level: Literal[0, 1, 2] = const.PERMISSION_LOCAL,
                   archive_output=True,
+                  max_file_size=None,
+                  log_file: str | None = None,
+                  log_mode=const.LOG_SIMPLE,
                   **converter_kwargs) -> FileConversionRunResult:
     """Shortcut to create and run a FileConverter in one step
 
@@ -627,8 +627,13 @@ def run_converter_chain(filename: str,
                         path: list[tuple] | None = None,
                         to_format: str | int | UUID | Any | None = None,
                         from_format: str | int | UUID | Any | None = None,
+                        input_dir=const.DEFAULT_INPUT_DIR,
+                        output_dir=const.DEFAULT_OUTPUT_DIR,
                         l_data: list[dict[str, Any]] | None = None,
                         delete_input: bool = False,
+                        max_file_size: float | None = None,
+                        log_file: str | None = None,
+                        permission_level: Literal[0, 1, 2] = const.PERMISSION_LOCAL,
                         **kwargs) -> list[FileConversionRunResult]:
     """_summary_
 
@@ -656,6 +661,17 @@ def run_converter_chain(filename: str,
         `path`
     delete_input : bool
         Whether or not to delete input files after conversion, default False
+    permission_level : Literal[0,1,2]
+        Integer representing the permissions level of the user requesting the conversion. 2 (default) indicates running
+        in local mode, so maximum permissions. 1 indicates running in service mode with a logged-in user, 0 indicates
+        running in service mode with a logged-out user
+    max_file_size : float
+        The maximum allowed file size for input/output files, in MB, default 1 MB for Open Babel, unlimited for other
+        converters. If 0, will be unlimited. If an archive of files is provided, this will apply to the total of all
+        files contained in it
+    log_file : str | None
+        If provided, all logging will go to a single file or stream. Otherwise, logs will be split up among multiple
+        files for server-style logging.
 
     Returns
     -------
@@ -713,9 +729,33 @@ def run_converter_chain(filename: str,
 
         path = get_conversion_pathway(from_format_info, to_format_info, only="registered")
 
-    # Run each step in the conversion
+    # Set the maximum file size based on permission level and which converter is being used, if it isn't explicitly
+    # specified
+    if max_file_size is None:
+        if name == const.CONVERTER_OB:
+            max_file_size == const.DEFAULT_MAX_FILE_SIZE_OB/const.MEGABYTE
+        elif permission_level >= const.PERMISSION_LOCAL:
+            max_file_size = const.DEFAULT_MAX_FILE_SIZE/const.MEGABYTE
+        elif permission_level >= const.PERMISSION_LOGGED_IN:
+            from psdi_data_conversion.gui.env import get_env
+            max_file_size = get_env().max_file_size_logged_in/const.MEGABYTE
+        else:
+            from psdi_data_conversion.gui.env import get_env
+            max_file_size = get_env().max_file_size_logged_out/const.MEGABYTE
+
+    # Set the log file if it was unset - note that in server logging mode, this value won't be used within the
+    # converter class, so it needs to be set up here to match what will be set up there
+    if log_file is None:
+        base_filename = os.path.basename(split_archive_ext(filename)[0])
+        log_file = os.path.join(output_dir, base_filename + const.OUTPUT_LOG_EXT)
+
     from_filename = filename
     l_log_files = []
+
+    # Keep track of the file size budget
+    remaining_file_size = max_file_size
+
+    # Run each step in the conversion
     for i, conversion_step in enumerate(path):
 
         # Check the format of the conversion step, and get info from it appropriately
@@ -734,31 +774,46 @@ def run_converter_chain(filename: str,
         # Delete input for each step except the first, where we go by the user's preference
         delete_input_for_step = delete_input if i == 0 else True
 
+        # Make a log file for just this step
+        tmp_logfile = NamedTemporaryFile("w+", delete_on_close=False)
+
         # And run this step in the conversion chain
-        run_result = run_converter(from_filename,
-                                   to_format_info,
-                                   *args,
-                                   from_format=from_format_info,
-                                   name=converter_info.name,
-                                   data=data,
-                                   delete_input=delete_input_for_step,
-                                   **kwargs)
+
+        try:
+            run_result = run_converter(from_filename,
+                                       to_format_info,
+                                       *args,
+                                       from_format=from_format_info,
+                                       name=converter_info.name,
+                                       input_dir=input_dir,
+                                       output_dir=output_dir,
+                                       data=data,
+                                       log_file=tmp_logfile.name,
+                                       delete_input=delete_input_for_step,
+                                       permission_level=permission_level,
+                                       max_file_size=remaining_file_size,
+                                       **kwargs)
+        except base.FileConverterAbortException:
+            # If the run fails, copy the log file to the expected output location
+            copyfile(tmp_logfile.name, log_file)
+            raise
 
         # Update `from_format_info` and `from_filename` for the next step
         from_format_info = to_format_info
         from_filename = run_result.output_filename
 
-        # Move the log file to a temporary location so we can combine them together later, if a log file was created
-        if run_result.log_filename and os.path.isfile(run_result.log_filename):
-            log_file = NamedTemporaryFile("w+", delete_on_close=False)
-            l_log_files.append(log_file)
-            copyfile(run_result.log_filename, log_file.name)
+        # Keep track of the log file, if one was created
+        if (run_result.log_filename and os.path.isfile(run_result.log_filename)
+                and os.path.getsize(run_result.log_filename) > 0):
+            l_log_files.append(tmp_logfile)
 
-        # TODO: Keep track of file size across steps
+        # Reduce the file size limit by how much was used here
+        remaining_file_size -= max((run_result.in_size, run_result.out_size))
 
     # Compile the log files into a single file, if any exist
-    if run_result.log_filename and len(l_log_files) > 0:
-        with open(run_result.log_filename, "w") as fo:
+    if log_file and len(l_log_files) > 0:
+        run_result.log_filename = log_file
+        with open(log_file, "w") as fo:
             fo.write("---\n\n".join(open(f.name).read() for f in l_log_files))
 
     return run_result
