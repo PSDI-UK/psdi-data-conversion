@@ -399,17 +399,23 @@ Not compatible with GUI tests in current setup of test implementation, which doe
 things like maximum size on a per-test basis. May be possible to set up in the future though
 """
 
+
+max_size_archive_callback = MCB(CheckFileStatus(),
+                                CheckLogContents("file exceeds maximum size"),
+                                CheckException(ex_type=FileConverterSizeException,
+                                               ex_message="exceeds maximum size",
+                                               ex_status_code=const.STATUS_CODE_SIZE))
 l_all_test_specs.append(Spec(name="Max size exceeded - archive",
                              filename="caffeine-smi.tar.gz",
                              to_format=tc.FORMAT_PDB_0,
-                             conversion_kwargs={"max_file_size": 0.0005},
+                             conversion_kwargs={"max_file_size": 0.003},
                              expect_success=False,
-                             callback=max_size_callback,
+                             callback=max_size_archive_callback,
                              compatible_with_cla=False,
                              compatible_with_gui=False,
                              compatible_with_chain=False,
                              ))
-"""A test conversion that the maximum size constraint is properly applied. The inputa rchive is smaller than the maximum
+"""A test conversion that the maximum size constraint is properly applied. The input archive is smaller than the maximum
 size, but the unpacked files in it are greater, so it should fail midway through.
 
 Not compatible with CLA tests, since the CLA doesn't allow the imposition of a maximum size.
@@ -419,7 +425,6 @@ things like maximum size on a per-test basis. May be possible to set up in the f
 
 Not compatible with chain tests, as the chain conversion function does not yet support archives
 """
-
 
 l_all_test_specs.append(Spec(name="Format args",
                              filename=["caffeine.inchi",
@@ -540,13 +545,37 @@ l_all_test_specs.append(Spec(name="Chain Test - log contents",
                                                                                r"To: +pdb",
                                                                                r"From: +pdb",
                                                                                r"To: +inchi"]),
-                             compatible_with_chain=True,
                              compatible_with_cla=False,
                              compatible_with_gui=False,
                              compatible_with_single_step=False,
                              ))
 """A test of running a conversion chain, checking that the log contains logs from each individual step and the step
 separator.
+"""
+
+l_all_test_specs.append(Spec(name="Max size exceeded - chain",
+                             filename="standard_test.mol",
+                             from_format=tc.FORMAT_MOLDY,
+                             conversion_kwargs={"path": [(get_converter_info("Atomsk"),
+                                                          get_format_info(tc.FORMAT_PDB_0)),
+                                                         (get_converter_info("Open Babel"),
+                                                          get_format_info(tc.FORMAT_INCHI))],
+                                                "max_file_size": 0.003},
+                             to_format=None,
+                             converter_name=None,
+                             expect_success=False,
+                             callback=max_size_callback,
+                             compatible_with_cla=False,
+                             compatible_with_gui=False,
+                             compatible_with_single_step=False,
+                             ))
+"""A test conversion that the maximum size constraint is properly applied in chain conversions. The input file here is
+smaller than the maximum size, so the test should only fail in the second step
+
+Not compatible with CLA tests, since the CLA doesn't allow the imposition of a maximum size
+
+Not compatible with GUI tests in current setup of test implementation, which doesn't let us set env vars to control
+things like maximum size on a per-test basis. May be possible to set up in the future though
 """
 
 l_library_test_specs = [x for x in l_all_test_specs
