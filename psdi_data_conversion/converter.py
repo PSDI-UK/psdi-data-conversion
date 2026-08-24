@@ -809,7 +809,7 @@ def run_converter_chain(filename: str,
             l_log_files.append(tmp_logfile)
 
         # Reduce the file size limit by how much was used here
-        remaining_file_size -= max((run_result.in_size, run_result.out_size))
+        remaining_file_size -= max((run_result.in_size, run_result.out_size))/const.MEGABYTE
 
     # Compile the log files into a single file, if any exist
     if log_file and len(l_log_files) > 0:
