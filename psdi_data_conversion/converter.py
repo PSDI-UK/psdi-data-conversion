@@ -757,7 +757,7 @@ def run_converter_chain(filename: str,
 
     # Compile the log files into a single file
     with open(run_result.log_filename, "w") as fo:
-        fo.write("\n---\n".join(open(f.name).read() for f in l_log_files))
+        fo.write("---\n\n".join(open(f.name).read() for f in l_log_files))
 
     return run_result
 
