@@ -14,7 +14,8 @@ import traceback
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from multiprocessing import Lock
-from tempfile import TemporaryDirectory
+from shutil import copyfile
+from tempfile import NamedTemporaryFile, TemporaryDirectory
 from typing import Any, Literal, NamedTuple
 from uuid import UUID
 
@@ -710,8 +711,16 @@ def run_converter_chain(filename: str,
         path = get_conversion_pathway(from_format_info, to_format_info, only="registered")
 
     # Run each step in the conversion
+    last_from_filename: str | None = None
     from_filename = filename
+    l_log_files = []
     for i, conversion_step in enumerate(path):
+
+        # Delete the input file from the previous step, if one exists (and not in the rare circumstance that it shares a
+        # name with the input file for this step)
+        if last_from_filename and last_from_filename != from_filename:
+            os.remove(last_from_filename)
+        last_from_filename = from_filename
 
         # Check the format of the conversion step, and get info from it appropriately
         converter_info: ConverterInfo
@@ -739,9 +748,16 @@ def run_converter_chain(filename: str,
         from_format_info = to_format_info
         from_filename = run_result.output_filename
 
-        # TODO: Combine logs of each step
+        # Move the log file to a temporary location so we can combine them together later
+        log_file = NamedTemporaryFile("w+", delete_on_close=False)
+        l_log_files.append(log_file)
+        copyfile(run_result.log_filename, log_file.name)
 
         # TODO: Keep track of file size across steps
+
+    # Compile the log files into a single file
+    with open(run_result.log_filename) as fo:
+        fo.write("\n---\n".join(f.name.read() for f in l_log_files))
 
     return run_result
 
