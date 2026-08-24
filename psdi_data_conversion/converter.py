@@ -14,7 +14,8 @@ import traceback
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from multiprocessing import Lock
-from tempfile import TemporaryDirectory
+from shutil import copyfile
+from tempfile import NamedTemporaryFile, TemporaryDirectory
 from typing import Any, Literal, NamedTuple
 from uuid import UUID
 
@@ -627,6 +628,7 @@ def run_converter_chain(filename: str,
                         to_format: str | int | UUID | Any | None = None,
                         from_format: str | int | UUID | Any | None = None,
                         l_data: list[dict[str, Any]] | None = None,
+                        delete_input: bool = False,
                         **kwargs) -> list[FileConversionRunResult]:
     """_summary_
 
@@ -652,6 +654,8 @@ def run_converter_chain(filename: str,
         A list of `data` dicts for each step of the conversion chain, providing any other data needed by the converter
         used for the respective step. May only be provided if `path` is also provided, and must have the same length as
         `path`
+    delete_input : bool
+        Whether or not to delete input files after conversion, default False
 
     Returns
     -------
@@ -711,6 +715,7 @@ def run_converter_chain(filename: str,
 
     # Run each step in the conversion
     from_filename = filename
+    l_log_files = []
     for i, conversion_step in enumerate(path):
 
         # Check the format of the conversion step, and get info from it appropriately
@@ -726,6 +731,9 @@ def run_converter_chain(filename: str,
         if l_data:
             data = l_data[i]
 
+        # Delete input for each step except the first, where we go by the user's preference
+        delete_input_for_step = delete_input if i == 0 else True
+
         # And run this step in the conversion chain
         run_result = run_converter(from_filename,
                                    to_format_info,
@@ -733,15 +741,23 @@ def run_converter_chain(filename: str,
                                    from_format=from_format_info,
                                    name=converter_info.name,
                                    data=data,
+                                   delete_input=delete_input_for_step,
                                    **kwargs)
 
         # Update `from_format_info` and `from_filename` for the next step
         from_format_info = to_format_info
         from_filename = run_result.output_filename
 
-        # TODO: Combine logs of each step
+        # Move the log file to a temporary location so we can combine them together later
+        log_file = NamedTemporaryFile("w+", delete_on_close=False)
+        l_log_files.append(log_file)
+        copyfile(run_result.log_filename, log_file.name)
 
         # TODO: Keep track of file size across steps
+
+    # Compile the log files into a single file
+    with open(run_result.log_filename, "w") as fo:
+        fo.write("---\n\n".join(open(f.name).read() for f in l_log_files))
 
     return run_result
 

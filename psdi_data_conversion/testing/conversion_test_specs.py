@@ -510,10 +510,12 @@ l_all_test_specs.append(Spec(name="Chain Test - set path",
                                                            get_format_info(tc.FORMAT_INCHI))]}],
                              to_format=None,
                              converter_name=None,
-                             callback=[MCB(CheckFileStatus(),
+                             callback=[MCB(CheckFileStatus(expect_input_files_not_exist=["standard_test.pdb"],
+                                                           expect_output_files_not_exist=["standard_test.pdb"]),
                                            CheckLogContentsSuccess(),
                                            MatchOutputFile("chain_via_pdb.inchi")),
-                                       MCB(CheckFileStatus(),
+                                       MCB(CheckFileStatus(expect_input_files_not_exist=["standard_test.cif"],
+                                                           expect_output_files_not_exist=["standard_test.pdb"]),
                                            CheckLogContentsSuccess(),
                                            MatchOutputFile("chain_via_cif.inchi"))],
                              compatible_with_chain=True,
@@ -522,6 +524,29 @@ l_all_test_specs.append(Spec(name="Chain Test - set path",
                              compatible_with_single_step=False,
                              ))
 """A test of running a conversion chain, where the path is explicitly provided in two manners and two different paths
+"""
+
+l_all_test_specs.append(Spec(name="Chain Test - log contents",
+                             filename="standard_test.mol",
+                             from_format=tc.FORMAT_MOLDY,
+                             conversion_kwargs={"path": [(get_converter_info("Atomsk"),
+                                                          get_format_info(tc.FORMAT_PDB_0)),
+                                                         (get_converter_info("Open Babel"),
+                                                          get_format_info(tc.FORMAT_INCHI))]},
+                             to_format=None,
+                             converter_name=None,
+                             callback=CheckLogContentsSuccess(l_strings_to_find="\n\n---\n\n",
+                                                              l_regex_to_find=[r"From: +mol",
+                                                                               r"To: +pdb",
+                                                                               r"From: +pdb",
+                                                                               r"To: +inchi"]),
+                             compatible_with_chain=True,
+                             compatible_with_cla=False,
+                             compatible_with_gui=False,
+                             compatible_with_single_step=False,
+                             ))
+"""A test of running a conversion chain, checking that the log contains logs from each individual step and the step
+separator.
 """
 
 l_library_test_specs = [x for x in l_all_test_specs
