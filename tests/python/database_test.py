@@ -118,7 +118,7 @@ def test_format_info(database):
     """Test that we can get the expected information on a few test formats
     """
 
-    for name, id in (("pdb", tc.FORMAT_PDB_0), ("cif", tc.FORMAT_CIF), ("mmcif", tc.FORMAT_MMCIF),
+    for name, id in (("pdb", tc.FORMAT_PDB_0), ("inchikey", tc.FORMAT_INCHIKEY), ("mmcif", tc.FORMAT_MMCIF),
                      ("inchi", tc.FORMAT_INCHI), ("molreport", tc.FORMAT_MOLREPORT)):
 
         format_info = db.get_format_info(id)
@@ -153,14 +153,11 @@ def test_format_info(database):
         else:
             assert not format_info.connections, name
 
-        if name in ("mmcif", "molreport"):
-            assert format_info.two_dim, name
-        else:
-            assert not format_info.two_dim, name
-
         if name in ("pdb", "mmcif"):
+            assert format_info.two_dim, name
             assert format_info.three_dim, name
         else:
+            assert not format_info.two_dim, name
             assert not format_info.three_dim, name
 
 
@@ -221,7 +218,8 @@ def test_conversion_table(database):
     assert conversions_table.parent is database
 
     # Check we can get the correct conversion quality
-    assert db.get_conversion_quality(const.CONVERTER_OB, tc.FORMAT_PDB_0, tc.FORMAT_CIF).qual_str == const.QUAL_UNKNOWN
+    assert db.get_conversion_quality(const.CONVERTER_OB, tc.FORMAT_PDB_0,
+                                     tc.FORMAT_CIF).qual_str == const.QUAL_VERYGOOD
     assert db.get_conversion_quality(const.CONVERTER_ATO, tc.FORMAT_XYZ_1, tc.FORMAT_INCHI) is None
 
     # Do some detailed checks on one conversion
