@@ -31,7 +31,7 @@
             "connections": false,
             "two_dim": false,
             "three_dim": false,
-            "precision": null
+            "precision": 0
         },
         {
             "extension": "acesin",
@@ -152,7 +152,7 @@
             "connections": true,
             "two_dim": false,
             "three_dim": false,
-            "precision": null
+            "precision": 0
         },
         {
             "extension": "ascii",
@@ -227,7 +227,7 @@
             "format": "box",
             "composition": false,
             "connections": true,
-            "two_dim": false,
+            "two_dim": true,
             "three_dim": true,
             "precision": null
         },
@@ -238,7 +238,7 @@
             "format": "bs",
             "composition": true,
             "connections": true,
-            "two_dim": false,
+            "two_dim": true,
             "three_dim": true,
             "precision": null
         },
@@ -282,7 +282,7 @@
             "format": "c3d1",
             "composition": true,
             "connections": true,
-            "two_dim": false,
+            "two_dim": true,
             "three_dim": true,
             "precision": null
         },
@@ -293,7 +293,7 @@
             "format": "c3d2",
             "composition": true,
             "connections": true,
-            "two_dim": false,
+            "two_dim": true,
             "three_dim": true,
             "precision": null
         },
@@ -315,7 +315,7 @@
             "format": "caccrt",
             "composition": true,
             "connections": true,
-            "two_dim": false,
+            "two_dim": true,
             "three_dim": true,
             "precision": null
         },
@@ -350,7 +350,7 @@
             "connections": true,
             "two_dim": false,
             "three_dim": false,
-            "precision": null
+            "precision": 0
         },
         {
             "extension": "car",
@@ -361,7 +361,7 @@
             "connections": true,
             "two_dim": false,
             "three_dim": false,
-            "precision": null
+            "precision": 0
         },
         {
             "extension": "castep",
@@ -414,20 +414,20 @@
             "format": "cdjson",
             "composition": true,
             "connections": true,
-            "two_dim": false,
+            "two_dim": true,
             "three_dim": true,
-            "precision": null
+            "precision": 5
         },
         {
             "extension": "cdxml",
             "note": "ChemDraw CDXML",
             "id": 266389324323103918149718987713882163586,
             "format": "cdxml",
-            "composition": null,
-            "connections": null,
-            "two_dim": null,
-            "three_dim": null,
-            "precision": null
+            "composition": true,
+            "connections": true,
+            "two_dim": true,
+            "three_dim": true,
+            "precision": 5
         },
         {
             "extension": "cel",
@@ -533,11 +533,11 @@
             "note": "Crystallographic Information File",
             "id": 214908995963617485636855366710271712886,
             "format": "cif",
-            "composition": null,
-            "connections": null,
-            "two_dim": null,
-            "three_dim": null,
-            "precision": null
+            "composition": true,
+            "connections": false,
+            "two_dim": true,
+            "three_dim": true,
+            "precision": 5
         },
         {
             "extension": "ck",
@@ -579,7 +579,7 @@
             "format": "cof",
             "composition": true,
             "connections": true,
-            "two_dim": false,
+            "two_dim": true,
             "three_dim": true,
             "precision": null
         },
@@ -731,22 +731,22 @@
             "note": "Gaussian cube",
             "id": 74371210293607487710428162012724232274,
             "format": "cube",
-            "composition": null,
-            "connections": null,
-            "two_dim": null,
-            "three_dim": null,
-            "precision": null
+            "composition": true,
+            "connections": false,
+            "two_dim": true,
+            "three_dim": true,
+            "precision": 6
         },
         {
             "extension": "cube",
             "note": "Gaussian cube",
             "id": 22556641855344674493163123090473605751,
             "format": "cube",
-            "composition": null,
-            "connections": null,
-            "two_dim": null,
-            "three_dim": null,
-            "precision": null
+            "composition": true,
+            "connections": false,
+            "two_dim": true,
+            "three_dim": true,
+            "precision": 6
         },
         {
             "extension": "d12",
@@ -975,9 +975,9 @@
             "format": "pdb",
             "composition": true,
             "connections": true,
-            "two_dim": false,
+            "two_dim": true,
             "three_dim": true,
-            "precision": null
+            "precision": 5
         },
         {
             "extension": "exyz",
@@ -1098,7 +1098,7 @@
             "connections": true,
             "two_dim": false,
             "three_dim": false,
-            "precision": null
+            "precision": 0
         },
         {
             "extension": "fps",
@@ -1538,7 +1538,7 @@
             "connections": true,
             "two_dim": false,
             "three_dim": false,
-            "precision": null
+            "precision": 0
         },
         {
             "extension": "inchikey",
@@ -1549,7 +1549,7 @@
             "connections": false,
             "two_dim": false,
             "three_dim": false,
-            "precision": null
+            "precision": 0
         },
         {
             "extension": "inp",
@@ -1567,11 +1567,11 @@
             "note": "RIETAN-FP",
             "id": 28432815592399480094962454902300990984,
             "format": "ins",
-            "composition": null,
-            "connections": null,
-            "two_dim": null,
-            "three_dim": null,
-            "precision": null
+            "composition": true,
+            "connections": true,
+            "two_dim": true,
+            "three_dim": true,
+            "precision": 6
         },
         {
             "extension": "ins",
@@ -1579,10 +1579,10 @@
             "id": 265228661700132434943151283693896395164,
             "format": "ins",
             "composition": true,
-            "connections": true,
+            "connections": false,
             "two_dim": true,
             "three_dim": true,
-            "precision": null
+            "precision": 8
         },
         {
             "extension": "JDX",
@@ -1747,7 +1747,7 @@
             "connections": false,
             "two_dim": true,
             "three_dim": true,
-            "precision": null
+            "precision": 5
         },
         {
             "extension": "MDFF",
@@ -1789,9 +1789,9 @@
             "format": "ml2",
             "composition": true,
             "connections": true,
-            "two_dim": false,
+            "two_dim": true,
             "three_dim": true,
-            "precision": null
+            "precision": 5
         },
         {
             "extension": "mmcif",
@@ -1802,7 +1802,7 @@
             "connections": false,
             "two_dim": true,
             "three_dim": true,
-            "precision": null
+            "precision": 5
         },
         {
             "extension": "mmd",
@@ -1864,11 +1864,11 @@
             "note": "MOLDY",
             "id": 72959745128074324821901268400337732406,
             "format": "mol",
-            "composition": null,
-            "connections": null,
-            "two_dim": null,
-            "three_dim": null,
-            "precision": null
+            "composition": true,
+            "connections": false,
+            "two_dim": true,
+            "three_dim": true,
+            "precision": 9
         },
         {
             "extension": "mol2",
@@ -1877,7 +1877,7 @@
             "format": "mol2",
             "composition": true,
             "connections": true,
-            "two_dim": false,
+            "two_dim": true,
             "three_dim": true,
             "precision": null
         },
@@ -1886,33 +1886,33 @@
             "note": "Molden",
             "id": 214513980779548429541384975889898482960,
             "format": "mold",
-            "composition": null,
-            "connections": null,
-            "two_dim": null,
-            "three_dim": null,
-            "precision": null
+            "composition": true,
+            "connections": false,
+            "two_dim": true,
+            "three_dim": true,
+            "precision": 8
         },
         {
             "extension": "molden",
             "note": "Molden",
             "id": 315876805348576818877952809238961067299,
             "format": "molden",
-            "composition": null,
-            "connections": null,
-            "two_dim": null,
-            "three_dim": null,
-            "precision": null
+            "composition": true,
+            "connections": false,
+            "two_dim": true,
+            "three_dim": true,
+            "precision": 8
         },
         {
             "extension": "molf",
             "note": "Molden",
             "id": 71979496514962592580628060526162033302,
             "format": "molf",
-            "composition": null,
-            "connections": null,
-            "two_dim": null,
-            "three_dim": null,
-            "precision": null
+            "composition": true,
+            "connections": false,
+            "two_dim": true,
+            "three_dim": true,
+            "precision": 8
         },
         {
             "extension": "molreport",
@@ -1921,9 +1921,9 @@
             "format": "molreport",
             "composition": true,
             "connections": true,
-            "two_dim": true,
+            "two_dim": false,
             "three_dim": false,
-            "precision": null
+            "precision": 6
         },
         {
             "extension": "moo",
@@ -2198,7 +2198,7 @@
             "connections": false,
             "two_dim": true,
             "three_dim": true,
-            "precision": null
+            "precision": 16
         },
         {
             "extension": "output",
@@ -2262,42 +2262,42 @@
             "format": "pdb",
             "composition": true,
             "connections": true,
-            "two_dim": false,
+            "two_dim": true,
             "three_dim": true,
-            "precision": null
+            "precision": 5
         },
         {
             "extension": "pdb",
             "note": "Protein Data Bank with atoms numbered",
             "id": 325652524238156842953511960586864188646,
             "format": "pdbn",
-            "composition": null,
-            "connections": null,
-            "two_dim": null,
-            "three_dim": null,
-            "precision": null
+            "composition": true,
+            "connections": true,
+            "two_dim": true,
+            "three_dim": true,
+            "precision": 5
         },
         {
             "extension": "pdbqt",
             "note": "AutoDock PDBQT",
             "id": 23086914704772561252272100468075652414,
             "format": "pdbqt",
-            "composition": null,
-            "connections": null,
-            "two_dim": null,
-            "three_dim": null,
-            "precision": null
+            "composition": true,
+            "connections": true,
+            "two_dim": true,
+            "three_dim": true,
+            "precision": 5
         },
         {
             "extension": "pdbx",
             "note": "PDBx",
             "id": 202765373841098224425903645089118536801,
             "format": "pdbx",
-            "composition": null,
-            "connections": null,
-            "two_dim": null,
-            "three_dim": null,
-            "precision": null
+            "composition": true,
+            "connections": true,
+            "two_dim": true,
+            "three_dim": true,
+            "precision": 5
         },
         {
             "extension": "png",
@@ -2506,7 +2506,7 @@
             "connections": true,
             "two_dim": true,
             "three_dim": true,
-            "precision": null
+            "precision": 6
         },
         {
             "extension": "res",
@@ -2524,11 +2524,11 @@
             "note": "ShelX (specifically ShelX-97 for c2x)",
             "id": 327200745458547092709635496941629709670,
             "format": "shelx",
-            "composition": null,
-            "connections": null,
-            "two_dim": null,
-            "three_dim": null,
-            "precision": null
+            "composition": true,
+            "connections": false,
+            "two_dim": true,
+            "three_dim": true,
+            "precision": 8
         },
         {
             "extension": "RHO",
@@ -2561,7 +2561,7 @@
             "connections": true,
             "two_dim": false,
             "three_dim": false,
-            "precision": null
+            "precision": 0
         },
         {
             "extension": "rsmi",
@@ -2572,7 +2572,7 @@
             "connections": true,
             "two_dim": false,
             "three_dim": false,
-            "precision": null
+            "precision": 0
         },
         {
             "extension": "rxn",
@@ -2627,7 +2627,7 @@
             "connections": true,
             "two_dim": false,
             "three_dim": false,
-            "precision": null
+            "precision": 0
         },
         {
             "extension": "smiles",
@@ -2638,7 +2638,7 @@
             "connections": true,
             "two_dim": false,
             "three_dim": false,
-            "precision": null
+            "precision": 0
         },
         {
             "extension": "smy",
@@ -2649,7 +2649,7 @@
             "connections": true,
             "two_dim": false,
             "three_dim": false,
-            "precision": null
+            "precision": 0
         },
         {
             "extension": "stl",
@@ -2713,7 +2713,7 @@
             "format": "sy2",
             "composition": true,
             "connections": true,
-            "two_dim": false,
+            "two_dim": true,
             "three_dim": true,
             "precision": null
         },
@@ -2979,7 +2979,7 @@
             "connections": true,
             "two_dim": false,
             "three_dim": false,
-            "precision": null
+            "precision": 0
         },
         {
             "extension": "xed",
@@ -3085,11 +3085,11 @@
             "note": "Extended XYZ (adds lattice vectors)",
             "id": 46290705721393589047128301807650178748,
             "format": "xyze",
-            "composition": null,
-            "connections": null,
-            "two_dim": null,
-            "three_dim": null,
-            "precision": null
+            "composition": true,
+            "connections": false,
+            "two_dim": true,
+            "three_dim": true,
+            "precision": 5
         },
         {
             "extension": "xyz",
@@ -3100,7 +3100,7 @@
             "connections": false,
             "two_dim": true,
             "three_dim": true,
-            "precision": null
+            "precision": 5
         },
         {
             "extension": "yob",
