@@ -2198,7 +2198,7 @@
             "connections": false,
             "two_dim": true,
             "three_dim": true,
-            "precision": null
+            "precision": 16
         },
         {
             "extension": "output",
