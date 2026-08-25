@@ -218,7 +218,8 @@ def test_conversion_table(database):
     assert conversions_table.parent is database
 
     # Check we can get the correct conversion quality
-    assert db.get_conversion_quality(const.CONVERTER_OB, tc.FORMAT_PDB_0, tc.FORMAT_CIF).qual_str == const.QUAL_UNKNOWN
+    assert db.get_conversion_quality(const.CONVERTER_OB, tc.FORMAT_PDB_0,
+                                     tc.FORMAT_CIF).qual_str == const.QUAL_VERYGOOD
     assert db.get_conversion_quality(const.CONVERTER_ATO, tc.FORMAT_XYZ_1, tc.FORMAT_INCHI) is None
 
     # Do some detailed checks on one conversion
