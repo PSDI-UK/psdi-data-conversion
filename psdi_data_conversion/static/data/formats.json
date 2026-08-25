@@ -16,11 +16,11 @@
             "note": "ABINIT input",
             "id": 27718082287045194982410453597576697893,
             "format": "abinit",
-            "composition": null,
-            "connections": null,
-            "two_dim": null,
-            "three_dim": null,
-            "precision": null
+            "composition": true,
+            "connections": false,
+            "two_dim": true,
+            "three_dim": true,
+            "precision": 11
         },
         {
             "extension": "abinit",
@@ -599,11 +599,11 @@
             "note": "DL-POLY CONFIG",
             "id": 18507187996847391187387603320218018984,
             "format": "CONFIG",
-            "composition": null,
-            "connections": null,
-            "two_dim": null,
-            "three_dim": null,
-            "precision": null
+            "composition": true,
+            "connections": false,
+            "two_dim": true,
+            "three_dim": true,
+            "precision": 17
         },
         {
             "extension": "CONTCAR",
@@ -988,7 +988,7 @@
             "connections": false,
             "two_dim": true,
             "three_dim": true,
-            "precision": null
+            "precision": 10
         },
         {
             "extension": "fa",
@@ -1468,22 +1468,22 @@
             "note": "ABINIT Input",
             "id": 253343490648404254749979894649590884729,
             "format": "abinit",
-            "composition": null,
-            "connections": null,
-            "two_dim": null,
-            "three_dim": null,
-            "precision": null
+            "composition": true,
+            "connections": false,
+            "two_dim": true,
+            "three_dim": true,
+            "precision": 11
         },
         {
             "extension": "in",
             "note": "Abinit version 8",
             "id": 337522090618642577855256330195391248369,
             "format": "abinit8",
-            "composition": null,
-            "connections": null,
-            "two_dim": null,
-            "three_dim": null,
-            "precision": null
+            "composition": true,
+            "connections": false,
+            "two_dim": true,
+            "three_dim": true,
+            "precision": 11
         },
         {
             "extension": "in",
@@ -1769,7 +1769,7 @@
             "connections": true,
             "two_dim": true,
             "three_dim": true,
-            "precision": null
+            "precision": 8
         },
         {
             "extension": "mgf",
@@ -2341,7 +2341,7 @@
             "connections": false,
             "two_dim": true,
             "three_dim": true,
-            "precision": null
+            "precision": 21
         },
         {
             "extension": "POSFF",
@@ -2594,7 +2594,7 @@
             "connections": true,
             "two_dim": true,
             "three_dim": true,
-            "precision": null
+            "precision": 8
         },
         {
             "extension": "sdf",
@@ -2605,7 +2605,7 @@
             "connections": true,
             "two_dim": true,
             "three_dim": true,
-            "precision": null
+            "precision": 8
         },
         {
             "extension": "siesta",
@@ -3045,7 +3045,7 @@
             "connections": false,
             "two_dim": true,
             "three_dim": true,
-            "precision": null
+            "precision": 5
         },
         {
             "extension": "xtc",
@@ -3074,11 +3074,11 @@
             "note": "SIESTA XV",
             "id": 106192524664603598885327722572354670435,
             "format": "xv",
-            "composition": null,
-            "connections": null,
-            "two_dim": null,
-            "three_dim": null,
-            "precision": null
+            "composition": true,
+            "connections": false,
+            "two_dim": true,
+            "three_dim": true,
+            "precision": 11
         },
         {
             "extension": "xyz",
@@ -3089,7 +3089,7 @@
             "connections": false,
             "two_dim": true,
             "three_dim": true,
-            "precision": 5
+            "precision": 10
         },
         {
             "extension": "xyz",
@@ -3100,7 +3100,7 @@
             "connections": false,
             "two_dim": true,
             "three_dim": true,
-            "precision": 5
+            "precision": 10
         },
         {
             "extension": "yob",
