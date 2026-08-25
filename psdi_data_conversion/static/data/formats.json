@@ -977,7 +977,7 @@
             "connections": true,
             "two_dim": true,
             "three_dim": true,
-            "precision": null
+            "precision": 5
         },
         {
             "extension": "exyz",
@@ -2264,40 +2264,40 @@
             "connections": true,
             "two_dim": true,
             "three_dim": true,
-            "precision": null
+            "precision": 5
         },
         {
             "extension": "pdb",
             "note": "Protein Data Bank with atoms numbered",
             "id": 325652524238156842953511960586864188646,
             "format": "pdbn",
-            "composition": null,
-            "connections": null,
-            "two_dim": null,
-            "three_dim": null,
-            "precision": null
+            "composition": true,
+            "connections": true,
+            "two_dim": true,
+            "three_dim": true,
+            "precision": 5
         },
         {
             "extension": "pdbqt",
             "note": "AutoDock PDBQT",
             "id": 23086914704772561252272100468075652414,
             "format": "pdbqt",
-            "composition": null,
-            "connections": null,
-            "two_dim": null,
-            "three_dim": null,
-            "precision": null
+            "composition": true,
+            "connections": true,
+            "two_dim": true,
+            "three_dim": true,
+            "precision": 5
         },
         {
             "extension": "pdbx",
             "note": "PDBx",
             "id": 202765373841098224425903645089118536801,
             "format": "pdbx",
-            "composition": null,
-            "connections": null,
-            "two_dim": null,
-            "three_dim": null,
-            "precision": null
+            "composition": true,
+            "connections": true,
+            "two_dim": true,
+            "three_dim": true,
+            "precision": 5
         },
         {
             "extension": "png",
