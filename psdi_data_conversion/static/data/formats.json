@@ -537,7 +537,7 @@
             "connections": false,
             "two_dim": true,
             "three_dim": true,
-            "precision": 6
+            "precision": 5
         },
         {
             "extension": "ck",
