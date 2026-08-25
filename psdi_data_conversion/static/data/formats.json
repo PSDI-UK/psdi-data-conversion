@@ -227,7 +227,7 @@
             "format": "box",
             "composition": false,
             "connections": true,
-            "two_dim": false,
+            "two_dim": true,
             "three_dim": true,
             "precision": null
         },
@@ -238,7 +238,7 @@
             "format": "bs",
             "composition": true,
             "connections": true,
-            "two_dim": false,
+            "two_dim": true,
             "three_dim": true,
             "precision": null
         },
@@ -282,7 +282,7 @@
             "format": "c3d1",
             "composition": true,
             "connections": true,
-            "two_dim": false,
+            "two_dim": true,
             "three_dim": true,
             "precision": null
         },
@@ -293,7 +293,7 @@
             "format": "c3d2",
             "composition": true,
             "connections": true,
-            "two_dim": false,
+            "two_dim": true,
             "three_dim": true,
             "precision": null
         },
@@ -315,7 +315,7 @@
             "format": "caccrt",
             "composition": true,
             "connections": true,
-            "two_dim": false,
+            "two_dim": true,
             "three_dim": true,
             "precision": null
         },
@@ -414,7 +414,7 @@
             "format": "cdjson",
             "composition": true,
             "connections": true,
-            "two_dim": false,
+            "two_dim": true,
             "three_dim": true,
             "precision": null
         },
@@ -579,7 +579,7 @@
             "format": "cof",
             "composition": true,
             "connections": true,
-            "two_dim": false,
+            "two_dim": true,
             "three_dim": true,
             "precision": null
         },
@@ -975,7 +975,7 @@
             "format": "pdb",
             "composition": true,
             "connections": true,
-            "two_dim": false,
+            "two_dim": true,
             "three_dim": true,
             "precision": null
         },
@@ -1789,7 +1789,7 @@
             "format": "ml2",
             "composition": true,
             "connections": true,
-            "two_dim": false,
+            "two_dim": true,
             "three_dim": true,
             "precision": null
         },
@@ -1877,7 +1877,7 @@
             "format": "mol2",
             "composition": true,
             "connections": true,
-            "two_dim": false,
+            "two_dim": true,
             "three_dim": true,
             "precision": null
         },
@@ -2262,7 +2262,7 @@
             "format": "pdb",
             "composition": true,
             "connections": true,
-            "two_dim": false,
+            "two_dim": true,
             "three_dim": true,
             "precision": null
         },
@@ -2713,7 +2713,7 @@
             "format": "sy2",
             "composition": true,
             "connections": true,
-            "two_dim": false,
+            "two_dim": true,
             "three_dim": true,
             "precision": null
         },
