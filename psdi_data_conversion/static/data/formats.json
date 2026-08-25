@@ -1050,11 +1050,11 @@
             "note": "SIESTA Flexible Data Format",
             "id": 11984171992240423209861542561953763988,
             "format": "fdf",
-            "composition": null,
-            "connections": null,
-            "two_dim": null,
-            "three_dim": null,
-            "precision": null
+            "composition": true,
+            "connections": false,
+            "two_dim": true,
+            "three_dim": true,
+            "precision": 9
         },
         {
             "extension": "feat",
