@@ -3085,11 +3085,11 @@
             "note": "Extended XYZ (adds lattice vectors)",
             "id": 46290705721393589047128301807650178748,
             "format": "xyze",
-            "composition": null,
-            "connections": null,
-            "two_dim": null,
-            "three_dim": null,
-            "precision": null
+            "composition": true,
+            "connections": false,
+            "two_dim": true,
+            "three_dim": true,
+            "precision": 5
         },
         {
             "extension": "xyz",
@@ -3100,7 +3100,7 @@
             "connections": false,
             "two_dim": true,
             "three_dim": true,
-            "precision": null
+            "precision": 5
         },
         {
             "extension": "yob",
