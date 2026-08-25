@@ -31,7 +31,7 @@
             "connections": false,
             "two_dim": false,
             "three_dim": false,
-            "precision": null
+            "precision": 0
         },
         {
             "extension": "acesin",
@@ -152,7 +152,7 @@
             "connections": true,
             "two_dim": false,
             "three_dim": false,
-            "precision": null
+            "precision": 0
         },
         {
             "extension": "ascii",
@@ -350,7 +350,7 @@
             "connections": true,
             "two_dim": false,
             "three_dim": false,
-            "precision": null
+            "precision": 0
         },
         {
             "extension": "car",
@@ -361,7 +361,7 @@
             "connections": true,
             "two_dim": false,
             "three_dim": false,
-            "precision": null
+            "precision": 0
         },
         {
             "extension": "castep",
@@ -1098,7 +1098,7 @@
             "connections": true,
             "two_dim": false,
             "three_dim": false,
-            "precision": null
+            "precision": 0
         },
         {
             "extension": "fps",
@@ -1538,7 +1538,7 @@
             "connections": true,
             "two_dim": false,
             "three_dim": false,
-            "precision": null
+            "precision": 0
         },
         {
             "extension": "inchikey",
@@ -1549,7 +1549,7 @@
             "connections": false,
             "two_dim": false,
             "three_dim": false,
-            "precision": null
+            "precision": 0
         },
         {
             "extension": "inp",
@@ -2561,7 +2561,7 @@
             "connections": true,
             "two_dim": false,
             "three_dim": false,
-            "precision": null
+            "precision": 0
         },
         {
             "extension": "rsmi",
@@ -2572,7 +2572,7 @@
             "connections": true,
             "two_dim": false,
             "three_dim": false,
-            "precision": null
+            "precision": 0
         },
         {
             "extension": "rxn",
@@ -2627,7 +2627,7 @@
             "connections": true,
             "two_dim": false,
             "three_dim": false,
-            "precision": null
+            "precision": 0
         },
         {
             "extension": "smiles",
@@ -2638,7 +2638,7 @@
             "connections": true,
             "two_dim": false,
             "three_dim": false,
-            "precision": null
+            "precision": 0
         },
         {
             "extension": "smy",
@@ -2649,7 +2649,7 @@
             "connections": true,
             "two_dim": false,
             "three_dim": false,
-            "precision": null
+            "precision": 0
         },
         {
             "extension": "stl",
@@ -2979,7 +2979,7 @@
             "connections": true,
             "two_dim": false,
             "three_dim": false,
-            "precision": null
+            "precision": 0
         },
         {
             "extension": "xed",
