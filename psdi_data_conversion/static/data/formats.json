@@ -731,22 +731,22 @@
             "note": "Gaussian cube",
             "id": 74371210293607487710428162012724232274,
             "format": "cube",
-            "composition": null,
-            "connections": null,
-            "two_dim": null,
-            "three_dim": null,
-            "precision": null
+            "composition": true,
+            "connections": false,
+            "two_dim": true,
+            "three_dim": true,
+            "precision": 6
         },
         {
             "extension": "cube",
             "note": "Gaussian cube",
             "id": 22556641855344674493163123090473605751,
             "format": "cube",
-            "composition": null,
-            "connections": null,
-            "two_dim": null,
-            "three_dim": null,
-            "precision": null
+            "composition": true,
+            "connections": false,
+            "two_dim": true,
+            "three_dim": true,
+            "precision": 6
         },
         {
             "extension": "d12",
