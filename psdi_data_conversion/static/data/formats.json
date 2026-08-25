@@ -1857,7 +1857,7 @@
             "connections": true,
             "two_dim": true,
             "three_dim": true,
-            "precision": null
+            "precision": 8
         },
         {
             "extension": "mol",
