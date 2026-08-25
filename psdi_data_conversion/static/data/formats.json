@@ -1923,7 +1923,7 @@
             "connections": true,
             "two_dim": false,
             "three_dim": false,
-            "precision": 5
+            "precision": 6
         },
         {
             "extension": "moo",
@@ -2506,7 +2506,7 @@
             "connections": true,
             "two_dim": true,
             "three_dim": true,
-            "precision": null
+            "precision": 6
         },
         {
             "extension": "res",
