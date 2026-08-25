@@ -1921,9 +1921,9 @@
             "format": "molreport",
             "composition": true,
             "connections": true,
-            "two_dim": true,
+            "two_dim": false,
             "three_dim": false,
-            "precision": null
+            "precision": 5
         },
         {
             "extension": "moo",
