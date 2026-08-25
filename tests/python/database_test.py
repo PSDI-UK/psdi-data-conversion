@@ -118,7 +118,7 @@ def test_format_info(database):
     """Test that we can get the expected information on a few test formats
     """
 
-    for name, id in (("pdb", tc.FORMAT_PDB_0), ("cif", tc.FORMAT_CIF), ("mmcif", tc.FORMAT_MMCIF),
+    for name, id in (("pdb", tc.FORMAT_PDB_0), ("inchikey", tc.FORMAT_INCHIKEY), ("mmcif", tc.FORMAT_MMCIF),
                      ("inchi", tc.FORMAT_INCHI), ("molreport", tc.FORMAT_MOLREPORT)):
 
         format_info = db.get_format_info(id)
@@ -153,14 +153,11 @@ def test_format_info(database):
         else:
             assert not format_info.connections, name
 
-        if name in ("mmcif", "molreport"):
-            assert format_info.two_dim, name
-        else:
-            assert not format_info.two_dim, name
-
         if name in ("pdb", "mmcif"):
+            assert format_info.two_dim, name
             assert format_info.three_dim, name
         else:
+            assert not format_info.two_dim, name
             assert not format_info.three_dim, name
 
 
