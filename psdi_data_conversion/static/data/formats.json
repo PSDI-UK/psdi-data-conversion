@@ -1791,7 +1791,7 @@
             "connections": true,
             "two_dim": true,
             "three_dim": true,
-            "precision": null
+            "precision": 5
         },
         {
             "extension": "mmcif",
@@ -1886,33 +1886,33 @@
             "note": "Molden",
             "id": 214513980779548429541384975889898482960,
             "format": "mold",
-            "composition": null,
-            "connections": null,
-            "two_dim": null,
-            "three_dim": null,
-            "precision": null
+            "composition": true,
+            "connections": false,
+            "two_dim": true,
+            "three_dim": true,
+            "precision": 8
         },
         {
             "extension": "molden",
             "note": "Molden",
             "id": 315876805348576818877952809238961067299,
             "format": "molden",
-            "composition": null,
-            "connections": null,
-            "two_dim": null,
-            "three_dim": null,
-            "precision": null
+            "composition": true,
+            "connections": false,
+            "two_dim": true,
+            "three_dim": true,
+            "precision": 8
         },
         {
             "extension": "molf",
             "note": "Molden",
             "id": 71979496514962592580628060526162033302,
             "format": "molf",
-            "composition": null,
-            "connections": null,
-            "two_dim": null,
-            "three_dim": null,
-            "precision": null
+            "composition": true,
+            "connections": false,
+            "two_dim": true,
+            "three_dim": true,
+            "precision": 8
         },
         {
             "extension": "molreport",
