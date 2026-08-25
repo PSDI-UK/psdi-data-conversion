@@ -416,18 +416,18 @@
             "connections": true,
             "two_dim": true,
             "three_dim": true,
-            "precision": null
+            "precision": 5
         },
         {
             "extension": "cdxml",
             "note": "ChemDraw CDXML",
             "id": 266389324323103918149718987713882163586,
             "format": "cdxml",
-            "composition": null,
-            "connections": null,
-            "two_dim": null,
-            "three_dim": null,
-            "precision": null
+            "composition": true,
+            "connections": true,
+            "two_dim": true,
+            "three_dim": true,
+            "precision": 5
         },
         {
             "extension": "cel",
