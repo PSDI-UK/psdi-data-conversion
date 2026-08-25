@@ -1567,11 +1567,11 @@
             "note": "RIETAN-FP",
             "id": 28432815592399480094962454902300990984,
             "format": "ins",
-            "composition": null,
-            "connections": null,
-            "two_dim": null,
-            "three_dim": null,
-            "precision": null
+            "composition": true,
+            "connections": true,
+            "two_dim": true,
+            "three_dim": true,
+            "precision": 6
         },
         {
             "extension": "ins",
@@ -1579,10 +1579,10 @@
             "id": 265228661700132434943151283693896395164,
             "format": "ins",
             "composition": true,
-            "connections": true,
+            "connections": false,
             "two_dim": true,
             "three_dim": true,
-            "precision": null
+            "precision": 8
         },
         {
             "extension": "JDX",
@@ -2524,11 +2524,11 @@
             "note": "ShelX (specifically ShelX-97 for c2x)",
             "id": 327200745458547092709635496941629709670,
             "format": "shelx",
-            "composition": null,
-            "connections": null,
-            "two_dim": null,
-            "three_dim": null,
-            "precision": null
+            "composition": true,
+            "connections": false,
+            "two_dim": true,
+            "three_dim": true,
+            "precision": 8
         },
         {
             "extension": "RHO",
