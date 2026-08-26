@@ -925,7 +925,7 @@
         },
         {
             "extension": "elf",
-            "note": "CASTEP ELF",
+            "note": "CASTEP ELF (binary)",
             "id": 329546574412725588695734304710408979242,
             "format": "elf",
             "composition": null,
@@ -936,7 +936,7 @@
         },
         {
             "extension": "elf_fmt",
-            "note": "CASTEP ELF",
+            "note": "CASTEP ELF (formatted)",
             "id": 149436938344174473784523768380469429102,
             "format": "elf_fmt",
             "composition": null,
@@ -947,14 +947,8 @@
         },
         {
             "extension": "ent",
-            "note": "Protein Data Bank",
             "id": 32103794576339723026923590371300680498,
-            "format": "pdb",
-            "composition": true,
-            "connections": true,
-            "two_dim": true,
-            "three_dim": true,
-            "precision": 5
+            "alias_of": 178366529166858241161075106138867206788
         },
         {
             "extension": "exyz",
@@ -980,14 +974,8 @@
         },
         {
             "extension": "fasta",
-            "note": "FASTA (genetic sequences)",
             "id": 118484790870718437043272623986523152493,
-            "format": "fasta",
-            "composition": null,
-            "connections": null,
-            "two_dim": null,
-            "three_dim": null,
-            "precision": null
+            "alias_of": 127325448333808099218652406615021461466
         },
         {
             "extension": "fch",
@@ -1002,25 +990,13 @@
         },
         {
             "extension": "fchk",
-            "note": "Gaussian formatted checkpoint file",
             "id": 248906788879831668235784512182957495786,
-            "format": "fchk",
-            "composition": true,
-            "connections": false,
-            "two_dim": true,
-            "three_dim": true,
-            "precision": null
+            "alias_of": 49120600658416108974876735403084537009
         },
         {
             "extension": "fck",
-            "note": "Gaussian formatted checkpoint file",
             "id": 187391399687884167703843132511072812833,
-            "format": "fck",
-            "composition": true,
-            "connections": false,
-            "two_dim": true,
-            "three_dim": true,
-            "precision": null
+            "alias_of": 49120600658416108974876735403084537009
         },
         {
             "extension": "fdf",
@@ -1123,14 +1099,8 @@
         },
         {
             "extension": "fsa",
-            "note": "FASTA (genetic sequences)",
             "id": 205237936785857655978529626512927794188,
-            "format": "fsa",
-            "composition": null,
-            "connections": null,
-            "two_dim": null,
-            "three_dim": null,
-            "precision": null
+            "alias_of": 127325448333808099218652406615021461466
         },
         {
             "extension": "g03",
@@ -1222,14 +1192,8 @@
         },
         {
             "extension": "gamess",
-            "note": "GAMESS Output",
             "id": 35457974918221409620446215629229917674,
-            "format": "gamess",
-            "composition": true,
-            "connections": true,
-            "two_dim": true,
-            "three_dim": true,
-            "precision": null
+            "alias_of": 186421497653501599634628674311337579442
         },
         {
             "extension": "gamin",
@@ -1244,14 +1208,8 @@
         },
         {
             "extension": "gamout",
-            "note": "GAMESS Output",
             "id": 286603189554790672310398833408923852963,
-            "format": "gamout",
-            "composition": true,
-            "connections": true,
-            "two_dim": true,
-            "three_dim": true,
-            "precision": null
+            "alias_of": 186421497653501599634628674311337579442
         },
         {
             "extension": "gau",
@@ -1646,14 +1604,8 @@
         },
         {
             "extension": "log",
-            "note": "Generic Output file",
             "id": 162103299763807380500131326958816874604,
-            "format": "log",
-            "composition": null,
-            "connections": null,
-            "two_dim": null,
-            "three_dim": null,
-            "precision": null
+            "alias_of": 18060400445211778284339610808960164493
         },
         {
             "extension": "lpmd",
@@ -2107,14 +2059,8 @@
         },
         {
             "extension": "out",
-            "note": "Generic Output file",
             "id": 140802954064900569091310859702143140268,
-            "format": "out",
-            "composition": null,
-            "connections": null,
-            "two_dim": null,
-            "three_dim": null,
-            "precision": null
+            "alias_of": 18060400445211778284339610808960164493
         },
         {
             "extension": "out",
@@ -2140,25 +2086,13 @@
         },
         {
             "extension": "outmol",
-            "note": "DMol3 coordinates",
             "id": 23082963749979422604700127676877572562,
-            "format": "outmol",
-            "composition": true,
-            "connections": false,
-            "two_dim": true,
-            "three_dim": true,
-            "precision": 16
+            "alias_of": 165446354456708261838226408395697033526
         },
         {
             "extension": "output",
-            "note": "Generic Output file",
             "id": 152269619056269653625250260620024171468,
-            "format": "output",
-            "composition": null,
-            "connections": null,
-            "two_dim": null,
-            "three_dim": null,
-            "precision": null
+            "alias_of": 18060400445211778284339610808960164493
         },
         {
             "extension": "paint",
