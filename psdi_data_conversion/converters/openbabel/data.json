@@ -6,6 +6,7 @@
         "id": 322794523490578343580442401142062932365,
         "url": "https://open-babel.readthedocs.io/en/latest/",
         "database_key_prefix": "ob",
+        "weight": 1,
         "supports_ambiguous_extensions": false
     },
     "extra_formats": [],
