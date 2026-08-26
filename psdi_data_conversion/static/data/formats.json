@@ -321,14 +321,9 @@
         },
         {
             "extension": "cache",
-            "note": "CAChe MolStruct",
             "id": 187115540466110696028917706488390027467,
             "format": "cache",
-            "composition": true,
-            "connections": true,
-            "two_dim": true,
-            "three_dim": true,
-            "precision": null
+            "alias_of": 208024302292990741610418031867256143245
         },
         {
             "extension": "cacint",
@@ -612,14 +607,8 @@
         },
         {
             "extension": "CONTFF",
-            "note": "MDFF",
             "id": 98261525007525135735251046647244654113,
-            "format": "CONTFF",
-            "composition": null,
-            "connections": null,
-            "two_dim": null,
-            "three_dim": null,
-            "precision": null
+            "alias_of": 195740799786273524362341124474008908118
         },
         {
             "extension": "COORAT",
@@ -733,14 +722,8 @@
         },
         {
             "extension": "cube",
-            "note": "Gaussian cube",
             "id": 22556641855344674493163123090473605751,
-            "format": "cube",
-            "composition": true,
-            "connections": false,
-            "two_dim": true,
-            "three_dim": true,
-            "precision": 6
+            "alias_of": 74371210293607487710428162012724232274
         },
         {
             "extension": "d12",
@@ -1272,14 +1255,8 @@
         },
         {
             "extension": "gau",
-            "note": "Gaussian Input",
             "id": 229442134277031918831436837871492179909,
-            "format": "gau",
-            "composition": true,
-            "connections": false,
-            "two_dim": true,
-            "three_dim": true,
-            "precision": null
+            "alias_of": 101147546724837741856431551717329312040
         },
         {
             "extension": "geom",
@@ -1307,23 +1284,13 @@
             "extension": "gjc",
             "note": "Gaussian Input",
             "id": 295483664287131059634825273652142233679,
-            "format": "gjc",
-            "composition": true,
-            "connections": false,
-            "two_dim": true,
-            "three_dim": true,
-            "precision": null
+            "alias_of": 101147546724837741856431551717329312040
         },
         {
             "extension": "gjf",
             "note": "Gaussian Input",
             "id": 81476428634656558428219224353277334564,
-            "format": "gjf",
-            "composition": true,
-            "connections": false,
-            "two_dim": true,
-            "three_dim": true,
-            "precision": null
+            "alias_of": 101147546724837741856431551717329312040
         },
         {
             "extension": "gnu",
@@ -2036,14 +2003,8 @@
         },
         {
             "extension": "mrv",
-            "note": "Chemical Markup Language",
             "id": 232798684620226777149726409841452987070,
-            "format": "cml",
-            "composition": true,
-            "connections": true,
-            "two_dim": true,
-            "three_dim": true,
-            "precision": null
+            "alias_of": 17662494363313796187301246917012434805
         },
         {
             "extension": "msi",
@@ -2333,14 +2294,8 @@
         },
         {
             "extension": "POSFF",
-            "note": "MDFF",
             "id": 300796939547901577812626686286774265749,
-            "format": "POSFF",
-            "composition": null,
-            "connections": null,
-            "two_dim": null,
-            "three_dim": null,
-            "precision": null
+            "alias_of": 195740799786273524362341124474008908118
         },
         {
             "extension": "POT",
