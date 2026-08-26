@@ -6,6 +6,7 @@
         "id": 80044686994611744455636263468222948252,
         "url": "https://www.c2x.org.uk",
         "database_key_prefix": null,
+        "weight": 2,
         "supports_ambiguous_extensions": true
     },
     "extra_formats": [],

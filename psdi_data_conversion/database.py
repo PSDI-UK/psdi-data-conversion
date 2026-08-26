@@ -119,7 +119,6 @@ D_PROP_BITS = {
 D_PROP_WEIGHTS = {key: 1 << bit for key, bit in D_PROP_BITS.items()}
 
 # Number of bits the property weight section is offset within the full weight when everything is combined into a single
-
 # 64-bit integer
 PROP_WEIGHT_BIT_OFFSET = 48
 
@@ -128,7 +127,6 @@ PREC_MIN_DIGIT_LOSS = 0
 PREC_MAX_DIGIT_LOSS = 14
 
 # Number of bits separating weight bits for different levels of precision loss
-
 PREC_GAP_BITS = 2
 
 # Number of bits the precision weight section is offset within the full weight when everything is combined into a single
@@ -137,7 +135,14 @@ PREC_WEIGHT_BIT_OFFSET = 16
 
 # Number of bits the time weight section is offset within the full weight when everything is combined into a single
 # 64-bit integer
-TIME_WEIGHT_BIT_OFFSET = 0
+TIME_WEIGHT_BIT_OFFSET = 8
+
+# Number of bits the converter weight section is offset within the full weight when everything is combined into a single
+# 64-bit integer
+CONV_WEIGHT_BIT_OFFSET = 0
+
+# Default converter weight, which is used if no explicit weight is set
+CONV_WEIGHT_DEFAULT = 1 << (TIME_WEIGHT_BIT_OFFSET - CONV_WEIGHT_BIT_OFFSET - 2)
 
 logger = getLogger(__name__)
 
@@ -238,6 +243,13 @@ class ConverterInfo:
 
         self.url: str = d_single_converter_info.get(DB_URL_KEY, "")
         """The official URL for the converter"""
+
+        self.weight: str = d_single_converter_info.get(DB_WEIGHT_KEY)
+        """The weight of the converter for determining chain conversion pathways"""
+
+        # Use the default weight if the key is absent or the value is None
+        if not self.weight:
+            self.weight = CONV_WEIGHT_DEFAULT
 
         # Get necessary info about the converter from the class
 
@@ -797,11 +809,14 @@ class ConversionQualityInfo:
     time_weight: int | None = None
     """The time weight for the conversion, based on the estimated time to perform it"""
 
+    conv_weight: int | None = None
+    """The converter for the conversion, based on how well-supported the converter is (roughly)"""
+
     def __post_init__(self):
         """Regularize the converter name"""
         self.converter_name = regularize_name(self.converter_name)
 
-        self.prop_weight, self.prec_weight, self.time_weight = split_conversion_weight(self.weight)
+        self.prop_weight, self.prec_weight, self.time_weight, self.conv_weight = split_conversion_weight(self.weight)
 
 
 class ConversionsTable:
@@ -2082,6 +2097,30 @@ def calc_conversion_time_weight(converter_info: ConverterInfo, in_format_info: F
     return 0
 
 
+def calc_conversion_conv_weight(converter_info: ConverterInfo, in_format_info: FormatInfo,
+                                out_format_info: FormatInfo) -> int:
+    """Get the converter weight for a conversion from `in_format_info` to `out_format_info` with converter
+    `converter_info` (not including the offset applied to it when stored in the total weight)
+
+    Parameters
+    ----------
+    converter_info : ConverterInfo
+        The converter used for the conversion
+    in_format_info : FormatInfo
+        The source format for the conversion (unused at present, but may be used in the future if found to be
+        necessary, so needed here for consistent syntax)
+    out_format_info : FormatInfo
+        The output format for the conversion (unused at present, but may be used in the future if found to be
+        necessary, so needed here for consistent syntax)
+
+    Returns
+    -------
+    int
+        64-bit bit weight, representing the weight based on the conversion time (implementation TBD)
+    """
+    return converter_info.weight
+
+
 def calc_conversion_weight(converter_info: ConverterInfo, in_format_info: FormatInfo,
                            out_format_info: FormatInfo) -> int:
     """Get the combined weight for a conversion
@@ -2103,10 +2142,11 @@ def calc_conversion_weight(converter_info: ConverterInfo, in_format_info: Format
 
     return combine_conversion_weight(calc_conversion_prop_weight(converter_info, in_format_info, out_format_info),
                                      calc_conversion_prec_weight(converter_info, in_format_info, out_format_info),
-                                     calc_conversion_time_weight(converter_info, in_format_info, out_format_info))
+                                     calc_conversion_time_weight(converter_info, in_format_info, out_format_info),
+                                     calc_conversion_conv_weight(converter_info, in_format_info, out_format_info))
 
 
-def combine_conversion_weight(prop_weight: int, prec_weight: int, time_weight: int):
+def combine_conversion_weight(prop_weight: int, prec_weight: int, time_weight: int, conv_weight: int):
     """Calculate the combined weight for a conversion from its component weights. The weights must be in the provided
     range, or else the output will have undefined behaviour
 
@@ -2117,7 +2157,9 @@ def combine_conversion_weight(prop_weight: int, prec_weight: int, time_weight: i
     prec_weight : int
         The conversion precision weight, in the range 0 <= prec_weight < 2**32
     time_weight : int
-        The conversion time weight, in the range 0 <= time_weight < 2**16
+        The conversion time weight, in the range 0 <= time_weight < 2**8
+    conv_weight : int
+        The converter weight, in the range 0 <= time_weight < 2**8
 
     Returns
     -------
@@ -2126,13 +2168,15 @@ def combine_conversion_weight(prop_weight: int, prec_weight: int, time_weight: i
     """
     return ((prop_weight << PROP_WEIGHT_BIT_OFFSET) +
             (prec_weight << PREC_WEIGHT_BIT_OFFSET) +
-            (time_weight << TIME_WEIGHT_BIT_OFFSET))
+            (time_weight << TIME_WEIGHT_BIT_OFFSET) +
+            (conv_weight << CONV_WEIGHT_BIT_OFFSET))
 
 
 class ConversionWeightParts(NamedTuple):
     prop_weight: int
     prec_weight: int
     time_weight: int
+    conv_weight: int
 
 
 def split_conversion_weight(conversion_weight: int):
@@ -2156,5 +2200,8 @@ def split_conversion_weight(conversion_weight: int):
     conversion_weight -= prec_weight << PREC_WEIGHT_BIT_OFFSET
 
     time_weight = conversion_weight >> TIME_WEIGHT_BIT_OFFSET
+    conversion_weight -= time_weight << TIME_WEIGHT_BIT_OFFSET
 
-    return ConversionWeightParts(prop_weight, prec_weight, time_weight)
+    conv_weight = conversion_weight >> CONV_WEIGHT_BIT_OFFSET
+
+    return ConversionWeightParts(prop_weight, prec_weight, time_weight, conv_weight)
