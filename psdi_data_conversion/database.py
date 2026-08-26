@@ -112,9 +112,9 @@ DB_OUT_OPTIONS_ID_KEY_BASE = "argflags_out_id"
 D_PROP_BITS = {
 
     const.QUAL_COMP_KEY: 9,
-    const.QUAL_CONN_KEY: 6,
-    const.QUAL_2D_KEY: 3,
-    const.QUAL_3D_KEY: 0
+    const.QUAL_2D_KEY: 6,
+    const.QUAL_3D_KEY: 3,
+    const.QUAL_CONN_KEY: 0
 }
 D_PROP_WEIGHTS = {key: 1 << bit for key, bit in D_PROP_BITS.items()}
 

@@ -117,8 +117,8 @@ To determine which approach is best for our task, let's now get into the details
 A chemical file format can store various types of information, of which we currently keep track of four, listed here in descending order of importance:
 
 1. **Composition**: What elements make up the chemical (there are in fact some formats which don't store this information, such as [InChIKey](https://en.wikipedia.org/wiki/International_Chemical_Identifier#InChIKey))
-2. **Connections**: Which atoms in the chemical are bonded to which other atoms
-3. **Coordinates**: The physical locations of the atoms relative to each other. Some formats provide a full 3D information, while others only provide 2D information. To keep track of which is supported, our database lists 2D Coordinates and 3D Coordinates separately
+2. **Coordinates**: The physical locations of the atoms relative to each other. Some formats provide full 3D information, while others only provide 2D information. To keep track of which is supported, our database lists 2D Coordinates and 3D Coordinates separately
+3. **Connections**: Which atoms in the chemical are bonded to which other atoms. This is often assumed to be inferrable from 3D coordinates, so explicit connections are given a lower weight that coordinates here
 
 At present, our database stores whether or not each of these properties is supported for many, but not all formats, listing the status as unknown for the remainder. While of course ideally this information should be added to the database, in the meantime it's an issue we need to take into account.
 
@@ -168,9 +168,9 @@ It's safe to say that it's not worth the effort and computational time to do thi
 Putting this all together, we have the following list of properties to weight, in descending order of importance:
 
 1. Composition
-2. Connections
-3. 2D Coordinates
-4. 3D coordinates
+2. 2D Coordinates
+3. 3D coordinates
+4. Connections
 5. Numerical precision
 6. Conversion time
 
@@ -201,9 +201,9 @@ The first four property in our list are the loss (or not) of a property of a for
 | Property       | Bit |
 | -------------- | --- |
 | Composition    | 9   |
-| Connections    | 6   |
-| 2D Coordinates | 3   |
-| 3D Coordinates | 0   |
+| 2D Coordinates | 6   |
+| 3D Coordinates | 3   |
+| Connections    | 0   |
 
 This set of bits was chosen so that they could all fit into 16-bits and they are spaced out enough that if used as weights there is negligible chance that any path will accrue enough weight from a lower-importance property to overcome the lack of a weight from a higher-importance property (the 3-bit difference would require 8 occurences to be overcome, which is exceedingly unlikely to cause a problem even imaging the future addition of many different specialised converters).
 
