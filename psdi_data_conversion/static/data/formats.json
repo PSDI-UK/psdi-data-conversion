@@ -354,14 +354,8 @@
         },
         {
             "extension": "car",
-            "note": "Accelrys/MSI Biosym/Insight II CAR",
             "id": 6145128555743823019270948617290459229,
-            "format": "car",
-            "composition": true,
-            "connections": true,
-            "two_dim": false,
-            "three_dim": false,
-            "precision": 0
+            "alias_of": 183079669871823796614849308541253271232
         },
         {
             "extension": "castep",
@@ -1850,14 +1844,8 @@
         },
         {
             "extension": "mol",
-            "note": "MDL MOL",
             "id": 14163986051707882465586360841029029139,
-            "format": "mol",
-            "composition": true,
-            "connections": true,
-            "two_dim": true,
-            "three_dim": true,
-            "precision": 8
+            "alias_of": 292727325821381794107846543252288100244
         },
         {
             "extension": "mol",
@@ -2587,25 +2575,13 @@
         },
         {
             "extension": "sd",
-            "note": "MDL MOL",
             "id": 84896050381326444273888468929459347256,
-            "format": "mol",
-            "composition": true,
-            "connections": true,
-            "two_dim": true,
-            "three_dim": true,
-            "precision": 8
+            "alias_of": 292727325821381794107846543252288100244
         },
         {
             "extension": "sdf",
-            "note": "MDL MOL",
             "id": 275917740769777784072805688195146073430,
-            "format": "mol",
-            "composition": true,
-            "connections": true,
-            "two_dim": true,
-            "three_dim": true,
-            "precision": 8
+            "alias_of": 292727325821381794107846543252288100244
         },
         {
             "extension": "siesta",
