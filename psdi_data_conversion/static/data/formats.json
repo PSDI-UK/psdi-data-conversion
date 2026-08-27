@@ -1240,13 +1240,11 @@
         },
         {
             "extension": "gjc",
-            "note": "Gaussian Input",
             "id": 295483664287131059634825273652142233679,
             "alias_of": 101147546724837741856431551717329312040
         },
         {
             "extension": "gjf",
-            "note": "Gaussian Input",
             "id": 81476428634656558428219224353277334564,
             "alias_of": 101147546724837741856431551717329312040
         },
@@ -1307,14 +1305,8 @@
         },
         {
             "extension": "grs",
-            "note": "General Utility Lattice Package (GULP) input",
             "id": 282398400740300644480006008550688677189,
-            "format": "grs",
-            "composition": null,
-            "connections": null,
-            "two_dim": null,
-            "three_dim": null,
-            "precision": null
+            "alias_of": 13086459403769357130721208417443942017
         },
         {
             "extension": "gukin",
@@ -1472,14 +1464,8 @@
         },
         {
             "extension": "inp",
-            "note": "GAMESS Input",
             "id": 55451110043223884478910162348924549409,
-            "format": "inp",
-            "composition": true,
-            "connections": false,
-            "two_dim": true,
-            "three_dim": true,
-            "precision": null
+            "alias_of": 428890912438433496853978570015087835
         },
         {
             "extension": "ins",
@@ -1538,14 +1524,8 @@
         },
         {
             "extension": "KP",
-            "note": "SIESTA kpoints",
             "id": 76181586533071159723534401061100519819,
-            "format": "KP",
-            "composition": null,
-            "connections": null,
-            "two_dim": null,
-            "three_dim": null,
-            "precision": null
+            "alias_of": 117199674045377163862916769568005613800
         },
         {
             "extension": "kp",
@@ -1582,14 +1562,13 @@
         },
         {
             "extension": "lmpdat",
-            "note": "LAMMPS data",
             "id": 175100776358975770796098627875387083204,
-            "format": "lmpdat",
-            "composition": null,
-            "connections": null,
-            "two_dim": null,
-            "three_dim": null,
-            "precision": null
+            "alias_of": 166687571138146369614453555512491210906
+        },
+        {
+            "extension": "data",
+            "id": 201420702486270393740065584701567382601,
+            "alias_of": 166687571138146369614453555512491210906
         },
         {
             "extension": "LOCPOT",
@@ -1730,14 +1709,8 @@
         },
         {
             "extension": "mmod",
-            "note": "MacroModel",
             "id": 160182656203062481907997569754307662257,
-            "format": "mmod",
-            "composition": null,
-            "connections": null,
-            "two_dim": null,
-            "three_dim": null,
-            "precision": null
+            "alias_of": 209270548670355987654501666350378390701
         },
         {
             "extension": "mna",
@@ -1779,14 +1752,8 @@
         },
         {
             "extension": "mol2",
-            "note": "Sybyl Mol2",
             "id": 143425445942253368938814885806318269174,
-            "format": "mol2",
-            "composition": true,
-            "connections": true,
-            "two_dim": true,
-            "three_dim": true,
-            "precision": null
+            "alias_of": 253646697262577575373378065419268181033
         },
         {
             "extension": "mold",
@@ -1801,25 +1768,13 @@
         },
         {
             "extension": "molden",
-            "note": "Molden",
             "id": 315876805348576818877952809238961067299,
-            "format": "molden",
-            "composition": true,
-            "connections": false,
-            "two_dim": true,
-            "three_dim": true,
-            "precision": 8
+            "alias_of": 214513980779548429541384975889898482960
         },
         {
             "extension": "molf",
-            "note": "Molden",
             "id": 71979496514962592580628060526162033302,
-            "format": "molf",
-            "composition": true,
-            "connections": false,
-            "two_dim": true,
-            "three_dim": true,
-            "precision": 8
+            "alias_of": 214513980779548429541384975889898482960
         },
         {
             "extension": "molreport",
@@ -1856,14 +1811,8 @@
         },
         {
             "extension": "mopcrt",
-            "note": "MOPAC Cartesian",
             "id": 115284935565942077012093254807694312333,
-            "format": "mopcrt",
-            "composition": true,
-            "connections": false,
-            "two_dim": true,
-            "three_dim": true,
-            "precision": null
+            "alias_of": 109159716603777158625728697344624728603
         },
         {
             "extension": "mopin",
@@ -1878,14 +1827,8 @@
         },
         {
             "extension": "mopout",
-            "note": "MOPAC Output",
             "id": 143057463165023442074484263410041915913,
-            "format": "mopout",
-            "composition": null,
-            "connections": null,
-            "two_dim": null,
-            "three_dim": null,
-            "precision": null
+            "alias_of": 263465866558940061620786987109970249688
         },
         {
             "extension": "mp",
@@ -1900,14 +1843,8 @@
         },
         {
             "extension": "mpc",
-            "note": "MOPAC Cartesian",
             "id": 313957455269055695592006295660574290653,
-            "format": "mpc",
-            "composition": true,
-            "connections": false,
-            "two_dim": true,
-            "three_dim": true,
-            "precision": null
+            "alias_of": 109159716603777158625728697344624728603
         },
         {
             "extension": "mpd",
@@ -2387,14 +2324,8 @@
         },
         {
             "extension": "res",
-            "note": "General Utility Lattice Package (GULP) input",
             "id": 314940860974188633296163260180092764046,
-            "format": "res",
-            "composition": null,
-            "connections": null,
-            "two_dim": null,
-            "three_dim": null,
-            "precision": null
+            "alias_of": 13086459403769357130721208417443942017
         },
         {
             "extension": "res",
@@ -2409,14 +2340,8 @@
         },
         {
             "extension": "RHO",
-            "note": "SIESTA RHO",
             "id": 9341813283313499894827098056751533226,
-            "format": "RHO",
-            "composition": null,
-            "connections": null,
-            "two_dim": null,
-            "three_dim": null,
-            "precision": null
+            "alias_of": 204026270898157960263419294745963492043
         },
         {
             "extension": "rho",
@@ -2496,14 +2421,8 @@
         },
         {
             "extension": "smiles",
-            "note": "SMILES",
             "id": 297419025361599384272733241121809134667,
-            "format": "smiles",
-            "composition": true,
-            "connections": true,
-            "two_dim": false,
-            "three_dim": false,
-            "precision": 0
+            "alias_of": 20320184528576299830358586785865096672
         },
         {
             "extension": "smy",
@@ -2540,14 +2459,8 @@
         },
         {
             "extension": "stru",
-            "note": "PDFFIT structure",
             "id": 177668124975025263585376901037169630110,
-            "format": "stru",
-            "composition": null,
-            "connections": null,
-            "two_dim": null,
-            "three_dim": null,
-            "precision": null
+            "alias_of": 17777839427830598944569931729743162767
         },
         {
             "extension": "svg",
@@ -2573,14 +2486,8 @@
         },
         {
             "extension": "sy2",
-            "note": "Sybyl Mol2",
             "id": 318851989183477540453947203371966440690,
-            "format": "sy2",
-            "composition": true,
-            "connections": true,
-            "two_dim": true,
-            "three_dim": true,
-            "precision": null
+            "alias_of": 253646697262577575373378065419268181033
         },
         {
             "extension": "t41",
@@ -2617,14 +2524,8 @@
         },
         {
             "extension": "therm",
-            "note": "Thermo (NASA polynomials)",
             "id": 19536313315451808034724544445668548700,
-            "format": "therm",
-            "composition": null,
-            "connections": null,
-            "two_dim": null,
-            "three_dim": null,
-            "precision": null
+            "alias_of": 101389313506856235208299705705909774321
         },
         {
             "extension": "tmol",
@@ -2738,14 +2639,8 @@
         },
         {
             "extension": "VH",
-            "note": "SIESTA potential",
             "id": 232433607655743852600774327210554861314,
-            "format": "VH",
-            "composition": null,
-            "connections": null,
-            "two_dim": null,
-            "three_dim": null,
-            "precision": null
+            "alias_of": 236849952644879792685414451091539623326
         },
         {
             "extension": "vh",
@@ -2782,14 +2677,8 @@
         },
         {
             "extension": "VT",
-            "note": "SIESTA potential",
             "id": 175685838324049260543232548803595503379,
-            "format": "VT",
-            "composition": null,
-            "connections": null,
-            "two_dim": null,
-            "three_dim": null,
-            "precision": null
+            "alias_of": 313839798342916429693228538721402371701
         },
         {
             "extension": "vt",
@@ -2881,14 +2770,8 @@
         },
         {
             "extension": "xml",
-            "note": "Quantum Espresso PWscf output",
             "id": 301598072342801950763513121261746178173,
-            "format": "xml",
-            "composition": null,
-            "connections": null,
-            "two_dim": null,
-            "three_dim": null,
-            "precision": null
+            "alias_of": 75812523089448185333036219943662697581
         },
         {
             "extension": "xplor",
@@ -2925,14 +2808,8 @@
         },
         {
             "extension": "XV",
-            "note": "SIESTA XV",
             "id": 31515889798523375759424628754076569174,
-            "format": "XV",
-            "composition": null,
-            "connections": null,
-            "two_dim": null,
-            "three_dim": null,
-            "precision": null
+            "alias_of": 106192524664603598885327722572354670435
         },
         {
             "extension": "xv",
