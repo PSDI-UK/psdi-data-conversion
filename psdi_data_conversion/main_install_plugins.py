@@ -39,7 +39,8 @@ L_CONVERTER_SORT_ORDER = [db.DB_NAME_KEY, db.DB_DESCRIPTION_KEY, db.DB_FURTHER_I
                           db.DB_URL_KEY, db.DB_KEY_PREFIX_KEY, db.DB_WEIGHT_KEY, db.DB_SUPPORT_AMBIG_EXT_KEY]
 L_CONVERTS_TO_SORT_ORDER = [db.DB_CONV_ID_KEY, db.DB_IN_ID_KEY, db.DB_OUT_ID_KEY, db.DB_SUCCESS_KEY, db.DB_WEIGHT_KEY]
 L_FORMATS_SORT_ORDER = [db.DB_FORMAT_EXT_KEY, db.DB_FORMAT_NOTE_KEY, db.DB_ID_KEY, db.DB_FORMAT_C2X_KEY,
-                        db.DB_FORMAT_COMP_KEY, db.DB_FORMAT_CONN_KEY, db.DB_FORMAT_2D_KEY, db.DB_FORMAT_3D_KEY,
+                        db.DB_FORMAT_ALIASES_KEY, db.DB_FORMAT_ALIAS_OF_KEY,
+                        db.DB_FORMAT_COMP_KEY, db.DB_FORMAT_2D_KEY, db.DB_FORMAT_3D_KEY, db.DB_FORMAT_CONN_KEY,
                         db.DB_FORMAT_PRECISION_KEY, db.DB_FORMAT_CONFIRMED_NEW_KEY]
 L_ARG_INFO_ORDER = [db.DB_FLAG_KEY, db.DB_BRIEF_KEY, db.DB_DESCRIPTION_KEY, db.DB_FURTHER_INFO_KEY, db.DB_ID_KEY]
 
@@ -193,6 +194,50 @@ def get_support_ambig_ext(db_conv: JsonMainDict, db_out: JsonMainDict):
     return False
 
 
+def load_expanded_formats_info(db_dir: Path):
+    """Load the formats database, expanding entries on all formats which are simply listed as an alias of another to
+    contain their full info, and linking primary entries to all their aliases
+    """
+
+    l_in_format_info: list[JsonDict] = json.load(open(db_dir / FORMATS_DATAFILE))[db.DB_FORMATS_KEY]
+    d_in_format_info = {x["id"]: x for x in l_in_format_info}
+
+    # Start creating a dict of all format aliases
+    d_format_aliases: dict[int, set[int]] = {}
+    for format_info in l_in_format_info:
+        format_id: int = format_info[db.DB_ID_KEY]
+        d_format_aliases[format_id] = set([format_id])
+
+    l_out_format_info: list[JsonDict] = []
+    for format_info in l_in_format_info:
+
+        format_id: int = format_info[db.DB_ID_KEY]
+
+        # Check if this is listed as an alias of another format
+        if (alias_of_id := format_info.get(db.DB_FORMAT_ALIAS_OF_KEY)):
+            d_prim_info = d_in_format_info[alias_of_id]
+            d_format_aliases[alias_of_id].add(format_id)
+
+            # Append the ID of this to the aliases list of the primary format
+            if db.DB_FORMAT_ALIASES_KEY not in d_prim_info:
+                d_prim_info[db.DB_FORMAT_ALIASES_KEY] = []
+            d_prim_info[db.DB_FORMAT_ALIASES_KEY].append(format_id)
+
+            # Copy over all info from the primary format, except the data specific to this
+            for key in L_FORMATS_SORT_ORDER:
+                if (key in (db.DB_FORMAT_EXT_KEY, db.DB_ID_KEY, db.DB_FORMAT_ALIASES_KEY, db.DB_FORMAT_ALIAS_OF_KEY)
+                        or key in format_info):
+                    continue
+                format_info[key] = d_prim_info[key]
+
+        l_out_format_info.append(format_info)
+
+    # Sort all aliases lists
+    [x[db.DB_FORMAT_ALIASES_KEY].sort() for x in l_out_format_info if x.get(db.DB_FORMAT_ALIASES_KEY)]
+
+    return l_out_format_info, d_format_aliases
+
+
 def run_from_args(args):
     """Workhorse function to perform primary execution of this script, using the provided parsed arguments.
 
@@ -240,7 +285,7 @@ def run_from_args(args):
         d_conv_db[qual_conv_path] = json.load(open(qual_conv_path / PLUGIN_DATAFILE))
 
     # Load the formats data and check and process new formats
-    l_format_info: list[JsonDict] = json.load(open(db_dir / FORMATS_DATAFILE))[db.DB_FORMATS_KEY]
+    l_format_info, d_format_aliases = load_expanded_formats_info(db_dir)
     d_format_info_for_ext: dict[str, list[JsonDict]] = {}
     for format_info in l_format_info:
         ext = format_info[db.DB_FORMAT_EXT_KEY]
@@ -250,18 +295,30 @@ def run_from_args(args):
             d_format_info_for_ext[ext].append(format_info)
     format_info_updated = False
 
+    alias_formats_found = False
+    first_alias_format_found = True
     questionable_formats_found = False
     first_questionable_format_found = True
     for qual_conv_path, db_conv in d_conv_db.items():
 
         d_format_id_changes: dict[int, int] = {}
         d_questionable_formats: dict[int, tuple[JsonDict, list[JsonDict]]] = {}
+        d_alias_formats: dict[int, JsonDict] = {}
         l_extra_format_info: list[JsonDict] = db_conv[db.DB_EXTRA_FORMATS_KEY]
 
         for extra_format_info in l_extra_format_info:
 
-            # Check if this format is questionable as to if it already exists in the database
             format_id: int = extra_format_info[db.DB_ID_KEY]
+
+            # Check if this format is listed as an alias
+            alias_format = False
+            if extra_format_info.get(db.DB_FORMAT_ALIAS_OF_KEY) or extra_format_info.get(db.DB_FORMAT_ALIASES_KEY):
+                alias_format = True
+                alias_formats_found = True
+                d_alias_formats[format_id] = extra_format_info
+                continue
+
+            # Check if this format is questionable as to if it already exists in the database
             ext: str = extra_format_info[db.DB_FORMAT_EXT_KEY]
             if (not args.force and format_id <= THRESHOLD_FORMAT_ID and ext in d_format_info_for_ext
                     and not extra_format_info.get(db.DB_FORMAT_CONFIRMED_NEW_KEY)):
@@ -269,9 +326,37 @@ def run_from_args(args):
                 d_questionable_formats[format_id] = (extra_format_info, d_format_info_for_ext[ext])
                 continue
 
-            # This format is new, so generate a UUID for it if necessary
+            if alias_format:
+                continue
+
+            # This format is new and not an alias, so generate a UUID for it if necessary
             if format_id <= THRESHOLD_FORMAT_ID:
                 d_format_id_changes[format_id] = uuid4().int
+
+        # If we found any alias formats, report them now
+        if d_alias_formats:
+            if first_alias_format_found:
+                first_questionable_format_found = False
+                print_wrap(f"{TC.WARNING}!!! ALERT !!!{TC.ENDC}\n"
+                           f"{TC.WARNING}-------------{TC.ENDC}\n"
+                           "The following formats provided by the converter "
+                           f"'{db_conv[db.DB_CONVERTER_KEY][db.DB_NAME_KEY]}' are listed as aliases of other formats "
+                           "or have aliases. Aliases are not yet supported by this installation script. Please assign "
+                           "these formats UUIDs manually (if not already done) and add them to the formats database "
+                           "file in this repo.\n")
+            else:
+                print_wrap(f"{TC.WARNING}!!! ALERT !!!{TC.ENDC}\n"
+                           f"{TC.WARNING}-------------{TC.ENDC}\n"
+                           "The following formats provided by the converter "
+                           f"'{db_conv[db.DB_CONVERTER_KEY][db.DB_NAME_KEY]}' are listed as aliases of other formats "
+                           "or have aliases:\n")
+
+            l_formats_strings: list[str] = []
+            for extra_format_info in d_alias_formats.values():
+                format_string = get_wrapped_str(get_format_info_str(extra_format_info),
+                                                initial_indent="", subsequent_indent=" "*2)
+                l_formats_strings.append(format_string)
+            print_wrap("\n\n---\n\n".join(l_formats_strings))
 
         # If we found any questionable formats for this converter, report them now
         if d_questionable_formats:
@@ -311,6 +396,9 @@ def run_from_args(args):
                 l_format_matches_strings.append(format_matches_string)
             print_wrap("\n\n---\n\n".join(l_format_matches_strings))
 
+            continue
+
+        if d_alias_formats:
             continue
 
         # If we get here, all formats look good. Now update the IDs of any formats to UUIDs wherever they appear, if
@@ -363,8 +451,8 @@ def run_from_args(args):
             l_format_info.append(format_info)
         db_conv[db.DB_EXTRA_FORMATS_KEY] = []
 
-    # If we found any questionable formats, end execution here to let the user deal with them appropriately
-    if questionable_formats_found:
+    # If we found any alias or questionable formats, end execution here to let the user deal with them appropriately
+    if alias_formats_found or questionable_formats_found:
         exit(2)
 
     # Sort the format info and add it to the output database
@@ -410,14 +498,33 @@ def run_from_args(args):
         l_db_converters.append(get_sorted_dict(d_conv_info, L_CONVERTER_SORT_ORDER))
 
         # Determine possible conversions and add them all to the database
-        s_in_formats = {*db_conv[db.DB_SUPPORTED_FORMATS_KEY]}.union({*db_conv[db.DB_IN_ONLY_FORMATS_KEY]})
-        s_out_formats = {*db_conv[db.DB_SUPPORTED_FORMATS_KEY]}.union({*db_conv[db.DB_OUT_ONLY_FORMATS_KEY]})
 
-        d_supported_conversions: dict[tuple[int, int], str] = {(x[db.DB_IN_ID_KEY], x[db.DB_OUT_ID_KEY]):
-                                                               x[db.DB_SUCCESS_KEY]
-                                                               for x in db_conv[db.DB_SUPPORTED_CONVERSIONS_KEY]}
-        s_unsupported_conversions: set[tuple[int, int]] = {(x[db.DB_IN_ID_KEY], x[db.DB_OUT_ID_KEY])
-                                                           for x in db_conv[db.DB_UNSUPPORTED_CONVERSIONS_KEY]}
+        # Expand all format aliases so all IDs get an entry in the output database
+        s_supp_formats = set()
+        s_in_formats = set()
+        s_out_formats = set()
+        for s, key in ((s_supp_formats, db.DB_SUPPORTED_FORMATS_KEY),
+                       (s_in_formats, db.DB_IN_ONLY_FORMATS_KEY),
+                       (s_out_formats, db.DB_OUT_ONLY_FORMATS_KEY)):
+            for format_id in db_conv[key]:
+                [s.add(x) for x in d_format_aliases[format_id]]
+
+        s_in_formats = s_supp_formats.union(s_in_formats)
+        s_out_formats = {*db_conv[db.DB_SUPPORTED_FORMATS_KEY]}.union(s_out_formats)
+
+        d_supported_conversions: dict[tuple[int, int], str] = {}
+        for d_conv in db_conv[db.DB_SUPPORTED_CONVERSIONS_KEY]:
+            s_in_ids = d_format_aliases[d_conv[db.DB_IN_ID_KEY]]
+            s_out_ids = d_format_aliases[d_conv[db.DB_OUT_ID_KEY]]
+            for in_id, out_id in product(s_in_ids, s_out_ids):
+                d_supported_conversions[(in_id, out_id)] = d_conv[db.DB_SUCCESS_KEY]
+
+        s_unsupported_conversions: set[tuple[int, int]] = set()
+        for d_conv in db_conv[db.DB_UNSUPPORTED_CONVERSIONS_KEY]:
+            s_in_ids = d_format_aliases[d_conv[db.DB_IN_ID_KEY]]
+            s_out_ids = d_format_aliases[d_conv[db.DB_OUT_ID_KEY]]
+            for in_id, out_id in product(s_in_ids, s_out_ids):
+                s_unsupported_conversions.add((in_id, out_id))
 
         for in_id, out_id in product(s_in_formats, s_out_formats):
             # Skip conversions of any format to itself, any that are labeled as unsupported or supported (the latter
@@ -470,13 +577,14 @@ def run_from_args(args):
                 d_out_arg_info = get_sorted_dict(d_out_arg_info, L_ARG_INFO_ORDER)
                 l_arg_info.append(d_out_arg_info)
 
-                for format_id in d_in_arg_info[db.DB_FORMAT_ID_LIST_KEY]:
-                    d_out_arg_format: JsonDict = {
-                        db.DB_FORMAT_ID_KEY: format_id,
-                        arg_in_out_id: d_in_arg_info[db.DB_ID_KEY]
-                    }
-                    d_out_arg_format = get_sorted_dict(d_out_arg_format, l_arg_format_order)
-                    l_arg_formats.append(d_out_arg_format)
+                for prim_format_id in d_in_arg_info[db.DB_FORMAT_ID_LIST_KEY]:
+                    for format_id in d_format_aliases[prim_format_id]:
+                        d_out_arg_format: JsonDict = {
+                            db.DB_FORMAT_ID_KEY: format_id,
+                            arg_in_out_id: d_in_arg_info[db.DB_ID_KEY]
+                        }
+                        d_out_arg_format = get_sorted_dict(d_out_arg_format, l_arg_format_order)
+                        l_arg_formats.append(d_out_arg_format)
 
             sort_json_list(l_arg_info, L_ARG_INFO_ORDER)
             db_out[out_key] = l_arg_info
