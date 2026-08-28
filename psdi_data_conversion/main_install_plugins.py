@@ -228,7 +228,7 @@ def load_expanded_formats_info(db_dir: Path):
                 if (key in (db.DB_FORMAT_EXT_KEY, db.DB_ID_KEY, db.DB_FORMAT_ALIASES_KEY, db.DB_FORMAT_ALIAS_OF_KEY)
                         or key in format_info):
                     continue
-                format_info[key] = d_prim_info[key]
+                format_info[key] = d_prim_info.get(key)
 
         l_out_format_info.append(format_info)
 
