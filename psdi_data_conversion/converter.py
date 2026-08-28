@@ -776,7 +776,14 @@ def run_converter_chain(filename: str,
         delete_input_for_step = delete_input if i == 0 else True
 
         # Make a log file for just this step
-        tmp_logfile = NamedTemporaryFile("w+", delete_on_close=False)
+        try:
+            tmp_logfile = NamedTemporaryFile("w+", delete_on_close=False)
+        except TypeError as e:
+            # Compatibility patch for Python 3.11
+            if "delete_on_close" in str(e):
+                tmp_logfile = NamedTemporaryFile("w+", delete=False)
+            else:
+                raise
 
         # And run this step in the conversion chain
 
