@@ -454,10 +454,15 @@ def run_from_args(args):
 
         # Add all extra formats to the database now
         for format_info in l_extra_format_info:
-            assert format_info[db.DB_ID_KEY] > THRESHOLD_FORMAT_ID
+            format_id = format_info[db.DB_ID_KEY]
+            assert format_id > THRESHOLD_FORMAT_ID
             if db.DB_FORMAT_CONFIRMED_NEW_KEY in format_info:
                 del format_info[db.DB_FORMAT_CONFIRMED_NEW_KEY]
             l_format_info.append(format_info)
+
+            # Add this to the alias list too
+            d_format_aliases[format_id] = set([format_id])
+
         db_conv[db.DB_EXTRA_FORMATS_KEY] = []
 
     # If we found any alias or questionable formats, end execution here to let the user deal with them appropriately
