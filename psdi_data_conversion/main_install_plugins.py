@@ -510,7 +510,7 @@ def run_from_args(args):
                 [s.add(x) for x in d_format_aliases[format_id]]
 
         s_in_formats = s_supp_formats.union(s_in_formats)
-        s_out_formats = {*db_conv[db.DB_SUPPORTED_FORMATS_KEY]}.union(s_out_formats)
+        s_out_formats = s_supp_formats.union(s_out_formats)
 
         d_supported_conversions: dict[tuple[int, int], str] = {}
         for d_conv in db_conv[db.DB_SUPPORTED_CONVERSIONS_KEY]:
