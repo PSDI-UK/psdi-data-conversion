@@ -81,13 +81,14 @@ def run_from_args(args):
     for conv_path in plugins_path.iterdir():
         if not conv_path.is_dir():
             return
-        data_path = open(conv_path / "data.json")
+        data_path = conv_path / "data.json"
         d_conv: JsonMainDict = json.load(open(data_path))
 
         for key in "supported_formats", "in_only_formats", "out_only_formats":
-            d_conv[key] = get_cleaned_list(d_conv[key], d_aliases.values())
+            d_conv[key] = get_cleaned_list(d_conv[key], d_aliases.items())
         for key in "in_flags", "out_flags", "in_options", "out_options":
-            d_conv[key]["format_ids"] = get_cleaned_list(d_conv[key]["format_ids"], d_aliases.values())
+            for d_arg in d_conv[key]:
+                d_arg["format_ids"] = get_cleaned_list(d_arg["format_ids"], d_aliases.items())
 
         l_supported_conversions = d_conv["supported_conversions"]
         l_supp_conv = [(x["in_id"], x["out_id"], x["degree_of_success"]) for x in l_supported_conversions]
@@ -104,13 +105,13 @@ def run_from_args(args):
                 s_supp_conv.add(out_tuple)
         l_supp_conv = list(s_supp_conv)
         l_supp_conv.sort()
-        d_conv["supported_conversions"] = dict([(("in_id", x[0]), ("out_id", x[1]), ("degree_of_success", x[2]))
-                                                for x in l_supp_conv])
+        d_conv["supported_conversions"] = [{"in_id": x[0], "out_id": x[1], "degree_of_success": x[2]}
+                                           for x in l_supp_conv]
 
         l_unsupported_conversions = d_conv["unsupported_conversions"]
         l_unsupp_conv = [(x["in_id"], x["out_id"]) for x in l_unsupported_conversions]
         s_unsupp_conv = set(l_unsupp_conv)
-        for in_id, out_id, dos in l_unsupp_conv:
+        for in_id, out_id in l_unsupp_conv:
             in_tuple = in_id, out_id
             if in_id in d_aliases:
                 in_id = d_aliases[in_id]
@@ -122,8 +123,8 @@ def run_from_args(args):
                 s_unsupp_conv.add(out_tuple)
         l_unsupp_conv = list(s_unsupp_conv)
         l_unsupp_conv.sort()
-        d_conv["unsupported_conversions"] = dict([(("in_id", x[0]), ("out_id", x[1]))
-                                                  for x in l_unsupp_conv])
+        d_conv["unsupported_conversions"] = [{"in_id": x[0], "out_id": x[1]}
+                                             for x in l_unsupp_conv]
 
         json.dump(d_conv, open(data_path, "w"), indent=4)
 
