@@ -103,7 +103,7 @@ def sort_json_list(l_d: list[JsonDict], l_order: list | None = None):
     keys in sorting
     """
     def get_key(d: JsonDict):
-        l_key = [d[x] for x in l_order if x in d]
+        l_key = [d.get(x, "") for x in l_order]
         for i, key in enumerate(l_key):
             if isinstance(key, str):
                 l_key[i] = (key.lower(), key)
@@ -111,14 +111,22 @@ def sort_json_list(l_d: list[JsonDict], l_order: list | None = None):
     l_d.sort(key=get_key)
 
 
-def sort_db(db_path: Path, project_path: Path):
+def sort_db(db_dir: Path, project_path: Path):
     """Sort the existing database"""
-    db_out: JsonMainDict = json.load(open(db_path))
-    db_out = get_sorted_dict(db_out)
 
-    sort_json_list(db_out[db.DB_FORMATS_KEY], L_FORMATS_SORT_ORDER)
-    for i, d in enumerate(db_out[db.DB_FORMATS_KEY]):
-        db_out[db.DB_FORMATS_KEY][i] = get_sorted_dict(d, L_FORMATS_SORT_ORDER)
+    db_path = db_dir / "data.json"
+    db_out: JsonMainDict = json.load(open(db_path))
+
+    formats_path = db_dir / "formats.json"
+    d_formats_out: JsonMainDict = json.load(open(formats_path))
+
+    db_out = get_sorted_dict(db_out)
+    d_formats_out = get_sorted_dict(d_formats_out)
+
+    for db_main in db_out, d_formats_out:
+        sort_json_list(db_main[db.DB_FORMATS_KEY], L_FORMATS_SORT_ORDER)
+        for i, d in enumerate(db_main[db.DB_FORMATS_KEY]):
+            db_main[db.DB_FORMATS_KEY][i] = get_sorted_dict(d, L_FORMATS_SORT_ORDER)
 
     sort_json_list(db_out[db.DB_CONVERTERS_KEY], L_CONVERTER_SORT_ORDER)
     for i, d in enumerate(db_out[db.DB_CONVERTERS_KEY]):
@@ -167,6 +175,7 @@ def sort_db(db_path: Path, project_path: Path):
                 db_out[out_format_key][i] = get_sorted_dict(d, l_arg_format_order)
 
     json.dump(db_out, open(db_path, "w"), indent=4)
+    json.dump(d_formats_out, open(formats_path, "w"), indent=4)
 
 
 def get_support_ambig_ext(db_conv: JsonMainDict, db_out: JsonMainDict):
@@ -268,7 +277,7 @@ def run_from_args(args):
     db_dir: Path = db_path.parent
 
     if args.sort_only:
-        return sort_db(db_path, project_path)
+        return sort_db(db_dir, project_path)
 
     # Make a dict of converter paths and DBs we want to process
     conv_parent_path = project_path / "psdi_data_conversion/converters"
