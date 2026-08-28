@@ -62,6 +62,9 @@ def get_argument_parser():
                         help="Assume that all provided formats are new and don't ask for confirmation if they resemble "
                         "any existing formats")
 
+    parser.add_argument("--sort-only", action="store_true", help="If set, will not install plugins, and will only "
+                        "apply sorting to the currently-installed database file.")
+
     return parser
 
 
@@ -75,9 +78,6 @@ def parse_args():
     """
 
     parser = get_argument_parser()
-
-    parser.add_argument("--sort-only", action="store_true", help="If set, will not install plugins, and will only "
-                        "apply sorting to the currently-installed database file.")
 
     args = parser.parse_args()
 
