@@ -529,7 +529,7 @@ def run_from_args(args):
         # Disallow any conversions between formats which are aliases of each other
         for s_alias_formats in d_format_aliases.values():
             for in_id, out_id in product(s_alias_formats, s_alias_formats):
-                s_unsupported_conversions.add(in_id, out_id)
+                s_unsupported_conversions.add((in_id, out_id))
 
         for in_id, out_id in product(s_in_formats, s_out_formats):
             # Skip conversions of any format to itself, any that are labeled as unsupported or supported (the latter
