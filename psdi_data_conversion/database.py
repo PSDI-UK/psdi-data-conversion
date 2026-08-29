@@ -15,7 +15,7 @@ from functools import lru_cache
 from itertools import product
 from logging import getLogger
 from pathlib import Path
-from typing import Any, Literal, NamedTuple, overload
+from typing import Any, Iterable, Literal, NamedTuple, overload
 from uuid import UUID
 from warnings import catch_warnings
 
@@ -26,7 +26,7 @@ from psdi_data_conversion.converter import (L_REGISTERED_CONVERTERS, L_SUPPORTED
                                             get_registered_converter_class)
 from psdi_data_conversion.converters.base import FileConverter, FileConverterException
 from psdi_data_conversion.file_io import get_package_path
-from psdi_data_conversion.utils import regularize_name
+from psdi_data_conversion.utils import JsonDict, regularize_name
 
 # Database keys
 # -------------
@@ -662,7 +662,9 @@ class FormatInfo:
     def __init__(self,
                  name: str,
                  parent: DataConversionDatabase,
-                 d_single_format_info: dict[str, bool | int | str | None]):
+                 d_single_format_info: dict[str, bool | int | str | None],
+                 l_alias_ids: Iterable[int],
+                 l_alias_exts: Iterable[str]):
         """Set up the class - this will be initialised within a `DataConversionDatabase`, which we set as the parent
 
         Parameters
@@ -681,6 +683,12 @@ class FormatInfo:
 
         self.parent = parent
         """The database which this format belongs to"""
+
+        self.l_alias_ids = tuple(l_alias_ids)
+        """All IDs which may refer to this extension, both the primary and all aliases"""
+
+        self.l_alias_exts = tuple(l_alias_exts)
+        """All extensions which may refer to this extension, both the primary and all aliases"""
 
         # Load attributes from the database
         self.id: int = d_single_format_info.get(DB_ID_KEY, -1)
@@ -739,6 +747,10 @@ class FormatInfo:
     def __int__(self):
         """When cast to int, return the ID of the format"""
         return self.id
+
+
+class PartialFormatInfo(FormatInfo):
+    """A partially-constructed FormatInfo"""
 
 
 @dataclass
@@ -850,6 +862,7 @@ class ConversionsTable:
 
     def __init__(self,
                  l_converts_to: list[dict[str, bool | int | str | None]],
+                 d_format_id_aliases: dict[int, set[int]],
                  parent: DataConversionDatabase):
         """Set up the class - this will be initialised within a `DataConversionDatabase`, which we set as the parent
 
@@ -857,6 +870,8 @@ class ConversionsTable:
         ----------
         l_converts_to : list[dict[str, bool  |  int  |  str  |  None]]
             The list of dicts in the database providing information on possible conversions
+        d_format_id_aliases : Iterable[int]
+            A dict of primary format IDs listing the aliases for each
         parent : DataConversionDatabase
             The database which this belongs to
 
@@ -875,10 +890,14 @@ class ConversionsTable:
         self.d_indices_from_uuids: dict[int, int] = {}
         self.d_uuids_from_indices: dict[int, int] = {}
 
-        for i, format in enumerate(parent.formats):
-            uuid = format[DB_ID_KEY]
-            self.d_indices_from_uuids[uuid] = i
-            self.d_uuids_from_indices[i] = uuid
+        for i, (prim_id, s_alias_ids) in enumerate(d_format_id_aliases.items()):
+            for format_id in s_alias_ids:
+                self.d_indices_from_uuids[format_id] = i
+            self.d_uuids_from_indices[i] = prim_id
+
+        # Trim down the conversions list to only conversions involving primary formats
+        l_converts_to = [x for x in l_converts_to if x[DB_IN_ID_KEY] in d_format_id_aliases and
+                         x[DB_OUT_ID_KEY] in d_format_id_aliases]
 
         l_supported_conversions = [x for x in l_converts_to if
                                    self.parent.get_converter_info(x[DB_CONV_ID_KEY]).name in L_SUPPORTED_CONVERTERS]
@@ -1365,21 +1384,52 @@ class DataConversionDatabase:
         # Make the dict of format info keyed by ID
         self._d_format_info_from_id: dict[int, FormatInfo] = {}
 
-        for d_single_format_info in self.formats:
-            lc_name: str = d_single_format_info[DB_FORMAT_EXT_KEY]
+        # To sort aliases, we first make a temporary dict of the entries in the database, noting as we go through
+        # which ids are for primary formats, and creating a dict listing the alias IDs for each primary ID
+        d_format_id_aliases: dict[int, set[int]] = {}
+        d_format_dicts: dict[int, JsonDict] = {}
+        for d_format_db_info in self.formats:
+            format_id: int = d_format_db_info[DB_ID_KEY]
+            d_format_dicts[format_id] = d_format_db_info
+            if not d_format_db_info.get(DB_FORMAT_ALIAS_OF_KEY):
+                if format_id not in d_format_id_aliases:
+                    d_format_id_aliases[format_id] = set((format_id,))
+                else:
+                    d_format_id_aliases[format_id].add(format_id)
+            else:
+                prim_id: int = d_format_db_info[DB_FORMAT_ALIAS_OF_KEY]
+                if prim_id not in d_format_id_aliases:
+                    d_format_id_aliases[prim_id] = set((prim_id, format_id))
+                else:
+                    d_format_id_aliases[prim_id].add(format_id)
+
+        # Now create a FormatInfo object for each primary ID
+        for prim_id, s_alias_ids in d_format_id_aliases.items():
+
+            # Collect all the alias extensions for each primary format
+            s_alias_exts: set[str] = {d_format_dicts[x][DB_FORMAT_EXT_KEY] for x in s_alias_ids}
+
+            d_format_db_info = d_format_dicts[prim_id]
+
+            lc_name: str = d_format_db_info[DB_FORMAT_EXT_KEY]
 
             format_info = FormatInfo(name=lc_name,
                                      parent=self,
-                                     d_single_format_info=d_single_format_info)
+                                     d_single_format_info=d_format_db_info,
+                                     l_alias_ids=s_alias_ids,
+                                     l_alias_exts=s_alias_exts)
 
-            self._d_format_info_from_id[format_info.id] = format_info
+            # Add this to the dict for the primary ID and all aliases
+            for format_id in s_alias_ids:
+                self._d_format_info_from_id[format_id] = format_info
 
         # Create a temporary version of the unsorted format info list. We'll create a pruned version later, but the
         # unpruned version is needed to create the conversions table, which is needed before we can prune it
-        self._l_unsorted_format_info = list(self._d_format_info_from_id.values())
+        self._l_unsorted_format_info = list(set(self._d_format_info_from_id.values()))
 
         # Initialize the conversions table now
         self._conversions_table = ConversionsTable(l_converts_to=self.converts_to,
+                                                   d_format_id_aliases=d_format_id_aliases,
                                                    parent=self)
 
         # Use the conversions graph to prune any formats which have no valid conversions
@@ -1395,25 +1445,27 @@ class DataConversionDatabase:
                     # The format isn't supported for any conversions, so mark it to be removed from the dict
                     # (Can't remove while we're iterating over the dict)
                     l_ids_to_remove.append(format_id)
-            for id in l_ids_to_remove:
-                del self._d_format_info_from_id[id]
+            for format_id in l_ids_to_remove:
+                del self._d_format_info_from_id[format_id]
 
         # Now create the formats from name dict
         self._d_format_info_from_name: dict[str, list[FormatInfo]] = {}
 
         for format_info in self._d_format_info_from_id.values():
 
-            lc_name = format_info.name.lower()
+            for name in format_info.l_alias_exts:
 
-            # Each name may correspond to multiple formats, so we use a list for each entry to list all possible
-            # formats for each name
-            if lc_name not in self._d_format_info_from_name:
-                self._d_format_info_from_name[lc_name] = []
+                lc_name = name.lower()
 
-            self._d_format_info_from_name[lc_name].append(format_info)
+                # Each name may correspond to multiple formats, so we use a list for each entry to list all possible
+                # formats for each name
+                if lc_name not in self._d_format_info_from_name:
+                    self._d_format_info_from_name[lc_name] = [format_info]
+                elif format_info not in self._d_format_info_from_name[lc_name]:
+                    self._d_format_info_from_name[lc_name].append(format_info)
 
         # Finally, create a list of format infos (with arbitrary index)
-        self._l_unsorted_format_info = list(self._d_format_info_from_id.values())
+        self._l_unsorted_format_info = list(set(self._d_format_info_from_id.values()))
 
     def _get_converter_list(self) -> str:
         return "\n".join([f"{x.pretty_name} (ID: {x.id} / {UUID(int=x.id)})" for x in self.l_unsorted_converter_info])
