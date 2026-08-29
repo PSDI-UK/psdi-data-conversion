@@ -295,19 +295,19 @@ def test_conversion_pathways():
         assert inchi_to_moldy_path[i][0] != inchi_to_moldy_path[i+1][0]
 
 
-@pytest.fixture()
-def format_all(scope="module"):
-    return db.FormatInfo("all", database, {key: True for key in db.D_PROP_BITS.keys()})
+@pytest.fixture(scope="module")
+def format_all(database):
+    return db.FormatInfo("all", database, {key: True for key in db.D_PROP_BITS.keys()}, [], [])
 
 
 @pytest.fixture(scope="module")
 def format_none(database):
-    return db.FormatInfo("none", database, {key: False for key in db.D_PROP_BITS.keys()})
+    return db.FormatInfo("none", database, {key: False for key in db.D_PROP_BITS.keys()}, [], [])
 
 
 @pytest.fixture(scope="module")
 def format_unknown(database):
-    return db.FormatInfo("unknown", database, {key: None for key in db.D_PROP_BITS.keys()})
+    return db.FormatInfo("unknown", database, {key: None for key in db.D_PROP_BITS.keys()}, [], [])
 
 
 @pytest.fixture(scope="module")
