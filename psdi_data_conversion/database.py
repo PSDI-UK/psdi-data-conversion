@@ -15,7 +15,7 @@ from functools import lru_cache
 from itertools import product
 from logging import getLogger
 from pathlib import Path
-from typing import Any, Iterable, Literal, NamedTuple, overload
+from typing import Any, Literal, NamedTuple, overload
 from uuid import UUID
 from warnings import catch_warnings
 
@@ -663,8 +663,7 @@ class FormatInfo:
                  name: str,
                  parent: DataConversionDatabase,
                  d_single_format_info: dict[str, bool | int | str | None],
-                 l_alias_ids: Iterable[int],
-                 l_alias_exts: Iterable[str]):
+                 d_alias_exts: dict[int, str]):
         """Set up the class - this will be initialised within a `DataConversionDatabase`, which we set as the parent
 
         Parameters
@@ -675,6 +674,8 @@ class FormatInfo:
             The database which this belongs to
         d_single_format_info : dict[str, bool  |  int  |  str  |  None]
             The dict of info on the format stored in the database
+        d_alias_exts : dict[int, str]
+            Dict of IDs of aliases and their respective extensions
         """
 
         # Load attributes from input
@@ -684,11 +685,8 @@ class FormatInfo:
         self.parent = parent
         """The database which this format belongs to"""
 
-        self.l_alias_ids = tuple(l_alias_ids)
-        """All IDs which may refer to this extension, both the primary and all aliases"""
-
-        self.l_alias_exts = tuple(l_alias_exts)
-        """All extensions which may refer to this extension, both the primary and all aliases"""
+        self.d_alias_exts = d_alias_exts
+        """Dict of IDs of aliases and their respective extensions"""
 
         # Load attributes from the database
         self.id: int = d_single_format_info.get(DB_ID_KEY, -1)
@@ -1406,7 +1404,10 @@ class DataConversionDatabase:
         for prim_id, s_alias_ids in d_format_id_aliases.items():
 
             # Collect all the alias extensions for each primary format
-            s_alias_exts: set[str] = {d_format_dicts[x][DB_FORMAT_EXT_KEY] for x in s_alias_ids}
+            d_alias_exts: dict[int, str] = {x: d_format_dicts[x][DB_FORMAT_EXT_KEY] for x in s_alias_ids}
+            for key, val in d_alias_exts.items():
+                if val.startswith("."):
+                    d_alias_exts[key] = val[1:]
 
             d_format_db_info = d_format_dicts[prim_id]
 
@@ -1415,8 +1416,7 @@ class DataConversionDatabase:
             format_info = FormatInfo(name=lc_name,
                                      parent=self,
                                      d_single_format_info=d_format_db_info,
-                                     l_alias_ids=s_alias_ids,
-                                     l_alias_exts=s_alias_exts)
+                                     d_alias_exts=d_alias_exts)
 
             # Add this to the dict for the primary ID and all aliases
             for format_id in s_alias_ids:
@@ -1452,7 +1452,7 @@ class DataConversionDatabase:
 
         for format_info in self._d_format_info_from_id.values():
 
-            for name in format_info.l_alias_exts:
+            for name in format_info.d_alias_exts.values():
 
                 lc_name = name.lower()
 

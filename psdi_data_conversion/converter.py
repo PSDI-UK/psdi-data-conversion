@@ -294,10 +294,16 @@ def check_from_format(filename: str,
     from psdi_data_conversion.database import get_format_info
     from_format_name = "." + get_format_info(from_format).name
 
-    if filename.endswith(from_format_name):
-        return True
+    l_allowed_exts = list(get_format_info(from_format).d_alias_exts.values())
+    for from_format_name in l_allowed_exts:
+        if filename.endswith(from_format_name):
+            return True
 
-    msg = const.ERR_WRONG_EXTENSIONS.format(file=os.path.basename(filename), ext=from_format_name)
+    l_allowed_exts.sort()
+    if len(l_allowed_exts) == 1:
+        msg = const.ERR_WRONG_EXTENSION.format(file=os.path.basename(filename), ext=l_allowed_exts[0])
+    else:
+        msg = (const.ERR_WRONG_EXTENSION_MULT.format(file=os.path.basename(filename)) + ", ".join(l_allowed_exts))
 
     if strict:
         raise base.FileConverterInputException(msg)

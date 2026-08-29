@@ -196,7 +196,8 @@ STATUS_CODE_GENERAL = 500
 
 # Error messages
 ERR_CONVERTER_NOT_RECOGNISED = "Converter {} not recognized. Allowed converters are: "
-ERR_WRONG_EXTENSIONS = "Input file '{file}' does not have expected extension '{ext}'"
+ERR_WRONG_EXTENSION = "Input file '{file}' does not have expected extension '{ext}'"
+ERR_WRONG_EXTENSION_MULT = "Input file '{file}' does not have one of the following expected extensions: "
 ERR_EMPTY_ARCHIVE = "No files to convert were contained in archive"
 ERR_CONVERSION_FAILED = ("File conversion failed for one or more files. Lines from the output log "
                          "{} which indicate possible sources of error: ")
