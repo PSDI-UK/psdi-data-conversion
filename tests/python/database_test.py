@@ -351,7 +351,7 @@ def test_calc_conversion_prop_weight(in_format, out_format, ex_weight,
 def test_calc_conversion_prop_weight_prop_lost(format_none, prop, converter_ob):
     """Test each property individually when it's lost to ensure the right bit is set for each"""
     test_format = db.FormatInfo("test", database, {key: True if key == prop else False
-                                                   for key in db.D_PROP_BITS.keys()})
+                                                   for key in db.D_PROP_BITS.keys()}, [], [])
     assert db.calc_conversion_prop_weight(converter_ob, test_format,
                                           format_none) == 1 << db.D_PROP_BITS[prop]
 
@@ -365,8 +365,8 @@ def test_calc_conversion_prop_weight_prop_lost(format_none, prop, converter_ob):
                                                           (24, 6, 1 << db.PREC_MAX_DIGIT_LOSS*db.PREC_GAP_BITS)])
 def test_calc_conversion_precision_weight(database, in_prec, out_prec, ex_weight, converter_ob):
     """Test that conversion precision weights are calculated correctly"""
-    in_format = db.FormatInfo("in", database, {db.DB_FORMAT_PRECISION_KEY: in_prec})
-    out_format = db.FormatInfo("in", database, {db.DB_FORMAT_PRECISION_KEY: out_prec})
+    in_format = db.FormatInfo("in", database, {db.DB_FORMAT_PRECISION_KEY: in_prec}, [], [])
+    out_format = db.FormatInfo("in", database, {db.DB_FORMAT_PRECISION_KEY: out_prec}, [], [])
     assert db.calc_conversion_prec_weight(converter_ob, in_format, out_format) == ex_weight
 
 
