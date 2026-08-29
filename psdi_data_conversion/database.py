@@ -1463,6 +1463,10 @@ class DataConversionDatabase:
                 elif format_info not in self._d_format_info_from_name[lc_name]:
                     self._d_format_info_from_name[lc_name].append(format_info)
 
+        # Sort each list in the format info from name dict by format ID for consistency
+        for l_format_info in self._d_format_info_from_name.values():
+            l_format_info.sort(key=lambda x: x.id)
+
         # Finally, create a list of format infos (with arbitrary index)
         self._l_unsorted_format_info = list(set(self._d_format_info_from_id.values()))
 
