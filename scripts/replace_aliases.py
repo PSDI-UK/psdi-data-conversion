@@ -9,8 +9,8 @@ Created 2026-08-27 by Bryan Gillis.
 import json
 import logging
 from argparse import ArgumentParser
+from collections.abc import Iterable
 from pathlib import Path
-from typing import Iterable
 
 from psdi_data_conversion.utils import JsonMainDict
 
@@ -79,8 +79,8 @@ def run_from_args(args):
     plugins_path = Path("psdi_data_conversion/converters").resolve()
 
     for conv_path in plugins_path.iterdir():
-        if not conv_path.is_dir():
-            return
+        if not conv_path.is_dir() or not (conv_path / "data.json").is_file():
+            continue
         data_path = conv_path / "data.json"
         d_conv: JsonMainDict = json.load(open(data_path))
 
