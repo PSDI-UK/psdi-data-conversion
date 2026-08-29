@@ -731,8 +731,7 @@ class FormatInfo:
         """A unique name for this format which can be used to distinguish it from others which share the same extension,
         by appending the name of each with a unique index"""
         if self._disambiguated_name is None:
-            l_formats_with_same_name = [x for x in self.parent.l_unsorted_format_info
-                                        if x and x._lower_name == self._lower_name]
+            l_formats_with_same_name = self.parent.d_format_info_from_name[self.name]
             if len(l_formats_with_same_name) == 1:
                 self._disambiguated_name = self._lower_name
             else:
@@ -920,9 +919,9 @@ class ConversionsTable:
                               for x in l_conversions]
             graph = ig.Graph(n=num_formats,
                              directed=True,
-                             # Each vertex stores the disambiguated name of the format
-                             vertex_attrs={DB_NAME_KEY: [x.disambiguated_name if x is not None else None
-                                                         for x in parent.l_unsorted_format_info]},
+                             # Each vertex stores the ID of the primary format
+                             vertex_attrs={DB_ID_KEY: [x.id if x is not None else None
+                                                       for x in parent.l_unsorted_format_info]},
                              edges=[(self.d_indices_from_uuids[x[DB_IN_ID_KEY]],
                                      self.d_indices_from_uuids[x[DB_OUT_ID_KEY]]) for x in l_conversions],
                              # Each edge stores the id and name of the converter used for the conversion
