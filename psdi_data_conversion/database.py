@@ -731,7 +731,7 @@ class FormatInfo:
         """A unique name for this format which can be used to distinguish it from others which share the same extension,
         by appending the name of each with a unique index"""
         if self._disambiguated_name is None:
-            l_formats_with_same_name = self.parent.d_format_info_from_name[self.name]
+            l_formats_with_same_name = self.parent.d_format_info_from_name[self.name.lower()]
             if len(l_formats_with_same_name) == 1:
                 self._disambiguated_name = self._lower_name
             else:
