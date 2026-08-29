@@ -6,9 +6,9 @@
             "id": 294805227422729825621567070597511048862,
             "format": "12",
             "composition": null,
-            "connections": null,
             "two_dim": null,
             "three_dim": null,
+            "connections": null,
             "precision": null
         },
         {
@@ -17,9 +17,9 @@
             "id": 27718082287045194982410453597576697893,
             "format": "abinit",
             "composition": true,
-            "connections": false,
             "two_dim": true,
             "three_dim": true,
+            "connections": false,
             "precision": 11
         },
         {
@@ -28,9 +28,9 @@
             "id": 98087358648240724707595803459265028120,
             "format": "abinit",
             "composition": false,
-            "connections": false,
             "two_dim": false,
             "three_dim": false,
+            "connections": false,
             "precision": 0
         },
         {
@@ -39,9 +39,9 @@
             "id": 323447212051753230497722740221560061230,
             "format": "acesin",
             "composition": null,
-            "connections": null,
             "two_dim": null,
             "three_dim": null,
+            "connections": null,
             "precision": null
         },
         {
@@ -50,9 +50,9 @@
             "id": 178051250684404333864853326144004349070,
             "format": "acesout",
             "composition": true,
-            "connections": true,
             "two_dim": true,
             "three_dim": true,
+            "connections": true,
             "precision": null
         },
         {
@@ -61,9 +61,9 @@
             "id": 42467827704295123803800080524419079706,
             "format": "acr",
             "composition": null,
-            "connections": null,
             "two_dim": null,
             "three_dim": null,
+            "connections": null,
             "precision": null
         },
         {
@@ -72,9 +72,9 @@
             "id": 211437754021283042845632230934286368125,
             "format": "adf",
             "composition": true,
-            "connections": false,
             "two_dim": true,
             "three_dim": true,
+            "connections": false,
             "precision": null
         },
         {
@@ -83,9 +83,9 @@
             "id": 164015717479405861925048938802415089264,
             "format": "adfband",
             "composition": null,
-            "connections": null,
             "two_dim": null,
             "three_dim": null,
+            "connections": null,
             "precision": null
         },
         {
@@ -94,9 +94,9 @@
             "id": 55421721184724190199255663875579141514,
             "format": "adfdftb",
             "composition": null,
-            "connections": null,
             "two_dim": null,
             "three_dim": null,
+            "connections": null,
             "precision": null
         },
         {
@@ -105,9 +105,9 @@
             "id": 244932917611111266006197115678561122005,
             "format": "adfout",
             "composition": null,
-            "connections": null,
             "two_dim": null,
             "three_dim": null,
+            "connections": null,
             "precision": null
         },
         {
@@ -116,9 +116,9 @@
             "id": 189799672843271148469061621940850020290,
             "format": "alc",
             "composition": null,
-            "connections": null,
             "two_dim": null,
             "three_dim": null,
+            "connections": null,
             "precision": null
         },
         {
@@ -127,9 +127,9 @@
             "id": 182937675088317554679813770978148294902,
             "format": "animl",
             "composition": null,
-            "connections": null,
             "two_dim": null,
             "three_dim": null,
+            "connections": null,
             "precision": null
         },
         {
@@ -138,9 +138,9 @@
             "id": 333584033541916537473635267800498264692,
             "format": "aoforce",
             "composition": null,
-            "connections": null,
             "two_dim": null,
             "three_dim": null,
+            "connections": null,
             "precision": null
         },
         {
@@ -149,9 +149,9 @@
             "id": 183079669871823796614849308541253271232,
             "format": "arc",
             "composition": true,
-            "connections": true,
             "two_dim": false,
             "three_dim": false,
+            "connections": true,
             "precision": 0
         },
         {
@@ -160,9 +160,9 @@
             "id": 140040321967105212767875377418986133540,
             "format": "ascii",
             "composition": null,
-            "connections": null,
             "two_dim": null,
             "three_dim": null,
+            "connections": null,
             "precision": null
         },
         {
@@ -171,9 +171,9 @@
             "id": 116410197399891681871045547733567540740,
             "format": "atsk",
             "composition": null,
-            "connections": null,
             "two_dim": null,
             "three_dim": null,
+            "connections": null,
             "precision": null
         },
         {
@@ -182,9 +182,9 @@
             "id": 173779925106285252203277380892095079434,
             "format": "axsf",
             "composition": true,
-            "connections": false,
             "two_dim": true,
             "three_dim": true,
+            "connections": false,
             "precision": null
         },
         {
@@ -193,9 +193,9 @@
             "id": 125067293545008288351887372417679001026,
             "format": "bands",
             "composition": null,
-            "connections": null,
             "two_dim": null,
             "three_dim": null,
+            "connections": null,
             "precision": null
         },
         {
@@ -204,9 +204,9 @@
             "id": 325840160163908231938743647024402836534,
             "format": "bgf",
             "composition": true,
-            "connections": true,
             "two_dim": true,
             "three_dim": true,
+            "connections": true,
             "precision": null
         },
         {
@@ -215,9 +215,9 @@
             "id": 220358918386701381820357488974029301998,
             "format": "bop",
             "composition": null,
-            "connections": null,
             "two_dim": null,
             "three_dim": null,
+            "connections": null,
             "precision": null
         },
         {
@@ -226,9 +226,9 @@
             "id": 45029271004934808890870232253397407470,
             "format": "box",
             "composition": false,
-            "connections": true,
             "two_dim": true,
             "three_dim": true,
+            "connections": true,
             "precision": null
         },
         {
@@ -237,9 +237,9 @@
             "id": 317814353048046495813489963855304475337,
             "format": "bs",
             "composition": true,
-            "connections": true,
             "two_dim": true,
             "three_dim": true,
+            "connections": true,
             "precision": null
         },
         {
@@ -248,9 +248,9 @@
             "id": 338455088290125731933866377611878397677,
             "format": "bx",
             "composition": null,
-            "connections": null,
             "two_dim": null,
             "three_dim": null,
+            "connections": null,
             "precision": null
         },
         {
@@ -259,9 +259,9 @@
             "id": 239600444474180475217200154056412071052,
             "format": "bxsf",
             "composition": true,
-            "connections": false,
             "two_dim": true,
             "three_dim": true,
+            "connections": false,
             "precision": null
         },
         {
@@ -270,9 +270,9 @@
             "id": 250228181914271190098048137007707135404,
             "format": "c09out",
             "composition": null,
-            "connections": null,
             "two_dim": null,
             "three_dim": null,
+            "connections": null,
             "precision": null
         },
         {
@@ -281,9 +281,9 @@
             "id": 312584323884034023873281721717428436828,
             "format": "c3d1",
             "composition": true,
-            "connections": true,
             "two_dim": true,
             "three_dim": true,
+            "connections": true,
             "precision": null
         },
         {
@@ -292,9 +292,9 @@
             "id": 150818025371172174302673570014764021474,
             "format": "c3d2",
             "composition": true,
-            "connections": true,
             "two_dim": true,
             "three_dim": true,
+            "connections": true,
             "precision": null
         },
         {
@@ -303,9 +303,9 @@
             "id": 208024302292990741610418031867256143245,
             "format": "cac",
             "composition": true,
-            "connections": true,
             "two_dim": true,
             "three_dim": true,
+            "connections": true,
             "precision": null
         },
         {
@@ -314,21 +314,16 @@
             "id": 64062233841191714942741004810469827032,
             "format": "caccrt",
             "composition": true,
-            "connections": true,
             "two_dim": true,
             "three_dim": true,
+            "connections": true,
             "precision": null
         },
         {
             "extension": "cache",
-            "note": "CAChe MolStruct",
             "id": 187115540466110696028917706488390027467,
             "format": "cache",
-            "composition": true,
-            "connections": true,
-            "two_dim": true,
-            "three_dim": true,
-            "precision": null
+            "alias_of": 208024302292990741610418031867256143245
         },
         {
             "extension": "cacint",
@@ -336,9 +331,9 @@
             "id": 158276203633767196761066483229331702996,
             "format": "cacint",
             "composition": null,
-            "connections": null,
             "two_dim": null,
             "three_dim": null,
+            "connections": null,
             "precision": null
         },
         {
@@ -347,21 +342,15 @@
             "id": 242351412810482127667305401957656993421,
             "format": "can",
             "composition": true,
-            "connections": true,
             "two_dim": false,
             "three_dim": false,
+            "connections": true,
             "precision": 0
         },
         {
             "extension": "car",
-            "note": "Accelrys/MSI Biosym/Insight II CAR",
             "id": 6145128555743823019270948617290459229,
-            "format": "car",
-            "composition": true,
-            "connections": true,
-            "two_dim": false,
-            "three_dim": false,
-            "precision": 0
+            "alias_of": 183079669871823796614849308541253271232
         },
         {
             "extension": "castep",
@@ -369,9 +358,9 @@
             "id": 189891380312144085475327814775915515817,
             "format": "castep",
             "composition": true,
-            "connections": true,
             "two_dim": true,
             "three_dim": true,
+            "connections": true,
             "precision": null
         },
         {
@@ -380,9 +369,9 @@
             "id": 123529051998589748016662810804240503287,
             "format": "ccc",
             "composition": null,
-            "connections": null,
             "two_dim": null,
             "three_dim": null,
+            "connections": null,
             "precision": null
         },
         {
@@ -391,9 +380,9 @@
             "id": 79022529440861258891142015413324091343,
             "format": "ccp4",
             "composition": null,
-            "connections": null,
             "two_dim": null,
             "three_dim": null,
+            "connections": null,
             "precision": null
         },
         {
@@ -402,9 +391,9 @@
             "id": 99515903324256349316585347569509460199,
             "format": "CDF",
             "composition": null,
-            "connections": null,
             "two_dim": null,
             "three_dim": null,
+            "connections": null,
             "precision": null
         },
         {
@@ -413,9 +402,9 @@
             "id": 20753642385669108430387120717727783064,
             "format": "cdjson",
             "composition": true,
-            "connections": true,
             "two_dim": true,
             "three_dim": true,
+            "connections": true,
             "precision": 5
         },
         {
@@ -424,9 +413,9 @@
             "id": 266389324323103918149718987713882163586,
             "format": "cdxml",
             "composition": true,
-            "connections": true,
             "two_dim": true,
             "three_dim": true,
+            "connections": true,
             "precision": 5
         },
         {
@@ -435,9 +424,9 @@
             "id": 221620849055615673318908285996095221762,
             "format": "cel",
             "composition": null,
-            "connections": null,
             "two_dim": null,
             "three_dim": null,
+            "connections": null,
             "precision": null
         },
         {
@@ -446,9 +435,9 @@
             "id": 222080616471449104299074435141381830940,
             "format": "cell_abc_abs",
             "composition": null,
-            "connections": null,
             "two_dim": null,
             "three_dim": null,
+            "connections": null,
             "precision": null
         },
         {
@@ -457,9 +446,9 @@
             "id": 20372931890239360786503697941300304833,
             "format": "cell_abc",
             "composition": null,
-            "connections": null,
             "two_dim": null,
             "three_dim": null,
+            "connections": null,
             "precision": null
         },
         {
@@ -468,9 +457,9 @@
             "id": 133487180118952304055280048276459430438,
             "format": "cell_abs",
             "composition": null,
-            "connections": null,
             "two_dim": null,
             "three_dim": null,
+            "connections": null,
             "precision": null
         },
         {
@@ -479,9 +468,9 @@
             "id": 57613520080952269289996483215922849422,
             "format": "cell",
             "composition": null,
-            "connections": null,
             "two_dim": null,
             "three_dim": null,
+            "connections": null,
             "precision": null
         },
         {
@@ -490,9 +479,9 @@
             "id": 314975333346287622848999788387812296808,
             "format": "cfg",
             "composition": null,
-            "connections": null,
             "two_dim": null,
             "three_dim": null,
+            "connections": null,
             "precision": null
         },
         {
@@ -501,9 +490,9 @@
             "id": 39018050936831198912390595227922911301,
             "format": "vasp",
             "composition": true,
-            "connections": false,
             "two_dim": true,
             "three_dim": true,
+            "connections": false,
             "precision": null
         },
         {
@@ -512,9 +501,9 @@
             "id": 288024965803696203581215793292670580620,
             "format": "chgcar",
             "composition": null,
-            "connections": null,
             "two_dim": null,
             "three_dim": null,
+            "connections": null,
             "precision": null
         },
         {
@@ -523,9 +512,9 @@
             "id": 127485749647936769291874690541987585037,
             "format": "cht",
             "composition": null,
-            "connections": null,
             "two_dim": null,
             "three_dim": null,
+            "connections": null,
             "precision": null
         },
         {
@@ -534,9 +523,9 @@
             "id": 214908995963617485636855366710271712886,
             "format": "cif",
             "composition": true,
-            "connections": false,
             "two_dim": true,
             "three_dim": true,
+            "connections": false,
             "precision": 5
         },
         {
@@ -545,9 +534,9 @@
             "id": 29911246111224779837663677976272255692,
             "format": "ck",
             "composition": null,
-            "connections": null,
             "two_dim": null,
             "three_dim": null,
+            "connections": null,
             "precision": null
         },
         {
@@ -556,9 +545,9 @@
             "id": 17662494363313796187301246917012434805,
             "format": "cml",
             "composition": true,
-            "connections": true,
             "two_dim": true,
             "three_dim": true,
+            "connections": true,
             "precision": null
         },
         {
@@ -567,9 +556,9 @@
             "id": 149780019444182511271858992398277910115,
             "format": "cmlr",
             "composition": true,
-            "connections": true,
             "two_dim": true,
             "three_dim": true,
+            "connections": true,
             "precision": null
         },
         {
@@ -578,9 +567,9 @@
             "id": 203233969061717138723802621663778516756,
             "format": "cof",
             "composition": true,
-            "connections": true,
             "two_dim": true,
             "three_dim": true,
+            "connections": true,
             "precision": null
         },
         {
@@ -589,9 +578,9 @@
             "id": 101147546724837741856431551717329312040,
             "format": "com",
             "composition": true,
-            "connections": false,
             "two_dim": true,
             "three_dim": true,
+            "connections": false,
             "precision": null
         },
         {
@@ -600,9 +589,9 @@
             "id": 18507187996847391187387603320218018984,
             "format": "CONFIG",
             "composition": true,
-            "connections": false,
             "two_dim": true,
             "three_dim": true,
+            "connections": false,
             "precision": 17
         },
         {
@@ -611,21 +600,15 @@
             "id": 109334830415080040083849964670968869182,
             "format": "CONTCAR",
             "composition": true,
-            "connections": false,
             "two_dim": true,
             "three_dim": true,
+            "connections": false,
             "precision": null
         },
         {
             "extension": "CONTFF",
-            "note": "MDFF",
             "id": 98261525007525135735251046647244654113,
-            "format": "CONTFF",
-            "composition": null,
-            "connections": null,
-            "two_dim": null,
-            "three_dim": null,
-            "precision": null
+            "alias_of": 195740799786273524362341124474008908118
         },
         {
             "extension": "COORAT",
@@ -633,9 +616,9 @@
             "id": 264277346924135332200965633422943552618,
             "format": "COORAT",
             "composition": null,
-            "connections": null,
             "two_dim": null,
             "three_dim": null,
+            "connections": null,
             "precision": null
         },
         {
@@ -644,9 +627,9 @@
             "id": 292762928275445737958548863767378891151,
             "format": "copy",
             "composition": null,
-            "connections": null,
             "two_dim": null,
             "three_dim": null,
+            "connections": null,
             "precision": null
         },
         {
@@ -655,9 +638,9 @@
             "id": 49482451423421542032360443871728802396,
             "format": "crk2d",
             "composition": null,
-            "connections": null,
             "two_dim": null,
             "three_dim": null,
+            "connections": null,
             "precision": null
         },
         {
@@ -666,9 +649,9 @@
             "id": 87014304383029942899933088834669674427,
             "format": "crk3d",
             "composition": null,
-            "connections": null,
             "two_dim": null,
             "three_dim": null,
+            "connections": null,
             "precision": null
         },
         {
@@ -677,9 +660,9 @@
             "id": 170457162688838195372672545558705867976,
             "format": "csr",
             "composition": null,
-            "connections": null,
             "two_dim": null,
             "three_dim": null,
+            "connections": null,
             "precision": null
         },
         {
@@ -688,9 +671,9 @@
             "id": 25831407526637982590123066275877258938,
             "format": "cssr",
             "composition": true,
-            "connections": true,
             "two_dim": true,
             "three_dim": true,
+            "connections": true,
             "precision": null
         },
         {
@@ -699,9 +682,9 @@
             "id": 225072396696944137412919788166507374857,
             "format": "cst_esp",
             "composition": null,
-            "connections": null,
             "two_dim": null,
             "three_dim": null,
+            "connections": null,
             "precision": null
         },
         {
@@ -710,9 +693,9 @@
             "id": 205338358281299342826360683193152046762,
             "format": "csv",
             "composition": null,
-            "connections": null,
             "two_dim": null,
             "three_dim": null,
+            "connections": null,
             "precision": null
         },
         {
@@ -721,9 +704,9 @@
             "id": 330459666519421422796365239431590788791,
             "format": "ct",
             "composition": true,
-            "connections": true,
             "two_dim": true,
             "three_dim": true,
+            "connections": true,
             "precision": null
         },
         {
@@ -732,21 +715,15 @@
             "id": 74371210293607487710428162012724232274,
             "format": "cube",
             "composition": true,
-            "connections": false,
             "two_dim": true,
             "three_dim": true,
+            "connections": false,
             "precision": 6
         },
         {
             "extension": "cube",
-            "note": "Gaussian cube",
             "id": 22556641855344674493163123090473605751,
-            "format": "cube",
-            "composition": true,
-            "connections": false,
-            "two_dim": true,
-            "three_dim": true,
-            "precision": 6
+            "alias_of": 74371210293607487710428162012724232274
         },
         {
             "extension": "d12",
@@ -754,9 +731,9 @@
             "id": 121685503541113979184368410529619495052,
             "format": "d12",
             "composition": null,
-            "connections": null,
             "two_dim": null,
             "three_dim": null,
+            "connections": null,
             "precision": null
         },
         {
@@ -765,9 +742,9 @@
             "id": 65584369182938890525958810956722032863,
             "format": "dallog",
             "composition": null,
-            "connections": null,
             "two_dim": null,
             "three_dim": null,
+            "connections": null,
             "precision": null
         },
         {
@@ -776,9 +753,9 @@
             "id": 158727458119477299327944664210408884296,
             "format": "dalmol",
             "composition": true,
-            "connections": false,
             "two_dim": true,
             "three_dim": true,
+            "connections": false,
             "precision": null
         },
         {
@@ -787,9 +764,9 @@
             "id": 90292567403848917083702366510226590346,
             "format": "dat",
             "composition": null,
-            "connections": null,
             "two_dim": null,
             "three_dim": null,
+            "connections": null,
             "precision": null
         },
         {
@@ -798,9 +775,9 @@
             "id": 18060400445211778284339610808960164493,
             "format": "dat",
             "composition": null,
-            "connections": null,
             "two_dim": null,
             "three_dim": null,
+            "connections": null,
             "precision": null
         },
         {
@@ -809,9 +786,9 @@
             "id": 233962464625289803979867692820427844248,
             "format": "dat",
             "composition": null,
-            "connections": null,
             "two_dim": null,
             "three_dim": null,
+            "connections": null,
             "precision": null
         },
         {
@@ -820,9 +797,9 @@
             "id": 322151902182452722756656414099200578404,
             "format": "one_abc_abs",
             "composition": null,
-            "connections": null,
             "two_dim": null,
             "three_dim": null,
+            "connections": null,
             "precision": null
         },
         {
@@ -831,9 +808,9 @@
             "id": 324093895757821997340319691750654893533,
             "format": "one_abc",
             "composition": null,
-            "connections": null,
             "two_dim": null,
             "three_dim": null,
+            "connections": null,
             "precision": null
         },
         {
@@ -842,9 +819,9 @@
             "id": 73649908297938704803746273638823233891,
             "format": "one_abs",
             "composition": null,
-            "connections": null,
             "two_dim": null,
             "three_dim": null,
+            "connections": null,
             "precision": null
         },
         {
@@ -853,10 +830,15 @@
             "id": 106604922889016866443254809912892634662,
             "format": "one",
             "composition": null,
-            "connections": null,
             "two_dim": null,
             "three_dim": null,
+            "connections": null,
             "precision": null
+        },
+        {
+            "extension": "data",
+            "id": 201420702486270393740065584701567382601,
+            "alias_of": 166687571138146369614453555512491210906
         },
         {
             "extension": "dd",
@@ -864,9 +846,9 @@
             "id": 222250545692291421935357553590750113357,
             "format": "dd",
             "composition": null,
-            "connections": null,
             "two_dim": null,
             "three_dim": null,
+            "connections": null,
             "precision": null
         },
         {
@@ -875,9 +857,9 @@
             "id": 130679921781181273958805620134665691036,
             "format": "DEN",
             "composition": null,
-            "connections": null,
             "two_dim": null,
             "three_dim": null,
+            "connections": null,
             "precision": null
         },
         {
@@ -886,9 +868,9 @@
             "id": 319357043641216258430959002270827292266,
             "format": "den_fmt",
             "composition": null,
-            "connections": null,
             "two_dim": null,
             "three_dim": null,
+            "connections": null,
             "precision": null
         },
         {
@@ -897,9 +879,9 @@
             "id": 165446354456708261838226408395697033526,
             "format": "dmol",
             "composition": true,
-            "connections": false,
             "two_dim": true,
             "three_dim": true,
+            "connections": false,
             "precision": null
         },
         {
@@ -908,9 +890,9 @@
             "id": 75460676248923577289028894017366295279,
             "format": "dx",
             "composition": null,
-            "connections": null,
             "two_dim": null,
             "three_dim": null,
+            "connections": null,
             "precision": null
         },
         {
@@ -919,9 +901,9 @@
             "id": 9219717492294838706481921227877751503,
             "format": "EIG",
             "composition": null,
-            "connections": null,
             "two_dim": null,
             "three_dim": null,
+            "connections": null,
             "precision": null
         },
         {
@@ -930,9 +912,9 @@
             "id": 211586371454243106141491845714248362862,
             "format": "EIG",
             "composition": null,
-            "connections": null,
             "two_dim": null,
             "three_dim": null,
+            "connections": null,
             "precision": null
         },
         {
@@ -941,43 +923,37 @@
             "id": 78614132369687965067998454009306650613,
             "format": "EIGENVAL",
             "composition": null,
-            "connections": null,
             "two_dim": null,
             "three_dim": null,
+            "connections": null,
             "precision": null
         },
         {
             "extension": "elf",
-            "note": "CASTEP ELF",
+            "note": "CASTEP ELF (binary)",
             "id": 329546574412725588695734304710408979242,
             "format": "elf",
             "composition": null,
-            "connections": null,
             "two_dim": null,
             "three_dim": null,
+            "connections": null,
             "precision": null
         },
         {
             "extension": "elf_fmt",
-            "note": "CASTEP ELF",
+            "note": "CASTEP ELF (formatted)",
             "id": 149436938344174473784523768380469429102,
             "format": "elf_fmt",
             "composition": null,
-            "connections": null,
             "two_dim": null,
             "three_dim": null,
+            "connections": null,
             "precision": null
         },
         {
             "extension": "ent",
-            "note": "Protein Data Bank",
             "id": 32103794576339723026923590371300680498,
-            "format": "pdb",
-            "composition": true,
-            "connections": true,
-            "two_dim": true,
-            "three_dim": true,
-            "precision": 5
+            "alias_of": 178366529166858241161075106138867206788
         },
         {
             "extension": "exyz",
@@ -985,9 +961,9 @@
             "id": 211724617318004434893467139293681820081,
             "format": "exyz",
             "composition": true,
-            "connections": false,
             "two_dim": true,
             "three_dim": true,
+            "connections": false,
             "precision": 10
         },
         {
@@ -996,21 +972,15 @@
             "id": 127325448333808099218652406615021461466,
             "format": "fa",
             "composition": null,
-            "connections": null,
             "two_dim": null,
             "three_dim": null,
+            "connections": null,
             "precision": null
         },
         {
             "extension": "fasta",
-            "note": "FASTA (genetic sequences)",
             "id": 118484790870718437043272623986523152493,
-            "format": "fasta",
-            "composition": null,
-            "connections": null,
-            "two_dim": null,
-            "three_dim": null,
-            "precision": null
+            "alias_of": 127325448333808099218652406615021461466
         },
         {
             "extension": "fch",
@@ -1018,32 +988,20 @@
             "id": 49120600658416108974876735403084537009,
             "format": "fch",
             "composition": true,
-            "connections": false,
             "two_dim": true,
             "three_dim": true,
+            "connections": false,
             "precision": null
         },
         {
             "extension": "fchk",
-            "note": "Gaussian formatted checkpoint file",
             "id": 248906788879831668235784512182957495786,
-            "format": "fchk",
-            "composition": true,
-            "connections": false,
-            "two_dim": true,
-            "three_dim": true,
-            "precision": null
+            "alias_of": 49120600658416108974876735403084537009
         },
         {
             "extension": "fck",
-            "note": "Gaussian formatted checkpoint file",
             "id": 187391399687884167703843132511072812833,
-            "format": "fck",
-            "composition": true,
-            "connections": false,
-            "two_dim": true,
-            "three_dim": true,
-            "precision": null
+            "alias_of": 49120600658416108974876735403084537009
         },
         {
             "extension": "fdf",
@@ -1051,9 +1009,9 @@
             "id": 11984171992240423209861542561953763988,
             "format": "fdf",
             "composition": true,
-            "connections": false,
             "two_dim": true,
             "three_dim": true,
+            "connections": false,
             "precision": 9
         },
         {
@@ -1062,9 +1020,9 @@
             "id": 208901672612172989347321953871049279705,
             "format": "feat",
             "composition": null,
-            "connections": null,
             "two_dim": null,
             "three_dim": null,
+            "connections": null,
             "precision": null
         },
         {
@@ -1073,9 +1031,9 @@
             "id": 60722064820726607749884055707632192589,
             "format": "fh",
             "composition": true,
-            "connections": false,
             "two_dim": true,
             "three_dim": true,
+            "connections": false,
             "precision": null
         },
         {
@@ -1084,9 +1042,9 @@
             "id": 42929030948607777034721872659909207659,
             "format": "fhiaims",
             "composition": true,
-            "connections": false,
             "two_dim": true,
             "three_dim": true,
+            "connections": false,
             "precision": null
         },
         {
@@ -1095,9 +1053,9 @@
             "id": 51142977921990733275801310770649363498,
             "format": "fix",
             "composition": true,
-            "connections": true,
             "two_dim": false,
             "three_dim": false,
+            "connections": true,
             "precision": 0
         },
         {
@@ -1106,9 +1064,9 @@
             "id": 311727220817052319413740496112655834385,
             "format": "fps",
             "composition": null,
-            "connections": null,
             "two_dim": null,
             "three_dim": null,
+            "connections": null,
             "precision": null
         },
         {
@@ -1117,9 +1075,9 @@
             "id": 203455324937141831266205930173305911236,
             "format": "fpt",
             "composition": null,
-            "connections": null,
             "two_dim": null,
             "three_dim": null,
+            "connections": null,
             "precision": null
         },
         {
@@ -1128,9 +1086,9 @@
             "id": 107828280388478511951026387228740011485,
             "format": "fract",
             "composition": true,
-            "connections": false,
             "two_dim": true,
             "three_dim": true,
+            "connections": false,
             "precision": null
         },
         {
@@ -1139,21 +1097,15 @@
             "id": 229718938459220525539470386349907318524,
             "format": "fs",
             "composition": null,
-            "connections": null,
             "two_dim": null,
             "three_dim": null,
+            "connections": null,
             "precision": null
         },
         {
             "extension": "fsa",
-            "note": "FASTA (genetic sequences)",
             "id": 205237936785857655978529626512927794188,
-            "format": "fsa",
-            "composition": null,
-            "connections": null,
-            "two_dim": null,
-            "three_dim": null,
-            "precision": null
+            "alias_of": 127325448333808099218652406615021461466
         },
         {
             "extension": "g03",
@@ -1161,9 +1113,9 @@
             "id": 212341502249074142074023390346112242006,
             "format": "g03",
             "composition": true,
-            "connections": false,
             "two_dim": true,
             "three_dim": true,
+            "connections": false,
             "precision": null
         },
         {
@@ -1172,9 +1124,9 @@
             "id": 131324783833441752657122447631530332915,
             "format": "g09",
             "composition": true,
-            "connections": false,
             "two_dim": true,
             "three_dim": true,
+            "connections": false,
             "precision": null
         },
         {
@@ -1183,9 +1135,9 @@
             "id": 90045086629918350146740817174978261587,
             "format": "g16",
             "composition": true,
-            "connections": false,
             "two_dim": true,
             "three_dim": true,
+            "connections": false,
             "precision": null
         },
         {
@@ -1194,9 +1146,9 @@
             "id": 277528275937225967448335816787802602344,
             "format": "g92",
             "composition": true,
-            "connections": false,
             "two_dim": true,
             "three_dim": true,
+            "connections": false,
             "precision": null
         },
         {
@@ -1205,9 +1157,9 @@
             "id": 75256735368296090982827896104660949364,
             "format": "g94",
             "composition": true,
-            "connections": false,
             "two_dim": true,
             "three_dim": true,
+            "connections": false,
             "precision": null
         },
         {
@@ -1216,9 +1168,9 @@
             "id": 286338901044606364215112067935541989577,
             "format": "g98",
             "composition": true,
-            "connections": false,
             "two_dim": true,
             "three_dim": true,
+            "connections": false,
             "precision": null
         },
         {
@@ -1227,9 +1179,9 @@
             "id": 186021132297894598022399782271060075282,
             "format": "gal",
             "composition": true,
-            "connections": false,
             "two_dim": true,
             "three_dim": true,
+            "connections": false,
             "precision": null
         },
         {
@@ -1238,21 +1190,15 @@
             "id": 186421497653501599634628674311337579442,
             "format": "gam",
             "composition": true,
-            "connections": true,
             "two_dim": true,
             "three_dim": true,
+            "connections": true,
             "precision": null
         },
         {
             "extension": "gamess",
-            "note": "GAMESS Output",
             "id": 35457974918221409620446215629229917674,
-            "format": "gamess",
-            "composition": true,
-            "connections": true,
-            "two_dim": true,
-            "three_dim": true,
-            "precision": null
+            "alias_of": 186421497653501599634628674311337579442
         },
         {
             "extension": "gamin",
@@ -1260,32 +1206,20 @@
             "id": 428890912438433496853978570015087835,
             "format": "gamin",
             "composition": true,
-            "connections": false,
             "two_dim": true,
             "three_dim": true,
+            "connections": false,
             "precision": null
         },
         {
             "extension": "gamout",
-            "note": "GAMESS Output",
             "id": 286603189554790672310398833408923852963,
-            "format": "gamout",
-            "composition": true,
-            "connections": true,
-            "two_dim": true,
-            "three_dim": true,
-            "precision": null
+            "alias_of": 186421497653501599634628674311337579442
         },
         {
             "extension": "gau",
-            "note": "Gaussian Input",
             "id": 229442134277031918831436837871492179909,
-            "format": "gau",
-            "composition": true,
-            "connections": false,
-            "two_dim": true,
-            "three_dim": true,
-            "precision": null
+            "alias_of": 101147546724837741856431551717329312040
         },
         {
             "extension": "geom",
@@ -1293,9 +1227,9 @@
             "id": 125131925452180257808193967505847258441,
             "format": "geom",
             "composition": null,
-            "connections": null,
             "two_dim": null,
             "three_dim": null,
+            "connections": null,
             "precision": null
         },
         {
@@ -1304,32 +1238,20 @@
             "id": 13086459403769357130721208417443942017,
             "format": "gin",
             "composition": null,
-            "connections": null,
             "two_dim": null,
             "three_dim": null,
+            "connections": null,
             "precision": null
         },
         {
             "extension": "gjc",
-            "note": "Gaussian Input",
             "id": 295483664287131059634825273652142233679,
-            "format": "gjc",
-            "composition": true,
-            "connections": false,
-            "two_dim": true,
-            "three_dim": true,
-            "precision": null
+            "alias_of": 101147546724837741856431551717329312040
         },
         {
             "extension": "gjf",
-            "note": "Gaussian Input",
             "id": 81476428634656558428219224353277334564,
-            "format": "gjf",
-            "composition": true,
-            "connections": false,
-            "two_dim": true,
-            "three_dim": true,
-            "precision": null
+            "alias_of": 101147546724837741856431551717329312040
         },
         {
             "extension": "gnu",
@@ -1337,9 +1259,9 @@
             "id": 259786594746360057510396273830671147551,
             "format": "gnu",
             "composition": null,
-            "connections": null,
             "two_dim": null,
             "three_dim": null,
+            "connections": null,
             "precision": null
         },
         {
@@ -1348,9 +1270,9 @@
             "id": 219090304970120911658441172508085968139,
             "format": "got",
             "composition": null,
-            "connections": null,
             "two_dim": null,
             "three_dim": null,
+            "connections": null,
             "precision": null
         },
         {
@@ -1359,9 +1281,9 @@
             "id": 156669175214092075619518460468546822755,
             "format": "gpr",
             "composition": null,
-            "connections": null,
             "two_dim": null,
             "three_dim": null,
+            "connections": null,
             "precision": null
         },
         {
@@ -1370,9 +1292,9 @@
             "id": 56822921110267315109685573823552074593,
             "format": "gr96",
             "composition": null,
-            "connections": null,
             "two_dim": null,
             "three_dim": null,
+            "connections": null,
             "precision": null
         },
         {
@@ -1381,21 +1303,15 @@
             "id": 259412489246290481355693631081480691731,
             "format": "gro",
             "composition": null,
-            "connections": null,
             "two_dim": null,
             "three_dim": null,
+            "connections": null,
             "precision": null
         },
         {
             "extension": "grs",
-            "note": "General Utility Lattice Package (GULP) input",
             "id": 282398400740300644480006008550688677189,
-            "format": "grs",
-            "composition": null,
-            "connections": null,
-            "two_dim": null,
-            "three_dim": null,
-            "precision": null
+            "alias_of": 13086459403769357130721208417443942017
         },
         {
             "extension": "gukin",
@@ -1403,9 +1319,9 @@
             "id": 312416361991399498569569403187572586585,
             "format": "gukin",
             "composition": true,
-            "connections": false,
             "two_dim": true,
             "three_dim": true,
+            "connections": false,
             "precision": null
         },
         {
@@ -1414,9 +1330,9 @@
             "id": 245799431846755329366656443042300021644,
             "format": "gukout",
             "composition": true,
-            "connections": true,
             "two_dim": true,
             "three_dim": true,
+            "connections": true,
             "precision": null
         },
         {
@@ -1425,9 +1341,9 @@
             "id": 32583490387263496417347059827950455926,
             "format": "gzmat",
             "composition": true,
-            "connections": false,
             "two_dim": true,
             "three_dim": true,
+            "connections": false,
             "precision": null
         },
         {
@@ -1436,9 +1352,9 @@
             "id": 285920280369953151466217874528695330246,
             "format": "hin",
             "composition": true,
-            "connections": true,
             "two_dim": true,
             "three_dim": true,
+            "connections": true,
             "precision": null
         },
         {
@@ -1447,9 +1363,9 @@
             "id": 160647954093856970511721540768817864026,
             "format": "HISTORY",
             "composition": null,
-            "connections": null,
             "two_dim": null,
             "three_dim": null,
+            "connections": null,
             "precision": null
         },
         {
@@ -1458,9 +1374,9 @@
             "id": 174121638000092743411747550133835439716,
             "format": "imd",
             "composition": null,
-            "connections": null,
             "two_dim": null,
             "three_dim": null,
+            "connections": null,
             "precision": null
         },
         {
@@ -1469,9 +1385,9 @@
             "id": 253343490648404254749979894649590884729,
             "format": "abinit",
             "composition": true,
-            "connections": false,
             "two_dim": true,
             "three_dim": true,
+            "connections": false,
             "precision": 11
         },
         {
@@ -1480,9 +1396,9 @@
             "id": 337522090618642577855256330195391248369,
             "format": "abinit8",
             "composition": true,
-            "connections": false,
             "two_dim": true,
             "three_dim": true,
+            "connections": false,
             "precision": 11
         },
         {
@@ -1491,9 +1407,9 @@
             "id": 16401435532908578802619204052203273729,
             "format": "qe",
             "composition": null,
-            "connections": null,
             "two_dim": null,
             "three_dim": null,
+            "connections": null,
             "precision": null
         },
         {
@@ -1502,9 +1418,9 @@
             "id": 235366349304489206067601717435021864779,
             "format": "qef",
             "composition": null,
-            "connections": null,
             "two_dim": null,
             "three_dim": null,
+            "connections": null,
             "precision": null
         },
         {
@@ -1513,9 +1429,9 @@
             "id": 326377472459096428974266623447465656364,
             "format": "qef",
             "composition": null,
-            "connections": null,
             "two_dim": null,
             "three_dim": null,
+            "connections": null,
             "precision": null
         },
         {
@@ -1524,9 +1440,9 @@
             "id": 211056812011868110306382952789990064716,
             "format": "incar",
             "composition": null,
-            "connections": null,
             "two_dim": null,
             "three_dim": null,
+            "connections": null,
             "precision": null
         },
         {
@@ -1535,9 +1451,9 @@
             "id": 279751716690019374171243961730825953031,
             "format": "inchi",
             "composition": true,
-            "connections": true,
             "two_dim": false,
             "three_dim": false,
+            "connections": true,
             "precision": 0
         },
         {
@@ -1546,21 +1462,15 @@
             "id": 314639788394343741317480440361585042427,
             "format": "inchikey",
             "composition": false,
-            "connections": false,
             "two_dim": false,
             "three_dim": false,
+            "connections": false,
             "precision": 0
         },
         {
             "extension": "inp",
-            "note": "GAMESS Input",
             "id": 55451110043223884478910162348924549409,
-            "format": "inp",
-            "composition": true,
-            "connections": false,
-            "two_dim": true,
-            "three_dim": true,
-            "precision": null
+            "alias_of": 428890912438433496853978570015087835
         },
         {
             "extension": "ins",
@@ -1568,9 +1478,9 @@
             "id": 28432815592399480094962454902300990984,
             "format": "ins",
             "composition": true,
-            "connections": true,
             "two_dim": true,
             "three_dim": true,
+            "connections": true,
             "precision": 6
         },
         {
@@ -1579,9 +1489,9 @@
             "id": 265228661700132434943151283693896395164,
             "format": "ins",
             "composition": true,
-            "connections": false,
             "two_dim": true,
             "three_dim": true,
+            "connections": false,
             "precision": 8
         },
         {
@@ -1590,9 +1500,9 @@
             "id": 333171647576875444434880943922184533624,
             "format": "JDX",
             "composition": null,
-            "connections": null,
             "two_dim": null,
             "three_dim": null,
+            "connections": null,
             "precision": null
         },
         {
@@ -1601,9 +1511,9 @@
             "id": 337115475730854156794260244459774479188,
             "format": "jin",
             "composition": true,
-            "connections": false,
             "two_dim": true,
             "three_dim": true,
+            "connections": false,
             "precision": null
         },
         {
@@ -1612,21 +1522,15 @@
             "id": 165118644531950273804723468281726017540,
             "format": "jout",
             "composition": null,
-            "connections": null,
             "two_dim": null,
             "three_dim": null,
+            "connections": null,
             "precision": null
         },
         {
             "extension": "KP",
-            "note": "SIESTA kpoints",
             "id": 76181586533071159723534401061100519819,
-            "format": "KP",
-            "composition": null,
-            "connections": null,
-            "two_dim": null,
-            "three_dim": null,
-            "precision": null
+            "alias_of": 117199674045377163862916769568005613800
         },
         {
             "extension": "kp",
@@ -1634,9 +1538,9 @@
             "id": 117199674045377163862916769568005613800,
             "format": "kp",
             "composition": null,
-            "connections": null,
             "two_dim": null,
             "three_dim": null,
+            "connections": null,
             "precision": null
         },
         {
@@ -1645,9 +1549,9 @@
             "id": 308083614046311250415363426651623608042,
             "format": "lmc",
             "composition": null,
-            "connections": null,
             "two_dim": null,
             "three_dim": null,
+            "connections": null,
             "precision": null
         },
         {
@@ -1656,21 +1560,15 @@
             "id": 166687571138146369614453555512491210906,
             "format": "lmp",
             "composition": null,
-            "connections": null,
             "two_dim": null,
             "three_dim": null,
+            "connections": null,
             "precision": null
         },
         {
             "extension": "lmpdat",
-            "note": "LAMMPS data",
             "id": 175100776358975770796098627875387083204,
-            "format": "lmpdat",
-            "composition": null,
-            "connections": null,
-            "two_dim": null,
-            "three_dim": null,
-            "precision": null
+            "alias_of": 166687571138146369614453555512491210906
         },
         {
             "extension": "LOCPOT",
@@ -1678,21 +1576,15 @@
             "id": 141643545588668217058038693546002476983,
             "format": "LOCPOT",
             "composition": null,
-            "connections": null,
             "two_dim": null,
             "three_dim": null,
+            "connections": null,
             "precision": null
         },
         {
             "extension": "log",
-            "note": "Generic Output file",
             "id": 162103299763807380500131326958816874604,
-            "format": "log",
-            "composition": null,
-            "connections": null,
-            "two_dim": null,
-            "three_dim": null,
-            "precision": null
+            "alias_of": 18060400445211778284339610808960164493
         },
         {
             "extension": "lpmd",
@@ -1700,9 +1592,9 @@
             "id": 240273221595392696792114943248305349240,
             "format": "lpmd",
             "composition": null,
-            "connections": null,
             "two_dim": null,
             "three_dim": null,
+            "connections": null,
             "precision": null
         },
         {
@@ -1711,9 +1603,9 @@
             "id": 155123015621914684110197289247932260345,
             "format": "mae",
             "composition": null,
-            "connections": null,
             "two_dim": null,
             "three_dim": null,
+            "connections": null,
             "precision": null
         },
         {
@@ -1722,9 +1614,9 @@
             "id": 335147988236017971853140345093921986037,
             "format": "maegz",
             "composition": null,
-            "connections": null,
             "two_dim": null,
             "three_dim": null,
+            "connections": null,
             "precision": null
         },
         {
@@ -1733,9 +1625,9 @@
             "id": 275355553275831646102330921285438643953,
             "format": "mcdl",
             "composition": null,
-            "connections": null,
             "two_dim": null,
             "three_dim": null,
+            "connections": null,
             "precision": null
         },
         {
@@ -1744,9 +1636,9 @@
             "id": 211332162782481593381835124460353798951,
             "format": "mcif",
             "composition": true,
-            "connections": false,
             "two_dim": true,
             "three_dim": true,
+            "connections": false,
             "precision": 5
         },
         {
@@ -1755,9 +1647,9 @@
             "id": 195740799786273524362341124474008908118,
             "format": "MDFF",
             "composition": null,
-            "connections": null,
             "two_dim": null,
             "three_dim": null,
+            "connections": null,
             "precision": null
         },
         {
@@ -1766,9 +1658,9 @@
             "id": 292727325821381794107846543252288100244,
             "format": "mol",
             "composition": true,
-            "connections": true,
             "two_dim": true,
             "three_dim": true,
+            "connections": true,
             "precision": 8
         },
         {
@@ -1777,9 +1669,9 @@
             "id": 172087761777071222663803962906497280843,
             "format": "mgf",
             "composition": null,
-            "connections": null,
             "two_dim": null,
             "three_dim": null,
+            "connections": null,
             "precision": null
         },
         {
@@ -1788,9 +1680,9 @@
             "id": 253646697262577575373378065419268181033,
             "format": "ml2",
             "composition": true,
-            "connections": true,
             "two_dim": true,
             "three_dim": true,
+            "connections": true,
             "precision": 5
         },
         {
@@ -1799,9 +1691,9 @@
             "id": 111142745790695896928946860948434358952,
             "format": "mmcif",
             "composition": true,
-            "connections": false,
             "two_dim": true,
             "three_dim": true,
+            "connections": false,
             "precision": 5
         },
         {
@@ -1810,21 +1702,15 @@
             "id": 209270548670355987654501666350378390701,
             "format": "mmd",
             "composition": null,
-            "connections": null,
             "two_dim": null,
             "three_dim": null,
+            "connections": null,
             "precision": null
         },
         {
             "extension": "mmod",
-            "note": "MacroModel",
             "id": 160182656203062481907997569754307662257,
-            "format": "mmod",
-            "composition": null,
-            "connections": null,
-            "two_dim": null,
-            "three_dim": null,
-            "precision": null
+            "alias_of": 209270548670355987654501666350378390701
         },
         {
             "extension": "mna",
@@ -1832,9 +1718,9 @@
             "id": 71134613119509213904394171293615511768,
             "format": "mna",
             "composition": null,
-            "connections": null,
             "two_dim": null,
             "three_dim": null,
+            "connections": null,
             "precision": null
         },
         {
@@ -1843,21 +1729,15 @@
             "id": 30228856871438450511552644541554222714,
             "format": "mocube",
             "composition": null,
-            "connections": null,
             "two_dim": null,
             "three_dim": null,
+            "connections": null,
             "precision": null
         },
         {
             "extension": "mol",
-            "note": "MDL MOL",
             "id": 14163986051707882465586360841029029139,
-            "format": "mol",
-            "composition": true,
-            "connections": true,
-            "two_dim": true,
-            "three_dim": true,
-            "precision": 8
+            "alias_of": 292727325821381794107846543252288100244
         },
         {
             "extension": "mol",
@@ -1865,21 +1745,15 @@
             "id": 72959745128074324821901268400337732406,
             "format": "mol",
             "composition": true,
-            "connections": false,
             "two_dim": true,
             "three_dim": true,
+            "connections": false,
             "precision": 9
         },
         {
             "extension": "mol2",
-            "note": "Sybyl Mol2",
             "id": 143425445942253368938814885806318269174,
-            "format": "mol2",
-            "composition": true,
-            "connections": true,
-            "two_dim": true,
-            "three_dim": true,
-            "precision": null
+            "alias_of": 253646697262577575373378065419268181033
         },
         {
             "extension": "mold",
@@ -1887,32 +1761,20 @@
             "id": 214513980779548429541384975889898482960,
             "format": "mold",
             "composition": true,
-            "connections": false,
             "two_dim": true,
             "three_dim": true,
+            "connections": false,
             "precision": 8
         },
         {
             "extension": "molden",
-            "note": "Molden",
             "id": 315876805348576818877952809238961067299,
-            "format": "molden",
-            "composition": true,
-            "connections": false,
-            "two_dim": true,
-            "three_dim": true,
-            "precision": 8
+            "alias_of": 214513980779548429541384975889898482960
         },
         {
             "extension": "molf",
-            "note": "Molden",
             "id": 71979496514962592580628060526162033302,
-            "format": "molf",
-            "composition": true,
-            "connections": false,
-            "two_dim": true,
-            "three_dim": true,
-            "precision": 8
+            "alias_of": 214513980779548429541384975889898482960
         },
         {
             "extension": "molreport",
@@ -1920,9 +1782,9 @@
             "id": 7238200498577848480656953899431052311,
             "format": "molreport",
             "composition": true,
-            "connections": true,
             "two_dim": false,
             "three_dim": false,
+            "connections": true,
             "precision": 6
         },
         {
@@ -1931,9 +1793,9 @@
             "id": 263465866558940061620786987109970249688,
             "format": "moo",
             "composition": null,
-            "connections": null,
             "two_dim": null,
             "three_dim": null,
+            "connections": null,
             "precision": null
         },
         {
@@ -1942,21 +1804,15 @@
             "id": 109159716603777158625728697344624728603,
             "format": "mop",
             "composition": true,
-            "connections": false,
             "two_dim": true,
             "three_dim": true,
+            "connections": false,
             "precision": null
         },
         {
             "extension": "mopcrt",
-            "note": "MOPAC Cartesian",
             "id": 115284935565942077012093254807694312333,
-            "format": "mopcrt",
-            "composition": true,
-            "connections": false,
-            "two_dim": true,
-            "three_dim": true,
-            "precision": null
+            "alias_of": 109159716603777158625728697344624728603
         },
         {
             "extension": "mopin",
@@ -1964,21 +1820,15 @@
             "id": 274304641201508541381149396456354573916,
             "format": "mopin",
             "composition": null,
-            "connections": null,
             "two_dim": null,
             "three_dim": null,
+            "connections": null,
             "precision": null
         },
         {
             "extension": "mopout",
-            "note": "MOPAC Output",
             "id": 143057463165023442074484263410041915913,
-            "format": "mopout",
-            "composition": null,
-            "connections": null,
-            "two_dim": null,
-            "three_dim": null,
-            "precision": null
+            "alias_of": 263465866558940061620786987109970249688
         },
         {
             "extension": "mp",
@@ -1986,21 +1836,15 @@
             "id": 7080563899215913382069699620796584379,
             "format": "mp",
             "composition": true,
-            "connections": false,
             "two_dim": true,
             "three_dim": true,
+            "connections": false,
             "precision": null
         },
         {
             "extension": "mpc",
-            "note": "MOPAC Cartesian",
             "id": 313957455269055695592006295660574290653,
-            "format": "mpc",
-            "composition": true,
-            "connections": false,
-            "two_dim": true,
-            "three_dim": true,
-            "precision": null
+            "alias_of": 109159716603777158625728697344624728603
         },
         {
             "extension": "mpd",
@@ -2008,9 +1852,9 @@
             "id": 256698568770506760516294464206589507935,
             "format": "mpd",
             "composition": null,
-            "connections": null,
             "two_dim": null,
             "three_dim": null,
+            "connections": null,
             "precision": null
         },
         {
@@ -2019,9 +1863,9 @@
             "id": 258624728267775991998580718445137455374,
             "format": "mpo",
             "composition": null,
-            "connections": null,
             "two_dim": null,
             "three_dim": null,
+            "connections": null,
             "precision": null
         },
         {
@@ -2030,9 +1874,9 @@
             "id": 317461235989458158100553047391214580851,
             "format": "mpqc",
             "composition": null,
-            "connections": null,
             "two_dim": null,
             "three_dim": null,
+            "connections": null,
             "precision": null
         },
         {
@@ -2041,21 +1885,15 @@
             "id": 9694191781361711494655474144372280276,
             "format": "mpqcin",
             "composition": null,
-            "connections": null,
             "two_dim": null,
             "three_dim": null,
+            "connections": null,
             "precision": null
         },
         {
             "extension": "mrv",
-            "note": "Chemical Markup Language",
             "id": 232798684620226777149726409841452987070,
-            "format": "cml",
-            "composition": true,
-            "connections": true,
-            "two_dim": true,
-            "three_dim": true,
-            "precision": null
+            "alias_of": 17662494363313796187301246917012434805
         },
         {
             "extension": "msi",
@@ -2063,9 +1901,9 @@
             "id": 102468372446585383013217809274092405247,
             "format": "msi",
             "composition": null,
-            "connections": null,
             "two_dim": null,
             "three_dim": null,
+            "connections": null,
             "precision": null
         },
         {
@@ -2074,9 +1912,9 @@
             "id": 13237656873337728718765342346201990149,
             "format": "msms",
             "composition": null,
-            "connections": null,
             "two_dim": null,
             "three_dim": null,
+            "connections": null,
             "precision": null
         },
         {
@@ -2085,9 +1923,9 @@
             "id": 292995839363572365153169041723817126664,
             "format": "mzML",
             "composition": null,
-            "connections": null,
             "two_dim": null,
             "three_dim": null,
+            "connections": null,
             "precision": null
         },
         {
@@ -2096,9 +1934,9 @@
             "id": 220339121559229275877388298072679935301,
             "format": "npy",
             "composition": null,
-            "connections": null,
             "two_dim": null,
             "three_dim": null,
+            "connections": null,
             "precision": null
         },
         {
@@ -2107,9 +1945,9 @@
             "id": 50336342536900357140464268639125220199,
             "format": "nw",
             "composition": true,
-            "connections": false,
             "two_dim": true,
             "three_dim": true,
+            "connections": false,
             "precision": null
         },
         {
@@ -2118,9 +1956,9 @@
             "id": 134569736213287218538320956840196678451,
             "format": "nwo",
             "composition": true,
-            "connections": false,
             "two_dim": true,
             "three_dim": true,
+            "connections": false,
             "precision": null
         },
         {
@@ -2129,9 +1967,9 @@
             "id": 305287394663687882056493561777756932843,
             "format": "ocb",
             "composition": null,
-            "connections": null,
             "two_dim": null,
             "three_dim": null,
+            "connections": null,
             "precision": null
         },
         {
@@ -2140,9 +1978,9 @@
             "id": 14197590732937287881456998945687225790,
             "format": "orca",
             "composition": null,
-            "connections": null,
             "two_dim": null,
             "three_dim": null,
+            "connections": null,
             "precision": null
         },
         {
@@ -2151,21 +1989,15 @@
             "id": 318966972984405186439296793455936172061,
             "format": "orcainp",
             "composition": true,
-            "connections": false,
             "two_dim": true,
             "three_dim": true,
+            "connections": false,
             "precision": null
         },
         {
             "extension": "out",
-            "note": "Generic Output file",
             "id": 140802954064900569091310859702143140268,
-            "format": "out",
-            "composition": null,
-            "connections": null,
-            "two_dim": null,
-            "three_dim": null,
-            "precision": null
+            "alias_of": 18060400445211778284339610808960164493
         },
         {
             "extension": "out",
@@ -2173,9 +2005,9 @@
             "id": 75812523089448185333036219943662697581,
             "format": "out",
             "composition": null,
-            "connections": null,
             "two_dim": null,
             "three_dim": null,
+            "connections": null,
             "precision": null
         },
         {
@@ -2184,32 +2016,20 @@
             "id": 193799457757271265438878454922205770762,
             "format": "OUTCAR",
             "composition": null,
-            "connections": null,
             "two_dim": null,
             "three_dim": null,
+            "connections": null,
             "precision": null
         },
         {
             "extension": "outmol",
-            "note": "DMol3 coordinates",
             "id": 23082963749979422604700127676877572562,
-            "format": "outmol",
-            "composition": true,
-            "connections": false,
-            "two_dim": true,
-            "three_dim": true,
-            "precision": 16
+            "alias_of": 165446354456708261838226408395697033526
         },
         {
             "extension": "output",
-            "note": "Generic Output file",
             "id": 152269619056269653625250260620024171468,
-            "format": "output",
-            "composition": null,
-            "connections": null,
-            "two_dim": null,
-            "three_dim": null,
-            "precision": null
+            "alias_of": 18060400445211778284339610808960164493
         },
         {
             "extension": "paint",
@@ -2217,9 +2037,9 @@
             "id": 113868783398416612169698405548476096841,
             "format": "paint",
             "composition": null,
-            "connections": null,
             "two_dim": null,
             "three_dim": null,
+            "connections": null,
             "precision": null
         },
         {
@@ -2228,9 +2048,9 @@
             "id": 34144918507016723002656952883188490287,
             "format": "pc",
             "composition": null,
-            "connections": null,
             "two_dim": null,
             "three_dim": null,
+            "connections": null,
             "precision": null
         },
         {
@@ -2239,9 +2059,9 @@
             "id": 266049478114000494937814324865758516629,
             "format": "pcjson",
             "composition": null,
-            "connections": null,
             "two_dim": null,
             "three_dim": null,
+            "connections": null,
             "precision": null
         },
         {
@@ -2250,9 +2070,9 @@
             "id": 207134527900237063775216459175322595183,
             "format": "pcm",
             "composition": null,
-            "connections": null,
             "two_dim": null,
             "three_dim": null,
+            "connections": null,
             "precision": null
         },
         {
@@ -2261,9 +2081,9 @@
             "id": 178366529166858241161075106138867206788,
             "format": "pdb",
             "composition": true,
-            "connections": true,
             "two_dim": true,
             "three_dim": true,
+            "connections": true,
             "precision": 5
         },
         {
@@ -2272,9 +2092,9 @@
             "id": 325652524238156842953511960586864188646,
             "format": "pdbn",
             "composition": true,
-            "connections": true,
             "two_dim": true,
             "three_dim": true,
+            "connections": true,
             "precision": 5
         },
         {
@@ -2283,9 +2103,9 @@
             "id": 23086914704772561252272100468075652414,
             "format": "pdbqt",
             "composition": true,
-            "connections": true,
             "two_dim": true,
             "three_dim": true,
+            "connections": true,
             "precision": 5
         },
         {
@@ -2294,9 +2114,9 @@
             "id": 202765373841098224425903645089118536801,
             "format": "pdbx",
             "composition": true,
-            "connections": true,
             "two_dim": true,
             "three_dim": true,
+            "connections": true,
             "precision": 5
         },
         {
@@ -2305,9 +2125,9 @@
             "id": 281078610809857855124590786515545964119,
             "format": "png",
             "composition": null,
-            "connections": null,
             "two_dim": null,
             "three_dim": null,
+            "connections": null,
             "precision": null
         },
         {
@@ -2316,9 +2136,9 @@
             "id": 258869049190979492248849245557152339882,
             "format": "pointcloud",
             "composition": null,
-            "connections": null,
             "two_dim": null,
             "three_dim": null,
+            "connections": null,
             "precision": null
         },
         {
@@ -2327,9 +2147,9 @@
             "id": 157948546461387970602767851984261258376,
             "format": "pos",
             "composition": true,
-            "connections": false,
             "two_dim": true,
             "three_dim": true,
+            "connections": false,
             "precision": null
         },
         {
@@ -2338,21 +2158,15 @@
             "id": 318487010089456902950008675463492717371,
             "format": "vasp",
             "composition": true,
-            "connections": false,
             "two_dim": true,
             "three_dim": true,
+            "connections": false,
             "precision": 21
         },
         {
             "extension": "POSFF",
-            "note": "MDFF",
             "id": 300796939547901577812626686286774265749,
-            "format": "POSFF",
-            "composition": null,
-            "connections": null,
-            "two_dim": null,
-            "three_dim": null,
-            "precision": null
+            "alias_of": 195740799786273524362341124474008908118
         },
         {
             "extension": "POT",
@@ -2360,9 +2174,9 @@
             "id": 124558377380307881696200887013671419227,
             "format": "POT",
             "composition": null,
-            "connections": null,
             "two_dim": null,
             "three_dim": null,
+            "connections": null,
             "precision": null
         },
         {
@@ -2371,9 +2185,9 @@
             "id": 275279032356469659937690391154454154632,
             "format": "pot_fmt",
             "composition": null,
-            "connections": null,
             "two_dim": null,
             "three_dim": null,
+            "connections": null,
             "precision": null
         },
         {
@@ -2382,9 +2196,9 @@
             "id": 196510774020677087699004467179660353979,
             "format": "pov",
             "composition": true,
-            "connections": true,
             "two_dim": true,
             "three_dim": true,
+            "connections": true,
             "precision": null
         },
         {
@@ -2393,9 +2207,9 @@
             "id": 245583399082158185307315960291944621157,
             "format": "pqr",
             "composition": null,
-            "connections": null,
             "two_dim": null,
             "three_dim": null,
+            "connections": null,
             "precision": null
         },
         {
@@ -2404,9 +2218,9 @@
             "id": 224385136222948748152544834393042297814,
             "format": "pqs",
             "composition": null,
-            "connections": null,
             "two_dim": null,
             "three_dim": null,
+            "connections": null,
             "precision": null
         },
         {
@@ -2415,9 +2229,9 @@
             "id": 164043074007521460393631826491715850867,
             "format": "prep",
             "composition": null,
-            "connections": null,
             "two_dim": null,
             "three_dim": null,
+            "connections": null,
             "precision": null
         },
         {
@@ -2426,9 +2240,9 @@
             "id": 61724174897851796696713316640210484673,
             "format": "pw",
             "composition": null,
-            "connections": null,
             "two_dim": null,
             "three_dim": null,
+            "connections": null,
             "precision": null
         },
         {
@@ -2437,9 +2251,9 @@
             "id": 216602765834382192531047521289669115174,
             "format": "pwscf",
             "composition": null,
-            "connections": null,
             "two_dim": null,
             "three_dim": null,
+            "connections": null,
             "precision": null
         },
         {
@@ -2448,9 +2262,9 @@
             "id": 125835046132321594743371619195082583629,
             "format": "pya",
             "composition": null,
-            "connections": null,
             "two_dim": null,
             "three_dim": null,
+            "connections": null,
             "precision": null
         },
         {
@@ -2459,9 +2273,9 @@
             "id": 220271908623477008776967765306791783037,
             "format": "py",
             "composition": null,
-            "connections": null,
             "two_dim": null,
             "three_dim": null,
+            "connections": null,
             "precision": null
         },
         {
@@ -2470,9 +2284,9 @@
             "id": 87697213745282142848233051847868519529,
             "format": "qcin",
             "composition": true,
-            "connections": false,
             "two_dim": true,
             "three_dim": true,
+            "connections": false,
             "precision": null
         },
         {
@@ -2481,9 +2295,9 @@
             "id": 208260153018670683990484459978815300545,
             "format": "qcout",
             "composition": null,
-            "connections": null,
             "two_dim": null,
             "three_dim": null,
+            "connections": null,
             "precision": null
         },
         {
@@ -2492,9 +2306,9 @@
             "id": 48746576185426937819153906173748998767,
             "format": "RAW",
             "composition": null,
-            "connections": null,
             "two_dim": null,
             "three_dim": null,
+            "connections": null,
             "precision": null
         },
         {
@@ -2503,21 +2317,15 @@
             "id": 207721787859699505128237502842370868073,
             "format": "report",
             "composition": true,
-            "connections": true,
             "two_dim": true,
             "three_dim": true,
+            "connections": true,
             "precision": 6
         },
         {
             "extension": "res",
-            "note": "General Utility Lattice Package (GULP) input",
             "id": 314940860974188633296163260180092764046,
-            "format": "res",
-            "composition": null,
-            "connections": null,
-            "two_dim": null,
-            "three_dim": null,
-            "precision": null
+            "alias_of": 13086459403769357130721208417443942017
         },
         {
             "extension": "res",
@@ -2525,21 +2333,15 @@
             "id": 327200745458547092709635496941629709670,
             "format": "shelx",
             "composition": true,
-            "connections": false,
             "two_dim": true,
             "three_dim": true,
+            "connections": false,
             "precision": 8
         },
         {
             "extension": "RHO",
-            "note": "SIESTA RHO",
             "id": 9341813283313499894827098056751533226,
-            "format": "RHO",
-            "composition": null,
-            "connections": null,
-            "two_dim": null,
-            "three_dim": null,
-            "precision": null
+            "alias_of": 204026270898157960263419294745963492043
         },
         {
             "extension": "rho",
@@ -2547,9 +2349,9 @@
             "id": 204026270898157960263419294745963492043,
             "format": "rho",
             "composition": null,
-            "connections": null,
             "two_dim": null,
             "three_dim": null,
+            "connections": null,
             "precision": null
         },
         {
@@ -2558,9 +2360,9 @@
             "id": 187855126437857317514615572300346542595,
             "format": "rinchi",
             "composition": true,
-            "connections": true,
             "two_dim": false,
             "three_dim": false,
+            "connections": true,
             "precision": 0
         },
         {
@@ -2569,9 +2371,9 @@
             "id": 288653554956822251052461047133224607221,
             "format": "rsmi",
             "composition": true,
-            "connections": true,
             "two_dim": false,
             "three_dim": false,
+            "connections": true,
             "precision": 0
         },
         {
@@ -2580,32 +2382,20 @@
             "id": 76950252569365882150732917449041895032,
             "format": "rxn",
             "composition": true,
-            "connections": true,
             "two_dim": true,
             "three_dim": true,
+            "connections": true,
             "precision": null
         },
         {
             "extension": "sd",
-            "note": "MDL MOL",
             "id": 84896050381326444273888468929459347256,
-            "format": "mol",
-            "composition": true,
-            "connections": true,
-            "two_dim": true,
-            "three_dim": true,
-            "precision": 8
+            "alias_of": 292727325821381794107846543252288100244
         },
         {
             "extension": "sdf",
-            "note": "MDL MOL",
             "id": 275917740769777784072805688195146073430,
-            "format": "mol",
-            "composition": true,
-            "connections": true,
-            "two_dim": true,
-            "three_dim": true,
-            "precision": 8
+            "alias_of": 292727325821381794107846543252288100244
         },
         {
             "extension": "siesta",
@@ -2613,9 +2403,9 @@
             "id": 173011178275454186790850669502908321129,
             "format": "siesta",
             "composition": null,
-            "connections": null,
             "two_dim": null,
             "three_dim": null,
+            "connections": null,
             "precision": null
         },
         {
@@ -2624,21 +2414,15 @@
             "id": 20320184528576299830358586785865096672,
             "format": "smi",
             "composition": true,
-            "connections": true,
             "two_dim": false,
             "three_dim": false,
+            "connections": true,
             "precision": 0
         },
         {
             "extension": "smiles",
-            "note": "SMILES",
             "id": 297419025361599384272733241121809134667,
-            "format": "smiles",
-            "composition": true,
-            "connections": true,
-            "two_dim": false,
-            "three_dim": false,
-            "precision": 0
+            "alias_of": 20320184528576299830358586785865096672
         },
         {
             "extension": "smy",
@@ -2646,9 +2430,9 @@
             "id": 98944406755041640472793572415551378898,
             "format": "smy",
             "composition": true,
-            "connections": true,
             "two_dim": false,
             "three_dim": false,
+            "connections": true,
             "precision": 0
         },
         {
@@ -2657,9 +2441,9 @@
             "id": 68669533866597814414817631521755643473,
             "format": "stl",
             "composition": null,
-            "connections": null,
             "two_dim": null,
             "three_dim": null,
+            "connections": null,
             "precision": null
         },
         {
@@ -2668,21 +2452,15 @@
             "id": 17777839427830598944569931729743162767,
             "format": "str",
             "composition": null,
-            "connections": null,
             "two_dim": null,
             "three_dim": null,
+            "connections": null,
             "precision": null
         },
         {
             "extension": "stru",
-            "note": "PDFFIT structure",
             "id": 177668124975025263585376901037169630110,
-            "format": "stru",
-            "composition": null,
-            "connections": null,
-            "two_dim": null,
-            "three_dim": null,
-            "precision": null
+            "alias_of": 17777839427830598944569931729743162767
         },
         {
             "extension": "svg",
@@ -2690,9 +2468,9 @@
             "id": 11534748775667962669015007545803037652,
             "format": "svg",
             "composition": null,
-            "connections": null,
             "two_dim": null,
             "three_dim": null,
+            "connections": null,
             "precision": null
         },
         {
@@ -2701,21 +2479,15 @@
             "id": 222610172317530966501505361564720053204,
             "format": "sxyz",
             "composition": null,
-            "connections": null,
             "two_dim": null,
             "three_dim": null,
+            "connections": null,
             "precision": null
         },
         {
             "extension": "sy2",
-            "note": "Sybyl Mol2",
             "id": 318851989183477540453947203371966440690,
-            "format": "sy2",
-            "composition": true,
-            "connections": true,
-            "two_dim": true,
-            "three_dim": true,
-            "precision": null
+            "alias_of": 253646697262577575373378065419268181033
         },
         {
             "extension": "t41",
@@ -2723,9 +2495,9 @@
             "id": 307669102354654522010722369882037488386,
             "format": "t41",
             "composition": null,
-            "connections": null,
             "two_dim": null,
             "three_dim": null,
+            "connections": null,
             "precision": null
         },
         {
@@ -2734,9 +2506,9 @@
             "id": 101389313506856235208299705705909774321,
             "format": "tdd",
             "composition": null,
-            "connections": null,
             "two_dim": null,
             "three_dim": null,
+            "connections": null,
             "precision": null
         },
         {
@@ -2745,21 +2517,15 @@
             "id": 62016663647194334312509700476122091687,
             "format": "text",
             "composition": null,
-            "connections": null,
             "two_dim": null,
             "three_dim": null,
+            "connections": null,
             "precision": null
         },
         {
             "extension": "therm",
-            "note": "Thermo (NASA polynomials)",
             "id": 19536313315451808034724544445668548700,
-            "format": "therm",
-            "composition": null,
-            "connections": null,
-            "two_dim": null,
-            "three_dim": null,
-            "precision": null
+            "alias_of": 101389313506856235208299705705909774321
         },
         {
             "extension": "tmol",
@@ -2767,9 +2533,9 @@
             "id": 30665022909691561325779745793193814283,
             "format": "tmol",
             "composition": true,
-            "connections": false,
             "two_dim": true,
             "three_dim": true,
+            "connections": false,
             "precision": null
         },
         {
@@ -2778,9 +2544,9 @@
             "id": 137156397971608857269487452262953602068,
             "format": "txt",
             "composition": null,
-            "connections": null,
             "two_dim": null,
             "three_dim": null,
+            "connections": null,
             "precision": null
         },
         {
@@ -2789,9 +2555,9 @@
             "id": 8563602249591148809320941026257500044,
             "format": "txt",
             "composition": null,
-            "connections": null,
             "two_dim": null,
             "three_dim": null,
+            "connections": null,
             "precision": null
         },
         {
@@ -2800,9 +2566,9 @@
             "id": 32043555312713639025957046122919489996,
             "format": "txyz",
             "composition": null,
-            "connections": null,
             "two_dim": null,
             "three_dim": null,
+            "connections": null,
             "precision": null
         },
         {
@@ -2811,9 +2577,9 @@
             "id": 266121539119077795673797287845096591518,
             "format": "unixyz",
             "composition": true,
-            "connections": false,
             "two_dim": true,
             "three_dim": true,
+            "connections": false,
             "precision": null
         },
         {
@@ -2822,9 +2588,9 @@
             "id": 178002885945313670724373494495586011145,
             "format": "VASP",
             "composition": true,
-            "connections": false,
             "two_dim": true,
             "three_dim": true,
+            "connections": false,
             "precision": null
         },
         {
@@ -2833,9 +2599,9 @@
             "id": 235600286985704646610835316923881218069,
             "format": "VCLMB",
             "composition": null,
-            "connections": null,
             "two_dim": null,
             "three_dim": null,
+            "connections": null,
             "precision": null
         },
         {
@@ -2844,9 +2610,9 @@
             "id": 184908393568743128335003113560992231759,
             "format": "verts",
             "composition": null,
-            "connections": null,
             "two_dim": null,
             "three_dim": null,
+            "connections": null,
             "precision": null
         },
         {
@@ -2855,9 +2621,9 @@
             "id": 54564101680105421861709602143549217352,
             "format": "verts_frac",
             "composition": null,
-            "connections": null,
             "two_dim": null,
             "three_dim": null,
+            "connections": null,
             "precision": null
         },
         {
@@ -2866,21 +2632,15 @@
             "id": 111283682628362087403484652806626156130,
             "format": "vesta",
             "composition": null,
-            "connections": null,
             "two_dim": null,
             "three_dim": null,
+            "connections": null,
             "precision": null
         },
         {
             "extension": "VH",
-            "note": "SIESTA potential",
             "id": 232433607655743852600774327210554861314,
-            "format": "VH",
-            "composition": null,
-            "connections": null,
-            "two_dim": null,
-            "three_dim": null,
-            "precision": null
+            "alias_of": 236849952644879792685414451091539623326
         },
         {
             "extension": "vh",
@@ -2888,9 +2648,9 @@
             "id": 236849952644879792685414451091539623326,
             "format": "vh",
             "composition": null,
-            "connections": null,
             "two_dim": null,
             "three_dim": null,
+            "connections": null,
             "precision": null
         },
         {
@@ -2899,9 +2659,9 @@
             "id": 284486036241533200418281249136751184168,
             "format": "vmd_recip",
             "composition": null,
-            "connections": null,
             "two_dim": null,
             "three_dim": null,
+            "connections": null,
             "precision": null
         },
         {
@@ -2910,21 +2670,15 @@
             "id": 293892807975145609373743919186598379172,
             "format": "vmol",
             "composition": null,
-            "connections": null,
             "two_dim": null,
             "three_dim": null,
+            "connections": null,
             "precision": null
         },
         {
             "extension": "VT",
-            "note": "SIESTA potential",
             "id": 175685838324049260543232548803595503379,
-            "format": "VT",
-            "composition": null,
-            "connections": null,
-            "two_dim": null,
-            "three_dim": null,
-            "precision": null
+            "alias_of": 313839798342916429693228538721402371701
         },
         {
             "extension": "vt",
@@ -2932,9 +2686,9 @@
             "id": 313839798342916429693228538721402371701,
             "format": "vt",
             "composition": null,
-            "connections": null,
             "two_dim": null,
             "three_dim": null,
+            "connections": null,
             "precision": null
         },
         {
@@ -2943,9 +2697,9 @@
             "id": 231483434023456697276320312599067828968,
             "format": "wavecar",
             "composition": null,
-            "connections": null,
             "two_dim": null,
             "three_dim": null,
+            "connections": null,
             "precision": null
         },
         {
@@ -2954,9 +2708,9 @@
             "id": 289644940844589840653367490226325419159,
             "format": "wavecar45",
             "composition": null,
-            "connections": null,
             "two_dim": null,
             "three_dim": null,
+            "connections": null,
             "precision": null
         },
         {
@@ -2965,9 +2719,9 @@
             "id": 108918259024333191697510639374573512453,
             "format": "WFK",
             "composition": null,
-            "connections": null,
             "two_dim": null,
             "three_dim": null,
+            "connections": null,
             "precision": null
         },
         {
@@ -2976,9 +2730,9 @@
             "id": 57208371217313378767434864947416222129,
             "format": "wln",
             "composition": true,
-            "connections": true,
             "two_dim": false,
             "three_dim": false,
+            "connections": true,
             "precision": 0
         },
         {
@@ -2987,9 +2741,9 @@
             "id": 176872839012100431393241970930677331892,
             "format": "xed",
             "composition": null,
-            "connections": null,
             "two_dim": null,
             "three_dim": null,
+            "connections": null,
             "precision": null
         },
         {
@@ -2998,10 +2752,15 @@
             "id": 136927725276907773739503422731206082806,
             "format": "xmd",
             "composition": null,
-            "connections": null,
             "two_dim": null,
             "three_dim": null,
+            "connections": null,
             "precision": null
+        },
+        {
+            "extension": "xml",
+            "id": 301598072342801950763513121261746178173,
+            "alias_of": 75812523089448185333036219943662697581
         },
         {
             "extension": "xml",
@@ -3009,20 +2768,9 @@
             "id": 146631832032801319084080695122229884754,
             "format": "xml",
             "composition": true,
-            "connections": true,
             "two_dim": true,
             "three_dim": true,
-            "precision": null
-        },
-        {
-            "extension": "xml",
-            "note": "Quantum Espresso PWscf output",
-            "id": 301598072342801950763513121261746178173,
-            "format": "xml",
-            "composition": null,
-            "connections": null,
-            "two_dim": null,
-            "three_dim": null,
+            "connections": true,
             "precision": null
         },
         {
@@ -3031,9 +2779,9 @@
             "id": 75586451786068810256834901287390596125,
             "format": "xplor",
             "composition": null,
-            "connections": null,
             "two_dim": null,
             "three_dim": null,
+            "connections": null,
             "precision": null
         },
         {
@@ -3042,9 +2790,9 @@
             "id": 215712837579064454423947286281714090418,
             "format": "xsf",
             "composition": true,
-            "connections": false,
             "two_dim": true,
             "three_dim": true,
+            "connections": false,
             "precision": 5
         },
         {
@@ -3053,21 +2801,15 @@
             "id": 266720717934161798645966059338667710342,
             "format": "xtc",
             "composition": false,
-            "connections": false,
             "two_dim": true,
             "three_dim": true,
+            "connections": false,
             "precision": null
         },
         {
             "extension": "XV",
-            "note": "SIESTA XV",
             "id": 31515889798523375759424628754076569174,
-            "format": "XV",
-            "composition": null,
-            "connections": null,
-            "two_dim": null,
-            "three_dim": null,
-            "precision": null
+            "alias_of": 106192524664603598885327722572354670435
         },
         {
             "extension": "xv",
@@ -3075,9 +2817,9 @@
             "id": 106192524664603598885327722572354670435,
             "format": "xv",
             "composition": true,
-            "connections": false,
             "two_dim": true,
             "three_dim": true,
+            "connections": false,
             "precision": 11
         },
         {
@@ -3086,9 +2828,9 @@
             "id": 46290705721393589047128301807650178748,
             "format": "xyze",
             "composition": true,
-            "connections": false,
             "two_dim": true,
             "three_dim": true,
+            "connections": false,
             "precision": 10
         },
         {
@@ -3097,9 +2839,9 @@
             "id": 50135205643343990489495467470022579507,
             "format": "xyz",
             "composition": true,
-            "connections": false,
             "two_dim": true,
             "three_dim": true,
+            "connections": false,
             "precision": 10
         },
         {
@@ -3108,9 +2850,9 @@
             "id": 84911821147220874565420273190129740994,
             "format": "yob",
             "composition": null,
-            "connections": null,
             "two_dim": null,
             "three_dim": null,
+            "connections": null,
             "precision": null
         },
         {
@@ -3119,9 +2861,9 @@
             "id": 110063328763770889730093328255943162230,
             "format": "zin",
             "composition": true,
-            "connections": false,
             "two_dim": true,
             "three_dim": true,
+            "connections": false,
             "precision": null
         }
     ]
