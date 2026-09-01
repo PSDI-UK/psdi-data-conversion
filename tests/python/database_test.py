@@ -373,9 +373,9 @@ def test_calc_conversion_precision_weight(database, in_prec, out_prec, ex_weight
 def test_calc_conversion_weight(format_all, format_none, max_prop_weight, converter_ob):
     """Test that getting the full conversion weight is calculated as expected"""
     in_format: db.FormatInfo = deepcopy(format_all)
-    in_format.precision = 24
+    in_format.format_common_info.precision = 24
     out_format: db.FormatInfo = deepcopy(format_none)
-    out_format.precision = 18
+    out_format.format_common_info.precision = 18
 
     assert db.calc_conversion_weight(converter_ob, in_format,
                                      out_format,) == ((max_prop_weight << db.PROP_WEIGHT_BIT_OFFSET) +

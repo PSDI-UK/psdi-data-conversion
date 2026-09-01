@@ -719,7 +719,7 @@ class FormatCommonInfo:
             Dict of IDs of aliases and their respective extensions
         """
 
-        primary_name = d_single_format_info.get(DB_NAME_KEY, "")
+        primary_name = d_single_format_info.get(DB_FORMAT_EXT_KEY, "")
         primary_id = d_single_format_info.get(DB_ID_KEY, -1)
 
         if d_alias_exts is None:
