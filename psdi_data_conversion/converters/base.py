@@ -859,9 +859,9 @@ class ScriptFileConverter(FileConverter):
         """Get the list of arguments which will be passed to the script"""
 
         from_flags = self.data.get("from_flags", "")
-        to_flags = self.data.get("from_flags", "")
+        to_flags = self.data.get("to_flags", "")
         from_options = self.data.get("from_options", "")
-        to_options = self.data.get("from_options", "")
+        to_options = self.data.get("to_options", "")
 
         # Check that all user-provided input passes security checks
         for user_args in [from_flags, to_flags, from_options, to_options]:
