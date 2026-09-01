@@ -1566,7 +1566,7 @@ class DataConversionDatabase:
                                                      d_single_format_info=d_format_dicts[prim_id],
                                                      d_alias_exts=d_alias_exts)
 
-            self._d_format_info_from_id[format_id] = primary_format_info
+            self._d_format_info_from_id[prim_id] = primary_format_info
 
             # Create a FormatInfo for every alias as well and also add those to the ID dict
             for alias_id in s_alias_ids:
