@@ -1606,16 +1606,14 @@ class DataConversionDatabase:
 
         for format_info in self._d_format_info_from_id.values():
 
-            for name in format_info.d_alias_exts.values():
+            lc_name = format_info.name.lower()
 
-                lc_name = name.lower()
-
-                # Each name may correspond to multiple formats, so we use a list for each entry to list all possible
-                # formats for each name
-                if lc_name not in self._d_format_info_from_name:
-                    self._d_format_info_from_name[lc_name] = [format_info]
-                elif format_info not in self._d_format_info_from_name[lc_name]:
-                    self._d_format_info_from_name[lc_name].append(format_info)
+            # Each name may correspond to multiple formats, so we use a list for each entry to list all possible
+            # formats for each name
+            if lc_name not in self._d_format_info_from_name:
+                self._d_format_info_from_name[lc_name] = [format_info]
+            elif format_info not in self._d_format_info_from_name[lc_name]:
+                self._d_format_info_from_name[lc_name].append(format_info)
 
         # Sort each list in the format info from name dict by format ID for consistency
         for l_format_info in self._d_format_info_from_name.values():
