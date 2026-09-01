@@ -18,7 +18,7 @@ from psdi_data_conversion import constants as const
 from psdi_data_conversion.converter import D_CONVERTER_ARGS, L_REGISTERED_CONVERTERS, get_registered_converter_class
 from psdi_data_conversion.converters.openbabel.converter import (COORD_GEN_KEY, COORD_GEN_QUAL_KEY, DEFAULT_COORD_GEN,
                                                                  DEFAULT_COORD_GEN_QUAL)
-from psdi_data_conversion.database import (FormatInfo, get_conversion_pathway, get_conversion_quality,
+from psdi_data_conversion.database import (D_FORMAT_PROPERTY_ATTRS, get_conversion_pathway, get_conversion_quality,
                                            get_converter_info, get_format_info, get_in_format_args,
                                            get_out_format_args, get_possible_conversions, get_possible_formats)
 from psdi_data_conversion.main import FileConverterInputException, parse_args
@@ -415,7 +415,7 @@ def test_format_info(capsys):
                                     in_format_info.note)
 
     # Check for property information
-    for attr, label in FormatInfo.D_PROPERTY_ATTRS.items():
+    for attr, label in D_FORMAT_PROPERTY_ATTRS.items():
         support_status = getattr(in_format_info, attr)
         if support_status:
             assert string_is_present_in_out(label + " supported")
