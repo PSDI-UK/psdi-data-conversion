@@ -732,9 +732,9 @@ class FormatCommonInfo:
                                 c2x_format=d_single_format_info.get(DB_FORMAT_C2X_KEY),
                                 note=d_single_format_info.get(DB_FORMAT_NOTE_KEY, ""),
                                 composition=d_single_format_info.get(DB_FORMAT_COMP_KEY),
-                                two_dim=d_single_format_info.get(DB_FORMAT_CONN_KEY),
-                                three_dim=d_single_format_info.get(DB_FORMAT_2D_KEY),
-                                connections=d_single_format_info.get(DB_FORMAT_3D_KEY),
+                                two_dim=d_single_format_info.get(DB_FORMAT_2D_KEY),
+                                three_dim=d_single_format_info.get(DB_FORMAT_3D_KEY),
+                                connections=d_single_format_info.get(DB_FORMAT_CONN_KEY),
                                 precision=d_single_format_info.get(DB_FORMAT_PRECISION_KEY))
 
     @property
