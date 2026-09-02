@@ -165,7 +165,27 @@ class GuiSingleTestSpecRunner:
 
         # Get the format info for each format, which we'll use to get the name and note of each
         self._from_format_info = get_format_info(from_format, which=0)
-        self._to_format_info = get_format_info(single_test_spec.to_format, which=0)
+        to_format = single_test_spec.to_format
+        self._to_format_info = get_format_info(to_format, which=0)
+
+        # Store the desired extension for each format
+        if isinstance(from_format, int):
+            self._from_format_ext = self._from_format_info.d_alias_exts[from_format]
+        elif isinstance(from_format, str) and len(from_format) < 32:
+            self._from_format_ext = from_format
+        else:
+            self._from_format_ext = self._from_format_info.name
+        if self._from_format_ext.startswith("."):
+            self._from_format_ext = self._from_format_ext[1:]
+
+        if isinstance(to_format, int):
+            self._to_format_ext = self._to_format_info.d_alias_exts[to_format]
+        elif isinstance(to_format, str) and len(to_format) < 32:
+            self._to_format_ext = to_format
+        else:
+            self._to_format_ext = self._to_format_info.name
+        if self._to_format_ext.startswith("."):
+            self._to_format_ext = self._to_format_ext[1:]
 
         # For each argument in the conversion kwargs, interpret it as the appropriate option for this conversion,
         # overriding defaults set above
@@ -289,12 +309,12 @@ class GuiSingleTestSpecRunner:
         wait_for_element(self.driver, "//select[@id='fromList']/option")
 
         # Select from_format from the 'from' list.
-        full_from_format = f"{self._from_format_info.name}: {self._from_format_info.note}"
+        full_from_format = f"{self._from_format_ext}: {self._from_format_info.note}"
         self.driver.find_element(
             By.XPATH, f"//select[@id='fromList']/option[starts-with(.,'{full_from_format}')]").click()
 
         # Select to_format from the 'to' list.
-        full_to_format = f"{self._to_format_info.name}: {self._to_format_info.note}"
+        full_to_format = f"{self._to_format_ext}: {self._to_format_info.note}"
         self.driver.find_element(
             By.XPATH, f"//select[@id='toList']/option[starts-with(.,'{full_to_format}')]").click()
 
@@ -445,8 +465,10 @@ class GuiSingleTestSpecRunner:
         directory.
         """
         # Check for the presence of the output file
+        # TODO: Ensure output file is created with the properly-indicated extension
         if not os.path.isfile(self._output_file):
-            raise FileConverterAbortException("ERROR: No output file was produced. Log contents:\n" +
+            raise FileConverterAbortException("ERROR: No output file was produced at expected location "
+                                              f"{self._output_file}. Log contents:\n" +
                                               open(self._log_file, "r").read())
 
         # Move the output file and log file to the expected locations

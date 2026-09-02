@@ -21,10 +21,10 @@ from psdi_data_conversion.converter import (D_CONVERTER_ARGS, L_REGISTERED_CONVE
                                             get_supported_converter_class, run_converter)
 from psdi_data_conversion.converters.base import (FileConverterAbortException, FileConverterException,
                                                   FileConverterInputException)
-from psdi_data_conversion.database import (ConversionQualityInfo, FormatInfo, get_conversion_pathway,
-                                           get_conversion_quality, get_converter_info, get_format_info,
-                                           get_in_format_args, get_out_format_args, get_possible_conversions,
-                                           get_possible_formats)
+from psdi_data_conversion.database import (D_FORMAT_PROPERTY_ATTRS, ConversionQualityInfo, FormatInfo,
+                                           get_conversion_pathway, get_conversion_quality, get_converter_info,
+                                           get_format_info, get_in_format_args, get_out_format_args,
+                                           get_possible_conversions, get_possible_formats)
 from psdi_data_conversion.file_io import split_archive_ext
 from psdi_data_conversion.log_utility import get_log_level_from_str
 from psdi_data_conversion.utils import print_wrap, regularize_name
@@ -578,7 +578,7 @@ def detail_format(format_name: str):
         print_wrap(f"{format_info.disambiguated_name} (ID: {format_info.id}): {format_info.note}")
 
         # Print whether or not it supports each possible property
-        for attr, label in FormatInfo.D_PROPERTY_ATTRS.items():
+        for attr, label in D_FORMAT_PROPERTY_ATTRS.items():
             support_str = label
             if getattr(format_info, attr):
                 support_str += " supported"

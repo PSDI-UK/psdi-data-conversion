@@ -18,10 +18,11 @@ from psdi_data_conversion import constants as const
 from psdi_data_conversion.converter import D_CONVERTER_ARGS, L_REGISTERED_CONVERTERS, get_registered_converter_class
 from psdi_data_conversion.converters.openbabel.converter import (COORD_GEN_KEY, COORD_GEN_QUAL_KEY, DEFAULT_COORD_GEN,
                                                                  DEFAULT_COORD_GEN_QUAL)
-from psdi_data_conversion.database import (FormatInfo, get_conversion_pathway, get_conversion_quality,
+from psdi_data_conversion.database import (D_FORMAT_PROPERTY_ATTRS, get_conversion_pathway, get_conversion_quality,
                                            get_converter_info, get_format_info, get_in_format_args,
                                            get_out_format_args, get_possible_conversions, get_possible_formats)
 from psdi_data_conversion.main import FileConverterInputException, parse_args
+from psdi_data_conversion.testing.constants import FORMAT_INCHI, FORMAT_MOLDY
 from psdi_data_conversion.testing.conversion_test_specs import l_cla_test_specs
 from psdi_data_conversion.testing.utils import run_test_conversion_with_cla, run_with_arg_string
 from psdi_data_conversion.utils import regularize_name
@@ -292,12 +293,12 @@ def test_get_conversions(capsys):
 def test_get_chained(capsys):
     """Test the ability to get a pathway for a chained conversion
     """
-    in_format = "mol-1"
-    out_format = "inchi"
+    in_format = get_format_info(FORMAT_MOLDY)
+    out_format = get_format_info(FORMAT_INCHI)
     pathway = get_conversion_pathway(in_format, out_format)
     assert len(pathway) > 1
 
-    run_with_arg_string(f"-l -f {in_format} -t {out_format}")
+    run_with_arg_string(f"-l -f {in_format.id} -t {out_format.id}")
     captured = capsys.readouterr()
     compressed_out: str = captured.out.replace("\n", "").replace(" ", "")
 
@@ -306,9 +307,9 @@ def test_get_chained(capsys):
 
     _check_no_errors(captured)
 
-    assert string_is_present_in_out(f"No direct conversions are possible from {in_format} to {out_format}")
+    assert string_is_present_in_out(f"No direct conversions are possible from {in_format.id} to {out_format.id}")
 
-    assert string_is_present_in_out(f"A chained conversion is possible from {in_format} to {out_format} using "
+    assert string_is_present_in_out(f"A chained conversion is possible from {in_format.id} to {out_format.id} using "
                                     f"registered converters:")
 
     for i, step in enumerate(pathway):
@@ -414,7 +415,7 @@ def test_format_info(capsys):
                                     in_format_info.note)
 
     # Check for property information
-    for attr, label in FormatInfo.D_PROPERTY_ATTRS.items():
+    for attr, label in D_FORMAT_PROPERTY_ATTRS.items():
         support_status = getattr(in_format_info, attr)
         if support_status:
             assert string_is_present_in_out(label + " supported")

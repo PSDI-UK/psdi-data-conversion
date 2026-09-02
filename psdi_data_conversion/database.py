@@ -26,7 +26,7 @@ from psdi_data_conversion.converter import (L_REGISTERED_CONVERTERS, L_SUPPORTED
                                             get_registered_converter_class)
 from psdi_data_conversion.converters.base import FileConverter, FileConverterException
 from psdi_data_conversion.file_io import get_package_path
-from psdi_data_conversion.utils import regularize_name
+from psdi_data_conversion.utils import JsonDict, regularize_name
 
 # Database keys
 # -------------
@@ -649,68 +649,93 @@ class ConverterInfo:
         return l_flag_info, l_option_info
 
 
-class FormatInfo:
-    """Class providing information on a file format from the PSDI Data Conversion database
-    """
+D_FORMAT_PROPERTY_ATTRS = {const.QUAL_COMP_KEY: const.QUAL_COMP_LABEL,
+                           const.QUAL_CONN_KEY: const.QUAL_CONN_LABEL,
+                           const.QUAL_2D_KEY: const.QUAL_2D_LABEL,
+                           const.QUAL_3D_KEY: const.QUAL_3D_LABEL}
+"""A dict of attrs of this class which describe properties that a format may or may not have"""
 
-    D_PROPERTY_ATTRS = {const.QUAL_COMP_KEY: const.QUAL_COMP_LABEL,
-                        const.QUAL_CONN_KEY: const.QUAL_CONN_LABEL,
-                        const.QUAL_2D_KEY: const.QUAL_2D_LABEL,
-                        const.QUAL_3D_KEY: const.QUAL_3D_LABEL}
-    """A dict of attrs of this class which describe properties that a format may or may not have"""
 
-    def __init__(self,
-                 name: str,
-                 parent: DataConversionDatabase,
-                 d_single_format_info: dict[str, bool | int | str | None]):
-        """Set up the class - this will be initialised within a `DataConversionDatabase`, which we set as the parent
+@dataclass
+class FormatCommonInfo:
+    """A class representing the common info for a file format (basically, everything except the extension and ID)"""
+
+    primary_name: str
+    """The primary name (extension) of this format"""
+
+    primary_id: int = -1
+    """The primary ID of this format"""
+
+    parent: DataConversionDatabase | None = None
+    """The database which this format belongs to"""
+
+    d_alias_exts: dict[int, str] | None = None
+    """Dict of IDs of aliases and their respective extensions"""
+
+    c2x_format: str | None = None
+    """The name of this format as the c2x converter expects it"""
+
+    note: str = ""
+    """The description of this format"""
+
+    composition: bool | None = None
+    """Whether or not this format stores composition information"""
+
+    two_dim: bool | None = None
+    """Whether or not this format stores 2D structural information"""
+
+    three_dim: bool | None = None
+    """Whether or not this format stores 3D structural information"""
+
+    connections: bool | None = None
+    """Whether or not this format stores connections information"""
+
+    precision: int | None = None
+    """The precision of numeric information in the format, as the number of decimal places, or 0 if unknown"""
+
+    def __post_init__(self):
+        """Finish initialising the object"""
+
+        if self.d_alias_exts is None:
+            self.d_alias_exts = {}
+
+        if self.c2x_format is None:
+            self.c2x_format = self.primary_name
+
+    @staticmethod
+    def factory(parent: DataConversionDatabase,
+                d_single_format_info: dict[str, bool | int | str | None],
+                d_alias_exts: dict[int, str] | None = None):
+        """Factory function to set up the class - this will be initialised within a `DataConversionDatabase`, which we
+        set as the parent
 
         Parameters
         ----------
-        name : str
-            The name (extension) of the file format
         parent : DataConversionDatabase
             The database which this belongs to
         d_single_format_info : dict[str, bool  |  int  |  str  |  None]
             The dict of info on the format stored in the database
+        d_alias_exts : dict[int, str]
+            Dict of IDs of aliases and their respective extensions
         """
 
-        # Load attributes from input
-        self.name = name
-        """The name of this format"""
+        primary_name = d_single_format_info.get(DB_FORMAT_EXT_KEY, "")
+        primary_id = d_single_format_info.get(DB_ID_KEY, -1)
 
-        self.parent = parent
-        """The database which this format belongs to"""
+        if d_alias_exts is None:
+            d_alias_exts = {primary_id: primary_name}
 
-        # Load attributes from the database
-        self.id: int = d_single_format_info.get(DB_ID_KEY, -1)
-        """The ID of this format"""
-
-        self.c2x_format: str = d_single_format_info.get(DB_FORMAT_C2X_KEY)
-        """The name of this format as the c2x converter expects it"""
-
-        self.note: str = d_single_format_info.get(DB_FORMAT_NOTE_KEY, "")
-        """The description of this format"""
-
-        self.composition: bool | None = d_single_format_info.get(DB_FORMAT_COMP_KEY)
-        """Whether or not this format stores composition information"""
-
-        self.connections: bool | None = d_single_format_info.get(DB_FORMAT_CONN_KEY)
-        """Whether or not this format stores connections information"""
-
-        self.two_dim: bool | None = d_single_format_info.get(DB_FORMAT_2D_KEY)
-        """Whether or not this format stores 2D structural information"""
-
-        self.three_dim: bool | None = d_single_format_info.get(DB_FORMAT_3D_KEY)
-        """Whether or not this format stores 3D structural information"""
-
-        self.precision: int | None = d_single_format_info.get(DB_FORMAT_PRECISION_KEY)
-        """The precision of numeric information in the format, as the number of decimal places, or 0 if unknown"""
-
-        self._lower_name: str = self.name.lower()
-        """The format name all in lower-case"""
-
-        self._disambiguated_name: str | None = None
+        return FormatCommonInfo(primary_name=primary_name,
+                                primary_id=primary_id,
+                                parent=parent,
+                                d_alias_exts=d_alias_exts,
+                                c2x_format=d_single_format_info.get(DB_FORMAT_C2X_KEY),
+                                note=d_single_format_info.get(DB_FORMAT_NOTE_KEY, ""),
+                                composition=d_single_format_info.get(DB_FORMAT_COMP_KEY),
+                                two_dim=d_single_format_info.get(DB_FORMAT_2D_KEY),
+                                three_dim=d_single_format_info.get(DB_FORMAT_3D_KEY),
+                                connections=d_single_format_info.get(DB_FORMAT_CONN_KEY),
+                                precision=d_single_format_info.get(DB_FORMAT_PRECISION_KEY))
 
     @property
     def uuid(self):
@@ -723,8 +748,7 @@ class FormatInfo:
         """A unique name for this format which can be used to distinguish it from others which share the same extension,
         by appending the name of each with a unique index"""
         if self._disambiguated_name is None:
-            l_formats_with_same_name = [x for x in self.parent.l_unsorted_format_info
-                                        if x and x._lower_name == self._lower_name]
+            l_formats_with_same_name = self.parent.d_format_info_from_name[self.name.lower()]
             if len(l_formats_with_same_name) == 1:
                 self._disambiguated_name = self._lower_name
             else:
@@ -739,6 +763,145 @@ class FormatInfo:
     def __int__(self):
         """When cast to int, return the ID of the format"""
         return self.id
+
+    def __hash__(self):
+        return hash(self.primary_id)
+
+
+@dataclass
+class FormatInfo:
+    """Class providing information on a file format from the PSDI Data Conversion database
+    """
+
+    format_common_info: FormatCommonInfo
+    """The information common to all variants of the format"""
+
+    name: str | None = None
+    """The name (extension) of this particular variant of the format"""
+
+    id: int | None = None
+    """The ID of this particular variant of the format"""
+
+    def __post_init__(self):
+        """Finish setting up the object"""
+
+        if self.name is None:
+            self.name = self.format_common_info.primary_name
+
+        if self.id is None:
+            self.id = self.format_common_info.primary_id
+
+        self.is_primary = self.id == self.format_common_info.primary_id
+        """Whether or not this is the primary format for the shared extensions of a format"""
+
+        self._lower_name: str = self.name.lower()
+        """The format name all in lower-case"""
+
+        self._disambiguated_name: str | None = None
+        """The disambiguated name of the format"""
+
+    @property
+    def primary_name(self):
+        """The primary name (extension) of the format"""
+        return self.format_common_info.primary_name
+
+    @property
+    def primary_id(self):
+        """The primary ID of the format"""
+        return self.format_common_info.primary_id
+
+    @property
+    def parent(self):
+        """The database which this format belongs to"""
+        return self.format_common_info.parent
+
+    @property
+    def d_alias_exts(self):
+        """Dict of IDs of aliases and their respective extensions"""
+        return self.format_common_info.d_alias_exts
+
+    @property
+    def c2x_format(self):
+        """The name of this format as the c2x converter expects it"""
+        return self.format_common_info.c2x_format
+
+    @property
+    def note(self):
+        """The description of this format"""
+        return self.format_common_info.note
+
+    @property
+    def composition(self):
+        """Whether or not this format stores composition information"""
+        return self.format_common_info.composition
+
+    @property
+    def two_dim(self):
+        """Whether or not this format stores 2D structural information"""
+        return self.format_common_info.two_dim
+
+    @property
+    def three_dim(self):
+        """Whether or not this format stores 3D structural information"""
+        return self.format_common_info.three_dim
+
+    @property
+    def connections(self):
+        """Whether or not this format stores connections information"""
+        return self.format_common_info.connections
+
+    @property
+    def precision(self):
+        """The precision of numeric information in the format, as the number of decimal places, or 0 if unknown"""
+        return self.format_common_info.precision
+
+    @property
+    def uuid(self):
+        """Returns the ID as a UUID object"""
+        return UUID(int=self.id)
+
+    @property
+    def disambiguated_name(self) -> str:
+        """A unique name for this format which can be used to distinguish it from others which share the same extension,
+        by appending the name of each with a unique index"""
+        if self._disambiguated_name is None:
+            l_formats_with_same_name = self.parent.d_format_info_from_name[self.name.lower()]
+            if len(l_formats_with_same_name) == 1:
+                self._disambiguated_name = self._lower_name
+            else:
+                index_of_this = [i for i, x in enumerate(l_formats_with_same_name) if self is x][0]
+                self._disambiguated_name = f"{self._lower_name}-{index_of_this}"
+        return self._disambiguated_name
+
+    def __str__(self):
+        """When cast to string, convert to the name (extension) of the format"""
+        return self.name
+
+    def __int__(self):
+        """When cast to int, return the ID of the format"""
+        return self.id
+
+    def __hash__(self):
+        return hash(self.id)
+
+    @staticmethod
+    def factory(parent: DataConversionDatabase,
+                d_single_format_info: dict[str, bool | int | str | None],
+                d_alias_exts: dict[int, str] | None = None):
+        """Factory function to easily set up the class. This should only be used for primary formats, and each alias
+        format should be set up using the class initializer and the `format_common_info` of the primary format.
+
+        Parameters
+        ----------
+        parent : DataConversionDatabase
+            The database which this belongs to
+        d_single_format_info : dict[str, bool  |  int  |  str  |  None]
+            The dict of info on the format stored in the database
+        d_alias_exts : dict[int, str] | None
+            Dict of IDs of aliases and their respective extensions
+        """
+
+        return FormatInfo(FormatCommonInfo.factory(parent, d_single_format_info, d_alias_exts))
 
 
 @dataclass
@@ -755,7 +918,7 @@ class PropertyConversionInfo:
     def __post_init__(self):
         """Set the label and note based on input/output status
         """
-        self.label = FormatInfo.D_PROPERTY_ATTRS[self.key]
+        self.label = D_FORMAT_PROPERTY_ATTRS[self.key]
 
         if self.input_supported is None and self.output_supported is None:
             self.note = const.QUAL_NOTE_BOTH_UNKNOWN
@@ -850,6 +1013,7 @@ class ConversionsTable:
 
     def __init__(self,
                  l_converts_to: list[dict[str, bool | int | str | None]],
+                 d_format_id_aliases: dict[int, set[int]],
                  parent: DataConversionDatabase):
         """Set up the class - this will be initialised within a `DataConversionDatabase`, which we set as the parent
 
@@ -857,6 +1021,8 @@ class ConversionsTable:
         ----------
         l_converts_to : list[dict[str, bool  |  int  |  str  |  None]]
             The list of dicts in the database providing information on possible conversions
+        d_format_id_aliases : Iterable[int]
+            A dict of primary format IDs listing the aliases for each
         parent : DataConversionDatabase
             The database which this belongs to
 
@@ -869,16 +1035,20 @@ class ConversionsTable:
 
         # Build the conversion graphs - each format is a vertex, each conversion is an edge
 
-        num_formats = len(parent.formats)
+        num_formats = len(d_format_id_aliases)
 
         # igraph doesn't support int128s (used for UUIDs) for indices, so associate each format with an index
         self.d_indices_from_uuids: dict[int, int] = {}
         self.d_uuids_from_indices: dict[int, int] = {}
 
-        for i, format in enumerate(parent.formats):
-            uuid = format[DB_ID_KEY]
-            self.d_indices_from_uuids[uuid] = i
-            self.d_uuids_from_indices[i] = uuid
+        for i, (prim_id, s_alias_ids) in enumerate(d_format_id_aliases.items()):
+            for format_id in s_alias_ids:
+                self.d_indices_from_uuids[format_id] = i
+            self.d_uuids_from_indices[i] = prim_id
+
+        # Trim down the conversions list to only conversions involving primary formats
+        l_converts_to = [x for x in l_converts_to if x[DB_IN_ID_KEY] in d_format_id_aliases and
+                         x[DB_OUT_ID_KEY] in d_format_id_aliases]
 
         l_supported_conversions = [x for x in l_converts_to if
                                    self.parent.get_converter_info(x[DB_CONV_ID_KEY]).name in L_SUPPORTED_CONVERTERS]
@@ -901,9 +1071,8 @@ class ConversionsTable:
                               for x in l_conversions]
             graph = ig.Graph(n=num_formats,
                              directed=True,
-                             # Each vertex stores the disambiguated name of the format
-                             vertex_attrs={DB_NAME_KEY: [x.disambiguated_name if x is not None else None
-                                                         for x in parent.l_unsorted_format_info]},
+                             # Each vertex stores the ID of the primary format
+                             vertex_attrs={DB_ID_KEY: [self.d_uuids_from_indices[i] for i in range(num_formats)]},
                              edges=[(self.d_indices_from_uuids[x[DB_IN_ID_KEY]],
                                      self.d_indices_from_uuids[x[DB_OUT_ID_KEY]]) for x in l_conversions],
                              # Each edge stores the id and name of the converter used for the conversion
@@ -992,7 +1161,7 @@ class ConversionsTable:
         num_new_props = 0
         any_unknown = False
         d_prop_conversion_info: dict[str, PropertyConversionInfo] = {}
-        for prop in FormatInfo.D_PROPERTY_ATTRS:
+        for prop in D_FORMAT_PROPERTY_ATTRS:
             in_prop: bool | None = getattr(in_format_info, prop)
             out_prop: bool | None = getattr(out_format_info, prop)
 
@@ -1175,6 +1344,12 @@ class ConversionsTable:
             l_steps.append((get_converter_info(converter_name),
                             self.parent.get_format_info(source_id),
                             self.parent.get_format_info(target_id)))
+
+        # If the in or out format is an alias, make sure the path references that particular alias
+        if not in_format_info.is_primary:
+            l_steps[0] = l_steps[0][0], in_format_info, l_steps[0][2]
+        if not out_format_info.is_primary:
+            l_steps[-1] = l_steps[-1][0], l_steps[-1][1], out_format_info
 
         return l_steps
 
@@ -1365,21 +1540,55 @@ class DataConversionDatabase:
         # Make the dict of format info keyed by ID
         self._d_format_info_from_id: dict[int, FormatInfo] = {}
 
-        for d_single_format_info in self.formats:
-            lc_name: str = d_single_format_info[DB_FORMAT_EXT_KEY]
+        # To sort aliases, we first make a temporary dict of the entries in the database, noting as we go through
+        # which ids are for primary formats, and creating a dict listing the alias IDs for each primary ID
+        d_format_id_aliases: dict[int, set[int]] = {}
+        d_format_dicts: dict[int, JsonDict] = {}
+        for d_format_db_info in self.formats:
+            format_id: int = d_format_db_info[DB_ID_KEY]
+            d_format_dicts[format_id] = d_format_db_info
+            if not d_format_db_info.get(DB_FORMAT_ALIAS_OF_KEY):
+                if format_id not in d_format_id_aliases:
+                    d_format_id_aliases[format_id] = set((format_id,))
+                else:
+                    d_format_id_aliases[format_id].add(format_id)
+            else:
+                prim_id: int = d_format_db_info[DB_FORMAT_ALIAS_OF_KEY]
+                if prim_id not in d_format_id_aliases:
+                    d_format_id_aliases[prim_id] = set((prim_id, format_id))
+                else:
+                    d_format_id_aliases[prim_id].add(format_id)
 
-            format_info = FormatInfo(name=lc_name,
-                                     parent=self,
-                                     d_single_format_info=d_single_format_info)
+        # Now create a FormatInfo object for each primary ID
+        for prim_id, s_alias_ids in d_format_id_aliases.items():
 
-            self._d_format_info_from_id[format_info.id] = format_info
+            # Collect all the alias extensions for each primary format
+            d_alias_exts: dict[int, str] = {x: d_format_dicts[x][DB_FORMAT_EXT_KEY] for x in s_alias_ids}
+            for key, val in d_alias_exts.items():
+                if val.startswith("."):
+                    d_alias_exts[key] = val[1:]
+
+            primary_format_info = FormatInfo.factory(parent=self,
+                                                     d_single_format_info=d_format_dicts[prim_id],
+                                                     d_alias_exts=d_alias_exts)
+
+            self._d_format_info_from_id[prim_id] = primary_format_info
+
+            # Create a FormatInfo for every alias as well and also add those to the ID dict
+            for alias_id in s_alias_ids:
+                if alias_id == prim_id:
+                    continue
+                self._d_format_info_from_id[alias_id] = FormatInfo(primary_format_info.format_common_info,
+                                                                   name=d_alias_exts[alias_id],
+                                                                   id=alias_id)
 
         # Create a temporary version of the unsorted format info list. We'll create a pruned version later, but the
         # unpruned version is needed to create the conversions table, which is needed before we can prune it
-        self._l_unsorted_format_info = list(self._d_format_info_from_id.values())
+        self._l_unsorted_format_info = list(set(self._d_format_info_from_id.values()))
 
         # Initialize the conversions table now
         self._conversions_table = ConversionsTable(l_converts_to=self.converts_to,
+                                                   d_format_id_aliases=d_format_id_aliases,
                                                    parent=self)
 
         # Use the conversions graph to prune any formats which have no valid conversions
@@ -1395,8 +1604,8 @@ class DataConversionDatabase:
                     # The format isn't supported for any conversions, so mark it to be removed from the dict
                     # (Can't remove while we're iterating over the dict)
                     l_ids_to_remove.append(format_id)
-            for id in l_ids_to_remove:
-                del self._d_format_info_from_id[id]
+            for format_id in l_ids_to_remove:
+                del self._d_format_info_from_id[format_id]
 
         # Now create the formats from name dict
         self._d_format_info_from_name: dict[str, list[FormatInfo]] = {}
@@ -1408,12 +1617,16 @@ class DataConversionDatabase:
             # Each name may correspond to multiple formats, so we use a list for each entry to list all possible
             # formats for each name
             if lc_name not in self._d_format_info_from_name:
-                self._d_format_info_from_name[lc_name] = []
+                self._d_format_info_from_name[lc_name] = [format_info]
+            elif format_info not in self._d_format_info_from_name[lc_name]:
+                self._d_format_info_from_name[lc_name].append(format_info)
 
-            self._d_format_info_from_name[lc_name].append(format_info)
+        # Sort each list in the format info from name dict by format ID for consistency
+        for l_format_info in self._d_format_info_from_name.values():
+            l_format_info.sort(key=lambda x: x.id)
 
         # Finally, create a list of format infos (with arbitrary index)
-        self._l_unsorted_format_info = list(self._d_format_info_from_id.values())
+        self._l_unsorted_format_info = list(set(self._d_format_info_from_id.values()))
 
     def _get_converter_list(self) -> str:
         return "\n".join([f"{x.pretty_name} (ID: {x.id} / {UUID(int=x.id)})" for x in self.l_unsorted_converter_info])

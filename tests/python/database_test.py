@@ -17,20 +17,19 @@ from psdi_data_conversion.testing import constants as tc
 from psdi_data_conversion.utils import regularize_name
 
 
-def test_load():
+@pytest.fixture(scope="module", autouse=True)
+def database():
+    return db.get_database()
+
+
+def test_load(database):
     """Test that we can load and retrieve the database
     """
 
-    db1 = db.get_database()
-    db2 = db.get_database()
+    new_database = db.get_database()
 
     # We should only get one database created, and any additional calls to `get_database()` should return the same
-    assert db2 is db1
-
-
-@pytest.fixture(scope="module")
-def database():
-    return db.get_database()
+    assert new_database is database
 
 
 def test_converter_info(database):
@@ -160,6 +159,67 @@ def test_format_info(database):
             assert not format_info.two_dim, name
             assert not format_info.three_dim, name
 
+# "ent" is an alias of the PDB format info. Check various aspects of each to ensure they work correctly
+
+
+@pytest.fixture(scope="module")
+def pdb_format_info():
+    return db.get_format_info(tc.FORMAT_PDB_0)
+
+
+@pytest.fixture(scope="module")
+def ent_format_info():
+    return db.get_format_info(tc.FORMAT_ENT)
+
+
+def test_format_alias_equality(pdb_format_info: db.FormatInfo, ent_format_info: db.FormatInfo):
+    """Test that format aliases are separate but share common info"""
+
+    # These objects should not be the same
+    assert ent_format_info != pdb_format_info
+
+    # But they should share the same common format info
+    assert ent_format_info.format_common_info is pdb_format_info.format_common_info
+
+
+def test_format_alias_primary(pdb_format_info: db.FormatInfo, ent_format_info: db.FormatInfo):
+    """Test that format aliases properly indicate which is the primary in all appropriate ways"""
+
+    # Check the "is_primary" indicator
+    assert not ent_format_info.is_primary
+    assert pdb_format_info.is_primary
+
+    # Both should reference PDB as the primary, in both ID and name
+    assert ent_format_info.primary_id != ent_format_info.id
+    assert ent_format_info.primary_name != ent_format_info.name
+    assert ent_format_info.primary_id == pdb_format_info.id
+    assert ent_format_info.primary_name == pdb_format_info.name
+
+    assert pdb_format_info.primary_id == pdb_format_info.id
+    assert pdb_format_info.primary_name == pdb_format_info.name
+
+
+def test_format_alias_dicts(pdb_format_info: db.FormatInfo, ent_format_info: db.FormatInfo):
+    """Test that format aliases dicts of IDs and extensions behave appropriately"""
+
+    # The alias extension dicts of each should be the same and should include the ID and name of each
+    assert ent_format_info.d_alias_exts is pdb_format_info.d_alias_exts
+
+    assert ent_format_info.d_alias_exts[ent_format_info.id] == ent_format_info.name
+    assert pdb_format_info.d_alias_exts[pdb_format_info.id] == pdb_format_info.name
+
+
+def test_format_alias_graph(database: db.DataConversionDatabase):
+    """Test that format aliases are handled correctly in the graphs"""
+    d_indices_from_uuids = database.conversions_table.d_indices_from_uuids
+    d_uuids_from_indices = database.conversions_table.d_uuids_from_indices
+
+    # Both the "pdb" format and its alias "ent" format should point to the same index in the graph
+    assert d_indices_from_uuids[tc.FORMAT_PDB_0] == d_indices_from_uuids[tc.FORMAT_ENT]
+
+    # The UUID pointed back to from this index should be solely the PDB format
+    assert d_uuids_from_indices[d_indices_from_uuids[tc.FORMAT_ENT]] == tc.FORMAT_PDB_0
+
 
 def test_format_info_options():
     """Test that we can get the expected information on a few test formats
@@ -265,8 +325,7 @@ def test_conversion_table(database):
 
 
 def test_conversion_pathways():
-    """Tests of determining conversion pathways between formats
-    """
+    """Tests of determining conversion pathways between formats"""
 
     # Check that we get `None` for converting from one format to itself
     assert db.get_conversion_pathway(tc.FORMAT_CIF, tc.FORMAT_CIF) is None
@@ -295,19 +354,41 @@ def test_conversion_pathways():
         assert inchi_to_moldy_path[i][0] != inchi_to_moldy_path[i+1][0]
 
 
-@pytest.fixture()
-def format_all(scope="module"):
-    return db.FormatInfo("all", database, {key: True for key in db.D_PROP_BITS.keys()})
+def test_conversion_pathways_with_aliases():
+    """Tests of how format aliases are handled in getting conversion pathways"""
+
+    # Test that if a conversion is requested from an alias, that alias is retained in the input path
+    from_alias_path = db.get_conversion_pathway(tc.FORMAT_MOLD_ALIAS, tc.FORMAT_MOLDY)
+    assert len(from_alias_path) > 1, "Test is only valid if path has at least 2 steps"
+    assert from_alias_path[0][1].id == tc.FORMAT_MOLD_ALIAS
+
+    # Test that if a conversion is requested to an alias, that alias is retained in the output path
+    to_alias_path = db.get_conversion_pathway(tc.FORMAT_MOLDY, tc.FORMAT_MOLD_ALIAS)
+    assert len(to_alias_path) > 1, "Test is only valid if path has at least 2 steps"
+    assert to_alias_path[-1][2].id == tc.FORMAT_MOLD_ALIAS
+
+    # Test that each path is still valid
+    for path in from_alias_path, to_alias_path:
+        for i in range(len(path)-1):
+            # Output format of each step should match input of next
+            assert path[i][2] is path[i+1][1]
+            # Each step should use a different converter
+            assert path[i][0] != path[i+1][0]
+
+
+@pytest.fixture(scope="module")
+def format_all(database):
+    return db.FormatInfo.factory(database, {db.DB_NAME_KEY: "all", **{key: True for key in db.D_PROP_BITS.keys()}})
 
 
 @pytest.fixture(scope="module")
 def format_none(database):
-    return db.FormatInfo("none", database, {key: False for key in db.D_PROP_BITS.keys()})
+    return db.FormatInfo.factory(database, {db.DB_NAME_KEY: "none", **{key: False for key in db.D_PROP_BITS.keys()}})
 
 
 @pytest.fixture(scope="module")
 def format_unknown(database):
-    return db.FormatInfo("unknown", database, {key: None for key in db.D_PROP_BITS.keys()})
+    return db.FormatInfo.factory(database, {db.DB_NAME_KEY: "unknown", **{key: None for key in db.D_PROP_BITS.keys()}})
 
 
 @pytest.fixture(scope="module")
@@ -350,8 +431,8 @@ def test_calc_conversion_prop_weight(in_format, out_format, ex_weight,
 @pytest.mark.parametrize("prop", db.D_PROP_BITS.keys())
 def test_calc_conversion_prop_weight_prop_lost(format_none, prop, converter_ob):
     """Test each property individually when it's lost to ensure the right bit is set for each"""
-    test_format = db.FormatInfo("test", database, {key: True if key == prop else False
-                                                   for key in db.D_PROP_BITS.keys()})
+    test_format = db.FormatInfo.factory(database, {db.DB_NAME_KEY: "unknown", **{key: True if key == prop else False
+                                                                                 for key in db.D_PROP_BITS.keys()}})
     assert db.calc_conversion_prop_weight(converter_ob, test_format,
                                           format_none) == 1 << db.D_PROP_BITS[prop]
 
@@ -365,17 +446,17 @@ def test_calc_conversion_prop_weight_prop_lost(format_none, prop, converter_ob):
                                                           (24, 6, 1 << db.PREC_MAX_DIGIT_LOSS*db.PREC_GAP_BITS)])
 def test_calc_conversion_precision_weight(database, in_prec, out_prec, ex_weight, converter_ob):
     """Test that conversion precision weights are calculated correctly"""
-    in_format = db.FormatInfo("in", database, {db.DB_FORMAT_PRECISION_KEY: in_prec})
-    out_format = db.FormatInfo("in", database, {db.DB_FORMAT_PRECISION_KEY: out_prec})
+    in_format = db.FormatInfo.factory(database, {db.DB_NAME_KEY: "in", db.DB_FORMAT_PRECISION_KEY: in_prec}, {})
+    out_format = db.FormatInfo.factory(database, {db.DB_NAME_KEY: "out", db.DB_FORMAT_PRECISION_KEY: out_prec}, {})
     assert db.calc_conversion_prec_weight(converter_ob, in_format, out_format) == ex_weight
 
 
 def test_calc_conversion_weight(format_all, format_none, max_prop_weight, converter_ob):
     """Test that getting the full conversion weight is calculated as expected"""
     in_format: db.FormatInfo = deepcopy(format_all)
-    in_format.precision = 24
+    in_format.format_common_info.precision = 24
     out_format: db.FormatInfo = deepcopy(format_none)
-    out_format.precision = 18
+    out_format.format_common_info.precision = 18
 
     assert db.calc_conversion_weight(converter_ob, in_format,
                                      out_format,) == ((max_prop_weight << db.PROP_WEIGHT_BIT_OFFSET) +
