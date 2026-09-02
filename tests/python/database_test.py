@@ -159,9 +159,54 @@ def test_format_info(database):
             assert not format_info.two_dim, name
             assert not format_info.three_dim, name
 
+# "ent" is an alias of the PDB format info. Check various aspects of each to ensure they work correctly
 
-def test_format_alias_info():
-    """Test that format alias info is loaded correctly"""
+
+@pytest.fixture(scope="module")
+def pdb_format_info():
+    return db.get_format_info(tc.FORMAT_PDB_0)
+
+
+@pytest.fixture(scope="module")
+def ent_format_info():
+    return db.get_format_info(tc.FORMAT_ENT)
+
+
+def test_format_alias_equality(pdb_format_info: db.FormatInfo, ent_format_info: db.FormatInfo):
+    """Test that format aliases are separate but share common info"""
+
+    # These objects should not be the same
+    assert ent_format_info != pdb_format_info
+
+    # But they should share the same common format info
+    assert ent_format_info.format_common_info is pdb_format_info.format_common_info
+
+
+def test_format_alias_primary(pdb_format_info: db.FormatInfo, ent_format_info: db.FormatInfo):
+    """Test that format aliases properly indicate which is the primary in all appropriate ways"""
+
+    # Check the "is_primary" indicator
+    assert not ent_format_info.is_primary
+    assert pdb_format_info.is_primary
+
+    # Both should reference PDB as the primary, in both ID and name
+    assert ent_format_info.primary_id != ent_format_info.id
+    assert ent_format_info.primary_name != ent_format_info.name
+    assert ent_format_info.primary_id == pdb_format_info.id
+    assert ent_format_info.primary_name == pdb_format_info.name
+
+    assert pdb_format_info.primary_id == pdb_format_info.id
+    assert pdb_format_info.primary_name == pdb_format_info.name
+
+
+def test_format_alias_dicts(pdb_format_info: db.FormatInfo, ent_format_info: db.FormatInfo):
+    """Test that format aliases dicts of IDs and extensions behave appropriately"""
+
+    # The alias extension dicts of each should be the same and should include the ID and name of each
+    assert ent_format_info.d_alias_exts is pdb_format_info.d_alias_exts
+
+    assert ent_format_info.d_alias_exts[ent_format_info.id] == ent_format_info.name
+    assert pdb_format_info.d_alias_exts[pdb_format_info.id] == pdb_format_info.name
 
 
 def test_format_info_options():
