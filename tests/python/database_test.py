@@ -325,8 +325,7 @@ def test_conversion_table(database):
 
 
 def test_conversion_pathways():
-    """Tests of determining conversion pathways between formats
-    """
+    """Tests of determining conversion pathways between formats"""
 
     # Check that we get `None` for converting from one format to itself
     assert db.get_conversion_pathway(tc.FORMAT_CIF, tc.FORMAT_CIF) is None
@@ -353,6 +352,28 @@ def test_conversion_pathways():
         assert inchi_to_moldy_path[i][2] is inchi_to_moldy_path[i+1][1]
         # Each step should use a different converter
         assert inchi_to_moldy_path[i][0] != inchi_to_moldy_path[i+1][0]
+
+
+def test_conversion_pathways_with_aliases():
+    """Tests of how format aliases are handled in getting conversion pathways"""
+
+    # Test that if a conversion is requested from an alias, that alias is retained in the input path
+    from_alias_path = db.get_conversion_pathway(tc.FORMAT_MOLD_ALIAS, tc.FORMAT_MOLDY)
+    assert len(from_alias_path) > 1, "Test is only valid if path has at least 2 steps"
+    assert from_alias_path[0][1].id == tc.FORMAT_MOLD_ALIAS
+
+    # Test that if a conversion is requested to an alias, that alias is retained in the output path
+    to_alias_path = db.get_conversion_pathway(tc.FORMAT_MOLDY, tc.FORMAT_MOLD_ALIAS)
+    assert len(to_alias_path) > 1, "Test is only valid if path has at least 2 steps"
+    assert to_alias_path[-1][2].id == tc.FORMAT_MOLD_ALIAS
+
+    # Test that each path is still valid
+    for path in from_alias_path, to_alias_path:
+        for i in range(len(path)-1):
+            # Output format of each step should match input of next
+            assert path[i][2] is path[i+1][1]
+            # Each step should use a different converter
+            assert path[i][0] != path[i+1][0]
 
 
 @pytest.fixture(scope="module")

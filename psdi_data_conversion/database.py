@@ -1345,6 +1345,12 @@ class ConversionsTable:
                             self.parent.get_format_info(source_id),
                             self.parent.get_format_info(target_id)))
 
+        # If the in or out format is an alias, make sure the path references that particular alias
+        if not in_format_info.is_primary:
+            l_steps[0] = l_steps[0][0], in_format_info, l_steps[0][2]
+        if not out_format_info.is_primary:
+            l_steps[-1] = l_steps[-1][0], l_steps[-1][1], out_format_info
+
         return l_steps
 
     def get_possible_formats(self, converter_name: str) -> tuple[list[FormatInfo], list[FormatInfo]]:
