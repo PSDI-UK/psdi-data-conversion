@@ -209,6 +209,18 @@ def test_format_alias_dicts(pdb_format_info: db.FormatInfo, ent_format_info: db.
     assert pdb_format_info.d_alias_exts[pdb_format_info.id] == pdb_format_info.name
 
 
+def test_format_alias_graph(database: db.DataConversionDatabase):
+    """Test that format aliases are handled correctly in the graphs"""
+    d_indices_from_uuids = database.conversions_table.d_indices_from_uuids
+    d_uuids_from_indices = database.conversions_table.d_uuids_from_indices
+
+    # Both the "pdb" format and its alias "ent" format should point to the same index in the graph
+    assert d_indices_from_uuids[tc.FORMAT_PDB_0] == d_indices_from_uuids[tc.FORMAT_ENT]
+
+    # The UUID pointed back to from this index should be solely the PDB format
+    assert d_uuids_from_indices[d_indices_from_uuids[tc.FORMAT_ENT]] == tc.FORMAT_PDB_0
+
+
 def test_format_info_options():
     """Test that we can get the expected information on a few test formats
     """
