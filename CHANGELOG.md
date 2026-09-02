@@ -30,6 +30,7 @@
 - The database structure has been reworked so that now converter plugins "own" all data specifically relevant to them, stored in the `data.json` file in their plugin folder. For the time being, the singular database file is still used on runtime, but rather than this file being maintained manually, it is now generated from the new script `psdi-data-convert-install-plugins`
   - The one piece of database information which isn't "owned" by converter plugins is the list of formats, since multiple converters can handle the same format in many cases, and allowing converters to own this information could result in different converters using different UUIDs for the same format. This is now stored in the file `psdi_data_conversion/static/data/formats.json`
     - For formats which the converter supports but which do not already exist in the database, these can be provided in the "extra_formats" entry in its `data.json` file. The installation script will check in case any of these share an extension with a format already in the database. If any are found, the script will abort with an alert to double-check that these formats are new, and confirm if so
+    - The `formats.json` database now has support for aliases - formats that represent the same file structure, but with a different expected extension. At present, aliases cannot be added through the "extra_formats" entry in a converter's `data.json` file, and must be added directly to the `formats.json` file
 - The convenience script `psdi-data-convert-create-plugin` has been added to create a stub for a new converter plugin
 - The database method `get_converter_info` can now be called without a `name` argument, and will return a list of info on all converters
 - The converter info provided by queries to the database methods now contains member variables `supported` and `registered` indicating the status of the converter:
@@ -39,6 +40,9 @@
 - `ConverterInfo`, `FormatInfo`, `FlagInfo`, `OptionInfo`, and individual converter classes now have a `uuid` property which provides the ID converted to a UUID class
 - In order to help determine optimal conversion pathways when a direct conversion is not possible, conversions are now assigned weights in the database based on information loss and expected conversion time. These are now used in the shortest-path algorithm to determine indirect conversions
 - Added method `run_converter_chain` to `psdi_data_conversion.converter`, which can run a chained conversion, either with a provided path or by determining an optimal chain from the source to target format
+- The database used by the Python library now has support for format aliases - formats which represent the same file structure but with different extensions. This has the following practical changes for users:
+  - When extensions are being checked (as is the default when formats are requested from the GUI), formats with any of the extensions used by an alias will be accepted. E.g. since "ent" is an alias for the "pdb" format, a bulk conversion of "pdb" files can include some with the "ent" extension without issue
+  - When chained conversion pathways are requested, only the format arbirtarily labelled as "primary" will be used for intermediate formats (meaning that the user won't be offered multiple pathways which differ only by which extension the intermediate format uses)
 
 ### Bugfixes
 
