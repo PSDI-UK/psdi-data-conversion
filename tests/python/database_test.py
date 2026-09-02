@@ -17,20 +17,19 @@ from psdi_data_conversion.testing import constants as tc
 from psdi_data_conversion.utils import regularize_name
 
 
-def test_load():
+@pytest.fixture(scope="module", autouse=True)
+def database():
+    return db.get_database()
+
+
+def test_load(database):
     """Test that we can load and retrieve the database
     """
 
-    db1 = db.get_database()
-    db2 = db.get_database()
+    new_database = db.get_database()
 
     # We should only get one database created, and any additional calls to `get_database()` should return the same
-    assert db2 is db1
-
-
-@pytest.fixture(scope="module")
-def database():
-    return db.get_database()
+    assert new_database is database
 
 
 def test_converter_info(database):
@@ -159,6 +158,10 @@ def test_format_info(database):
         else:
             assert not format_info.two_dim, name
             assert not format_info.three_dim, name
+
+
+def test_format_alias_info():
+    """Test that format alias info is loaded correctly"""
 
 
 def test_format_info_options():

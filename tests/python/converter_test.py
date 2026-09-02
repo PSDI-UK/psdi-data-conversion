@@ -16,10 +16,17 @@ from psdi_data_conversion import constants as const
 from psdi_data_conversion.converter import L_REGISTERED_CONVERTERS
 from psdi_data_conversion.converters.c2x.converter import C2xFileConverter
 from psdi_data_conversion.converters.openbabel.converter import OpenBabelFileConverter
+from psdi_data_conversion.database import get_database
 from psdi_data_conversion.testing import constants as tc
 from psdi_data_conversion.testing.conversion_test_specs import l_library_chain_test_specs, l_library_test_specs
 from psdi_data_conversion.testing.utils import run_test_conversion_with_library
 from psdi_data_conversion.utils import regularize_name
+
+
+@pytest.fixture(scope="module", autouse=True)
+def load_database():
+    """Load the database before all tests so it doesn't have to be re-loaded for each test"""
+    get_database()
 
 
 @pytest.fixture(autouse=True)
