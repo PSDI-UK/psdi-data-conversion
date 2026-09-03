@@ -697,10 +697,6 @@ def run_converter_chain(filename: str,
 
     # Check the input for validity
 
-    # This function does not yet support archives
-    if is_archive(filename):
-        raise base.FileConverterInputException("`run_converter_chain` does not yet support file archives.")
-
     # Only one of `path` and `to_format` may be provided
     if path and to_format:
         raise base.FileConverterArgException("Only one of `path` and `to_format` may be passed to "
@@ -726,14 +722,18 @@ def run_converter_chain(filename: str,
     # Try to figure out the input format if not provided
     if from_format:
         from_format_info = get_format_info(from_format)
-    else:
+    elif not is_archive(filename):
         from_format_info = get_format_info(os.path.splitext(filename)[-1])
+    elif path and len(path[0]) == 3:
+        from_format_info = path[0][1]
+    else:
+        raise base.FileConverterInputException("When performing a conversion of an archive file with "
+                                               "`run_converter_chain`, the input file format must be specified either "
+                                               "through `from_format` or `path`.")
 
     # If `to_format` was provided, determine the best path to use
     if to_format:
-
         to_format_info = get_format_info(to_format)
-
         path = get_conversion_pathway(from_format_info, to_format_info, only="registered")
 
     # Set the maximum file size based on permission level and which converter is being used, if it isn't explicitly
