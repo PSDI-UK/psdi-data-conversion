@@ -578,7 +578,7 @@ chain_archive_callback = MCB(CheckFileStatus(),
                                                   to_format=tc.FORMAT_INCHI))
 
 l_all_test_specs.append(Spec(name="Chain Test - archive find path",
-                             filename="standard_test.tar.gz",
+                             filename="standard_test_mol.tar.gz",
                              from_format=tc.FORMAT_MOLDY,
                              to_format=tc.FORMAT_INCHI,
                              converter_name=None,
@@ -590,7 +590,7 @@ l_all_test_specs.append(Spec(name="Chain Test - archive find path",
 """A test of running a conversion chain on an archive and finding a path"""
 
 l_all_test_specs.append(Spec(name="Chain Test - archive set path",
-                             filename="standard_test.tar.gz",
+                             filename="standard_test_mol.tar.gz",
                              from_format=tc.FORMAT_MOLDY,
                              conversion_kwargs={"path": [(get_converter_info("Atomsk"),
                                                           get_format_info(tc.FORMAT_MOLDY),
