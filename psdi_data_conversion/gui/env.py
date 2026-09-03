@@ -8,6 +8,7 @@ import os
 import sys
 from argparse import Namespace
 from datetime import datetime
+from functools import cached_property
 from hashlib import md5
 from subprocess import run
 from traceback import format_exc
@@ -145,18 +146,14 @@ class SiteEnv:
                                                                   value_type=int,
                                                                   default=DEFAULT_SESSION_TIMEOUT_SECONDS)
 
-        self._kwargs: dict[str, str] | None = None
-        """Cached value for dict containing all env values"""
-
-    @property
+    @cached_property
     def kwargs(self) -> dict[str, str]:
         """Get a dict which can be used to provide kwargs for rendering a template"""
-        if not self._kwargs:
-            self._kwargs = {}
-            for key, val in self.__dict__.items():
-                if not key.startswith("_"):
-                    self._kwargs[key] = val
-        return self._kwargs
+        kwargs = {}
+        for key, val in self.__dict__.items():
+            if not key.startswith("_"):
+                kwargs[key] = val
+        return kwargs
 
     def get_keycloak_secret(self) -> str:
         """Get the private KeyCloak secret"""
