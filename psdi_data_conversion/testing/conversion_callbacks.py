@@ -210,7 +210,7 @@ class CheckArchiveContents:
                 if not os.path.isfile(os.path.join(extract_dir, filename)):
                     l_errors.append(f"ERROR: Expected file '{filename}' was not found in archive "
                                     f"{qualified_out_filename}")
-                elif os.path.getsize(os.path.join(extract_dir, filename)):
+                elif os.path.getsize(os.path.join(extract_dir, filename)) == 0:
                     l_errors.append(f"ERROR: Expected file '{filename}' was found in archive "
                                     f"{qualified_out_filename} but was unexpectedly empty")
 
