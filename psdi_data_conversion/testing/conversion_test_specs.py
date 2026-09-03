@@ -572,6 +572,23 @@ Not compatible with GUI tests in current setup of test implementation, which doe
 things like maximum size on a per-test basis. May be possible to set up in the future though
 """
 
+chain_archive_callback = MCB(CheckFileStatus(),
+                             CheckArchiveContents(l_filename_bases=["standard_test",
+                                                                    "standard_test_2",],
+                                                  to_format=tc.FORMAT_INCHI))
+
+l_all_test_specs.append(Spec(name="Chain Test - archive find path",
+                             filename="standard_test.tar.gz",
+                             from_format=tc.FORMAT_MOLDY,
+                             to_format=tc.FORMAT_INCHI,
+                             converter_name=None,
+                             callback=chain_archive_callback,
+                             compatible_with_cla=False,
+                             compatible_with_gui=False,
+                             compatible_with_single_step=False,
+                             ))
+"""A test of running a conversion chain on an archive and finding a path"""
+
 l_all_test_specs.append(Spec(name="Chain Test - archive set path",
                              filename="standard_test.tar.gz",
                              from_format=tc.FORMAT_MOLDY,
@@ -583,10 +600,7 @@ l_all_test_specs.append(Spec(name="Chain Test - archive set path",
                                                           get_format_info(tc.FORMAT_INCHI))]},
                              to_format=None,
                              converter_name=None,
-                             callback=MCB(CheckFileStatus(),
-                                          CheckArchiveContents(l_filename_bases=["standard_test",
-                                                                                 "standard_test_2",],
-                                                               to_format=tc.FORMAT_INCHI)),
+                             callback=chain_archive_callback,
                              compatible_with_cla=False,
                              compatible_with_gui=False,
                              compatible_with_single_step=False,
