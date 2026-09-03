@@ -11,6 +11,7 @@ import shlex
 import sys
 from collections.abc import Callable, Iterable
 from dataclasses import dataclass, field
+from functools import cached_property
 from math import isclose
 from pathlib import Path
 from tempfile import TemporaryDirectory
@@ -133,6 +134,9 @@ class ConversionTestSpec:
     from_format: str | int | Iterable[str | int] | None = None
     """The format of the input file, when it needs to be explicitly specified"""
 
+    ex_out_filename: str | Iterable[str] | None = None
+    """The expected name of the output file, when it needs to be explicitly specified"""
+
     converter_name: str | Iterable[str] = CONVERTER_DEFAULT
     """The name of the converter to be used for the test, or a list thereof"""
 
@@ -250,6 +254,9 @@ class SingleConversionTestSpec:
     from_format: str | int | None = None
     """The format of the input file, when it needs to be explicitly specified"""
 
+    ex_out_filename: str | None = None
+    """The expected name of the output file"""
+
     converter_name: str | Iterable[str] = CONVERTER_DEFAULT
     """The name of the converter to be used for the test"""
 
@@ -268,20 +275,24 @@ class SingleConversionTestSpec:
     should take as its only argument a `ConversionTestInfo` and return a string. The string should be empty if the check
     is passed and should explain the failure otherwise."""
 
-    @property
+    @cached_property
     def out_filename(self) -> str:
         """The unqualified name of the output file which should have been created by the conversion."""
+        if self.ex_out_filename is not None:
+            return self.ex_out_filename
+
         if self.to_format:
             to_format_name = get_format_info(self.to_format, which=0).name
         else:
             to_format_name = self.conversion_kwargs["path"][-1][-1].name
+
         if not is_archive(self.filename):
             return f"{os.path.splitext(self.filename)[0]}.{to_format_name}"
         else:
             filename_base, ext = split_archive_ext(os.path.basename(self.filename))
             return f"{filename_base}-{to_format_name}{ext}"
 
-    @property
+    @cached_property
     def log_filename(self) -> str:
         """The unqualified name of the log file which should have been created by the conversion."""
         return f"{split_archive_ext(self.filename)[0]}{OUTPUT_LOG_EXT}"
