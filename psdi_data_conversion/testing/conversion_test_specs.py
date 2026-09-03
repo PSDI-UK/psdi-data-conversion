@@ -76,23 +76,20 @@ l_all_test_specs.append(Spec(name="Converter Name Sensitivity Tests",
                              ))
 """Tests that converters can be specified case- and space-insensitively in the library and CLI"""
 
-archive_callback = MCB(CheckFileStatus(),
-                       CheckArchiveContents(l_filename_bases=["caffeine-no-flags",
-                                                              "caffeine-ia",
-                                                              "caffeine-ia-ox",
-                                                              "caffeine-ia-okx",
-                                                              "caffeine-ia-okx-oof4",
-                                                              "caffeine-ia-okx-oof4l5",],
-                                            to_format=tc.FORMAT_INCHI))
-
 l_all_test_specs.append(Spec(name="Archive",
                              filename=["caffeine-smi.zip",
                                        "caffeine-smi.tar",
                                        "caffeine-smi.tar.gz"],
                              from_format=tc.FORMAT_SMI,
                              to_format=tc.FORMAT_INCHI,
-                             callback=archive_callback,
-                             compatible_with_chain=False,
+                             callback=MCB(CheckFileStatus(),
+                                          CheckArchiveContents(l_filename_bases=["caffeine-no-flags",
+                                                                                 "caffeine-ia",
+                                                                                 "caffeine-ia-ox",
+                                                                                 "caffeine-ia-okx",
+                                                                                 "caffeine-ia-okx-oof4",
+                                                                                 "caffeine-ia-okx-oof4l5",],
+                                                               to_format=tc.FORMAT_INCHI)),
                              ))
 """A test of converting a archives of files"""
 
@@ -106,7 +103,6 @@ l_all_test_specs.append(Spec(name="Archive (wrong format) - Library and CLA",
                                        CheckException(ex_type=FileConverterInputException,
                                                       ex_message=const.ERR_WRONG_EXTENSION_MULT)],
                              compatible_with_gui=False,
-                             compatible_with_chain=False,
                              ))
 """A test that if the user provides the wrong input format for files in an archive, and error will be output to stderr
 """
@@ -407,13 +403,13 @@ max_size_archive_callback = MCB(CheckFileStatus(),
                                                ex_status_code=const.STATUS_CODE_SIZE))
 l_all_test_specs.append(Spec(name="Max size exceeded - archive",
                              filename="caffeine-smi.tar.gz",
+                             from_format=tc.FORMAT_SMI,
                              to_format=tc.FORMAT_PDB_0,
                              conversion_kwargs={"max_file_size": 0.003},
                              expect_success=False,
                              callback=max_size_archive_callback,
                              compatible_with_cla=False,
                              compatible_with_gui=False,
-                             compatible_with_chain=False,
                              ))
 """A test conversion that the maximum size constraint is properly applied. The input archive is smaller than the maximum
 size, but the unpacked files in it are greater, so it should fail midway through.
@@ -422,8 +418,6 @@ Not compatible with CLA tests, since the CLA doesn't allow the imposition of a m
 
 Not compatible with GUI tests in current setup of test implementation, which doesn't let us set env vars to control
 things like maximum size on a per-test basis. May be possible to set up in the future though
-
-Not compatible with chain tests, as the chain conversion function does not yet support archives
 """
 
 l_all_test_specs.append(Spec(name="Format args",
@@ -520,7 +514,7 @@ l_all_test_specs.append(Spec(name="Chain Test - set path",
                                            CheckLogContentsSuccess(),
                                            MatchOutputFile("chain_via_pdb.inchi")),
                                        MCB(CheckFileStatus(expect_input_files_not_exist=["standard_test.cif"],
-                                                           expect_output_files_not_exist=["standard_test.pdb"]),
+                                                           expect_output_files_not_exist=["standard_test.cif"]),
                                            CheckLogContentsSuccess(),
                                            MatchOutputFile("chain_via_cif.inchi"))],
                              compatible_with_chain=True,
@@ -577,6 +571,27 @@ Not compatible with CLA tests, since the CLA doesn't allow the imposition of a m
 Not compatible with GUI tests in current setup of test implementation, which doesn't let us set env vars to control
 things like maximum size on a per-test basis. May be possible to set up in the future though
 """
+
+l_all_test_specs.append(Spec(name="Chain Test - archive set path",
+                             filename="standard_test.tar.gz",
+                             from_format=tc.FORMAT_MOLDY,
+                             conversion_kwargs={"path": [(get_converter_info("Atomsk"),
+                                                          get_format_info(tc.FORMAT_MOLDY),
+                                                          get_format_info(tc.FORMAT_CIF)),
+                                                         (get_converter_info("Open Babel"),
+                                                          get_format_info(tc.FORMAT_CIF),
+                                                          get_format_info(tc.FORMAT_INCHI))]},
+                             to_format=None,
+                             converter_name=None,
+                             callback=MCB(CheckFileStatus(),
+                                          CheckArchiveContents(l_filename_bases=["standard_test",
+                                                                                 "standard_test_2",],
+                                                               to_format=tc.FORMAT_INCHI)),
+                             compatible_with_cla=False,
+                             compatible_with_gui=False,
+                             compatible_with_single_step=False,
+                             ))
+"""A test of running a conversion chain on an archive with a set path"""
 
 l_library_test_specs = [x for x in l_all_test_specs
                         if x.compatible_with_library and x.compatible_with_single_step and not x.skip_all]
