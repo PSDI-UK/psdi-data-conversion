@@ -11,7 +11,7 @@ import json
 import sys
 import warnings
 from dataclasses import dataclass, field
-from functools import lru_cache
+from functools import cached_property, lru_cache
 from itertools import product
 from logging import getLogger
 from pathlib import Path
@@ -281,11 +281,6 @@ class ConverterInfo:
         self._d_out_option_info: dict[int, OptionInfo] | None = None
         self._l_unsorted_out_option_info: list[FlagInfo] | None = None
 
-        self._d_in_format_flags: dict[str | int, set[str]] | None = None
-        self._d_out_format_flags: dict[str | int, set[str]] | None = None
-        self._d_in_format_options: dict[str | int, set[str]] | None = None
-        self._d_out_format_options: dict[str | int, set[str]] | None = None
-
         # If the converter class has no defined key prefix, don't add any extra info for it
         if self._key_prefix is None:
             return
@@ -544,41 +539,33 @@ class ConverterInfo:
 
         return d_format_args
 
-    @property
+    @cached_property
     def d_in_format_flags(self) -> dict[str | int, set[int]]:
         """Generate the dict of flags for an input format (keyed by format name/extension or format ID) when needed.
         The format will not be in the dict if no flags are accepted
         """
-        if self._d_in_format_flags is None:
-            self._d_in_format_flags = self._create_d_format_args(FlagInfo, "in")
-        return self._d_in_format_flags
+        return self._create_d_format_args(FlagInfo, "in")
 
-    @property
+    @cached_property
     def d_out_format_flags(self) -> dict[str | int, set[int]]:
         """Generate the dict of flags for an output format (keyed by format name/extension or format ID) when needed.
         The format will not be in the dict if no options are accepted
         """
-        if self._d_out_format_flags is None:
-            self._d_out_format_flags = self._create_d_format_args(FlagInfo, "out")
-        return self._d_out_format_flags
+        return self._create_d_format_args(FlagInfo, "out")
 
-    @property
+    @cached_property
     def d_in_format_options(self) -> dict[str | int, set[int]]:
         """Generate the dict of options for an input format (keyed by format name/extension or format ID) when needed.
         The format will not be in the dict if no options are accepted
         """
-        if self._d_in_format_options is None:
-            self._d_in_format_options = self._create_d_format_args(OptionInfo, "in")
-        return self._d_in_format_options
+        return self._create_d_format_args(OptionInfo, "in")
 
-    @property
+    @cached_property
     def d_out_format_options(self) -> dict[str | int, set[int]]:
         """Generate the dict of options for an output format (keyed by format name/extension or format ID) when needed.
         The format will not be in the dict if no options are accepted
         """
-        if self._d_out_format_options is None:
-            self._d_out_format_options = self._create_d_format_args(OptionInfo, "out")
-        return self._d_out_format_options
+        return self._create_d_format_args(OptionInfo, "out")
 
     def get_in_format_args(self, in_format: str | int | UUID | FormatInfo) -> tuple[list[FlagInfo], list[OptionInfo]]:
         """Get the input flags and options supported for a given format (provided as its extension)
@@ -743,18 +730,16 @@ class FormatCommonInfo:
         """
         return UUID(int=self.id)
 
-    @property
+    @cached_property
     def disambiguated_name(self) -> str:
         """A unique name for this format which can be used to distinguish it from others which share the same extension,
         by appending the name of each with a unique index"""
-        if self._disambiguated_name is None:
-            l_formats_with_same_name = self.parent.d_format_info_from_name[self.name.lower()]
-            if len(l_formats_with_same_name) == 1:
-                self._disambiguated_name = self._lower_name
-            else:
-                index_of_this = [i for i, x in enumerate(l_formats_with_same_name) if self is x][0]
-                self._disambiguated_name = f"{self._lower_name}-{index_of_this}"
-        return self._disambiguated_name
+        l_formats_with_same_name = self.parent.d_format_info_from_name[self.name.lower()]
+        if len(l_formats_with_same_name) == 1:
+            return self._lower_name
+        else:
+            index_of_this = [i for i, x in enumerate(l_formats_with_same_name) if self is x][0]
+            return f"{self._lower_name}-{index_of_this}"
 
     def __str__(self):
         """When cast to string, convert to the name (extension) of the format"""
@@ -860,18 +845,16 @@ class FormatInfo:
         """Returns the ID as a UUID object"""
         return UUID(int=self.id)
 
-    @property
+    @cached_property
     def disambiguated_name(self) -> str:
         """A unique name for this format which can be used to distinguish it from others which share the same extension,
         by appending the name of each with a unique index"""
-        if self._disambiguated_name is None:
-            l_formats_with_same_name = self.parent.d_format_info_from_name[self.name.lower()]
-            if len(l_formats_with_same_name) == 1:
-                self._disambiguated_name = self._lower_name
-            else:
-                index_of_this = [i for i, x in enumerate(l_formats_with_same_name) if self is x][0]
-                self._disambiguated_name = f"{self._lower_name}-{index_of_this}"
-        return self._disambiguated_name
+        l_formats_with_same_name = self.parent.d_format_info_from_name[self.name.lower()]
+        if len(l_formats_with_same_name) == 1:
+            return self._lower_name
+        else:
+            index_of_this = [i for i, x in enumerate(l_formats_with_same_name) if self is x][0]
+            return f"{self._lower_name}-{index_of_this}"
 
     def __str__(self):
         """When cast to string, convert to the name (extension) of the format"""

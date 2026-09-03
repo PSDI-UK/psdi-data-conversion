@@ -92,22 +92,22 @@ class ConversionTestInfo:
     exc_info: pytest.ExceptionInfo | None = None
     """If the test conversion raised an exception, that exception's info, otherwise None"""
 
-    @property
+    @cached_property
     def qualified_in_filename(self):
         """Get the fully-qualified name of the input file"""
         return os.path.realpath(os.path.join(self.input_dir, self.test_spec.filename))
 
-    @property
+    @cached_property
     def qualified_out_filename(self):
         """Get the fully-qualified name of the output file"""
         return os.path.realpath(os.path.join(self.output_dir, self.test_spec.out_filename))
 
-    @property
+    @cached_property
     def qualified_log_filename(self):
         """Get the fully-qualified name of the log file"""
         return os.path.realpath(os.path.join(self.output_dir, self.test_spec.log_filename))
 
-    @property
+    @cached_property
     def qualified_global_log_filename(self):
         """Get the fully-qualified name of the log file"""
         return self.test_spec.global_log_filename
