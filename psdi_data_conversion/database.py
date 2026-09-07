@@ -323,6 +323,9 @@ class ConverterInfo(DBInfo):
     _d_out_option_info: dict[int, OptionInfo] | None = field(init=False, repr=False, default=None)
     _l_unsorted_out_option_info: list[FlagInfo] | None = field(init=False, repr=False, default=None)
 
+    # __hash__ needs to be inherited explicitly for dataclasses since they redefine __eq__
+    __hash__ = DBInfo.__hash__
+
     @staticmethod
     def from_db(parent: DataConversionDatabase,
                 d_single_converter_info: dict[str, int | str],
