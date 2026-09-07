@@ -797,7 +797,7 @@ class FormatCommonInfo(DBInfo):
     __hash__ = DBInfo.__hash__
 
     @staticmethod
-    def factory(parent: DataConversionDatabase,
+    def from_db(parent: DataConversionDatabase,
                 d_single_format_info: dict[str, bool | int | str | None],
                 d_alias_exts: dict[int, str] | None = None):
         """Factory function to set up the class - this will be initialised within a `DataConversionDatabase`, which we
@@ -933,7 +933,7 @@ class FormatInfo(DBInfo):
             return f"{self.lower_name}-{index_of_this}"
 
     @staticmethod
-    def factory(parent: DataConversionDatabase,
+    def from_db(parent: DataConversionDatabase,
                 d_single_format_info: dict[str, bool | int | str | None],
                 d_alias_exts: dict[int, str] | None = None):
         """Factory function to easily set up the class. This should only be used for primary formats, and each alias
@@ -949,7 +949,7 @@ class FormatInfo(DBInfo):
             Dict of IDs of aliases and their respective extensions
         """
 
-        format_common_info = FormatCommonInfo.factory(parent, d_single_format_info, d_alias_exts)
+        format_common_info = FormatCommonInfo.from_db(parent, d_single_format_info, d_alias_exts)
         format_info = FormatInfo(format_common_info=format_common_info)
         return format_info
 
@@ -1619,7 +1619,7 @@ class DataConversionDatabase:
                 if val.startswith("."):
                     d_alias_exts[key] = val[1:]
 
-            primary_format_info = FormatInfo.factory(parent=self,
+            primary_format_info = FormatInfo.from_db(parent=self,
                                                      d_single_format_info=d_format_dicts[prim_id],
                                                      d_alias_exts=d_alias_exts)
 

@@ -378,17 +378,17 @@ def test_conversion_pathways_with_aliases():
 
 @pytest.fixture(scope="module")
 def format_all(database):
-    return db.FormatInfo.factory(database, {db.DB_NAME_KEY: "all", **{key: True for key in db.D_PROP_BITS.keys()}})
+    return db.FormatInfo.from_db(database, {db.DB_NAME_KEY: "all", **{key: True for key in db.D_PROP_BITS.keys()}})
 
 
 @pytest.fixture(scope="module")
 def format_none(database):
-    return db.FormatInfo.factory(database, {db.DB_NAME_KEY: "none", **{key: False for key in db.D_PROP_BITS.keys()}})
+    return db.FormatInfo.from_db(database, {db.DB_NAME_KEY: "none", **{key: False for key in db.D_PROP_BITS.keys()}})
 
 
 @pytest.fixture(scope="module")
 def format_unknown(database):
-    return db.FormatInfo.factory(database, {db.DB_NAME_KEY: "unknown", **{key: None for key in db.D_PROP_BITS.keys()}})
+    return db.FormatInfo.from_db(database, {db.DB_NAME_KEY: "unknown", **{key: None for key in db.D_PROP_BITS.keys()}})
 
 
 @pytest.fixture(scope="module")
@@ -431,7 +431,7 @@ def test_calc_conversion_prop_weight(in_format, out_format, ex_weight,
 @pytest.mark.parametrize("prop", db.D_PROP_BITS.keys())
 def test_calc_conversion_prop_weight_prop_lost(format_none, prop, converter_ob):
     """Test each property individually when it's lost to ensure the right bit is set for each"""
-    test_format = db.FormatInfo.factory(database, {db.DB_NAME_KEY: "unknown", **{key: True if key == prop else False
+    test_format = db.FormatInfo.from_db(database, {db.DB_NAME_KEY: "unknown", **{key: True if key == prop else False
                                                                                  for key in db.D_PROP_BITS.keys()}})
     assert db.calc_conversion_prop_weight(converter_ob, test_format,
                                           format_none) == 1 << db.D_PROP_BITS[prop]
@@ -446,8 +446,8 @@ def test_calc_conversion_prop_weight_prop_lost(format_none, prop, converter_ob):
                                                           (24, 6, 1 << db.PREC_MAX_DIGIT_LOSS*db.PREC_GAP_BITS)])
 def test_calc_conversion_precision_weight(database, in_prec, out_prec, ex_weight, converter_ob):
     """Test that conversion precision weights are calculated correctly"""
-    in_format = db.FormatInfo.factory(database, {db.DB_NAME_KEY: "in", db.DB_FORMAT_PRECISION_KEY: in_prec}, {})
-    out_format = db.FormatInfo.factory(database, {db.DB_NAME_KEY: "out", db.DB_FORMAT_PRECISION_KEY: out_prec}, {})
+    in_format = db.FormatInfo.from_db(database, {db.DB_NAME_KEY: "in", db.DB_FORMAT_PRECISION_KEY: in_prec}, {})
+    out_format = db.FormatInfo.from_db(database, {db.DB_NAME_KEY: "out", db.DB_FORMAT_PRECISION_KEY: out_prec}, {})
     assert db.calc_conversion_prec_weight(converter_ob, in_format, out_format) == ex_weight
 
 
