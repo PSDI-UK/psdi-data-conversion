@@ -294,21 +294,43 @@ class OptionInfo(ArgInfo):
     __hash__ = DBInfo.__hash__
 
 
-class ConverterInfo:
+@dataclass
+class ConverterInfo(DBInfo):
     """Class providing information on a converter stored in the PSDI Data Conversion database
     """
 
-    def __init__(self,
-                 name: str,
-                 parent: DataConversionDatabase,
-                 d_single_converter_info: dict[str, int | str],
-                 d_data: dict[str, Any]):
-        """Set up the class - this will be initialised within a `DataConversionDatabase`, which we set as the parent
+    url: str = ""
+    weight: int = CONV_WEIGHT_DEFAULT
+    supported: bool = False
+    registered: bool = False
+
+    converter_class: type[FileConverter] = FileConverter
+    """The class used to perform conversions with this converter"""
+
+    pretty_name: str = ""
+    """The name of the converter, properly spaced and capitalized"""
+
+    _key_prefix: str = ""
+    _arg_info: dict[str, list[dict[str, int | str]]] = field(default_factory=dict)
+
+    # Placeholders for members that are generated when needed
+    _d_in_flag_info: dict[int, FlagInfo] | None = field(init=False, repr=False, default=None)
+    _l_unsorted_in_flag_info: list[FlagInfo] | None = field(init=False, repr=False, default=None)
+    _d_out_flag_info: dict[int, FlagInfo] | None = field(init=False, repr=False, default=None)
+    _l_unsorted_out_flag_info: list[FlagInfo] | None = field(init=False, repr=False, default=None)
+    _d_in_option_info: dict[int, OptionInfo] | None = field(init=False, repr=False, default=None)
+    _l_unsorted_in_option_info: list[FlagInfo] | None = field(init=False, repr=False, default=None)
+    _d_out_option_info: dict[int, OptionInfo] | None = field(init=False, repr=False, default=None)
+    _l_unsorted_out_option_info: list[FlagInfo] | None = field(init=False, repr=False, default=None)
+
+    @staticmethod
+    def from_db(parent: DataConversionDatabase,
+                d_single_converter_info: dict[str, int | str],
+                d_data: dict[str, Any]):
+        """Factory function to set up the class
 
         Parameters
         ----------
-        name : str
-            The regularized name of the converter
         parent : DataConversionDatabase
             The database which this belongs to
         d_single_converter_info : dict[str, int | str]
@@ -317,85 +339,55 @@ class ConverterInfo:
             The loaded database dict
         """
 
-        self.name = regularize_name(name)
-        """The regularized name of the converter"""
+        # Get info about the converter from the database
 
-        self.converter_class: type[FileConverter]
-        """The class used to perform conversions with this converter"""
-
-        self.pretty_name: str
-        """The name of the converter, properly spaced and capitalized"""
+        name = regularize_name(d_single_converter_info[DB_NAME_KEY])
+        weight: int | None = d_single_converter_info.get(DB_WEIGHT_KEY)
 
         try:
-            self.converter_class = get_registered_converter_class(self.name)
-            self.pretty_name = self.converter_class.meta.name
+            converter_class = get_registered_converter_class(name)
+            pretty_name = converter_class.meta.name
         except KeyError:
-            self.converter_class = None
-            self.pretty_name = d_single_converter_info[DB_NAME_KEY]
-
-        self.parent = parent
-        """The parent database"""
-
-        # Get info about the converter from the database
-        self.id: int = d_single_converter_info.get(DB_ID_KEY, DEFAULT_ID)
-        """The converter's ID"""
-
-        self.description: str = d_single_converter_info.get(DB_DESCRIPTION_KEY, "")
-        """A description of the converter"""
-
-        self.info: str = d_single_converter_info.get(DB_INFO_KEY, "")
-        """A description of the converter"""
-
-        self.url: str = d_single_converter_info.get(DB_URL_KEY, "")
-        """The official URL for the converter"""
-
-        self.weight: str = d_single_converter_info.get(DB_WEIGHT_KEY)
-        """The weight of the converter for determining chain conversion pathways"""
+            converter_class = FileConverter
+            pretty_name = d_single_converter_info[DB_NAME_KEY]
 
         # Use the default weight if the key is absent or the value is None
-        if not self.weight:
-            self.weight = CONV_WEIGHT_DEFAULT
-
-        # Get necessary info about the converter from the class
-
-        self.supported = self.name in L_SUPPORTED_CONVERTERS
-        """Whether or not the converter is supported by this package. If a converter is supported but not registered,
-        this usually means that a required binary is missing and must be supplied by the user"""
-
-        self.registered = self.name in L_REGISTERED_CONVERTERS
-        """Whether or not the converter is ready to be used by this package"""
+        if not weight:
+            weight = ConverterInfo.weight
 
         try:
-            self._key_prefix = get_registered_converter_class(name).meta.database_key_prefix
+            _key_prefix = get_registered_converter_class(name).meta.database_key_prefix
         except KeyError:
             # We'll get a KeyError for converters in the database that don't yet have their own class, which we can
             # safely ignore
-            self._key_prefix = None
-
-        self._arg_info: dict[str, list[dict[str, int | str]]] = {}
-
-        # Placeholders for members that are generated when needed
-        self._d_in_flag_info: dict[int, FlagInfo] | None = None
-        self._l_unsorted_in_flag_info: list[FlagInfo] | None = None
-        self._d_out_flag_info: dict[int, FlagInfo] | None = None
-        self._l_unsorted_out_flag_info: list[FlagInfo] | None = None
-        self._d_in_option_info: dict[int, OptionInfo] | None = None
-        self._l_unsorted_in_option_info: list[FlagInfo] | None = None
-        self._d_out_option_info: dict[int, OptionInfo] | None = None
-        self._l_unsorted_out_option_info: list[FlagInfo] | None = None
+            _key_prefix = None
 
         # If the converter class has no defined key prefix, don't add any extra info for it
-        if self._key_prefix is None:
-            return
-        for key_base in (DB_IN_FLAGS_KEY_BASE,
-                         DB_OUT_FLAGS_KEY_BASE,
-                         DB_IN_OPTIONS_KEY_BASE,
-                         DB_OUT_OPTIONS_KEY_BASE,
-                         DB_IN_FLAGS_FORMATS_KEY_BASE,
-                         DB_OUT_FLAGS_FORMATS_KEY_BASE,
-                         DB_IN_OPTIONS_FORMATS_KEY_BASE,
-                         DB_OUT_OPTIONS_FORMATS_KEY_BASE):
-            self._arg_info[key_base] = d_data.get(self._key_prefix + key_base)
+        _arg_info: dict[str, list[dict[str, int | str]]] = {}
+        if _key_prefix is not None:
+            for key_base in (DB_IN_FLAGS_KEY_BASE,
+                             DB_OUT_FLAGS_KEY_BASE,
+                             DB_IN_OPTIONS_KEY_BASE,
+                             DB_OUT_OPTIONS_KEY_BASE,
+                             DB_IN_FLAGS_FORMATS_KEY_BASE,
+                             DB_OUT_FLAGS_FORMATS_KEY_BASE,
+                             DB_IN_OPTIONS_FORMATS_KEY_BASE,
+                             DB_OUT_OPTIONS_FORMATS_KEY_BASE):
+                _arg_info[key_base] = d_data.get(_key_prefix + key_base)
+
+        return ConverterInfo(id=d_single_converter_info.get(DB_ID_KEY, DEFAULT_ID),
+                             name=regularize_name(name),
+                             description=d_single_converter_info.get(DB_DESCRIPTION_KEY, ""),
+                             info=d_single_converter_info.get(DB_INFO_KEY, ""),
+                             parent=parent,
+                             url=d_single_converter_info.get(DB_URL_KEY, ""),
+                             weight=weight,
+                             supported=name in L_SUPPORTED_CONVERTERS,
+                             registered=name in L_REGISTERED_CONVERTERS,
+                             converter_class=converter_class,
+                             pretty_name=pretty_name,
+                             _key_prefix=_key_prefix,
+                             _arg_info=_arg_info)
 
     @property
     def uuid(self):
@@ -1475,10 +1467,9 @@ class DataConversionDatabase:
                                " will be used.")
                 continue
 
-            single_converter_info = ConverterInfo(name=name,
-                                                  parent=self,
-                                                  d_single_converter_info=d_single_converter_info,
-                                                  d_data=self._d_data)
+            single_converter_info = ConverterInfo.from_db(parent=self,
+                                                          d_single_converter_info=d_single_converter_info,
+                                                          d_data=self._d_data)
             self._d_converter_info_from_name[name] = single_converter_info
             self._d_converter_info_from_id[single_converter_info.id] = single_converter_info
             self._l_unsorted_converter_info.append(single_converter_info)
