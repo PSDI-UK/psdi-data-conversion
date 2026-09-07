@@ -712,8 +712,8 @@ class FileConverter:
         # empty or whitespace will be stripped by the logger, so we use a lone colon, which looks least obtrusive
         return (":\n"
                 f"File name:         {self.filename_base}\n"
-                f"From:              {self.from_format_info.name} ({self.from_format_info.note})\n"
-                f"To:                {self.to_format} ({self.to_format_info.note})\n"
+                f"From:              {self.from_format_info.name} ({self.from_format_info.description})\n"
+                f"To:                {self.to_format} ({self.to_format_info.description})\n"
                 f"Converter:         {self.name}\n")
 
     def _log_success(self):

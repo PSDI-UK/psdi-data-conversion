@@ -28,6 +28,9 @@ from psdi_data_conversion.converters.base import FileConverter, FileConverterExc
 from psdi_data_conversion.file_io import get_package_path
 from psdi_data_conversion.utils import JsonDict, regularize_name
 
+# We have to use a default ID which isn't Falsey, since 0 is a valid ID
+DEFAULT_ID = -1
+
 # Database keys
 # -------------
 
@@ -160,7 +163,7 @@ class DBInfo:
     """Base for classes providing information from the database"""
 
     id: int
-    _id: int = field(init=False, repr=False, default=-1)
+    _id: int = field(init=False, repr=False, default=DEFAULT_ID)
 
     name: str
     _name: str = field(init=False, repr=False, default="")
@@ -171,13 +174,17 @@ class DBInfo:
     info: str
     _info: str = field(init=False, repr=False, default="")
 
+    parent: DataConversionDatabase | DBInfo | None = field(repr=False, default=None)
+
     @property
     def id(self):
         """The integer representation of the object's UUID"""
         return self._id
 
     @id.setter
-    def id(self, val: int):
+    def id(self, val: int | property):
+        if type(val) is property:
+            val = self._id
         self._id = val
 
     @property
@@ -186,7 +193,9 @@ class DBInfo:
         return self._name
 
     @name.setter
-    def name(self, val: str):
+    def name(self, val: str | property):
+        if type(val) is property:
+            val = self._name
         self._name = val
 
     @property
@@ -195,7 +204,9 @@ class DBInfo:
         return self._description
 
     @description.setter
-    def description(self, val: str):
+    def description(self, val: str | property):
+        if type(val) is property:
+            val = self._description
         self._description = val
 
     @property
@@ -204,7 +215,9 @@ class DBInfo:
         return self._info
 
     @info.setter
-    def info(self, val: str):
+    def info(self, val: str | property):
+        if type(val) is property:
+            val = self._info
         self._info = val
 
     @property
@@ -212,6 +225,10 @@ class DBInfo:
         """Returns the ID as a UUID object
         """
         return UUID(int=self.id)
+
+    @cached_property
+    def lower_name(self):
+        return self.name.lower()
 
     def format_word(self):
         """Return a formatted representation of this as a single word"""
@@ -250,23 +267,20 @@ class ArgInfo(DBInfo):
     """Class providing information on an argument accepted by a converter (whether it accepts a value or not)
     """
 
-    parent: ConverterInfo | None = None
-
     s_in_formats: set[int] = field(default_factory=set)
     s_out_formats: set[int] = field(default_factory=set)
 
-    @property
-    def uuid(self):
-        """Returns the ID as a UUID object
-        """
-        return UUID(int=self.id)
+    # __hash__ needs to be inherited explicitly for dataclasses since they redefine __eq__
+    __hash__ = DBInfo.__hash__
 
 
 @dataclass
 class FlagInfo(ArgInfo):
     """Class providing information on a flag accepted by a converter (an argument which doesn't accept a value)
     """
-    pass
+
+    # __hash__ needs to be inherited explicitly for dataclasses since they redefine __eq__
+    __hash__ = DBInfo.__hash__
 
 
 @dataclass
@@ -275,6 +289,9 @@ class OptionInfo(ArgInfo):
     """
     # We need to provide a default argument here, since it will come after the sets with default arguments in ArgInfo
     brief: str = ""
+
+    # __hash__ needs to be inherited explicitly for dataclasses since they redefine __eq__
+    __hash__ = DBInfo.__hash__
 
 
 class ConverterInfo:
@@ -320,7 +337,7 @@ class ConverterInfo:
         """The parent database"""
 
         # Get info about the converter from the database
-        self.id: int = d_single_converter_info.get(DB_ID_KEY, -1)
+        self.id: int = d_single_converter_info.get(DB_ID_KEY, DEFAULT_ID)
         """The converter's ID"""
 
         self.description: str = d_single_converter_info.get(DB_DESCRIPTION_KEY, "")
@@ -731,26 +748,20 @@ D_FORMAT_PROPERTY_ATTRS = {const.QUAL_COMP_KEY: const.QUAL_COMP_LABEL,
 
 
 @dataclass
-class FormatCommonInfo:
+class FormatCommonInfo(DBInfo):
     """A class representing the common info for a file format (basically, everything except the extension and ID)"""
 
-    primary_name: str
+    primary_name: str = ""
     """The primary name (extension) of this format"""
 
-    primary_id: int = -1
+    primary_id: int = DEFAULT_ID
     """The primary ID of this format"""
-
-    parent: DataConversionDatabase | None = None
-    """The database which this format belongs to"""
 
     d_alias_exts: dict[int, str] | None = None
     """Dict of IDs of aliases and their respective extensions"""
 
     c2x_format: str | None = None
     """The name of this format as the c2x converter expects it"""
-
-    note: str = ""
-    """The description of this format"""
 
     composition: bool | None = None
     """Whether or not this format stores composition information"""
@@ -770,11 +781,20 @@ class FormatCommonInfo:
     def __post_init__(self):
         """Finish initialising the object"""
 
+        if not self.name:
+            self.name = self.primary_name
+
+        if self.id == DEFAULT_ID:
+            self.id = self.primary_id
+
         if self.d_alias_exts is None:
             self.d_alias_exts = {}
 
         if self.c2x_format is None:
             self.c2x_format = self.primary_name
+
+    # __hash__ needs to be inherited explicitly for dataclasses since they redefine __eq__
+    __hash__ = DBInfo.__hash__
 
     @staticmethod
     def factory(parent: DataConversionDatabase,
@@ -788,34 +808,29 @@ class FormatCommonInfo:
         parent : DataConversionDatabase
             The database which this belongs to
         d_single_format_info : dict[str, bool  |  int  |  str  |  None]
-            The dict of info on the format stored in the database
+            The dict of info on the primary format stored in the database
         d_alias_exts : dict[int, str]
             Dict of IDs of aliases and their respective extensions
         """
 
-        primary_name = d_single_format_info.get(DB_FORMAT_EXT_KEY, "")
-        primary_id = d_single_format_info.get(DB_ID_KEY, -1)
+        primary_name: str = d_single_format_info.get(DB_FORMAT_EXT_KEY, "")
+        primary_id: int = d_single_format_info.get(DB_ID_KEY, DEFAULT_ID)
 
         if d_alias_exts is None:
             d_alias_exts = {primary_id: primary_name}
 
-        return FormatCommonInfo(primary_name=primary_name,
-                                primary_id=primary_id,
-                                parent=parent,
-                                d_alias_exts=d_alias_exts,
-                                c2x_format=d_single_format_info.get(DB_FORMAT_C2X_KEY),
-                                note=d_single_format_info.get(DB_FORMAT_NOTE_KEY, ""),
-                                composition=d_single_format_info.get(DB_FORMAT_COMP_KEY),
-                                two_dim=d_single_format_info.get(DB_FORMAT_2D_KEY),
-                                three_dim=d_single_format_info.get(DB_FORMAT_3D_KEY),
-                                connections=d_single_format_info.get(DB_FORMAT_CONN_KEY),
-                                precision=d_single_format_info.get(DB_FORMAT_PRECISION_KEY))
-
-    @property
-    def uuid(self):
-        """Returns the ID as a UUID object
-        """
-        return UUID(int=self.id)
+        format_common_info = FormatCommonInfo(primary_name=primary_name,
+                                              primary_id=primary_id,
+                                              description=d_single_format_info.get(DB_FORMAT_NOTE_KEY, ""),
+                                              parent=parent,
+                                              d_alias_exts=d_alias_exts,
+                                              c2x_format=d_single_format_info.get(DB_FORMAT_C2X_KEY),
+                                              composition=d_single_format_info.get(DB_FORMAT_COMP_KEY),
+                                              two_dim=d_single_format_info.get(DB_FORMAT_2D_KEY),
+                                              three_dim=d_single_format_info.get(DB_FORMAT_3D_KEY),
+                                              connections=d_single_format_info.get(DB_FORMAT_CONN_KEY),
+                                              precision=d_single_format_info.get(DB_FORMAT_PRECISION_KEY))
+        return format_common_info
 
     @cached_property
     def disambiguated_name(self) -> str:
@@ -823,51 +838,40 @@ class FormatCommonInfo:
         by appending the name of each with a unique index"""
         l_formats_with_same_name = self.parent.d_format_info_from_name[self.name.lower()]
         if len(l_formats_with_same_name) == 1:
-            return self._lower_name
+            return self.lower_name
         else:
             index_of_this = [i for i, x in enumerate(l_formats_with_same_name) if self is x][0]
-            return f"{self._lower_name}-{index_of_this}"
-
-    def __str__(self):
-        """When cast to string, convert to the name (extension) of the format"""
-        return self.name
-
-    def __int__(self):
-        """When cast to int, return the ID of the format"""
-        return self.id
-
-    def __hash__(self):
-        return hash(self.primary_id)
+            return f"{self.lower_name}-{index_of_this}"
 
 
 @dataclass
-class FormatInfo:
+class FormatInfo(DBInfo):
     """Class providing information on a file format from the PSDI Data Conversion database
     """
 
-    format_common_info: FormatCommonInfo
+    format_common_info: FormatCommonInfo = field(default_factory=FormatCommonInfo)
     """The information common to all variants of the format"""
 
-    name: str | None = None
-    """The name (extension) of this particular variant of the format"""
-
-    id: int | None = None
-    """The ID of this particular variant of the format"""
+    # __hash__ needs to be inherited explicitly for dataclasses since they redefine __eq__
+    __hash__ = DBInfo.__hash__
 
     def __post_init__(self):
         """Finish setting up the object"""
 
-        if self.name is None:
+        if not self.name:
             self.name = self.format_common_info.primary_name
 
-        if self.id is None:
+        if self.id == DEFAULT_ID:
             self.id = self.format_common_info.primary_id
+
+        if not self.description:
+            self.description = self.format_common_info.description
+
+        if not self.parent:
+            self.parent = self.format_common_info.parent
 
         self.is_primary = self.id == self.format_common_info.primary_id
         """Whether or not this is the primary format for the shared extensions of a format"""
-
-        self._lower_name: str = self.name.lower()
-        """The format name all in lower-case"""
 
         self._disambiguated_name: str | None = None
         """The disambiguated name of the format"""
@@ -883,11 +887,6 @@ class FormatInfo:
         return self.format_common_info.primary_id
 
     @property
-    def parent(self):
-        """The database which this format belongs to"""
-        return self.format_common_info.parent
-
-    @property
     def d_alias_exts(self):
         """Dict of IDs of aliases and their respective extensions"""
         return self.format_common_info.d_alias_exts
@@ -896,11 +895,6 @@ class FormatInfo:
     def c2x_format(self):
         """The name of this format as the c2x converter expects it"""
         return self.format_common_info.c2x_format
-
-    @property
-    def note(self):
-        """The description of this format"""
-        return self.format_common_info.note
 
     @property
     def composition(self):
@@ -927,32 +921,16 @@ class FormatInfo:
         """The precision of numeric information in the format, as the number of decimal places, or 0 if unknown"""
         return self.format_common_info.precision
 
-    @property
-    def uuid(self):
-        """Returns the ID as a UUID object"""
-        return UUID(int=self.id)
-
     @cached_property
     def disambiguated_name(self) -> str:
         """A unique name for this format which can be used to distinguish it from others which share the same extension,
         by appending the name of each with a unique index"""
         l_formats_with_same_name = self.parent.d_format_info_from_name[self.name.lower()]
         if len(l_formats_with_same_name) == 1:
-            return self._lower_name
+            return self.lower_name
         else:
             index_of_this = [i for i, x in enumerate(l_formats_with_same_name) if self is x][0]
-            return f"{self._lower_name}-{index_of_this}"
-
-    def __str__(self):
-        """When cast to string, convert to the name (extension) of the format"""
-        return self.name
-
-    def __int__(self):
-        """When cast to int, return the ID of the format"""
-        return self.id
-
-    def __hash__(self):
-        return hash(self.id)
+            return f"{self.lower_name}-{index_of_this}"
 
     @staticmethod
     def factory(parent: DataConversionDatabase,
@@ -971,7 +949,9 @@ class FormatInfo:
             Dict of IDs of aliases and their respective extensions
         """
 
-        return FormatInfo(FormatCommonInfo.factory(parent, d_single_format_info, d_alias_exts))
+        format_common_info = FormatCommonInfo.factory(parent, d_single_format_info, d_alias_exts)
+        format_info = FormatInfo(format_common_info=format_common_info)
+        return format_info
 
 
 @dataclass
@@ -983,7 +963,7 @@ class PropertyConversionInfo:
     input_supported: bool | None
     output_supported: bool | None
     label: str = field(init=False)
-    note: str = field(init=False)
+    description: str = field(init=False)
 
     def __post_init__(self):
         """Set the label and note based on input/output status
@@ -991,20 +971,20 @@ class PropertyConversionInfo:
         self.label = D_FORMAT_PROPERTY_ATTRS[self.key]
 
         if self.input_supported is None and self.output_supported is None:
-            self.note = const.QUAL_NOTE_BOTH_UNKNOWN
+            self.description = const.QUAL_NOTE_BOTH_UNKNOWN
         elif self.input_supported is None and self.output_supported is not None:
-            self.note = const.QUAL_NOTE_IN_UNKNOWN
+            self.description = const.QUAL_NOTE_IN_UNKNOWN
         elif self.input_supported is not None and self.output_supported is None:
-            self.note = const.QUAL_NOTE_OUT_UNKNOWN
+            self.description = const.QUAL_NOTE_OUT_UNKNOWN
         elif self.input_supported == self.output_supported:
-            self.note = ""
+            self.description = ""
         elif self.input_supported:
-            self.note = const.QUAL_NOTE_OUT_MISSING
+            self.description = const.QUAL_NOTE_OUT_MISSING
         else:
-            self.note = const.QUAL_NOTE_IN_MISSING
+            self.description = const.QUAL_NOTE_IN_MISSING
 
-        if self.note:
-            self.note = self.note.format(self.label)
+        if self.description:
+            self.description = self.description.format(self.label)
 
 
 @dataclass
@@ -1216,9 +1196,9 @@ class ConversionsTable:
                    "conversions are:\n")
             for possible_in_format, possible_out_format in l_found_combinations:
                 msg += (f"    {possible_in_format.id}: {possible_in_format.disambiguated_name} "
-                        f"({possible_in_format.note}) to "
+                        f"({possible_in_format.description}) to "
                         f"{possible_out_format.id}: {possible_out_format.disambiguated_name} "
-                        f"({possible_out_format.note})\n")
+                        f"({possible_out_format.description})\n")
             # Trim the final newline from the message
             msg = msg[:-1]
             raise FileConverterDatabaseException(msg, help=True)
@@ -1270,7 +1250,8 @@ class ConversionsTable:
         l_props: list[str] = list(d_prop_conversion_info.keys())
         l_props.sort(key=lambda x: d_prop_conversion_info[x].label)
 
-        details = "\n".join([d_prop_conversion_info[x].note for x in l_props if d_prop_conversion_info[x].note])
+        details = "\n".join(
+            [d_prop_conversion_info[x].description for x in l_props if d_prop_conversion_info[x].description])
 
         weight = calc_conversion_weight(self.parent.get_converter_info(converter_name),
                                         in_format_info, out_format_info)
@@ -1648,9 +1629,10 @@ class DataConversionDatabase:
             for alias_id in s_alias_ids:
                 if alias_id == prim_id:
                     continue
-                self._d_format_info_from_id[alias_id] = FormatInfo(primary_format_info.format_common_info,
-                                                                   name=d_alias_exts[alias_id],
-                                                                   id=alias_id)
+                self._d_format_info_from_id[alias_id] = FormatInfo(
+                    format_common_info=primary_format_info.format_common_info,
+                    name=d_alias_exts[alias_id],
+                    id=alias_id)
 
         # Create a temporary version of the unsorted format info list. We'll create a pruned version later, but the
         # unpruned version is needed to create the conversions table, which is needed before we can prune it
@@ -1863,7 +1845,7 @@ class DataConversionDatabase:
                        "Possible formats are:")
                 for possible_format_info in l_possible_format_info:
                     msg += (f"\n{possible_format_info.disambiguated_name} (ID: {possible_format_info.id}): " +
-                            possible_format_info.note)
+                            possible_format_info.description)
                 raise FileConverterDatabaseException(msg, help=True)
 
         elif isinstance(format_name_or_id, int):
@@ -2191,9 +2173,9 @@ def disambiguate_formats(converter_name: str,
                "conversions are:\n")
         for _, possible_in_format, possible_out_format in l_possible_conversions:
             msg += (f"    {possible_in_format.id}: {possible_in_format.disambiguated_name} "
-                    f"({possible_in_format.note}) to "
+                    f"({possible_in_format.description}) to "
                     f"{possible_out_format.id}: {possible_out_format.disambiguated_name} "
-                    f"({possible_out_format.note})\n")
+                    f"({possible_out_format.description})\n")
         # Trim the final newline from the message
         msg = msg[:-1]
         raise FileConverterDatabaseException(msg, help=True)

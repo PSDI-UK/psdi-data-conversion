@@ -239,10 +239,12 @@ def test_detail_converter(capsys):
         l_allowed_in_formats, l_allowed_out_formats = get_possible_formats(name)
         for in_format in l_allowed_in_formats:
             output_allowed = "yes" if in_format in l_allowed_out_formats else "no"
-            assert string_is_present_in_out(f"{in_format.disambiguated_name}yes{output_allowed}{in_format.note}")
+            assert string_is_present_in_out(
+                f"{in_format.disambiguated_name}yes{output_allowed}{in_format.description}")
         for out_format in l_allowed_out_formats:
             input_allowed = "yes" if out_format in l_allowed_in_formats else "no"
-            assert string_is_present_in_out(f"{out_format.disambiguated_name}{input_allowed}yes{out_format.note}")
+            assert string_is_present_in_out(
+                f"{out_format.disambiguated_name}{input_allowed}yes{out_format.description}")
 
         _check_no_errors(captured)
 
@@ -412,7 +414,7 @@ def test_format_info(capsys):
 
     # Check for basic format information
     assert string_is_present_in_out(f"{in_format_info.disambiguated_name} (ID: {in_format_info.id}): " +
-                                    in_format_info.note)
+                                    in_format_info.description)
 
     # Check for property information
     for attr, label in D_FORMAT_PROPERTY_ATTRS.items():
@@ -439,7 +441,7 @@ def test_format_info(capsys):
 
     for out_format_info in l_out_format_info:
         assert string_is_present_in_out(f"{out_format_info.disambiguated_name} (ID: {out_format_info.id}): " +
-                                        out_format_info.note)
+                                        out_format_info.description)
 
     # Test we get expected errors for unrecognised formats
 

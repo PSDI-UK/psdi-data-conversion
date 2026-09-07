@@ -311,7 +311,7 @@ def test_conversion_table(database):
     assert comp_prop_info.input_supported is True
     assert comp_prop_info.output_supported is True
     assert comp_prop_info.label == const.QUAL_COMP_LABEL
-    assert comp_prop_info.note == ""
+    assert comp_prop_info.description == ""
 
     # Check we can get a list of possible converters for a given conversion
     l_possible_conversions = db.get_possible_conversions("pdb", "cif")
