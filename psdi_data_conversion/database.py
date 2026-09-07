@@ -159,30 +159,53 @@ class FileConverterDatabaseException(FileConverterException):
 class DBInfo:
     """Base for classes providing information from the database"""
 
-    _id: int = -1
-    _name: str = ""
-    _description: str = ""
-    _info: str = ""
+    id: int
+    _id: int = field(init=False, repr=False, default=-1)
+
+    name: str
+    _name: str = field(init=False, repr=False, default="")
+
+    description: str
+    _description: str = field(init=False, repr=False, default="")
+
+    info: str
+    _info: str = field(init=False, repr=False, default="")
 
     @property
     def id(self):
         """The integer representation of the object's UUID"""
         return self._id
 
+    @id.setter
+    def id(self, val: int):
+        self._id = val
+
     @property
     def name(self):
         """The short name of the object"""
         return self._name
+
+    @name.setter
+    def name(self, val: str):
+        self._name = val
 
     @property
     def description(self):
         """A brief description of the object, which can fit alongside the name and ID on a single line"""
         return self._description
 
+    @description.setter
+    def description(self, val: str):
+        self._description = val
+
     @property
     def info(self):
         """An extended description of the object, which can cover multiple lines"""
         return self._info
+
+    @info.setter
+    def info(self, val: str):
+        self._info = val
 
     @property
     def uuid(self):
@@ -223,15 +246,11 @@ class DBInfo:
 
 
 @dataclass
-class ArgInfo:
+class ArgInfo(DBInfo):
     """Class providing information on an argument accepted by a converter (whether it accepts a value or not)
     """
 
-    parent: ConverterInfo
-    id: int
-    flag: str
-    description: str
-    info: str
+    parent: ConverterInfo | None = None
 
     s_in_formats: set[int] = field(default_factory=set)
     s_out_formats: set[int] = field(default_factory=set)
@@ -401,12 +420,13 @@ class ConverterInfo:
                 optional_arg_info_kwargs = {}
                 if brief is not None:
                     optional_arg_info_kwargs["brief"] = brief
-                arg_info = subclass(parent=self,
-                                    id=arg_id,
-                                    flag=name,
-                                    description=d_single_arg_info[DB_DESCRIPTION_KEY],
-                                    info=d_single_arg_info[DB_FURTHER_INFO_KEY],
-                                    **optional_arg_info_kwargs)
+                arg_info = subclass(
+                    id=arg_id,
+                    name=name,
+                    description=d_single_arg_info[DB_DESCRIPTION_KEY],
+                    info=d_single_arg_info[DB_FURTHER_INFO_KEY],
+                    parent=self,
+                    **optional_arg_info_kwargs)
                 d_arg_info[arg_id] = arg_info
 
                 # Get a list of all in and formats applicable to this flag, and add them to the flag info's sets
@@ -2200,7 +2220,7 @@ def _find_arg(tl_args: tuple[list[FlagInfo], list[OptionInfo]],
     """Find a specific flag or option in the lists
     """
     for l_args in tl_args:
-        l_found = [x for x in l_args if x.flag == arg]
+        l_found = [x for x in l_args if x.name == arg]
         if len(l_found) > 0:
             return l_found[0]
     # If we get here, it wasn't found in either list

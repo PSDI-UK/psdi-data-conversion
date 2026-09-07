@@ -93,8 +93,8 @@ def test_format_args():
     l_in_flags, _ = db.get_in_format_args(converter_name, in_format)
     l_out_flags, _ = db.get_out_format_args(converter_name, out_format)
 
-    l_in_flag_names = [x.flag for x in l_in_flags]
-    l_out_flag_names = [x.flag for x in l_out_flags]
+    l_in_flag_names = [x.name for x in l_in_flags]
+    l_out_flag_names = [x.name for x in l_out_flags]
 
     assert "b" in l_in_flag_names
     assert "c" in l_in_flag_names
@@ -104,9 +104,9 @@ def test_format_args():
 
     # Check that we can find a specific argument
     in_flag_info_0 = l_in_flags[0]
-    assert db.get_in_format_args(converter_name, in_format, in_flag_info_0.flag) is in_flag_info_0
+    assert db.get_in_format_args(converter_name, in_format, in_flag_info_0.name) is in_flag_info_0
     out_flag_info_0 = l_out_flags[0]
-    assert db.get_out_format_args(converter_name, out_format, out_flag_info_0.flag) is out_flag_info_0
+    assert db.get_out_format_args(converter_name, out_format, out_flag_info_0.name) is out_flag_info_0
 
     # Check that the UUID is constructed appropriately for the info objects
     assert in_flag_info_0.uuid == UUID(int=in_flag_info_0.id)

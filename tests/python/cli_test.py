@@ -373,10 +373,10 @@ def test_conversion_info(capsys):
     # Check that info for each flag and option is printed as expected
     for flag_info in l_in_flags + l_out_flags:
         info = flag_info.info if flag_info.info and flag_info.info != "N/A" else ""
-        assert string_is_present_in_out(f"{flag_info.flag}{flag_info.description}{info}")
+        assert string_is_present_in_out(f"{flag_info.name}{flag_info.description}{info}")
     for option_info in l_in_options + l_out_options:
         info = option_info.info if option_info.info and option_info.info != "N/A" else ""
-        assert string_is_present_in_out(f"{option_info.flag}<{option_info.brief}>{option_info.description}{info}")
+        assert string_is_present_in_out(f"{option_info.name}<{option_info.brief}>{option_info.description}{info}")
 
     # Now try listing for converters which don't yet allow in/out args
 

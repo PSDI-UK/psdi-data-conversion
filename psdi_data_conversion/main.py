@@ -476,7 +476,7 @@ def detail_converter_use(args: ConvertArgs):
                 optional_brief = ""
             else:
                 optional_brief = f" <{arg_info.brief}>"
-            print_wrap(f"{arg_info.flag+optional_brief:>{ARG_LEN}}  {arg_info.description}",
+            print_wrap(f"{arg_info.name+optional_brief:>{ARG_LEN}}  {arg_info.description}",
                        subsequent_indent=" "*(ARG_LEN+2))
             if arg_info.info and arg_info.info != "N/A":
                 print_wrap(arg_info.info,
