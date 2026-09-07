@@ -156,6 +156,73 @@ class FileConverterDatabaseException(FileConverterException):
 
 
 @dataclass
+class DBInfo:
+    """Base for classes providing information from the database"""
+
+    _id: int = -1
+    _name: str = ""
+    _description: str = ""
+    _info: str = ""
+
+    @property
+    def id(self):
+        """The integer representation of the object's UUID"""
+        return self._id
+
+    @property
+    def name(self):
+        """The short name of the object"""
+        return self._name
+
+    @property
+    def description(self):
+        """A brief description of the object, which can fit alongside the name and ID on a single line"""
+        return self._description
+
+    @property
+    def info(self):
+        """An extended description of the object, which can cover multiple lines"""
+        return self._info
+
+    @property
+    def uuid(self):
+        """Returns the ID as a UUID object
+        """
+        return UUID(int=self.id)
+
+    def format_word(self):
+        """Return a formatted representation of this as a single word"""
+        return str(self)
+
+    def format_inline(self):
+        """Return a formatted representation of this that can fit inline"""
+        return f"{self.format_word()} (ID: {self.id})"
+
+    def format_oneline(self):
+        """Return a formatted description of this that can fit in a single line"""
+        str_rep = str(self)
+        format_word_rep = self.format_word()
+        if str_rep != format_word_rep:
+            return f"{self.name} (\"{format_word_rep}\", ID: {self.id}): {self.description}"
+        return f"{self.format_inline()}: {self.description}"
+
+    def format_detailed(self):
+        """Return a multi-line formatted description of this"""
+        return f"{self.format_oneline()}\n{self.info}"
+
+    def __str__(self):
+        """Use the name as the string representation"""
+        return self.name
+
+    def __int__(self):
+        """Use the ID as the integer representation"""
+        return self.id
+
+    def __hash__(self):
+        return hash(int(self))
+
+
+@dataclass
 class ArgInfo:
     """Class providing information on an argument accepted by a converter (whether it accepts a value or not)
     """
