@@ -93,8 +93,8 @@ def test_format_args():
     l_in_flags, _ = db.get_in_format_args(converter_name, in_format)
     l_out_flags, _ = db.get_out_format_args(converter_name, out_format)
 
-    l_in_flag_names = [x.flag for x in l_in_flags]
-    l_out_flag_names = [x.flag for x in l_out_flags]
+    l_in_flag_names = [x.name for x in l_in_flags]
+    l_out_flag_names = [x.name for x in l_out_flags]
 
     assert "b" in l_in_flag_names
     assert "c" in l_in_flag_names
@@ -104,9 +104,9 @@ def test_format_args():
 
     # Check that we can find a specific argument
     in_flag_info_0 = l_in_flags[0]
-    assert db.get_in_format_args(converter_name, in_format, in_flag_info_0.flag) is in_flag_info_0
+    assert db.get_in_format_args(converter_name, in_format, in_flag_info_0.name) is in_flag_info_0
     out_flag_info_0 = l_out_flags[0]
-    assert db.get_out_format_args(converter_name, out_format, out_flag_info_0.flag) is out_flag_info_0
+    assert db.get_out_format_args(converter_name, out_format, out_flag_info_0.name) is out_flag_info_0
 
     # Check that the UUID is constructed appropriately for the info objects
     assert in_flag_info_0.uuid == UUID(int=in_flag_info_0.id)
@@ -311,7 +311,7 @@ def test_conversion_table(database):
     assert comp_prop_info.input_supported is True
     assert comp_prop_info.output_supported is True
     assert comp_prop_info.label == const.QUAL_COMP_LABEL
-    assert comp_prop_info.note == ""
+    assert comp_prop_info.description == ""
 
     # Check we can get a list of possible converters for a given conversion
     l_possible_conversions = db.get_possible_conversions("pdb", "cif")
@@ -378,17 +378,17 @@ def test_conversion_pathways_with_aliases():
 
 @pytest.fixture(scope="module")
 def format_all(database):
-    return db.FormatInfo.factory(database, {db.DB_NAME_KEY: "all", **{key: True for key in db.D_PROP_BITS.keys()}})
+    return db.FormatInfo.from_db(database, {db.DB_NAME_KEY: "all", **{key: True for key in db.D_PROP_BITS.keys()}})
 
 
 @pytest.fixture(scope="module")
 def format_none(database):
-    return db.FormatInfo.factory(database, {db.DB_NAME_KEY: "none", **{key: False for key in db.D_PROP_BITS.keys()}})
+    return db.FormatInfo.from_db(database, {db.DB_NAME_KEY: "none", **{key: False for key in db.D_PROP_BITS.keys()}})
 
 
 @pytest.fixture(scope="module")
 def format_unknown(database):
-    return db.FormatInfo.factory(database, {db.DB_NAME_KEY: "unknown", **{key: None for key in db.D_PROP_BITS.keys()}})
+    return db.FormatInfo.from_db(database, {db.DB_NAME_KEY: "unknown", **{key: None for key in db.D_PROP_BITS.keys()}})
 
 
 @pytest.fixture(scope="module")
@@ -431,7 +431,7 @@ def test_calc_conversion_prop_weight(in_format, out_format, ex_weight,
 @pytest.mark.parametrize("prop", db.D_PROP_BITS.keys())
 def test_calc_conversion_prop_weight_prop_lost(format_none, prop, converter_ob):
     """Test each property individually when it's lost to ensure the right bit is set for each"""
-    test_format = db.FormatInfo.factory(database, {db.DB_NAME_KEY: "unknown", **{key: True if key == prop else False
+    test_format = db.FormatInfo.from_db(database, {db.DB_NAME_KEY: "unknown", **{key: True if key == prop else False
                                                                                  for key in db.D_PROP_BITS.keys()}})
     assert db.calc_conversion_prop_weight(converter_ob, test_format,
                                           format_none) == 1 << db.D_PROP_BITS[prop]
@@ -446,8 +446,8 @@ def test_calc_conversion_prop_weight_prop_lost(format_none, prop, converter_ob):
                                                           (24, 6, 1 << db.PREC_MAX_DIGIT_LOSS*db.PREC_GAP_BITS)])
 def test_calc_conversion_precision_weight(database, in_prec, out_prec, ex_weight, converter_ob):
     """Test that conversion precision weights are calculated correctly"""
-    in_format = db.FormatInfo.factory(database, {db.DB_NAME_KEY: "in", db.DB_FORMAT_PRECISION_KEY: in_prec}, {})
-    out_format = db.FormatInfo.factory(database, {db.DB_NAME_KEY: "out", db.DB_FORMAT_PRECISION_KEY: out_prec}, {})
+    in_format = db.FormatInfo.from_db(database, {db.DB_NAME_KEY: "in", db.DB_FORMAT_PRECISION_KEY: in_prec}, {})
+    out_format = db.FormatInfo.from_db(database, {db.DB_NAME_KEY: "out", db.DB_FORMAT_PRECISION_KEY: out_prec}, {})
     assert db.calc_conversion_prec_weight(converter_ob, in_format, out_format) == ex_weight
 
 

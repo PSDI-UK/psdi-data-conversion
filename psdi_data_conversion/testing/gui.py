@@ -309,12 +309,12 @@ class GuiSingleTestSpecRunner:
         wait_for_element(self.driver, "//select[@id='fromList']/option")
 
         # Select from_format from the 'from' list.
-        full_from_format = f"{self._from_format_ext}: {self._from_format_info.note}"
+        full_from_format = f"{self._from_format_ext}: {self._from_format_info.description}"
         self.driver.find_element(
             By.XPATH, f"//select[@id='fromList']/option[starts-with(.,'{full_from_format}')]").click()
 
         # Select to_format from the 'to' list.
-        full_to_format = f"{self._to_format_ext}: {self._to_format_info.note}"
+        full_to_format = f"{self._to_format_ext}: {self._to_format_info.description}"
         self.driver.find_element(
             By.XPATH, f"//select[@id='toList']/option[starts-with(.,'{full_to_format}')]").click()
 

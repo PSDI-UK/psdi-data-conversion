@@ -62,7 +62,7 @@ def post_convert():
 
         # Otherwise, find the format with the matching note
         for possible_format in l_possible_formats:
-            if possible_format.note in full_note:
+            if possible_format.description in full_note:
                 d_formats[format_label] = possible_format
                 break
         else:
