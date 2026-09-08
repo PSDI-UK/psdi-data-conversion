@@ -27,7 +27,7 @@ from psdi_data_conversion.database import (D_FORMAT_PROPERTY_ATTRS, ConversionQu
                                            get_out_format_args, get_possible_conversions, get_possible_formats)
 from psdi_data_conversion.file_io import split_archive_ext
 from psdi_data_conversion.log_utility import get_log_level_from_str
-from psdi_data_conversion.utils import displaylen, print_wrap, regularize_name, tc
+from psdi_data_conversion.utils import print_wrap, regularize_name, tc
 
 
 class ConvertArgs:
@@ -124,8 +124,8 @@ class ConvertArgs:
                                               "not exist as a directory", help=True)
 
         if self.to_format is None:
-            msg = textwrap.fill(f"{tc.ERROR}ERROR:{tc.OFF} Output format (-t or --to) must be provided. For "
-                                "information on supported formats and converters, call:\n")
+            msg = textwrap.fill(f"{tc.ERROR}ERROR:{tc.OFF} Output format ({tc.CODE}`-t/--to`{tc.OFF}) must be "
+                                "provided. For information on supported formats and converters, call:\n")
             msg += f"{tc.CODE}{CL_SCRIPT_NAME} -l{tc.OFF}"
             raise FileConverterInputException(msg, msg_preformatted=True, help=True)
 
@@ -153,8 +153,10 @@ class ConvertArgs:
 
         # Logging mode is valid
         if self.log_mode not in const.L_ALLOWED_LOG_MODES:
-            raise FileConverterInputException(f"Unrecognised logging mode: {self.log_mode}. Allowed "
-                                              f"modes are: {const.L_ALLOWED_LOG_MODES}", help=True)
+            raise FileConverterInputException(f"Unrecognised logging mode: {tc.MESSAGE}'{self.log_mode}'{tc.OFF}. "
+                                              f"Allowed modes are: " +
+                                              ", ".join([f"{tc.MESSAGE}'{x}'{tc.OFF}"
+                                                         for x in const.L_ALLOWED_LOG_MODES]), help=True)
 
         # Arguments specific to this converter
         self.d_converter_args = {}
@@ -201,10 +203,12 @@ class ConvertArgs:
                         if os.path.isfile(test_filename):
                             first_filename = test_filename
                         else:
-                            raise FileConverterInputException(f"Input file {first_filename} cannot be found. Also "
-                                                              f"checked for {test_filename}.", help=True)
+                            raise FileConverterInputException(f"Input file {tc.PATH}'{first_filename}'{tc.OFF} cannot "
+                                                              f"be found. Also checked for {tc.PATH}'{test_filename}"
+                                                              f"'{tc.OFF}.", help=True)
                     else:
-                        raise FileConverterInputException(f"Input file {first_filename} cannot be found.", help=True)
+                        raise FileConverterInputException(f"Input file {tc.PATH}'{first_filename}'{tc.OFF} cannot be "
+                                                          "found.", help=True)
 
                 filename_base = os.path.split(split_archive_ext(first_filename)[0])[1]
                 if self.log_mode == const.LOG_FULL:
@@ -507,13 +511,13 @@ def detail_converter_use(args: ConvertArgs):
     # Now at the end, bring up input/output-format-specific flags and options
     if mention_input_format and mention_output_format:
         print_wrap("For details on input/output flags and options allowed for specific formats, call:\n"
-                   f"{CL_SCRIPT_NAME} -l {converter_name} -f <input_format> -t <output_format>")
+                   f"{tc.CODE}{CL_SCRIPT_NAME} -l {converter_name} -f <input_format> -t <output_format>{tc.OFF}")
     elif mention_input_format:
         print_wrap("For details on input flags and options allowed for a specific format, call:\n"
-                   f"{CL_SCRIPT_NAME} -l {converter_name} -f <input_format> [-t <output_format>]")
+                   f"{tc.CODE}{CL_SCRIPT_NAME} -l {converter_name} -f <input_format> [-t <output_format>]{tc.OFF}")
     elif mention_output_format:
         print_wrap("For details on output flags and options allowed for a specific format, call:\n"
-                   f"{CL_SCRIPT_NAME} -l {converter_name} -t <output_format> [-f <input_format>]")
+                   f"{tc.CODE}{CL_SCRIPT_NAME} -l {converter_name} -t <output_format> [-f <input_format>]{tc.OFF}")
 
 
 def list_supported_formats(err=False):
@@ -565,7 +569,7 @@ def list_supported_formats(err=False):
     if err:
         print("")
         print_wrap("For more details on a format, call:")
-        print(f"{CL_SCRIPT_NAME} -l -f <format>")
+        print(f"{tc.CODE}{CL_SCRIPT_NAME} -l -f <format>{tc.OFF}")
 
 
 def detail_format(format_name: str):
@@ -596,7 +600,7 @@ def detail_format(format_name: str):
             print()
 
         # Print the format's basic details
-        print_wrap(f"{format_info.disambiguated_name} (ID: {format_info.id}): {format_info.description}")
+        print_wrap(format_info.format_oneline())
 
         # Print whether or not it supports each possible property
         for attr, label in D_FORMAT_PROPERTY_ATTRS.items():
@@ -645,12 +649,16 @@ def detail_formats_and_possible_converters(from_format: str, to_format: str):
 
     # Check if no direct conversions are possible, and if formats are specified uniquely, recommend a chained conversion
     if len(l_possible_conversions) == 0:
-        print()
-        print_wrap(f"No direct conversions are possible from {from_format} to {to_format}")
-        print()
 
         l_from_formats = get_format_info(from_format, which="all")
         l_to_formats = get_format_info(to_format, which="all")
+
+        from_format_name = l_from_formats[0].format_word() if len(l_from_formats) == 1 else f"'{from_format}'"
+        to_format_name = l_to_formats[0].format_word() if len(l_to_formats) == 1 else f"'{to_format}'"
+
+        print()
+        print_wrap(f"No direct conversions are possible from {from_format_name} to {to_format_name}")
+        print()
 
         if len(l_from_formats) == 1 and len(l_to_formats) == 1:
 
@@ -663,11 +671,12 @@ def detail_formats_and_possible_converters(from_format: str, to_format: str):
                     converter_type_needed = only
                 else:
                     converter_type_needed = "unsupported"
-                print_wrap(f"A chained conversion is possible from {from_format} to {to_format} using "
+                print_wrap(f"A chained conversion is possible from {from_format_name} to {to_format_name} using "
                            f"{converter_type_needed} converters:")
 
                 for i, step in enumerate(pathway):
-                    print_wrap(f"{i+1}) Convert from {step[1].name} to {step[2].name} with {step[0].pretty_name}")
+                    print_wrap(f"{i+1}) Convert from {step[1].format_word()} to {step[2].format_word()} with "
+                               f"{step[0].format_word()}")
 
                 print()
                 print_wrap("Chained conversion is not yet supported by this utility, but will be added soon")
@@ -679,7 +688,7 @@ def detail_formats_and_possible_converters(from_format: str, to_format: str):
 
         else:
             print_wrap("To see possible chained conversions, specify each format uniquely using the ID or "
-                       "disambiguated name (e.g. \"xxx-0\") listed above)")
+                       f"disambiguated name (e.g. '{tc.MESSAGE}xxx-0{tc.OFF}') listed above)")
 
     # Get a list of all different formats which share the provided name, cutting out duplicates
     l_from_formats = list(set([x[1] for x in l_possible_conversions]))
@@ -692,16 +701,16 @@ def detail_formats_and_possible_converters(from_format: str, to_format: str):
     for possible_from_format, possible_to_format in product(l_from_formats, l_to_formats):
         print()
 
-        from_name = possible_from_format.disambiguated_name
-        to_name = possible_to_format.disambiguated_name
+        from_name = possible_from_format.format_word()
+        to_name = possible_to_format.format_word()
 
         l_conversions_matching_formats = [x for x in l_possible_conversions
                                           if x[1] == possible_from_format and x[2] == possible_to_format]
 
-        l_possible_registered_converters = [x[0].pretty_name
+        l_possible_registered_converters = [x[0].format_word()
                                             for x in l_conversions_matching_formats
                                             if x[0].name in L_REGISTERED_CONVERTERS]
-        l_possible_unregistered_converters = [x[0].pretty_name
+        l_possible_unregistered_converters = [x[0].format_word()
                                               for x in l_conversions_matching_formats
                                               if x[0].name in L_SUPPORTED_CONVERTERS
                                               and x[0].name not in L_REGISTERED_CONVERTERS]
@@ -748,9 +757,9 @@ def get_supported_converters():
     output_str = "Available converters: \n\n    " + "\n    ".join(l_converters)
 
     if any_not_registered:
-        output_str += (f"\n\nConverters marked as \"{MSG_NOT_REGISTERED}\" are supported by this package, but no "
-                       "appropriate binary for your platform was either distributed with this package or "
-                       "found on your system")
+        output_str += (f"\n\nConverters marked as {tc.MESSAGE}'{MSG_NOT_REGISTERED}'{tc.OFF} are supported by this "
+                       "package, but no appropriate binary for your platform was either distributed with this package "
+                       "or found on your system")
 
     return output_str
 
@@ -797,16 +806,16 @@ def detail_converters_and_formats(args: ConvertArgs):
     print("")
 
     print_wrap("For more details on a converter, call:")
-    print(f"{CL_SCRIPT_NAME} -l <converter name>\n")
+    print(f"{tc.CODE}{CL_SCRIPT_NAME} -l <converter name>{tc.OFF}\n")
 
     print_wrap("For more details on a format, call:")
-    print(f"{CL_SCRIPT_NAME} -l -f <format>\n")
+    print(f"{tc.CODE}{CL_SCRIPT_NAME} -l -f <format>{tc.OFF}\n")
 
     print_wrap("For a list of converters that can perform a desired conversion, call:")
-    print(f"{CL_SCRIPT_NAME} -l -f <input format> -t <output format>\n")
+    print(f"{tc.CODE}{CL_SCRIPT_NAME} -l -f <input format> -t <output format>{tc.OFF}\n")
 
     print_wrap("For a list of options provided by a converter for a desired conversion, call:")
-    print(f"{CL_SCRIPT_NAME} -l <converter name> -f <input format> -t <output format>")
+    print(f"{tc.CODE}{CL_SCRIPT_NAME} -l <converter name> -f <input format> -t <output format>{tc.OFF}")
 
 
 def run_from_args(args: ConvertArgs):
@@ -846,16 +855,17 @@ def run_from_args(args: ConvertArgs):
             if not qualified_filename.endswith(ex_extension):
                 qualified_filename += ex_extension
                 if not os.path.isfile(qualified_filename):
-                    print_wrap(f"{tc.ERROR}ERROR:{tc.OFF} Cannot find file {tc.PATH}{filename+ex_extension}{tc.OFF} in "
-                               f"directory {tc.PATH}{args.input_dir}{tc.OFF}", err=True)
+                    print_wrap(f"{tc.ERROR}ERROR:{tc.OFF} Cannot find file {tc.PATH}'{filename+ex_extension}'{tc.OFF} "
+                               f"in directory {tc.PATH}'{args.input_dir}'{tc.OFF}", err=True)
                     continue
             else:
-                print_wrap(f"{tc.ERROR}ERROR:{tc.OFF} Cannot find file {tc.PATH}{filename}{tc.OFF} in directory "
-                           f"{tc.PATH}{args.input_dir}{tc.OFF}", err=True)
+                print_wrap(f"{tc.ERROR}ERROR:{tc.OFF} Cannot find file {tc.PATH}'{filename}'{tc.OFF} in directory "
+                           f"{tc.PATH}'{args.input_dir}'{tc.OFF}", err=True)
                 continue
 
         if not args.quiet:
-            print_wrap(f"Converting {filename} to {args.to_format}...", newline=True)
+            print_wrap(f"Converting {tc.PATH}'{filename}'{tc.OFF} to {tc.MESSAGE}'{args.to_format}'{tc.OFF}...",
+                       newline=True)
 
         try:
             conversion_result = run_converter(filename=qualified_filename,
@@ -876,7 +886,7 @@ def run_from_args(args: ConvertArgs):
         except FileConverterAbortException as e:
             if not e.logged:
                 print_wrap(f"{tc.ERROR}ERROR:{tc.OFF} Attempt to convert file {filename} aborted with status code "
-                           f"{e.status_code} and message:\n{e}\n", err=True)
+                           f"{tc.MESSAGE}{e.status_code}{tc.OFF} and message:\n{tc.MESSAGE}{e}{tc.OFF}\n", err=True)
                 e.logged = True
             success = False
             continue
@@ -894,16 +904,17 @@ def run_from_args(args: ConvertArgs):
                 else:
                     print_wrap(f"{tc.ERROR}ERROR:{tc.OFF} {e}", err=True)
             elif not e.logged:
-                print_wrap(f"{tc.ERROR}ERROR:{tc.OFF} Attempt to convert file {tc.PATH}{filename}{tc.OFF} failed at "
-                           f"converter initialization with exception type {tc.CODE}{type(e)}{tc.OFF} and message: "
-                           f"\n{e}\n", err=True)
+                print_wrap(f"{tc.ERROR}ERROR:{tc.OFF} Attempt to convert file {tc.PATH}'{filename}'{tc.OFF} failed at "
+                           f"converter initialization with exception type {tc.CODE}`{type(e)}`{tc.OFF} and message: "
+                           f"\n{tc.MESSAGE}{e}{tc.OFF}\n", err=True)
             e.logged = True
             success = False
             continue
         except Exception as e:
             if not hasattr(e, "logged") or e.logged is False:
-                print_wrap(f"{tc.ERROR}ERROR:{tc.OFF} Attempt to convert file {tc.PATH}{filename}{tc.OFF} failed with "
-                           f"exception type {tc.CODE}{type(e)}{tc.OFF} and message: \n{e}\n", err=True)
+                print_wrap(f"{tc.ERROR}ERROR:{tc.OFF} Attempt to convert file {tc.PATH}'{filename}'{tc.OFF} failed "
+                           f"with exception type {tc.CODE}`{type(e)}`{tc.OFF} and message: \n{tc.MESSAGE}{e}{tc.OFF}\n",
+                           err=True)
                 e.logged = True
             success = False
             continue
@@ -924,9 +935,9 @@ def main():
 
     # If no inputs were provided, print a message about usage
     if len(sys.argv) == 1:
-        print_wrap("See the README.md file for information on using this utility and examples of basic usage, or for "
-                   "detailed explanation of arguments call:")
-        print(f"{CL_SCRIPT_NAME} -h")
+        print_wrap(f"See the {tc.PATH}'README.md'{tc.OFF} file for information on using this utility and examples of "
+                   "basic usage, or for detailed explanation of arguments call:")
+        print(f"{tc.CODE}{CL_SCRIPT_NAME} -h{tc.OFF}")
         exit(1)
 
     try:
