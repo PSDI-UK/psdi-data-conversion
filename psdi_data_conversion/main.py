@@ -10,9 +10,10 @@ Entry-point file for the command-line interface for data conversion.
 import logging
 import os
 import sys
-import textwrap
 from argparse import ArgumentParser
 from itertools import product
+
+import wraptext
 
 from psdi_data_conversion import constants as const
 from psdi_data_conversion.constants import CL_SCRIPT_NAME, CONVERTER_DEFAULT, TERM_WIDTH
@@ -124,7 +125,7 @@ class ConvertArgs:
                                               "not exist as a directory", help=True)
 
         if self.to_format is None:
-            msg = textwrap.fill(f"{tc.ERROR}ERROR:{tc.OFF} Output format ({tc.CODE}`-t/--to`{tc.OFF}) must be "
+            msg = wraptext.fill(f"{tc.ERROR}ERROR:{tc.OFF} Output format ({tc.CODE}`-t/--to`{tc.OFF}) must be "
                                 "provided. For information on supported formats and converters, call:\n")
             msg += f"{tc.CODE}{CL_SCRIPT_NAME} -l{tc.OFF}"
             raise FileConverterInputException(msg, msg_preformatted=True, help=True)
@@ -138,14 +139,13 @@ class ConvertArgs:
 
         # Check the converter is recognized
         if not converter_is_supported(self.name):
-            msg = textwrap.fill(
-                f"{tc.ERROR}ERROR:{tc.OFF} Converter {tc.MESSAGE}'{self.name}'{tc.OFF} not recognised",
-                width=TERM_WIDTH)
+            msg = wraptext.fill(f"{tc.ERROR}ERROR:{tc.OFF} Converter {tc.MESSAGE}'{self.name}'{tc.OFF} not "
+                                "recognised", width=TERM_WIDTH)
             msg += f"\n\n{get_supported_converters()}"
             raise FileConverterInputException(msg, help=True, msg_preformatted=True)
         elif not converter_is_registered(self.name):
             converter_name = get_supported_converter_class(self.name).meta.name
-            msg = textwrap.fill(f"{tc.ERROR}ERROR:{tc.OFF} Converter {tc.MESSAGE}'{converter_name}'{tc.OFF} is not "
+            msg = wraptext.fill(f"{tc.ERROR}ERROR:{tc.OFF} Converter {tc.MESSAGE}'{converter_name}'{tc.OFF} is not "
                                 "registered. It may be possible to register it by installing an appropriate binary for "
                                 "your platform.", width=TERM_WIDTH)
             msg += f"\n\n{get_supported_converters()}"
@@ -458,7 +458,7 @@ def detail_converter_use(args: ConvertArgs):
         for option, d_data, _ in converter_class.allowed_options:
             help = d_data.get("help", "(No information provided)")
             print(f"  {tc.CODE}{option} <val(s)>{tc.OFF}")
-            print(textwrap.fill(help, initial_indent=" "*4, subsequent_indent=" "*4))
+            print(wraptext.fill(help, initial_indent=" "*4, subsequent_indent=" "*4))
         print("")
 
     # If input/output-format specific flags or options are available for the converter but a format isn't available,

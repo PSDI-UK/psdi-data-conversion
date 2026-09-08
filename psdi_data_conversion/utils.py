@@ -8,10 +8,11 @@ Miscellaneous utility functions used by this project
 import json
 import re
 import sys
-import textwrap
 from functools import lru_cache
 from importlib.metadata import Distribution
 from pathlib import Path
+
+import wraptext
 
 from psdi_data_conversion.constants import TERM_WIDTH
 from psdi_data_conversion.file_io import get_package_path
@@ -141,7 +142,7 @@ def get_wrapped_str(s: str, color: str | None = None, **kwargs):
         s_colored = color+s+TextColors.OFF
     else:
         s_colored = s
-    return textwrap.fill(s_colored, width=TERM_WIDTH, **kwargs)
+    return wraptext.fill(s_colored, width=TERM_WIDTH, **kwargs)
 
 
 def print_wrap(s: str, newline=False, err=False, **kwargs):
