@@ -2178,29 +2178,33 @@ def disambiguate_formats(converter: str | int | UUID | ConverterInfo,
         If more than one format combination is possible for this conversion, or no conversion is possible
     """
 
-    # Get the converter/format info for all input
+    # Get the converter/format info for all input, as possible
     converter_info = get_converter_info(converter)
-    in_format_info = get_format_info(in_format)
-    out_format_info = get_format_info(out_format)
+    l_in_format_info = get_format_info(in_format, "all")
+    if len(l_in_format_info) == 1:
+        in_format_name = l_in_format_info[0].format_word()
+    else:
+        in_format_name = f"{tc.MESSAGE}'{in_format}'{tc.OFF}"
+    l_out_format_info = get_format_info(out_format, "all")
+    if len(l_out_format_info) == 1:
+        out_format_name = l_out_format_info[0].format_word()
+    else:
+        out_format_name = f"{tc.MESSAGE}'{out_format}'{tc.OFF}"
 
     # Get all possible conversions, and see if we only have one for this converter
-    l_possible_conversions = [x for x in get_possible_conversions(in_format_info, out_format_info)
+    l_possible_conversions = [x for x in get_possible_conversions(in_format, out_format)
                               if x[0] is converter_info]
 
     if len(l_possible_conversions) == 1:
         return l_possible_conversions[0][1], l_possible_conversions[0][2]
     elif len(l_possible_conversions) == 0:
-        raise FileConverterDatabaseException(f"Conversion from {in_format_info.format_word()} to "
-                                             f"{out_format_info.format_word()} with converter "
+        raise FileConverterDatabaseException(f"Conversion from {in_format_name} to "
+                                             f"{out_format_name} with converter "
                                              f"{converter_info.format_word()} is not supported", help=True)
     else:
 
         converter_name = converter.format_word() if isinstance(
             converter, ConverterInfo) else f"{tc.PATH}'{converter}'{tc.OFF}"
-        in_format_name = in_format.format_word() if isinstance(
-            in_format, FormatInfo) else f"{tc.PATH}'{in_format}'{tc.OFF}"
-        out_format_name = out_format.format_word() if isinstance(
-            out_format, FormatInfo) else f"{tc.PATH}'{out_format}'{tc.OFF}"
 
         msg = (f"Conversion from {in_format_name} to {out_format_name} with converter "
                f"{converter_name} is ambiguous. Please Use the ID or disambiguated name (listed below) "
