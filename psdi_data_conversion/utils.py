@@ -58,10 +58,10 @@ class TextColors:
     DARKMAGENTA = "\033[35m"
     """Start coloring dark magenta"""
 
-    CYAN = PATH = "\033[96m"
+    CYAN = PATH = MESSAGE = "\033[96m"
     """Start coloring cyan"""
 
-    DARKCYAN = MESSAGE = "\033[36m"
+    DARKCYAN = "\033[36m"
     """Start coloring dark cyan"""
 
     # Text formatting codes

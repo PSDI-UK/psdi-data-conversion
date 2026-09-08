@@ -266,7 +266,7 @@ def run_from_args(args):
         project_path = Path(os.environ[TEST_PATH_KEY]).resolve()
         if not project_path.is_dir():
             print_wrap(f"{TC.RED}ERROR:{TC.OFF} When running this script with '{TC.YELLOW}{TEST_PATH_KEY}=$TEST_PATH"
-                       f"{TC.OFF}', the provided path ({TC.CYAN}{project_path}{TC.OFF}) must already exist.",
+                       f"'{tc.OFF}, the provided path ({TC.CYAN}{project_path}{TC.OFF}) must already exist.",
                        err=True)
             exit(1)
         db_path = project_path / "psdi_data_conversion/static/data/data.json"
@@ -383,11 +383,11 @@ def run_from_args(args):
                                       "entry in the database\n", initial_indent=" "*2, subsequent_indent=" "*2)
                       )
                 print_wrap(f"- If it is not one of those, add a line '{TC.YELLOW}\"confirmed_new\": "
-                           f"true{TC.OFF}' to its entry in the converter database file\n",
+                           f"true'{tc.OFF} to its entry in the converter database file\n",
                            initial_indent="", subsequent_indent=" "*2)
                 print_wrap("Once this is done for all formats listed here, rerun this script. Alternatively, if you "
                            "confirm that all listed formats are new, you can rerun the script with the "
-                           f"'{TC.YELLOW}-f/--force{TC.OFF}' flag.\n\n---\n")
+                           f"'{TC.YELLOW}-f/--force'{tc.OFF} flag.\n\n---\n")
             else:
                 print_wrap(f"\n\n------\n\nThe following formats provided by the converter "
                            f"'{db_conv[db.DB_CONVERTER_KEY][db.DB_NAME_KEY]}' might already exist in the database:"

@@ -116,7 +116,7 @@ def run_from_args(args):
         label = NON_SNAKE_CASE_CHAR_RE.sub("", name.lower().replace(" ", "_"))
         if not label:
             print_wrap(f"{TC.RED}ERROR:{TC.OFF} A valid label could not be generated from converter name '{name}'. "
-                       f"Please specify a label directly with '{TC.YELLOW}--label LABEL{TC.OFF}'. The label should "
+                       f"Please specify a label directly with '{TC.YELLOW}--label LABEL'{tc.OFF}. The label should "
                        "be in snake_case (all lower-case with underscores in place of spaces), containing only "
                        "letters, digits, and underscores", err=True)
             exit(1)
@@ -130,7 +130,7 @@ def run_from_args(args):
         project_path: Path = Path(os.environ[TEST_PATH_KEY]).resolve()
         if not project_path.is_dir():
             print_wrap(f"{TC.RED}ERROR:{TC.OFF} When running this script with '{TC.YELLOW}--test-path TEST_PATH" +
-                       f"{TC.OFF}', the provided path ({TC.CYAN}{project_path}{TC.OFF}) must already exist.",
+                       f"'{tc.OFF}, the provided path ({TC.CYAN}{project_path}{TC.OFF}) must already exist.",
                        err=True)
             exit(1)
     else:
@@ -194,11 +194,11 @@ def run_from_args(args):
 
     print(f"{TC.GREEN}Success!{TC.OFF} The plugin has been created at "
           f"{TC.CYAN}{plugin_path}{TC.OFF}\nNext steps:\n")
-    print_wrap(f"- Edit the '{TC.CYAN}{PLUGIN_PYFILE}{TC.OFF}' and "
-               f"'{TC.CYAN}{PLUGIN_DATAFILE}{TC.OFF}' files in this directory to contain all "
+    print_wrap(f"- Edit the '{TC.CYAN}{PLUGIN_PYFILE}'{tc.OFF} and "
+               f"'{TC.CYAN}{PLUGIN_DATAFILE}'{tc.OFF} files in this directory to contain all "
                "necessary information about this converter and how to run it\n",
                initial_indent="", subsequent_indent=" "*2)
-    print_wrap(f"- Run the script '{TC.YELLOW}psdi-data-convert-install-plugins{TC.OFF}' to install "
+    print_wrap(f"- Run the script '{TC.YELLOW}psdi-data-convert-install-plugins'{tc.OFF} to install "
                "it\n",
                initial_indent="", subsequent_indent=" "*2)
     print_wrap("- If this script highlights that formats provided by this plugin may already be in the database,"

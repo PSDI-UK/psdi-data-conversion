@@ -422,8 +422,8 @@ class ConverterInfo(DBInfo):
             out_formats_key_base = DB_OUT_OPTIONS_FORMATS_KEY_BASE
             out_args_id_key_base = DB_OUT_OPTIONS_ID_KEY_BASE
         else:
-            raise FileConverterDatabaseException(f"Unrecognised subclass passed to `{tc.CODE}_create_d_arg_info"
-                                                 f"{tc.OFF}`: {tc.CODE}{subclass}{tc.OFF}")
+            raise FileConverterDatabaseException(f"Unrecognised subclass passed to {tc.CODE}`_create_d_arg_info"
+                                                 f"`{tc.OFF}: {tc.CODE}{subclass}{tc.OFF}")
 
         for key_base, in_or_out in ((in_key_base, "in"),
                                     (out_key_base, "out")):
@@ -471,8 +471,8 @@ class ConverterInfo(DBInfo):
                 self._d_out_option_info = d_arg_info
                 self._l_unsorted_out_option_info = list(d_arg_info.values())
             else:
-                raise FileConverterDatabaseException(f"Unrecognised subclass passed to `{tc.CODE}_create_d_arg_info"
-                                                     f"{tc.OFF}`: {tc.CODE}{subclass}{tc.OFF}")
+                raise FileConverterDatabaseException(f"Unrecognised subclass passed to {tc.CODE}`_create_d_arg_info"
+                                                     f"`{tc.OFF}: {tc.CODE}{subclass}{tc.OFF}")
 
         return
 
@@ -490,10 +490,10 @@ class ConverterInfo(DBInfo):
         """DEPRECATED: Generate the input flag info list (indexed by ID) when needed. Returns None if the converter has
         no flag info in the database
         """
-        deprecation_msg = (f"`{tc.CODE}l_in_flag_info{tc.OFF}` is deprecated as of version 0.4.0 and due to be removed "
+        deprecation_msg = (f"{tc.CODE}`l_in_flag_info`{tc.OFF} is deprecated as of version 0.4.0 and due to be removed "
                            f"in a future release. To get an input {tc.CODE}FlagInfo{tc.OFF} from the format UUID, use "
-                           f"`{tc.CODE}d_in_flag_info{tc.OFF}`. To get an unsorted list of input "
-                           f"{tc.CODE}FlagInfo{tc.OFF}, use `{tc.CODE}l_unsorted_in_flag_info{tc.OFF}`.")
+                           f"{tc.CODE}`d_in_flag_info`{tc.OFF}. To get an unsorted list of input "
+                           f"{tc.CODE}FlagInfo{tc.OFF}, use {tc.CODE}`l_unsorted_in_flag_info`{tc.OFF}.")
         warnings.warn(deprecation_msg, DeprecationWarning)
         raise AttributeError(deprecation_msg)
 
@@ -520,10 +520,10 @@ class ConverterInfo(DBInfo):
         """DEPRECATED: Generate the input flag info list (indexed by ID) when needed. Returns None if the converter has
         no flag info in the database
         """
-        deprecation_msg = (f"`{tc.CODE}l_out_flag_info{tc.OFF}` is deprecated as of version 0.4.0 and due to be "
+        deprecation_msg = (f"{tc.CODE}`l_out_flag_info`{tc.OFF} is deprecated as of version 0.4.0 and due to be "
                            f"removed in a future release. To get an input {tc.CODE}FlagInfo{tc.OFF} from the format "
-                           f"UUID, use `{tc.CODE}d_out_flag_info{tc.OFF}`. To get an unsorted list of input "
-                           f"{tc.CODE}FlagInfo{tc.OFF}, use `{tc.CODE}l_unsorted_out_flag_info{tc.OFF}`.")
+                           f"UUID, use {tc.CODE}`d_out_flag_info`{tc.OFF}. To get an unsorted list of input "
+                           f"{tc.CODE}FlagInfo{tc.OFF}, use {tc.CODE}`l_unsorted_out_flag_info`{tc.OFF}.")
         warnings.warn(deprecation_msg, DeprecationWarning)
         raise AttributeError(deprecation_msg)
 
@@ -550,10 +550,10 @@ class ConverterInfo(DBInfo):
         """DEPRECATED: Generate the input option info list (indexed by ID) when needed. Returns None if the converter
         has no option info in the database
         """
-        deprecation_msg = (f"`{tc.CODE}l_in_option_info{tc.OFF}` is deprecated as of version 0.4.0 and due to be "
+        deprecation_msg = (f"{tc.CODE}`l_in_option_info`{tc.OFF} is deprecated as of version 0.4.0 and due to be "
                            f"removed in a future release. To get an input {tc.CODE}OptionInfo{tc.OFF} from the format "
-                           f"UUID, use `{tc.CODE}d_in_option_info{tc.OFF}`. To get an unsorted list of input "
-                           f"{tc.CODE}OptionInfo{tc.OFF}, use `{tc.CODE}l_unsorted_in_option_info{tc.OFF}`.")
+                           f"UUID, use {tc.CODE}`d_in_option_info`{tc.OFF}. To get an unsorted list of input "
+                           f"{tc.CODE}OptionInfo{tc.OFF}, use {tc.CODE}`l_unsorted_in_option_info`{tc.OFF}.")
         warnings.warn(deprecation_msg, DeprecationWarning)
         raise AttributeError(deprecation_msg)
 
@@ -580,10 +580,10 @@ class ConverterInfo(DBInfo):
         """DEPRECATED: Generate the input option info list (indexed by ID) when needed. Returns None if the converter
         has no option info in the database
         """
-        deprecation_msg = (f"`{tc.CODE}l_out_option_info{tc.OFF}` is deprecated as of version 0.4.0 and due to be "
+        deprecation_msg = (f"{tc.CODE}`l_out_option_info`{tc.OFF} is deprecated as of version 0.4.0 and due to be "
                            f"removed in a future release. To get an input {tc.CODE}OptionInfo{tc.OFF} from the format "
-                           f"UUID, use `{tc.CODE}d_out_option_info{tc.OFF}`. To get an unsorted list of input "
-                           f"{tc.CODE}OptionInfo{tc.OFF}, use `{tc.CODE}l_unsorted_out_option_info{tc.OFF}`.")
+                           f"UUID, use {tc.CODE}`d_out_option_info`{tc.OFF}. To get an unsorted list of input "
+                           f"{tc.CODE}OptionInfo{tc.OFF}, use {tc.CODE}`l_unsorted_out_option_info`{tc.OFF}.")
         warnings.warn(deprecation_msg, DeprecationWarning)
         raise AttributeError(deprecation_msg)
 
@@ -603,9 +603,9 @@ class ConverterInfo(DBInfo):
         """
 
         if in_or_out not in ("in", "out"):
-            raise FileConverterDatabaseException(f"Unrecognised `{tc.CODE}in_or_out{tc.OFF}` value passed to "
-                                                 f"`{tc.CODE}_create_d_format_args{tc.OFF}`: "
-                                                 f"'{tc.MESSAGE}{in_or_out}{tc.OFF}'")
+            raise FileConverterDatabaseException(f"Unrecognised {tc.CODE}`in_or_out`{tc.OFF} value passed to "
+                                                 f"{tc.CODE}`_create_d_format_args`{tc.OFF}: "
+                                                 f"{tc.PATH}'{in_or_out}'{tc.OFF}")
 
         # Set values based on whether we're working with flags or options, and input or output
         if issubclass(subclass, FlagInfo):
@@ -614,7 +614,7 @@ class ConverterInfo(DBInfo):
             l_arg_info = self.l_unsorted_in_option_info if in_or_out == "in" else self.l_unsorted_out_option_info
         else:
             raise FileConverterDatabaseException(
-                f"Unrecognised subclass passed to `{tc.CODE}_create_d_format_args{tc.OFF}`: {subclass}")
+                f"Unrecognised subclass passed to {tc.CODE}`_create_d_format_args`{tc.OFF}: {subclass}")
 
         d_format_args: dict[str | int, set[ArgInfo]] = {}
         d_parent_format_info_from_id = self.parent.d_format_info_from_id
@@ -1147,9 +1147,9 @@ class ConversionsTable:
         elif only == "registered":
             return self.registered_graph
         else:
-            raise ValueError(f"Invalid value '{tc.MESSAGE}{only}{tc.OFF}' for keyword argument "
-                             f"`{tc.CODE}only{tc.OFF}`. Allowed values are '{tc.MESSAGE}all{tc.OFF}' "
-                             f"(default), '{tc.MESSAGE}supported{tc.OFF}', and '{tc.MESSAGE}registered{tc.OFF}'.")
+            raise ValueError(f"Invalid value {tc.PATH}'{only}'{tc.OFF} for keyword argument "
+                             f"{tc.CODE}`only`{tc.OFF}. Allowed values are {tc.PATH}'all'{tc.OFF} "
+                             f"(default), {tc.PATH}'supported'{tc.OFF}, and {tc.PATH}'registered'{tc.OFF}.")
 
     def _get_possible_converters(self, in_format_info: FormatInfo, out_format_info: FormatInfo,
                                  only: Literal["all"] | Literal["supported"] | Literal["registered"] = "all"):
@@ -1201,11 +1201,11 @@ class ConversionsTable:
         if len(l_found_combinations) > 1:
 
             converter_name = converter.format_word() if isinstance(
-                converter, ConverterInfo) else f"'{tc.MESSAGE}{converter}{tc.OFF}'"
+                converter, ConverterInfo) else f"{tc.PATH}'{converter}'{tc.OFF}"
             in_format_name = in_format.format_word() if isinstance(
-                in_format, FormatInfo) else f"'{tc.MESSAGE}{in_format}{tc.OFF}'"
+                in_format, FormatInfo) else f"{tc.PATH}'{in_format}'{tc.OFF}"
             out_format_name = out_format.format_word() if isinstance(
-                out_format, FormatInfo) else f"'{tc.MESSAGE}{out_format}{tc.OFF}'"
+                out_format, FormatInfo) else f"{tc.PATH}'{out_format}'{tc.OFF}"
 
             msg = (f"Conversion from {in_format_name} to {out_format_name} with converter "
                    f"{converter_name} is ambiguous. Please Use the ID or disambiguated name (listed below) "
@@ -1484,7 +1484,7 @@ class DataConversionDatabase:
         for d_single_converter_info in self.converters:
             name: str = regularize_name(d_single_converter_info[DB_NAME_KEY])
             if name in self._d_converter_info_from_name:
-                logger.warning(f"Converter '{tc.MESSAGE}{name}{tc.OFF}' appears more than once in the database. Only "
+                logger.warning(f"Converter {tc.PATH}'{name}'{tc.OFF} appears more than once in the database. Only "
                                "the first instance will be used.")
                 continue
 
@@ -1516,11 +1516,11 @@ class DataConversionDatabase:
     @property
     def d_converter_info(self) -> dict[str, ConverterInfo]:
         """DEPRECATED: Get a dict of converter info keyed by name"""
-        warnings.warn(f"`{tc.CODE}d_converter_info{tc.OFF}` is deprecated as of version 0.4.0 and due to be removed in "
+        warnings.warn(f"{tc.CODE}`d_converter_info`{tc.OFF} is deprecated as of version 0.4.0 and due to be removed in "
                       "a future release. To get a {tc.CODE}ConverterInfo{tc.OFF} from the converter name (the previous "
-                      f"functionality of this), use `{tc.CODE}d_converter_info_from_name{tc.OFF}`. To get a "
+                      f"functionality of this), use {tc.CODE}`d_converter_info_from_name`{tc.OFF}. To get a "
                       f"{tc.CODE}ConverterInfo{tc.OFF} from the format UUID, use "
-                      f"`{tc.CODE}d_converter_info_from_id{tc.OFF}`.", DeprecationWarning)
+                      f"{tc.CODE}`d_converter_info_from_id`{tc.OFF}.", DeprecationWarning)
         return self.d_converter_info_from_name
 
     @property
@@ -1535,10 +1535,10 @@ class DataConversionDatabase:
     @property
     def l_converter_info(self):
         """DEPRECATED: Get a list of converter info keyed by ID"""
-        deprecation_msg = (f"`{tc.CODE}l_converter_info{tc.OFF}` is deprecated as of version 0.4.0 and due to be "
+        deprecation_msg = (f"{tc.CODE}`l_converter_info`{tc.OFF} is deprecated as of version 0.4.0 and due to be "
                            f"removed in a future release. To get a {tc.CODE}ConverterInfo{tc.OFF} from the format "
-                           f"UUID, use `{tc.CODE}d_converter_info_from_id{tc.OFF}`. To get an unsorted list of "
-                           f"{tc.CODE}ConverterInfo{tc.OFF}, use `{tc.CODE}l_unsorted_converter_info{tc.OFF}`.")
+                           f"UUID, use {tc.CODE}`d_converter_info_from_id`{tc.OFF}. To get an unsorted list of "
+                           f"{tc.CODE}ConverterInfo{tc.OFF}, use {tc.CODE}`l_unsorted_converter_info`{tc.OFF}.")
         warnings.warn(deprecation_msg, DeprecationWarning)
         raise AttributeError(deprecation_msg)
 
@@ -1563,11 +1563,11 @@ class DataConversionDatabase:
     @property
     def d_format_info(self) -> dict[str, list[FormatInfo]]:
         """DEPRECATED: Get a dict of format info keyed by format name"""
-        warnings.warn(f"`{tc.CODE}d_format_info{tc.OFF}` is deprecated as of version 0.4.0 and due to be removed in a "
+        warnings.warn(f"{tc.CODE}`d_format_info`{tc.OFF} is deprecated as of version 0.4.0 and due to be removed in a "
                       f"future release. To get a {tc.CODE}FormatInfo{tc.OFF} from the format name (the previous "
-                      f"functionality of this), use `{tc.CODE}d_format_info_from_name{tc.OFF}`. To get a "
+                      f"functionality of this), use {tc.CODE}`d_format_info_from_name`{tc.OFF}. To get a "
                       f"{tc.CODE}FormatInfo{tc.OFF} from the format UUID, use "
-                      f"`{tc.CODE}d_format_info_from_id{tc.OFF}`.", DeprecationWarning)
+                      f"{tc.CODE}`d_format_info_from_id`{tc.OFF}.", DeprecationWarning)
         return self.d_format_info_from_name
 
     @property
@@ -1582,10 +1582,10 @@ class DataConversionDatabase:
     @property
     def l_format_info(self):
         """DEPRECATED: Get a list of format info keyed by ID"""
-        deprecation_msg = (f"`{tc.CODE}l_format_info{tc.OFF}` is deprecated as of version 0.4.0 and due to be "
+        deprecation_msg = (f"{tc.CODE}`l_format_info`{tc.OFF} is deprecated as of version 0.4.0 and due to be "
                            f"removed in a future release. To get a {tc.CODE}FormatInfo{tc.OFF} from the format UUID, "
-                           f"use `{tc.CODE}d_format_info_from_id{tc.OFF}`. To get an unsorted list of "
-                           f"{tc.CODE}FormatInfo{tc.OFF}, use `{tc.CODE}l_unsorted_format_info{tc.OFF}`.")
+                           f"use {tc.CODE}`d_format_info_from_id`{tc.OFF}. To get an unsorted list of "
+                           f"{tc.CODE}FormatInfo{tc.OFF}, use {tc.CODE}`l_unsorted_format_info`{tc.OFF}.")
         warnings.warn(deprecation_msg, DeprecationWarning)
         raise AttributeError(deprecation_msg)
 
@@ -1737,7 +1737,7 @@ class DataConversionDatabase:
                 try:
                     return self.d_converter_info_from_id[UUID(converter_name_or_id).int]
                 except (KeyError, ValueError):
-                    raise FileConverterDatabaseException(f"Converter '{tc.MESSAGE}{converter_name_or_id}{tc.OFF}' not "
+                    raise FileConverterDatabaseException(f"Converter {tc.PATH}'{converter_name_or_id}'{tc.OFF} not "
                                                          "found as a name in the database and/or was not recognised as "
                                                          "a value UUID. Known converters are:\n" +
                                                          self._get_converter_list(),
@@ -1746,7 +1746,7 @@ class DataConversionDatabase:
             try:
                 return self.d_converter_info_from_id[converter_name_or_id]
             except KeyError:
-                raise FileConverterDatabaseException(f"Converter ID '{tc.ID}{converter_name_or_id}{tc.OFF}' not found "
+                raise FileConverterDatabaseException(f"Converter ID '{tc.ID}{converter_name_or_id}'{tc.OFF} not found "
                                                      "in the database. Known converters are:\n" +
                                                      self._get_converter_list(),
                                                      help=True)
@@ -1754,7 +1754,7 @@ class DataConversionDatabase:
             try:
                 return self.d_converter_info_from_id[converter_name_or_id.int]
             except KeyError:
-                raise FileConverterDatabaseException(f"Converter ID '{tc.ID}{converter_name_or_id}{tc.OFF}' not found "
+                raise FileConverterDatabaseException(f"Converter ID '{tc.ID}{converter_name_or_id}'{tc.OFF} not found "
                                                      "in the database. Known converters are:\n" +
                                                      self._get_converter_list(),
                                                      help=True)
@@ -1764,11 +1764,11 @@ class DataConversionDatabase:
         elif converter_name_or_id is None:
             return self.l_unsorted_converter_info
         else:
-            raise FileConverterDatabaseException(f"Invalid key passed to `{tc.CODE}get_converter_info{tc.OFF}`: "
-                                                 f"'{tc.MESSAGE}{converter_name_or_id}{tc.OFF}' of type "
-                                                 f"`{tc.CODE}{type(converter_name_or_id)}{tc.OFF}`. Type must be "
-                                                 f"`{tc.CODE}str{tc.OFF}`, `{tc.CODE}int{tc.OFF}`, or "
-                                                 f"`{tc.CODE}UUID{tc.OFF}`")
+            raise FileConverterDatabaseException(f"Invalid key passed to {tc.CODE}`get_converter_info`{tc.OFF}: "
+                                                 f"{tc.PATH}'{converter_name_or_id}'{tc.OFF} of type "
+                                                 f"{tc.CODE}`{type(converter_name_or_id)}`{tc.OFF}. Type must be "
+                                                 f"{tc.CODE}`str`{tc.OFF}, {tc.CODE}`int`{tc.OFF}, or "
+                                                 f"{tc.CODE}`UUID`{tc.OFF}")
 
     @overload
     def get_format_info(self,
@@ -1818,7 +1818,7 @@ class DataConversionDatabase:
                 return format_info
             except KeyError as e:
                 if e.args[0] == UUID(format_name_or_id).int:
-                    raise FileConverterDatabaseException(f"Format ID '{tc.ID}{format_name_or_id}{tc.OFF}' not "
+                    raise FileConverterDatabaseException(f"Format ID '{tc.ID}{format_name_or_id}'{tc.OFF} not "
                                                          "recognised", help=True)
             except ValueError:
                 pass
@@ -1835,11 +1835,11 @@ class DataConversionDatabase:
             if "-" in format_name_or_id:
                 l_name_segments = format_name_or_id.split("-")
                 if len(l_name_segments) > 2:
-                    raise FileConverterDatabaseException(f"Format name '{tc.MESSAGE}{format_name_or_id}{tc.OFF}' is "
+                    raise FileConverterDatabaseException(f"Format name {tc.PATH}'{format_name_or_id}'{tc.OFF} is "
                                                          "improperly formatted - It may contain at most one hyphen, "
                                                          "separating the extension from an index indicating which of "
                                                          "the formats with that extension to use, e.g. "
-                                                         f"'{tc.MESSAGE}pdb-0{tc.OFF}', '{tc.MESSAGE}pdb-1{tc.OFF}', "
+                                                         f"{tc.PATH}'pdb-0'{tc.OFF}, {tc.PATH}'pdb-1'{tc.OFF}, "
                                                          "etc.", help=True)
                 format_name_or_id = l_name_segments[0]
                 which = int(l_name_segments[1])
@@ -1853,14 +1853,14 @@ class DataConversionDatabase:
                 format_info = l_possible_format_info[0]
 
             elif len(l_possible_format_info) == 0:
-                raise FileConverterDatabaseException(f"Format name '{tc.MESSAGE}{format_name_or_id}{tc.OFF}' not "
+                raise FileConverterDatabaseException(f"Format name {tc.PATH}'{format_name_or_id}'{tc.OFF} not "
                                                      "recognised", help=True)
 
             elif which is not None and which < len(l_possible_format_info):
                 format_info = l_possible_format_info[which]
 
             else:
-                msg = (f"Extension '{tc.MESSAGE}{format_name_or_id}{tc.OFF}' is ambiguous and must be defined by "
+                msg = (f"Extension {tc.PATH}'{format_name_or_id}'{tc.OFF} is ambiguous and must be defined by "
                        "disambiguated name or ID. Possible formats are:")
                 for possible_format_info in l_possible_format_info:
                     msg += f"\n{possible_format_info.format_oneline()}"
@@ -1874,7 +1874,7 @@ class DataConversionDatabase:
                     raise
                 if return_as_list:
                     return []
-                raise FileConverterDatabaseException(f"Format ID '{tc.MESSAGE}{format_name_or_id}{tc.OFF}' not "
+                raise FileConverterDatabaseException(f"Format ID {tc.PATH}'{format_name_or_id}'{tc.OFF} not "
                                                      "recognised", help=True)
 
         elif isinstance(format_name_or_id, UUID):
@@ -1885,7 +1885,7 @@ class DataConversionDatabase:
                     raise
                 if return_as_list:
                     return []
-                raise FileConverterDatabaseException(f"Format ID '{tc.MESSAGE}{format_name_or_id}{tc.OFF}' not "
+                raise FileConverterDatabaseException(f"Format ID {tc.PATH}'{format_name_or_id}'{tc.OFF} not "
                                                      "recognised", help=True)
 
         elif isinstance(format_name_or_id, FormatInfo):
@@ -1893,10 +1893,10 @@ class DataConversionDatabase:
             format_info = format_name_or_id
 
         else:
-            raise FileConverterDatabaseException(f"Invalid key passed to `{tc.CODE}get_format_info{tc.OFF}`: "
-                                                 f"'{tc.MESSAGE}{format_name_or_id}{tc.OFF}' of type "
-                                                 f"'{tc.CODE}{type(format_name_or_id)}{tc.OFF}'. Type must be "
-                                                 f"`{tc.CODE}str{tc.OFF}` or `{tc.CODE}int{tc.OFF}`")
+            raise FileConverterDatabaseException(f"Invalid key passed to {tc.CODE}`get_format_info`{tc.OFF}: "
+                                                 f"{tc.PATH}'{format_name_or_id}'{tc.OFF} of type "
+                                                 f"{tc.CODE}`{type(format_name_or_id)}'{tc.OFF}. Type must be "
+                                                 f"{tc.CODE}`str`{tc.OFF} or {tc.CODE}`int`{tc.OFF}")
         if return_as_list:
             return [format_info]
 
@@ -2192,11 +2192,11 @@ def disambiguate_formats(converter: str | int | UUID | ConverterInfo,
     else:
 
         converter_name = converter.format_word() if isinstance(
-            converter, ConverterInfo) else f"'{tc.MESSAGE}{converter}{tc.OFF}'"
+            converter, ConverterInfo) else f"{tc.PATH}'{converter}'{tc.OFF}"
         in_format_name = in_format.format_word() if isinstance(
-            in_format, FormatInfo) else f"'{tc.MESSAGE}{in_format}{tc.OFF}'"
+            in_format, FormatInfo) else f"{tc.PATH}'{in_format}'{tc.OFF}"
         out_format_name = out_format.format_word() if isinstance(
-            out_format, FormatInfo) else f"'{tc.MESSAGE}{out_format}{tc.OFF}'"
+            out_format, FormatInfo) else f"{tc.PATH}'{out_format}'{tc.OFF}"
 
         msg = (f"Conversion from {in_format_name} to {out_format_name} with converter "
                f"{converter_name} is ambiguous. Please Use the ID or disambiguated name (listed below) "
@@ -2233,7 +2233,7 @@ def _find_arg(tl_args: tuple[list[FlagInfo], list[OptionInfo]],
         if len(l_found) > 0:
             return l_found[0]
     # If we get here, it wasn't found in either list
-    raise FileConverterDatabaseException(f"Argument '{tc.MESSAGE}{arg}{tc.OFF}' was not found in the list of allowed "
+    raise FileConverterDatabaseException(f"Argument {tc.PATH}'{arg}'{tc.OFF} was not found in the list of allowed "
                                          "arguments for this conversion")
 
 
