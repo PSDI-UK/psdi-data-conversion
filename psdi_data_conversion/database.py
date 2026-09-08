@@ -26,7 +26,7 @@ from psdi_data_conversion.converter import (L_REGISTERED_CONVERTERS, L_SUPPORTED
                                             get_registered_converter_class)
 from psdi_data_conversion.converters.base import FileConverter, FileConverterException
 from psdi_data_conversion.file_io import get_package_path
-from psdi_data_conversion.utils import JsonDict, regularize_name
+from psdi_data_conversion.utils import JsonDict, NoColors, TextColors, regularize_name
 
 # We have to use a default ID which isn't Falsey, since 0 is a valid ID
 DEFAULT_ID = -1
@@ -230,25 +230,81 @@ class DBInfo:
     def lower_name(self):
         return self.name.lower()
 
-    def format_word(self):
-        """Return a formatted representation of this as a single word"""
-        return str(self)
+    @staticmethod
+    def _get_colors(plain: bool):
+        if plain:
+            return NoColors
+        return TextColors
 
-    def format_inline(self):
-        """Return a formatted representation of this that can fit inline"""
-        return f"{self.format_word()} (ID: {self.id})"
+    def format_word(self, plain=False):
+        """Return a formatted representation of this as a single word
 
-    def format_oneline(self):
-        """Return a formatted description of this that can fit in a single line"""
-        str_rep = str(self)
-        format_word_rep = self.format_word()
+        Parameters
+        ----------
+        plain : bool, optional
+            If True, will output as plain text, without any ANSI escape codes used for formatting, by default False
+
+        Returns
+        -------
+        str
+        """
+
+        tc = self._get_colors(plain)
+        return f"{tc.BOLD}{self}{tc.OFF}"
+
+    def format_inline(self, plain=False):
+        """Return a formatted representation of this that can fit inline
+
+        Parameters
+        ----------
+        plain : bool, optional
+            If True, will output as plain text, without any ANSI escape codes used for formatting, by default False
+
+        Returns
+        -------
+        str
+        """
+
+        tc = self._get_colors(plain)
+        return f"{tc.BOLD}{self.format_word(plain)}{tc.OFF} (ID: {tc.ID}{self.id}{tc.OFF})"
+
+    def format_oneline(self, plain=False):
+        """Return a formatted description of this that can fit in a single line
+
+        Parameters
+        ----------
+        plain : bool, optional
+            If True, will output as plain text, without any ANSI escape codes used for formatting, by default False
+
+        Returns
+        -------
+        str
+        """
+
+        tc = self._get_colors(plain)
+
+        str_rep = f"{tc.BOLD}{self}{tc.OFF}"
+        format_word_rep = self.format_word(plain)
+
         if str_rep != format_word_rep:
-            return f"{self.name} (\"{format_word_rep}\", ID: {self.id}): {self.description}"
-        return f"{self.format_inline()}: {self.description}"
+            return f"{str_rep} (\"{format_word_rep}\", ID: {tc.ID}{self.id}{tc.OFF}): {self.description}"
 
-    def format_detailed(self):
-        """Return a multi-line formatted description of this"""
-        return f"{self.format_oneline()}\n{self.info}"
+        return f"{self.format_inline(plain)}: {self.description}"
+
+    def format_detailed(self, plain=False):
+        """Return a multi-line formatted description of this
+
+        Parameters
+        ----------
+        plain : bool, optional
+            If True, will output as plain text, without any ANSI escape codes used for formatting, by default False
+
+        Returns
+        -------
+        str
+        """
+
+        return f"{self.format_oneline(plain)}\n{self.info}"
 
     def __str__(self):
         """Use the name as the string representation"""
