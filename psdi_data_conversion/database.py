@@ -1155,15 +1155,15 @@ class ConversionsTable:
 
     @lru_cache(maxsize=None)
     def get_conversion_quality(self,
-                               converter_name: str,
+                               converter: str | int | UUID | ConverterInfo,
                                in_format: str | int | UUID | FormatInfo,
                                out_format: str | int | UUID | FormatInfo) -> ConversionQualityInfo | None:
         """Get an indication of the quality of a conversion from one format to another, or if it's not possible
 
         Parameters
         ----------
-        converter_name : str
-            The name of the converter
+        converter : str | int | UUID | ConverterInfo
+            The converter, specified by its name or ID
         in_format : str | int | UUID | FormatInfo
             The extension or ID of the input file format
         out_format : str | int | UUID | FormatInfo
@@ -1176,6 +1176,8 @@ class ConversionsTable:
             `ConversionQualityInfo` object with info on the conversion
         """
 
+        converter_info = get_converter_info(converter)
+
         # Get all possible format infos for each format
         l_in_format_info = self.parent.get_format_info(in_format, "all")
         l_out_format_info = self.parent.get_format_info(out_format, "all")
@@ -1183,21 +1185,23 @@ class ConversionsTable:
         # First check if the conversion is possible for at least one combination
         l_found_combinations: list[tuple[FormatInfo, FormatInfo]] = []
         for in_format_info, out_format_info in product(l_in_format_info, l_out_format_info):
-            if converter_name in self._get_possible_converters(in_format_info, out_format_info):
+            if converter_info.name in self._get_possible_converters(in_format_info, out_format_info):
                 l_found_combinations.append((in_format_info, out_format_info))
         if len(l_found_combinations) == 0:
             return None
 
         # Check if the conversion is ambiguous
         if len(l_found_combinations) > 1:
-            msg = (f"Conversion from {in_format} to {out_format} with converter {converter_name} is ambiguous. Please "
-                   "Use the ID or disambiguated name (listed below) of the desired conversion. Possible matching "
-                   "conversions are:\n")
+
+            converter_name = converter.format_word() if isinstance(converter, ConverterInfo) else f"'{converter}'"
+            in_format_name = in_format.format_word() if isinstance(in_format, FormatInfo) else f"'{in_format}'"
+            out_format_name = out_format.format_word() if isinstance(out_format, FormatInfo) else f"'{out_format}'"
+
+            msg = (f"Conversion from {in_format_name} to {out_format_name} with converter "
+                   f"{converter_name} is ambiguous. Please Use the ID or disambiguated name (listed below) "
+                   "of the desired conversion. Possible matching conversions are:\n")
             for possible_in_format, possible_out_format in l_found_combinations:
-                msg += (f"    {possible_in_format.id}: {possible_in_format.disambiguated_name} "
-                        f"({possible_in_format.description}) to "
-                        f"{possible_out_format.id}: {possible_out_format.disambiguated_name} "
-                        f"({possible_out_format.description})\n")
+                msg += (f"    {possible_in_format.format_inline()} to {possible_out_format.format_inline()}\n")
             # Trim the final newline from the message
             msg = msg[:-1]
             raise FileConverterDatabaseException(msg, help=True)
@@ -1842,8 +1846,7 @@ class DataConversionDatabase:
                 msg = (f"Extension '{format_name_or_id}' is ambiguous and must be defined by disambiguated name or ID. "
                        "Possible formats are:")
                 for possible_format_info in l_possible_format_info:
-                    msg += (f"\n{possible_format_info.disambiguated_name} (ID: {possible_format_info.id}): " +
-                            possible_format_info.description)
+                    msg += f"\n{possible_format_info.format_oneline()}"
                 raise FileConverterDatabaseException(msg, help=True)
 
         elif isinstance(format_name_or_id, int):
@@ -2127,7 +2130,7 @@ def get_conversion_pathway(in_format: str | int | UUID | FormatInfo,
                                                                    only=only)
 
 
-def disambiguate_formats(converter_name: str,
+def disambiguate_formats(converter: str | int | UUID | ConverterInfo,
                          in_format: str | int | UUID | FormatInfo,
                          out_format: str | int | UUID | FormatInfo) -> tuple[FormatInfo, FormatInfo]:
     """Try to disambiguate formats by seeing if there's only one possible conversion between formats matching those
@@ -2135,8 +2138,8 @@ def disambiguate_formats(converter_name: str,
 
     Parameters
     ----------
-    converter_name : str
-        The name of the converter
+    converter : str | int | UUID | ConverterInfo
+        The converter, specified by its name or ID
     in_format : str | int | UUID | FormatInfo
         The extension or ID of the input file format
     out_format : str | int | UUID | FormatInfo
@@ -2153,27 +2156,32 @@ def disambiguate_formats(converter_name: str,
         If more than one format combination is possible for this conversion, or no conversion is possible
     """
 
-    # Regularize the converter name so we don't worry about case/spacing mismatches
-    converter_reg_name = regularize_name(converter_name)
+    # Get the converter/format info for all input
+    converter_info = get_converter_info(converter)
+    in_format_info = get_format_info(in_format)
+    out_format_info = get_format_info(out_format)
 
     # Get all possible conversions, and see if we only have one for this converter
-    l_possible_conversions = [x for x in get_possible_conversions(in_format, out_format)
-                              if x[0].name == converter_reg_name]
+    l_possible_conversions = [x for x in get_possible_conversions(in_format_info, out_format_info)
+                              if x[0] is converter_info]
 
     if len(l_possible_conversions) == 1:
         return l_possible_conversions[0][1], l_possible_conversions[0][2]
     elif len(l_possible_conversions) == 0:
-        raise FileConverterDatabaseException(f"Conversion from {in_format} to {out_format} with converter "
-                                             f"{converter_name} is not supported", help=True)
+        raise FileConverterDatabaseException(f"Conversion from {in_format_info.format_word()} to "
+                                             f"{out_format_info.format_word()} with converter "
+                                             f"{converter_info.format_word()} is not supported", help=True)
     else:
-        msg = (f"Conversion from {in_format} to {out_format} with converter {converter_name} is ambiguous. Please "
-               "Use the ID or disambiguated name (listed below) of the desired conversion. Possible matching "
-               "conversions are:\n")
+
+        converter_name = converter.format_word() if isinstance(converter, ConverterInfo) else f"'{converter}'"
+        in_format_name = in_format.format_word() if isinstance(in_format, FormatInfo) else f"'{in_format}'"
+        out_format_name = out_format.format_word() if isinstance(out_format, FormatInfo) else f"'{out_format}'"
+
+        msg = (f"Conversion from {in_format_name} to {out_format_name} with converter "
+               f"{converter_name} is ambiguous. Please Use the ID or disambiguated name (listed below) "
+               "of the desired conversion. Possible matching conversions are:\n")
         for _, possible_in_format, possible_out_format in l_possible_conversions:
-            msg += (f"    {possible_in_format.id}: {possible_in_format.disambiguated_name} "
-                    f"({possible_in_format.description}) to "
-                    f"{possible_out_format.id}: {possible_out_format.disambiguated_name} "
-                    f"({possible_out_format.description})\n")
+            msg += (f"    {possible_in_format.format_inline()} to {possible_out_format.format_inline()}\n")
         # Trim the final newline from the message
         msg = msg[:-1]
         raise FileConverterDatabaseException(msg, help=True)
