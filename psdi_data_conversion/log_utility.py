@@ -12,6 +12,7 @@ import sys
 from datetime import datetime
 
 from psdi_data_conversion import constants as const
+from psdi_data_conversion.utils import strip_control_codes
 
 D_LOG_LEVELS = {"notset": logging.NOTSET,
                 "debug": logging.DEBUG,
@@ -116,6 +117,17 @@ def set_up_data_conversion_logger(name=const.LOCAL_LOGGER_NAME,
     return logger
 
 
+class CodeStripFilter(logging.Filter):
+    """Filter which modifies logged messages to strip any control codes from them"""
+
+    def filter(self, record: logging.LogRecord):
+        record.message = strip_control_codes(record.message)
+        return True
+
+
+code_strip_filter = CodeStripFilter()
+
+
 def _add_filehandler_to_logger(logger, filename, level, raw_output, mode):
     """Private function to add a file handler to a logger only if the logger doesn't already have a handler for that
     file, and set the logging level for the handler
@@ -123,8 +135,6 @@ def _add_filehandler_to_logger(logger, filename, level, raw_output, mode):
     # Skip if filename is None
     if filename is None:
         return
-
-    file_handler = logging.FileHandler(filename, mode)
 
     # Check if the file to log to is already in the logger's filehandlers
     handler_already_present = False
@@ -143,6 +153,7 @@ def _add_filehandler_to_logger(logger, filename, level, raw_output, mode):
             os.makedirs(filename_loc, exist_ok=True)
 
         file_handler = logging.FileHandler(filename)
+        file_handler.addFilter(code_strip_filter)
 
         logger.addHandler(file_handler)
 

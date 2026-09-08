@@ -127,7 +127,7 @@ CONTROL_CODE_RE = re.compile("\033\\[\\d+?m")
 
 def strip_control_codes(s: str):
     """Strip all control codes from a string"""
-    return CONTROL_CODE_RE.sub("", s)
+    return CONTROL_CODE_RE.sub("", str(s))
 
 
 def displaylen(s: str):
