@@ -236,23 +236,19 @@ class DBInfo:
 
     def format_inline(self):
         """Return a formatted representation of this that can fit inline"""
-        return f"{tc.BOLD}{self.format_word()}{tc.OFF} (ID: {tc.ID}{self.id}{tc.OFF})"
+        return f"{tc.BOLD}{self.format_word()}{tc.OFF} (ID {tc.ID}{self.id}{tc.OFF})"
 
     def format_oneline(self):
         """Return a formatted description of this that can fit in a single line"""
-
-        str_rep = f"{tc.BOLD}{self}{tc.OFF}"
-        format_word_rep = self.format_word()
-
-        if str_rep != format_word_rep:
-            return f"{str_rep} ('{format_word_rep}', ID: {tc.ID}{self.id}{tc.OFF}): {self.description}"
-
         return f"{self.format_inline()}: {self.description}"
 
     def format_detailed(self):
         """Return a multi-line formatted description of this"""
 
-        return f"{self.format_oneline()}\n{self.info}"
+        msg = self.format_oneline()
+        if self.info:
+            msg += f"\n{self.info}"
+        return msg
 
     def __str__(self):
         """Use the name as the string representation"""
@@ -329,6 +325,10 @@ class ConverterInfo(DBInfo):
 
     # __hash__ needs to be inherited explicitly for dataclasses since they redefine __eq__
     __hash__ = DBInfo.__hash__
+
+    def format_word(self):
+        """Use the pretty name for the formatted name"""
+        return f"{tc.BOLD}{self.pretty_name}{tc.OFF}"
 
     @staticmethod
     def from_db(parent: DataConversionDatabase,
@@ -936,6 +936,10 @@ class FormatInfo(DBInfo):
         else:
             index_of_this = [i for i, x in enumerate(l_formats_with_same_name) if self is x][0]
             return f"{self.lower_name}-{index_of_this}"
+
+    def format_word(self):
+        """Use the disambiguated name for the formatted name"""
+        return f"{tc.BOLD}{self.disambiguated_name}{tc.OFF}"
 
     @staticmethod
     def from_db(parent: DataConversionDatabase,

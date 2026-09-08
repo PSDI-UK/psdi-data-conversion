@@ -29,7 +29,7 @@ from psdi_data_conversion.database import (D_FORMAT_PROPERTY_ATTRS, ConversionQu
                                            get_out_format_args, get_possible_conversions, get_possible_formats)
 from psdi_data_conversion.file_io import split_archive_ext
 from psdi_data_conversion.log_utility import get_log_level_from_str
-from psdi_data_conversion.utils import print_wrap, regularize_name, tc
+from psdi_data_conversion.utils import displaylen, print_wrap, regularize_name, strip_control_codes, tc
 
 # Monkey-patch textwrap to use the improved wraptext implementation when argparse calls it
 textwrap.wrap = wraptext.wrap
@@ -415,7 +415,7 @@ def detail_converter_use(args: ConvertArgs):
                     optional_not: str = "not "
                 formats_found = True
 
-                print_wrap(f"Conversion {to_or_from} {format_info.disambiguated_name} (ID: {format_info.id}) is "
+                print_wrap(f"Conversion {to_or_from} {format_info.format_inline()} is "
                            f"{optional_not}supported by {converter_name}.")
             if formats_found:
                 print("")
@@ -429,17 +429,19 @@ def detail_converter_use(args: ConvertArgs):
         s_all_formats: set[FormatInfo] = set(l_input_formats)
         s_all_formats.update(l_output_formats)
         l_all_formats: list[FormatInfo] = list(s_all_formats)
-        l_all_formats.sort(key=lambda x: x.disambiguated_name.lower())
+        l_all_formats.sort(key=lambda x: x.format_word().lower())
 
         print_wrap(f"File formats supported by {converter_name}:", newline=True)
-        max_format_length = max([len(x.disambiguated_name) for x in l_all_formats])
+        max_format_length = max([displaylen(x.disambiguated_name) for x in l_all_formats])
         print(" "*(max_format_length+4) + "    INPUT    OUTPUT    DESCRIPTION")
         print(" "*(max_format_length+4) + "    -----    ------    -----------")
         for file_format in l_all_formats:
             in_yes_or_no = "yes" if file_format in l_input_formats else "no"
             out_yes_or_no = "yes" if file_format in l_output_formats else "no"
-            print(f"    {file_format.disambiguated_name:>{max_format_length}}    {in_yes_or_no:<9}{out_yes_or_no:<10}"
-                  f"{file_format.description}")
+            format_name = file_format.format_word()
+            len_offset = len(format_name) - displaylen(format_name)
+            print(f"    {file_format.format_word():>{max_format_length+len_offset}}    {in_yes_or_no:<9}"
+                  f"{out_yes_or_no:<10}{file_format.description}")
         print_wrap("\nFor more information on a format, including its ID (which can be used to specify it uniquely in "
                    "case of ambiguity, and is resilient to database changes affecting the disambiguated names listed "
                    "above), call:\n"
@@ -740,7 +742,8 @@ def detail_formats_and_possible_converters(from_format: str, to_format: str):
             print("    " + "\n    ".join(l_possible_unregistered_converters) + "\n")
 
         print_wrap("For details on input/output flags and options allowed by a converter for this conversion, call:")
-        print(f"{CL_SCRIPT_NAME} -l <converter name> -f {from_name} -t {to_name}")
+        print(f"{tc.CODE}{CL_SCRIPT_NAME} -l <converter name> -f {strip_control_codes(from_name)} -t "
+              f"{strip_control_codes(to_name)}{tc.OFF}")
 
 
 def get_supported_converters():
