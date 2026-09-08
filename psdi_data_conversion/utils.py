@@ -27,61 +27,61 @@ class TextColors:
 
     # Text color codes
 
-    RED = '\033[91m'
+    RED = "\033[91m"
     """Start coloring red"""
 
-    DARKRED = ERROR = FAIL = '\033[31m'
+    DARKRED = ERROR = FAIL = "\033[31m"
     """Start coloring dark red"""
 
-    GREEN = SUCCESS = '\033[92m'
+    GREEN = SUCCESS = "\033[92m"
     """Start coloring green"""
 
-    DARKGREEN = '\033[32m'
+    DARKGREEN = "\033[32m"
     """Start coloring dark green"""
 
-    YELLOW = CODE = '\033[93m'
+    YELLOW = CODE = "\033[93m"
     """Start coloring yellow"""
 
-    DARKYELLOW = WARNING = '\033[33m'
+    DARKYELLOW = WARNING = "\033[33m"
     """Start coloring dark yellow"""
 
-    BLUE = ID = '\033[94m'
+    BLUE = ID = "\033[94m"
     """Start coloring blue"""
 
-    DARKBLUE = '\033[34m'
+    DARKBLUE = "\033[34m"
     """Start coloring dark blue"""
 
-    MAGENTA = '\033[95m'
+    MAGENTA = "\033[95m"
     """Start coloring magenta"""
 
-    DARKMAGENTA = '\033[35m'
+    DARKMAGENTA = "\033[35m"
     """Start coloring dark magenta"""
 
-    CYAN = PATH = '\033[96m'
+    CYAN = PATH = "\033[96m"
     """Start coloring cyan"""
 
-    DARKCYAN = '\033[36m'
+    DARKCYAN = "\033[36m"
     """Start coloring dark cyan"""
 
     # Text formatting codes
 
-    BOLD = '\033[1m'
+    BOLD = "\033[1m"
     """Start formatting bold - NOT compatible with coloring"""
 
-    DIM = '\033[2m'
+    DIM = "\033[2m"
     """Start formatting dim (opposite of bold) - NOT compatible with coloring"""
 
-    UNDERLINE = '\033[4m'
+    UNDERLINE = "\033[4m"
     """Start underlining - compatible with coloring"""
 
     # Combined codes
 
-    HEADER = '\033[95m\033[4m'
+    HEADER = "\033[95m\033[4m"
     """Start header section - magenta underlined"""
 
     # Other codes
 
-    OFF = '\033[0m'
+    OFF = "\033[0m"
     """End all coloring and formatting"""
 
     @classmethod
@@ -92,6 +92,28 @@ class TextColors:
         l_codes_and_vals.sort(key=lambda x: int(x[1].replace("\033[", "").replace("m", "")))
         for code, val in l_codes_and_vals:
             print(f"{val}{code}{cls.OFF}")
+
+
+class NoColors(TextColors):
+    """Alternate version of `TextColors` which disables all color codes, for when plain text should be used"""
+
+    RED = ""
+    DARKRED = ERROR = FAIL = ""
+    GREEN = SUCCESS = ""
+    DARKGREEN = ""
+    YELLOW = CODE = ""
+    DARKYELLOW = WARNING = ""
+    BLUE = ID = ""
+    DARKBLUE = ""
+    MAGENTA = ""
+    DARKMAGENTA = ""
+    CYAN = PATH = ""
+    DARKCYAN = ""
+    BOLD = ""
+    DIM = ""
+    UNDERLINE = ""
+    HEADER = ""
+    OFF = ""
 
 
 def get_wrapped_str(s: str, color=TextColors.OFF, **kwargs):
