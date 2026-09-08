@@ -11,7 +11,7 @@ import wraptext
 from psdi_data_conversion import constants as const
 from psdi_data_conversion.gui.env import update_env
 from psdi_data_conversion.gui.setup import limit_upload_size, start_app
-from psdi_data_conversion.utils import print_wrap, tc
+from psdi_data_conversion.utils import CustomHelpFormatter, print_wrap, tc
 
 # Monkey-patch textwrap to use the improved wraptext implementation when argparse calls it
 textwrap.wrap = wraptext.wrap
@@ -21,7 +21,7 @@ def main():
     """Standard entry-point function for this script.
     """
 
-    parser = ArgumentParser()
+    parser = ArgumentParser(formatter_class=CustomHelpFormatter)
 
     parser.add_argument("--use-env-vars", action="store_true",
                         help="If set, all other arguments and defaults for this script are ignored, and environmental "

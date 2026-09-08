@@ -5,6 +5,7 @@ Miscellaneous utility functions used by this project
 """
 
 
+import argparse
 import json
 import re
 import sys
@@ -172,6 +173,14 @@ def regularize_name(name: str):
         The regularized name, e.g. "openbabel"
     """
     return name.lower().replace(" ", "")
+
+
+class CustomHelpFormatter(argparse.HelpFormatter):
+    """Custom formatter for argparse
+    """
+
+    def _format_action(self, action):
+        return super()._format_action(action) + "\n"
 
 
 def in_editable_mode():

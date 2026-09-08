@@ -22,8 +22,8 @@ import wraptext
 
 from psdi_data_conversion import database as db
 from psdi_data_conversion.testing.constants import TEST_PATH_KEY
-from psdi_data_conversion.utils import (JsonDict, JsonMainDict, confirm_editable_mode, get_project_path,
-                                        get_wrapped_str, print_wrap, tc)
+from psdi_data_conversion.utils import (CustomHelpFormatter, JsonDict, JsonMainDict, confirm_editable_mode,
+                                        get_project_path, get_wrapped_str, print_wrap, tc)
 
 # Monkey-patch textwrap to use the improved wraptext implementation when argparse calls it
 textwrap.wrap = wraptext.wrap
@@ -62,7 +62,7 @@ def get_argument_parser():
         An argument parser set up with the allowed command-line arguments for this script.
     """
 
-    parser = ArgumentParser()
+    parser = ArgumentParser(formatter_class=CustomHelpFormatter)
 
     parser.add_argument("-f", "--force", action="store_true", default=None,
                         help="Assume that all provided formats are new and don't ask for confirmation if they resemble "

@@ -29,7 +29,8 @@ from psdi_data_conversion.database import (D_FORMAT_PROPERTY_ATTRS, ConversionQu
                                            get_out_format_args, get_possible_conversions, get_possible_formats)
 from psdi_data_conversion.file_io import split_archive_ext
 from psdi_data_conversion.log_utility import get_log_level_from_str
-from psdi_data_conversion.utils import displaylen, print_wrap, regularize_name, strip_control_codes, tc
+from psdi_data_conversion.utils import (CustomHelpFormatter, displaylen, print_wrap, regularize_name,
+                                        strip_control_codes, tc)
 
 # Monkey-patch textwrap to use the improved wraptext implementation when argparse calls it
 textwrap.wrap = wraptext.wrap
@@ -232,14 +233,14 @@ def get_argument_parser():
         An argument parser set up with the allowed command-line arguments for this script.
     """
 
-    parser = ArgumentParser()
+    parser = ArgumentParser(formatter_class=CustomHelpFormatter)
 
     # Positional arguments
     parser.add_argument("l_args", type=str, nargs="*",
                         help="Normally, file(s) to be converted or zip/tar archives thereof. If an archive or archives "
                         "are provided, the output will be packed into an archive of the same type. Filenames should be "
                         "provided as either relative to the input directory (default current directory) or absolute. "
-                        f"If the {tc.CODE}`-l'{tc.OFF} or {tc.CODE}`--list'{tc.OFF} flag is set, instead the name of a "
+                        f"If the {tc.CODE}`-l/--list`{tc.OFF} flag is set, instead the name of a "
                         "converter can be used here to get information on it.")
 
     # Keyword arguments for standard conversion
@@ -506,7 +507,9 @@ def detail_converter_use(args: ConvertArgs):
                 optional_brief = ""
             else:
                 optional_brief = f" <{arg_info.brief}>"
-            print_wrap(f"{arg_info.name+optional_brief:>{ARG_LEN}}  {arg_info.description}",
+            arg_name = f"{tc.BOLD}{arg_info.name}{optional_brief}{tc.OFF}"
+            len_offset = len(arg_name) - displaylen(arg_name)
+            print_wrap(f"{arg_name:>{ARG_LEN+len_offset}}  {arg_info.description}",
                        subsequent_indent=" "*(ARG_LEN+2))
             if arg_info.info and arg_info.info != "N/A":
                 print_wrap(arg_info.info,

@@ -21,7 +21,7 @@ import wraptext
 
 from psdi_data_conversion.testing.constants import TEST_PATH_KEY
 from psdi_data_conversion.testing.utils import get_test_data_loc
-from psdi_data_conversion.utils import confirm_editable_mode, get_project_path, print_wrap, tc
+from psdi_data_conversion.utils import CustomHelpFormatter, confirm_editable_mode, get_project_path, print_wrap, tc
 
 # Monkey-patch textwrap to use the improved wraptext implementation when argparse calls it
 textwrap.wrap = wraptext.wrap
@@ -60,7 +60,7 @@ def get_argument_parser():
         An argument parser set up with the allowed command-line arguments for this script.
     """
 
-    parser = ArgumentParser()
+    parser = ArgumentParser(formatter_class=CustomHelpFormatter)
 
     parser.add_argument("plugin_name", type=str, nargs="+",
                         help=f"The name of the plugin to be created, e.g. {tc.MESSAGE}'Open Babel'{tc.OFF}")
