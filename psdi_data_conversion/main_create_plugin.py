@@ -57,15 +57,17 @@ def get_argument_parser():
     parser = ArgumentParser()
 
     parser.add_argument("plugin_name", type=str, nargs="+",
-                        help="The name of the plugin to be created, e.g. 'Open Babel'")
+                        help=f"The name of the plugin to be created, e.g. {tc.MESSAGE}'Open Babel'{tc.OFF}")
 
     parser.add_argument("--label", type=str, default=None,
                         help="The label for the package (i.e. Python-compatible package name). By default, will "
-                        "convert `name` to snake_case (e.g. 'Open Babel' -> 'open_babel')")
+                        f"convert <NAME> to snake_case (e.g. {tc.MESSAGE}'Open Babel'{tc.OFF} -> "
+                        f"{tc.MESSAGE}'open_babel'{tc.OFF})")
 
     parser.add_argument("--script", action="store_true",
-                        help="If set, will create the plugin using the 'ScriptFileConverter' base class, which uses "
-                        "a script to run the conversion. The script will by default be named `{label}.sh`")
+                        help=f"If set, will create the plugin using the {tc.CODE}`ScriptFileConverter`{tc.OFF} base "
+                        "class, which uses a script to run the conversion. The script will by default be named "
+                        f"{tc.PATH}'<LABEL>.sh'{tc.OFF}")
 
     return parser
 

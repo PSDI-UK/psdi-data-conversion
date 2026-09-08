@@ -86,7 +86,7 @@ def parse_args():
 
 def get_format_info_str(format_info: JsonDict):
     """Returns a string which details information about a format"""
-    return (f"{format_info[db.DB_FORMAT_EXT_KEY]} (ID: {format_info[db.DB_ID_KEY]}): "
+    return (f"{tc.BOLD}{format_info[db.DB_FORMAT_EXT_KEY]}{tc.OFF} (ID: {tc.ID}{format_info[db.DB_ID_KEY]}{tc.OFF}): "
             f"{format_info[db.DB_FORMAT_NOTE_KEY]}")
 
 
