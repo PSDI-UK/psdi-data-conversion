@@ -559,8 +559,8 @@ def list_supported_formats(err=False):
 
     # Pad the format strings to all be the same length. To keep columns aligned, all padding is done with non-
     # breaking spaces (\xa0), and each format is followed by a single normal space
-    longest_format_len = max([len(x.disambiguated_name) for x in l_registered_formats])
-    l_padded_formats = [f"{x.disambiguated_name:\xa0<{longest_format_len}} " for x in l_registered_formats]
+    longest_format_len = max([len(x.format_word()) for x in l_registered_formats])
+    l_padded_formats = [f"{x.format_word():\xa0<{longest_format_len}} " for x in l_registered_formats]
 
     print_wrap("Formats supported by registered converters: ", err=err, newline=True)
     print_wrap("".join(l_padded_formats), err=err, initial_indent="  ", subsequent_indent="  ", newline=True)
@@ -758,7 +758,7 @@ def get_supported_converters():
     l_converters: list[str] = []
     any_not_registered = False
     for converter_name in L_SUPPORTED_CONVERTERS:
-        converter_text = get_supported_converter_class(converter_name).meta.name
+        converter_text = get_converter_info(converter_name).format_word()
         if converter_name not in L_REGISTERED_CONVERTERS:
             converter_text += f" {MSG_NOT_REGISTERED}"
             any_not_registered = True
