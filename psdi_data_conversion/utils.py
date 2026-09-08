@@ -21,20 +21,82 @@ JsonMainDict = dict[str, None | int | str | bool | JsonDict | list[JsonDict]]
 
 
 class TextColors:
-    HEADER = '\033[95m'
-    OKBLUE = '\033[94m'
-    OKCYAN = '\033[96m'
-    OKGREEN = '\033[92m'
-    WARNING = '\033[93m'
-    FAIL = '\033[91m'
-    ENDC = '\033[0m'
+    """ANSI escape codes that can be used to color text printed to the terminal. E.g. to give text the header color,
+    you could do `print(f"{TextColors.MAGENTA}Header text{TextColors.OFF}")`
+    """
+
+    # Text color codes
+
+    RED = '\033[91m'
+    """Start coloring red"""
+
+    DARKRED = ERROR = FAIL = '\033[31m'
+    """Start coloring dark red"""
+
+    GREEN = SUCCESS = '\033[92m'
+    """Start coloring green"""
+
+    DARKGREEN = '\033[32m'
+    """Start coloring dark green"""
+
+    YELLOW = CODE = '\033[93m'
+    """Start coloring yellow"""
+
+    DARKYELLOW = WARNING = '\033[33m'
+    """Start coloring dark yellow"""
+
+    BLUE = ID = '\033[94m'
+    """Start coloring blue"""
+
+    DARKBLUE = '\033[34m'
+    """Start coloring dark blue"""
+
+    MAGENTA = '\033[95m'
+    """Start coloring magenta"""
+
+    DARKMAGENTA = '\033[35m'
+    """Start coloring dark magenta"""
+
+    CYAN = PATH = '\033[96m'
+    """Start coloring cyan"""
+
+    DARKCYAN = '\033[36m'
+    """Start coloring dark cyan"""
+
+    # Text formatting codes
+
     BOLD = '\033[1m'
+    """Start formatting bold - NOT compatible with coloring"""
+
+    DIM = '\033[2m'
+    """Start formatting dim (opposite of bold) - NOT compatible with coloring"""
+
     UNDERLINE = '\033[4m'
+    """Start underlining - compatible with coloring"""
+
+    # Combined codes
+
+    HEADER = '\033[95m\033[4m'
+    """Start header section - magenta underlined"""
+
+    # Other codes
+
+    OFF = '\033[0m'
+    """End all coloring and formatting"""
+
+    @classmethod
+    def display(cls):
+        """Displays all color codes"""
+        l_codes = [x for x in dir(cls) if not x.startswith("_") and x.upper() == x]
+        l_codes_and_vals = [(x, getattr(cls, x)) for x in l_codes]
+        l_codes_and_vals.sort(key=lambda x: int(x[1].replace("\033[", "").replace("m", "")))
+        for code, val in l_codes_and_vals:
+            print(f"{val}{code}{cls.OFF}")
 
 
-def get_wrapped_str(s: str, **kwargs):
+def get_wrapped_str(s: str, color=TextColors.OFF, **kwargs):
     """Get a string wrapped to the terminal width"""
-    return textwrap.fill(s, width=TERM_WIDTH, **kwargs)
+    return textwrap.fill(color+s+TextColors.OFF, width=TERM_WIDTH, **kwargs)
 
 
 def print_wrap(s: str, newline=False, err=False, **kwargs):
@@ -80,9 +142,9 @@ def confirm_editable_mode():
     """Checks if the `psdi_data_conversion` module is installed in editable mode, and exits the program if not
     """
     if not in_editable_mode():
-        print_wrap(f"{TextColors.FAIL}ERROR:{TextColors.ENDC} To run this script, the package must be installed in "
+        print_wrap(f"{TextColors.RED}ERROR:{TextColors.OFF} To run this script, the package must be installed in "
                    f"editable mode. Please reinstall with:\n")
-        print(f"{TextColors.WARNING}pip install --editable .{TextColors.ENDC}\n")
+        print_wrap("pip install --editable .\n", color=TextColors.WARNING)
         print_wrap("and re-run this script.")
         exit(1)
 

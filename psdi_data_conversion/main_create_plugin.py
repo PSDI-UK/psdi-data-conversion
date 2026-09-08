@@ -107,7 +107,7 @@ def run_from_args(args):
     if label:
         # Check that the label appears to be properly in snake_case
         if label != label.lower().replace(" ", "_") or NON_SNAKE_CASE_CHAR_RE.search(label):
-            print_wrap(f"{TC.FAIL}ERROR:{TC.ENDC} Label '{label}' is invalid. The label should be in snake_case (all "
+            print_wrap(f"{TC.RED}ERROR:{TC.OFF} Label '{label}' is invalid. The label should be in snake_case (all "
                        "lower-case with underscores in place of spaces), containing only letters, digits, "
                        "and underscores", err=True)
             exit(1)
@@ -115,8 +115,8 @@ def run_from_args(args):
         # Create the label by converting the name to snake_case and stripping invalid characters
         label = NON_SNAKE_CASE_CHAR_RE.sub("", name.lower().replace(" ", "_"))
         if not label:
-            print_wrap(f"{TC.FAIL}ERROR:{TC.ENDC} A valid label could not be generated from converter name '{name}'. "
-                       f"Please specify a label directly with '{TC.WARNING}--label LABEL{TC.ENDC}'. The label should "
+            print_wrap(f"{TC.RED}ERROR:{TC.OFF} A valid label could not be generated from converter name '{name}'. "
+                       f"Please specify a label directly with '{TC.YELLOW}--label LABEL{TC.OFF}'. The label should "
                        "be in snake_case (all lower-case with underscores in place of spaces), containing only "
                        "letters, digits, and underscores", err=True)
             exit(1)
@@ -129,8 +129,8 @@ def run_from_args(args):
     if os.environ.get(TEST_PATH_KEY):
         project_path: Path = Path(os.environ[TEST_PATH_KEY]).resolve()
         if not project_path.is_dir():
-            print_wrap(f"{TC.FAIL}ERROR:{TC.ENDC} When running this script with '{TC.WARNING}--test-path TEST_PATH" +
-                       f"{TC.ENDC}', the provided path ({TC.OKCYAN}{project_path}{TC.ENDC}) must already exist.",
+            print_wrap(f"{TC.RED}ERROR:{TC.OFF} When running this script with '{TC.YELLOW}--test-path TEST_PATH" +
+                       f"{TC.OFF}', the provided path ({TC.CYAN}{project_path}{TC.OFF}) must already exist.",
                        err=True)
             exit(1)
     else:
@@ -150,13 +150,13 @@ def run_from_args(args):
                 shutil.rmtree(qual_dir)
                 break
             else:
-                print_wrap(f"{TC.FAIL}ERROR:{TC.ENDC} Label '{label}' clashes with the label of an "
+                print_wrap(f"{TC.RED}ERROR:{TC.OFF} Label '{label}' clashes with the label of an "
                            "existing converter plugin. Please choose a different label (or different name if this was "
                            "determined from the name)", err=True)
                 exit(1)
         conv_module = import_from_path(label, qual_dir / PLUGIN_PYFILE)
         if name == conv_module.converter.meta.name:
-            print_wrap(f"{TC.FAIL}ERROR:{TC.ENDC} Name '{name}' clashes with the name of an existing "
+            print_wrap(f"{TC.RED}ERROR:{TC.OFF} Name '{name}' clashes with the name of an existing "
                        "converter plugin. Please choose a different name", err=True)
             exit(1)
 
@@ -192,13 +192,13 @@ def run_from_args(args):
 
         open(plugin_path / filename, "w").write(text)
 
-    print(f"{TC.OKGREEN}Success!{TC.ENDC} The plugin has been created at "
-          f"{TC.OKCYAN}{plugin_path}{TC.ENDC}\nNext steps:\n")
-    print_wrap(f"- Edit the '{TC.OKCYAN}{PLUGIN_PYFILE}{TC.ENDC}' and "
-               f"'{TC.OKCYAN}{PLUGIN_DATAFILE}{TC.ENDC}' files in this directory to contain all "
+    print(f"{TC.GREEN}Success!{TC.OFF} The plugin has been created at "
+          f"{TC.CYAN}{plugin_path}{TC.OFF}\nNext steps:\n")
+    print_wrap(f"- Edit the '{TC.CYAN}{PLUGIN_PYFILE}{TC.OFF}' and "
+               f"'{TC.CYAN}{PLUGIN_DATAFILE}{TC.OFF}' files in this directory to contain all "
                "necessary information about this converter and how to run it\n",
                initial_indent="", subsequent_indent=" "*2)
-    print_wrap(f"- Run the script '{TC.WARNING}psdi-data-convert-install-plugins{TC.ENDC}' to install "
+    print_wrap(f"- Run the script '{TC.YELLOW}psdi-data-convert-install-plugins{TC.OFF}' to install "
                "it\n",
                initial_indent="", subsequent_indent=" "*2)
     print_wrap("- If this script highlights that formats provided by this plugin may already be in the database,"

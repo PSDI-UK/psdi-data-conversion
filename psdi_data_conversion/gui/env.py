@@ -131,11 +131,11 @@ class SiteEnv:
 
         # Warn if the default secret is being used
         if self.service_mode and self._keycloak_secret == DEFAULT_KEYCLOAK_SECRET:
-            print(f"\n{TextColors.WARNING}!!! WARNING !!! \n"
+            print(f"\n{TextColors.YELLOW}!!! WARNING !!! \n"
                   "The default keycloak secret is being used, which is not secure. In a production "
                   f"deployment, the keycloak secret must be set using the {KEYCLOAK_SECRET_EV} environmental "
                   "variable. \n"
-                  f"!!! WARNING !!!{TextColors.ENDC}\n",
+                  f"!!! WARNING !!!{TextColors.OFF}\n",
                   file=sys.stderr)
 
         self.keycloak_redirect_url: str = self._determine_value(ev=KEYCLOAK_REDIRECT_URL_EV,
