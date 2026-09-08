@@ -10,7 +10,7 @@ from openbabel import openbabel
 
 from psdi_data_conversion.converters.base import FileConverter, FileConverterInputException, FileConverterMeta
 from psdi_data_conversion.security import SAFE_STRING_RE, string_is_safe
-from psdi_data_conversion.utils import print_wrap
+from psdi_data_conversion.utils import print_wrap, strip_control_codes, tc
 
 # Constants related to command-line and library arguments unique to this converter
 L_ALLOWED_COORD_GENS = ["Gen2D", "Gen3D", "neither"]
@@ -28,8 +28,9 @@ def check_string_security(s: str):
     """Checks that a string is secure and raises an exception if it isn't.
     """
     if not string_is_safe(s):
-        raise FileConverterInputException(f"Format option '{s}' does not pass security checks. It must pass the regex "
-                                          f"/{SAFE_STRING_RE.pattern}/.", help=True)
+        raise FileConverterInputException(f"Format option {tc.MESSAGE}'{s}'{tc.OFF} does not pass security checks. It "
+                                          f"must pass the regex {tc.CODE}/{SAFE_STRING_RE.pattern}/{tc.OFF}.",
+                                          help=True)
 
 
 def get_option_and_value(s: str):
@@ -58,16 +59,17 @@ def get_coord_gen(l_opts: list[str] | None) -> dict[str, str]:
 
     # No more than two arguments supplied to --coord-gen
     if l_opts is not None and len(l_opts) > 2:
-        raise FileConverterInputException("At most two arguments may be provided to --coord-gen, the mode and "
-                                          "quality, e.g. '--coord-gen Gen3D best'", help=True)
+        raise FileConverterInputException(f"At most two arguments may be provided to {tc.CODE}--coord-gen{tc.OFF}, the "
+                                          f"mode and quality, e.g. {tc.CODE}`--coord-gen Gen3D best`{tc.OFF}",
+                                          help=True)
 
     # Coordinate generation options are valid
     if coord_gen not in L_ALLOWED_COORD_GENS:
-        raise FileConverterInputException(f"Coordinate generation type '{coord_gen}' not recognised. Allowed "
-                                          f"types are: {L_ALLOWED_COORD_GENS}", help=True)
+        raise FileConverterInputException(f"Coordinate generation type {tc.MESSAGE}'{coord_gen}'{tc.OFF} not "
+                                          f"recognised. Allowed types are: {L_ALLOWED_COORD_GENS}", help=True)
     if coord_gen_qual not in L_ALLOWED_COORD_GEN_QUALS:
-        raise FileConverterInputException(f"Coordinate generation quality '{coord_gen_qual}' not recognised. "
-                                          f"Allowed qualities are: {L_ALLOWED_COORD_GEN_QUALS}", help=True)
+        raise FileConverterInputException(f"Coordinate generation quality {tc.MESSAGE}'{coord_gen_qual}'{tc.OFF} not "
+                                          f"recognised. Allowed qualities are: {L_ALLOWED_COORD_GEN_QUALS}", help=True)
 
     return {COORD_GEN_KEY: coord_gen,
             COORD_GEN_QUAL_KEY: coord_gen_qual}
@@ -129,9 +131,12 @@ class OpenBabelFileConverter(FileConverter):
     allowed_options = (("--coord-gen",
                         {"help": "(Open Babel converter only). The mode to be used for Open Babel calculation of "
                          "atomic coordinates, and optionally the quality of the conversion. The mode should be one of "
-                         "'Gen2D', 'Gen3D', or 'neither' (default 'neither'). The quality, if supplied, should be "
-                         "one of 'fastest', 'fast', 'medium', 'better' or 'best' (default 'medium'). E.g. "
-                         "'--coord-gen Gen2D' (quality defaults to 'medium'), '--coord-gen Gen3D best'",
+                         f"{tc.MESSAGE}'Gen2D'{tc.OFF}, {tc.MESSAGE}'Gen3D'{tc.OFF}, or {tc.MESSAGE}'neither'{tc.OFF} "
+                         f"(default {tc.MESSAGE}'neither'{tc.OFF}). The quality, if supplied, should be one of "
+                         f"{tc.MESSAGE}'fastest'{tc.OFF}, {tc.MESSAGE}'fast'{tc.OFF}, {tc.MESSAGE}'medium'{tc.OFF}, "
+                         f"{tc.MESSAGE}'better'{tc.OFF} or {tc.MESSAGE}'best'{tc.OFF} (default {tc.MESSAGE}'medium"
+                         f"'{tc.OFF}). E.g. {tc.CODE}'--coord-gen Gen2D'{tc.OFF} (quality defaults to "
+                         f"{tc.MESSAGE}'medium'{tc.OFF}), {tc.CODE}'--coord-gen Gen3D best'{tc.OFF}",
                          "type": str,
                          "default": None,
                          "nargs": "+"},
@@ -170,8 +175,9 @@ class OpenBabelFileConverter(FileConverter):
                 try:
                     get_in_format_args(self.name, self.from_format_info, char)
                 except FileConverterDatabaseException:
-                    print_wrap(f"WARNING: Input format flag '{char}' not recognised for conversion with {self.name}. "
-                               "If this is valid, the database should be updated to indicate this.", err=True)
+                    print_wrap(f"{tc.OFF}WARNING:{tc.OFF} Input format flag {tc.MESSAGE}'{char}'{tc.OFF} not "
+                               f"recognised for conversion with {self.name}. If this is valid, the database should be "
+                               "updated to indicate this.", err=True)
                 ob_conversion.AddOption(char, ob_conversion.INOPTIONS)
 
             for char in to_flags:
@@ -180,8 +186,9 @@ class OpenBabelFileConverter(FileConverter):
                 try:
                     get_out_format_args(self.name, self.to_format_info, char)
                 except FileConverterDatabaseException:
-                    print_wrap(f"WARNING: Output format flag '{char}' not recognised for conversion with {self.name}. "
-                               "If this is valid, the database should be updated to indicate this", err=True)
+                    print_wrap(f"{tc.OFF}WARNING:{tc.OFF} Output format flag {tc.MESSAGE}'{char}'{tc.OFF} not "
+                               f"recognised for conversion with {self.name}. If this is valid, the database should be "
+                               "updated to indicate this", err=True)
                 ob_conversion.AddOption(char, ob_conversion.OUTOPTIONS)
 
             self.data["read_flags_args"] = []
@@ -200,9 +207,9 @@ class OpenBabelFileConverter(FileConverter):
                     try:
                         get_in_format_args(self.name, self.from_format_info, option)
                     except FileConverterDatabaseException:
-                        print_wrap(f"WARNING: Input format option '{option}' not recognised for conversion with "
-                                   f"{self.name}. If this is valid, the database should be updated to indicate "
-                                   "this", err=True)
+                        print_wrap(f"{tc.OFF}WARNING:{tc.OFF} Input format option {tc.MESSAGE}'{option}'{tc.OFF} not "
+                                   f"recognised for conversion with {self.name}. If this is valid, the database should "
+                                   "be updated to indicate this", err=True)
 
                     ob_conversion.AddOption(option, ob_conversion.INOPTIONS, value)
 
@@ -222,9 +229,9 @@ class OpenBabelFileConverter(FileConverter):
                     try:
                         get_in_format_args(self.name, self.from_format_info, char)
                     except FileConverterDatabaseException:
-                        print_wrap(f"WARNING: Input format option '{arg}' not recognised for conversion with "
-                                   f"{self.name}. If this is valid, the database should be updated to indicate "
-                                   "this.", err=True)
+                        print_wrap(f"{tc.OFF}WARNING:{tc.OFF} Input format option {tc.MESSAGE}'{arg}'{tc.OFF} not "
+                                   f"recognised for conversion with {self.name}. If this is valid, the database should "
+                                   f"be updated to indicate this.", err=True)
 
                     ob_conversion.AddOption(char, ob_conversion.INOPTIONS, arg)
                     self.data["read_flags_args"].append(char + arg)
@@ -242,13 +249,14 @@ class OpenBabelFileConverter(FileConverter):
                     try:
                         get_out_format_args(self.name, self.to_format_info, option)
                     except FileConverterDatabaseException:
-                        print_wrap(f"WARNING: Output format option '{option}' not recognised for conversion with "
-                                   f"{self.name}. If this is valid, the database should be updated to indicate "
-                                   "this.", err=True)
+                        print_wrap(f"WARNING: Output format option {tc.MESSAGE}'{option}'{tc.OFF} not recognised for "
+                                   f"conversion with {self.name}. If this is valid, the database should be updated to "
+                                   "indicate this.", err=True)
 
                     ob_conversion.AddOption(option, ob_conversion.OUTOPTIONS, value)
 
-                self.logger.debug(f"Set Open Babel write flags arguments to: {self.data['to_options']}")
+                self.logger.debug(
+                    f"Set Open Babel write flags arguments to: {tc.MESSAGE}{self.data['to_options']}{tc.OFF}")
                 # Store the options in the "write_flags_args" entry for the later logging
                 self.data["write_flags_args"] = l_to_options
 
@@ -264,13 +272,14 @@ class OpenBabelFileConverter(FileConverter):
                     try:
                         get_out_format_args(self.name, self.to_format_info, char)
                     except FileConverterDatabaseException:
-                        print_wrap(f"WARNING: Output format option '{arg}' not recognised for conversion with "
-                                   f"{self.name}. If this is valid, the database should be updated to indicate "
-                                   "this.", err=True)
+                        print_wrap(f"{tc.OFF}WARNING:{tc.OFF} Output format option {tc.MESSAGE}'{arg}'{tc.OFF} not "
+                                   f"recognised for conversion with {self.name}. If this is valid, the database should "
+                                   "be updated to indicate this.", err=True)
 
                     ob_conversion.AddOption(char, ob_conversion.OUTOPTIONS, arg)
                     self.data["write_flags_args"].append(char + arg)
-                self.logger.debug(f"Set Open Babel write flags arguments to: {self.data['read_flags_args']}")
+                self.logger.debug("Set Open Babel write flags arguments to: "
+                                  f"{tc.MESSAGE}{self.data['read_flags_args']}{tc.OFF}")
 
             # Read the file to be converted
             mol = openbabel.OBMol()
@@ -284,8 +293,8 @@ class OpenBabelFileConverter(FileConverter):
                 self.option = self.data[COORD_GEN_QUAL_KEY]
 
                 gen = openbabel.OBOp.FindType(self.data[COORD_GEN_KEY])
-                self.logger.debug(f"Performing Open Babel {self.data[COORD_GEN_KEY]} coordinate conversion with option "
-                                  f"'{self.option}'")
+                self.logger.debug(f"Performing Open Babel {tc.MESSAGE}'{self.data[COORD_GEN_KEY]}'{tc.OFF} coordinate "
+                                  f"conversion with option {tc.MESSAGE}'{self.option}'{tc.OFF}")
                 gen.Do(mol, self.data[COORD_GEN_QUAL_KEY])
 
             # Write the converted file
@@ -303,7 +312,8 @@ class OpenBabelFileConverter(FileConverter):
         # Check for any non-critical errors and print them out
         l_err_blocks = self.err.split("\n\n")
         for err_block in l_err_blocks:
-            if err_block.startswith("ERROR:") or err_block.startswith("WARNING:"):
+            stripped_block = strip_control_codes(err_block)
+            if stripped_block.startswith("ERROR:") or stripped_block.startswith("WARNING:"):
                 print_wrap(err_block, err=True)
 
     def _create_message(self) -> str:
