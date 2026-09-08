@@ -28,10 +28,10 @@ class TextColors:
 
     # Text color codes
 
-    RED = "\033[91m"
+    RED = ERROR = FAIL = "\033[91m"
     """Start coloring red"""
 
-    DARKRED = ERROR = FAIL = "\033[31m"
+    DARKRED = "\033[31m"
     """Start coloring dark red"""
 
     GREEN = SUCCESS = "\033[92m"
