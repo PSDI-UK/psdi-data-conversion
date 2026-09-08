@@ -6,6 +6,7 @@ Miscellaneous utility functions used by this project
 
 
 import json
+import re
 import sys
 import textwrap
 from functools import lru_cache
@@ -121,9 +122,21 @@ def enable_colors():
     tc.enable()
 
 
-def get_wrapped_str(s: str, color=TextColors.OFF, **kwargs):
+CONTROL_CODE_RE = re.compile("\033\\[\\d+?m")
+
+
+def displaylen(s: str):
+    """Get the length of a string as it would be displayed in the terminal - this is, stripping out control codes"""
+    len(CONTROL_CODE_RE.sub("", s))
+
+
+def get_wrapped_str(s: str, color: str | None = None, **kwargs):
     """Get a string wrapped to the terminal width"""
-    return textwrap.fill(color+s+TextColors.OFF, width=TERM_WIDTH, **kwargs)
+    if color:
+        s_colored = color+s+TextColors.OFF
+    else:
+        s_colored = s
+    return textwrap.fill(s_colored, width=TERM_WIDTH, **kwargs)
 
 
 def print_wrap(s: str, newline=False, err=False, **kwargs):
