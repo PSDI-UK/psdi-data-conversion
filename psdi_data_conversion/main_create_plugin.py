@@ -13,12 +13,18 @@ import os
 import re
 import shutil
 import sys
+import textwrap
 from argparse import ArgumentParser
 from pathlib import Path
+
+import wraptext
 
 from psdi_data_conversion.testing.constants import TEST_PATH_KEY
 from psdi_data_conversion.testing.utils import get_test_data_loc
 from psdi_data_conversion.utils import confirm_editable_mode, get_project_path, print_wrap, tc
+
+# Monkey-patch textwrap to use the improved wraptext implementation when argparse calls it
+textwrap.wrap = wraptext.wrap
 
 PLUGIN_EXAMPLEDIR = "example"
 PLUGIN_TEMPLATEDIR = "template"

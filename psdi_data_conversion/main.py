@@ -10,6 +10,7 @@ Entry-point file for the command-line interface for data conversion.
 import logging
 import os
 import sys
+import textwrap
 from argparse import ArgumentParser
 from itertools import product
 
@@ -29,6 +30,9 @@ from psdi_data_conversion.database import (D_FORMAT_PROPERTY_ATTRS, ConversionQu
 from psdi_data_conversion.file_io import split_archive_ext
 from psdi_data_conversion.log_utility import get_log_level_from_str
 from psdi_data_conversion.utils import print_wrap, regularize_name, tc
+
+# Monkey-patch textwrap to use the improved wraptext implementation when argparse calls it
+textwrap.wrap = wraptext.wrap
 
 
 class ConvertArgs:

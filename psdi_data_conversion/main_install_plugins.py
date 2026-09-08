@@ -10,6 +10,7 @@ Entry-point file for the script to install converter plugins.
 
 import json
 import os
+import textwrap
 from argparse import ArgumentParser
 from collections import OrderedDict
 from copy import deepcopy
@@ -17,10 +18,15 @@ from itertools import product
 from pathlib import Path
 from uuid import uuid4
 
+import wraptext
+
 from psdi_data_conversion import database as db
 from psdi_data_conversion.testing.constants import TEST_PATH_KEY
 from psdi_data_conversion.utils import (JsonDict, JsonMainDict, confirm_editable_mode, get_project_path,
                                         get_wrapped_str, print_wrap, tc)
+
+# Monkey-patch textwrap to use the improved wraptext implementation when argparse calls it
+textwrap.wrap = wraptext.wrap
 
 # Constants
 PLUGIN_DATAFILE = "data.json"
