@@ -85,35 +85,40 @@ class TextColors:
     """End all coloring and formatting"""
 
     @classmethod
-    def display(cls):
+    def _get_codes(cls):
+        return [x for x in dir(cls) if not x.startswith("_") and x.upper() == x]
+
+    def display(self):
         """Displays all color codes"""
-        l_codes = [x for x in dir(cls) if not x.startswith("_") and x.upper() == x]
-        l_codes_and_vals = [(x, getattr(cls, x)) for x in l_codes]
-        l_codes_and_vals.sort(key=lambda x: int(x[1].replace("\033[", "").replace("m", "")))
+        l_codes_and_vals = [(x, getattr(self, x)) for x in self._get_codes()]
+        l_codes_and_vals.sort(key=lambda x: int(x[1].replace("\033[", "").replace("m", "")) if x[1] else x[0])
         for code, val in l_codes_and_vals:
-            print(f"{val}{code}{cls.OFF}")
+            print(f"{val}{code}{self.OFF}")
+
+    def enable(self):
+        """Enable colors"""
+        l_codes = self._get_codes()
+        for code in l_codes:
+            setattr(self, code, getattr(type(self), code))
+
+    def disable(self):
+        """Disable colors"""
+        l_codes = self._get_codes()
+        for code in l_codes:
+            setattr(self, code, "")
 
 
-class NoColors(TextColors):
-    """Alternate version of `TextColors` which disables all color codes, for when plain text should be used"""
+tc = TextColors()
 
-    RED = ""
-    DARKRED = ERROR = FAIL = ""
-    GREEN = SUCCESS = ""
-    DARKGREEN = ""
-    YELLOW = CODE = ""
-    DARKYELLOW = WARNING = ""
-    BLUE = ID = ""
-    DARKBLUE = ""
-    MAGENTA = ""
-    DARKMAGENTA = ""
-    CYAN = PATH = ""
-    DARKCYAN = ""
-    BOLD = ""
-    DIM = ""
-    UNDERLINE = ""
-    HEADER = ""
-    OFF = ""
+
+def disable_colors():
+    """Globally disable color formatting in output text"""
+    tc.disable()
+
+
+def enable_colors():
+    """Globally (re)enable color formatting in output text"""
+    tc.enable()
 
 
 def get_wrapped_str(s: str, color=TextColors.OFF, **kwargs):
