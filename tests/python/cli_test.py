@@ -227,7 +227,7 @@ def test_detail_converter(capsys):
         compressed_out: str = compress_output(captured.out)
 
         def string_is_present_in_out(s: str) -> bool:
-            return s.replace("\n", " ").replace(" ", "") in compressed_out
+            return compress_output(s) in compressed_out
 
         assert string_is_present_in_out(converter_name)
 
@@ -282,7 +282,7 @@ def test_get_conversions(capsys):
     compressed_out: str = strip_control_codes(captured.out.replace("\n", "").replace(" ", ""))
 
     def string_is_present_in_out(s: str) -> bool:
-        return s.replace("\n", " ").replace(" ", "") in compressed_out
+        return compress_output(s) in compressed_out
 
     _check_no_errors(captured)
 
@@ -311,18 +311,19 @@ def test_get_chained(capsys):
     compressed_out: str = compress_output(captured.out)
 
     def string_is_present_in_out(s: str) -> bool:
-        return s.replace("\n", " ").replace(" ", "") in compressed_out
+        return compress_output(s) in compressed_out
 
     _check_no_errors(captured)
 
-    assert string_is_present_in_out(f"No direct conversions are possible from {in_format.id} to {out_format.id}")
+    assert string_is_present_in_out(f"No direct conversions are possible from {in_format.format_word()} to "
+                                    f"{out_format.format_word()}")
 
-    assert string_is_present_in_out(f"A chained conversion is possible from {in_format.id} to {out_format.id} using "
-                                    f"registered converters:")
+    assert string_is_present_in_out(f"A chained conversion is possible from {in_format.format_word()} to "
+                                    f"{out_format.format_word()} using registered converters:")
 
     for i, step in enumerate(pathway):
-        assert string_is_present_in_out(f"{i+1}) Convert from {step[1].name} to {step[2].name} with "
-                                        f"{step[0].pretty_name}")
+        assert string_is_present_in_out(f"{i+1}) Convert from {step[1].format_word()} to {step[2].format_word()} with "
+                                        f"{step[0].format_word()}")
 
     # Now try getting a conversion which is not in fact possible, even chained
 
@@ -357,7 +358,7 @@ def test_conversion_info(capsys):
     compressed_out: str = compress_output(captured.out)
 
     def string_is_present_in_out(s: str) -> bool:
-        return s.replace("\n", " ").replace(" ", "") in compressed_out
+        return compress_output(s) in compressed_out
 
     _check_no_errors(captured)
 
@@ -414,7 +415,7 @@ def test_format_info(capsys):
     compressed_out: str = compress_output(captured.out)
 
     def string_is_present_in_out(s: str) -> bool:
-        return s.replace("\n", " ").replace(" ", "") in compressed_out
+        return compress_output(s) in compressed_out
 
     _check_no_errors(captured)
 
@@ -459,7 +460,7 @@ def test_format_info(capsys):
     compressed_err: str = compress_output(captured.err)
 
     def string_is_present_in_err(s: str) -> bool:
-        return s.replace("\n", " ").replace(" ", "") in compressed_err
+        return compress_output(s) in compressed_err
 
     assert string_is_present_in_err(f"ERROR: Format '{in_format}' not recognised")
 
