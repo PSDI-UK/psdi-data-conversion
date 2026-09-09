@@ -24,6 +24,11 @@
 - The internals of the `FileConverter` base class from `psdi_data_conversion.converters.base` have been reworked alongside database changes. This results in most data about an individual converter being stored within its `meta` attribute now, which is of the new `FileConverterMeta` class. The old attributes remain as properties which reference these to avoid breaking existing code as much as possible, but as it's to be deprecated for properties to also be class methods, these will not be accessible from the class itself, and instead must be accessed from the `meta` attribute. That is:
   - `FileConverter.name` used to work, but now won't. Use `FileConverter.meta.name` instead (or equivalent with any subclass of `FileConverter`)
   - `x = FileConverter(); x.name` still works. `x.meta.name` can be equivalently be used, but isn't needed
+- The `psdi_data_conversion.database` module has been refactored to provide a more consistent interface, which has resulted in some properties and kwargs changing name:
+  - The `ArgInfo`, `ConverterInfo`, and `FormatInfo` now all inherit from a common `DBInfo` class with shared properties `id`, `name`, `description`, `info` (extended description), and `parent`. Some previously-existing properties have been renamed to one of these for consistencies (with deprecated aliases left behind until they're removed in a future version):
+    - `ArgInfo.flag` is now `ArgInfo.name`
+    - `FormatInfo.note` is now `FormatInfo.description`
+  - Functions which accept a converter and/or file format(s) as arguments have been normalised to use the kwargs `converter`, `in_format`, `out_format`, and `file_format` (the latter for a format that could be either input or output) to refer to them, which will accept the converter/format specified by its name (if suitably unambiguous), ID/UUID, or `ConverterInfo`/`FormatInfo` object
 
 ### New and Changed Functionality
 
