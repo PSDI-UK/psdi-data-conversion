@@ -55,6 +55,10 @@
 - Fixed a CLI bug where if requesting info on both a converter and format, the user would always be told that conversion to/from the format with this converter was not possible
 - Fixed a bug where script file converters would use input arguments as both input/output arguments (none were yet supported, but would have caused issues with future support if not fixed)
 
+### Stylistic Changes
+
+- The output of the command-line interface and other scripts has been updated to use colors to highlight notable syntax (e.g. code snippets are shaded light yellow)
+
 ### Documentation Changes
 
 - Fixed incorrect output type in documentation for database methods `get_in_format_args` and `get_out_format_args`
