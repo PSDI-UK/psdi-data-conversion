@@ -25,7 +25,7 @@ from psdi_data_conversion.main import FileConverterInputException, parse_args
 from psdi_data_conversion.testing.constants import FORMAT_INCHI, FORMAT_MOLDY
 from psdi_data_conversion.testing.conversion_test_specs import l_cla_test_specs
 from psdi_data_conversion.testing.utils import run_test_conversion_with_cla, run_with_arg_string
-from psdi_data_conversion.utils import regularize_name
+from psdi_data_conversion.utils import regularize_name, strip_control_codes
 
 
 def test_unique_args():
@@ -218,7 +218,7 @@ def test_detail_converter(capsys):
 
         run_with_arg_string(f"--list {converter_name}")
         captured = capsys.readouterr()
-        compressed_out: str = captured.out.replace("\n", "").replace(" ", "")
+        compressed_out: str = strip_control_codes(captured.out.replace("\n", "").replace(" ", ""))
 
         def string_is_present_in_out(s: str) -> bool:
             return s.replace("\n", " ").replace(" ", "") in compressed_out
@@ -273,7 +273,7 @@ def test_get_conversions(capsys):
 
     run_with_arg_string(f"-l -f {in_format} -t {out_format}")
     captured = capsys.readouterr()
-    compressed_out: str = captured.out.replace("\n", "").replace(" ", "")
+    compressed_out: str = strip_control_codes(captured.out.replace("\n", "").replace(" ", ""))
 
     def string_is_present_in_out(s: str) -> bool:
         return s.replace("\n", " ").replace(" ", "") in compressed_out
@@ -302,7 +302,7 @@ def test_get_chained(capsys):
 
     run_with_arg_string(f"-l -f {in_format.id} -t {out_format.id}")
     captured = capsys.readouterr()
-    compressed_out: str = captured.out.replace("\n", "").replace(" ", "")
+    compressed_out: str = strip_control_codes(captured.out.replace("\n", "").replace(" ", ""))
 
     def string_is_present_in_out(s: str) -> bool:
         return s.replace("\n", " ").replace(" ", "") in compressed_out
@@ -325,7 +325,7 @@ def test_get_chained(capsys):
 
     run_with_arg_string(f"-l -f {in_format} -t {out_format}")
     captured = capsys.readouterr()
-    compressed_out: str = captured.out.replace("\n", "").replace(" ", "")
+    compressed_out: str = strip_control_codes(captured.out.replace("\n", "").replace(" ", ""))
 
     assert string_is_present_in_out(f"No chained conversions are possible from {in_format} to {out_format}.")
 
@@ -348,7 +348,7 @@ def test_conversion_info(capsys):
     # Test a basic listing of arguments, checking with the converter name in lowercase to be sure that works
     run_with_arg_string(f"-l {converter_name.lower()} -f {in_format} -t {out_format}")
     captured = capsys.readouterr()
-    compressed_out: str = captured.out.replace("\n", "").replace(" ", "")
+    compressed_out: str = strip_control_codes(captured.out.replace("\n", "").replace(" ", ""))
 
     def string_is_present_in_out(s: str) -> bool:
         return s.replace("\n", " ").replace(" ", "") in compressed_out
@@ -389,7 +389,7 @@ def test_conversion_info(capsys):
 
         run_with_arg_string(f"-l {converter_name} -f {in_format} -t {out_format}")
         captured = capsys.readouterr()
-        compressed_out: str = captured.out.replace("\n", "").replace(" ", "")
+        compressed_out: str = strip_control_codes(captured.out.replace("\n", "").replace(" ", ""))
 
         _check_no_errors(captured)
 
@@ -405,7 +405,7 @@ def test_format_info(capsys):
     run_with_arg_string(f"-l -f {in_format}")
 
     captured = capsys.readouterr()
-    compressed_out: str = captured.out.replace("\n", "").replace(" ", "")
+    compressed_out: str = strip_control_codes(captured.out.replace("\n", "").replace(" ", ""))
 
     def string_is_present_in_out(s: str) -> bool:
         return s.replace("\n", " ").replace(" ", "") in compressed_out
@@ -433,7 +433,7 @@ def test_format_info(capsys):
     run_with_arg_string(f"-l -t {out_format}")
 
     captured = capsys.readouterr()
-    compressed_out: str = captured.out.replace("\n", "").replace(" ", "")
+    compressed_out: str = strip_control_codes(captured.out.replace("\n", "").replace(" ", ""))
 
     _check_no_errors(captured)
 
