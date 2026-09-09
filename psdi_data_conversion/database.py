@@ -1835,22 +1835,23 @@ class DataConversionDatabase:
 
     @overload
     def get_format_info(self,
-                        format_name_or_id: str | int | UUID | FormatInfo,
+                        file_format: str | int | UUID | FormatInfo,
                         which: int | None = None) -> FormatInfo: ...
 
     @overload
     def get_format_info(self,
-                        format_name_or_id: str | int | UUID | FormatInfo,
+                        file_format: str | int | UUID | FormatInfo,
                         which: Literal["all"]) -> list[FormatInfo]: ...
 
     def get_format_info(self,
-                        format_name_or_id: str | int | UUID | FormatInfo,
-                        which: int | Literal["all"] | None = None) -> FormatInfo | list[FormatInfo]:
+                        file_format: str | int | UUID | FormatInfo,
+                        which: int | Literal["all"] | None = None,
+                        **kwargs) -> FormatInfo | list[FormatInfo]:
         """Gets the information on a given file format stored in the database
 
         Parameters
         ----------
-        format_name_or_id : str | int | UUID | FormatInfo
+        file_format : str | int | UUID | FormatInfo
             The name (extension) of the format, or its ID. In the case of ambiguous extensions which could apply to
             multiple formats, the ID must be used here or a `FileConverterDatabaseException` will be raised. This also
             allows passing a FormatInfo to this, in which case that object will be silently returned, to allow
@@ -1867,47 +1868,56 @@ class DataConversionDatabase:
         FormatInfo | list[FormatInfo]
         """
 
+        # Check for deprecated kwargs
+        if "format_name_or_id" in kwargs:
+            warnings.warn(f"The argument {tc.CODE}`format_name_or_id`{tc.OFF} for the method "
+                          f"{tc.CODE}`get_format_info`{tc.OFF} is deprecated as of version 0.4.0 and due to be "
+                          f"removed in a future release. Use the argument {tc.CODE}`file_format`{tc.OFF} instead, "
+                          "which has equivalent functionality and is being used now to normalise function signatures "
+                          "across the package.", DeprecationWarning)
+            file_format = kwargs["format_name_or_id"]
+
         if which == "all":
             return_as_list = True
         else:
             return_as_list = False
 
-        if isinstance(format_name_or_id, str):
+        if isinstance(file_format, str):
             # Check first if it's a UUID
             try:
-                format_info = self.d_format_info_from_id[UUID(format_name_or_id).int]
+                format_info = self.d_format_info_from_id[UUID(file_format).int]
                 if which == "all":
                     return [format_info]
                 return format_info
             except KeyError as e:
-                if e.args[0] == UUID(format_name_or_id).int:
-                    raise FileConverterDatabaseException(f"Format ID '{tc.ID}{format_name_or_id}'{tc.OFF} not "
+                if e.args[0] == UUID(file_format).int:
+                    raise FileConverterDatabaseException(f"Format ID '{tc.ID}{file_format}'{tc.OFF} not "
                                                          "recognised", help=True)
             except ValueError:
                 pass
 
             # Silently strip leading period
-            if format_name_or_id.startswith("."):
-                format_name_or_id = format_name_or_id[1:]
+            if file_format.startswith("."):
+                file_format = file_format[1:]
 
             # Convert the format name to lower-case to handle it case-insensitively
-            format_name_or_id = format_name_or_id.lower()
+            file_format = file_format.lower()
 
             # Check for a hyphen in the format, which indicates a preference from the user as to which, overriding the
             # `which` kwarg
-            if "-" in format_name_or_id:
-                l_name_segments = format_name_or_id.split("-")
+            if "-" in file_format:
+                l_name_segments = file_format.split("-")
                 if len(l_name_segments) > 2:
-                    raise FileConverterDatabaseException(f"Format name {tc.PATH}'{format_name_or_id}'{tc.OFF} is "
+                    raise FileConverterDatabaseException(f"Format name {tc.PATH}'{file_format}'{tc.OFF} is "
                                                          "improperly formatted - It may contain at most one hyphen, "
                                                          "separating the extension from an index indicating which of "
                                                          "the formats with that extension to use, e.g. "
                                                          f"{tc.PATH}'pdb-0'{tc.OFF}, {tc.PATH}'pdb-1'{tc.OFF}, "
                                                          "etc.", help=True)
-                format_name_or_id = l_name_segments[0]
+                file_format = l_name_segments[0]
                 which = int(l_name_segments[1])
 
-            l_possible_format_info = self.d_format_info_from_name.get(format_name_or_id, [])
+            l_possible_format_info = self.d_format_info_from_name.get(file_format, [])
 
             if which == "all":
                 return l_possible_format_info
@@ -1916,49 +1926,49 @@ class DataConversionDatabase:
                 format_info = l_possible_format_info[0]
 
             elif len(l_possible_format_info) == 0:
-                raise FileConverterDatabaseException(f"Format name {tc.PATH}'{format_name_or_id}'{tc.OFF} not "
+                raise FileConverterDatabaseException(f"Format name {tc.PATH}'{file_format}'{tc.OFF} not "
                                                      "recognised", help=True)
 
             elif which is not None and which < len(l_possible_format_info):
                 format_info = l_possible_format_info[which]
 
             else:
-                msg = (f"Extension {tc.PATH}'{format_name_or_id}'{tc.OFF} is ambiguous and must be defined by "
+                msg = (f"Extension {tc.PATH}'{file_format}'{tc.OFF} is ambiguous and must be defined by "
                        "disambiguated name or ID. Possible formats are:")
                 for possible_format_info in l_possible_format_info:
                     msg += f"\n{possible_format_info.format_oneline()}"
                 raise FileConverterDatabaseException(msg, help=True)
 
-        elif isinstance(format_name_or_id, int):
+        elif isinstance(file_format, int):
             try:
-                format_info = self.d_format_info_from_id[format_name_or_id]
+                format_info = self.d_format_info_from_id[file_format]
             except KeyError as e:
-                if e.args[0] != format_name_or_id:
+                if e.args[0] != file_format:
                     raise
                 if return_as_list:
                     return []
-                raise FileConverterDatabaseException(f"Format ID {tc.PATH}'{format_name_or_id}'{tc.OFF} not "
+                raise FileConverterDatabaseException(f"Format ID {tc.PATH}'{file_format}'{tc.OFF} not "
                                                      "recognised", help=True)
 
-        elif isinstance(format_name_or_id, UUID):
+        elif isinstance(file_format, UUID):
             try:
-                format_info = self.d_format_info_from_id[format_name_or_id.int]
+                format_info = self.d_format_info_from_id[file_format.int]
             except KeyError as e:
-                if e.args[0] != format_name_or_id.int:
+                if e.args[0] != file_format.int:
                     raise
                 if return_as_list:
                     return []
-                raise FileConverterDatabaseException(f"Format ID {tc.PATH}'{format_name_or_id}'{tc.OFF} not "
+                raise FileConverterDatabaseException(f"Format ID {tc.PATH}'{file_format}'{tc.OFF} not "
                                                      "recognised", help=True)
 
-        elif isinstance(format_name_or_id, FormatInfo):
+        elif isinstance(file_format, FormatInfo):
             # Silently return the FormatInfo if it was used as a key here
-            format_info = format_name_or_id
+            format_info = file_format
 
         else:
             raise FileConverterDatabaseException(f"Invalid key passed to {tc.CODE}`get_format_info`{tc.OFF}: "
-                                                 f"{tc.PATH}'{format_name_or_id}'{tc.OFF} of type "
-                                                 f"{tc.CODE}`{type(format_name_or_id)}'{tc.OFF}. Type must be "
+                                                 f"{tc.PATH}'{file_format}'{tc.OFF} of type "
+                                                 f"{tc.CODE}`{type(file_format)}'{tc.OFF}. Type must be "
                                                  f"{tc.CODE}`str`{tc.OFF} or {tc.CODE}`int`{tc.OFF}")
         if return_as_list:
             return [format_info]
@@ -2062,22 +2072,23 @@ def get_converter_info(converter: str | int | UUID | ConverterInfo | None = None
 
 
 @overload
-def get_format_info(format_name_or_id: str | int | UUID | FormatInfo,
+def get_format_info(file_format: str | int | UUID | FormatInfo,
                     which: int | None = None) -> FormatInfo: ...
 
 
 @overload
-def get_format_info(format_name_or_id: str | int | UUID | FormatInfo,
+def get_format_info(file_format: str | int | UUID | FormatInfo,
                     which: Literal["all"]) -> list[FormatInfo]: ...
 
 
-def get_format_info(format_name_or_id: str | int | UUID | FormatInfo,
-                    which: int | Literal["all"] | None = None) -> FormatInfo | list[FormatInfo]:
+def get_format_info(file_format: str | int | UUID | FormatInfo,
+                    which: int | Literal["all"] | None = None,
+                    **kwargs) -> FormatInfo | list[FormatInfo]:
     """Gets the information on a given file format stored in the database
 
     Parameters
     ----------
-    format_name_or_id : str | int | UUID | FormatInfo
+    file_format : str | int | UUID | FormatInfo
         The name (extension) of the format, or its ID. In the case of ambiguous extensions which could apply to multiple
         formats, the ID must be used here or a FileConverterDatabaseException will be raised. This also allows passing a
         FormatInfo to this, in which case that object will be silently returned, to allow normalising the input to
@@ -2094,7 +2105,16 @@ def get_format_info(format_name_or_id: str | int | UUID | FormatInfo,
     FormatInfo | list[FormatInfo]
     """
 
-    return get_database().get_format_info(format_name_or_id, which)
+    # Check for deprecated kwargs
+    if "format_name_or_id" in kwargs:
+        warnings.warn(f"The argument {tc.CODE}`format_name_or_id`{tc.OFF} for the method "
+                      f"{tc.CODE}`get_format_info`{tc.OFF} is deprecated as of version 0.4.0 and due to be "
+                      f"removed in a future release. Use the argument {tc.CODE}`file_format`{tc.OFF} instead, "
+                      "which has equivalent functionality and is being used now to normalise function signatures "
+                      "across the package.", DeprecationWarning)
+        file_format = kwargs["format_name_or_id"]
+
+    return get_database().get_format_info(file_format, which)
 
 
 def get_conversion_quality(converter: str | int | UUID | ConverterInfo,
