@@ -273,6 +273,15 @@ class ArgInfo(DBInfo):
     # __hash__ needs to be inherited explicitly for dataclasses since they redefine __eq__
     __hash__ = DBInfo.__hash__
 
+    @property
+    def flag(self):
+        """DEPRECATED: Now known as `name`
+        """
+        warnings.warn(f"The {tc.CODE}`flag`{tc.OFF} property of the {tc.CODE}`ArgInfo`{tc.OFF} class has been renamed "
+                      f"to {tc.CODE}`name`{tc.OFF} as of version 0.4.0 and is due to be removed in a future version.",
+                      DeprecationWarning)
+        return self.name
+
 
 @dataclass
 class FlagInfo(ArgInfo):
@@ -943,6 +952,15 @@ class FormatInfo(DBInfo):
         else:
             index_of_this = [i for i, x in enumerate(l_formats_with_same_name) if self is x][0]
             return f"{self.lower_name}-{index_of_this}"
+
+    @property
+    def note(self):
+        """DEPRECATED: Now known as `description`
+        """
+        warnings.warn(f"The {tc.CODE}`note`{tc.OFF} property of the {tc.CODE}`FormatInfo`{tc.OFF} class has been "
+                      f"renamed to {tc.CODE}`description`{tc.OFF} as of version 0.4.0 and is due to be removed in a "
+                      "future version.", DeprecationWarning)
+        return self.description
 
     def format_word(self):
         """Use the disambiguated name for the formatted name"""
