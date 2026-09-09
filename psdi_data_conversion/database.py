@@ -2235,12 +2235,17 @@ def disambiguate_formats(converter: str | int | UUID | ConverterInfo,
     FileConverterDatabaseException
         If more than one format combination is possible for this conversion, or no conversion is possible
     """
+    # Check for deprecated kwargs
     if "converter_name" in kwargs:
         warnings.warn(f"The argument {tc.CODE}`converter_name`{tc.OFF} for the method "
                       f"{tc.CODE}`disambiguate_formats`{tc.OFF} is deprecated as of version 0.4.0 and due to be "
                       f"removed in a future release. Use the argument {tc.CODE}`converter`{tc.OFF} instead, which "
                       "accepts the converter name, ID, or info", DeprecationWarning)
         converter = kwargs["converter_name"]
+
+    # Check if both formats are already supplied unambiguously
+    if not isinstance(in_format, str) and not isinstance(out_format, str):
+        return get_format_info(in_format), get_format_info(out_format)
 
     # Get the converter/format info for all input, as possible
     converter_info = get_converter_info(converter)
@@ -2280,20 +2285,28 @@ def disambiguate_formats(converter: str | int | UUID | ConverterInfo,
         raise FileConverterDatabaseException(msg, help=True)
 
 
-def get_possible_formats(converter_name: str) -> tuple[list[FormatInfo], list[FormatInfo]]:
+def get_possible_formats(converter: str | int | UUID | ConverterInfo,
+                         **kwargs) -> tuple[list[FormatInfo], list[FormatInfo]]:
     """Get a list of input and output formats that a given converter supports
 
     Parameters
     ----------
-    converter_name : str
-        The name of the converter
+    converter: str | int | UUID | ConverterInfo
+        The converter, specified by its name or ID
 
     Returns
     -------
     tuple[list[FormatInfo], list[FormatInfo]]
         A tuple of a list of the supported input formats and a list of the supported output formats
     """
-    return get_database().conversions_table.get_possible_formats(converter_name=regularize_name(converter_name))
+    # Check for deprecated kwargs
+    if "converter_name" in kwargs:
+        warnings.warn(f"The argument {tc.CODE}`converter_name`{tc.OFF} for the method "
+                      f"{tc.CODE}`disambiguate_formats`{tc.OFF} is deprecated as of version 0.4.0 and due to be "
+                      f"removed in a future release. Use the argument {tc.CODE}`converter`{tc.OFF} instead, which "
+                      "accepts the converter name, ID, or info", DeprecationWarning)
+        converter = kwargs["converter_name"]
+    return get_database().conversions_table.get_possible_formats(converter)
 
 
 def _find_arg(tl_args: tuple[list[FlagInfo], list[OptionInfo]],
@@ -2407,26 +2420,29 @@ def get_out_format_args(converter: str | int | UUID | ConverterInfo,
     return _find_arg(tl_args, arg)
 
 
-def calc_conversion_prop_weight(converter_info: ConverterInfo, in_format_info: FormatInfo,
-                                out_format_info: FormatInfo) -> int:
+def calc_conversion_prop_weight(converter: str | int | UUID | ConverterInfo,
+                                in_format: str | int | UUID | FormatInfo,
+                                out_format: str | int | UUID | FormatInfo) -> int:
     """Get the property weight for a conversion from `in_format_info` to `out_format_info` (not including the offset
     applied to it when stored in the total weight).
 
     Parameters
     ----------
-    converter_info : ConverterInfo
-        The converter used for the conversion (unused at present, but may be used in the future if found to be
-        necessary, so needed here for consistent syntax)
-    in_format_info : FormatInfo
-        The source format for the conversion
-    out_format_info : FormatInfo
-        The output format for the conversion
+    converter : str | int | UUID | ConverterInfo
+        The converter, specified by its name or ID
+    in_format : str | int | UUID | FormatInfo
+        The extension, ID, or info of the converter of the input file format
+    out_format : str | int | UUID | FormatInfo
+        The extension, ID, or info of the converter of the output file format
 
     Returns
     -------
     int
         64-bit bit weight, where bits set to 1 indicate the properties lost or potentially in this conversion
     """
+
+    # Get the info for all input
+    in_format_info, out_format_info = disambiguate_formats(converter, in_format, out_format)
 
     # Start the weight as the minimum weight for any conversion. We'll turn on bits for each property potentially lost
     prop_weight = 0
@@ -2443,20 +2459,20 @@ def calc_conversion_prop_weight(converter_info: ConverterInfo, in_format_info: F
     return prop_weight
 
 
-def calc_conversion_prec_weight(converter_info: ConverterInfo, in_format_info: FormatInfo,
-                                out_format_info: FormatInfo) -> int:
+def calc_conversion_prec_weight(converter: str | int | UUID | ConverterInfo,
+                                in_format: str | int | UUID | FormatInfo,
+                                out_format: str | int | UUID | FormatInfo) -> int:
     """Get the precision weight for a conversion from `in_format_info` to `out_format_info` (not including the offset
     applied to it when stored in the total weight).
 
     Parameters
     ----------
-    converter_info : ConverterInfo
-        The converter used for the conversion (unused at present, but may be used in the future if found to be
-        necessary, so needed here for consistent syntax)
-    in_format_info : FormatInfo
-        The source format for the conversion
-    out_format_info : FormatInfo
-        The output format for the conversion
+    converter : str | int | UUID | ConverterInfo
+        The converter, specified by its name or ID
+    in_format : str | int | UUID | FormatInfo
+        The extension, ID, or info of the converter of the input file format
+    out_format : str | int | UUID | FormatInfo
+        The extension, ID, or info of the converter of the output file format
 
     Returns
     -------
@@ -2464,6 +2480,8 @@ def calc_conversion_prec_weight(converter_info: ConverterInfo, in_format_info: F
         32-bit bit weight, where the bit 2N is set to 1, with N being the number of decimal places of precision lost,
         bound to 0 <= N <= 12
     """
+    # Get the info for all input
+    in_format_info, out_format_info = disambiguate_formats(converter, in_format, out_format)
 
     # Calculate the precision loss, defaulting to the maximum if unknown
     prec_loss = PREC_MAX_DIGIT_LOSS
@@ -2474,8 +2492,9 @@ def calc_conversion_prec_weight(converter_info: ConverterInfo, in_format_info: F
     return 1 << PREC_GAP_BITS*prec_loss
 
 
-def calc_conversion_time_weight(converter_info: ConverterInfo, in_format_info: FormatInfo,
-                                out_format_info: FormatInfo) -> int:
+def calc_conversion_time_weight(converter: str | int | UUID | ConverterInfo,
+                                in_format: str | int | UUID | FormatInfo,
+                                out_format: str | int | UUID | FormatInfo) -> int:
     """Get the time weight for a conversion from `in_format_info` to `out_format_info` (not including the offset
     applied to it when stored in the total weight)
 
@@ -2483,13 +2502,12 @@ def calc_conversion_time_weight(converter_info: ConverterInfo, in_format_info: F
 
     Parameters
     ----------
-    converter_info : ConverterInfo
-        The converter used for the conversion (unused at present, but may be used in the future if found to be
-        necessary, so needed here for consistent syntax)
-    in_format_info : FormatInfo
-        The source format for the conversion
-    out_format_info : FormatInfo
-        The output format for the conversion
+    converter : str | int | UUID | ConverterInfo
+        The converter, specified by its name or ID
+    in_format : str | int | UUID | FormatInfo
+        The extension, ID, or info of the converter of the input file format
+    out_format : str | int | UUID | FormatInfo
+        The extension, ID, or info of the converter of the output file format
 
     Returns
     -------
@@ -2499,32 +2517,34 @@ def calc_conversion_time_weight(converter_info: ConverterInfo, in_format_info: F
     return 0
 
 
-def calc_conversion_conv_weight(converter_info: ConverterInfo, in_format_info: FormatInfo,
-                                out_format_info: FormatInfo) -> int:
+def calc_conversion_conv_weight(converter: str | int | UUID | ConverterInfo,
+                                in_format: str | int | UUID | FormatInfo,
+                                out_format: str | int | UUID | FormatInfo) -> int:
     """Get the converter weight for a conversion from `in_format_info` to `out_format_info` with converter
     `converter_info` (not including the offset applied to it when stored in the total weight)
 
     Parameters
     ----------
-    converter_info : ConverterInfo
-        The converter used for the conversion
-    in_format_info : FormatInfo
-        The source format for the conversion (unused at present, but may be used in the future if found to be
-        necessary, so needed here for consistent syntax)
-    out_format_info : FormatInfo
-        The output format for the conversion (unused at present, but may be used in the future if found to be
-        necessary, so needed here for consistent syntax)
+    converter : str | int | UUID | ConverterInfo
+        The converter, specified by its name or ID
+    in_format : str | int | UUID | FormatInfo
+        The extension, ID, or info of the converter of the input file format
+    out_format : str | int | UUID | FormatInfo
+        The extension, ID, or info of the converter of the output file format
 
     Returns
     -------
     int
         64-bit bit weight, representing the weight based on the conversion time (implementation TBD)
     """
+    # Get the info for all input
+    converter_info = get_converter_info(converter)
     return converter_info.weight
 
 
-def calc_conversion_weight(converter_info: ConverterInfo, in_format_info: FormatInfo,
-                           out_format_info: FormatInfo) -> int:
+def calc_conversion_weight(converter: str | int | UUID | ConverterInfo,
+                           in_format: str | int | UUID | FormatInfo,
+                           out_format: str | int | UUID | FormatInfo) -> int:
     """Get the combined weight for a conversion
 
     Parameters
@@ -2541,6 +2561,9 @@ def calc_conversion_weight(converter_info: ConverterInfo, in_format_info: Format
     int
         64-bit weight
     """
+    # Get the info for all input
+    converter_info = get_converter_info(converter)
+    in_format_info, out_format_info = disambiguate_formats(converter, in_format, out_format)
 
     return combine_conversion_weight(calc_conversion_prop_weight(converter_info, in_format_info, out_format_info),
                                      calc_conversion_prec_weight(converter_info, in_format_info, out_format_info),
