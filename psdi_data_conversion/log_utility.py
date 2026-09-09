@@ -121,7 +121,7 @@ class CodeStripFilter(logging.Filter):
     """Filter which modifies logged messages to strip any control codes from them"""
 
     def filter(self, record: logging.LogRecord):
-        record.message = strip_control_codes(record.message)
+        record.msg = strip_control_codes(record.msg)
         return True
 
 

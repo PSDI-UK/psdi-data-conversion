@@ -1001,8 +1001,8 @@ class ConversionQualityInfo:
     """Class describing the quality of a conversion from one format to another with a given converter.
     """
 
-    converter_name: str
-    """The name of the converter"""
+    converter: ConverterInfo
+    """The info for the converter"""
 
     in_format: FormatInfo
     """The info for the input file format"""
@@ -1024,22 +1024,20 @@ class ConversionQualityInfo:
     weight: int
     """The full weight for the conversion, for the purpose of determining optimal conversion pathways"""
 
-    prop_weight: int | None = None
+    prop_weight: int | None = field(init=False, repr=False, default=None)
     """The property weight for the conversion, based on how many format properties are/might be lost"""
 
-    prec_weight: int | None = None
+    prec_weight: int | None = field(init=False, repr=False, default=None)
     """The precision weight for the conversion, based on how much precision is/might be lost"""
 
-    time_weight: int | None = None
+    time_weight: int | None = field(init=False, repr=False, default=None)
     """The time weight for the conversion, based on the estimated time to perform it"""
 
-    conv_weight: int | None = None
+    conv_weight: int | None = field(init=False, repr=False, default=None)
     """The converter for the conversion, based on how well-supported the converter is (roughly)"""
 
     def __post_init__(self):
-        """Regularize the converter name"""
-        self.converter_name = regularize_name(self.converter_name)
-
+        """Finalise setting up the class"""
         self.prop_weight, self.prec_weight, self.time_weight, self.conv_weight = split_conversion_weight(self.weight)
 
 
@@ -1270,10 +1268,10 @@ class ConversionsTable:
         details = "\n".join(
             [d_prop_conversion_info[x].description for x in l_props if d_prop_conversion_info[x].description])
 
-        weight = calc_conversion_weight(self.parent.get_converter_info(converter_name),
+        weight = calc_conversion_weight(self.parent.get_converter_info(converter),
                                         in_format_info, out_format_info)
 
-        return ConversionQualityInfo(converter_name=converter_name,
+        return ConversionQualityInfo(converter=converter_info,
                                      in_format=in_format_info,
                                      out_format=out_format_info,
                                      qual_str=qual_str,
@@ -2029,15 +2027,15 @@ def get_format_info(format_name_or_id: str | int | UUID | FormatInfo,
     return get_database().get_format_info(format_name_or_id, which)
 
 
-def get_conversion_quality(converter_name: str,
+def get_conversion_quality(converter: str | int | UUID | ConverterInfo,
                            in_format: str | int | UUID | FormatInfo,
                            out_format: str | int | UUID | FormatInfo) -> ConversionQualityInfo | None:
     """Get an indication of the quality of a conversion from one format to another, or if it's not possible
 
     Parameters
     ----------
-    converter_name : str
-        The name of the converter
+    converter : str | int | UUID | ConverterInfo,
+        The converter, specified through its name or ID
     in_format : str | int | UUID | FormatInfo
         The extension or ID of the input file format
     out_format : str | int | UUID | FormatInfo
@@ -2050,7 +2048,7 @@ def get_conversion_quality(converter_name: str,
         `ConversionQualityInfo` object with info on the conversion
     """
 
-    return get_database().conversions_table.get_conversion_quality(converter_name=regularize_name(converter_name),
+    return get_database().conversions_table.get_conversion_quality(converter=converter,
                                                                    in_format=in_format,
                                                                    out_format=out_format)
 
