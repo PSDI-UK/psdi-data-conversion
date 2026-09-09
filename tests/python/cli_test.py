@@ -28,6 +28,12 @@ from psdi_data_conversion.testing.utils import run_test_conversion_with_cla, run
 from psdi_data_conversion.utils import regularize_name, strip_control_codes
 
 
+def compress_output(s: str):
+    """Strips whitespace and control codes from output to ease comparisons without worrying about things like line-
+    wrapping"""
+    return strip_control_codes(s.replace("\n", "").replace(" ", ""))
+
+
 def test_unique_args():
     """Check that all converter-specific arguments have unique names
     """
@@ -218,7 +224,7 @@ def test_detail_converter(capsys):
 
         run_with_arg_string(f"--list {converter_name}")
         captured = capsys.readouterr()
-        compressed_out: str = strip_control_codes(captured.out.replace("\n", "").replace(" ", ""))
+        compressed_out: str = compress_output(captured.out)
 
         def string_is_present_in_out(s: str) -> bool:
             return s.replace("\n", " ").replace(" ", "") in compressed_out
@@ -302,7 +308,7 @@ def test_get_chained(capsys):
 
     run_with_arg_string(f"-l -f {in_format.id} -t {out_format.id}")
     captured = capsys.readouterr()
-    compressed_out: str = strip_control_codes(captured.out.replace("\n", "").replace(" ", ""))
+    compressed_out: str = compress_output(captured.out)
 
     def string_is_present_in_out(s: str) -> bool:
         return s.replace("\n", " ").replace(" ", "") in compressed_out
@@ -325,7 +331,7 @@ def test_get_chained(capsys):
 
     run_with_arg_string(f"-l -f {in_format} -t {out_format}")
     captured = capsys.readouterr()
-    compressed_out: str = strip_control_codes(captured.out.replace("\n", "").replace(" ", ""))
+    compressed_out: str = compress_output(captured.out)
 
     assert string_is_present_in_out(f"No chained conversions are possible from {in_format} to {out_format}.")
 
@@ -341,14 +347,14 @@ def test_conversion_info(capsys):
 
     converter_name = const.CONVERTER_OB
 
-    in_format = "xyz"
+    in_format = "xyz-1"
     out_format = "inchi"
     qual = get_conversion_quality(converter_name, in_format, out_format)
 
     # Test a basic listing of arguments, checking with the converter name in lowercase to be sure that works
     run_with_arg_string(f"-l {converter_name.lower()} -f {in_format} -t {out_format}")
     captured = capsys.readouterr()
-    compressed_out: str = strip_control_codes(captured.out.replace("\n", "").replace(" ", ""))
+    compressed_out: str = compress_output(captured.out)
 
     def string_is_present_in_out(s: str) -> bool:
         return s.replace("\n", " ").replace(" ", "") in compressed_out
@@ -356,7 +362,7 @@ def test_conversion_info(capsys):
     _check_no_errors(captured)
 
     # Check that conversion quality details are in the output as expected
-    assert string_is_present_in_out(f"Conversion from '{in_format}' to '{out_format}' with {converter_name} is "
+    assert string_is_present_in_out(f"Conversion from {in_format} to {out_format} with {converter_name} is "
                                     f"possible with {qual.qual_str} conversion quality")
     assert string_is_present_in_out("WARNING: Potential data loss or extrapolation issues with this conversion:")
     assert string_is_present_in_out(const.QUAL_NOTE_OUT_MISSING.format(const.QUAL_2D_LABEL))
@@ -367,10 +373,10 @@ def test_conversion_info(capsys):
     l_out_flags, l_out_options = get_out_format_args(converter_name, out_format)
 
     # Check headings for input/output flags/options are present if and only if some of those flags/options exist
-    assert bool(l_in_flags) == string_is_present_in_out(f"Allowed input flags for format '{in_format}':")
-    assert bool(l_out_flags) == string_is_present_in_out(f"Allowed output flags for format '{out_format}':")
-    assert bool(l_in_options) == string_is_present_in_out(f"Allowed input options for format '{in_format}':")
-    assert bool(l_out_options) == string_is_present_in_out(f"Allowed output options for format '{out_format}':")
+    assert bool(l_in_flags) == string_is_present_in_out(f"Allowed input flags for format {in_format}:")
+    assert bool(l_out_flags) == string_is_present_in_out(f"Allowed output flags for format {out_format}:")
+    assert bool(l_in_options) == string_is_present_in_out(f"Allowed input options for format {in_format}:")
+    assert bool(l_out_options) == string_is_present_in_out(f"Allowed output options for format {out_format}:")
 
     # Check that info for each flag and option is printed as expected
     for flag_info in l_in_flags + l_out_flags:
@@ -389,7 +395,7 @@ def test_conversion_info(capsys):
 
         run_with_arg_string(f"-l {converter_name} -f {in_format} -t {out_format}")
         captured = capsys.readouterr()
-        compressed_out: str = strip_control_codes(captured.out.replace("\n", "").replace(" ", ""))
+        compressed_out: str = compress_output(captured.out)
 
         _check_no_errors(captured)
 
@@ -405,7 +411,7 @@ def test_format_info(capsys):
     run_with_arg_string(f"-l -f {in_format}")
 
     captured = capsys.readouterr()
-    compressed_out: str = strip_control_codes(captured.out.replace("\n", "").replace(" ", ""))
+    compressed_out: str = compress_output(captured.out)
 
     def string_is_present_in_out(s: str) -> bool:
         return s.replace("\n", " ").replace(" ", "") in compressed_out
@@ -413,7 +419,7 @@ def test_format_info(capsys):
     _check_no_errors(captured)
 
     # Check for basic format information
-    assert string_is_present_in_out(f"{in_format_info.disambiguated_name} (ID: {in_format_info.id}): " +
+    assert string_is_present_in_out(f"{in_format_info.disambiguated_name} (ID {in_format_info.id}): " +
                                     in_format_info.description)
 
     # Check for property information
@@ -433,14 +439,14 @@ def test_format_info(capsys):
     run_with_arg_string(f"-l -t {out_format}")
 
     captured = capsys.readouterr()
-    compressed_out: str = strip_control_codes(captured.out.replace("\n", "").replace(" ", ""))
+    compressed_out: str = compress_output(captured.out)
 
     _check_no_errors(captured)
 
     assert string_is_present_in_out(f"WARNING: Format '{out_format}' is ambiguous")
 
     for out_format_info in l_out_format_info:
-        assert string_is_present_in_out(f"{out_format_info.disambiguated_name} (ID: {out_format_info.id}): " +
+        assert string_is_present_in_out(f"{out_format_info.disambiguated_name} (ID {out_format_info.id}): " +
                                         out_format_info.description)
 
     # Test we get expected errors for unrecognised formats
@@ -450,7 +456,7 @@ def test_format_info(capsys):
         run_with_arg_string(f"-l -f {in_format}")
 
     captured = capsys.readouterr()
-    compressed_err: str = captured.err.replace("\n", "").replace(" ", "")
+    compressed_err: str = compress_output(captured.err)
 
     def string_is_present_in_err(s: str) -> bool:
         return s.replace("\n", " ").replace(" ", "") in compressed_err
@@ -463,6 +469,6 @@ def test_format_info(capsys):
         run_with_arg_string(f"-l -t {out_format}")
 
     captured = capsys.readouterr()
-    compressed_err: str = captured.err.replace("\n", "").replace(" ", "")
+    compressed_err: str = compress_output(captured.err)
 
     assert string_is_present_in_err(f"ERROR: Format '{out_format}' not recognised")
