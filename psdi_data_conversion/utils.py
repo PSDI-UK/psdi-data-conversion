@@ -82,6 +82,9 @@ class TextColors:
     HEADER = "\033[95m\033[4m"
     """Start header section - magenta underlined"""
 
+    LINK = "\033[96m\033[4m"
+    """Start link - cyan underlined"""
+
     # Other codes
 
     OFF = "\033[0m"

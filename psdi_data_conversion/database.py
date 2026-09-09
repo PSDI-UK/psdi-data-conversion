@@ -330,6 +330,13 @@ class ConverterInfo(DBInfo):
         """Use the pretty name for the formatted name"""
         return f"{tc.BOLD}{self.pretty_name}{tc.OFF}"
 
+    def format_detailed(self):
+        """Include extra information in the detailed description"""
+        msg = super().format_detailed()
+        if self.url:
+            msg += f"\nURL: {tc.LINK}{self.url}{tc.OFF}"
+        return msg
+
     @staticmethod
     def from_db(parent: DataConversionDatabase,
                 d_single_converter_info: dict[str, int | str],
