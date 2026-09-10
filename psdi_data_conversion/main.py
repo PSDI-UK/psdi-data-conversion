@@ -60,7 +60,7 @@ class ConvertArgs:
         elif converter_name:
             self.name = regularize_name(" ".join(converter_name))
         else:
-            self.name = CONVERTER_AUTO
+            self.name = None
         self.delete_input = args.delete_input
         self.from_flags: str = args.from_flags.replace(r"\-", "-")
         self.to_flags: str = args.to_flags.replace(r"\-", "-")
@@ -153,6 +153,8 @@ class ConvertArgs:
             os.makedirs(self._output_dir, exist_ok=True)
 
         # If the converter is set to be automatically determined, do so now
+        if not self.name:
+            self.name = CONVERTER_AUTO
         if self.name == CONVERTER_AUTO:
             self.name = self._determine_auto_converter()
 

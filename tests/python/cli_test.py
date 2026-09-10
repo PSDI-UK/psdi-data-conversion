@@ -111,7 +111,7 @@ def test_input_validity():
     assert args.log_mode == const.LOG_NONE
 
     # Test Open-Babel-specific arguments
-    args = get_parsed_args(f"file1 -t pdb -w '{const.CONVERTER_OB}' --coord-gen Gen3D best")
+    args = get_parsed_args(f"file1.mmcif -t pdb -w '{const.CONVERTER_OB}' --coord-gen Gen3D best")
     assert args.d_converter_args[COORD_GEN_KEY] == "Gen3D"
     assert args.d_converter_args[COORD_GEN_QUAL_KEY] == "best"
 
@@ -133,15 +133,15 @@ def test_input_validity():
 
     # It should fail with bad or too many arguments to --coord-gen
     with pytest.raises(FileConverterInputException):
-        get_parsed_args("file1.mmcif -t pdb --coord-gen Gen1D")
+        get_parsed_args(f"file1.mmcif -t pdb -w '{const.CONVERTER_OB}' --coord-gen Gen1D")
     with pytest.raises(FileConverterInputException):
-        get_parsed_args("file1.mmcif -t pdb --coord-gen Gen3D worst")
+        get_parsed_args(f"file1.mmcif -t pdb -w '{const.CONVERTER_OB}' --coord-gen Gen3D worst")
     with pytest.raises(FileConverterInputException):
-        get_parsed_args("file1.mmcif -t pdb --coord-gen Gen3D best quality")
+        get_parsed_args(f"file1.mmcif -t pdb -w '{const.CONVERTER_OB}' --coord-gen Gen3D best quality")
 
     # It should fail if it doesn't recognise the logging mode
     with pytest.raises(FileConverterInputException):
-        get_parsed_args("file1.mmcif -t pdb --log-mode max")
+        get_parsed_args(f"file1.mmcif -t pdb -w '{const.CONVERTER_OB}' --log-mode max")
 
     # It should work if we just ask for a list, and set log mode to stdout
     args = get_parsed_args("--list")
