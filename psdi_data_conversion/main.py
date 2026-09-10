@@ -261,7 +261,7 @@ class ConvertArgs:
             if weight < best_weight:
                 best_converter = converter_info
                 best_weight = weight
-        return best_converter
+        return best_converter.name
 
     def _determine_auto_converter(self):
         """Automatically determine the converter to use when the 'auto' keyword is used"""

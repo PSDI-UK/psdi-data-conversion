@@ -100,64 +100,83 @@ except Exception:
     D_CONVERTER_ARGS = {}
 
 
-def get_supported_converter_class(name: str):
+def _get_converter_name(converter: str | int | UUID | Any):
+    """Get the converter's name from however it's specified
+
+    Parameters
+    ----------
+    converter : str | int | UUID | ConverterInfo
+        The name, ID, or info of the desired converter
+
+    Returns
+    -------
+    str
+    """
+    if isinstance(converter, str):
+        return regularize_name(converter)
+    else:
+        from psdi_data_conversion.database import get_converter_info
+        return get_converter_info(converter).name
+
+
+def get_supported_converter_class(converter: str | int | UUID | Any):
     """Get the appropriate converter class matching the provided name from the dict of supported converters
 
     Parameters
     ----------
-    name : str
-        Converter name (case- and space-insensitive)
+    converter : str | int | UUID | ConverterInfo
+        The name, ID, or info of the desired converter
 
     Returns
     -------
     type[base.FileConverter]
     """
-    return D_SUPPORTED_CONVERTERS[regularize_name(name)]
+    return D_SUPPORTED_CONVERTERS[_get_converter_name(converter)]
 
 
-def get_registered_converter_class(name: str):
+def get_registered_converter_class(converter: str | int | UUID | Any):
     """Get the appropriate converter class matching the provided name from the dict of supported converters
 
     Parameters
     ----------
-    name : str
-        Converter name (case- and space-insensitive)
+    converter : str | int | UUID | ConverterInfo
+        The name, ID, or info of the desired converter
 
     Returns
     -------
     type[base.FileConverter]
     """
-    return D_REGISTERED_CONVERTERS[regularize_name(name)]
+    return D_REGISTERED_CONVERTERS[_get_converter_name(converter)]
 
 
-def converter_is_supported(name: str):
+def converter_is_supported(converter: str | int | UUID | Any):
     """Checks if a converter is supported in principle by this project
 
     Parameters
     ----------
-    name : str
-        Converter name (case- and space-insensitive)
+    converter : str | int | UUID | ConverterInfo
+        The name, ID, or info of the desired converter
 
     Returns
     -------
     bool
     """
-    return regularize_name(name) in L_SUPPORTED_CONVERTERS
+    return _get_converter_name(converter) in L_SUPPORTED_CONVERTERS
 
 
-def converter_is_registered(name: str):
+def converter_is_registered(converter: str | int | UUID | Any):
     """Checks if a converter is registered (usable)
 
     Parameters
     ----------
-    name : str
-        Converter name (case- and space-insensitive)
+    converter : str | int | UUID | ConverterInfo
+        The name, ID, or info of the desired converter
 
     Returns
     -------
     bool
     """
-    return regularize_name(name) in L_REGISTERED_CONVERTERS
+    return _get_converter_name(converter) in L_REGISTERED_CONVERTERS
 
 
 def get_converter(*args, name=const.CONVERTER_OB, **converter_kwargs) -> base.FileConverter:
