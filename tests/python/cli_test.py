@@ -204,11 +204,15 @@ def test_auto_converter(auto_str):
     """Unit test to ensure that a converter can be properly determined automatically
     """
 
-    # Check that different ways of specifying converter are all processed correctly
+    # Test that Open Babel is chosen when expected
     args = get_parsed_args(f"file1.pdb -f pdb-0 -t inchi {auto_str}")
     assert args.name == regularize_name(const.CONVERTER_OB)
+
+    # Test that c2x is chosen when expected
     args = get_parsed_args(f"file1.pdb -f pdb-0 -t xyz-0 {auto_str}")
     assert args.name == regularize_name(const.CONVERTER_C2X)
+
+    # TODO: Add test of some fail states
 
 
 def test_list_converters(capsys):
