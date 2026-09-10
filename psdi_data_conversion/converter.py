@@ -120,7 +120,8 @@ def _get_converter_name(converter: str | int | UUID | Any):
         return get_converter_info(converter).name
 
 
-def get_supported_converter_class(converter: str | int | UUID | Any):
+def get_supported_converter_class(converter: str | int | UUID | Any = None,
+                                  **kwargs):
     """Get the appropriate converter class matching the provided name from the dict of supported converters
 
     Parameters
@@ -132,10 +133,25 @@ def get_supported_converter_class(converter: str | int | UUID | Any):
     -------
     type[base.FileConverter]
     """
-    return D_SUPPORTED_CONVERTERS[_get_converter_name(converter)]
+
+    # Check for deprecated kwargs
+    if "name" in kwargs:
+        warnings.warn(f"The argument {tc.CODE}`name`{tc.OFF} for the method {tc.CODE}`get_supported_converter_class"
+                      f"`{tc.OFF} is deprecated as of version 0.4.0 and due to be "
+                      f"removed in a future release. Use the argument {tc.CODE}`converter`{tc.OFF} instead, which "
+                      "accepts the converter name, ID, or info", DeprecationWarning)
+        name = _get_converter_name(kwargs["name"])
+    elif converter is None:
+        raise TypeError(f"The argument {tc.CODE}`converter`{tc.OFF} for the method "
+                        f"{tc.CODE}`get_supported_converter_class`{tc.OFF} must be provided to specify the converter")
+    else:
+        name = _get_converter_name(converter)
+
+    return D_SUPPORTED_CONVERTERS[name]
 
 
-def get_registered_converter_class(converter: str | int | UUID | Any):
+def get_registered_converter_class(converter: str | int | UUID | Any = None,
+                                   **kwargs):
     """Get the appropriate converter class matching the provided name from the dict of supported converters
 
     Parameters
@@ -147,10 +163,24 @@ def get_registered_converter_class(converter: str | int | UUID | Any):
     -------
     type[base.FileConverter]
     """
-    return D_REGISTERED_CONVERTERS[_get_converter_name(converter)]
+
+    # Check for deprecated kwargs
+    if "name" in kwargs:
+        warnings.warn(f"The argument {tc.CODE}`name`{tc.OFF} for the method {tc.CODE}`get_supported_converter_class"
+                      f"`{tc.OFF} is deprecated as of version 0.4.0 and due to be "
+                      f"removed in a future release. Use the argument {tc.CODE}`converter`{tc.OFF} instead, which "
+                      "accepts the converter name, ID, or info", DeprecationWarning)
+        name = _get_converter_name(kwargs["name"])
+    elif converter is None:
+        raise TypeError(f"The argument {tc.CODE}`converter`{tc.OFF} for the method "
+                        f"{tc.CODE}`get_supported_converter_class`{tc.OFF} must be provided to specify the converter")
+    else:
+        name = _get_converter_name(converter)
+    return D_REGISTERED_CONVERTERS[name]
 
 
-def converter_is_supported(converter: str | int | UUID | Any):
+def converter_is_supported(converter: str | int | UUID | Any = None,
+                           **kwargs):
     """Checks if a converter is supported in principle by this project
 
     Parameters
@@ -162,10 +192,24 @@ def converter_is_supported(converter: str | int | UUID | Any):
     -------
     bool
     """
-    return _get_converter_name(converter) in L_SUPPORTED_CONVERTERS
+
+    # Check for deprecated kwargs
+    if "name" in kwargs:
+        warnings.warn(f"The argument {tc.CODE}`name`{tc.OFF} for the method {tc.CODE}`get_supported_converter_class"
+                      f"`{tc.OFF} is deprecated as of version 0.4.0 and due to be "
+                      f"removed in a future release. Use the argument {tc.CODE}`converter`{tc.OFF} instead, which "
+                      "accepts the converter name, ID, or info", DeprecationWarning)
+        name = _get_converter_name(kwargs["name"])
+    elif converter is None:
+        raise TypeError(f"The argument {tc.CODE}`converter`{tc.OFF} for the method "
+                        f"{tc.CODE}`get_supported_converter_class`{tc.OFF} must be provided to specify the converter")
+    else:
+        name = _get_converter_name(converter)
+    return name in L_SUPPORTED_CONVERTERS
 
 
-def converter_is_registered(converter: str | int | UUID | Any):
+def converter_is_registered(converter: str | int | UUID | Any = None,
+                            **kwargs):
     """Checks if a converter is registered (usable)
 
     Parameters
@@ -177,7 +221,20 @@ def converter_is_registered(converter: str | int | UUID | Any):
     -------
     bool
     """
-    return _get_converter_name(converter) in L_REGISTERED_CONVERTERS
+
+    # Check for deprecated kwargs
+    if "name" in kwargs:
+        warnings.warn(f"The argument {tc.CODE}`name`{tc.OFF} for the method {tc.CODE}`get_supported_converter_class"
+                      f"`{tc.OFF} is deprecated as of version 0.4.0 and due to be "
+                      f"removed in a future release. Use the argument {tc.CODE}`converter`{tc.OFF} instead, which "
+                      "accepts the converter name, ID, or info", DeprecationWarning)
+        name = _get_converter_name(kwargs["name"])
+    elif converter is None:
+        raise TypeError(f"The argument {tc.CODE}`converter`{tc.OFF} for the method "
+                        f"{tc.CODE}`get_supported_converter_class`{tc.OFF} must be provided to specify the converter")
+    else:
+        name = _get_converter_name(converter)
+    return name in L_REGISTERED_CONVERTERS
 
 
 def get_converter(*args, converter=const.CONVERTER_OB, **converter_kwargs) -> base.FileConverter:
