@@ -10,6 +10,7 @@ Entry-point file for the script to install converter plugins.
 
 import json
 import os
+import textwrap
 from argparse import ArgumentParser
 from collections import OrderedDict
 from copy import deepcopy
@@ -17,11 +18,15 @@ from itertools import product
 from pathlib import Path
 from uuid import uuid4
 
+import wraptext
+
 from psdi_data_conversion import database as db
 from psdi_data_conversion.testing.constants import TEST_PATH_KEY
-from psdi_data_conversion.utils import JsonDict, JsonMainDict
-from psdi_data_conversion.utils import TextColors as TC
-from psdi_data_conversion.utils import confirm_editable_mode, get_project_path, get_wrapped_str, print_wrap
+from psdi_data_conversion.utils import (CustomHelpFormatter, JsonDict, JsonMainDict, confirm_editable_mode,
+                                        get_project_path, get_wrapped_str, print_wrap, tc)
+
+# Monkey-patch textwrap to use the improved wraptext implementation when argparse calls it
+textwrap.wrap = wraptext.wrap
 
 # Constants
 PLUGIN_DATAFILE = "data.json"
@@ -57,7 +62,7 @@ def get_argument_parser():
         An argument parser set up with the allowed command-line arguments for this script.
     """
 
-    parser = ArgumentParser()
+    parser = ArgumentParser(formatter_class=CustomHelpFormatter)
 
     parser.add_argument("-f", "--force", action="store_true", default=None,
                         help="Assume that all provided formats are new and don't ask for confirmation if they resemble "
@@ -87,7 +92,7 @@ def parse_args():
 
 def get_format_info_str(format_info: JsonDict):
     """Returns a string which details information about a format"""
-    return (f"{format_info[db.DB_FORMAT_EXT_KEY]} (ID: {format_info[db.DB_ID_KEY]}): "
+    return (f"{tc.BOLD}{format_info[db.DB_FORMAT_EXT_KEY]}{tc.OFF} (ID: {tc.ID}{format_info[db.DB_ID_KEY]}{tc.OFF}): "
             f"{format_info[db.DB_FORMAT_NOTE_KEY]}")
 
 
@@ -265,8 +270,8 @@ def run_from_args(args):
     if os.environ.get(TEST_PATH_KEY):
         project_path = Path(os.environ[TEST_PATH_KEY]).resolve()
         if not project_path.is_dir():
-            print_wrap(f"{TC.FAIL}ERROR:{TC.ENDC} When running this script with '{TC.WARNING}{TEST_PATH_KEY}=$TEST_PATH"
-                       f"{TC.ENDC}', the provided path ({TC.OKCYAN}{project_path}{TC.ENDC}) must already exist.",
+            print_wrap(f"{tc.ERROR}ERROR:{tc.OFF} When running this script with {tc.CODE}`{TEST_PATH_KEY}=<TEST_PATH>"
+                       f"`{tc.OFF}, the provided path ({tc.PATH}'{project_path}'{tc.OFF}) must already exist.",
                        err=True)
             exit(1)
         db_path = project_path / "psdi_data_conversion/static/data/data.json"
@@ -346,16 +351,16 @@ def run_from_args(args):
         if d_alias_formats:
             if first_alias_format_found:
                 first_questionable_format_found = False
-                print_wrap(f"{TC.WARNING}!!! ALERT !!!{TC.ENDC}\n"
-                           f"{TC.WARNING}-------------{TC.ENDC}\n"
+                print_wrap(f"{tc.WARNING}!!! ALERT !!!{tc.OFF}\n"
+                           f"{tc.WARNING}-------------{tc.OFF}\n"
                            "The following formats provided by the converter "
                            f"'{db_conv[db.DB_CONVERTER_KEY][db.DB_NAME_KEY]}' are listed as aliases of other formats "
                            "or have aliases. Aliases are not yet supported by this installation script. Please assign "
                            "these formats UUIDs manually (if not already done) and add them to the formats database "
                            "file in this repo.\n")
             else:
-                print_wrap(f"{TC.WARNING}!!! ALERT !!!{TC.ENDC}\n"
-                           f"{TC.WARNING}-------------{TC.ENDC}\n"
+                print_wrap(f"{tc.WARNING}!!! ALERT !!!{tc.OFF}\n"
+                           f"{tc.WARNING}-------------{tc.OFF}\n"
                            "The following formats provided by the converter "
                            f"'{db_conv[db.DB_CONVERTER_KEY][db.DB_NAME_KEY]}' are listed as aliases of other formats "
                            "or have aliases:\n")
@@ -371,23 +376,23 @@ def run_from_args(args):
         if d_questionable_formats:
             if first_questionable_format_found:
                 first_questionable_format_found = False
-                print_wrap(f"{TC.WARNING}!!! ALERT !!!{TC.ENDC}\n"
-                           f"{TC.WARNING}-------------{TC.ENDC}\n"
+                print_wrap(f"{tc.WARNING}!!! ALERT !!!{tc.OFF}\n"
+                           f"{tc.WARNING}-------------{tc.OFF}\n"
                            "The following formats provided by the converter "
                            f"'{db_conv[db.DB_CONVERTER_KEY][db.DB_NAME_KEY]}' might already exist in the database. For "
                            "each, please check against the provided list of possible matches.\n")
                 print(get_wrapped_str("- If it is indeed one of those, remove it from the list of extra formats in the "
                                       "converter database file", initial_indent="", subsequent_indent=" "*2) +
-                      f" {TC.OKCYAN}{qual_conv_path / PLUGIN_DATAFILE}{TC.ENDC}\n" +
+                      f" {tc.PATH}'{qual_conv_path / PLUGIN_DATAFILE}'{tc.OFF}\n" +
                       get_wrapped_str("and update references to its ID in that file to instead use the ID of its "
                                       "entry in the database\n", initial_indent=" "*2, subsequent_indent=" "*2)
                       )
-                print_wrap(f"- If it is not one of those, add a line '{TC.WARNING}\"confirmed_new\": "
-                           f"true{TC.ENDC}' to its entry in the converter database file\n",
+                print_wrap(f"- If it is not one of those, add a line {tc.CODE}`\"confirmed_new\": "
+                           f"true`{tc.OFF} to its entry in the converter database file\n",
                            initial_indent="", subsequent_indent=" "*2)
                 print_wrap("Once this is done for all formats listed here, rerun this script. Alternatively, if you "
                            "confirm that all listed formats are new, you can rerun the script with the "
-                           f"'{TC.WARNING}-f/--force{TC.ENDC}' flag.\n\n---\n")
+                           f"{tc.CODE}`-f/--force`{tc.OFF} flag.\n\n---\n")
             else:
                 print_wrap(f"\n\n------\n\nThe following formats provided by the converter "
                            f"'{db_conv[db.DB_CONVERTER_KEY][db.DB_NAME_KEY]}' might already exist in the database:"

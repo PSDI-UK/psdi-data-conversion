@@ -204,12 +204,12 @@ class TestCreatePlugin(PluginManagementBase):
     def test_create_plugin_invalid_label_caps(self):
         """Test we get a failure if the provided label is invalid due to including capital letters"""
         process = self._run_create_plugin(self.PLUGIN_NAME, label=self.INVALID_LABEL_CAPS, expect_fail=True)
-        assert f"Label '{self.INVALID_LABEL_CAPS}' is invalid" in process.stderr
+        assert f"Label '{self.INVALID_LABEL_CAPS}' is invalid" in utils.strip_control_codes(process.stderr)
 
     def test_create_plugin_invalid_label_chars(self):
         """Test we get a failure if the provided label is invalid due to including invalid characters"""
         process = self._run_create_plugin(self.PLUGIN_NAME, label=self.INVALID_LABEL_CHAR, expect_fail=True)
-        assert f"Label '{self.INVALID_LABEL_CHAR}' is invalid" in process.stderr
+        assert f"Label '{self.INVALID_LABEL_CHAR}' is invalid" in utils.strip_control_codes(process.stderr)
 
 
 class TestInstallPlugins(PluginManagementBase):

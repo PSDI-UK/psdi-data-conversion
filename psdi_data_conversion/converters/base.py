@@ -787,7 +787,7 @@ class FileConverter:
         """
         from psdi_data_conversion.database import get_conversion_quality
 
-        conversion_quality = get_conversion_quality(converter_name=self.name,
+        conversion_quality = get_conversion_quality(converter=self.name,
                                                     in_format=self.from_format_info.id,
                                                     out_format=self.to_format_info.id)
         if not conversion_quality:

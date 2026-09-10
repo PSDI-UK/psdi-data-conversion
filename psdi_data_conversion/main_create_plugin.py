@@ -13,13 +13,18 @@ import os
 import re
 import shutil
 import sys
+import textwrap
 from argparse import ArgumentParser
 from pathlib import Path
 
+import wraptext
+
 from psdi_data_conversion.testing.constants import TEST_PATH_KEY
 from psdi_data_conversion.testing.utils import get_test_data_loc
-from psdi_data_conversion.utils import TextColors as TC
-from psdi_data_conversion.utils import confirm_editable_mode, get_project_path, print_wrap
+from psdi_data_conversion.utils import CustomHelpFormatter, confirm_editable_mode, get_project_path, print_wrap, tc
+
+# Monkey-patch textwrap to use the improved wraptext implementation when argparse calls it
+textwrap.wrap = wraptext.wrap
 
 PLUGIN_EXAMPLEDIR = "example"
 PLUGIN_TEMPLATEDIR = "template"
@@ -55,18 +60,20 @@ def get_argument_parser():
         An argument parser set up with the allowed command-line arguments for this script.
     """
 
-    parser = ArgumentParser()
+    parser = ArgumentParser(formatter_class=CustomHelpFormatter)
 
     parser.add_argument("plugin_name", type=str, nargs="+",
-                        help="The name of the plugin to be created, e.g. 'Open Babel'")
+                        help=f"The name of the plugin to be created, e.g. {tc.MESSAGE}'Open Babel'{tc.OFF}")
 
     parser.add_argument("--label", type=str, default=None,
                         help="The label for the package (i.e. Python-compatible package name). By default, will "
-                        "convert `name` to snake_case (e.g. 'Open Babel' -> 'open_babel')")
+                        f"convert <NAME> to snake_case (e.g. {tc.MESSAGE}'Open Babel'{tc.OFF} -> "
+                        f"{tc.MESSAGE}'open_babel'{tc.OFF})")
 
     parser.add_argument("--script", action="store_true",
-                        help="If set, will create the plugin using the 'ScriptFileConverter' base class, which uses "
-                        "a script to run the conversion. The script will by default be named `{label}.sh`")
+                        help=f"If set, will create the plugin using the {tc.CODE}`ScriptFileConverter`{tc.OFF} base "
+                        "class, which uses a script to run the conversion. The script will by default be named "
+                        f"{tc.PATH}'<LABEL>.sh'{tc.OFF}")
 
     return parser
 
@@ -107,16 +114,16 @@ def run_from_args(args):
     if label:
         # Check that the label appears to be properly in snake_case
         if label != label.lower().replace(" ", "_") or NON_SNAKE_CASE_CHAR_RE.search(label):
-            print_wrap(f"{TC.FAIL}ERROR:{TC.ENDC} Label '{label}' is invalid. The label should be in snake_case (all "
-                       "lower-case with underscores in place of spaces), containing only letters, digits, "
-                       "and underscores", err=True)
+            print_wrap(f"{tc.ERROR}ERROR:{tc.OFF} Label {tc.MESSAGE}'{label}'{tc.OFF} is invalid. The label should be "
+                       "in snake_case (all lower-case with underscores in place of spaces), containing only letters, "
+                       "digits, and underscores", err=True)
             exit(1)
     else:
         # Create the label by converting the name to snake_case and stripping invalid characters
         label = NON_SNAKE_CASE_CHAR_RE.sub("", name.lower().replace(" ", "_"))
         if not label:
-            print_wrap(f"{TC.FAIL}ERROR:{TC.ENDC} A valid label could not be generated from converter name '{name}'. "
-                       f"Please specify a label directly with '{TC.WARNING}--label LABEL{TC.ENDC}'. The label should "
+            print_wrap(f"{tc.ERROR}ERROR:{tc.OFF} A valid label could not be generated from converter name '{name}'. "
+                       f"Please specify a label directly with {tc.CODE}`--label LABEL`{tc.OFF}. The label should "
                        "be in snake_case (all lower-case with underscores in place of spaces), containing only "
                        "letters, digits, and underscores", err=True)
             exit(1)
@@ -129,8 +136,8 @@ def run_from_args(args):
     if os.environ.get(TEST_PATH_KEY):
         project_path: Path = Path(os.environ[TEST_PATH_KEY]).resolve()
         if not project_path.is_dir():
-            print_wrap(f"{TC.FAIL}ERROR:{TC.ENDC} When running this script with '{TC.WARNING}--test-path TEST_PATH" +
-                       f"{TC.ENDC}', the provided path ({TC.OKCYAN}{project_path}{TC.ENDC}) must already exist.",
+            print_wrap(f"{tc.ERROR}ERROR:{tc.OFF} When running this script with {tc.CODE}`TEST_PATH=<TEST_PATH>" +
+                       f"`{tc.OFF}, the provided path ({tc.CYAN}'{project_path}'{tc.OFF}) must already exist.",
                        err=True)
             exit(1)
     else:
@@ -150,13 +157,13 @@ def run_from_args(args):
                 shutil.rmtree(qual_dir)
                 break
             else:
-                print_wrap(f"{TC.FAIL}ERROR:{TC.ENDC} Label '{label}' clashes with the label of an "
+                print_wrap(f"{tc.ERROR}ERROR:{tc.OFF} Label '{label}' clashes with the label of an "
                            "existing converter plugin. Please choose a different label (or different name if this was "
                            "determined from the name)", err=True)
                 exit(1)
         conv_module = import_from_path(label, qual_dir / PLUGIN_PYFILE)
         if name == conv_module.converter.meta.name:
-            print_wrap(f"{TC.FAIL}ERROR:{TC.ENDC} Name '{name}' clashes with the name of an existing "
+            print_wrap(f"{tc.ERROR}ERROR:{tc.OFF} Name '{name}' clashes with the name of an existing "
                        "converter plugin. Please choose a different name", err=True)
             exit(1)
 
@@ -192,14 +199,12 @@ def run_from_args(args):
 
         open(plugin_path / filename, "w").write(text)
 
-    print(f"{TC.OKGREEN}Success!{TC.ENDC} The plugin has been created at "
-          f"{TC.OKCYAN}{plugin_path}{TC.ENDC}\nNext steps:\n")
-    print_wrap(f"- Edit the '{TC.OKCYAN}{PLUGIN_PYFILE}{TC.ENDC}' and "
-               f"'{TC.OKCYAN}{PLUGIN_DATAFILE}{TC.ENDC}' files in this directory to contain all "
-               "necessary information about this converter and how to run it\n",
+    print(f"{tc.SUCCESS}Success!{tc.OFF} The plugin has been created at "
+          f"{tc.PATH}'{plugin_path}'{tc.OFF}\nNext steps:\n")
+    print_wrap(f"- Edit the {tc.PATH}'{PLUGIN_PYFILE}'{tc.OFF} and {tc.PATH}'{PLUGIN_DATAFILE}'{tc.OFF} files in this "
+               "directory to contain all necessary information about this converter and how to run it\n",
                initial_indent="", subsequent_indent=" "*2)
-    print_wrap(f"- Run the script '{TC.WARNING}psdi-data-convert-install-plugins{TC.ENDC}' to install "
-               "it\n",
+    print_wrap(f"- Run the script {tc.CODE}`psdi-data-convert-install-plugins`{tc.OFF} to install it\n",
                initial_indent="", subsequent_indent=" "*2)
     print_wrap("- If this script highlights that formats provided by this plugin may already be in the database,"
                "follow the provided instructions to resolve this and then run it again",

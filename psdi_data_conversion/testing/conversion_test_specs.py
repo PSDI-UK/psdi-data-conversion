@@ -8,9 +8,9 @@ application, and GUI.
 
 from psdi_data_conversion import constants as const
 from psdi_data_conversion.converters.base import (FileConverterAbortException, FileConverterInputException,
-                                                  FileConverterSizeException)
+                                                  FileConverterSizeException, FileConverterUnsupportedException)
 from psdi_data_conversion.converters.openbabel.converter import COORD_GEN_KEY, COORD_GEN_QUAL_KEY
-from psdi_data_conversion.database import FileConverterDatabaseException, get_converter_info, get_format_info
+from psdi_data_conversion.database import get_converter_info, get_format_info
 from psdi_data_conversion.testing import constants as tc
 from psdi_data_conversion.testing.conversion_callbacks import (CheckArchiveContents, CheckException, CheckFileStatus,
                                                                CheckLogContents, CheckLogContentsSuccess,
@@ -304,7 +304,7 @@ l_all_test_specs.append(Spec(name="Failed conversion - invalid conversion",
                              converter_name=[const.CONVERTER_C2X, const.CONVERTER_ATO],
                              callback=MCB(CheckFileStatus(expect_output_exists=False,
                                                           expect_log_exists=None),
-                                          CheckException(ex_type=FileConverterDatabaseException,
+                                          CheckException(ex_type=FileConverterUnsupportedException,
                                                          ex_message="is not supported")),
                              compatible_with_gui=False,
                              ))

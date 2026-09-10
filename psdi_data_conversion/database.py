@@ -26,7 +26,7 @@ from psdi_data_conversion.converter import (L_REGISTERED_CONVERTERS, L_SUPPORTED
                                             get_registered_converter_class)
 from psdi_data_conversion.converters.base import FileConverter, FileConverterException
 from psdi_data_conversion.file_io import get_package_path
-from psdi_data_conversion.utils import JsonDict, regularize_name
+from psdi_data_conversion.utils import JsonDict, regularize_name, tc
 
 # We have to use a default ID which isn't Falsey, since 0 is a valid ID
 DEFAULT_ID = -1
@@ -232,23 +232,23 @@ class DBInfo:
 
     def format_word(self):
         """Return a formatted representation of this as a single word"""
-        return str(self)
+        return f"{tc.BOLD}{self}{tc.OFF}"
 
     def format_inline(self):
         """Return a formatted representation of this that can fit inline"""
-        return f"{self.format_word()} (ID: {self.id})"
+        return f"{tc.BOLD}{self.format_word()}{tc.OFF} (ID {tc.ID}{self.id}{tc.OFF})"
 
     def format_oneline(self):
         """Return a formatted description of this that can fit in a single line"""
-        str_rep = str(self)
-        format_word_rep = self.format_word()
-        if str_rep != format_word_rep:
-            return f"{self.name} (\"{format_word_rep}\", ID: {self.id}): {self.description}"
         return f"{self.format_inline()}: {self.description}"
 
     def format_detailed(self):
         """Return a multi-line formatted description of this"""
-        return f"{self.format_oneline()}\n{self.info}"
+
+        msg = self.format_oneline()
+        if self.info:
+            msg += f"\n{self.info}"
+        return msg
 
     def __str__(self):
         """Use the name as the string representation"""
@@ -272,6 +272,15 @@ class ArgInfo(DBInfo):
 
     # __hash__ needs to be inherited explicitly for dataclasses since they redefine __eq__
     __hash__ = DBInfo.__hash__
+
+    @property
+    def flag(self):
+        """DEPRECATED: Now known as `name`
+        """
+        warnings.warn(f"The {tc.CODE}`flag`{tc.OFF} property of the {tc.CODE}`ArgInfo`{tc.OFF} class has been renamed "
+                      f"to {tc.CODE}`name`{tc.OFF} as of version 0.4.0 and is due to be removed in a future version.",
+                      DeprecationWarning)
+        return self.name
 
 
 @dataclass
@@ -325,6 +334,17 @@ class ConverterInfo(DBInfo):
 
     # __hash__ needs to be inherited explicitly for dataclasses since they redefine __eq__
     __hash__ = DBInfo.__hash__
+
+    def format_word(self):
+        """Use the pretty name for the formatted name"""
+        return f"{tc.BOLD}{self.pretty_name}{tc.OFF}"
+
+    def format_detailed(self):
+        """Include extra information in the detailed description"""
+        msg = super().format_detailed()
+        if self.url:
+            msg += f"\nURL: {tc.LINK}{self.url}{tc.OFF}"
+        return msg
 
     @staticmethod
     def from_db(parent: DataConversionDatabase,
@@ -418,7 +438,8 @@ class ConverterInfo(DBInfo):
             out_formats_key_base = DB_OUT_OPTIONS_FORMATS_KEY_BASE
             out_args_id_key_base = DB_OUT_OPTIONS_ID_KEY_BASE
         else:
-            raise FileConverterDatabaseException(f"Unrecognised subclass passed to `_create_d_arg_info`: {subclass}")
+            raise FileConverterDatabaseException(f"Unrecognised subclass passed to {tc.CODE}`_create_d_arg_info"
+                                                 f"`{tc.OFF}: {tc.CODE}{subclass}{tc.OFF}")
 
         for key_base, in_or_out in ((in_key_base, "in"),
                                     (out_key_base, "out")):
@@ -466,8 +487,8 @@ class ConverterInfo(DBInfo):
                 self._d_out_option_info = d_arg_info
                 self._l_unsorted_out_option_info = list(d_arg_info.values())
             else:
-                raise FileConverterDatabaseException(
-                    f"Unrecognised subclass passed to `_create_d_arg_info`: {subclass}")
+                raise FileConverterDatabaseException(f"Unrecognised subclass passed to {tc.CODE}`_create_d_arg_info"
+                                                     f"`{tc.OFF}: {tc.CODE}{subclass}{tc.OFF}")
 
         return
 
@@ -485,9 +506,10 @@ class ConverterInfo(DBInfo):
         """DEPRECATED: Generate the input flag info list (indexed by ID) when needed. Returns None if the converter has
         no flag info in the database
         """
-        deprecation_msg = ("`l_in_flag_info` is deprecated as of version 0.4.0 and due to be removed in a future "
-                           "release. To get an input FlagInfo from the format UUID, use `d_in_flag_info`. To "
-                           "get an unsorted list of input FlagInfo, use `l_unsorted_in_flag_info`.")
+        deprecation_msg = (f"{tc.CODE}`l_in_flag_info`{tc.OFF} is deprecated as of version 0.4.0 and due to be removed "
+                           f"in a future release. To get an input {tc.CODE}FlagInfo{tc.OFF} from the format UUID, use "
+                           f"{tc.CODE}`d_in_flag_info`{tc.OFF}. To get an unsorted list of input "
+                           f"{tc.CODE}FlagInfo{tc.OFF}, use {tc.CODE}`l_unsorted_in_flag_info`{tc.OFF}.")
         warnings.warn(deprecation_msg, DeprecationWarning)
         raise AttributeError(deprecation_msg)
 
@@ -514,9 +536,10 @@ class ConverterInfo(DBInfo):
         """DEPRECATED: Generate the input flag info list (indexed by ID) when needed. Returns None if the converter has
         no flag info in the database
         """
-        deprecation_msg = ("`l_out_flag_info` is deprecated as of version 0.4.0 and due to be removed in a future "
-                           "release. To get an input FlagInfo from the format UUID, use `d_out_flag_info`. To "
-                           "get an unsorted list of input FlagInfo, use `l_unsorted_out_flag_info`.")
+        deprecation_msg = (f"{tc.CODE}`l_out_flag_info`{tc.OFF} is deprecated as of version 0.4.0 and due to be "
+                           f"removed in a future release. To get an input {tc.CODE}FlagInfo{tc.OFF} from the format "
+                           f"UUID, use {tc.CODE}`d_out_flag_info`{tc.OFF}. To get an unsorted list of input "
+                           f"{tc.CODE}FlagInfo{tc.OFF}, use {tc.CODE}`l_unsorted_out_flag_info`{tc.OFF}.")
         warnings.warn(deprecation_msg, DeprecationWarning)
         raise AttributeError(deprecation_msg)
 
@@ -543,9 +566,10 @@ class ConverterInfo(DBInfo):
         """DEPRECATED: Generate the input option info list (indexed by ID) when needed. Returns None if the converter
         has no option info in the database
         """
-        deprecation_msg = ("`l_in_option_info` is deprecated as of version 0.4.0 and due to be removed in a future "
-                           "release. To get an input OptionInfo from the format UUID, use `d_in_option_info`. To "
-                           "get an unsorted list of input OptionInfo, use `l_unsorted_in_option_info`.")
+        deprecation_msg = (f"{tc.CODE}`l_in_option_info`{tc.OFF} is deprecated as of version 0.4.0 and due to be "
+                           f"removed in a future release. To get an input {tc.CODE}OptionInfo{tc.OFF} from the format "
+                           f"UUID, use {tc.CODE}`d_in_option_info`{tc.OFF}. To get an unsorted list of input "
+                           f"{tc.CODE}OptionInfo{tc.OFF}, use {tc.CODE}`l_unsorted_in_option_info`{tc.OFF}.")
         warnings.warn(deprecation_msg, DeprecationWarning)
         raise AttributeError(deprecation_msg)
 
@@ -572,9 +596,10 @@ class ConverterInfo(DBInfo):
         """DEPRECATED: Generate the input option info list (indexed by ID) when needed. Returns None if the converter
         has no option info in the database
         """
-        deprecation_msg = ("`l_out_option_info` is deprecated as of version 0.4.0 and due to be removed in a future "
-                           "release. To get an input OptionInfo from the format UUID, use `d_out_option_info`. To "
-                           "get an unsorted list of input OptionInfo, use `l_unsorted_out_option_info`.")
+        deprecation_msg = (f"{tc.CODE}`l_out_option_info`{tc.OFF} is deprecated as of version 0.4.0 and due to be "
+                           f"removed in a future release. To get an input {tc.CODE}OptionInfo{tc.OFF} from the format "
+                           f"UUID, use {tc.CODE}`d_out_option_info`{tc.OFF}. To get an unsorted list of input "
+                           f"{tc.CODE}OptionInfo{tc.OFF}, use {tc.CODE}`l_unsorted_out_option_info`{tc.OFF}.")
         warnings.warn(deprecation_msg, DeprecationWarning)
         raise AttributeError(deprecation_msg)
 
@@ -594,8 +619,9 @@ class ConverterInfo(DBInfo):
         """
 
         if in_or_out not in ("in", "out"):
-            raise FileConverterDatabaseException(
-                f"Unrecognised `in_or_out` value passed to `_create_d_format_args`: {in_or_out}")
+            raise FileConverterDatabaseException(f"Unrecognised {tc.CODE}`in_or_out`{tc.OFF} value passed to "
+                                                 f"{tc.CODE}`_create_d_format_args`{tc.OFF}: "
+                                                 f"{tc.PATH}'{in_or_out}'{tc.OFF}")
 
         # Set values based on whether we're working with flags or options, and input or output
         if issubclass(subclass, FlagInfo):
@@ -604,7 +630,7 @@ class ConverterInfo(DBInfo):
             l_arg_info = self.l_unsorted_in_option_info if in_or_out == "in" else self.l_unsorted_out_option_info
         else:
             raise FileConverterDatabaseException(
-                f"Unrecognised subclass passed to `_create_d_format_args`: {subclass}")
+                f"Unrecognised subclass passed to {tc.CODE}`_create_d_format_args`{tc.OFF}: {subclass}")
 
         d_format_args: dict[str | int, set[ArgInfo]] = {}
         d_parent_format_info_from_id = self.parent.d_format_info_from_id
@@ -671,7 +697,7 @@ class ConverterInfo(DBInfo):
 
         Parameters
         ----------
-        in_format : str
+        in_format : str | int | UUID | FormatInfo
             The file format name (extension), ID, or FormatInfo
 
         Returns
@@ -705,7 +731,7 @@ class ConverterInfo(DBInfo):
 
         Parameters
         ----------
-        out_format : str
+        out_format : str | int | UUID | FormatInfo
             The file format name (extension), ID, or FormatInfo
 
         Returns
@@ -927,6 +953,19 @@ class FormatInfo(DBInfo):
             index_of_this = [i for i, x in enumerate(l_formats_with_same_name) if self is x][0]
             return f"{self.lower_name}-{index_of_this}"
 
+    @property
+    def note(self):
+        """DEPRECATED: Now known as `description`
+        """
+        warnings.warn(f"The {tc.CODE}`note`{tc.OFF} property of the {tc.CODE}`FormatInfo`{tc.OFF} class has been "
+                      f"renamed to {tc.CODE}`description`{tc.OFF} as of version 0.4.0 and is due to be removed in a "
+                      "future version.", DeprecationWarning)
+        return self.description
+
+    def format_word(self):
+        """Use the disambiguated name for the formatted name"""
+        return f"{tc.BOLD}{self.disambiguated_name}{tc.OFF}"
+
     @staticmethod
     def from_db(parent: DataConversionDatabase,
                 d_single_format_info: dict[str, bool | int | str | None],
@@ -987,8 +1026,8 @@ class ConversionQualityInfo:
     """Class describing the quality of a conversion from one format to another with a given converter.
     """
 
-    converter_name: str
-    """The name of the converter"""
+    converter: ConverterInfo
+    """The info for the converter"""
 
     in_format: FormatInfo
     """The info for the input file format"""
@@ -1010,23 +1049,25 @@ class ConversionQualityInfo:
     weight: int
     """The full weight for the conversion, for the purpose of determining optimal conversion pathways"""
 
-    prop_weight: int | None = None
+    prop_weight: int | None = field(init=False, repr=False, default=None)
     """The property weight for the conversion, based on how many format properties are/might be lost"""
 
-    prec_weight: int | None = None
+    prec_weight: int | None = field(init=False, repr=False, default=None)
     """The precision weight for the conversion, based on how much precision is/might be lost"""
 
-    time_weight: int | None = None
+    time_weight: int | None = field(init=False, repr=False, default=None)
     """The time weight for the conversion, based on the estimated time to perform it"""
 
-    conv_weight: int | None = None
+    conv_weight: int | None = field(init=False, repr=False, default=None)
     """The converter for the conversion, based on how well-supported the converter is (roughly)"""
 
     def __post_init__(self):
-        """Regularize the converter name"""
-        self.converter_name = regularize_name(self.converter_name)
-
+        """Finalise setting up the class"""
         self.prop_weight, self.prec_weight, self.time_weight, self.conv_weight = split_conversion_weight(self.weight)
+
+    @property
+    def converter_name(self):
+        return self.converter.name
 
 
 class ConversionsTable:
@@ -1119,7 +1160,7 @@ class ConversionsTable:
                              # Each vertex stores the ID of the primary format
                              vertex_attrs={DB_ID_KEY: [self.d_uuids_from_indices[i] for i in range(num_formats)]},
                              edges=[(self.d_indices_from_uuids[x[DB_IN_ID_KEY]],
-                                     self.d_indices_from_uuids[x[DB_OUT_ID_KEY]]) for x in l_conversions],
+                                    self.d_indices_from_uuids[x[DB_OUT_ID_KEY]]) for x in l_conversions],
                              # Each edge stores the id and name of the converter used for the conversion
                              edge_attrs={DB_CONV_ID_KEY: [x[DB_CONV_ID_KEY] for x in l_conversions],
                                          DB_NAME_KEY: [self.parent.get_converter_info(x[DB_CONV_ID_KEY]).name
@@ -1137,8 +1178,9 @@ class ConversionsTable:
         elif only == "registered":
             return self.registered_graph
         else:
-            raise ValueError(f"Invalid value \"{only}\" for keyword argument `only`. Allowed values are \"all\" "
-                             "(default), \"supported\", and \"registered\".")
+            raise ValueError(f"Invalid value {tc.PATH}'{only}'{tc.OFF} for keyword argument "
+                             f"{tc.CODE}`only`{tc.OFF}. Allowed values are {tc.PATH}'all'{tc.OFF} "
+                             f"(default), {tc.PATH}'supported'{tc.OFF}, and {tc.PATH}'registered'{tc.OFF}.")
 
     def _get_possible_converters(self, in_format_info: FormatInfo, out_format_info: FormatInfo,
                                  only: Literal["all"] | Literal["supported"] | Literal["registered"] = "all"):
@@ -1151,19 +1193,20 @@ class ConversionsTable:
 
     @lru_cache(maxsize=None)
     def get_conversion_quality(self,
-                               converter_name: str,
+                               converter: str | int | UUID | ConverterInfo,
                                in_format: str | int | UUID | FormatInfo,
-                               out_format: str | int | UUID | FormatInfo) -> ConversionQualityInfo | None:
+                               out_format: str | int | UUID | FormatInfo,
+                               **kwargs) -> ConversionQualityInfo | None:
         """Get an indication of the quality of a conversion from one format to another, or if it's not possible
 
         Parameters
         ----------
-        converter_name : str
-            The name of the converter
+        converter : str | int | UUID | ConverterInfo
+            The converter, specified by its name, ID, or info
         in_format : str | int | UUID | FormatInfo
-            The extension or ID of the input file format
+            The extension, ID, or info of the input file format
         out_format : str | int | UUID | FormatInfo
-            The extension or ID of the output file format
+            The extension, ID, or info of the output file format
 
         Returns
         -------
@@ -1172,6 +1215,16 @@ class ConversionsTable:
             `ConversionQualityInfo` object with info on the conversion
         """
 
+        # Check for deprecated kwargs
+        if "converter_name" in kwargs:
+            warnings.warn(f"The argument {tc.CODE}`converter_name`{tc.OFF} for the method "
+                          f"{tc.CODE}`get_conversion_quality`{tc.OFF} is deprecated as of version 0.4.0 and due to be "
+                          f"removed in a future release. Use the argument {tc.CODE}`converter`{tc.OFF} instead, which "
+                          "accepts the converter name, ID, or info", DeprecationWarning)
+            converter_info = get_converter_info(kwargs["converter_name"])
+        else:
+            converter_info = get_converter_info(converter)
+
         # Get all possible format infos for each format
         l_in_format_info = self.parent.get_format_info(in_format, "all")
         l_out_format_info = self.parent.get_format_info(out_format, "all")
@@ -1179,21 +1232,26 @@ class ConversionsTable:
         # First check if the conversion is possible for at least one combination
         l_found_combinations: list[tuple[FormatInfo, FormatInfo]] = []
         for in_format_info, out_format_info in product(l_in_format_info, l_out_format_info):
-            if converter_name in self._get_possible_converters(in_format_info, out_format_info):
+            if converter_info.name in self._get_possible_converters(in_format_info, out_format_info):
                 l_found_combinations.append((in_format_info, out_format_info))
         if len(l_found_combinations) == 0:
             return None
 
         # Check if the conversion is ambiguous
         if len(l_found_combinations) > 1:
-            msg = (f"Conversion from {in_format} to {out_format} with converter {converter_name} is ambiguous. Please "
-                   "Use the ID or disambiguated name (listed below) of the desired conversion. Possible matching "
-                   "conversions are:\n")
+
+            converter_name = converter.format_word() if isinstance(
+                converter, ConverterInfo) else f"{tc.PATH}'{converter}'{tc.OFF}"
+            in_format_name = in_format.format_word() if isinstance(
+                in_format, FormatInfo) else f"{tc.PATH}'{in_format}'{tc.OFF}"
+            out_format_name = out_format.format_word() if isinstance(
+                out_format, FormatInfo) else f"{tc.PATH}'{out_format}'{tc.OFF}"
+
+            msg = (f"Conversion from {in_format_name} to {out_format_name} with converter "
+                   f"{converter_name} is ambiguous. Please Use the ID or disambiguated name (listed below) "
+                   "of the desired conversion. Possible matching conversions are:\n")
             for possible_in_format, possible_out_format in l_found_combinations:
-                msg += (f"    {possible_in_format.id}: {possible_in_format.disambiguated_name} "
-                        f"({possible_in_format.description}) to "
-                        f"{possible_out_format.id}: {possible_out_format.disambiguated_name} "
-                        f"({possible_out_format.description})\n")
+                msg += (f"    {possible_in_format.format_inline()} to {possible_out_format.format_inline()}\n")
             # Trim the final newline from the message
             msg = msg[:-1]
             raise FileConverterDatabaseException(msg, help=True)
@@ -1248,10 +1306,10 @@ class ConversionsTable:
         details = "\n".join(
             [d_prop_conversion_info[x].description for x in l_props if d_prop_conversion_info[x].description])
 
-        weight = calc_conversion_weight(self.parent.get_converter_info(converter_name),
+        weight = calc_conversion_weight(self.parent.get_converter_info(converter),
                                         in_format_info, out_format_info)
 
-        return ConversionQualityInfo(converter_name=converter_name,
+        return ConversionQualityInfo(converter=converter_info,
                                      in_format=in_format_info,
                                      out_format=out_format_info,
                                      qual_str=qual_str,
@@ -1268,11 +1326,11 @@ class ConversionsTable:
         Parameters
         ----------
         converter : str | int | UUID | ConverterInfo
-            The name or ID of the converter used for this conversion
+            The name, ID, or info of the converter used for this conversion
         in_format : str | int | UUID | FormatInfo
-            The extension or ID of the input file format
+            The extension, ID, or info of the converter of the input file format
         out_format : str | int | UUID | FormatInfo
-            The extension or ID of the output file format
+            The extension, ID, or info of the converter of the output file format
 
         Returns
         -------
@@ -1310,9 +1368,9 @@ class ConversionsTable:
         Parameters
         ----------
         in_format : str | int | UUID | FormatInfo
-            The extension or ID of the input file format
+            The extension, ID, or info of the converter of the input file format
         out_format : str | int | UUID | FormatInfo
-            The extension or ID of the output file format
+            The extension, ID, or info of the converter of the output file format
 
         Returns
         -------
@@ -1399,20 +1457,32 @@ class ConversionsTable:
 
         return l_steps
 
-    def get_possible_formats(self, converter_name: str) -> tuple[list[FormatInfo], list[FormatInfo]]:
+    def get_possible_formats(self,
+                             converter: str | int | UUID | ConverterInfo,
+                             **kwargs) -> tuple[list[FormatInfo], list[FormatInfo]]:
         """Get a list of input and output formats that a given converter supports
 
         Parameters
         ----------
-        converter_name : str
-            The name of the converter
+        converter : str | int | UUID | ConverterInfo
+            The name, ID, or info of the converter
 
         Returns
         -------
         tuple[list[FormatInfo], list[FormatInfo]]
             A tuple of a list of the supported input formats and a list of the supported output formats
         """
-        conv_id: int = self.parent.get_converter_info(converter_name).id
+
+        # Check for deprecated kwargs
+        conv_id: int
+        if "converter_name" in kwargs:
+            warnings.warn(f"The argument {tc.CODE}`converter_name`{tc.OFF} for the method "
+                          f"{tc.CODE}`get_possible_formats`{tc.OFF} is deprecated as of version 0.4.0 and due to be "
+                          f"removed in a future release. Use the argument {tc.CODE}`converter`{tc.OFF} instead, which "
+                          "accepts the converter name, ID, or info", DeprecationWarning)
+            conv_id = self.parent.get_converter_info(kwargs["converter_name"]).id
+        else:
+            conv_id = self.parent.get_converter_info(converter).id
 
         l_conversion_edges = self.graph.es.select(**{DB_CONV_ID_KEY: conv_id})
         l_possible_in_format_ids = list({self.d_uuids_from_indices[x.source] for x in l_conversion_edges})
@@ -1466,8 +1536,8 @@ class DataConversionDatabase:
         for d_single_converter_info in self.converters:
             name: str = regularize_name(d_single_converter_info[DB_NAME_KEY])
             if name in self._d_converter_info_from_name:
-                logger.warning(f"Converter '{name}' appears more than once in the database. Only the first instance"
-                               " will be used.")
+                logger.warning(f"Converter {tc.PATH}'{name}'{tc.OFF} appears more than once in the database. Only "
+                               "the first instance will be used.")
                 continue
 
             single_converter_info = ConverterInfo.from_db(parent=self,
@@ -1498,10 +1568,11 @@ class DataConversionDatabase:
     @property
     def d_converter_info(self) -> dict[str, ConverterInfo]:
         """DEPRECATED: Get a dict of converter info keyed by name"""
-        warnings.warn("`d_converter_info` is deprecated as of version 0.4.0 and due to be removed in a future release. "
-                      "To get a ConverterInfo from the converter name (the previous functionality of this), use "
-                      "`d_converter_info_from_name`. To get a FormatInfo from the format UUID, use "
-                      "`d_converter_info_from_id`.", DeprecationWarning)
+        warnings.warn(f"{tc.CODE}`d_converter_info`{tc.OFF} is deprecated as of version 0.4.0 and due to be removed in "
+                      "a future release. To get a {tc.CODE}ConverterInfo{tc.OFF} from the converter name (the previous "
+                      f"functionality of this), use {tc.CODE}`d_converter_info_from_name`{tc.OFF}. To get a "
+                      f"{tc.CODE}ConverterInfo{tc.OFF} from the format UUID, use "
+                      f"{tc.CODE}`d_converter_info_from_id`{tc.OFF}.", DeprecationWarning)
         return self.d_converter_info_from_name
 
     @property
@@ -1516,9 +1587,10 @@ class DataConversionDatabase:
     @property
     def l_converter_info(self):
         """DEPRECATED: Get a list of converter info keyed by ID"""
-        deprecation_msg = ("`l_converter_info` is deprecated as of version 0.4.0 and due to be removed in a future "
-                           "release. To get a ConverterInfo from the format UUID, use `d_converter_info_from_id`. To "
-                           "get an unsorted list of ConverterInfos, use `l_unsorted_converter_info`.")
+        deprecation_msg = (f"{tc.CODE}`l_converter_info`{tc.OFF} is deprecated as of version 0.4.0 and due to be "
+                           f"removed in a future release. To get a {tc.CODE}ConverterInfo{tc.OFF} from the format "
+                           f"UUID, use {tc.CODE}`d_converter_info_from_id`{tc.OFF}. To get an unsorted list of "
+                           f"{tc.CODE}ConverterInfo{tc.OFF}, use {tc.CODE}`l_unsorted_converter_info`{tc.OFF}.")
         warnings.warn(deprecation_msg, DeprecationWarning)
         raise AttributeError(deprecation_msg)
 
@@ -1543,10 +1615,11 @@ class DataConversionDatabase:
     @property
     def d_format_info(self) -> dict[str, list[FormatInfo]]:
         """DEPRECATED: Get a dict of format info keyed by format name"""
-        warnings.warn("`d_format_info` is deprecated as of version 0.4.0 and due to be removed in a future release. "
-                      "To get a FormatInfo from the format name (the previous functionality of this), use "
-                      "`d_format_info_from_name`. To get a FormatInfo from the format UUID, use "
-                      "`d_format_info_from_id`.", DeprecationWarning)
+        warnings.warn(f"{tc.CODE}`d_format_info`{tc.OFF} is deprecated as of version 0.4.0 and due to be removed in a "
+                      f"future release. To get a {tc.CODE}FormatInfo{tc.OFF} from the format name (the previous "
+                      f"functionality of this), use {tc.CODE}`d_format_info_from_name`{tc.OFF}. To get a "
+                      f"{tc.CODE}FormatInfo{tc.OFF} from the format UUID, use "
+                      f"{tc.CODE}`d_format_info_from_id`{tc.OFF}.", DeprecationWarning)
         return self.d_format_info_from_name
 
     @property
@@ -1561,9 +1634,10 @@ class DataConversionDatabase:
     @property
     def l_format_info(self):
         """DEPRECATED: Get a list of format info keyed by ID"""
-        deprecation_msg = ("`l_format_info` is deprecated as of version 0.4.0 and due to be removed in a future "
-                           "release. To get a FormatInfo from the format UUID, use `d_format_info_from_id`. To get an "
-                           "unsorted list of FormatInfos, use `l_unsorted_format_info`.")
+        deprecation_msg = (f"{tc.CODE}`l_format_info`{tc.OFF} is deprecated as of version 0.4.0 and due to be "
+                           f"removed in a future release. To get a {tc.CODE}FormatInfo{tc.OFF} from the format UUID, "
+                           f"use {tc.CODE}`d_format_info_from_id`{tc.OFF}. To get an unsorted list of "
+                           f"{tc.CODE}FormatInfo{tc.OFF}, use {tc.CODE}`l_unsorted_format_info`{tc.OFF}.")
         warnings.warn(deprecation_msg, DeprecationWarning)
         raise AttributeError(deprecation_msg)
 
@@ -1675,31 +1749,32 @@ class DataConversionDatabase:
         self._l_unsorted_format_info = list(set(self._d_format_info_from_id.values()))
 
     def _get_converter_list(self) -> str:
-        return "\n".join([f"{x.pretty_name} (ID: {x.id} / {UUID(int=x.id)})" for x in self.l_unsorted_converter_info])
+        return "\n".join([x.format_oneline() for x in self.l_unsorted_converter_info])
 
     @overload
-    def get_converter_info(self, converter_name_or_id: str | int | UUID | ConverterInfo) -> ConverterInfo: ...
+    def get_converter_info(self, converter: str | int | UUID | ConverterInfo) -> ConverterInfo: ...
 
     @overload
-    def get_converter_info(self, converter_name_or_id: None) -> list[ConverterInfo]: ...
+    def get_converter_info(self, converter: None) -> list[ConverterInfo]: ...
 
     @overload
     def get_converter_info(self) -> list[ConverterInfo]: ...
 
-    def get_converter_info(self, converter_name_or_id: str | int | UUID | ConverterInfo | None = None) -> (
+    def get_converter_info(self, converter: str | int | UUID | ConverterInfo | None = None,
+                           **kwargs) -> (
             ConverterInfo | list[ConverterInfo]):
         """Gets the information on converters or a given converter stored in the database
 
         Parameters
         ----------
-        converter_name_or_id : str | int | UUID | ConverterInfo | None
-            The name or UUID of the converter to get info for. Default None, which results in a list being returned of
-            the info for all converters in the database
+        converter : str | int | UUID | ConverterInfo | None
+            The name, ID, or info of the converter to get info for. Default None, which results in a list being
+            returned of the info for all converters in the database
 
         Returns
         -------
         ConverterInfo | list[ConverterInfo]
-            If `converter_name_or_id` is provided, will return a single `ConverterInfo` (or raise an exception if the
+            If `converter` is provided, will return a single `ConverterInfo` (or raise an exception if the
             name is invalid). If not provided, a list of all `ConverterInfo` objects in the database will be returned
 
         Raises
@@ -1708,64 +1783,77 @@ class DataConversionDatabase:
         If `name` is provided but does not match the name of a converter in the database
         """
 
-        if isinstance(converter_name_or_id, str):
+        # Check for deprecated kwargs
+        if "converter_name_or_id" in kwargs:
+            warnings.warn(f"The argument {tc.CODE}`converter_name_or_id`{tc.OFF} for the method "
+                          f"{tc.CODE}`get_converter_info`{tc.OFF} is deprecated as of version 0.4.0 and due to be "
+                          f"removed in a future release. Use the argument {tc.CODE}`converter`{tc.OFF} instead, which "
+                          "has equivalent functionality and is being used now to normalise function signatures across "
+                          "the package.", DeprecationWarning)
+            if converter is None:
+                converter = get_converter_info(kwargs["converter_name_or_id"])
+
+        if isinstance(converter, str):
             try:
-                return self.d_converter_info_from_name[regularize_name(converter_name_or_id)]
+                return self.d_converter_info_from_name[regularize_name(converter)]
             except KeyError:
                 try:
-                    return self.d_converter_info_from_id[UUID(converter_name_or_id).int]
+                    return self.d_converter_info_from_id[UUID(converter).int]
                 except (KeyError, ValueError):
-                    raise FileConverterDatabaseException(f"Converter '{converter_name_or_id}' not found as a name in "
-                                                         "the database and/or was not recognised as a value UUID. "
-                                                         "Known converters are:\n" +
+                    raise FileConverterDatabaseException(f"Converter {tc.PATH}'{converter}'{tc.OFF} not "
+                                                         "found as a name in the database and/or was not recognised as "
+                                                         "a value UUID. Known converters are:\n" +
                                                          self._get_converter_list(),
                                                          help=True)
-        elif isinstance(converter_name_or_id, int):
+        elif isinstance(converter, int):
             try:
-                return self.d_converter_info_from_id[converter_name_or_id]
+                return self.d_converter_info_from_id[converter]
             except KeyError:
-                raise FileConverterDatabaseException(f"Converter ID '{converter_name_or_id}' not found in the "
-                                                     "database. Known converters are:\n" +
+                raise FileConverterDatabaseException(f"Converter ID '{tc.ID}{converter}'{tc.OFF} not found "
+                                                     "in the database. Known converters are:\n" +
                                                      self._get_converter_list(),
                                                      help=True)
-        elif isinstance(converter_name_or_id, UUID):
+        elif isinstance(converter, UUID):
             try:
-                return self.d_converter_info_from_id[converter_name_or_id.int]
+                return self.d_converter_info_from_id[converter.int]
             except KeyError:
-                raise FileConverterDatabaseException(f"Converter ID '{converter_name_or_id}' not found in the "
-                                                     "database. Known converters are:\n" +
+                raise FileConverterDatabaseException(f"Converter ID '{tc.ID}{converter}'{tc.OFF} not found "
+                                                     "in the database. Known converters are:\n" +
                                                      self._get_converter_list(),
                                                      help=True)
-        elif isinstance(converter_name_or_id, ConverterInfo):
+        elif isinstance(converter, ConverterInfo):
             # Silently return if it's already a ConverterInfo
-            return converter_name_or_id
-        elif converter_name_or_id is None:
+            return converter
+        elif converter is None:
             return self.l_unsorted_converter_info
         else:
-            raise FileConverterDatabaseException(f"Invalid key passed to `get_converter_info`: '{converter_name_or_id}'"
-                                                 f" of type '{type(converter_name_or_id)}'. Type must be `str`, "
-                                                 "`int`, or `UUID`")
+            raise FileConverterDatabaseException(f"Invalid key passed to {tc.CODE}`get_converter_info`{tc.OFF}: "
+                                                 f"{tc.PATH}'{converter}'{tc.OFF} of type "
+                                                 f"{tc.CODE}`{type(converter)}`{tc.OFF}. Type must be "
+                                                 f"{tc.CODE}`str`{tc.OFF}, {tc.CODE}`int`{tc.OFF}, or "
+                                                 f"{tc.CODE}`UUID`{tc.OFF}")
 
     @overload
     def get_format_info(self,
-                        format_name_or_id: str | int | UUID | FormatInfo,
+                        file_format: str | int | UUID | FormatInfo,
                         which: int | None = None) -> FormatInfo: ...
 
     @overload
     def get_format_info(self,
-                        format_name_or_id: str | int | UUID | FormatInfo,
+                        file_format: str | int | UUID | FormatInfo,
                         which: Literal["all"]) -> list[FormatInfo]: ...
 
     def get_format_info(self,
-                        format_name_or_id: str | int | UUID | FormatInfo,
-                        which: int | Literal["all"] | None = None) -> FormatInfo | list[FormatInfo]:
+                        file_format: str | int | UUID | FormatInfo,
+                        which: int | Literal["all"] | None = None,
+                        **kwargs) -> FormatInfo | list[FormatInfo]:
         """Gets the information on a given file format stored in the database
 
         Parameters
         ----------
-        format_name_or_id : str | int | UUID | FormatInfo
+        file_format : str | int | UUID | FormatInfo
             The name (extension) of the format, or its ID. In the case of ambiguous extensions which could apply to
-            multiple formats, the ID must be used here or a FileConverterDatabaseException will be raised. This also
+            multiple formats, the ID must be used here or a `FileConverterDatabaseException` will be raised. This also
             allows passing a FormatInfo to this, in which case that object will be silently returned, to allow
             normalising the input to always be a FormatInfo when output from this
         which : int | None
@@ -1780,46 +1868,56 @@ class DataConversionDatabase:
         FormatInfo | list[FormatInfo]
         """
 
+        # Check for deprecated kwargs
+        if "format_name_or_id" in kwargs:
+            warnings.warn(f"The argument {tc.CODE}`format_name_or_id`{tc.OFF} for the method "
+                          f"{tc.CODE}`get_format_info`{tc.OFF} is deprecated as of version 0.4.0 and due to be "
+                          f"removed in a future release. Use the argument {tc.CODE}`file_format`{tc.OFF} instead, "
+                          "which has equivalent functionality and is being used now to normalise function signatures "
+                          "across the package.", DeprecationWarning)
+            file_format = kwargs["format_name_or_id"]
+
         if which == "all":
             return_as_list = True
         else:
             return_as_list = False
 
-        if isinstance(format_name_or_id, str):
+        if isinstance(file_format, str):
             # Check first if it's a UUID
             try:
-                format_info = self.d_format_info_from_id[UUID(format_name_or_id).int]
+                format_info = self.d_format_info_from_id[UUID(file_format).int]
                 if which == "all":
                     return [format_info]
                 return format_info
             except KeyError as e:
-                if e.args[0] == UUID(format_name_or_id).int:
-                    raise FileConverterDatabaseException(f"Format ID '{format_name_or_id}' not recognised",
-                                                         help=True)
+                if e.args[0] == UUID(file_format).int:
+                    raise FileConverterDatabaseException(f"Format ID '{tc.ID}{file_format}'{tc.OFF} not "
+                                                         "recognised", help=True)
             except ValueError:
                 pass
 
             # Silently strip leading period
-            if format_name_or_id.startswith("."):
-                format_name_or_id = format_name_or_id[1:]
+            if file_format.startswith("."):
+                file_format = file_format[1:]
 
             # Convert the format name to lower-case to handle it case-insensitively
-            format_name_or_id = format_name_or_id.lower()
+            file_format = file_format.lower()
 
             # Check for a hyphen in the format, which indicates a preference from the user as to which, overriding the
             # `which` kwarg
-            if "-" in format_name_or_id:
-                l_name_segments = format_name_or_id.split("-")
+            if "-" in file_format:
+                l_name_segments = file_format.split("-")
                 if len(l_name_segments) > 2:
-                    raise FileConverterDatabaseException(f"Format name '{format_name_or_id} is improperly formatted - "
-                                                         "It may contain at most one hyphen, separating the extension "
-                                                         "from an index indicating which of the formats with that "
-                                                         "extension to use, e.g. 'pdb-0', 'pdb-1', etc.",
-                                                         help=True)
-                format_name_or_id = l_name_segments[0]
+                    raise FileConverterDatabaseException(f"Format name {tc.PATH}'{file_format}'{tc.OFF} is "
+                                                         "improperly formatted - It may contain at most one hyphen, "
+                                                         "separating the extension from an index indicating which of "
+                                                         "the formats with that extension to use, e.g. "
+                                                         f"{tc.PATH}'pdb-0'{tc.OFF}, {tc.PATH}'pdb-1'{tc.OFF}, "
+                                                         "etc.", help=True)
+                file_format = l_name_segments[0]
                 which = int(l_name_segments[1])
 
-            l_possible_format_info = self.d_format_info_from_name.get(format_name_or_id, [])
+            l_possible_format_info = self.d_format_info_from_name.get(file_format, [])
 
             if which == "all":
                 return l_possible_format_info
@@ -1828,50 +1926,50 @@ class DataConversionDatabase:
                 format_info = l_possible_format_info[0]
 
             elif len(l_possible_format_info) == 0:
-                raise FileConverterDatabaseException(f"Format name '{format_name_or_id}' not recognised",
-                                                     help=True)
+                raise FileConverterDatabaseException(f"Format name {tc.PATH}'{file_format}'{tc.OFF} not "
+                                                     "recognised", help=True)
 
             elif which is not None and which < len(l_possible_format_info):
                 format_info = l_possible_format_info[which]
 
             else:
-                msg = (f"Extension '{format_name_or_id}' is ambiguous and must be defined by disambiguated name or ID. "
-                       "Possible formats are:")
+                msg = (f"Extension {tc.PATH}'{file_format}'{tc.OFF} is ambiguous and must be defined by "
+                       "disambiguated name or ID. Possible formats are:")
                 for possible_format_info in l_possible_format_info:
-                    msg += (f"\n{possible_format_info.disambiguated_name} (ID: {possible_format_info.id}): " +
-                            possible_format_info.description)
+                    msg += f"\n{possible_format_info.format_oneline()}"
                 raise FileConverterDatabaseException(msg, help=True)
 
-        elif isinstance(format_name_or_id, int):
+        elif isinstance(file_format, int):
             try:
-                format_info = self.d_format_info_from_id[format_name_or_id]
+                format_info = self.d_format_info_from_id[file_format]
             except KeyError as e:
-                if e.args[0] != format_name_or_id:
+                if e.args[0] != file_format:
                     raise
                 if return_as_list:
                     return []
-                raise FileConverterDatabaseException(f"Format ID '{format_name_or_id}' not recognised",
-                                                     help=True)
+                raise FileConverterDatabaseException(f"Format ID {tc.PATH}'{file_format}'{tc.OFF} not "
+                                                     "recognised", help=True)
 
-        elif isinstance(format_name_or_id, UUID):
+        elif isinstance(file_format, UUID):
             try:
-                format_info = self.d_format_info_from_id[format_name_or_id.int]
+                format_info = self.d_format_info_from_id[file_format.int]
             except KeyError as e:
-                if e.args[0] != format_name_or_id.int:
+                if e.args[0] != file_format.int:
                     raise
                 if return_as_list:
                     return []
-                raise FileConverterDatabaseException(f"Format ID '{format_name_or_id}' not recognised",
-                                                     help=True)
+                raise FileConverterDatabaseException(f"Format ID {tc.PATH}'{file_format}'{tc.OFF} not "
+                                                     "recognised", help=True)
 
-        elif isinstance(format_name_or_id, FormatInfo):
+        elif isinstance(file_format, FormatInfo):
             # Silently return the FormatInfo if it was used as a key here
-            format_info = format_name_or_id
+            format_info = file_format
 
         else:
-            raise FileConverterDatabaseException(f"Invalid key passed to `get_format_info`: '{format_name_or_id}'"
-                                                 f" of type '{type(format_name_or_id)}'. Type must be `str` or "
-                                                 "`int`")
+            raise FileConverterDatabaseException(f"Invalid key passed to {tc.CODE}`get_format_info`{tc.OFF}: "
+                                                 f"{tc.PATH}'{file_format}'{tc.OFF} of type "
+                                                 f"{tc.CODE}`{type(file_format)}'{tc.OFF}. Type must be "
+                                                 f"{tc.CODE}`str`{tc.OFF} or {tc.CODE}`int`{tc.OFF}")
         if return_as_list:
             return [format_info]
 
@@ -1928,31 +2026,31 @@ def get_database() -> DataConversionDatabase:
 
 
 @overload
-def get_converter_info(converter_name_or_id: str | int | UUID | ConverterInfo) -> ConverterInfo: ...
+def get_converter_info(converter: str | int | UUID | ConverterInfo) -> ConverterInfo: ...
 
 
 @overload
-def get_converter_info(converter_name_or_id: None) -> list[ConverterInfo]: ...
+def get_converter_info(converter: None) -> list[ConverterInfo]: ...
 
 
 @overload
 def get_converter_info() -> list[ConverterInfo]: ...
 
 
-def get_converter_info(converter_name_or_id: str | int | UUID | ConverterInfo | None = None) -> (
-        ConverterInfo | list[ConverterInfo]):
+def get_converter_info(converter: str | int | UUID | ConverterInfo | None = None,
+                       **kwargs) -> ConverterInfo | list[ConverterInfo]:
     """Gets the information on converters or a given converter stored in the database
 
     Parameters
     ----------
-    converter_name_or_id : str | int | UUID | ConverterInfo | None
+    converter : str | int | UUID | ConverterInfo | None
         The name or UUID of the converter to get info for. Default None, which results in a list being returned of the
         info for all converters in the database
 
     Returns
     -------
     ConverterInfo | list[ConverterInfo]
-        If `converter_name_or_id` is provided, will return a single `ConverterInfo` (or raise an exception if the name
+        If `converter` is provided, will return a single `ConverterInfo` (or raise an exception if the name
         is invalid). If not provided, a list of all `ConverterInfo` objects in the database will be returned
 
     Raises
@@ -1961,26 +2059,36 @@ def get_converter_info(converter_name_or_id: str | int | UUID | ConverterInfo | 
         If `name` is provided but does not match the name of a converter in the database
     """
 
-    return get_database().get_converter_info(converter_name_or_id)
+    # Check for deprecated kwargs
+    if "converter_name_or_id" in kwargs:
+        warnings.warn(f"The argument {tc.CODE}`converter_name_or_id`{tc.OFF} for the method "
+                      f"{tc.CODE}`get_converter_info`{tc.OFF} is deprecated as of version 0.4.0 and due to be "
+                      f"removed in a future release. Use the argument {tc.CODE}`converter`{tc.OFF} instead, which "
+                      "has equivalent functionality and is being used now to normalise function signatures across "
+                      "the package.", DeprecationWarning)
+        if converter is None:
+            converter = get_converter_info(kwargs["converter_name_or_id"])
+    return get_database().get_converter_info(converter)
 
 
 @overload
-def get_format_info(format_name_or_id: str | int | UUID | FormatInfo,
+def get_format_info(file_format: str | int | UUID | FormatInfo,
                     which: int | None = None) -> FormatInfo: ...
 
 
 @overload
-def get_format_info(format_name_or_id: str | int | UUID | FormatInfo,
+def get_format_info(file_format: str | int | UUID | FormatInfo,
                     which: Literal["all"]) -> list[FormatInfo]: ...
 
 
-def get_format_info(format_name_or_id: str | int | UUID | FormatInfo,
-                    which: int | Literal["all"] | None = None) -> FormatInfo | list[FormatInfo]:
+def get_format_info(file_format: str | int | UUID | FormatInfo,
+                    which: int | Literal["all"] | None = None,
+                    **kwargs) -> FormatInfo | list[FormatInfo]:
     """Gets the information on a given file format stored in the database
 
     Parameters
     ----------
-    format_name_or_id : str | int | UUID | FormatInfo
+    file_format : str | int | UUID | FormatInfo
         The name (extension) of the format, or its ID. In the case of ambiguous extensions which could apply to multiple
         formats, the ID must be used here or a FileConverterDatabaseException will be raised. This also allows passing a
         FormatInfo to this, in which case that object will be silently returned, to allow normalising the input to
@@ -1997,22 +2105,32 @@ def get_format_info(format_name_or_id: str | int | UUID | FormatInfo,
     FormatInfo | list[FormatInfo]
     """
 
-    return get_database().get_format_info(format_name_or_id, which)
+    # Check for deprecated kwargs
+    if "format_name_or_id" in kwargs:
+        warnings.warn(f"The argument {tc.CODE}`format_name_or_id`{tc.OFF} for the method "
+                      f"{tc.CODE}`get_format_info`{tc.OFF} is deprecated as of version 0.4.0 and due to be "
+                      f"removed in a future release. Use the argument {tc.CODE}`file_format`{tc.OFF} instead, "
+                      "which has equivalent functionality and is being used now to normalise function signatures "
+                      "across the package.", DeprecationWarning)
+        file_format = kwargs["format_name_or_id"]
+
+    return get_database().get_format_info(file_format, which)
 
 
-def get_conversion_quality(converter_name: str,
+def get_conversion_quality(converter: str | int | UUID | ConverterInfo,
                            in_format: str | int | UUID | FormatInfo,
-                           out_format: str | int | UUID | FormatInfo) -> ConversionQualityInfo | None:
+                           out_format: str | int | UUID | FormatInfo,
+                           **kwargs) -> ConversionQualityInfo | None:
     """Get an indication of the quality of a conversion from one format to another, or if it's not possible
 
     Parameters
     ----------
-    converter_name : str
-        The name of the converter
+    converter : str | int | UUID | ConverterInfo,
+        The converter, specified through its name or ID
     in_format : str | int | UUID | FormatInfo
-        The extension or ID of the input file format
+        The extension, ID, or info of the converter of the input file format
     out_format : str | int | UUID | FormatInfo
-        The extension or ID of the output file format
+        The extension, ID, or info of the converter of the output file format
 
     Returns
     -------
@@ -2020,8 +2138,14 @@ def get_conversion_quality(converter_name: str,
         If the conversion is not possible, returns None. If the conversion is possible, returns a
         `ConversionQualityInfo` object with info on the conversion
     """
+    if "converter_name" in kwargs:
+        warnings.warn(f"The argument {tc.CODE}`converter_name`{tc.OFF} for the method "
+                      f"{tc.CODE}`get_conversion_quality`{tc.OFF} is deprecated as of version 0.4.0 and due to be "
+                      f"removed in a future release. Use the argument {tc.CODE}`converter`{tc.OFF} instead, which "
+                      "accepts the converter name, ID, or info", DeprecationWarning)
+        converter = kwargs["converter_name"]
 
-    return get_database().conversions_table.get_conversion_quality(converter_name=regularize_name(converter_name),
+    return get_database().conversions_table.get_conversion_quality(converter=converter,
                                                                    in_format=in_format,
                                                                    out_format=out_format)
 
@@ -2034,11 +2158,11 @@ def get_conversion_weight(converter: str | int | UUID | ConverterInfo,
     Parameters
     ----------
     converter : str | int | UUID | ConverterInfo
-        The name or ID of the converter used for this conversion
+        The name, ID, or info of the converter used for this conversion
     in_format : str | int | UUID | FormatInfo
-        The extension or ID of the input file format
+        The extension, ID, or info of the converter of the input file format
     out_format : str | int | UUID | FormatInfo
-        The extension or ID of the output file format
+        The extension, ID, or info of the converter of the output file format
 
     Returns
     -------
@@ -2062,9 +2186,9 @@ def get_possible_conversions(in_format: str | int | UUID | FormatInfo,
     Parameters
     ----------
     in_format : str | int | UUID | FormatInfo
-        The extension or ID of the input file format
+        The extension, ID, or info of the converter of the input file format
     out_format : str | int | UUID | FormatInfo
-        The extension or ID of the output file format
+        The extension, ID, or info of the converter of the output file format
 
     Returns
     -------
@@ -2123,20 +2247,21 @@ def get_conversion_pathway(in_format: str | int | UUID | FormatInfo,
                                                                    only=only)
 
 
-def disambiguate_formats(converter_name: str,
+def disambiguate_formats(converter: str | int | UUID | ConverterInfo,
                          in_format: str | int | UUID | FormatInfo,
-                         out_format: str | int | UUID | FormatInfo) -> tuple[FormatInfo, FormatInfo]:
+                         out_format: str | int | UUID | FormatInfo,
+                         **kwargs) -> tuple[FormatInfo, FormatInfo]:
     """Try to disambiguate formats by seeing if there's only one possible conversion between formats matching those
     provided.
 
     Parameters
     ----------
-    converter_name : str
-        The name of the converter
+    converter : str | int | UUID | ConverterInfo
+        The converter, specified by its name or ID
     in_format : str | int | UUID | FormatInfo
-        The extension or ID of the input file format
+        The extension, ID, or info of the converter of the input file format
     out_format : str | int | UUID | FormatInfo
-        The extension or ID of the output file format
+        The extension, ID, or info of the converter of the output file format
 
     Returns
     -------
@@ -2148,47 +2273,78 @@ def disambiguate_formats(converter_name: str,
     FileConverterDatabaseException
         If more than one format combination is possible for this conversion, or no conversion is possible
     """
+    # Check for deprecated kwargs
+    if "converter_name" in kwargs:
+        warnings.warn(f"The argument {tc.CODE}`converter_name`{tc.OFF} for the method "
+                      f"{tc.CODE}`disambiguate_formats`{tc.OFF} is deprecated as of version 0.4.0 and due to be "
+                      f"removed in a future release. Use the argument {tc.CODE}`converter`{tc.OFF} instead, which "
+                      "accepts the converter name, ID, or info", DeprecationWarning)
+        converter = kwargs["converter_name"]
 
-    # Regularize the converter name so we don't worry about case/spacing mismatches
-    converter_reg_name = regularize_name(converter_name)
+    # Check if both formats are already supplied unambiguously
+    if not isinstance(in_format, str) and not isinstance(out_format, str):
+        return get_format_info(in_format), get_format_info(out_format)
+
+    # Get the converter/format info for all input, as possible
+    converter_info = get_converter_info(converter)
+    l_in_format_info = get_format_info(in_format, "all")
+    if len(l_in_format_info) == 1:
+        in_format_name = l_in_format_info[0].format_word()
+    else:
+        in_format_name = f"{tc.MESSAGE}'{in_format}'{tc.OFF}"
+    l_out_format_info = get_format_info(out_format, "all")
+    if len(l_out_format_info) == 1:
+        out_format_name = l_out_format_info[0].format_word()
+    else:
+        out_format_name = f"{tc.MESSAGE}'{out_format}'{tc.OFF}"
 
     # Get all possible conversions, and see if we only have one for this converter
     l_possible_conversions = [x for x in get_possible_conversions(in_format, out_format)
-                              if x[0].name == converter_reg_name]
+                              if x[0] is converter_info]
 
     if len(l_possible_conversions) == 1:
         return l_possible_conversions[0][1], l_possible_conversions[0][2]
     elif len(l_possible_conversions) == 0:
-        raise FileConverterDatabaseException(f"Conversion from {in_format} to {out_format} with converter "
-                                             f"{converter_name} is not supported", help=True)
+        raise FileConverterDatabaseException(f"Conversion from {in_format_name} to "
+                                             f"{out_format_name} with converter "
+                                             f"{converter_info.format_word()} is not supported", help=True)
     else:
-        msg = (f"Conversion from {in_format} to {out_format} with converter {converter_name} is ambiguous. Please "
-               "Use the ID or disambiguated name (listed below) of the desired conversion. Possible matching "
-               "conversions are:\n")
+
+        converter_name = converter.format_word() if isinstance(
+            converter, ConverterInfo) else f"{tc.PATH}'{converter}'{tc.OFF}"
+
+        msg = (f"Conversion from {in_format_name} to {out_format_name} with converter "
+               f"{converter_name} is ambiguous. Please Use the ID or disambiguated name (listed below) "
+               "of the desired conversion. Possible matching conversions are:\n")
         for _, possible_in_format, possible_out_format in l_possible_conversions:
-            msg += (f"    {possible_in_format.id}: {possible_in_format.disambiguated_name} "
-                    f"({possible_in_format.description}) to "
-                    f"{possible_out_format.id}: {possible_out_format.disambiguated_name} "
-                    f"({possible_out_format.description})\n")
+            msg += (f"    {possible_in_format.format_inline()} to {possible_out_format.format_inline()}\n")
         # Trim the final newline from the message
         msg = msg[:-1]
         raise FileConverterDatabaseException(msg, help=True)
 
 
-def get_possible_formats(converter_name: str) -> tuple[list[FormatInfo], list[FormatInfo]]:
+def get_possible_formats(converter: str | int | UUID | ConverterInfo,
+                         **kwargs) -> tuple[list[FormatInfo], list[FormatInfo]]:
     """Get a list of input and output formats that a given converter supports
 
     Parameters
     ----------
-    converter_name : str
-        The name of the converter
+    converter: str | int | UUID | ConverterInfo
+        The converter, specified by its name or ID
 
     Returns
     -------
     tuple[list[FormatInfo], list[FormatInfo]]
         A tuple of a list of the supported input formats and a list of the supported output formats
     """
-    return get_database().conversions_table.get_possible_formats(converter_name=regularize_name(converter_name))
+    # Check for deprecated kwargs
+    if "converter_name" in kwargs:
+        warnings.warn(f"The argument {tc.CODE}`converter_name`{tc.OFF} for the method "
+                      f"{tc.CODE}`disambiguate_formats`{tc.OFF} is deprecated as of version 0.4.0 and due to be "
+                      f"removed in a future release. Use the argument {tc.CODE}`converter`{tc.OFF} instead, which "
+                      "accepts the converter name, ID, or info", DeprecationWarning)
+        converter = kwargs["converter_name"]
+    return get_database().conversions_table.get_possible_formats(converter)
 
 
 def _find_arg(tl_args: tuple[list[FlagInfo], list[OptionInfo]],
@@ -2200,21 +2356,22 @@ def _find_arg(tl_args: tuple[list[FlagInfo], list[OptionInfo]],
         if len(l_found) > 0:
             return l_found[0]
     # If we get here, it wasn't found in either list
-    raise FileConverterDatabaseException(f"Argument '{arg}' was not found in the list of allowed arguments for this "
-                                         "conversion")
+    raise FileConverterDatabaseException(f"Argument {tc.PATH}'{arg}'{tc.OFF} was not found in the list of allowed "
+                                         "arguments for this conversion")
 
 
-def get_in_format_args(converter_name: str | int | UUID | ConverterInfo,
-                       format_name: str | int | UUID | FormatInfo,
-                       arg: str | None = None) -> tuple[list[FlagInfo], list[OptionInfo]] | ArgInfo:
+def get_in_format_args(converter: str | int | UUID | ConverterInfo,
+                       in_format: str | int | UUID | FormatInfo,
+                       arg: str | None = None,
+                       **kwargs) -> tuple[list[FlagInfo], list[OptionInfo]] | ArgInfo:
     """Get the input flags and options supported by a given converter for a given format (provided as its extension).
     Optionally will provide information on just a single flag or option if its value is provided as an optional argument
 
     Parameters
     ----------
-    converter_name : str | int | UUID | ConverterInfo
+    converter : str | int | UUID | ConverterInfo
         The converter name
-    format_name : str | int | UUID | FormatInfo
+    in_format : str | int | UUID | FormatInfo
         The file format name (extension)
     arg : str | None
         If provided, only information on this flag or option will be provided
@@ -2228,25 +2385,43 @@ def get_in_format_args(converter_name: str | int | UUID | ConverterInfo,
         (if `arg` provided) Info on the provided flag or option
     """
 
-    converter_info = get_converter_info(converter_name)
-    tl_args = converter_info.get_in_format_args(format_name)
+    # Check for deprecated kwargs
+    if "converter_name" in kwargs:
+        warnings.warn(f"The argument {tc.CODE}`converter_name`{tc.OFF} for the method "
+                      f"{tc.CODE}`get_in_format_args`{tc.OFF} is deprecated as of version 0.4.0 and due to be "
+                      f"removed in a future release. Use the argument {tc.CODE}`converter`{tc.OFF} instead, which "
+                      "accepts the converter name, ID, or info", DeprecationWarning)
+        converter_info = get_converter_info(kwargs["converter_name"])
+    else:
+        converter_info = get_converter_info(converter)
+    if "format_name" in kwargs:
+        warnings.warn(f"The argument {tc.CODE}`format_name`{tc.OFF} for the method "
+                      f"{tc.CODE}`get_in_format_args`{tc.OFF} is deprecated as of version 0.4.0 and due to be "
+                      f"removed in a future release. Use the argument {tc.CODE}`in_format`{tc.OFF} instead, which "
+                      "accepts the format name, ID, or info", DeprecationWarning)
+        in_format_info = get_converter_info(kwargs["format_name"])
+    else:
+        in_format_info = get_format_info(in_format)
+
+    tl_args = converter_info.get_in_format_args(in_format_info)
     if not arg:
         return tl_args
     return _find_arg(tl_args, arg)
 
 
-def get_out_format_args(converter_name: str | int | UUID | ConverterInfo,
-                        format_name: str | int | UUID | FormatInfo,
-                        arg: str | None = None) -> tuple[list[FlagInfo], list[OptionInfo]] | ArgInfo:
-    """Get the output flags and options supported by a given converter for a given format (provided as its extension).
+def get_out_format_args(converter: str | int | UUID | ConverterInfo,
+                        out_format: str | int | UUID | FormatInfo,
+                        arg: str | None = None,
+                        **kwargs) -> tuple[list[FlagInfo], list[OptionInfo]] | ArgInfo:
+    """Get the input flags and options supported by a given converter for a given format (provided as its extension).
     Optionally will provide information on just a single flag or option if its value is provided as an optional argument
 
     Parameters
     ----------
-    converter_name : str | int | UUID | ConverterInfo
-        The converter
-    format_name : str | int | UUID | FormatInfo
-        The file format (extension)
+    converter : str | int | UUID | ConverterInfo
+        The converter name
+    out_format : str | int | UUID | FormatInfo
+        The file format name (extension)
     arg : str | None
         If provided, only information on this flag or option will be provided
 
@@ -2259,33 +2434,53 @@ def get_out_format_args(converter_name: str | int | UUID | ConverterInfo,
         (if `arg` provided) Info on the provided flag or option
     """
 
-    converter_info = get_converter_info(converter_name)
-    tl_args = converter_info.get_out_format_args(format_name)
+    # Check for deprecated kwargs
+    if "converter_name" in kwargs:
+        warnings.warn(f"The argument {tc.CODE}`converter_name`{tc.OFF} for the method "
+                      f"{tc.CODE}`get_out_format_args`{tc.OFF} is deprecated as of version 0.4.0 and due to be "
+                      f"removed in a future release. Use the argument {tc.CODE}`converter`{tc.OFF} instead, which "
+                      "accepts the converter name, ID, or info", DeprecationWarning)
+        converter_info = get_converter_info(kwargs["converter_name"])
+    else:
+        converter_info = get_converter_info(converter)
+    if "format_name" in kwargs:
+        warnings.warn(f"The argument {tc.CODE}`format_name`{tc.OFF} for the method "
+                      f"{tc.CODE}`get_out_format_args`{tc.OFF} is deprecated as of version 0.4.0 and due to be "
+                      f"removed in a future release. Use the argument {tc.CODE}`out_format`{tc.OFF} instead, which "
+                      "accepts the format name, ID, or info", DeprecationWarning)
+        out_format_info = get_converter_info(kwargs["format_name"])
+    else:
+        out_format_info = get_format_info(out_format)
+
+    tl_args = converter_info.get_out_format_args(out_format_info)
     if not arg:
         return tl_args
     return _find_arg(tl_args, arg)
 
 
-def calc_conversion_prop_weight(converter_info: ConverterInfo, in_format_info: FormatInfo,
-                                out_format_info: FormatInfo) -> int:
+def calc_conversion_prop_weight(converter: str | int | UUID | ConverterInfo,
+                                in_format: str | int | UUID | FormatInfo,
+                                out_format: str | int | UUID | FormatInfo) -> int:
     """Get the property weight for a conversion from `in_format_info` to `out_format_info` (not including the offset
     applied to it when stored in the total weight).
 
     Parameters
     ----------
-    converter_info : ConverterInfo
-        The converter used for the conversion (unused at present, but may be used in the future if found to be
-        necessary, so needed here for consistent syntax)
-    in_format_info : FormatInfo
-        The source format for the conversion
-    out_format_info : FormatInfo
-        The output format for the conversion
+    converter : str | int | UUID | ConverterInfo
+        The converter, specified by its name or ID
+    in_format : str | int | UUID | FormatInfo
+        The extension, ID, or info of the converter of the input file format
+    out_format : str | int | UUID | FormatInfo
+        The extension, ID, or info of the converter of the output file format
 
     Returns
     -------
     int
         64-bit bit weight, where bits set to 1 indicate the properties lost or potentially in this conversion
     """
+
+    # Get the info for all input
+    in_format_info, out_format_info = disambiguate_formats(converter, in_format, out_format)
 
     # Start the weight as the minimum weight for any conversion. We'll turn on bits for each property potentially lost
     prop_weight = 0
@@ -2302,20 +2497,20 @@ def calc_conversion_prop_weight(converter_info: ConverterInfo, in_format_info: F
     return prop_weight
 
 
-def calc_conversion_prec_weight(converter_info: ConverterInfo, in_format_info: FormatInfo,
-                                out_format_info: FormatInfo) -> int:
+def calc_conversion_prec_weight(converter: str | int | UUID | ConverterInfo,
+                                in_format: str | int | UUID | FormatInfo,
+                                out_format: str | int | UUID | FormatInfo) -> int:
     """Get the precision weight for a conversion from `in_format_info` to `out_format_info` (not including the offset
     applied to it when stored in the total weight).
 
     Parameters
     ----------
-    converter_info : ConverterInfo
-        The converter used for the conversion (unused at present, but may be used in the future if found to be
-        necessary, so needed here for consistent syntax)
-    in_format_info : FormatInfo
-        The source format for the conversion
-    out_format_info : FormatInfo
-        The output format for the conversion
+    converter : str | int | UUID | ConverterInfo
+        The converter, specified by its name or ID
+    in_format : str | int | UUID | FormatInfo
+        The extension, ID, or info of the converter of the input file format
+    out_format : str | int | UUID | FormatInfo
+        The extension, ID, or info of the converter of the output file format
 
     Returns
     -------
@@ -2323,6 +2518,8 @@ def calc_conversion_prec_weight(converter_info: ConverterInfo, in_format_info: F
         32-bit bit weight, where the bit 2N is set to 1, with N being the number of decimal places of precision lost,
         bound to 0 <= N <= 12
     """
+    # Get the info for all input
+    in_format_info, out_format_info = disambiguate_formats(converter, in_format, out_format)
 
     # Calculate the precision loss, defaulting to the maximum if unknown
     prec_loss = PREC_MAX_DIGIT_LOSS
@@ -2333,8 +2530,9 @@ def calc_conversion_prec_weight(converter_info: ConverterInfo, in_format_info: F
     return 1 << PREC_GAP_BITS*prec_loss
 
 
-def calc_conversion_time_weight(converter_info: ConverterInfo, in_format_info: FormatInfo,
-                                out_format_info: FormatInfo) -> int:
+def calc_conversion_time_weight(converter: str | int | UUID | ConverterInfo,
+                                in_format: str | int | UUID | FormatInfo,
+                                out_format: str | int | UUID | FormatInfo) -> int:
     """Get the time weight for a conversion from `in_format_info` to `out_format_info` (not including the offset
     applied to it when stored in the total weight)
 
@@ -2342,13 +2540,12 @@ def calc_conversion_time_weight(converter_info: ConverterInfo, in_format_info: F
 
     Parameters
     ----------
-    converter_info : ConverterInfo
-        The converter used for the conversion (unused at present, but may be used in the future if found to be
-        necessary, so needed here for consistent syntax)
-    in_format_info : FormatInfo
-        The source format for the conversion
-    out_format_info : FormatInfo
-        The output format for the conversion
+    converter : str | int | UUID | ConverterInfo
+        The converter, specified by its name or ID
+    in_format : str | int | UUID | FormatInfo
+        The extension, ID, or info of the converter of the input file format
+    out_format : str | int | UUID | FormatInfo
+        The extension, ID, or info of the converter of the output file format
 
     Returns
     -------
@@ -2358,32 +2555,34 @@ def calc_conversion_time_weight(converter_info: ConverterInfo, in_format_info: F
     return 0
 
 
-def calc_conversion_conv_weight(converter_info: ConverterInfo, in_format_info: FormatInfo,
-                                out_format_info: FormatInfo) -> int:
+def calc_conversion_conv_weight(converter: str | int | UUID | ConverterInfo,
+                                in_format: str | int | UUID | FormatInfo,
+                                out_format: str | int | UUID | FormatInfo) -> int:
     """Get the converter weight for a conversion from `in_format_info` to `out_format_info` with converter
     `converter_info` (not including the offset applied to it when stored in the total weight)
 
     Parameters
     ----------
-    converter_info : ConverterInfo
-        The converter used for the conversion
-    in_format_info : FormatInfo
-        The source format for the conversion (unused at present, but may be used in the future if found to be
-        necessary, so needed here for consistent syntax)
-    out_format_info : FormatInfo
-        The output format for the conversion (unused at present, but may be used in the future if found to be
-        necessary, so needed here for consistent syntax)
+    converter : str | int | UUID | ConverterInfo
+        The converter, specified by its name or ID
+    in_format : str | int | UUID | FormatInfo
+        The extension, ID, or info of the converter of the input file format
+    out_format : str | int | UUID | FormatInfo
+        The extension, ID, or info of the converter of the output file format
 
     Returns
     -------
     int
         64-bit bit weight, representing the weight based on the conversion time (implementation TBD)
     """
+    # Get the info for all input
+    converter_info = get_converter_info(converter)
     return converter_info.weight
 
 
-def calc_conversion_weight(converter_info: ConverterInfo, in_format_info: FormatInfo,
-                           out_format_info: FormatInfo) -> int:
+def calc_conversion_weight(converter: str | int | UUID | ConverterInfo,
+                           in_format: str | int | UUID | FormatInfo,
+                           out_format: str | int | UUID | FormatInfo) -> int:
     """Get the combined weight for a conversion
 
     Parameters
@@ -2400,6 +2599,9 @@ def calc_conversion_weight(converter_info: ConverterInfo, in_format_info: Format
     int
         64-bit weight
     """
+    # Get the info for all input
+    converter_info = get_converter_info(converter)
+    in_format_info, out_format_info = disambiguate_formats(converter, in_format, out_format)
 
     return combine_conversion_weight(calc_conversion_prop_weight(converter_info, in_format_info, out_format_info),
                                      calc_conversion_prec_weight(converter_info, in_format_info, out_format_info),

@@ -5,12 +5,15 @@ Miscellaneous utility functions used by this project
 """
 
 
+import argparse
 import json
+import re
 import sys
-import textwrap
 from functools import lru_cache
 from importlib.metadata import Distribution
 from pathlib import Path
+
+import wraptext
 
 from psdi_data_conversion.constants import TERM_WIDTH
 from psdi_data_conversion.file_io import get_package_path
@@ -21,20 +24,129 @@ JsonMainDict = dict[str, None | int | str | bool | JsonDict | list[JsonDict]]
 
 
 class TextColors:
-    HEADER = '\033[95m'
-    OKBLUE = '\033[94m'
-    OKCYAN = '\033[96m'
-    OKGREEN = '\033[92m'
-    WARNING = '\033[93m'
-    FAIL = '\033[91m'
-    ENDC = '\033[0m'
-    BOLD = '\033[1m'
-    UNDERLINE = '\033[4m'
+    """ANSI escape codes that can be used to color text printed to the terminal. E.g. to give text the header color,
+    you could do `print(f"{TextColors.MAGENTA}Header text{TextColors.OFF}")`
+    """
+
+    # Text color codes
+
+    RED = ERROR = FAIL = "\033[91m"
+    """Start coloring red"""
+
+    DARKRED = "\033[31m"
+    """Start coloring dark red"""
+
+    GREEN = SUCCESS = "\033[92m"
+    """Start coloring green"""
+
+    DARKGREEN = "\033[32m"
+    """Start coloring dark green"""
+
+    YELLOW = CODE = "\033[93m"
+    """Start coloring yellow"""
+
+    DARKYELLOW = WARNING = "\033[33m"
+    """Start coloring dark yellow"""
+
+    BLUE = ID = "\033[94m"
+    """Start coloring blue"""
+
+    DARKBLUE = "\033[34m"
+    """Start coloring dark blue"""
+
+    MAGENTA = "\033[95m"
+    """Start coloring magenta"""
+
+    DARKMAGENTA = "\033[35m"
+    """Start coloring dark magenta"""
+
+    CYAN = PATH = MESSAGE = "\033[96m"
+    """Start coloring cyan"""
+
+    DARKCYAN = "\033[36m"
+    """Start coloring dark cyan"""
+
+    # Text formatting codes
+
+    BOLD = "\033[1m"
+    """Start formatting bold - NOT compatible with coloring"""
+
+    DIM = "\033[2m"
+    """Start formatting dim (opposite of bold) - NOT compatible with coloring"""
+
+    UNDERLINE = "\033[4m"
+    """Start underlining - compatible with coloring"""
+
+    # Combined codes
+
+    HEADER = "\033[95m\033[4m"
+    """Start header section - magenta underlined"""
+
+    LINK = "\033[96m\033[4m"
+    """Start link - cyan underlined"""
+
+    # Other codes
+
+    OFF = "\033[0m"
+    """End all coloring and formatting"""
+
+    @classmethod
+    def _get_codes(cls):
+        return [x for x in dir(cls) if not x.startswith("_") and x.upper() == x]
+
+    def display(self):
+        """Displays all color codes"""
+        l_codes_and_vals = [(x, getattr(self, x)) for x in self._get_codes()]
+        l_codes_and_vals.sort(key=lambda x: int(x[1].replace("\033[", "").replace("m", "")) if x[1] else x[0])
+        for code, val in l_codes_and_vals:
+            print(f"{val}{code}{self.OFF}")
+
+    def enable(self):
+        """Enable colors"""
+        l_codes = self._get_codes()
+        for code in l_codes:
+            setattr(self, code, getattr(type(self), code))
+
+    def disable(self):
+        """Disable colors"""
+        l_codes = self._get_codes()
+        for code in l_codes:
+            setattr(self, code, "")
 
 
-def get_wrapped_str(s: str, **kwargs):
+tc = TextColors()
+
+
+def disable_colors():
+    """Globally disable color formatting in output text"""
+    tc.disable()
+
+
+def enable_colors():
+    """Globally (re)enable color formatting in output text"""
+    tc.enable()
+
+
+CONTROL_CODE_RE = re.compile("\033\\[\\d+?m")
+
+
+def strip_control_codes(s: str):
+    """Strip all control codes from a string"""
+    return CONTROL_CODE_RE.sub("", str(s))
+
+
+def displaylen(s: str):
+    """Get the length of a string as it would be displayed in the terminal - this is, stripping out control codes"""
+    return len(strip_control_codes(s))
+
+
+def get_wrapped_str(s: str, color: str | None = None, **kwargs):
     """Get a string wrapped to the terminal width"""
-    return textwrap.fill(s, width=TERM_WIDTH, **kwargs)
+    if color:
+        s_colored = color+s+TextColors.OFF
+    else:
+        s_colored = s
+    return wraptext.fill(s_colored, width=TERM_WIDTH, **kwargs)
 
 
 def print_wrap(s: str, newline=False, err=False, **kwargs):
@@ -66,6 +178,14 @@ def regularize_name(name: str):
     return name.lower().replace(" ", "")
 
 
+class CustomHelpFormatter(argparse.HelpFormatter):
+    """Custom formatter for argparse
+    """
+
+    def _format_action(self, action):
+        return super()._format_action(action) + "\n"
+
+
 def in_editable_mode():
     """Checks if the `psdi_data_conversion` module is installed in editable mode
     """
@@ -80,9 +200,9 @@ def confirm_editable_mode():
     """Checks if the `psdi_data_conversion` module is installed in editable mode, and exits the program if not
     """
     if not in_editable_mode():
-        print_wrap(f"{TextColors.FAIL}ERROR:{TextColors.ENDC} To run this script, the package must be installed in "
+        print_wrap(f"{TextColors.RED}ERROR:{TextColors.OFF} To run this script, the package must be installed in "
                    f"editable mode. Please reinstall with:\n")
-        print(f"{TextColors.WARNING}pip install --editable .{TextColors.ENDC}\n")
+        print_wrap("pip install --editable .\n", color=TextColors.WARNING)
         print_wrap("and re-run this script.")
         exit(1)
 
