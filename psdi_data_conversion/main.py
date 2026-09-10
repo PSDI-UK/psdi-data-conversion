@@ -158,7 +158,9 @@ class ConvertArgs:
         if self.name == CONVERTER_AUTO:
             self.name = self._determine_auto_converter()
 
-        if not self.name:
+        if not self.name or self.name == CONVERTER_AUTO:
+            # Double check the name is set to an actual converter - this path shouldn't be possible, but catch it
+            # explicitly here just in case, to avoid a more confusing exception later
             raise FileConverterInputException("Could not automatically determine converter for conversion for an "
                                               "unknown reason.")
 
