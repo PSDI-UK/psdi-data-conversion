@@ -377,7 +377,7 @@ def _run_single_test_conversion_with_library(test_spec: SingleConversionTestSpec
             conversion_kwargs["to_format"] = test_spec.to_format
     else:
         run_func = run_converter
-        conversion_kwargs["name"] = test_spec.converter_name
+        conversion_kwargs["converter"] = test_spec.converter_name
         conversion_kwargs["to_format"] = test_spec.to_format
 
     # Capture stdout and stderr while we run this test. We use a try block to stop capturing as soon as testing finishes

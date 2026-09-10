@@ -994,7 +994,7 @@ def run_from_args(args: ConvertArgs):
             conversion_result = run_converter(filename=qualified_filename,
                                               to_format=args.to_format,
                                               from_format=args.from_format,
-                                              name=args.name,
+                                              converter=args.name,
                                               data=data,
                                               use_envvars=False,
                                               input_dir=args.input_dir,
