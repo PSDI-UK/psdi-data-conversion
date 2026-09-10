@@ -160,7 +160,7 @@ def converter_is_registered(name: str):
     return regularize_name(name) in L_REGISTERED_CONVERTERS
 
 
-def get_converter(*args, name=const.CONVERTER_DEFAULT, **converter_kwargs) -> base.FileConverter:
+def get_converter(*args, name=const.CONVERTER_OB, **converter_kwargs) -> base.FileConverter:
     """Get a FileConverter of the proper subclass for the requested converter type
 
     Parameters

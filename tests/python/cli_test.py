@@ -267,7 +267,7 @@ def test_detail_converter(capsys):
     captured = capsys.readouterr()
     _check_no_errors(captured)
     assert const.CONVERTER_C2X in captured.out
-    assert const.CONVERTER_DEFAULT not in captured.out
+    assert const.CONVERTER_OB not in captured.out
 
 
 def test_get_conversions(capsys):

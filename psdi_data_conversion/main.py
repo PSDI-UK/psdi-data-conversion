@@ -12,21 +12,23 @@ import os
 import sys
 import textwrap
 from argparse import ArgumentParser
+from functools import reduce
 from itertools import product
 
 import wraptext
 
 from psdi_data_conversion import constants as const
-from psdi_data_conversion.constants import CL_SCRIPT_NAME, CONVERTER_DEFAULT, TERM_WIDTH
+from psdi_data_conversion.constants import CL_SCRIPT_NAME, CONVERTER_AUTO, TERM_WIDTH
 from psdi_data_conversion.converter import (D_CONVERTER_ARGS, L_REGISTERED_CONVERTERS, L_SUPPORTED_CONVERTERS,
                                             converter_is_registered, converter_is_supported,
                                             get_supported_converter_class, run_converter)
 from psdi_data_conversion.converters.base import (FileConverterAbortException, FileConverterException,
                                                   FileConverterInputException)
-from psdi_data_conversion.database import (D_FORMAT_PROPERTY_ATTRS, ConversionQualityInfo, FormatInfo,
-                                           disambiguate_formats, get_conversion_pathway, get_conversion_quality,
-                                           get_converter_info, get_format_info, get_in_format_args,
-                                           get_out_format_args, get_possible_conversions, get_possible_formats)
+from psdi_data_conversion.database import (CONVERSION_WEIGHT_MAX, D_FORMAT_PROPERTY_ATTRS, ConversionQualityInfo,
+                                           ConverterInfo, FormatInfo, disambiguate_formats, get_conversion_pathway,
+                                           get_conversion_quality, get_conversion_weight, get_converter_info,
+                                           get_format_info, get_in_format_args, get_out_format_args,
+                                           get_possible_conversions, get_possible_formats)
 from psdi_data_conversion.file_io import split_archive_ext
 from psdi_data_conversion.log_utility import get_log_level_from_str
 from psdi_data_conversion.utils import (CustomHelpFormatter, displaylen, print_wrap, regularize_name,
@@ -58,7 +60,7 @@ class ConvertArgs:
         elif converter_name:
             self.name = regularize_name(" ".join(converter_name))
         else:
-            self.name = None
+            self.name = CONVERTER_AUTO
         self.delete_input = args.delete_input
         self.from_flags: str = args.from_flags.replace(r"\-", "-")
         self.to_flags: str = args.to_flags.replace(r"\-", "-")
@@ -110,10 +112,6 @@ class ConvertArgs:
             # For this operation, any other arguments can be ignored
             return
 
-        # If not listing and a converter name wasn't supplied, use the default converter
-        if not self.name:
-            self.name = regularize_name(CONVERTER_DEFAULT)
-
         # Quiet mode is equivalent to logging mode == LOGGING_NONE, so normalize them if either is set
         if self.quiet:
             self.log_mode = const.LOG_NONE
@@ -124,6 +122,18 @@ class ConvertArgs:
 
         if len(self.l_args) == 0:
             raise FileConverterInputException("One or more names of files to convert must be provided", help=True)
+
+        # Ensure we can determine at least one possible format for each file
+        if not self.from_format:
+            l_bad_filenames: list[str] = []
+            for in_filename in self.l_args:
+                ext = os.path.splitext(in_filename)[1]
+                if not ext or len(get_format_info(ext, "all")) == 0:
+                    l_bad_filenames.append(in_filename)
+            if l_bad_filenames:
+                msg = "\n".join([f"Cannot determine input format for file {tc.PATH}'{x}'{tc.OFF}"
+                                 for x in l_bad_filenames])
+                raise FileConverterInputException(msg)
 
         if self._input_dir is not None and not os.path.isdir(self._input_dir):
             raise FileConverterInputException(f"The provided input directory {tc.PATH}'{self._input_dir}'{tc.OFF} does "
@@ -141,6 +151,14 @@ class ConvertArgs:
                 raise FileConverterInputException(f"Output directory {tc.PATH}'{self._output_dir}'{tc.OFF} exists but "
                                                   "is not a directory", help=True)
             os.makedirs(self._output_dir, exist_ok=True)
+
+        # If the converter is set to be automatically determined, do so now
+        if self.name == CONVERTER_AUTO:
+            self.name = self._determine_auto_converter()
+
+        if not self.name:
+            raise FileConverterInputException("Could not automatically determine converter for conversion for an "
+                                              "unknown reason.")
 
         # Check the converter is recognized
         if not converter_is_supported(self.name):
@@ -223,6 +241,73 @@ class ConvertArgs:
                     self._log_file = os.path.join(self.output_dir, filename_base + const.LOG_EXT)
         return self._log_file
 
+    def _get_possible_converters(self, from_format_info: FormatInfo):
+        """Get a list of all converters which can perform a conversion from `from_format` to `self.to_format`"""
+        l_possible_conversions = get_possible_conversions(from_format_info, self.to_format)
+        s_possible_converters = {x[0] for x in l_possible_conversions}
+        return s_possible_converters
+
+    def _get_best_converter(self, s_converters: set[ConverterInfo], s_from_formats: set[FormatInfo]):
+        """Determine the best converter from which has the lowest total weight across all formats"""
+        best_weight: int = CONVERSION_WEIGHT_MAX
+        best_converter = None
+        for converter_info in s_converters:
+            weight = sum([get_conversion_weight(converter_info, x, self.to_format)
+                          for x in s_from_formats])
+            if weight < best_weight:
+                best_converter = converter_info
+                best_weight = weight
+        return best_converter
+
+    def _determine_auto_converter(self):
+        """Automatically determine the converter to use when the 'auto' keyword is used"""
+
+        # If input format wasn't provided, see first if we can uniquely determine it from the input files
+        if not self.from_format:
+            s_input_exts = {os.path.splitext(x)[1] for x in self.l_args}
+            if len(s_input_exts) == 1:
+                self.from_format = s_input_exts.pop()
+            else:
+                # Check if there's exactly one possible format for each extension
+                s_format_infos = set()
+                l_bad_exts: list[str] = []
+                for ext in s_input_exts:
+                    l_format_infos = get_format_info(ext, "all")
+                    if len(l_format_infos) != 1:
+                        l_bad_exts.append(ext)
+                    else:
+                        s_format_infos.add(l_format_infos[0])
+                if l_bad_exts:
+                    msg = (f"When using {tc.MESSAGE}'auto'{tc.OFF} converter, either the {tc.CODE}`"
+                           f"-f/--from`{tc.OFF} argument must be provided to specify input format, or else input "
+                           "format must be uniquely identifiable for all input files. The following files could not "
+                           "have their format uniquely identified: " +
+                           ", ".join([x for x in self.l_args if os.path.splitext(x)[1] in l_bad_exts]))
+                    raise FileConverterInputException(msg, help=True)
+
+                # Determine converters which can handle conversion from each input format to the output format
+                ls_converters = [self._get_possible_converters(x) for x in s_format_infos]
+                s_converters = reduce(lambda s1, s2: s1.intersection(s2), ls_converters)
+
+                if len(s_converters) == 0:
+                    raise FileConverterInputException("No converter is available which can perform a conversion of all "
+                                                      f"input files to {tc.PATH}'{self.to_format}'{tc.OFF}. Please "
+                                                      "try converting files in batches of one type at a time",
+                                                      help=True)
+
+                return self._get_best_converter(s_converters, s_format_infos)
+
+        # If the input format was provided, we can use that directly
+        l_format_infos = get_format_info(self.from_format, "all")
+        if len(l_format_infos) != 1:
+            raise FileConverterInputException(f"When using {tc.MESSAGE}'auto'{tc.OFF} converter, the input format "
+                                              f"specified with {tc.CODE}`-f/--from`{tc.OFF} must unambiguously "
+                                              "identify a format. Please use the ID or disambiguated name from the "
+                                              "correct format in the following list: " +
+                                              "\n".join([x.format_oneline() for x in l_format_infos]), help=True)
+        s_converters = self._get_possible_converters(l_format_infos[0])
+        return self._get_best_converter(s_converters, set(l_format_infos))
+
 
 def get_argument_parser():
     """Get an argument parser for this script.
@@ -256,7 +341,9 @@ def get_argument_parser():
                         f"be created in the {tc.CODE}`-i/--in`{tc.OFF} directory if that was provided, or else in the "
                         "directory containing the first input file.")
     parser.add_argument("-w", "--with", type=str, nargs="+",
-                        help=f"The converter to be used (default {tc.MESSAGE}'Open Babel'{tc.OFF}).")
+                        help=f"The converter to be used, or else the keyword {tc.MESSAGE}'auto'{tc.OFF}. "
+                        f"{tc.MESSAGE}'auto'{tc.OFF} will automatically determine a compatible converter. Default "
+                        f"{tc.MESSAGE}'auto'{tc.OFF}).")
     parser.add_argument("--delete-input", action="store_true",
                         help="If set, input files will be deleted after conversion, default they will be kept")
     parser.add_argument("--from-flags", type=str, default="",

@@ -21,7 +21,7 @@ from unittest.mock import patch
 import py
 import pytest
 
-from psdi_data_conversion.constants import CONVERTER_DEFAULT, GLOBAL_LOG_FILENAME, LOG_NONE, OUTPUT_LOG_EXT
+from psdi_data_conversion.constants import CONVERTER_OB, GLOBAL_LOG_FILENAME, LOG_NONE, OUTPUT_LOG_EXT
 from psdi_data_conversion.converter import run_converter, run_converter_chain
 from psdi_data_conversion.converters.openbabel.converter import COORD_GEN_KEY, COORD_GEN_QUAL_KEY
 from psdi_data_conversion.database import get_converter_info, get_format_info
@@ -137,7 +137,7 @@ class ConversionTestSpec:
     ex_out_filename: str | Iterable[str] | None = None
     """The expected name of the output file, when it needs to be explicitly specified"""
 
-    converter_name: str | Iterable[str] = CONVERTER_DEFAULT
+    converter_name: str | Iterable[str] = CONVERTER_OB
     """The name of the converter to be used for the test, or a list thereof"""
 
     conversion_kwargs: dict[str, Any] | Iterable[dict[str, Any]] = field(default_factory=dict)
@@ -257,7 +257,7 @@ class SingleConversionTestSpec:
     ex_out_filename: str | None = None
     """The expected name of the output file"""
 
-    converter_name: str | Iterable[str] = CONVERTER_DEFAULT
+    converter_name: str | Iterable[str] = CONVERTER_OB
     """The name of the converter to be used for the test"""
 
     conversion_kwargs: dict[str, Any] = field(default_factory=dict)

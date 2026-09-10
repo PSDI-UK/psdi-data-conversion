@@ -123,6 +123,9 @@ D_PROP_BITS = {
 }
 D_PROP_WEIGHTS = {key: 1 << bit for key, bit in D_PROP_BITS.items()}
 
+# Maximum possible conversion weight
+CONVERSION_WEIGHT_MAX = 1 << 64 - 1
+
 # Number of bits the property weight section is offset within the full weight when everything is combined into a single
 # 64-bit integer
 PROP_WEIGHT_BIT_OFFSET = 48

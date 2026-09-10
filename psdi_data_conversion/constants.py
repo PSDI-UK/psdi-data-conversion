@@ -144,8 +144,8 @@ DEFAULT_LISTING_LOG_FILE = "data-convert-list" + LOG_EXT
 # Converter names are determined based on the modules present in the 'converters' package by the 'converter' module
 # This module contains constant dicts and lists of registered converters
 
-# Default converter - this must match the name of one of the registered converters
-CONVERTER_DEFAULT = 'Open Babel'
+# Keyword to automatically determine a converter
+CONVERTER_AUTO = "auto"
 
 # Converter names
 CONVERTER_OB = 'Open Babel'
