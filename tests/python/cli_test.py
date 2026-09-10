@@ -196,7 +196,6 @@ def _check_no_errors(captured):
     """Check that no errors were produced in output"""
     assert not captured.err
     assert "Traceback" not in captured.out
-    assert "Traceback" not in captured.err
 
 
 @pytest.mark.parametrize("auto_str", ["", "-w auto", "-w Auto", "--with AUTO"])
