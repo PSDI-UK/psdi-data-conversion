@@ -251,7 +251,7 @@ class ConvertArgs:
         s_possible_converters = {x[0] for x in l_possible_conversions}
         return s_possible_converters
 
-    def _get_best_converter(self, s_converters: set[ConverterInfo], s_from_formats: set[FormatInfo]):
+    def _get_best_converter(self, s_converters: set[ConverterInfo], s_from_formats: set[FormatInfo]) -> ConverterInfo:
         """Determine the best converter from which has the lowest total weight across all formats"""
         best_weight: int = CONVERSION_WEIGHT_MAX
         best_converter = None
@@ -265,6 +265,20 @@ class ConvertArgs:
 
     def _determine_auto_converter(self):
         """Automatically determine the converter to use when the 'auto' keyword is used"""
+
+        # Check first that the output format is uniquely specified
+        l_to_formats: list[FormatInfo] = get_format_info(self.to_format, "all")
+        if not l_to_formats:
+            raise FileConverterInputException(f"{tc.MESSAGE}'{self.to_format}'{tc.OFF} is not recognised as a valid "
+                                              "output format. To see supported formats, call:\n"
+                                              f"{tc.CODE}{CL_SCRIPT_NAME} -l{tc.OFF}", help=True)
+        elif len(l_to_formats) > 1:
+            raise FileConverterInputException(f"{tc.MESSAGE}'{self.to_format}'{tc.OFF} is ambiguous and can correspond "
+                                              f"to multiple possible output formats. When using {tc.MESSAGE}'auto"
+                                              f"'{tc.OFF} converter, both the input and output formats must be "
+                                              "uniquely specified. Please use the disambiguated name or ID for the "
+                                              "desired format from the following list:\n" +
+                                              "\n".join([x.format_oneline() for x in l_to_formats]), help=True)
 
         # If input format wasn't provided, see first if we can uniquely determine it from the input files
         if not self.from_format:
@@ -302,15 +316,23 @@ class ConvertArgs:
                 return self._get_best_converter(s_converters, s_format_infos)
 
         # If the input format was provided, we can use that directly
-        l_format_infos = get_format_info(self.from_format, "all")
-        if len(l_format_infos) != 1:
+        l_from_formats = get_format_info(self.from_format, "all")
+        if len(l_from_formats) != 1:
             raise FileConverterInputException(f"When using {tc.MESSAGE}'auto'{tc.OFF} converter, the input format "
                                               f"specified with {tc.CODE}`-f/--from`{tc.OFF} must unambiguously "
                                               "identify a format. Please use the ID or disambiguated name from the "
                                               "correct format in the following list: " +
-                                              "\n".join([x.format_oneline() for x in l_format_infos]), help=True)
-        s_converters = self._get_possible_converters(l_format_infos[0])
-        return self._get_best_converter(s_converters, set(l_format_infos))
+                                              "\n".join([x.format_oneline() for x in l_from_formats]), help=True)
+        s_converters = self._get_possible_converters(l_from_formats[0])
+
+        if len(s_converters) == 0:
+            raise FileConverterInputException("No converter is available which can perform a direct conversion from "
+                                              f"{tc.PATH}'{self.from_format}'{tc.OFF} to {tc.PATH}'{self.to_format}"
+                                              f"'{tc.OFF}. To check if a chained conversion may be possible, call:\n"
+                                              f"{tc.CODE}{CL_SCRIPT_NAME} -l -f {self.from_format} -t "
+                                              f"{self.to_format}{tc.OFF}", help=True)
+
+        return self._get_best_converter(s_converters, set(l_from_formats))
 
 
 def get_argument_parser():

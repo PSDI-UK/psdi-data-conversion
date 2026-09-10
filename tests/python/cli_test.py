@@ -174,14 +174,14 @@ def test_input_processing():
     assert args.input_dir == cwd
 
     # Check that output dir defaults to match input dir
-    output_check_args = get_parsed_args(f"file1.mmcif -i {cwd}/.. -t pdb")
+    output_check_args = get_parsed_args(f"file1.mmcif -i {cwd}/.. -t pdb -w {converter_name}")
     assert output_check_args.output_dir == f"{cwd}/.."
 
     # Check that we get the default coordinate generation options
     assert args.d_converter_args[COORD_GEN_KEY] == DEFAULT_COORD_GEN
     assert args.d_converter_args[COORD_GEN_QUAL_KEY] == DEFAULT_COORD_GEN_QUAL
-    assert (get_parsed_args("file1.mmcif -t pdb --coord-gen Gen3D").d_converter_args[COORD_GEN_QUAL_KEY] ==
-            DEFAULT_COORD_GEN_QUAL)
+    assert get_parsed_args(f"file1.mmcif -t pdb -w {converter_name} --coord-gen Gen3D"
+                           ).d_converter_args[COORD_GEN_QUAL_KEY] == DEFAULT_COORD_GEN_QUAL
 
     # Check that trying to get the log file raises an exception due to the test file not existing
     with pytest.raises(FileConverterInputException):
