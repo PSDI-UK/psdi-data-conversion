@@ -199,6 +199,18 @@ def _check_no_errors(captured):
     assert "Traceback" not in captured.err
 
 
+@pytest.mark.parametrize("auto_str", ["", "-w auto", "-w Auto", "--with AUTO"])
+def test_auto_converter(auto_str):
+    """Unit test to ensure that a converter can be properly determined automatically
+    """
+
+    # Check that different ways of specifying converter are all processed correctly
+    args = get_parsed_args(f"file1.pdb -f pdb-0 -t inchi {auto_str}")
+    assert args.name == regularize_name(const.CONVERTER_OB)
+    args = get_parsed_args(f"file1.pdb -f pdb-0 -t xyz-0 {auto_str}")
+    assert args.name == regularize_name(const.CONVERTER_C2X)
+
+
 def test_list_converters(capsys):
     """Test the option to list available converters
     """
