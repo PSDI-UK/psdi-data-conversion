@@ -28,7 +28,7 @@ from psdi_data_conversion.testing.utils import run_test_conversion_with_cla, run
 from psdi_data_conversion.utils import regularize_name, strip_control_codes
 
 
-def compress_text(s: str):
+def _compress_text(s: str):
     """Strips whitespace and control codes from output to ease comparisons without worrying about things like line-
     wrapping"""
     return strip_control_codes(s.replace("\n", "").replace(" ", ""))
@@ -36,8 +36,8 @@ def compress_text(s: str):
 
 def _compressed_match(s1, s2):
     """Assert that s1 is contained in s2, ignoring control codes and whitespace"""
-    s1_compressed = compress_text(str(s1))
-    s2_compressed = compress_text(str(s2))
+    s1_compressed = _compress_text(str(s1))
+    s2_compressed = _compress_text(str(s2))
     return s1_compressed in s2_compressed
 
 
@@ -393,23 +393,19 @@ def test_get_conversions(capsys):
 
     run_with_arg_string(f"-l -f {in_format} -t {out_format}")
     captured = capsys.readouterr()
-    compressed_out: str = strip_control_codes(captured.out.replace("\n", "").replace(" ", ""))
-
-    def string_is_present_in_out(s: str) -> bool:
-        return compress_text(s) in compressed_out
 
     _check_no_errors(captured)
 
-    assert bool(l_conversions) == string_is_present_in_out("The following registered converters can convert from "
-                                                           f"{in_format} to {out_format}:")
+    assert bool(l_conversions) == _compressed_match("The following registered converters can convert from "
+                                                    f"{in_format} to {out_format}:", captured.out)
 
     for converter_info, _, _ in l_conversions:
         if converter_info.name in L_REGISTERED_CONVERTERS:
-            assert string_is_present_in_out(converter_info.pretty_name)
+            assert _compressed_match(converter_info.pretty_name, captured.out)
     for name in L_REGISTERED_CONVERTERS:
         converter_info = get_converter_info(name)
         if converter_info not in [x[0] for x in l_conversions]:
-            assert not string_is_present_in_out(converter_info.pretty_name)
+            assert not _compressed_match(converter_info.pretty_name, captured.out)
 
 
 def test_list_chain(capsys):
