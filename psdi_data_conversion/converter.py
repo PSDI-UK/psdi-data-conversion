@@ -11,6 +11,7 @@ import json
 import os
 import sys
 import traceback
+import warnings
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from multiprocessing import Lock
@@ -24,7 +25,7 @@ from psdi_data_conversion import log_utility
 from psdi_data_conversion.converters import base
 from psdi_data_conversion.file_io import (is_archive, is_supported_archive, pack_zip_or_tar, split_archive_ext,
                                           unpack_zip_or_tar)
-from psdi_data_conversion.utils import regularize_name
+from psdi_data_conversion.utils import regularize_name, tc
 
 # A lock to prevent multiple threads from logging at the same time
 logLock = Lock()
@@ -79,12 +80,12 @@ try:
 
     # Make dicts of flags, options, and args (combined flags and options) for each converter
     _d_converter_flags, _d_converter_options, _d_converter_args = {}, {}, {}
-    for name, converter_class in D_SUPPORTED_CONVERTERS.items():
+    for converter_name, converter_class in D_SUPPORTED_CONVERTERS.items():
         l_flags = converter_class.allowed_flags if converter_class.allowed_flags else ()
         l_options = converter_class.allowed_options if converter_class.allowed_options else ()
-        _d_converter_flags[name] = l_flags
-        _d_converter_options[name] = l_options
-        _d_converter_args[name] = (*l_flags, *l_options)
+        _d_converter_flags[converter_name] = l_flags
+        _d_converter_options[converter_name] = l_options
+        _d_converter_args[converter_name] = (*l_flags, *l_options)
     D_CONVERTER_FLAGS: dict[str, tuple[tuple[str, dict[str, Any], Callable]]] = _d_converter_flags
     D_CONVERTER_OPTIONS: dict[str, tuple[tuple[str, dict[str, Any], Callable]]] = _d_converter_options
     D_CONVERTER_ARGS: dict[str, tuple[tuple[str, dict[str, Any], Callable]]] = _d_converter_args
@@ -100,67 +101,143 @@ except Exception:
     D_CONVERTER_ARGS = {}
 
 
-def get_supported_converter_class(name: str):
+def _get_converter_name(converter: str | int | UUID | Any):
+    """Get the converter's name from however it's specified
+
+    Parameters
+    ----------
+    converter : str | int | UUID | ConverterInfo
+        The name, ID, or info of the desired converter
+
+    Returns
+    -------
+    str
+    """
+    if isinstance(converter, str):
+        return regularize_name(converter)
+    else:
+        from psdi_data_conversion.database import get_converter_info
+        return get_converter_info(converter).name
+
+
+def get_supported_converter_class(converter: str | int | UUID | Any = None,
+                                  **kwargs):
     """Get the appropriate converter class matching the provided name from the dict of supported converters
 
     Parameters
     ----------
-    name : str
-        Converter name (case- and space-insensitive)
+    converter : str | int | UUID | ConverterInfo
+        The name, ID, or info of the desired converter
 
     Returns
     -------
     type[base.FileConverter]
     """
-    return D_SUPPORTED_CONVERTERS[regularize_name(name)]
+
+    # Check for deprecated kwargs
+    if "name" in kwargs:
+        warnings.warn(f"The argument {tc.CODE}`name`{tc.OFF} for the method {tc.CODE}`get_supported_converter_class"
+                      f"`{tc.OFF} is deprecated as of version 0.4.0 and due to be "
+                      f"removed in a future release. Use the argument {tc.CODE}`converter`{tc.OFF} instead, which "
+                      "accepts the converter name, ID, or info", DeprecationWarning)
+        name = _get_converter_name(kwargs["name"])
+    elif converter is None:
+        raise TypeError(f"The argument {tc.CODE}`converter`{tc.OFF} for the method "
+                        f"{tc.CODE}`get_supported_converter_class`{tc.OFF} must be provided to specify the converter")
+    else:
+        name = _get_converter_name(converter)
+
+    return D_SUPPORTED_CONVERTERS[name]
 
 
-def get_registered_converter_class(name: str):
+def get_registered_converter_class(converter: str | int | UUID | Any = None,
+                                   **kwargs):
     """Get the appropriate converter class matching the provided name from the dict of supported converters
 
     Parameters
     ----------
-    name : str
-        Converter name (case- and space-insensitive)
+    converter : str | int | UUID | ConverterInfo
+        The name, ID, or info of the desired converter
 
     Returns
     -------
     type[base.FileConverter]
     """
-    return D_REGISTERED_CONVERTERS[regularize_name(name)]
+
+    # Check for deprecated kwargs
+    if "name" in kwargs:
+        warnings.warn(f"The argument {tc.CODE}`name`{tc.OFF} for the method {tc.CODE}`get_supported_converter_class"
+                      f"`{tc.OFF} is deprecated as of version 0.4.0 and due to be "
+                      f"removed in a future release. Use the argument {tc.CODE}`converter`{tc.OFF} instead, which "
+                      "accepts the converter name, ID, or info", DeprecationWarning)
+        name = _get_converter_name(kwargs["name"])
+    elif converter is None:
+        raise TypeError(f"The argument {tc.CODE}`converter`{tc.OFF} for the method "
+                        f"{tc.CODE}`get_supported_converter_class`{tc.OFF} must be provided to specify the converter")
+    else:
+        name = _get_converter_name(converter)
+    return D_REGISTERED_CONVERTERS[name]
 
 
-def converter_is_supported(name: str):
+def converter_is_supported(converter: str | int | UUID | Any = None,
+                           **kwargs):
     """Checks if a converter is supported in principle by this project
 
     Parameters
     ----------
-    name : str
-        Converter name (case- and space-insensitive)
+    converter : str | int | UUID | ConverterInfo
+        The name, ID, or info of the desired converter
 
     Returns
     -------
     bool
     """
-    return regularize_name(name) in L_SUPPORTED_CONVERTERS
+
+    # Check for deprecated kwargs
+    if "name" in kwargs:
+        warnings.warn(f"The argument {tc.CODE}`name`{tc.OFF} for the method {tc.CODE}`get_supported_converter_class"
+                      f"`{tc.OFF} is deprecated as of version 0.4.0 and due to be "
+                      f"removed in a future release. Use the argument {tc.CODE}`converter`{tc.OFF} instead, which "
+                      "accepts the converter name, ID, or info", DeprecationWarning)
+        name = _get_converter_name(kwargs["name"])
+    elif converter is None:
+        raise TypeError(f"The argument {tc.CODE}`converter`{tc.OFF} for the method "
+                        f"{tc.CODE}`get_supported_converter_class`{tc.OFF} must be provided to specify the converter")
+    else:
+        name = _get_converter_name(converter)
+    return name in L_SUPPORTED_CONVERTERS
 
 
-def converter_is_registered(name: str):
+def converter_is_registered(converter: str | int | UUID | Any = None,
+                            **kwargs):
     """Checks if a converter is registered (usable)
 
     Parameters
     ----------
-    name : str
-        Converter name (case- and space-insensitive)
+    converter : str | int | UUID | ConverterInfo
+        The name, ID, or info of the desired converter
 
     Returns
     -------
     bool
     """
-    return regularize_name(name) in L_REGISTERED_CONVERTERS
+
+    # Check for deprecated kwargs
+    if "name" in kwargs:
+        warnings.warn(f"The argument {tc.CODE}`name`{tc.OFF} for the method {tc.CODE}`get_supported_converter_class"
+                      f"`{tc.OFF} is deprecated as of version 0.4.0 and due to be "
+                      f"removed in a future release. Use the argument {tc.CODE}`converter`{tc.OFF} instead, which "
+                      "accepts the converter name, ID, or info", DeprecationWarning)
+        name = _get_converter_name(kwargs["name"])
+    elif converter is None:
+        raise TypeError(f"The argument {tc.CODE}`converter`{tc.OFF} for the method "
+                        f"{tc.CODE}`get_supported_converter_class`{tc.OFF} must be provided to specify the converter")
+    else:
+        name = _get_converter_name(converter)
+    return name in L_REGISTERED_CONVERTERS
 
 
-def get_converter(*args, name=const.CONVERTER_DEFAULT, **converter_kwargs) -> base.FileConverter:
+def get_converter(*args, converter=const.CONVERTER_OB, **converter_kwargs) -> base.FileConverter:
     """Get a FileConverter of the proper subclass for the requested converter type
 
     Parameters
@@ -172,8 +249,8 @@ def get_converter(*args, name=const.CONVERTER_DEFAULT, **converter_kwargs) -> ba
     from_format : str | None
         The format to convert from, as the file extension (e.g. "pdb"). If None is provided (default), will be
         determined from the extension of `filename`
-    name : str
-        The desired converter type, by default 'Open Babel'
+    converter : str | int | UUID | ConverterInfo
+        The name, ID, or info of the desired converter, by default 'Open Babel'
     data : dict[str, Any] | None
         A dict of any other data needed by a converter or for extra logging information, default empty dict. See the
         docstring of each converter for supported keys and values that can be passed to `data` here
@@ -224,7 +301,18 @@ def get_converter(*args, name=const.CONVERTER_DEFAULT, **converter_kwargs) -> ba
     FileConverterInputException
         If the converter isn't recognized or there's some other issue with the input
     """
-    name = regularize_name(name)
+
+    # Check for deprecated kwargs
+    if "name" in converter_kwargs:
+        warnings.warn(f"The argument {tc.CODE}`name`{tc.OFF} for the method "
+                      f"{tc.CODE}`get_converter`{tc.OFF} is deprecated as of version 0.4.0 and due to be "
+                      f"removed in a future release. Use the argument {tc.CODE}`converter`{tc.OFF} instead, which "
+                      "accepts the converter name, ID, or info", DeprecationWarning)
+        name = _get_converter_name(converter_kwargs["name"])
+        del converter_kwargs["name"]
+    else:
+        name = _get_converter_name(converter)
+
     if name not in L_REGISTERED_CONVERTERS:
         raise base.FileConverterInputException(const.ERR_CONVERTER_NOT_RECOGNISED.format(name) +
                                                f"{L_REGISTERED_CONVERTERS}")
@@ -266,7 +354,7 @@ class FileConversionRunResult:
 
 
 def check_from_format(filename: str,
-                      from_format: str | int,
+                      from_format: str | int | UUID | Any,
                       strict=False) -> bool:
     """Check that the filename for an input file ends with the expected extension
 
@@ -274,8 +362,8 @@ def check_from_format(filename: str,
     ----------
     filename : str
         The filename
-    from_format : str | int
-        The expected format (extension)
+    from_format : str | int | UUID | FormatInfo
+        The desired output format, specified by its extension, ID, or info
     strict : bool, optional
         If True, will raise an exception on failure. Otherwise will print a warning and return False
 
@@ -323,6 +411,7 @@ def run_converter(filename: str,
                   to_format: str,
                   *args,
                   from_format: str | None = None,
+                  converter: str | int | UUID | Any = const.CONVERTER_OB,
                   input_dir=const.DEFAULT_INPUT_DIR,
                   output_dir=const.DEFAULT_OUTPUT_DIR,
                   strict=False,
@@ -346,8 +435,8 @@ def run_converter(filename: str,
         The format to convert from, as the file extension (e.g. "pdb"). If None is provided (default), will be
         determined from the extension of `filename` if it's a simple file, or the contained files if `filename` is an
         archive file
-    name : str
-        The desired converter type, by default 'Open Babel'
+    converter : str | int | UUID | ConverterInfo
+        The name, ID, or info of the desired converter, by default 'Open Babel'
     abort_callback : Callable[[int], None]
         Function to be called if the conversion hits an error and must be aborted, default `abort_raise`, which
         raises an appropriate exception
@@ -412,6 +501,7 @@ def run_converter(filename: str,
     # Set the maximum file size based on permission level and which converter is being used, if it isn't explicitly
     # specified
     if max_file_size is None:
+        name = _get_converter_name(converter)
         if name == const.CONVERTER_OB:
             max_file_size == const.DEFAULT_MAX_FILE_SIZE_OB/const.MEGABYTE
         elif permission_level >= const.PERMISSION_LOCAL:
@@ -451,6 +541,7 @@ def run_converter(filename: str,
                             to_format,
                             *args,
                             from_format=from_format,
+                            converter=converter,
                             input_dir=input_dir,
                             output_dir=output_dir,
                             max_file_size=max_file_size,
@@ -499,6 +590,7 @@ def run_converter(filename: str,
                                                                         to_format,
                                                                         *args,
                                                                         from_format=from_format,
+                                                                        converter=converter,
                                                                         output_dir=output_dir,
                                                                         log_file=individual_log_file,
                                                                         log_mode=individual_log_mode,
@@ -739,9 +831,9 @@ def run_converter_chain(filename: str,
     # Set the maximum file size based on permission level and which converter is being used, if it isn't explicitly
     # specified
     if max_file_size is None:
-        if name == const.CONVERTER_OB:
-            max_file_size == const.DEFAULT_MAX_FILE_SIZE_OB/const.MEGABYTE
-        elif permission_level >= const.PERMISSION_LOCAL:
+        # In other places, we check if Open Babel is being used and apply its filesize limit if so, but we can't do
+        # that here, so skip that check
+        if permission_level >= const.PERMISSION_LOCAL:
             max_file_size = const.DEFAULT_MAX_FILE_SIZE/const.MEGABYTE
         elif permission_level >= const.PERMISSION_LOGGED_IN:
             from psdi_data_conversion.gui.env import get_env
@@ -798,7 +890,7 @@ def run_converter_chain(filename: str,
                                        to_format_info,
                                        *args,
                                        from_format=from_format_info,
-                                       name=converter_info.name,
+                                       converter=converter_info,
                                        input_dir=input_dir,
                                        output_dir=output_dir,
                                        data=data,

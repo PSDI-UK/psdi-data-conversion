@@ -7,7 +7,7 @@ This project provides utilities to assist in converting files between the many d
 
 - Online web service
 - Version of the web app you can download and run locally (e.g. if you need to convert files which exceed the online app's file size limit)
-- Command-line application, to run conversions from a terminal
+- Command-line interface, to run conversions from a terminal
 - Python library
 
 ## Quick Links
@@ -23,7 +23,7 @@ This project provides utilities to assist in converting files between the many d
 - [Requirements](#requirements)
   - [Python](#python)
   - [Other Dependencies](#other-dependencies)
-- [Command-Line Application](#command-line-application)
+- [Command-Line Interface](#command-line-interface)
   - [Installation](#installation)
   - [Execution](#execution)
     - [Data Conversion](#data-conversion)
@@ -95,7 +95,7 @@ This project provides utilities to assist in converting files between the many d
   - `gui`
     - (Unit tests for the GUI, aka the local version of the web app)
   - `python`
-    - (Unit tests for the Python library and command-line application)
+    - (Unit tests for the Python library and command-line interface)
 - `CHANGELOG.md` (Updates since initial public release)
 - `CONTRIBUTING.md` (Guidelines and information for contributors to the project)
 - `DOCKERFILE` (Dockerfile for image containerising PSDI's data conversion service)
@@ -182,11 +182,11 @@ Required to run unit tests on the web app (`pip install 'psdi-data-conversion[gu
 
 In addition to the dependencies listed above, this project uses the assets made public by PSDI's common style project at https://github.com/PSDI-UK/psdi-common-style. The latest versions of these assets are copied to this project periodically (using the scripts in the `scripts` directory). In case a future release of these assets causes a breaking change in this project, the file `fetch-common-style.conf` can be modified to set a previous fixed version to download and use until this project is updated to work with the latest version of the assets.
 
-## Command-Line Application
+## Command-Line Interface
 
 ### Installation
 
-The CLA and Python library are installed together. This project is available on PyPI, and so can be installed via pip with:
+The CLI and Python library are installed together. This project is available on PyPI, and so can be installed via pip with:
 
 ```bash
 pip install psdi-data-conversion
@@ -235,7 +235,7 @@ Data conversion is the default mode of the script. At its most basic, the syntax
 psdi-data-convert filename.ext1 -t ext2
 ```
 
-This will convert the file 'filename.ext1' to format 'ext2' using the default converter (Open Babel). A list of files can also be provided, and they will each be converted in turn.
+This will convert the file 'filename.ext1' to format 'ext2' using an automatically-determined suitable converter (if one can be determined - in the case of ambiguous file formats, it may be necessary to provide more information). A list of files can also be provided, and they will each be converted in turn.
 
 The full possible syntax for the script is:
 
@@ -251,28 +251,32 @@ options] [-s/--strict] [--nc/--no-check] [-q/--quiet] [-g/--log-file <log file n
 
 Call `psdi-data-convert -h` for details on each of these options.
 
-Note that some requested conversions may involve ambiguous formats which share the same extension. In this case, the application will print a warning and list possible matching formats, with IDs and disambiguating names that can be used to specify which one. For instance, the `c2x` converter can convert into two variants of the `pdb` format, and if you ask it to convert to `pdb` without specifying which one, you'll see:
+Note that some requested conversions may involve ambiguous formats which share the same extension. In this case, the application will print a warning and list possible matching formats, with IDs and disambiguating names that can be used to specify which one. For instance, the `c2x` converter can convert into two variants of the `pdb` format, and if you ask it to convert from `mmcif` to `pdb` without specifying which one, you'll see:
 
 ```
-WARNING: Format 'pdb' is ambiguous and could refer to multiple formats. It may be necessary to explicitly specify which
-you want to use when calling this script, e.g. with '-f pdb-0' - see the disambiguated names in the list below:
-
-178366529166858241161075106138867206788: pdb-0 (Protein Data Bank)
-...
-
-325652524238156842953511960586864188646: pdb-1 (Protein Data Bank with atoms numbered)
-...
+ERROR: Conversion from mmcif to 'pdb' with converter 'c2x' is ambiguous. Please use the ID or disambiguated name (listed
+below) of the desired conversion. Possible matching conversions are:
+    mmcif (ID 111142745790695896928946860948434358952) to pdb-0 (ID 178366529166858241161075106138867206788)
+    mmcif (ID 111142745790695896928946860948434358952) to pdb-1 (ID 325652524238156842953511960586864188646)
 ```
 
-This provides the IDs (`178366529166858241161075106138867206788` and `325652524238156842953511960586864188646`) and disambiguating names (`pdb-0` and `pdb-1`) for the matching formats. Either can be used in the call to the converter, e.g.:
+This provides the IDs (`178366529166858241161075106138867206788` and `325652524238156842953511960586864188646`) and disambiguated names (`pdb-0` and `pdb-1`) for the matching formats. Either can be used in the call to the converter, e.g.:
 
 ```bash
-psdi-data-conversion nacl.cif -t 178366529166858241161075106138867206788 -w c2x
+psdi-data-conversion nacl.mmcif -t 178366529166858241161075106138867206788 -w c2x
 # Or equivalently:
-psdi-data-conversion nacl.cif -t pdb-0 -w c2x
+psdi-data-conversion nacl.mmcif -t pdb-0 -w c2x
 ```
 
-The "<format>-0" pattern can be used with any format, even if it's unambiguous, and will be interpreted as the first instance of the format in the database with valid conversions. Note that as the database expands in future versions and more valid conversions are added, these disambiguated names may change, so it is recommended to use the format's ID in scripts and with the library to ensure consistency between versions of this package. It was necessary to update IDs in v0.4.0 to use UUIDs, but for all future versions there should be no need to change IDs. If you need to update from before this version, see the `v0.4.0` section of `CHANGELOG.md` for guidance.
+As all format (and converter) IDs are UUIDs, the standard UUID format is also accepted:
+
+```bash
+psdi-data-conversion nacl.mmcif -t 863024da-8e1f-46e5-992c-b14bcc258a84 -w c2x
+```
+
+The "<format>-0" pattern can be used with any format, even if it's unambiguous, and will be interpreted as the first instance of the format in the database with valid conversions. Note that as the database expands in future versions and more valid conversions are added, these disambiguated names may change, so it is recommended to use the format's ID or UUID in scripts and with the library to ensure consistency between versions of this package.
+
+It was necessary to update IDs in v0.4.0 to use UUIDs, but for all future versions there should be no need to change IDs, so these can be treated as stable between versions, whereas the same cannot be guaranteed for disambiguated names, which should only be used for one-time executions. If you need to update from before this version, see the `v0.4.0` section of `CHANGELOG.md` for guidance.
 
 #### Requesting Information on Possible Conversions
 
@@ -312,7 +316,7 @@ If an input format is provided, information on input flags and options accepted 
 
 ### Installation
 
-The CLA and Python library are installed together. See the [above instructions for installing the CLA](#installation), which will also install the Python library.
+The CLI and Python library are installed together. See the [above instructions for installing the CLI](#installation), which will also install the Python library.
 
 ### Use
 
@@ -341,10 +345,10 @@ from psdi_data_conversion.converter import run_converter
 For a simple conversion, this can be used via:
 
 ```python
-run_converter(filename, to_format, name=name, data=data)
+run_converter(filename, to_format, converter=name, data=data)
 ```
 
-Where `filename` is the name of the file to convert (either fully-qualified or relative to the current directory), `to_format` is the desired format to convert to (e.g. `"pdb"`), `name` is the name of the converter to use (default "Open Babel"), and `data` is a dict of any extra information required by the specific converter being used, such as flags for how to read/write input/output files (default empty dict).
+Where `filename` is the name of the file to convert (either fully-qualified or relative to the current directory), `to_format` is the desired format to convert to (e.g. `"pdb"`), `converter` is the name or ID of the converter to use (default "Open Babel"), and `data` is a dict of any extra information required by the specific converter being used, such as flags for how to read/write input/output files (default empty dict).
 
 See the method's documentation via `help(run_converter)` after importing it for further details on usage.
 
@@ -402,7 +406,7 @@ pip install '.[gui]'
 
 **Note:** This project uses git to determine the version number. If you clone the repository, you won't have to do anything special here, but if you get the source e.g. by extracting a release archive, you'll have to do one additional step before running the command above. If you have git installed, simply run `git init` in the project directory and it will be able to install. Otherwise, edit the project's `pyproject.toml` file to uncomment the line that sets a fixed version, and comment out the lines that set it up to determine the version from git - these are pointed out in the comments there.
 
-If your system does not allow installation in this manner, it may be necessary to set up a virtual environment. See the instructions in the [command-line application installation](#installation) section above for how to do that, and then try to install again once you've set one up and activated it.
+If your system does not allow installation in this manner, it may be necessary to set up a virtual environment. See the instructions in the [command-line interface installation](#installation) section above for how to do that, and then try to install again once you've set one up and activated it.
 
 ### Running the App
 
@@ -415,11 +419,11 @@ The local version has some customisable options for running it, which can can be
 
 ## Extending Functionality
 
-The Python library and CLA are written to make it easy to extend the functionality of this package to use other file format converters. This can be done by downloading or cloning the project's source from it's GitHub Repository (https://github.com/PSDI-UK/psdi-data-conversion), editing the code to add your converter following the guidance in the "[Adding File Format Converters](https://github.com/PSDI-UK/psdi-data-conversion/blob/main/CONTRIBUTING.md#adding-file-format-converters)" section of CONTRIBUTING.md.
+The Python library and CLI are written to make it easy to extend the functionality of this package to use other file format converters. This can be done by downloading or cloning the project's source from it's GitHub Repository (https://github.com/PSDI-UK/psdi-data-conversion), editing the code to add your converter following the guidance in the "[Adding File Format Converters](https://github.com/PSDI-UK/psdi-data-conversion/blob/main/CONTRIBUTING.md#adding-file-format-converters)" section of CONTRIBUTING.md.
 
 ## Testing
 
-To test the CLA and Python library, install the optional testing requirements locally (ideally within a virtual environment) and test with pytest by executing the following commands from this project's directory:
+To test the CLI and Python library, install the optional testing requirements locally (ideally within a virtual environment) and test with pytest by executing the following commands from this project's directory:
 
 ```bash
 pip install '.[test]'
@@ -458,7 +462,7 @@ You may see the error:
 OSError: [Errno 24] Too many open files
 ```
 
-while running the command-line application, using the Python library, or running tests This error is caused by a program hitting the limit of the number of open filehandles allowed by the OS. This limit is typically set to 1024 on Linux systems and 256 on MacOS systems, and thus this issue occurs much more often on the latter. You can see what your current limit is by running the command:
+while running the command-line interface, using the Python library, or running tests This error is caused by a program hitting the limit of the number of open filehandles allowed by the OS. This limit is typically set to 1024 on Linux systems and 256 on MacOS systems, and thus this issue occurs much more often on the latter. You can see what your current limit is by running the command:
 
 ```bash
 ulimit -a | grep "open files"

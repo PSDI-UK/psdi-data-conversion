@@ -29,6 +29,8 @@
     - `ArgInfo.flag` is now `ArgInfo.name`
     - `FormatInfo.note` is now `FormatInfo.description`
   - Functions which accept a converter and/or file format(s) as arguments have been normalised to use the kwargs `converter`, `in_format`, `out_format`, and `file_format` (the latter for a format that could be either input or output) to refer to them, which will accept the converter/format specified by its name (if suitably unambiguous), ID/UUID, or `ConverterInfo`/`FormatInfo` object
+- Similarly, functions in the `psdi_data_conversion.converter` module which previously took a converter `name` as a kwarg now take `converter` (which still accepts a name, but also an ID or `ConverterInfo` object)
+- The default behaviour of the CLI when no converter is specified is now to use the 'auto' keyword to automatically determine a converter, rather than defaulting to 'Open Babel'. Since this functionality requires the input and output format to be uniquely specified (and can't rely on the converter requested to disambiguate them) some commands which previously worked under the assumption that Open Babel would be used for the conversion will no longer work, such as `psdi-data-convert file.mmcif -t pdb` - 'pdb' is ambiguous but Open Babel only supports one version of it, so when Open Babel was the default, this could be disambiguated. But with 'auto' as the default, it's necessary to know which variant is desired. Conversely, using 'auto' as the default allows conversions that Open Babel can't perform to now be run without specifying a converter.
 
 ### New and Changed Functionality
 
@@ -48,6 +50,10 @@
 - The database used by the Python library now has support for format aliases - formats which represent the same file structure but with different extensions. This has the following practical changes for users:
   - When extensions are being checked (as is the default when formats are requested from the GUI), formats with any of the extensions used by an alias will be accepted. E.g. since "ent" is an alias for the "pdb" format, a bulk conversion of "pdb" files can include some with the "ent" extension without issue
   - When chained conversion pathways are requested, only the format arbirtarily labelled as "primary" will be used for intermediate formats (meaning that the user won't be offered multiple pathways which differ only by which extension the intermediate format uses)
+- The 'auto' keyword has been added as an option to the `-w/--with` option of the CLI to specify a converter. When this is used, a converter will be automatically determined which can perform the desired conversion, using the same heuristics as are used to determine the best chained conversion pathways, but limited to only single-step conversions. This has the following requirements:
+  - The output format must be unambiguously specified
+  - The input format must be unambiguous for all input files
+  - If input files of multiple formats are provided, the same converter must be able to handle a conversion of all of them to the output format
 
 ### Bugfixes
 
@@ -67,6 +73,7 @@
 ### Testing Changes
 
 - Tests which reference specific formats have been changed to reference format IDs to avoid potentially breaking in the future if/when new formats are added with clashing names (with the exception of tests where the specific goal is to test using other methods of referencing formats)
+- Various unit tests have been split to better represent one test case per test
 
 ## v0.3.25
 
@@ -193,7 +200,7 @@
 
 ### New and Changed Functionality
 
-- When listing formats supported by a given converter in the command-line application, the description of each format will also be shown in the table
+- When listing formats supported by a given converter in the command-line interface, the description of each format will also be shown in the table
 - A warning will now be printed to stderr and logged if an unrecognised format flag or option is provided for conversion with Open Babel
 
 ### Bugfixes

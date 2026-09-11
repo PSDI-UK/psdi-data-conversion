@@ -162,6 +162,11 @@ def print_wrap(s: str, newline=False, err=False, **kwargs):
         print("")
 
 
+def print_header(s: str,  **kwargs):
+    """Print a string formatted as a header"""
+    print_wrap(f"\n{tc.HEADER}{s}{tc.OFF}", newline=True, initial_indent=" "*2, subsequent_indent=" "*2, **kwargs)
+
+
 def regularize_name(name: str):
     """Regularizes a name for comparisons, making it lowercase and stripping spaces
 

@@ -28,10 +28,17 @@ from psdi_data_conversion.testing.utils import run_test_conversion_with_cla, run
 from psdi_data_conversion.utils import regularize_name, strip_control_codes
 
 
-def compress_output(s: str):
+def _compress_text(s: str):
     """Strips whitespace and control codes from output to ease comparisons without worrying about things like line-
     wrapping"""
     return strip_control_codes(s.replace("\n", "").replace(" ", ""))
+
+
+def _compressed_match(s1, s2):
+    """Assert that s1 is contained in s2, ignoring control codes and whitespace"""
+    s1_compressed = _compress_text(str(s1))
+    s2_compressed = _compress_text(str(s2))
+    return s1_compressed in s2_compressed
 
 
 def test_unique_args():
@@ -83,11 +90,9 @@ def test_conversions(test_spec):
     run_test_conversion_with_cla(test_spec)
 
 
-def test_input_validity():
-    """Unit tests to ensure that the CLI properly checks for valid input
+def test_general_arg_parsing():
+    """Test that a standard argument string is parsed properly
     """
-
-    # Test that we get what we put in for a standard execution
     cwd = os.getcwd()
     args = get_parsed_args(f"file1 file2 -f mmcif -i {cwd} -t pdb -o {cwd}/.. -w '{const.CONVERTER_C2X}' " +
                            r"--delete-input --from-flags '\-ab \-c \--example' --to-flags '\-d' " +
@@ -110,45 +115,80 @@ def test_input_validity():
     assert args.log_file == "text.log"
     assert args.log_mode == const.LOG_NONE
 
-    # Test Open-Babel-specific arguments
-    args = get_parsed_args(f"file1 -t pdb -w '{const.CONVERTER_OB}' --coord-gen Gen3D best")
+
+def test_open_babel_args():
+    """Test that Open-Babel-specific arguments are parsed correctly
+    """
+    args = get_parsed_args(f"file1.mmcif -t pdb -w '{const.CONVERTER_OB}' --coord-gen Gen3D best")
     assert args.d_converter_args[COORD_GEN_KEY] == "Gen3D"
     assert args.d_converter_args[COORD_GEN_QUAL_KEY] == "best"
 
-    # It should fail with no arguments
-    with pytest.raises(FileConverterInputException):
+
+def test_fail_no_args():
+    """Test that the parsing fails if no arguments are provided"""
+    with pytest.raises(FileConverterInputException) as e:
         get_parsed_args("")
+    assert _compressed_match("One or more names of files to convert must be provided", e.value)
 
-    # It should fail if the output format isn't specified
-    with pytest.raises(FileConverterInputException):
+
+def test_fail_no_to_format():
+    """Test that the parsing fails if output format isn't specified"""
+    with pytest.raises(FileConverterInputException) as e:
         get_parsed_args("file1.mmcif")
+    assert _compressed_match("Output format (`-t/--to`) must be provided", e.value)
 
-    # It should fail if the input directory doesn't exist
-    with pytest.raises(FileConverterInputException):
+
+def test_fail_no_input_dir():
+    """Test that the parsing fails if the input directory doesn't exist"""
+    with pytest.raises(FileConverterInputException) as e:
         get_parsed_args("file1.mmcif -i /no/where -t pdb")
+    assert _compressed_match("The provided input directory '/no/where' does not exist as a directory", e.value)
 
-    # It should fail if the converter isn't recognized
-    with pytest.raises(FileConverterInputException):
-        get_parsed_args("file1.mmcif -t pdb -w Ato")
 
-    # It should fail with bad or too many arguments to --coord-gen
-    with pytest.raises(FileConverterInputException):
-        get_parsed_args("file1.mmcif -t pdb --coord-gen Gen1D")
-    with pytest.raises(FileConverterInputException):
-        get_parsed_args("file1.mmcif -t pdb --coord-gen Gen3D worst")
-    with pytest.raises(FileConverterInputException):
-        get_parsed_args("file1.mmcif -t pdb --coord-gen Gen3D best quality")
+def test_fail_invalid_converter():
+    """Test that the parsing fails if the converter isn't recognized"""
+    with pytest.raises(FileConverterInputException) as e:
+        get_parsed_args("file1.mmcif -t pdb -w FakeConverter")
+    assert _compressed_match("Converter 'fakeconverter' not recognised", e.value)
 
-    # It should fail if it doesn't recognise the logging mode
-    with pytest.raises(FileConverterInputException):
-        get_parsed_args("file1.mmcif -t pdb --log-mode max")
 
-    # It should work if we just ask for a list, and set log mode to stdout
+def test_fail_bad_coord_gen_type():
+    """Test that the parsing fails with bad --coord-gen type"""
+    with pytest.raises(FileConverterInputException) as e:
+        get_parsed_args(f"file1.mmcif -t pdb -w '{const.CONVERTER_OB}' --coord-gen Gen1D")
+    assert _compressed_match("Coordinate generation type 'Gen1D' not recognised.", e.value)
+
+
+def test_fail_bad_coord_gen_quality():
+    """Test that the parsing fails with bad --coord-gen quality"""
+    with pytest.raises(FileConverterInputException) as e:
+        get_parsed_args(f"file1.mmcif -t pdb -w '{const.CONVERTER_OB}' --coord-gen Gen3D worst")
+    assert _compressed_match("Coordinate generation quality 'worst' not recognised.", e.value)
+
+
+def test_fail_bad_coord_gen_len():
+    """Test that the parsing fails too many args to --coord-gen"""
+    with pytest.raises(FileConverterInputException) as e:
+        get_parsed_args(f"file1.mmcif -t pdb -w '{const.CONVERTER_OB}' --coord-gen Gen3D best quality")
+    assert _compressed_match("At most two arguments may be provided to `--coord-gen`", e.value)
+
+
+def test_fail_bad_logging_mode():
+    """Test that the parsing fails if it doesn't recognise the logging mode"""
+    with pytest.raises(FileConverterInputException) as e:
+        get_parsed_args(f"file1.mmcif -t pdb -w '{const.CONVERTER_OB}' --log-mode max")
+    assert _compressed_match("Unrecognised logging mode: 'max'", e.value)
+
+
+def test_list_args():
+    """Test that the parsing works if we just ask for a list, and set log mode to stdout"""
     args = get_parsed_args("--list")
     assert args.list
     assert args.log_mode == const.LOG_STDOUT
 
-    # We should also be able to ask for info on a specific converter
+
+def test_list_converter():
+    """Test that the parsing works if we ask for info on a specific converter"""
     args = get_parsed_args("-l Open Babel")
     assert args.name == regularize_name("Open Babel")
     args = get_parsed_args("--list 'Open Babel'")
@@ -157,46 +197,121 @@ def test_input_validity():
     assert args.name == regularize_name("Atomsk")
 
 
-def test_input_processing():
-    """Unit tests to ensure that the CLI properly processes input arguments to determine values that are needed but
-    weren't provided
+def test_converter_input():
+    """Test that the converter specified with -w/--with is properly parsed
     """
+    args = get_parsed_args(f"file1.mmcif -t pdb -w {const.CONVERTER_OB}")
+    assert args.name == regularize_name(const.CONVERTER_OB)
+    args = get_parsed_args(f"file1.mmcif -t pdb -w '{const.CONVERTER_OB}'")
+    assert args.name == regularize_name(const.CONVERTER_OB)
 
-    # Check that different ways of specifying converter are all processed correctly
-    converter_name = "Open Babel"
-    args = get_parsed_args(f"file1.mmcif -t pdb -w {converter_name}")
-    assert args.name == regularize_name(converter_name)
-    args = get_parsed_args(f"file1.mmcif -t pdb -w '{converter_name}'")
-    assert args.name == regularize_name(converter_name)
 
-    # Check that input dir defaults to the current directory
+def test_default_input_dir():
+    """Test that the input directory is set to the current directory if not specified"""
+    args = get_parsed_args(f"file1.mmcif -t pdb -w {const.CONVERTER_OB}")
+    assert args.input_dir == os.getcwd()
+
+
+def test_default_output_dir():
+    """Test that the output dir defaults to match input dir"""
     cwd = os.getcwd()
-    assert args.input_dir == cwd
+    args = get_parsed_args(f"file1.mmcif -i {cwd}/.. -t pdb -w {const.CONVERTER_OB}")
+    assert args.output_dir == f"{cwd}/.."
 
-    # Check that output dir defaults to match input dir
-    output_check_args = get_parsed_args(f"file1.mmcif -i {cwd}/.. -t pdb")
-    assert output_check_args.output_dir == f"{cwd}/.."
 
-    # Check that we get the default coordinate generation options
+def test_default_coord_gen():
+    """Test that we get the default coordinate generation options if they aren't explicitly specified"""
+    args = get_parsed_args(f"file1.mmcif -t pdb -w {const.CONVERTER_OB}")
     assert args.d_converter_args[COORD_GEN_KEY] == DEFAULT_COORD_GEN
     assert args.d_converter_args[COORD_GEN_QUAL_KEY] == DEFAULT_COORD_GEN_QUAL
-    assert (get_parsed_args("file1.mmcif -t pdb --coord-gen Gen3D").d_converter_args[COORD_GEN_QUAL_KEY] ==
-            DEFAULT_COORD_GEN_QUAL)
+    assert get_parsed_args(f"file1.mmcif -t pdb -w {const.CONVERTER_OB} --coord-gen Gen3D"
+                           ).d_converter_args[COORD_GEN_QUAL_KEY] == DEFAULT_COORD_GEN_QUAL
 
-    # Check that trying to get the log file raises an exception due to the test file not existing
-    with pytest.raises(FileConverterInputException):
-        assert args.log_file == "file1" + const.LOG_EXT
 
-    # Check that the log file uses the expected default value in list mode
-    list_check_args = get_parsed_args("--list")
-    assert list_check_args.log_file == const.DEFAULT_LISTING_LOG_FILE
+def test_fail_log_file_not_set():
+    """Test that trying to get the log file raises an exception due to the test file not existing"""
+    args = get_parsed_args(f"file1.mmcif -t pdb -w {const.CONVERTER_OB}")
+    with pytest.raises(FileConverterInputException) as e:
+        _ = args.log_file
+    assert _compressed_match(f"Input file '{os.getcwd()}/file1.mmcif' cannot be found", e.value)
+
+
+def test_log_file_list_mode():
+    """Test that the log file uses the expected default value in list mode"""
+    args = get_parsed_args("--list")
+    assert args.log_file == const.DEFAULT_LISTING_LOG_FILE
 
 
 def _check_no_errors(captured):
     """Check that no errors were produced in output"""
     assert not captured.err
     assert "Traceback" not in captured.out
-    assert "Traceback" not in captured.err
+
+
+@pytest.mark.parametrize("auto_str", ["", "-w auto", "-w Auto", "--with AUTO"])
+def test_auto_converter(auto_str):
+    """Ensure that a converter can be properly determined automatically
+    """
+
+    # Test that Open Babel is chosen when expected
+    args = get_parsed_args(f"file1.pdb -f pdb-0 -t inchi {auto_str}")
+    assert args.name == regularize_name(const.CONVERTER_OB)
+
+    # Test that c2x is chosen when expected
+    args = get_parsed_args(f"file1.pdb -f pdb-0 -t xyz-0 {auto_str}")
+    assert args.name == regularize_name(const.CONVERTER_C2X)
+
+
+def test_auto_ambiguous_from_format():
+    """Ensure that the proper error is raised if the input format is ambiguous when using 'auto' converter
+    """
+    with pytest.raises(FileConverterInputException) as e:
+        get_parsed_args("file1 -f pdb -t xyz-0 -w auto")
+    assert _compressed_match("the input format determined from the extension of the input file or specified "
+                             "with `-f/--from` must unambiguously", e.value)
+
+
+def test_auto_ambiguous_ext():
+    """Ensure that the proper error is raised if the input format is ambiguous when using 'auto' converter
+    """
+    with pytest.raises(FileConverterInputException) as e:
+        get_parsed_args("file1.pdb -t xyz-0 -w auto")
+    assert _compressed_match("the input format determined from the extension of the input file or specified "
+                             "with `-f/--from` must unambiguously", e.value)
+
+
+def test_auto_multi_ambiguous_ext():
+    """Ensure that the proper error is raised if the input format is ambiguous for one or more in a list of input files
+    when using 'auto' converter
+    """
+    with pytest.raises(FileConverterInputException) as e:
+        get_parsed_args("file1.pdb file2.cif -t xyz-0 -w auto")
+    assert _compressed_match("input format must be uniquely identifiable for all input files.", e.value)
+
+
+def test_auto_invalid_to_format():
+    """Ensure that the proper error is raised if the output format is invalid when using 'auto' converter
+    """
+    with pytest.raises(FileConverterInputException) as e:
+        get_parsed_args("file1 -f pdb-0 -t invalid_format -w auto")
+    assert _compressed_match("is not recognised as a valid output format. To see supported formats", e.value)
+
+
+def test_auto_ambiguous_to_format():
+    """Ensure that the proper error is raised if the to format is ambiguous when using 'auto' converter
+    """
+    with pytest.raises(FileConverterInputException) as e:
+        get_parsed_args("file1 -f pdb-0 -t xyz -w auto")
+    assert _compressed_match("is ambiguous and can correspond to multiple possible output formats", e.value)
+
+
+def test_auto_no_common_converter():
+    """Ensure that the proper error is raised if no one converter can perform all conversions when using 'auto'
+    converter.
+    """
+    with pytest.raises(FileConverterInputException) as e:
+        get_parsed_args("file1.abi file2.inchi -t pdb-0 -w auto")
+    assert _compressed_match("No converter is available which can perform a conversion of all input files", e.value)
 
 
 def test_list_converters(capsys):
@@ -204,7 +319,7 @@ def test_list_converters(capsys):
     """
     run_with_arg_string("--list")
     captured = capsys.readouterr()
-    assert "Available converters:" in captured.out
+    assert "Available converters" in captured.out
     for converter_rname in L_REGISTERED_CONVERTERS:
         converter_name = get_registered_converter_class(converter_rname).meta.name
         assert converter_name in captured.out, converter_name
@@ -212,49 +327,45 @@ def test_list_converters(capsys):
     _check_no_errors(captured)
 
 
-def test_detail_converter(capsys):
+@pytest.mark.parametrize("converter_name", L_REGISTERED_CONVERTERS)
+def test_detail_converter(capsys, converter_name):
     """Test the option to provide detail on a converter
     """
 
-    # Test all converters are recognised, don't raise an error, and we get info on them
-    for name in L_REGISTERED_CONVERTERS:
+    converter_info = get_converter_info(converter_name)
 
-        converter_info = get_converter_info(name)
-        converter_name = get_registered_converter_class(name).meta.name
+    run_with_arg_string(f"--list {converter_name}")
+    captured = capsys.readouterr()
 
-        run_with_arg_string(f"--list {converter_name}")
-        captured = capsys.readouterr()
-        compressed_out: str = compress_output(captured.out)
+    assert _compressed_match(converter_info.pretty_name, captured.out)
 
-        def string_is_present_in_out(s: str) -> bool:
-            return compress_output(s) in compressed_out
+    if not converter_info.description:
+        assert _compressed_match("available for this converter", captured.out)
+    else:
+        assert _compressed_match(converter_info.description, captured.out)
 
-        assert string_is_present_in_out(converter_name)
+    # Check for URL
+    assert converter_info.url in captured.out
 
-        if not converter_info.description:
-            assert "available for this converter" in captured.out
-        else:
-            assert string_is_present_in_out(converter_info.description)
+    # Check for list of allowed input/output formats
+    assert "    INPUT    OUTPUT    DESCRIPTION" in captured.out
 
-        # Check for URL
-        assert converter_info.url in captured.out
+    l_allowed_in_formats, l_allowed_out_formats = get_possible_formats(converter_name)
+    for in_format in l_allowed_in_formats:
+        output_allowed = "yes" if in_format in l_allowed_out_formats else "no"
+        assert _compressed_match(f"{in_format.disambiguated_name}yes{output_allowed}{in_format.description}",
+                                 captured.out)
+    for out_format in l_allowed_out_formats:
+        input_allowed = "yes" if out_format in l_allowed_in_formats else "no"
+        assert _compressed_match(f"{out_format.disambiguated_name}{input_allowed}yes{out_format.description}",
+                                 captured.out)
 
-        # Check for list of allowed input/output formats
-        assert "    INPUT    OUTPUT    DESCRIPTION" in captured.out
+    _check_no_errors(captured)
 
-        l_allowed_in_formats, l_allowed_out_formats = get_possible_formats(name)
-        for in_format in l_allowed_in_formats:
-            output_allowed = "yes" if in_format in l_allowed_out_formats else "no"
-            assert string_is_present_in_out(
-                f"{in_format.disambiguated_name}yes{output_allowed}{in_format.description}")
-        for out_format in l_allowed_out_formats:
-            input_allowed = "yes" if out_format in l_allowed_in_formats else "no"
-            assert string_is_present_in_out(
-                f"{out_format.disambiguated_name}{input_allowed}yes{out_format.description}")
 
-        _check_no_errors(captured)
-
-    # Test we do get a simple error for a bad converter name
+def test_detail_converter_bad_name(capsys):
+    """Test we do get a simple error for a bad converter name
+    """
     with pytest.raises(SystemExit):
         run_with_arg_string("--list bad_converter")
     captured = capsys.readouterr()
@@ -262,12 +373,15 @@ def test_detail_converter(capsys):
     assert "Traceback" not in captured.out
     assert "Traceback" not in captured.err
 
-    # Test that we can also provide the converter name with -w/--with
+
+def test_detail_converter_with(capsys):
+    """Test that we can also provide the converter name with -w/--with
+    """
     run_with_arg_string(f"-l -w {const.CONVERTER_C2X}")
     captured = capsys.readouterr()
     _check_no_errors(captured)
     assert const.CONVERTER_C2X in captured.out
-    assert const.CONVERTER_DEFAULT not in captured.out
+    assert const.CONVERTER_OB not in captured.out
 
 
 def test_get_conversions(capsys):
@@ -279,26 +393,22 @@ def test_get_conversions(capsys):
 
     run_with_arg_string(f"-l -f {in_format} -t {out_format}")
     captured = capsys.readouterr()
-    compressed_out: str = strip_control_codes(captured.out.replace("\n", "").replace(" ", ""))
-
-    def string_is_present_in_out(s: str) -> bool:
-        return compress_output(s) in compressed_out
 
     _check_no_errors(captured)
 
-    assert bool(l_conversions) == string_is_present_in_out("The following registered converters can convert from "
-                                                           f"{in_format} to {out_format}:")
+    assert bool(l_conversions) == _compressed_match("The following registered converters can convert from "
+                                                    f"{in_format} to {out_format}:", captured.out)
 
     for converter_info, _, _ in l_conversions:
         if converter_info.name in L_REGISTERED_CONVERTERS:
-            assert string_is_present_in_out(converter_info.pretty_name)
+            assert _compressed_match(converter_info.pretty_name, captured.out)
     for name in L_REGISTERED_CONVERTERS:
         converter_info = get_converter_info(name)
         if converter_info not in [x[0] for x in l_conversions]:
-            assert not string_is_present_in_out(converter_info.pretty_name)
+            assert not _compressed_match(converter_info.pretty_name, captured.out)
 
 
-def test_get_chained(capsys):
+def test_list_chain(capsys):
     """Test the ability to get a pathway for a chained conversion
     """
     in_format = get_format_info(FORMAT_MOLDY)
@@ -308,42 +418,40 @@ def test_get_chained(capsys):
 
     run_with_arg_string(f"-l -f {in_format.id} -t {out_format.id}")
     captured = capsys.readouterr()
-    compressed_out: str = compress_output(captured.out)
-
-    def string_is_present_in_out(s: str) -> bool:
-        return compress_output(s) in compressed_out
 
     _check_no_errors(captured)
 
-    assert string_is_present_in_out(f"No direct conversions are possible from {in_format.format_word()} to "
-                                    f"{out_format.format_word()}")
+    assert _compressed_match(f"No direct conversions are possible from {in_format.format_word()} to "
+                             f"{out_format.format_word()}", captured.out)
 
-    assert string_is_present_in_out(f"A chained conversion is possible from {in_format.format_word()} to "
-                                    f"{out_format.format_word()} using registered converters:")
+    assert _compressed_match(f"A chained conversion is possible from {in_format.format_word()} to "
+                             f"{out_format.format_word()} using registered converters:", captured.out)
 
     for i, step in enumerate(pathway):
-        assert string_is_present_in_out(f"{i+1}) Convert from {step[1].format_word()} to {step[2].format_word()} with "
-                                        f"{step[0].format_word()}")
+        assert _compressed_match(f"{i+1}) Convert from {step[1].format_word()} to {step[2].format_word()} with "
+                                 f"{step[0].format_word()}", captured.out)
 
-    # Now try getting a conversion which is not in fact possible, even chained
+
+def test_list_chain_impossible(capsys):
+    """Test that we get the expected output when a chained conversion is not possible
+    """
 
     in_format = "cif"
     out_format = "abinit"
 
     run_with_arg_string(f"-l -f {in_format} -t {out_format}")
     captured = capsys.readouterr()
-    compressed_out: str = compress_output(captured.out)
 
-    assert string_is_present_in_out(f"No chained conversions are possible from {in_format} to {out_format}.")
+    assert _compressed_match(f"No chained conversions are possible from {in_format} to {out_format}.", captured.out)
 
     # Check that igraph's warning is suppressed
-    assert not string_is_present_in_out("Couldn't reach some vertices")
+    assert not _compressed_match("Couldn't reach some vertices", captured.out)
 
     _check_no_errors(captured)
 
 
-def test_conversion_info(capsys):
-    """Test the option to provide detail on degree of success and arguments a converter allows for a given conversion
+def test_conversion_info_open_babel(capsys):
+    """Test that we get the expected information on the 'Open Babel' converter
     """
 
     converter_name = const.CONVERTER_OB
@@ -355,55 +463,61 @@ def test_conversion_info(capsys):
     # Test a basic listing of arguments, checking with the converter name in lowercase to be sure that works
     run_with_arg_string(f"-l {converter_name.lower()} -f {in_format} -t {out_format}")
     captured = capsys.readouterr()
-    compressed_out: str = compress_output(captured.out)
-
-    def string_is_present_in_out(s: str) -> bool:
-        return compress_output(s) in compressed_out
 
     _check_no_errors(captured)
 
     # Check that conversion quality details are in the output as expected
-    assert string_is_present_in_out(f"Conversion from {in_format} to {out_format} with {converter_name} is "
-                                    f"possible with {qual.qual_str} conversion quality")
-    assert string_is_present_in_out("WARNING: Potential data loss or extrapolation issues with this conversion:")
-    assert string_is_present_in_out(const.QUAL_NOTE_OUT_MISSING.format(const.QUAL_2D_LABEL))
-    assert string_is_present_in_out(const.QUAL_NOTE_OUT_MISSING.format(const.QUAL_3D_LABEL))
-    assert string_is_present_in_out(const.QUAL_NOTE_IN_MISSING.format(const.QUAL_CONN_LABEL))
+    assert _compressed_match(f"Conversion from {in_format} to {out_format} with {converter_name} is "
+                             f"possible with {qual.qual_str} conversion quality", captured.out)
+    assert _compressed_match("WARNING: Potential data loss or extrapolation issues with this conversion:",
+                             captured.out)
+    assert _compressed_match(const.QUAL_NOTE_OUT_MISSING.format(const.QUAL_2D_LABEL), captured.out)
+    assert _compressed_match(const.QUAL_NOTE_OUT_MISSING.format(const.QUAL_3D_LABEL), captured.out)
+    assert _compressed_match(const.QUAL_NOTE_IN_MISSING.format(const.QUAL_CONN_LABEL), captured.out)
 
     l_in_flags, l_in_options = get_in_format_args(converter_name, in_format)
     l_out_flags, l_out_options = get_out_format_args(converter_name, out_format)
 
     # Check headings for input/output flags/options are present if and only if some of those flags/options exist
-    assert bool(l_in_flags) == string_is_present_in_out(f"Allowed input flags for format {in_format}:")
-    assert bool(l_out_flags) == string_is_present_in_out(f"Allowed output flags for format {out_format}:")
-    assert bool(l_in_options) == string_is_present_in_out(f"Allowed input options for format {in_format}:")
-    assert bool(l_out_options) == string_is_present_in_out(f"Allowed output options for format {out_format}:")
+    assert bool(l_in_flags) == _compressed_match(f"Allowed input flags for format '{in_format}'", captured.out)
+    assert bool(l_out_flags) == _compressed_match(f"Allowed output flags for format '{out_format}'", captured.out)
+    assert bool(l_in_options) == _compressed_match(f"Allowed input options for format '{in_format}'", captured.out)
+    assert bool(l_out_options) == _compressed_match(f"Allowed output options for format '{out_format}'", captured.out)
 
     # Check that info for each flag and option is printed as expected
     for flag_info in l_in_flags + l_out_flags:
         info = flag_info.info if flag_info.info and flag_info.info != "N/A" else ""
-        assert string_is_present_in_out(f"{flag_info.name}{flag_info.description}{info}")
+        assert _compressed_match(f"{flag_info.name}{flag_info.description}{info}", captured.out)
     for option_info in l_in_options + l_out_options:
         info = option_info.info if option_info.info and option_info.info != "N/A" else ""
-        assert string_is_present_in_out(f"{option_info.name}<{option_info.brief}>{option_info.description}{info}")
+        assert _compressed_match(f"{option_info.name}<{option_info.brief}>{option_info.description}{info}",
+                                 captured.out)
 
-    # Now try listing for converters which don't yet allow in/out args
+
+@pytest.mark.parametrize("converter_name", [const.CONVERTER_C2X, const.CONVERTER_ATO])
+def test_conversion_info_others(capsys, converter_name):
+    """Test that we get the expected information on other converters
+    """
 
     in_format = "pdb-0"
     out_format = "cif"
-    for converter_name in [const.CONVERTER_C2X, const.CONVERTER_ATO]:
-        qual = get_conversion_quality(converter_name, in_format, out_format)
+    qual = get_conversion_quality(converter_name, in_format, out_format)
 
-        run_with_arg_string(f"-l {converter_name} -f {in_format} -t {out_format}")
-        captured = capsys.readouterr()
-        compressed_out: str = compress_output(captured.out)
+    run_with_arg_string(f"-l {converter_name} -f {in_format} -t {out_format}")
 
-        _check_no_errors(captured)
+    captured = capsys.readouterr()
+    _check_no_errors(captured)
+
+    # Check that conversion quality details are in the output as expected
+    assert _compressed_match(f"Conversion from {in_format} to {out_format} with {converter_name} is "
+                             f"possible with {qual.qual_str} conversion quality", captured.out)
+    assert _compressed_match("WARNING: Potential data loss or extrapolation issues with this conversion:",
+                             captured.out)
+    assert _compressed_match(const.QUAL_NOTE_OUT_MISSING.format(const.QUAL_CONN_LABEL), captured.out)
 
 
 def test_format_info(capsys):
-    """Test that we can get information on formats
-    """
+    """Test that we can successfully get information on a file format"""
 
     # Try to get info on an unambiguous format
 
@@ -412,64 +526,57 @@ def test_format_info(capsys):
     run_with_arg_string(f"-l -f {in_format}")
 
     captured = capsys.readouterr()
-    compressed_out: str = compress_output(captured.out)
-
-    def string_is_present_in_out(s: str) -> bool:
-        return compress_output(s) in compressed_out
 
     _check_no_errors(captured)
 
     # Check for basic format information
-    assert string_is_present_in_out(f"{in_format_info.disambiguated_name} (ID {in_format_info.id}): " +
-                                    in_format_info.description)
+    assert _compressed_match(f"{in_format_info.disambiguated_name} (ID {in_format_info.id}): " +
+                             in_format_info.description, captured.out)
 
     # Check for property information
     for attr, label in D_FORMAT_PROPERTY_ATTRS.items():
         support_status = getattr(in_format_info, attr)
         if support_status:
-            assert string_is_present_in_out(label + " supported")
+            assert _compressed_match(label + " supported", captured.out)
         elif support_status is False:
-            assert string_is_present_in_out(label + " not supported")
+            assert _compressed_match(label + " not supported", captured.out)
         else:
-            assert string_is_present_in_out(label + " unknown whether or not to be supported")
+            assert _compressed_match(label + " unknown whether or not to be supported", captured.out)
 
-    # Try to get info on an ambiguous format
+
+def test_format_info_ambiguous(capsys):
+    """Test that we get expected information for an ambiguous format"""
 
     out_format = "pdb"
     l_out_format_info = get_format_info(out_format, which="all")
     run_with_arg_string(f"-l -t {out_format}")
 
     captured = capsys.readouterr()
-    compressed_out: str = compress_output(captured.out)
 
     _check_no_errors(captured)
 
-    assert string_is_present_in_out(f"WARNING: Format '{out_format}' is ambiguous")
+    assert _compressed_match(f"WARNING: Format '{out_format}' is ambiguous", captured.out)
 
     for out_format_info in l_out_format_info:
-        assert string_is_present_in_out(f"{out_format_info.disambiguated_name} (ID {out_format_info.id}): " +
-                                        out_format_info.description)
+        assert _compressed_match(out_format_info.format_oneline(), captured.out)
 
-    # Test we get expected errors for unrecognised formats
+
+def test_format_info_in_unrecognised(capsys):
+    """Test we get expected errors for unrecognised input format"""
 
     in_format = 99999
     with pytest.raises(SystemExit):
         run_with_arg_string(f"-l -f {in_format}")
 
-    captured = capsys.readouterr()
-    compressed_err: str = compress_output(captured.err)
+    assert _compressed_match(f"ERROR: Format '{in_format}' not recognised", capsys.readouterr().err)
 
-    def string_is_present_in_err(s: str) -> bool:
-        return compress_output(s) in compressed_err
 
-    assert string_is_present_in_err(f"ERROR: Format '{in_format}' not recognised")
+def test_format_info_out_unrecognised(capsys):
+    """Test we get expected errors for unrecognised output format"""
 
     out_format = "not_a_format"
 
     with pytest.raises(SystemExit):
         run_with_arg_string(f"-l -t {out_format}")
 
-    captured = capsys.readouterr()
-    compressed_err: str = compress_output(captured.err)
-
-    assert string_is_present_in_err(f"ERROR: Format '{out_format}' not recognised")
+    assert _compressed_match(f"ERROR: Format '{out_format}' not recognised", capsys.readouterr().err)

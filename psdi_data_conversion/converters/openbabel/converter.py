@@ -59,8 +59,8 @@ def get_coord_gen(l_opts: list[str] | None) -> dict[str, str]:
 
     # No more than two arguments supplied to --coord-gen
     if l_opts is not None and len(l_opts) > 2:
-        raise FileConverterInputException(f"At most two arguments may be provided to {tc.CODE}--coord-gen{tc.OFF}, the "
-                                          f"mode and quality, e.g. {tc.CODE}`--coord-gen Gen3D best`{tc.OFF}",
+        raise FileConverterInputException(f"At most two arguments may be provided to {tc.CODE}`--coord-gen`{tc.OFF}, "
+                                          f"the mode and quality, e.g. {tc.CODE}`--coord-gen Gen3D best`{tc.OFF}",
                                           help=True)
 
     # Coordinate generation options are valid

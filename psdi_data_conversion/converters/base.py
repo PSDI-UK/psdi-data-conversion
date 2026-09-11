@@ -449,8 +449,8 @@ class FileConverter:
             if not no_check:
                 from psdi_data_conversion.database import get_conversion_quality
                 qual = get_conversion_quality(self.name,
-                                              self.from_format_info.id,
-                                              self.to_format_info.id)
+                                              self.from_format_info,
+                                              self.to_format_info)
                 if not qual:
                     raise FileConverterUnsupportedException(f"Conversion from {self.from_format_info.name} to "
                                                             f"{self.to_format_info.name} "

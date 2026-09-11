@@ -123,6 +123,9 @@ D_PROP_BITS = {
 }
 D_PROP_WEIGHTS = {key: 1 << bit for key, bit in D_PROP_BITS.items()}
 
+# Maximum possible conversion weight
+CONVERSION_WEIGHT_MAX = 1 << 64 - 1
+
 # Number of bits the property weight section is offset within the full weight when everything is combined into a single
 # 64-bit integer
 PROP_WEIGHT_BIT_OFFSET = 48
@@ -1248,7 +1251,7 @@ class ConversionsTable:
                 out_format, FormatInfo) else f"{tc.PATH}'{out_format}'{tc.OFF}"
 
             msg = (f"Conversion from {in_format_name} to {out_format_name} with converter "
-                   f"{converter_name} is ambiguous. Please Use the ID or disambiguated name (listed below) "
+                   f"{converter_name} is ambiguous. Please use the ID or disambiguated name (listed below) "
                    "of the desired conversion. Possible matching conversions are:\n")
             for possible_in_format, possible_out_format in l_found_combinations:
                 msg += (f"    {possible_in_format.format_inline()} to {possible_out_format.format_inline()}\n")
@@ -2115,6 +2118,27 @@ def get_format_info(file_format: str | int | UUID | FormatInfo,
         file_format = kwargs["format_name_or_id"]
 
     return get_database().get_format_info(file_format, which)
+
+
+def get_format_pretty_name(file_format: str | int | UUID | FormatInfo):
+    """Gets a string for the name of a format which may or may not be ambiguous at this point
+
+    Parameters
+    ----------
+    file_format : str | int | UUID | FormatInfo
+        The name (extension) of the format, or its ID. In the case of ambiguous extensions which could apply to multiple
+        formats, the ID must be used here or a FileConverterDatabaseException will be raised. This also allows passing a
+        FormatInfo to this, in which case that object will be silently returned, to allow normalising the input to
+        always be a FormatInfo when output from this
+
+    Returns
+    -------
+    str
+    """
+    l_possible_format_info = get_format_info(file_format, "all")
+    if len(l_possible_format_info) == 1:
+        return l_possible_format_info[0].format_word()
+    return f"{tc.MESSAGE}'{file_format}'{tc.OFF}"
 
 
 def get_conversion_quality(converter: str | int | UUID | ConverterInfo,

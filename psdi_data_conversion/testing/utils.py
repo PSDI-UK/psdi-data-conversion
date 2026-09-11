@@ -21,7 +21,7 @@ from unittest.mock import patch
 import py
 import pytest
 
-from psdi_data_conversion.constants import CONVERTER_DEFAULT, GLOBAL_LOG_FILENAME, LOG_NONE, OUTPUT_LOG_EXT
+from psdi_data_conversion.constants import CONVERTER_OB, GLOBAL_LOG_FILENAME, LOG_NONE, OUTPUT_LOG_EXT
 from psdi_data_conversion.converter import run_converter, run_converter_chain
 from psdi_data_conversion.converters.openbabel.converter import COORD_GEN_KEY, COORD_GEN_QUAL_KEY
 from psdi_data_conversion.database import get_converter_info, get_format_info
@@ -66,7 +66,7 @@ class ConversionTestInfo:
     """Information about a tested conversion."""
 
     run_type: str
-    """One of "library", "cla", or "gui", describing which type of test run was performed"""
+    """One of "library", "cli", or "gui", describing which type of test run was performed"""
 
     chain: bool
     """Whether or not this test was run as a chain conversion"""
@@ -137,7 +137,7 @@ class ConversionTestSpec:
     ex_out_filename: str | Iterable[str] | None = None
     """The expected name of the output file, when it needs to be explicitly specified"""
 
-    converter_name: str | Iterable[str] = CONVERTER_DEFAULT
+    converter_name: str | Iterable[str] = CONVERTER_OB
     """The name of the converter to be used for the test, or a list thereof"""
 
     conversion_kwargs: dict[str, Any] | Iterable[dict[str, Any]] = field(default_factory=dict)
@@ -162,7 +162,7 @@ class ConversionTestSpec:
     """Whether or not this test spec is compatible with being run through the Python library, default True"""
 
     compatible_with_cla: bool = True
-    """Whether or not this test spec is compatible with being run through the command-line application, default True"""
+    """Whether or not this test spec is compatible with being run through the command-line interface, default True"""
 
     compatible_with_gui: bool = True
     """Whether or not this test spec is compatible with being run through the GUI, default True"""
@@ -257,7 +257,7 @@ class SingleConversionTestSpec:
     ex_out_filename: str | None = None
     """The expected name of the output file"""
 
-    converter_name: str | Iterable[str] = CONVERTER_DEFAULT
+    converter_name: str | Iterable[str] = CONVERTER_OB
     """The name of the converter to be used for the test"""
 
     conversion_kwargs: dict[str, Any] = field(default_factory=dict)
@@ -377,7 +377,7 @@ def _run_single_test_conversion_with_library(test_spec: SingleConversionTestSpec
             conversion_kwargs["to_format"] = test_spec.to_format
     else:
         run_func = run_converter
-        conversion_kwargs["name"] = test_spec.converter_name
+        conversion_kwargs["converter"] = test_spec.converter_name
         conversion_kwargs["to_format"] = test_spec.to_format
 
     # Capture stdout and stderr while we run this test. We use a try block to stop capturing as soon as testing finishes
@@ -423,7 +423,7 @@ def _run_single_test_conversion_with_library(test_spec: SingleConversionTestSpec
 
 
 def run_test_conversion_with_cla(test_spec: ConversionTestSpec):
-    """Runs a test conversion or series thereof through the command-line application.
+    """Runs a test conversion or series thereof through the command-line interface.
 
     Parameters
     ----------
@@ -447,7 +447,7 @@ def run_test_conversion_with_cla(test_spec: ConversionTestSpec):
 def _run_single_test_conversion_with_cla(test_spec: SingleConversionTestSpec,
                                          input_dir: str,
                                          output_dir: str):
-    """Runs a single test conversion through the command-line application.
+    """Runs a single test conversion through the command-line interface.
 
     Parameters
     ----------
@@ -507,7 +507,7 @@ def _run_single_test_conversion_with_cla(test_spec: SingleConversionTestSpec,
 
     # Compile output info for the test and call the callback function if one is provided
     if test_spec.callback:
-        test_info = ConversionTestInfo(run_type="cla",
+        test_info = ConversionTestInfo(run_type="cli",
                                        chain=False,
                                        test_spec=test_spec,
                                        input_dir=input_dir,
@@ -577,7 +577,7 @@ def run_converter_through_cla(filename: str,
         elif key == "max_file_size":
             if val != 0:
                 pytest.fail("Test specification imposes a maximum file size, which isn't compatible with the "
-                            "command-line application.")
+                            "command-line interface.")
         elif key == "data":
             for subkey, subval in val.items():
                 if subkey == "from_flags":
