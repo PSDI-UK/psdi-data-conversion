@@ -164,39 +164,48 @@ def test_input_validity():
     assert args.name == regularize_name("Atomsk")
 
 
-def test_input_processing():
-    """Unit tests to ensure that the CLI properly processes input arguments to determine values that are needed but
-    weren't provided
+def test_converter_input():
+    """Test that the converter specified with -w/--with is properly parsed
     """
+    args = get_parsed_args(f"file1.mmcif -t pdb -w {const.CONVERTER_OB}")
+    assert args.name == regularize_name(const.CONVERTER_OB)
+    args = get_parsed_args(f"file1.mmcif -t pdb -w '{const.CONVERTER_OB}'")
+    assert args.name == regularize_name(const.CONVERTER_OB)
 
-    # Check that different ways of specifying converter are all processed correctly
-    converter_name = "Open Babel"
-    args = get_parsed_args(f"file1.mmcif -t pdb -w {converter_name}")
-    assert args.name == regularize_name(converter_name)
-    args = get_parsed_args(f"file1.mmcif -t pdb -w '{converter_name}'")
-    assert args.name == regularize_name(converter_name)
 
-    # Check that input dir defaults to the current directory
+def test_default_input_dir():
+    """Test that the input directory is set to the current directory if not specified"""
+    args = get_parsed_args(f"file1.mmcif -t pdb -w {const.CONVERTER_OB}")
+    assert args.input_dir == os.getcwd()
+
+
+def test_default_output_dir():
+    """Test that the output dir defaults to match input dir"""
     cwd = os.getcwd()
-    assert args.input_dir == cwd
+    args = get_parsed_args(f"file1.mmcif -i {cwd}/.. -t pdb -w {const.CONVERTER_OB}")
+    assert args.output_dir == f"{cwd}/.."
 
-    # Check that output dir defaults to match input dir
-    output_check_args = get_parsed_args(f"file1.mmcif -i {cwd}/.. -t pdb -w {converter_name}")
-    assert output_check_args.output_dir == f"{cwd}/.."
 
-    # Check that we get the default coordinate generation options
+def test_default_coord_gen():
+    """Test that we get the default coordinate generation options if they aren't explicitly specified"""
+    args = get_parsed_args(f"file1.mmcif -t pdb -w {const.CONVERTER_OB}")
     assert args.d_converter_args[COORD_GEN_KEY] == DEFAULT_COORD_GEN
     assert args.d_converter_args[COORD_GEN_QUAL_KEY] == DEFAULT_COORD_GEN_QUAL
-    assert get_parsed_args(f"file1.mmcif -t pdb -w {converter_name} --coord-gen Gen3D"
+    assert get_parsed_args(f"file1.mmcif -t pdb -w {const.CONVERTER_OB} --coord-gen Gen3D"
                            ).d_converter_args[COORD_GEN_QUAL_KEY] == DEFAULT_COORD_GEN_QUAL
 
-    # Check that trying to get the log file raises an exception due to the test file not existing
-    with pytest.raises(FileConverterInputException):
-        assert args.log_file == "file1" + const.LOG_EXT
 
-    # Check that the log file uses the expected default value in list mode
-    list_check_args = get_parsed_args("--list")
-    assert list_check_args.log_file == const.DEFAULT_LISTING_LOG_FILE
+def test_log_file_not_set():
+    """Test that trying to get the log file raises an exception due to the test file not existing"""
+    args = get_parsed_args(f"file1.mmcif -t pdb -w {const.CONVERTER_OB}")
+    with pytest.raises(FileConverterInputException):
+        _ = args.log_file
+
+
+def test_log_file_list_mode():
+    """Test that the log file uses the expected default value in list mode"""
+    args = get_parsed_args("--list")
+    assert args.log_file == const.DEFAULT_LISTING_LOG_FILE
 
 
 def _check_no_errors(captured):
