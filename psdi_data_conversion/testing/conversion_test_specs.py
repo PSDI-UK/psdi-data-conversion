@@ -93,7 +93,7 @@ l_all_test_specs.append(Spec(name="Archive",
                              ))
 """A test of converting a archives of files"""
 
-l_all_test_specs.append(Spec(name="Archive (wrong format) - Library and CLA",
+l_all_test_specs.append(Spec(name="Archive (wrong format) - Library and CLI",
                              filename="caffeine-smi.zip",
                              to_format=tc.FORMAT_INCHI,
                              from_format=[tc.FORMAT_PDB_0, tc.FORMAT_PDB_0],
@@ -270,7 +270,7 @@ l_all_test_specs.append(Spec(name="Failed conversion - bad input file",
 
 quartz_error_ob_callback = CheckLogContents(["ERROR",
                                              "Problems reading an XYZ file: Could not read line #11, file error"])
-l_all_test_specs.append(Spec(name="Errors in logs - Library and CLA",
+l_all_test_specs.append(Spec(name="Errors in logs - Library and CLI",
                              filename="quartz_err.xyz",
                              from_format=tc.FORMAT_XYZ_1,
                              to_format=tc.FORMAT_INCHI,
@@ -279,7 +279,7 @@ l_all_test_specs.append(Spec(name="Errors in logs - Library and CLA",
                              callback=quartz_error_ob_callback,
                              compatible_with_gui=False,
                              ))
-"""A test that when a conversion fails in the library or CLA, logs are still produced and contain the expected error
+"""A test that when a conversion fails in the library or CLI, logs are still produced and contain the expected error
 message"""
 
 l_all_test_specs.append(Spec(name="Errors in logs - GUI",
@@ -342,7 +342,7 @@ l_all_test_specs.append(Spec(name="Failed conversion - wrong input type",
                              ))
 """A test that a conversion which fails due to the wrong input file type will properly fail"""
 
-l_all_test_specs.append(Spec(name="Large files - Library and CLA",
+l_all_test_specs.append(Spec(name="Large files - Library and CLI",
                              filename=["ch3cl-esp.cub", "benzyne.molden", "periodic_dmol3.outmol",
                                        "fullRhinovirus.pdb"],
                              from_format=[None, None, None, tc.FORMAT_PDB_0],
@@ -353,7 +353,7 @@ l_all_test_specs.append(Spec(name="Large files - Library and CLA",
                              callback=CheckFileStatus(),
                              compatible_with_gui=False,
                              ))
-"""Test that the library and CLA can process large files properly"""
+"""Test that the library and CLI can process large files properly"""
 
 l_all_test_specs.append(Spec(name="Large files - GUI",
                              filename=["ch3cl-esp.cub", "benzyne.molden",
@@ -389,7 +389,7 @@ l_all_test_specs.append(Spec(name="Max size exceeded - single file",
 """A test conversion that the maximum size constraint is properly applied. The input file here is greater than the
 maximum size, so the test should fail immediately
 
-Not compatible with CLA tests, since the CLA doesn't allow the imposition of a maximum size
+Not compatible with CLI tests, since the CLI doesn't allow the imposition of a maximum size
 
 Not compatible with GUI tests in current setup of test implementation, which doesn't let us set env vars to control
 things like maximum size on a per-test basis. May be possible to set up in the future though
@@ -414,7 +414,7 @@ l_all_test_specs.append(Spec(name="Max size exceeded - archive",
 """A test conversion that the maximum size constraint is properly applied. The input archive is smaller than the maximum
 size, but the unpacked files in it are greater, so it should fail midway through.
 
-Not compatible with CLA tests, since the CLA doesn't allow the imposition of a maximum size.
+Not compatible with CLI tests, since the CLI doesn't allow the imposition of a maximum size.
 
 Not compatible with GUI tests in current setup of test implementation, which doesn't let us set env vars to control
 things like maximum size on a per-test basis. May be possible to set up in the future though
@@ -566,7 +566,7 @@ l_all_test_specs.append(Spec(name="Max size exceeded - chain",
 """A test conversion that the maximum size constraint is properly applied in chain conversions. The input file here is
 smaller than the maximum size, so the test should only fail in the second step
 
-Not compatible with CLA tests, since the CLA doesn't allow the imposition of a maximum size
+Not compatible with CLI tests, since the CLI doesn't allow the imposition of a maximum size
 
 Not compatible with GUI tests in current setup of test implementation, which doesn't let us set env vars to control
 things like maximum size on a per-test basis. May be possible to set up in the future though
@@ -619,7 +619,7 @@ l_library_chain_test_specs = [x for x in l_all_test_specs
 
 l_cla_test_specs = [x for x in l_all_test_specs
                     if x.compatible_with_cla and x.compatible_with_single_step and not x.skip_all]
-"""All test specs which are compatible with being run on the command-line application"""
+"""All test specs which are compatible with being run on the command-line interface"""
 
 l_gui_test_specs = [x for x in l_all_test_specs
                     if x.compatible_with_gui and x.compatible_with_single_step and not x.skip_all]

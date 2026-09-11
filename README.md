@@ -7,7 +7,7 @@ This project provides utilities to assist in converting files between the many d
 
 - Online web service
 - Version of the web app you can download and run locally (e.g. if you need to convert files which exceed the online app's file size limit)
-- Command-line application, to run conversions from a terminal
+- Command-line interface, to run conversions from a terminal
 - Python library
 
 ## Quick Links
@@ -23,7 +23,7 @@ This project provides utilities to assist in converting files between the many d
 - [Requirements](#requirements)
   - [Python](#python)
   - [Other Dependencies](#other-dependencies)
-- [Command-Line Application](#command-line-application)
+- [Command-Line Interface](#command-line-interface)
   - [Installation](#installation)
   - [Execution](#execution)
     - [Data Conversion](#data-conversion)
@@ -95,7 +95,7 @@ This project provides utilities to assist in converting files between the many d
   - `gui`
     - (Unit tests for the GUI, aka the local version of the web app)
   - `python`
-    - (Unit tests for the Python library and command-line application)
+    - (Unit tests for the Python library and command-line interface)
 - `CHANGELOG.md` (Updates since initial public release)
 - `CONTRIBUTING.md` (Guidelines and information for contributors to the project)
 - `DOCKERFILE` (Dockerfile for image containerising PSDI's data conversion service)
@@ -182,11 +182,11 @@ Required to run unit tests on the web app (`pip install 'psdi-data-conversion[gu
 
 In addition to the dependencies listed above, this project uses the assets made public by PSDI's common style project at https://github.com/PSDI-UK/psdi-common-style. The latest versions of these assets are copied to this project periodically (using the scripts in the `scripts` directory). In case a future release of these assets causes a breaking change in this project, the file `fetch-common-style.conf` can be modified to set a previous fixed version to download and use until this project is updated to work with the latest version of the assets.
 
-## Command-Line Application
+## Command-Line Interface
 
 ### Installation
 
-The CLA and Python library are installed together. This project is available on PyPI, and so can be installed via pip with:
+The CLI and Python library are installed together. This project is available on PyPI, and so can be installed via pip with:
 
 ```bash
 pip install psdi-data-conversion
@@ -312,7 +312,7 @@ If an input format is provided, information on input flags and options accepted 
 
 ### Installation
 
-The CLA and Python library are installed together. See the [above instructions for installing the CLA](#installation), which will also install the Python library.
+The CLI and Python library are installed together. See the [above instructions for installing the CLI](#installation), which will also install the Python library.
 
 ### Use
 
@@ -402,7 +402,7 @@ pip install '.[gui]'
 
 **Note:** This project uses git to determine the version number. If you clone the repository, you won't have to do anything special here, but if you get the source e.g. by extracting a release archive, you'll have to do one additional step before running the command above. If you have git installed, simply run `git init` in the project directory and it will be able to install. Otherwise, edit the project's `pyproject.toml` file to uncomment the line that sets a fixed version, and comment out the lines that set it up to determine the version from git - these are pointed out in the comments there.
 
-If your system does not allow installation in this manner, it may be necessary to set up a virtual environment. See the instructions in the [command-line application installation](#installation) section above for how to do that, and then try to install again once you've set one up and activated it.
+If your system does not allow installation in this manner, it may be necessary to set up a virtual environment. See the instructions in the [command-line interface installation](#installation) section above for how to do that, and then try to install again once you've set one up and activated it.
 
 ### Running the App
 
@@ -415,11 +415,11 @@ The local version has some customisable options for running it, which can can be
 
 ## Extending Functionality
 
-The Python library and CLA are written to make it easy to extend the functionality of this package to use other file format converters. This can be done by downloading or cloning the project's source from it's GitHub Repository (https://github.com/PSDI-UK/psdi-data-conversion), editing the code to add your converter following the guidance in the "[Adding File Format Converters](https://github.com/PSDI-UK/psdi-data-conversion/blob/main/CONTRIBUTING.md#adding-file-format-converters)" section of CONTRIBUTING.md.
+The Python library and CLI are written to make it easy to extend the functionality of this package to use other file format converters. This can be done by downloading or cloning the project's source from it's GitHub Repository (https://github.com/PSDI-UK/psdi-data-conversion), editing the code to add your converter following the guidance in the "[Adding File Format Converters](https://github.com/PSDI-UK/psdi-data-conversion/blob/main/CONTRIBUTING.md#adding-file-format-converters)" section of CONTRIBUTING.md.
 
 ## Testing
 
-To test the CLA and Python library, install the optional testing requirements locally (ideally within a virtual environment) and test with pytest by executing the following commands from this project's directory:
+To test the CLI and Python library, install the optional testing requirements locally (ideally within a virtual environment) and test with pytest by executing the following commands from this project's directory:
 
 ```bash
 pip install '.[test]'
@@ -458,7 +458,7 @@ You may see the error:
 OSError: [Errno 24] Too many open files
 ```
 
-while running the command-line application, using the Python library, or running tests This error is caused by a program hitting the limit of the number of open filehandles allowed by the OS. This limit is typically set to 1024 on Linux systems and 256 on MacOS systems, and thus this issue occurs much more often on the latter. You can see what your current limit is by running the command:
+while running the command-line interface, using the Python library, or running tests This error is caused by a program hitting the limit of the number of open filehandles allowed by the OS. This limit is typically set to 1024 on Linux systems and 256 on MacOS systems, and thus this issue occurs much more often on the latter. You can see what your current limit is by running the command:
 
 ```bash
 ulimit -a | grep "open files"

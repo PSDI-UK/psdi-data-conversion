@@ -66,7 +66,7 @@ class ConversionTestInfo:
     """Information about a tested conversion."""
 
     run_type: str
-    """One of "library", "cla", or "gui", describing which type of test run was performed"""
+    """One of "library", "cli", or "gui", describing which type of test run was performed"""
 
     chain: bool
     """Whether or not this test was run as a chain conversion"""
@@ -162,7 +162,7 @@ class ConversionTestSpec:
     """Whether or not this test spec is compatible with being run through the Python library, default True"""
 
     compatible_with_cla: bool = True
-    """Whether or not this test spec is compatible with being run through the command-line application, default True"""
+    """Whether or not this test spec is compatible with being run through the command-line interface, default True"""
 
     compatible_with_gui: bool = True
     """Whether or not this test spec is compatible with being run through the GUI, default True"""
@@ -423,7 +423,7 @@ def _run_single_test_conversion_with_library(test_spec: SingleConversionTestSpec
 
 
 def run_test_conversion_with_cla(test_spec: ConversionTestSpec):
-    """Runs a test conversion or series thereof through the command-line application.
+    """Runs a test conversion or series thereof through the command-line interface.
 
     Parameters
     ----------
@@ -447,7 +447,7 @@ def run_test_conversion_with_cla(test_spec: ConversionTestSpec):
 def _run_single_test_conversion_with_cla(test_spec: SingleConversionTestSpec,
                                          input_dir: str,
                                          output_dir: str):
-    """Runs a single test conversion through the command-line application.
+    """Runs a single test conversion through the command-line interface.
 
     Parameters
     ----------
@@ -507,7 +507,7 @@ def _run_single_test_conversion_with_cla(test_spec: SingleConversionTestSpec,
 
     # Compile output info for the test and call the callback function if one is provided
     if test_spec.callback:
-        test_info = ConversionTestInfo(run_type="cla",
+        test_info = ConversionTestInfo(run_type="cli",
                                        chain=False,
                                        test_spec=test_spec,
                                        input_dir=input_dir,
@@ -577,7 +577,7 @@ def run_converter_through_cla(filename: str,
         elif key == "max_file_size":
             if val != 0:
                 pytest.fail("Test specification imposes a maximum file size, which isn't compatible with the "
-                            "command-line application.")
+                            "command-line interface.")
         elif key == "data":
             for subkey, subval in val.items():
                 if subkey == "from_flags":
