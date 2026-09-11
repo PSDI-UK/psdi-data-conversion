@@ -34,7 +34,7 @@ def compress_text(s: str):
     return strip_control_codes(s.replace("\n", "").replace(" ", ""))
 
 
-def compressed_match(s1, s2):
+def _compressed_match(s1, s2):
     """Assert that s1 is contained in s2, ignoring control codes and whitespace"""
     s1_compressed = compress_text(str(s1))
     s2_compressed = compress_text(str(s2))
@@ -90,11 +90,9 @@ def test_conversions(test_spec):
     run_test_conversion_with_cla(test_spec)
 
 
-def test_input_validity():
-    """Unit tests to ensure that the CLI properly checks for valid input
+def test_general_arg_parsing():
+    """Test that a standard argument string is parsed properly
     """
-
-    # Test that we get what we put in for a standard execution
     cwd = os.getcwd()
     args = get_parsed_args(f"file1 file2 -f mmcif -i {cwd} -t pdb -o {cwd}/.. -w '{const.CONVERTER_C2X}' " +
                            r"--delete-input --from-flags '\-ab \-c \--example' --to-flags '\-d' " +
@@ -117,45 +115,80 @@ def test_input_validity():
     assert args.log_file == "text.log"
     assert args.log_mode == const.LOG_NONE
 
-    # Test Open-Babel-specific arguments
+
+def test_open_babel_args():
+    """Test that Open-Babel-specific arguments are parsed correctly
+    """
     args = get_parsed_args(f"file1.mmcif -t pdb -w '{const.CONVERTER_OB}' --coord-gen Gen3D best")
     assert args.d_converter_args[COORD_GEN_KEY] == "Gen3D"
     assert args.d_converter_args[COORD_GEN_QUAL_KEY] == "best"
 
-    # It should fail with no arguments
-    with pytest.raises(FileConverterInputException):
+
+def test_fail_no_args():
+    """Test that the parsing fails if no arguments are provided"""
+    with pytest.raises(FileConverterInputException) as e:
         get_parsed_args("")
+    assert _compressed_match("One or more names of files to convert must be provided", e.value)
 
-    # It should fail if the output format isn't specified
-    with pytest.raises(FileConverterInputException):
+
+def test_fail_no_to_format():
+    """Test that the parsing fails if output format isn't specified"""
+    with pytest.raises(FileConverterInputException) as e:
         get_parsed_args("file1.mmcif")
+    assert _compressed_match("One or more names of files to convert must be provided", e.value)
 
-    # It should fail if the input directory doesn't exist
-    with pytest.raises(FileConverterInputException):
+
+def test_fail_no_input_dir():
+    """Test that the parsing fails if the input directory doesn't exist"""
+    with pytest.raises(FileConverterInputException) as e:
         get_parsed_args("file1.mmcif -i /no/where -t pdb")
+    assert _compressed_match("The provided input directory '/no/where' does not exist as a directory", e.value)
 
-    # It should fail if the converter isn't recognized
-    with pytest.raises(FileConverterInputException):
-        get_parsed_args("file1.mmcif -t pdb -w Ato")
 
-    # It should fail with bad or too many arguments to --coord-gen
-    with pytest.raises(FileConverterInputException):
+def test_fail_invalid_converter():
+    """Test that the parsing fails if the converter isn't recognized"""
+    with pytest.raises(FileConverterInputException) as e:
+        get_parsed_args("file1.mmcif -t pdb -w FakeConverter")
+    assert _compressed_match("Converter 'fakeconverter' not recognised", e.value)
+
+
+def test_fail_bad_coord_gen_type():
+    """Test that the parsing fails with bad --coord-gen type"""
+    with pytest.raises(FileConverterInputException) as e:
         get_parsed_args(f"file1.mmcif -t pdb -w '{const.CONVERTER_OB}' --coord-gen Gen1D")
-    with pytest.raises(FileConverterInputException):
+    assert _compressed_match("Coordinate generation type 'Gen1D' not recognised.", e.value)
+
+
+def test_fail_bad_coord_gen_quality():
+    """Test that the parsing fails with bad --coord-gen quality"""
+    with pytest.raises(FileConverterInputException) as e:
         get_parsed_args(f"file1.mmcif -t pdb -w '{const.CONVERTER_OB}' --coord-gen Gen3D worst")
-    with pytest.raises(FileConverterInputException):
+    assert _compressed_match("Coordinate generation quality 'worst' not recognised.", e.value)
+
+
+def test_fail_bad_coord_gen_len():
+    """Test that the parsing fails too many args to --coord-gen"""
+    with pytest.raises(FileConverterInputException) as e:
         get_parsed_args(f"file1.mmcif -t pdb -w '{const.CONVERTER_OB}' --coord-gen Gen3D best quality")
+    assert _compressed_match("At most two arguments may be provided to `--coord-gen`", e.value)
 
-    # It should fail if it doesn't recognise the logging mode
-    with pytest.raises(FileConverterInputException):
+
+def test_fail_bad_logging_mode():
+    """Test that the parsing fails if it doesn't recognise the logging mode"""
+    with pytest.raises(FileConverterInputException) as e:
         get_parsed_args(f"file1.mmcif -t pdb -w '{const.CONVERTER_OB}' --log-mode max")
+    assert _compressed_match("Unrecognised logging mode: 'max'", e.value)
 
-    # It should work if we just ask for a list, and set log mode to stdout
+
+def test_list_args():
+    """Test that the parsing works if we just ask for a list, and set log mode to stdout"""
     args = get_parsed_args("--list")
     assert args.list
     assert args.log_mode == const.LOG_STDOUT
 
-    # We should also be able to ask for info on a specific converter
+
+def test_list_converter():
+    """Test that the parsing works if we ask for info on a specific converter"""
     args = get_parsed_args("-l Open Babel")
     assert args.name == regularize_name("Open Babel")
     args = get_parsed_args("--list 'Open Babel'")
@@ -195,11 +228,12 @@ def test_default_coord_gen():
                            ).d_converter_args[COORD_GEN_QUAL_KEY] == DEFAULT_COORD_GEN_QUAL
 
 
-def test_log_file_not_set():
+def test_fail_log_file_not_set():
     """Test that trying to get the log file raises an exception due to the test file not existing"""
     args = get_parsed_args(f"file1.mmcif -t pdb -w {const.CONVERTER_OB}")
-    with pytest.raises(FileConverterInputException):
+    with pytest.raises(FileConverterInputException) as e:
         _ = args.log_file
+    assert _compressed_match(f"Input file '{os.getcwd()}/file1.mmcif' cannot be found", e.value)
 
 
 def test_log_file_list_mode():
@@ -233,8 +267,8 @@ def test_auto_ambiguous_from_format():
     """
     with pytest.raises(FileConverterInputException) as e:
         get_parsed_args("file1 -f pdb -t xyz-0 -w auto")
-    assert compressed_match("the input format determined from the extension of the input file or specified "
-                            "with `-f/--from` must unambiguously", e.value)
+    assert _compressed_match("the input format determined from the extension of the input file or specified "
+                             "with `-f/--from` must unambiguously", e.value)
 
 
 def test_auto_ambiguous_ext():
@@ -242,8 +276,8 @@ def test_auto_ambiguous_ext():
     """
     with pytest.raises(FileConverterInputException) as e:
         get_parsed_args("file1.pdb -t xyz-0 -w auto")
-    assert compressed_match("the input format determined from the extension of the input file or specified "
-                            "with `-f/--from` must unambiguously", e.value)
+    assert _compressed_match("the input format determined from the extension of the input file or specified "
+                             "with `-f/--from` must unambiguously", e.value)
 
 
 def test_auto_multi_ambiguous_ext():
@@ -252,7 +286,7 @@ def test_auto_multi_ambiguous_ext():
     """
     with pytest.raises(FileConverterInputException) as e:
         get_parsed_args("file1.pdb file2.cif -t xyz-0 -w auto")
-    assert compressed_match("input format must be uniquely identifiable for all input files.", e.value)
+    assert _compressed_match("input format must be uniquely identifiable for all input files.", e.value)
 
 
 def test_auto_invalid_to_format():
@@ -260,7 +294,7 @@ def test_auto_invalid_to_format():
     """
     with pytest.raises(FileConverterInputException) as e:
         get_parsed_args("file1 -f pdb-0 -t invalid_format -w auto")
-    assert compressed_match("is not recognised as a valid output format. To see supported formats", e.value)
+    assert _compressed_match("is not recognised as a valid output format. To see supported formats", e.value)
 
 
 def test_auto_ambiguous_to_format():
@@ -268,7 +302,7 @@ def test_auto_ambiguous_to_format():
     """
     with pytest.raises(FileConverterInputException) as e:
         get_parsed_args("file1 -f pdb-0 -t xyz -w auto")
-    assert compressed_match("is ambiguous and can correspond to multiple possible output formats", e.value)
+    assert _compressed_match("is ambiguous and can correspond to multiple possible output formats", e.value)
 
 
 def test_auto_no_common_converter():
@@ -277,7 +311,7 @@ def test_auto_no_common_converter():
     """
     with pytest.raises(FileConverterInputException) as e:
         get_parsed_args("file1.abi file2.inchi -t pdb-0 -w auto")
-    assert compressed_match("No converter is available which can perform a conversion of all input files", e.value)
+    assert _compressed_match("No converter is available which can perform a conversion of all input files", e.value)
 
 
 def test_list_converters(capsys):
