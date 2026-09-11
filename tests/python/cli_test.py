@@ -28,10 +28,17 @@ from psdi_data_conversion.testing.utils import run_test_conversion_with_cla, run
 from psdi_data_conversion.utils import regularize_name, strip_control_codes
 
 
-def compress_output(s: str):
+def compress_text(s: str):
     """Strips whitespace and control codes from output to ease comparisons without worrying about things like line-
     wrapping"""
     return strip_control_codes(s.replace("\n", "").replace(" ", ""))
+
+
+def compressed_match(s1, s2):
+    """Assert that s1 is contained in s2, ignoring control codes and whitespace"""
+    s1_compressed = compress_text(str(s1))
+    s2_compressed = compress_text(str(s2))
+    return s1_compressed in s2_compressed
 
 
 def test_unique_args():
@@ -200,7 +207,7 @@ def _check_no_errors(captured):
 
 @pytest.mark.parametrize("auto_str", ["", "-w auto", "-w Auto", "--with AUTO"])
 def test_auto_converter(auto_str):
-    """Unit test to ensure that a converter can be properly determined automatically
+    """Ensure that a converter can be properly determined automatically
     """
 
     # Test that Open Babel is chosen when expected
@@ -211,7 +218,57 @@ def test_auto_converter(auto_str):
     args = get_parsed_args(f"file1.pdb -f pdb-0 -t xyz-0 {auto_str}")
     assert args.name == regularize_name(const.CONVERTER_C2X)
 
-    # TODO: Add test of some fail states
+
+def test_auto_ambiguous_from_format():
+    """Ensure that the proper error is raised if the input format is ambiguous when using 'auto' converter
+    """
+    with pytest.raises(FileConverterInputException) as e:
+        get_parsed_args("file1 -f pdb -t xyz-0 -w auto")
+    assert compressed_match("the input format determined from the extension of the input file or specified "
+                            "with `-f/--from` must unambiguously", e.value)
+
+
+def test_auto_ambiguous_ext():
+    """Ensure that the proper error is raised if the input format is ambiguous when using 'auto' converter
+    """
+    with pytest.raises(FileConverterInputException) as e:
+        get_parsed_args("file1.pdb -t xyz-0 -w auto")
+    assert compressed_match("the input format determined from the extension of the input file or specified "
+                            "with `-f/--from` must unambiguously", e.value)
+
+
+def test_auto_multi_ambiguous_ext():
+    """Ensure that the proper error is raised if the input format is ambiguous for one or more in a list of input files
+    when using 'auto' converter
+    """
+    with pytest.raises(FileConverterInputException) as e:
+        get_parsed_args("file1.pdb file2.cif -t xyz-0 -w auto")
+    assert compressed_match("input format must be uniquely identifiable for all input files.", e.value)
+
+
+def test_auto_invalid_to_format():
+    """Ensure that the proper error is raised if the output format is invalid when using 'auto' converter
+    """
+    with pytest.raises(FileConverterInputException) as e:
+        get_parsed_args("file1 -f pdb-0 -t invalid_format -w auto")
+    assert compressed_match("is not recognised as a valid output format. To see supported formats", e.value)
+
+
+def test_auto_ambiguous_to_format():
+    """Ensure that the proper error is raised if the to format is ambiguous when using 'auto' converter
+    """
+    with pytest.raises(FileConverterInputException) as e:
+        get_parsed_args("file1 -f pdb-0 -t xyz -w auto")
+    assert compressed_match("is ambiguous and can correspond to multiple possible output formats", e.value)
+
+
+def test_auto_no_common_converter():
+    """Ensure that the proper error is raised if no one converter can perform all conversions when using 'auto'
+    converter.
+    """
+    with pytest.raises(FileConverterInputException) as e:
+        get_parsed_args("file1.abi file2.inchi -t pdb-0 -w auto")
+    assert compressed_match("No converter is available which can perform a conversion of all input files", e.value)
 
 
 def test_list_converters(capsys):
@@ -239,10 +296,10 @@ def test_detail_converter(capsys):
 
         run_with_arg_string(f"--list {converter_name}")
         captured = capsys.readouterr()
-        compressed_out: str = compress_output(captured.out)
+        compressed_out: str = compress_text(captured.out)
 
         def string_is_present_in_out(s: str) -> bool:
-            return compress_output(s) in compressed_out
+            return compress_text(s) in compressed_out
 
         assert string_is_present_in_out(converter_name)
 
@@ -297,7 +354,7 @@ def test_get_conversions(capsys):
     compressed_out: str = strip_control_codes(captured.out.replace("\n", "").replace(" ", ""))
 
     def string_is_present_in_out(s: str) -> bool:
-        return compress_output(s) in compressed_out
+        return compress_text(s) in compressed_out
 
     _check_no_errors(captured)
 
@@ -323,10 +380,10 @@ def test_get_chained(capsys):
 
     run_with_arg_string(f"-l -f {in_format.id} -t {out_format.id}")
     captured = capsys.readouterr()
-    compressed_out: str = compress_output(captured.out)
+    compressed_out: str = compress_text(captured.out)
 
     def string_is_present_in_out(s: str) -> bool:
-        return compress_output(s) in compressed_out
+        return compress_text(s) in compressed_out
 
     _check_no_errors(captured)
 
@@ -347,7 +404,7 @@ def test_get_chained(capsys):
 
     run_with_arg_string(f"-l -f {in_format} -t {out_format}")
     captured = capsys.readouterr()
-    compressed_out: str = compress_output(captured.out)
+    compressed_out: str = compress_text(captured.out)
 
     assert string_is_present_in_out(f"No chained conversions are possible from {in_format} to {out_format}.")
 
@@ -370,10 +427,10 @@ def test_conversion_info(capsys):
     # Test a basic listing of arguments, checking with the converter name in lowercase to be sure that works
     run_with_arg_string(f"-l {converter_name.lower()} -f {in_format} -t {out_format}")
     captured = capsys.readouterr()
-    compressed_out: str = compress_output(captured.out)
+    compressed_out: str = compress_text(captured.out)
 
     def string_is_present_in_out(s: str) -> bool:
-        return compress_output(s) in compressed_out
+        return compress_text(s) in compressed_out
 
     _check_no_errors(captured)
 
@@ -411,7 +468,7 @@ def test_conversion_info(capsys):
 
         run_with_arg_string(f"-l {converter_name} -f {in_format} -t {out_format}")
         captured = capsys.readouterr()
-        compressed_out: str = compress_output(captured.out)
+        compressed_out: str = compress_text(captured.out)
 
         _check_no_errors(captured)
 
@@ -427,10 +484,10 @@ def test_format_info(capsys):
     run_with_arg_string(f"-l -f {in_format}")
 
     captured = capsys.readouterr()
-    compressed_out: str = compress_output(captured.out)
+    compressed_out: str = compress_text(captured.out)
 
     def string_is_present_in_out(s: str) -> bool:
-        return compress_output(s) in compressed_out
+        return compress_text(s) in compressed_out
 
     _check_no_errors(captured)
 
@@ -455,7 +512,7 @@ def test_format_info(capsys):
     run_with_arg_string(f"-l -t {out_format}")
 
     captured = capsys.readouterr()
-    compressed_out: str = compress_output(captured.out)
+    compressed_out: str = compress_text(captured.out)
 
     _check_no_errors(captured)
 
@@ -472,10 +529,10 @@ def test_format_info(capsys):
         run_with_arg_string(f"-l -f {in_format}")
 
     captured = capsys.readouterr()
-    compressed_err: str = compress_output(captured.err)
+    compressed_err: str = compress_text(captured.err)
 
     def string_is_present_in_err(s: str) -> bool:
-        return compress_output(s) in compressed_err
+        return compress_text(s) in compressed_err
 
     assert string_is_present_in_err(f"ERROR: Format '{in_format}' not recognised")
 
@@ -485,6 +542,6 @@ def test_format_info(capsys):
         run_with_arg_string(f"-l -t {out_format}")
 
     captured = capsys.readouterr()
-    compressed_err: str = compress_output(captured.err)
+    compressed_err: str = compress_text(captured.err)
 
     assert string_is_present_in_err(f"ERROR: Format '{out_format}' not recognised")

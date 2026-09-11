@@ -319,7 +319,8 @@ class ConvertArgs:
         l_from_formats = get_format_info(self.from_format, "all")
         if len(l_from_formats) != 1:
             raise FileConverterInputException(f"When using {tc.MESSAGE}'auto'{tc.OFF} converter, the input format "
-                                              f"specified with {tc.CODE}`-f/--from`{tc.OFF} must unambiguously "
+                                              "determined from the extension of the input file or specified with "
+                                              f"{tc.CODE}`-f/--from`{tc.OFF} must unambiguously "
                                               "identify a format. Please use the ID or disambiguated name from the "
                                               "correct format in the following list: " +
                                               "\n".join([x.format_oneline() for x in l_from_formats]), help=True)
