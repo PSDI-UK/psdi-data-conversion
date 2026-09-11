@@ -2120,6 +2120,27 @@ def get_format_info(file_format: str | int | UUID | FormatInfo,
     return get_database().get_format_info(file_format, which)
 
 
+def get_format_pretty_name(file_format: str | int | UUID | FormatInfo):
+    """Gets a string for the name of a format which may or may not be ambiguous at this point
+
+    Parameters
+    ----------
+    file_format : str | int | UUID | FormatInfo
+        The name (extension) of the format, or its ID. In the case of ambiguous extensions which could apply to multiple
+        formats, the ID must be used here or a FileConverterDatabaseException will be raised. This also allows passing a
+        FormatInfo to this, in which case that object will be silently returned, to allow normalising the input to
+        always be a FormatInfo when output from this
+
+    Returns
+    -------
+    str
+    """
+    l_possible_format_info = get_format_info(file_format, "all")
+    if len(l_possible_format_info) == 1:
+        return l_possible_format_info[0].format_word()
+    return f"{tc.MESSAGE}'{file_format}'{tc.OFF}"
+
+
 def get_conversion_quality(converter: str | int | UUID | ConverterInfo,
                            in_format: str | int | UUID | FormatInfo,
                            out_format: str | int | UUID | FormatInfo,

@@ -27,8 +27,8 @@ from psdi_data_conversion.converters.base import (FileConverterAbortException, F
 from psdi_data_conversion.database import (CONVERSION_WEIGHT_MAX, D_FORMAT_PROPERTY_ATTRS, ConversionQualityInfo,
                                            ConverterInfo, FormatInfo, disambiguate_formats, get_conversion_pathway,
                                            get_conversion_quality, get_conversion_weight, get_converter_info,
-                                           get_format_info, get_in_format_args, get_out_format_args,
-                                           get_possible_conversions, get_possible_formats)
+                                           get_format_info, get_format_pretty_name, get_in_format_args,
+                                           get_out_format_args, get_possible_conversions, get_possible_formats)
 from psdi_data_conversion.file_io import split_archive_ext
 from psdi_data_conversion.log_utility import get_log_level_from_str
 from psdi_data_conversion.utils import (CustomHelpFormatter, displaylen, print_wrap, regularize_name,
@@ -300,7 +300,8 @@ class ConvertArgs:
                            f"-f/--from`{tc.OFF} argument must be provided to specify input format, or else input "
                            "format must be uniquely identifiable for all input files. The following files could not "
                            "have their format uniquely identified: " +
-                           ", ".join([x for x in self.l_args if os.path.splitext(x)[1] in l_bad_exts]))
+                           ", ".join([f"{tc.PATH}'{x}'{tc.OFF}"
+                                      for x in self.l_args if os.path.splitext(x)[1] in l_bad_exts]))
                     raise FileConverterInputException(msg, help=True)
 
                 # Determine converters which can handle conversion from each input format to the output format
@@ -322,7 +323,7 @@ class ConvertArgs:
                                               "determined from the extension of the input file or specified with "
                                               f"{tc.CODE}`-f/--from`{tc.OFF} must unambiguously "
                                               "identify a format. Please use the ID or disambiguated name from the "
-                                              "correct format in the following list: " +
+                                              "correct format in the following list:\n" +
                                               "\n".join([x.format_oneline() for x in l_from_formats]), help=True)
         s_converters = self._get_possible_converters(l_from_formats[0])
 
@@ -592,8 +593,7 @@ def detail_converter_use(args: ConvertArgs):
 
     if args.from_format is not None:
         in_flags, in_options = get_in_format_args(args.name, args.from_format)
-        from_format = from_format_info.format_word(
-        ) if from_format_info else f"{tc.MESSAGE}'{args.from_format}'{tc.OFF}"
+        from_format = get_format_pretty_name(args.from_format)
     else:
         in_flags, in_options = [], []
         from_format = "N/A"
@@ -602,7 +602,7 @@ def detail_converter_use(args: ConvertArgs):
 
     if args.to_format is not None:
         out_flags, out_options = get_out_format_args(args.name, args.to_format)
-        to_format = to_format_info.format_word() if to_format_info else f"{tc.MESSAGE}'{args.to_format}'{tc.OFF}"
+        to_format = get_format_pretty_name(args.to_format)
     else:
         out_flags, out_options = [], []
         to_format = "N/A"
@@ -779,8 +779,8 @@ def detail_formats_and_possible_converters(from_format: str, to_format: str):
         l_from_formats = get_format_info(from_format, which="all")
         l_to_formats = get_format_info(to_format, which="all")
 
-        from_format_name = l_from_formats[0].format_word() if len(l_from_formats) == 1 else f"'{from_format}'"
-        to_format_name = l_to_formats[0].format_word() if len(l_to_formats) == 1 else f"'{to_format}'"
+        from_format_name = get_format_pretty_name(from_format)
+        to_format_name = get_format_pretty_name(to_format)
 
         print()
         print_wrap(f"No direct conversions are possible from {from_format_name} to {to_format_name}")
@@ -990,18 +990,9 @@ def run_from_args(args: ConvertArgs):
                            f"{tc.PATH}'{args.input_dir}'{tc.OFF}", err=True)
                 continue
 
-        # See if we can uniquely resolve the output format now, so we can display it's name nicely if possible
-        l_possible_to_formats = get_format_info(args.to_format, "all")
-        to_format: FormatInfo | str
-        if len(l_possible_to_formats) == 1:
-            to_format = l_possible_to_formats[0]
-        else:
-            to_format = args.to_format
-
         if not args.quiet:
-            to_format_name: str = (to_format.format_word() if isinstance(to_format, FormatInfo) else
-                                   f"{tc.MESSAGE}'{args.to_format}'{tc.OFF}")
-            print_wrap(f"Converting {tc.PATH}'{filename}'{tc.OFF} to {to_format_name}...", newline=True)
+            print_wrap(f"Converting {tc.PATH}'{filename}'{tc.OFF} to {get_format_pretty_name(args.to_format)}...",
+                       newline=True)
 
         try:
             conversion_result = run_converter(filename=qualified_filename,
