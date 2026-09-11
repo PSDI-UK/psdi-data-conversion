@@ -135,7 +135,7 @@ def test_fail_no_to_format():
     """Test that the parsing fails if output format isn't specified"""
     with pytest.raises(FileConverterInputException) as e:
         get_parsed_args("file1.mmcif")
-    assert _compressed_match("One or more names of files to convert must be provided", e.value)
+    assert _compressed_match("Output format (`-t/--to`) must be provided", e.value)
 
 
 def test_fail_no_input_dir():
