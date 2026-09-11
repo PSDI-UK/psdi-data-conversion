@@ -327,49 +327,45 @@ def test_list_converters(capsys):
     _check_no_errors(captured)
 
 
-def test_detail_converter(capsys):
+@pytest.mark.parametrize("converter_name", L_REGISTERED_CONVERTERS)
+def test_detail_converter(capsys, converter_name):
     """Test the option to provide detail on a converter
     """
 
-    # Test all converters are recognised, don't raise an error, and we get info on them
-    for name in L_REGISTERED_CONVERTERS:
+    converter_info = get_converter_info(converter_name)
 
-        converter_info = get_converter_info(name)
-        converter_name = get_registered_converter_class(name).meta.name
+    run_with_arg_string(f"--list {converter_name}")
+    captured = capsys.readouterr()
 
-        run_with_arg_string(f"--list {converter_name}")
-        captured = capsys.readouterr()
-        compressed_out: str = compress_text(captured.out)
+    assert _compressed_match(converter_info.pretty_name, captured.out)
 
-        def string_is_present_in_out(s: str) -> bool:
-            return compress_text(s) in compressed_out
+    if not converter_info.description:
+        assert _compressed_match("available for this converter", captured.out)
+    else:
+        assert _compressed_match(converter_info.description, captured.out)
 
-        assert string_is_present_in_out(converter_name)
+    # Check for URL
+    assert converter_info.url in captured.out
 
-        if not converter_info.description:
-            assert "available for this converter" in captured.out
-        else:
-            assert string_is_present_in_out(converter_info.description)
+    # Check for list of allowed input/output formats
+    assert "    INPUT    OUTPUT    DESCRIPTION" in captured.out
 
-        # Check for URL
-        assert converter_info.url in captured.out
+    l_allowed_in_formats, l_allowed_out_formats = get_possible_formats(converter_name)
+    for in_format in l_allowed_in_formats:
+        output_allowed = "yes" if in_format in l_allowed_out_formats else "no"
+        assert _compressed_match(f"{in_format.disambiguated_name}yes{output_allowed}{in_format.description}",
+                                 captured.out)
+    for out_format in l_allowed_out_formats:
+        input_allowed = "yes" if out_format in l_allowed_in_formats else "no"
+        assert _compressed_match(f"{out_format.disambiguated_name}{input_allowed}yes{out_format.description}",
+                                 captured.out)
 
-        # Check for list of allowed input/output formats
-        assert "    INPUT    OUTPUT    DESCRIPTION" in captured.out
+    _check_no_errors(captured)
 
-        l_allowed_in_formats, l_allowed_out_formats = get_possible_formats(name)
-        for in_format in l_allowed_in_formats:
-            output_allowed = "yes" if in_format in l_allowed_out_formats else "no"
-            assert string_is_present_in_out(
-                f"{in_format.disambiguated_name}yes{output_allowed}{in_format.description}")
-        for out_format in l_allowed_out_formats:
-            input_allowed = "yes" if out_format in l_allowed_in_formats else "no"
-            assert string_is_present_in_out(
-                f"{out_format.disambiguated_name}{input_allowed}yes{out_format.description}")
 
-        _check_no_errors(captured)
-
-    # Test we do get a simple error for a bad converter name
+def test_detail_converter_bad_name(capsys):
+    """Test we do get a simple error for a bad converter name
+    """
     with pytest.raises(SystemExit):
         run_with_arg_string("--list bad_converter")
     captured = capsys.readouterr()
@@ -377,7 +373,10 @@ def test_detail_converter(capsys):
     assert "Traceback" not in captured.out
     assert "Traceback" not in captured.err
 
-    # Test that we can also provide the converter name with -w/--with
+
+def test_detail_converter_with(capsys):
+    """Test that we can also provide the converter name with -w/--with
+    """
     run_with_arg_string(f"-l -w {const.CONVERTER_C2X}")
     captured = capsys.readouterr()
     _check_no_errors(captured)
@@ -413,7 +412,7 @@ def test_get_conversions(capsys):
             assert not string_is_present_in_out(converter_info.pretty_name)
 
 
-def test_get_chained(capsys):
+def test_list_chain(capsys):
     """Test the ability to get a pathway for a chained conversion
     """
     in_format = get_format_info(FORMAT_MOLDY)
@@ -423,36 +422,34 @@ def test_get_chained(capsys):
 
     run_with_arg_string(f"-l -f {in_format.id} -t {out_format.id}")
     captured = capsys.readouterr()
-    compressed_out: str = compress_text(captured.out)
-
-    def string_is_present_in_out(s: str) -> bool:
-        return compress_text(s) in compressed_out
 
     _check_no_errors(captured)
 
-    assert string_is_present_in_out(f"No direct conversions are possible from {in_format.format_word()} to "
-                                    f"{out_format.format_word()}")
+    assert _compressed_match(f"No direct conversions are possible from {in_format.format_word()} to "
+                             f"{out_format.format_word()}", captured.out)
 
-    assert string_is_present_in_out(f"A chained conversion is possible from {in_format.format_word()} to "
-                                    f"{out_format.format_word()} using registered converters:")
+    assert _compressed_match(f"A chained conversion is possible from {in_format.format_word()} to "
+                             f"{out_format.format_word()} using registered converters:", captured.out)
 
     for i, step in enumerate(pathway):
-        assert string_is_present_in_out(f"{i+1}) Convert from {step[1].format_word()} to {step[2].format_word()} with "
-                                        f"{step[0].format_word()}")
+        assert _compressed_match(f"{i+1}) Convert from {step[1].format_word()} to {step[2].format_word()} with "
+                                 f"{step[0].format_word()}", captured.out)
 
-    # Now try getting a conversion which is not in fact possible, even chained
+
+def test_list_chain_impossible(capsys):
+    """Test that we get the expected output when a chained conversion is not possible
+    """
 
     in_format = "cif"
     out_format = "abinit"
 
     run_with_arg_string(f"-l -f {in_format} -t {out_format}")
     captured = capsys.readouterr()
-    compressed_out: str = compress_text(captured.out)
 
-    assert string_is_present_in_out(f"No chained conversions are possible from {in_format} to {out_format}.")
+    assert _compressed_match(f"No chained conversions are possible from {in_format} to {out_format}.", captured.out)
 
     # Check that igraph's warning is suppressed
-    assert not string_is_present_in_out("Couldn't reach some vertices")
+    assert not _compressed_match("Couldn't reach some vertices", captured.out)
 
     _check_no_errors(captured)
 
