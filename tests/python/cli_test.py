@@ -479,10 +479,10 @@ def test_conversion_info_open_babel(capsys):
     l_out_flags, l_out_options = get_out_format_args(converter_name, out_format)
 
     # Check headings for input/output flags/options are present if and only if some of those flags/options exist
-    assert bool(l_in_flags) == _compressed_match(f"Allowed input flags for format {in_format}:", captured.out)
-    assert bool(l_out_flags) == _compressed_match(f"Allowed output flags for format {out_format}:", captured.out)
-    assert bool(l_in_options) == _compressed_match(f"Allowed input options for format {in_format}:", captured.out)
-    assert bool(l_out_options) == _compressed_match(f"Allowed output options for format {out_format}:", captured.out)
+    assert bool(l_in_flags) == _compressed_match(f"Allowed input flags for format '{in_format}'", captured.out)
+    assert bool(l_out_flags) == _compressed_match(f"Allowed output flags for format '{out_format}'", captured.out)
+    assert bool(l_in_options) == _compressed_match(f"Allowed input options for format '{in_format}'", captured.out)
+    assert bool(l_out_options) == _compressed_match(f"Allowed output options for format '{out_format}'", captured.out)
 
     # Check that info for each flag and option is printed as expected
     for flag_info in l_in_flags + l_out_flags:
