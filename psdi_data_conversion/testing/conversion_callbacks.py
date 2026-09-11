@@ -405,8 +405,8 @@ class CheckException:
     def __call__(self, test_info: ConversionTestInfo) -> str:
         """Perform the check on the exception"""
 
-        # Skip check on CLA, since this won't catch any exceptions
-        if test_info.run_type == "cla":
+        # Skip check on CLI, since this won't catch any exceptions
+        if test_info.run_type == "cli":
             return ""
 
         # Confirm that an exception was indeed raised
