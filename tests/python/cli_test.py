@@ -457,8 +457,8 @@ def test_get_chained(capsys):
     _check_no_errors(captured)
 
 
-def test_conversion_info(capsys):
-    """Test the option to provide detail on degree of success and arguments a converter allows for a given conversion
+def test_conversion_info_open_babel(capsys):
+    """Test that we get the expected information on the 'Open Babel' converter
     """
 
     converter_name = const.CONVERTER_OB
@@ -470,50 +470,57 @@ def test_conversion_info(capsys):
     # Test a basic listing of arguments, checking with the converter name in lowercase to be sure that works
     run_with_arg_string(f"-l {converter_name.lower()} -f {in_format} -t {out_format}")
     captured = capsys.readouterr()
-    compressed_out: str = compress_text(captured.out)
-
-    def string_is_present_in_out(s: str) -> bool:
-        return compress_text(s) in compressed_out
 
     _check_no_errors(captured)
 
     # Check that conversion quality details are in the output as expected
-    assert string_is_present_in_out(f"Conversion from {in_format} to {out_format} with {converter_name} is "
-                                    f"possible with {qual.qual_str} conversion quality")
-    assert string_is_present_in_out("WARNING: Potential data loss or extrapolation issues with this conversion:")
-    assert string_is_present_in_out(const.QUAL_NOTE_OUT_MISSING.format(const.QUAL_2D_LABEL))
-    assert string_is_present_in_out(const.QUAL_NOTE_OUT_MISSING.format(const.QUAL_3D_LABEL))
-    assert string_is_present_in_out(const.QUAL_NOTE_IN_MISSING.format(const.QUAL_CONN_LABEL))
+    assert _compressed_match(f"Conversion from {in_format} to {out_format} with {converter_name} is "
+                             f"possible with {qual.qual_str} conversion quality", captured.out)
+    assert _compressed_match("WARNING: Potential data loss or extrapolation issues with this conversion:",
+                             captured.out)
+    assert _compressed_match(const.QUAL_NOTE_OUT_MISSING.format(const.QUAL_2D_LABEL), captured.out)
+    assert _compressed_match(const.QUAL_NOTE_OUT_MISSING.format(const.QUAL_3D_LABEL), captured.out)
+    assert _compressed_match(const.QUAL_NOTE_IN_MISSING.format(const.QUAL_CONN_LABEL), captured.out)
 
     l_in_flags, l_in_options = get_in_format_args(converter_name, in_format)
     l_out_flags, l_out_options = get_out_format_args(converter_name, out_format)
 
     # Check headings for input/output flags/options are present if and only if some of those flags/options exist
-    assert bool(l_in_flags) == string_is_present_in_out(f"Allowed input flags for format {in_format}:")
-    assert bool(l_out_flags) == string_is_present_in_out(f"Allowed output flags for format {out_format}:")
-    assert bool(l_in_options) == string_is_present_in_out(f"Allowed input options for format {in_format}:")
-    assert bool(l_out_options) == string_is_present_in_out(f"Allowed output options for format {out_format}:")
+    assert bool(l_in_flags) == _compressed_match(f"Allowed input flags for format {in_format}:", captured.out)
+    assert bool(l_out_flags) == _compressed_match(f"Allowed output flags for format {out_format}:", captured.out)
+    assert bool(l_in_options) == _compressed_match(f"Allowed input options for format {in_format}:", captured.out)
+    assert bool(l_out_options) == _compressed_match(f"Allowed output options for format {out_format}:", captured.out)
 
     # Check that info for each flag and option is printed as expected
     for flag_info in l_in_flags + l_out_flags:
         info = flag_info.info if flag_info.info and flag_info.info != "N/A" else ""
-        assert string_is_present_in_out(f"{flag_info.name}{flag_info.description}{info}")
+        assert _compressed_match(f"{flag_info.name}{flag_info.description}{info}", captured.out)
     for option_info in l_in_options + l_out_options:
         info = option_info.info if option_info.info and option_info.info != "N/A" else ""
-        assert string_is_present_in_out(f"{option_info.name}<{option_info.brief}>{option_info.description}{info}")
+        assert _compressed_match(f"{option_info.name}<{option_info.brief}>{option_info.description}{info}",
+                                 captured.out)
 
-    # Now try listing for converters which don't yet allow in/out args
+
+@pytest.mark.parametrize("converter_name", [const.CONVERTER_C2X, const.CONVERTER_ATO])
+def test_conversion_info_others(capsys, converter_name):
+    """Test that we get the expected information on other converters
+    """
 
     in_format = "pdb-0"
     out_format = "cif"
-    for converter_name in [const.CONVERTER_C2X, const.CONVERTER_ATO]:
-        qual = get_conversion_quality(converter_name, in_format, out_format)
+    qual = get_conversion_quality(converter_name, in_format, out_format)
 
-        run_with_arg_string(f"-l {converter_name} -f {in_format} -t {out_format}")
-        captured = capsys.readouterr()
-        compressed_out: str = compress_text(captured.out)
+    run_with_arg_string(f"-l {converter_name} -f {in_format} -t {out_format}")
 
-        _check_no_errors(captured)
+    captured = capsys.readouterr()
+    _check_no_errors(captured)
+
+    # Check that conversion quality details are in the output as expected
+    assert _compressed_match(f"Conversion from {in_format} to {out_format} with {converter_name} is "
+                             f"possible with {qual.qual_str} conversion quality", captured.out)
+    assert _compressed_match("WARNING: Potential data loss or extrapolation issues with this conversion:",
+                             captured.out)
+    assert _compressed_match(const.QUAL_NOTE_OUT_MISSING.format(const.QUAL_CONN_LABEL), captured.out)
 
 
 def test_format_info(capsys):
