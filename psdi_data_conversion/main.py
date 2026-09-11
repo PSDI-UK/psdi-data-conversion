@@ -595,6 +595,7 @@ def detail_converter_use(args: ConvertArgs):
     mention_input_format = False
     mention_output_format = False
 
+    from_format_ambiguous = False
     if args.from_format is not None:
         if not from_format_info:
             try:
@@ -602,6 +603,7 @@ def detail_converter_use(args: ConvertArgs):
             except FileConverterDatabaseException:
                 in_flags, in_options = [], []
                 from_format = args.from_format
+                from_format_ambiguous = True
         if from_format_info:
             in_flags, in_options = get_in_format_args(args.name, from_format_info)
             from_format = from_format_info.disambiguated_name
@@ -611,6 +613,7 @@ def detail_converter_use(args: ConvertArgs):
         if converter_class.has_in_format_flags_or_options:
             mention_input_format = True
 
+    to_format_ambiguous = False
     if args.to_format is not None:
         if not to_format_info:
             try:
@@ -618,6 +621,7 @@ def detail_converter_use(args: ConvertArgs):
             except FileConverterDatabaseException:
                 out_flags, out_options = [], []
                 to_format = args.to_format
+                to_format_ambiguous = True
         if to_format_info:
             out_flags, out_options = get_out_format_args(args.name, to_format_info)
             to_format = to_format_info.disambiguated_name
@@ -636,12 +640,22 @@ def detail_converter_use(args: ConvertArgs):
                                                          (out_flags, "flag", "output", to_format, True),
                                                          (out_options, "option", "output", to_format, False)):
         if show_details:
-            if input_or_output == "input":
+            if input_or_output == "input" and args.from_format:
                 detail_format(args.from_format, "in")
-            else:
+                if from_format_ambiguous:
+                    print_wrap("\nFor details on input flags and options allowed for this format, please use the "
+                               "disambiguated name or ID and call:\n"
+                               f"{tc.CODE}{CL_SCRIPT_NAME} -l {converter_name} -f <input_format>{tc.OFF}")
+            elif input_or_output == "output" and args.to_format:
                 detail_format(args.to_format, "out")
+                if to_format_ambiguous:
+                    print_wrap("\nFor details on output flags and options allowed for this format, please use the "
+                               "disambiguated name or ID and call:\n"
+                               f"{tc.CODE}{CL_SCRIPT_NAME} -l {converter_name} -t <output_format>{tc.OFF}")
+
         if len(l_args) == 0:
             continue
+
         print_header(f"Allowed {input_or_output} {flag_or_option}s for format '{format_name}'")
         for arg_info in l_args:
             if flag_or_option == "flag":
