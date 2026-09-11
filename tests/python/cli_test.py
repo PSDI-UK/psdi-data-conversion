@@ -517,8 +517,7 @@ def test_conversion_info(capsys):
 
 
 def test_format_info(capsys):
-    """Test that we can get information on formats
-    """
+    """Test that we can successfully get information on a file format"""
 
     # Try to get info on an unambiguous format
 
@@ -527,64 +526,57 @@ def test_format_info(capsys):
     run_with_arg_string(f"-l -f {in_format}")
 
     captured = capsys.readouterr()
-    compressed_out: str = compress_text(captured.out)
-
-    def string_is_present_in_out(s: str) -> bool:
-        return compress_text(s) in compressed_out
 
     _check_no_errors(captured)
 
     # Check for basic format information
-    assert string_is_present_in_out(f"{in_format_info.disambiguated_name} (ID {in_format_info.id}): " +
-                                    in_format_info.description)
+    assert _compressed_match(f"{in_format_info.disambiguated_name} (ID {in_format_info.id}): " +
+                             in_format_info.description, captured.out)
 
     # Check for property information
     for attr, label in D_FORMAT_PROPERTY_ATTRS.items():
         support_status = getattr(in_format_info, attr)
         if support_status:
-            assert string_is_present_in_out(label + " supported")
+            assert _compressed_match(label + " supported", captured.out)
         elif support_status is False:
-            assert string_is_present_in_out(label + " not supported")
+            assert _compressed_match(label + " not supported", captured.out)
         else:
-            assert string_is_present_in_out(label + " unknown whether or not to be supported")
+            assert _compressed_match(label + " unknown whether or not to be supported", captured.out)
 
-    # Try to get info on an ambiguous format
+
+def test_format_info_ambiguous(capsys):
+    """Test that we get expected information for an ambiguous format"""
 
     out_format = "pdb"
     l_out_format_info = get_format_info(out_format, which="all")
     run_with_arg_string(f"-l -t {out_format}")
 
     captured = capsys.readouterr()
-    compressed_out: str = compress_text(captured.out)
 
     _check_no_errors(captured)
 
-    assert string_is_present_in_out(f"WARNING: Format '{out_format}' is ambiguous")
+    assert _compressed_match(f"WARNING: Format '{out_format}' is ambiguous", captured.out)
 
     for out_format_info in l_out_format_info:
-        assert string_is_present_in_out(f"{out_format_info.disambiguated_name} (ID {out_format_info.id}): " +
-                                        out_format_info.description)
+        assert _compressed_match(out_format_info.format_oneline(), captured.out)
 
-    # Test we get expected errors for unrecognised formats
+
+def test_format_info_in_unrecognised(capsys):
+    """Test we get expected errors for unrecognised input format"""
 
     in_format = 99999
     with pytest.raises(SystemExit):
         run_with_arg_string(f"-l -f {in_format}")
 
-    captured = capsys.readouterr()
-    compressed_err: str = compress_text(captured.err)
+    assert _compressed_match(f"ERROR: Format '{in_format}' not recognised", capsys.readouterr().err)
 
-    def string_is_present_in_err(s: str) -> bool:
-        return compress_text(s) in compressed_err
 
-    assert string_is_present_in_err(f"ERROR: Format '{in_format}' not recognised")
+def test_format_info_out_unrecognised(capsys):
+    """Test we get expected errors for unrecognised output format"""
 
     out_format = "not_a_format"
 
     with pytest.raises(SystemExit):
         run_with_arg_string(f"-l -t {out_format}")
 
-    captured = capsys.readouterr()
-    compressed_err: str = compress_text(captured.err)
-
-    assert string_is_present_in_err(f"ERROR: Format '{out_format}' not recognised")
+    assert _compressed_match(f"ERROR: Format '{out_format}' not recognised", capsys.readouterr().err)
