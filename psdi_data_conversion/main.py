@@ -25,13 +25,14 @@ from psdi_data_conversion.converter import (D_CONVERTER_ARGS, L_REGISTERED_CONVE
 from psdi_data_conversion.converters.base import (FileConverterAbortException, FileConverterException,
                                                   FileConverterInputException)
 from psdi_data_conversion.database import (CONVERSION_WEIGHT_MAX, D_FORMAT_PROPERTY_ATTRS, ConversionQualityInfo,
-                                           ConverterInfo, FormatInfo, disambiguate_formats, get_conversion_pathway,
-                                           get_conversion_quality, get_conversion_weight, get_converter_info,
-                                           get_format_info, get_format_pretty_name, get_in_format_args,
-                                           get_out_format_args, get_possible_conversions, get_possible_formats)
+                                           ConverterInfo, FileConverterDatabaseException, FormatInfo,
+                                           disambiguate_formats, get_conversion_pathway, get_conversion_quality,
+                                           get_conversion_weight, get_converter_info, get_format_info,
+                                           get_format_pretty_name, get_in_format_args, get_out_format_args,
+                                           get_possible_conversions, get_possible_formats)
 from psdi_data_conversion.file_io import split_archive_ext
 from psdi_data_conversion.log_utility import get_log_level_from_str
-from psdi_data_conversion.utils import (CustomHelpFormatter, displaylen, print_wrap, regularize_name,
+from psdi_data_conversion.utils import (CustomHelpFormatter, displaylen, print_header, print_wrap, regularize_name,
                                         strip_control_codes, tc)
 
 # Monkey-patch textwrap to use the improved wraptext implementation when argparse calls it
@@ -482,14 +483,16 @@ def detail_converter_use(args: ConvertArgs):
     converter_class = get_supported_converter_class(args.name)
     converter_name = converter_class.meta.name
 
+    print_header("Converter information")
     print_wrap(converter_info.format_detailed(), break_long_words=False,
-               break_on_hyphens=False, newline=True)
+               break_on_hyphens=False)
 
     # If both an input and output format are specified, provide the degree of success for this conversion. Otherwise
     # list possible input/output formats
     from_format_info: FormatInfo | None = None
     to_format_info: FormatInfo | None = None
     if args.from_format is not None and args.to_format is not None:
+        print_header("Conversion")
         qual: ConversionQualityInfo | None = None
         conversion_found = False
         try:
@@ -523,8 +526,13 @@ def detail_converter_use(args: ConvertArgs):
                                                      (args.to_format, l_output_formats, "to")):
             if format_name is None:
                 continue
+
+            if to_or_from == "from":
+                print_header("Input format support")
+            else:
+                print_header("Output format support")
+
             l_format_info = get_format_info(format_name, which="all")
-            formats_found = False
             for format_info in l_format_info:
                 if format_info is None:
                     continue
@@ -532,12 +540,9 @@ def detail_converter_use(args: ConvertArgs):
                     optional_not: str = ""
                 else:
                     optional_not: str = "not "
-                formats_found = True
 
                 print_wrap(f"Conversion {to_or_from} {format_info.format_inline()} is "
                            f"{optional_not}supported by {converter_name}.")
-            if formats_found:
-                print("")
             if len(l_format_info) == 1:
                 if to_or_from == "from" and from_format_info is None:
                     from_format_info = format_info
@@ -550,7 +555,7 @@ def detail_converter_use(args: ConvertArgs):
         l_all_formats: list[FormatInfo] = list(s_all_formats)
         l_all_formats.sort(key=lambda x: x.format_word().lower())
 
-        print_wrap(f"File formats supported by {converter_name}:", newline=True)
+        print_header(f"File formats supported by {converter_name}")
         max_format_length = max([displaylen(x.disambiguated_name) for x in l_all_formats])
         print(" "*(max_format_length+4) + "    INPUT    OUTPUT    DESCRIPTION")
         print(" "*(max_format_length+4) + "    -----    ------    -----------")
@@ -564,27 +569,26 @@ def detail_converter_use(args: ConvertArgs):
         print_wrap("\nFor more information on a format, including its ID (which can be used to specify it uniquely in "
                    "case of ambiguity, and is resilient to database changes affecting the disambiguated names listed "
                    "above), call:\n"
-                   f"{tc.CODE}{CL_SCRIPT_NAME} -l -f <format>{tc.OFF}", newline=True)
+                   f"{tc.CODE}{CL_SCRIPT_NAME} -l -f <format>{tc.OFF}")
 
     if converter_class.allowed_flags is None:
-        print_wrap("Information has not been provided about general flags accepted by this converter.", newline=True)
+        print_wrap("\nInformation has not been provided about general flags accepted by this converter.", newline=True)
     elif len(converter_class.allowed_flags) > 0:
-        print_wrap("Allowed general flags:")
+        print_header("Allowed command-line flags")
         for flag, d_data, _ in converter_class.allowed_flags:
             help = d_data.get("help", "(No information provided)")
             print(f"  {tc.CODE}{flag}{tc.OFF}")
             print_wrap(help, width=TERM_WIDTH, initial_indent=" "*4, subsequent_indent=" "*4)
-        print("")
 
     if converter_class.allowed_options is None:
-        print_wrap("Information has not been provided about general options accepted by this converter.", newline=True)
+        print_wrap("\nInformation has not been provided about general options accepted by this converter.",
+                   newline=True)
     elif len(converter_class.allowed_options) > 0:
-        print_wrap("Allowed general options:")
+        print_header("Allowed command-line options")
         for option, d_data, _ in converter_class.allowed_options:
             help = d_data.get("help", "(No information provided)")
             print(f"  {tc.CODE}{option} <val(s)>{tc.OFF}")
             print(wraptext.fill(help, initial_indent=" "*4, subsequent_indent=" "*4))
-        print("")
 
     # If input/output-format specific flags or options are available for the converter but a format isn't available,
     # we'll want to take note of that and mention that at the end of the output
@@ -592,8 +596,15 @@ def detail_converter_use(args: ConvertArgs):
     mention_output_format = False
 
     if args.from_format is not None:
-        in_flags, in_options = get_in_format_args(args.name, args.from_format)
-        from_format = get_format_pretty_name(args.from_format)
+        if not from_format_info:
+            try:
+                from_format_info = get_format_info(args.from_format)
+            except FileConverterDatabaseException:
+                in_flags, in_options = [], []
+                from_format = args.from_format
+        if from_format_info:
+            in_flags, in_options = get_in_format_args(args.name, from_format_info)
+            from_format = from_format_info.disambiguated_name
     else:
         in_flags, in_options = [], []
         from_format = "N/A"
@@ -601,8 +612,15 @@ def detail_converter_use(args: ConvertArgs):
             mention_input_format = True
 
     if args.to_format is not None:
-        out_flags, out_options = get_out_format_args(args.name, args.to_format)
-        to_format = get_format_pretty_name(args.to_format)
+        if not to_format_info:
+            try:
+                to_format_info = get_format_info(args.to_format)
+            except FileConverterDatabaseException:
+                out_flags, out_options = [], []
+                to_format = args.to_format
+        if to_format_info:
+            out_flags, out_options = get_out_format_args(args.name, to_format_info)
+            to_format = to_format_info.disambiguated_name
     else:
         out_flags, out_options = [], []
         to_format = "N/A"
@@ -612,13 +630,19 @@ def detail_converter_use(args: ConvertArgs):
     # Number of character spaces allocated for flags/options when printing them out
     ARG_LEN = 20
 
-    for l_args, flag_or_option, input_or_output, format_name in ((in_flags, "flag", "input", from_format),
-                                                                 (in_options, "option", "input", from_format),
-                                                                 (out_flags, "flag", "output", to_format),
-                                                                 (out_options, "option", "output", to_format)):
+    for (l_args, flag_or_option,
+         input_or_output, format_name, show_details) in ((in_flags, "flag", "input", from_format, True),
+                                                         (in_options, "option", "input", from_format, False),
+                                                         (out_flags, "flag", "output", to_format, True),
+                                                         (out_options, "option", "output", to_format, False)):
+        if show_details:
+            if input_or_output == "input":
+                detail_format(args.from_format, "in")
+            else:
+                detail_format(args.to_format, "out")
         if len(l_args) == 0:
             continue
-        print_wrap(f"Allowed {input_or_output} {flag_or_option}s for format {format_name}:")
+        print_header(f"Allowed {input_or_output} {flag_or_option}s for format '{format_name}'")
         for arg_info in l_args:
             if flag_or_option == "flag":
                 optional_brief = ""
@@ -632,7 +656,8 @@ def detail_converter_use(args: ConvertArgs):
                 print_wrap(arg_info.info,
                            initial_indent=" "*(ARG_LEN+2),
                            subsequent_indent=" "*(ARG_LEN+2))
-        print("")
+
+    print("")
 
     # Now at the end, bring up input/output-format-specific flags and options
     if mention_input_format and mention_output_format:
@@ -679,15 +704,14 @@ def list_supported_formats(err=False):
     longest_format_len = max([len(x.format_word()) for x in l_registered_formats])
     l_padded_formats = [f"{x.format_word():\xa0<{longest_format_len}} " for x in l_registered_formats]
 
-    print_wrap("Formats supported by registered converters: ", err=err, newline=True)
-    print_wrap("".join(l_padded_formats), err=err, initial_indent="  ", subsequent_indent="  ", newline=True)
+    print_header("File formats supported by registered converters", err=err)
+    print_wrap("".join(l_padded_formats), err=err, initial_indent=" "*4, subsequent_indent=" "*4, newline=True)
 
     if l_unregistered_formats:
         longest_unregistered_format_len = max([len(x) for x in l_unregistered_formats])
         l_padded_unregistered_formats = [f"{x:\xa0<{longest_unregistered_format_len}} "
                                          for x in l_unregistered_formats]
-        print_wrap("Formats supported by unregistered converters which are supported by this package: ", err=err,
-                   newline=True)
+        print_header("File formats supported by unregistered converters which are supported by this package", err=err)
         print_wrap("".join(l_padded_unregistered_formats), err=err,
                    initial_indent="  ", subsequent_indent="  ", newline=True)
 
@@ -698,7 +722,7 @@ def list_supported_formats(err=False):
         print(f"{tc.CODE}{CL_SCRIPT_NAME} -l -f <format>{tc.OFF}")
 
 
-def detail_format(format_name: str):
+def detail_format(format_name: str, in_or_out: str | None = None):
     """Prints details on a format
     """
 
@@ -709,6 +733,13 @@ def detail_format(format_name: str):
                    err=True, newline=True)
         list_supported_formats(err=True)
         exit(1)
+
+    if in_or_out == "in":
+        print_header("Input format information")
+    elif in_or_out == "out":
+        print_header("Output format information")
+    else:
+        print_header("Format information")
 
     if len(l_format_info) > 1:
         print_wrap(f"{tc.WARNING}WARNING:{tc.OFF} Format {tc.MESSAGE}'{format_name}'{tc.OFF} is ambiguous and could "
@@ -767,9 +798,8 @@ def detail_formats_and_possible_converters(from_format: str, to_format: str):
         exit(1)
 
     # Provide details on both the input and output formats
-    detail_format(from_format)
-    print()
-    detail_format(to_format)
+    detail_format(from_format, "in")
+    detail_format(to_format, "out")
 
     l_possible_conversions = get_possible_conversions(from_format, to_format)
 
@@ -823,9 +853,15 @@ def detail_formats_and_possible_converters(from_format: str, to_format: str):
     l_to_formats.sort(key=lambda x: x.disambiguated_name)
 
     # Loop over all possible combinations of formats
+    print_header("Conversion")
 
+    first_loop = True
     for possible_from_format, possible_to_format in product(l_from_formats, l_to_formats):
-        print()
+        # Add an extra line break before each loop after the first
+        if first_loop:
+            first_loop = False
+        else:
+            print()
 
         from_name = possible_from_format.format_word()
         to_name = possible_to_format.format_word()
@@ -881,7 +917,9 @@ def get_supported_converters():
             any_not_registered = True
         l_converters.append(converter_text)
 
-    output_str = "Available converters: \n\n    " + "\n    ".join(l_converters)
+    print_header("Available converters")
+
+    output_str = "    " + "\n    ".join(l_converters)
 
     if any_not_registered:
         output_str += (f"\n\nConverters marked as {tc.MESSAGE}'{MSG_NOT_REGISTERED}'{tc.OFF} are supported by this "
