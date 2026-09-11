@@ -235,7 +235,7 @@ Data conversion is the default mode of the script. At its most basic, the syntax
 psdi-data-convert filename.ext1 -t ext2
 ```
 
-This will convert the file 'filename.ext1' to format 'ext2' using the default converter (Open Babel). A list of files can also be provided, and they will each be converted in turn.
+This will convert the file 'filename.ext1' to format 'ext2' using an automatically-determined suitable converter (if one can be determined - in the case of ambiguous file formats, it may be necessary to provide more information). A list of files can also be provided, and they will each be converted in turn.
 
 The full possible syntax for the script is:
 
@@ -251,28 +251,32 @@ options] [-s/--strict] [--nc/--no-check] [-q/--quiet] [-g/--log-file <log file n
 
 Call `psdi-data-convert -h` for details on each of these options.
 
-Note that some requested conversions may involve ambiguous formats which share the same extension. In this case, the application will print a warning and list possible matching formats, with IDs and disambiguating names that can be used to specify which one. For instance, the `c2x` converter can convert into two variants of the `pdb` format, and if you ask it to convert to `pdb` without specifying which one, you'll see:
+Note that some requested conversions may involve ambiguous formats which share the same extension. In this case, the application will print a warning and list possible matching formats, with IDs and disambiguating names that can be used to specify which one. For instance, the `c2x` converter can convert into two variants of the `pdb` format, and if you ask it to convert from `mmcif` to `pdb` without specifying which one, you'll see:
 
 ```
-WARNING: Format 'pdb' is ambiguous and could refer to multiple formats. It may be necessary to explicitly specify which
-you want to use when calling this script, e.g. with '-f pdb-0' - see the disambiguated names in the list below:
-
-178366529166858241161075106138867206788: pdb-0 (Protein Data Bank)
-...
-
-325652524238156842953511960586864188646: pdb-1 (Protein Data Bank with atoms numbered)
-...
+ERROR: Conversion from mmcif to 'pdb' with converter 'c2x' is ambiguous. Please use the ID or disambiguated name (listed
+below) of the desired conversion. Possible matching conversions are:
+    mmcif (ID 111142745790695896928946860948434358952) to pdb-0 (ID 178366529166858241161075106138867206788)
+    mmcif (ID 111142745790695896928946860948434358952) to pdb-1 (ID 325652524238156842953511960586864188646)
 ```
 
-This provides the IDs (`178366529166858241161075106138867206788` and `325652524238156842953511960586864188646`) and disambiguating names (`pdb-0` and `pdb-1`) for the matching formats. Either can be used in the call to the converter, e.g.:
+This provides the IDs (`178366529166858241161075106138867206788` and `325652524238156842953511960586864188646`) and disambiguated names (`pdb-0` and `pdb-1`) for the matching formats. Either can be used in the call to the converter, e.g.:
 
 ```bash
-psdi-data-conversion nacl.cif -t 178366529166858241161075106138867206788 -w c2x
+psdi-data-conversion nacl.mmcif -t 178366529166858241161075106138867206788 -w c2x
 # Or equivalently:
-psdi-data-conversion nacl.cif -t pdb-0 -w c2x
+psdi-data-conversion nacl.mmcif -t pdb-0 -w c2x
 ```
 
-The "<format>-0" pattern can be used with any format, even if it's unambiguous, and will be interpreted as the first instance of the format in the database with valid conversions. Note that as the database expands in future versions and more valid conversions are added, these disambiguated names may change, so it is recommended to use the format's ID in scripts and with the library to ensure consistency between versions of this package. It was necessary to update IDs in v0.4.0 to use UUIDs, but for all future versions there should be no need to change IDs. If you need to update from before this version, see the `v0.4.0` section of `CHANGELOG.md` for guidance.
+As all format (and converter) IDs are UUIDs, the standard UUID format is also accepted:
+
+```bash
+psdi-data-conversion nacl.mmcif -t 863024da-8e1f-46e5-992c-b14bcc258a84 -w c2x
+```
+
+The "<format>-0" pattern can be used with any format, even if it's unambiguous, and will be interpreted as the first instance of the format in the database with valid conversions. Note that as the database expands in future versions and more valid conversions are added, these disambiguated names may change, so it is recommended to use the format's ID or UUID in scripts and with the library to ensure consistency between versions of this package.
+
+It was necessary to update IDs in v0.4.0 to use UUIDs, but for all future versions there should be no need to change IDs, so these can be treated as stable between versions, whereas the same cannot be guaranteed for disambiguated names, which should only be used for one-time executions. If you need to update from before this version, see the `v0.4.0` section of `CHANGELOG.md` for guidance.
 
 #### Requesting Information on Possible Conversions
 
@@ -341,10 +345,10 @@ from psdi_data_conversion.converter import run_converter
 For a simple conversion, this can be used via:
 
 ```python
-run_converter(filename, to_format, name=name, data=data)
+run_converter(filename, to_format, converter=name, data=data)
 ```
 
-Where `filename` is the name of the file to convert (either fully-qualified or relative to the current directory), `to_format` is the desired format to convert to (e.g. `"pdb"`), `name` is the name of the converter to use (default "Open Babel"), and `data` is a dict of any extra information required by the specific converter being used, such as flags for how to read/write input/output files (default empty dict).
+Where `filename` is the name of the file to convert (either fully-qualified or relative to the current directory), `to_format` is the desired format to convert to (e.g. `"pdb"`), `converter` is the name or ID of the converter to use (default "Open Babel"), and `data` is a dict of any extra information required by the specific converter being used, such as flags for how to read/write input/output files (default empty dict).
 
 See the method's documentation via `help(run_converter)` after importing it for further details on usage.
 

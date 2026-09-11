@@ -1251,7 +1251,7 @@ class ConversionsTable:
                 out_format, FormatInfo) else f"{tc.PATH}'{out_format}'{tc.OFF}"
 
             msg = (f"Conversion from {in_format_name} to {out_format_name} with converter "
-                   f"{converter_name} is ambiguous. Please Use the ID or disambiguated name (listed below) "
+                   f"{converter_name} is ambiguous. Please use the ID or disambiguated name (listed below) "
                    "of the desired conversion. Possible matching conversions are:\n")
             for possible_in_format, possible_out_format in l_found_combinations:
                 msg += (f"    {possible_in_format.format_inline()} to {possible_out_format.format_inline()}\n")

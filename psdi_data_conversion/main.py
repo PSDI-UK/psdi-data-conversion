@@ -369,8 +369,11 @@ def get_argument_parser():
                         "directory containing the first input file.")
     parser.add_argument("-w", "--with", type=str, nargs="+",
                         help=f"The converter to be used, or else the keyword {tc.MESSAGE}'auto'{tc.OFF}. "
-                        f"{tc.MESSAGE}'auto'{tc.OFF} will automatically determine a compatible converter. Default "
-                        f"{tc.MESSAGE}'auto'{tc.OFF}).")
+                        f"{tc.MESSAGE}'auto'{tc.OFF} will automatically determine a suitable converter which can "
+                        "perform the conversion (this may require input/output formats to be unambiguously "
+                        f"specified by using disambiguated names or IDs with {tc.CODE}`-f/--from`{tc.OFF} and "
+                        f"{tc.CODE}`-t/--to`{tc.OFF} if the extensions are ambiguous). Default "
+                        f"{tc.MESSAGE}'auto'{tc.OFF}.")
     parser.add_argument("--delete-input", action="store_true",
                         help="If set, input files will be deleted after conversion, default they will be kept")
     parser.add_argument("--from-flags", type=str, default="",
@@ -987,9 +990,18 @@ def run_from_args(args: ConvertArgs):
                            f"{tc.PATH}'{args.input_dir}'{tc.OFF}", err=True)
                 continue
 
+        # See if we can uniquely resolve the output format now, so we can display it's name nicely if possible
+        l_possible_to_formats = get_format_info(args.to_format, "all")
+        to_format: FormatInfo | str
+        if len(l_possible_to_formats) == 1:
+            to_format = l_possible_to_formats[0]
+        else:
+            to_format = args.to_format
+
         if not args.quiet:
-            print_wrap(f"Converting {tc.PATH}'{filename}'{tc.OFF} to {tc.MESSAGE}'{args.to_format}'{tc.OFF}...",
-                       newline=True)
+            to_format_name: str = (to_format.format_word() if isinstance(to_format, FormatInfo) else
+                                   f"{tc.MESSAGE}'{args.to_format}'{tc.OFF}")
+            print_wrap(f"Converting {tc.PATH}'{filename}'{tc.OFF} to {to_format_name}...", newline=True)
 
         try:
             conversion_result = run_converter(filename=qualified_filename,
