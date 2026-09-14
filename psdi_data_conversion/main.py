@@ -404,11 +404,14 @@ def get_argument_parser():
                         f"be created in the {tc.CODE}`-i/--in`{tc.OFF} directory if that was provided, or else in the "
                         "directory containing the first input file.")
     parser.add_argument("-w", "--with", type=str, nargs="+",
-                        help=f"The converter to be used, or else the keyword {tc.MESSAGE}'auto'{tc.OFF}. "
-                        f"{tc.MESSAGE}'auto'{tc.OFF} will automatically determine a suitable converter which can "
-                        "perform the conversion (this may require input/output formats to be unambiguously "
-                        f"specified by using disambiguated names or IDs with {tc.CODE}`-f/--from`{tc.OFF} and "
-                        f"{tc.CODE}`-t/--to`{tc.OFF} if the extensions are ambiguous). Default "
+                        help=f"The converter to be used, or else one of the keywords {tc.MESSAGE}'auto'{tc.OFF} "
+                        f"or {tc.MESSAGE}'auto-chain'{tc.OFF} (aliases {tc.MESSAGE}'autoc'{tc.OFF} and "
+                        f"{tc.MESSAGE}'autochain'{tc.OFF} for the latter).  {tc.MESSAGE}'auto'{tc.OFF} will "
+                        "automatically determine a suitable converter which can perform the conversion (this may "
+                        "require input/output formats to be unambiguously specified by using disambiguated names or "
+                        f"IDs with {tc.CODE}`-f/--from`{tc.OFF} and {tc.CODE}`-t/--to`{tc.OFF} if the extensions are "
+                        f"ambiguous). {tc.MESSAGE}'auto-chain'{tc.OFF} does the same, but will also determine and use "
+                        "a chained conversion if a single-step conversion is not possible. Default "
                         f"{tc.MESSAGE}'auto'{tc.OFF}.")
     parser.add_argument("--delete-input", action="store_true",
                         help="If set, input files will be deleted after conversion, default they will be kept")
