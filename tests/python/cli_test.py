@@ -323,8 +323,16 @@ def test_autochain_args(chain_str):
     assert args.chain is True
 
 
+def test_autochain_ambiguous_from_format():
+    """Test that the input format needs to be unambiguous when requesting an automatic chain"""
+    with pytest.raises(FileConverterInputException) as e:
+        get_parsed_args(f"file1 -f pdb -t xyz-0 -w {const.CONVERTER_AUTOCHAIN}")
+    assert _compressed_match("the input format determined from the extension of the input file or specified "
+                             "with `-f/--from` must unambiguously", e.value)
+
+
 def test_autochain_ambiguous_to_format():
-    """Test that the output format needs to be ambiguous when requesting an automatic chain"""
+    """Test that the output format needs to be unambiguous when requesting an automatic chain"""
     with pytest.raises(FileConverterInputException) as e:
         get_parsed_args(f"file1 -f pdb-0 -t xyz -w {const.CONVERTER_AUTOCHAIN}")
     assert _compressed_match("is ambiguous and can correspond to multiple possible output formats", e.value)

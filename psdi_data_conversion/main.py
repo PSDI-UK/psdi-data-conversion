@@ -166,6 +166,7 @@ class ConvertArgs:
 
         # If one of the autochain keywords is used, normalise it to the primary key
         if self.name in const.L_CONVERTER_AUTOCHAIN:
+            self._check_from_formats_unique()
             self._check_to_format_unique()
             self.chain = True
             self.name = const.CONVERTER_AUTOCHAIN
@@ -308,10 +309,11 @@ class ConvertArgs:
                     else:
                         s_format_infos.add(l_format_infos[0])
                 if l_bad_exts:
-                    msg = (f"When using {tc.MESSAGE}'auto'{tc.OFF} converter, either the {tc.CODE}`"
-                           f"-f/--from`{tc.OFF} argument must be provided to specify input format, or else input "
-                           "format must be uniquely identifiable for all input files. The following files could not "
-                           "have their format uniquely identified: " +
+                    msg = (f"When using the {tc.MESSAGE}'{const.CONVERTER_AUTO}'{tc.OFF} or {tc.MESSAGE}'"
+                           f"{const.CONVERTER_AUTOCHAIN}'{tc.OFF} keyword for {tc.CODE}`-w/--with`{tc.OFF}, either "
+                           f"the {tc.CODE}`-f/--from`{tc.OFF} argument must be provided to specify input format, or "
+                           "else input format must be uniquely identifiable for all input files. The following files "
+                           "could not have their format uniquely identified: " +
                            ", ".join([f"{tc.PATH}'{x}'{tc.OFF}"
                                       for x in self.l_args if os.path.splitext(x)[1] in l_bad_exts]))
                     raise FileConverterInputException(msg, help=True)
@@ -320,7 +322,9 @@ class ConvertArgs:
 
         l_from_formats: list[FormatInfo] = get_format_info(self.from_format, "all")
         if len(l_from_formats) != 1:
-            raise FileConverterInputException(f"When using {tc.MESSAGE}'auto'{tc.OFF} converter, the input format "
+            raise FileConverterInputException(f"When using the {tc.MESSAGE}'{const.CONVERTER_AUTO}'{tc.OFF} or "
+                                              f"{tc.MESSAGE}'{const.CONVERTER_AUTOCHAIN}'{tc.OFF} keyword for "
+                                              f"{tc.CODE}`-w/--with`{tc.OFF}, the input format "
                                               "determined from the extension of the input file or specified with "
                                               f"{tc.CODE}`-f/--from`{tc.OFF} must unambiguously "
                                               "identify a format. Please use the ID or disambiguated name from the "
