@@ -23,8 +23,8 @@ from psdi_data_conversion.database import (D_FORMAT_PROPERTY_ATTRS, get_conversi
                                            get_out_format_args, get_possible_conversions, get_possible_formats)
 from psdi_data_conversion.main import FileConverterInputException, parse_args
 from psdi_data_conversion.testing.constants import FORMAT_INCHI, FORMAT_MOLDY
-from psdi_data_conversion.testing.conversion_test_specs import l_cla_test_specs
-from psdi_data_conversion.testing.utils import run_test_conversion_with_cla, run_with_arg_string
+from psdi_data_conversion.testing.conversion_test_specs import l_cli_test_specs
+from psdi_data_conversion.testing.utils import run_test_conversion_with_cli, run_with_arg_string
 from psdi_data_conversion.utils import regularize_name, strip_control_codes
 
 
@@ -82,12 +82,12 @@ def setup_test():
     os.chdir(old_cwd)
 
 
-@pytest.mark.parametrize("test_spec", l_cla_test_specs,
+@pytest.mark.parametrize("test_spec", l_cli_test_specs,
                          ids=lambda x: x.name)
 def test_conversions(test_spec):
     """Run all conversion tests in the defined list of test specifications
     """
-    run_test_conversion_with_cla(test_spec)
+    run_test_conversion_with_cli(test_spec)
 
 
 def test_general_arg_parsing():

@@ -116,7 +116,7 @@ l_all_test_specs.append(Spec(name="Archive (wrong format) - GUI",
                              callback=CheckException(ex_type=FileConverterInputException,
                                                      ex_message=const.ERR_WRONG_EXTENSION_MULT),
                              compatible_with_library=False,
-                             compatible_with_cla=False,
+                             compatible_with_cli=False,
                              compatible_with_chain=False,
                              ))
 """A test that if the user provides the wrong input format for files in an archive - variant for the GUI test, which is
@@ -292,7 +292,7 @@ l_all_test_specs.append(Spec(name="Errors in logs - GUI",
                                                      ex_message=("Problems reading an XYZ file: Could not read line "
                                                                  "#11, file error")),
                              compatible_with_library=False,
-                             compatible_with_cla=False,
+                             compatible_with_cli=False,
                              ))
 """A test that when a conversion fails in the GUI, the log message is output to the alert box"""
 
@@ -325,7 +325,7 @@ l_all_test_specs.append(Spec(name="Blocked conversion - wrong input type",
                                                          ex_message=("The file extension is not {} or a zip or tar "
                                                                      "archive extension"))),
                              compatible_with_library=False,
-                             compatible_with_cla=False,
+                             compatible_with_cli=False,
                              ))
 """A test that a conversion which is blocked in the GUI"""
 
@@ -368,7 +368,7 @@ l_all_test_specs.append(Spec(name="Large files - GUI",
                                        CheckException(ex_type=FileConverterInputException),
                                        CheckFileStatus()],
                              compatible_with_library=False,
-                             compatible_with_cla=False,
+                             compatible_with_cli=False,
                              ))
 """Test that the GUI will refuse to process large files with OB, but will with other converters"""
 
@@ -383,7 +383,7 @@ l_all_test_specs.append(Spec(name="Max size exceeded - single file",
                              conversion_kwargs={"max_file_size": 0.0001},
                              expect_success=False,
                              callback=max_size_callback,
-                             compatible_with_cla=False,
+                             compatible_with_cli=False,
                              compatible_with_gui=False,
                              ))
 """A test conversion that the maximum size constraint is properly applied. The input file here is greater than the
@@ -408,7 +408,7 @@ l_all_test_specs.append(Spec(name="Max size exceeded - archive",
                              conversion_kwargs={"max_file_size": 0.003},
                              expect_success=False,
                              callback=max_size_archive_callback,
-                             compatible_with_cla=False,
+                             compatible_with_cli=False,
                              compatible_with_gui=False,
                              ))
 """A test conversion that the maximum size constraint is properly applied. The input archive is smaller than the maximum
@@ -487,7 +487,7 @@ l_all_test_specs.append(Spec(name="Chain Test - find path",
                                           CheckLogContentsSuccess(),
                                           MatchOutputFile("chain_via_cif.inchi")),
                              compatible_with_chain=True,
-                             compatible_with_cla=False,
+                             compatible_with_cli=False,
                              compatible_with_gui=False,
                              compatible_with_single_step=False,
                              ))
@@ -518,7 +518,7 @@ l_all_test_specs.append(Spec(name="Chain Test - set path",
                                            CheckLogContentsSuccess(),
                                            MatchOutputFile("chain_via_cif.inchi"))],
                              compatible_with_chain=True,
-                             compatible_with_cla=False,
+                             compatible_with_cli=False,
                              compatible_with_gui=False,
                              compatible_with_single_step=False,
                              ))
@@ -539,7 +539,7 @@ l_all_test_specs.append(Spec(name="Chain Test - log contents",
                                                                                r"To: +pdb",
                                                                                r"From: +pdb",
                                                                                r"To: +inchi"]),
-                             compatible_with_cla=False,
+                             compatible_with_cli=False,
                              compatible_with_gui=False,
                              compatible_with_single_step=False,
                              ))
@@ -559,7 +559,7 @@ l_all_test_specs.append(Spec(name="Max size exceeded - chain",
                              converter_name=None,
                              expect_success=False,
                              callback=max_size_callback,
-                             compatible_with_cla=False,
+                             compatible_with_cli=False,
                              compatible_with_gui=False,
                              compatible_with_single_step=False,
                              ))
@@ -584,7 +584,7 @@ l_all_test_specs.append(Spec(name="Chain Test - archive find path",
                              ex_out_filename="standard_test_mol-cif-inchi.tar.gz",
                              converter_name=None,
                              callback=chain_archive_callback,
-                             compatible_with_cla=False,
+                             compatible_with_cli=False,
                              compatible_with_gui=False,
                              compatible_with_single_step=False,
                              ))
@@ -603,7 +603,7 @@ l_all_test_specs.append(Spec(name="Chain Test - archive set path",
                              to_format=None,
                              converter_name=None,
                              callback=chain_archive_callback,
-                             compatible_with_cla=False,
+                             compatible_with_cli=False,
                              compatible_with_gui=False,
                              compatible_with_single_step=False,
                              ))
@@ -617,8 +617,8 @@ l_library_chain_test_specs = [x for x in l_all_test_specs
                               if x.compatible_with_library and x.compatible_with_chain and not x.skip_all]
 """All test specs which are compatible with being run on the Python library"""
 
-l_cla_test_specs = [x for x in l_all_test_specs
-                    if x.compatible_with_cla and x.compatible_with_single_step and not x.skip_all]
+l_cli_test_specs = [x for x in l_all_test_specs
+                    if x.compatible_with_cli and x.compatible_with_single_step and not x.skip_all]
 """All test specs which are compatible with being run on the command-line interface"""
 
 l_gui_test_specs = [x for x in l_all_test_specs

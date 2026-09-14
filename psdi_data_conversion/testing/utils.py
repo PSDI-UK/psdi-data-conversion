@@ -161,7 +161,7 @@ class ConversionTestSpec:
     compatible_with_library: bool = True
     """Whether or not this test spec is compatible with being run through the Python library, default True"""
 
-    compatible_with_cla: bool = True
+    compatible_with_cli: bool = True
     """Whether or not this test spec is compatible with being run through the command-line interface, default True"""
 
     compatible_with_gui: bool = True
@@ -422,7 +422,7 @@ def _run_single_test_conversion_with_library(test_spec: SingleConversionTestSpec
             pytest.fail(callback_msg)
 
 
-def run_test_conversion_with_cla(test_spec: ConversionTestSpec):
+def run_test_conversion_with_cli(test_spec: ConversionTestSpec):
     """Runs a test conversion or series thereof through the command-line interface.
 
     Parameters
@@ -438,13 +438,13 @@ def run_test_conversion_with_cla(test_spec: ConversionTestSpec):
                 print(f"Skipping single test spec {single_test_spec}")
                 continue
             print(f"Running single test spec: {single_test_spec}")
-            _run_single_test_conversion_with_cla(test_spec=single_test_spec,
+            _run_single_test_conversion_with_cli(test_spec=single_test_spec,
                                                  input_dir=input_dir,
                                                  output_dir=output_dir)
             print(f"Success for test spec: {single_test_spec}")
 
 
-def _run_single_test_conversion_with_cla(test_spec: SingleConversionTestSpec,
+def _run_single_test_conversion_with_cli(test_spec: SingleConversionTestSpec,
                                          input_dir: str,
                                          output_dir: str):
     """Runs a single test conversion through the command-line interface.
@@ -472,7 +472,7 @@ def _run_single_test_conversion_with_cla(test_spec: SingleConversionTestSpec,
         stdouterr = py.io.StdCaptureFD(in_=False)
 
         if test_spec.expect_success:
-            run_converter_through_cla(filename=qualified_in_filename,
+            run_converter_through_cli(filename=qualified_in_filename,
                                       to_format=test_spec.to_format,
                                       from_format=test_spec.from_format,
                                       name=test_spec.converter_name,
@@ -483,7 +483,7 @@ def _run_single_test_conversion_with_cla(test_spec: SingleConversionTestSpec,
             success = True
         else:
             with pytest.raises(SystemExit) as exc_info:
-                run_converter_through_cla(filename=qualified_in_filename,
+                run_converter_through_cli(filename=qualified_in_filename,
                                           to_format=test_spec.to_format,
                                           from_format=test_spec.from_format,
                                           name=test_spec.converter_name,
@@ -520,7 +520,7 @@ def _run_single_test_conversion_with_cla(test_spec: SingleConversionTestSpec,
             pytest.fail(callback_msg)
 
 
-def run_converter_through_cla(filename: str,
+def run_converter_through_cli(filename: str,
                               to_format: str,
                               name: str,
                               input_dir: str,
