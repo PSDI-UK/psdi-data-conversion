@@ -201,6 +201,28 @@ class ConvertArgs:
                 arg_name = arg_name.replace("-", "_")
                 self.d_converter_args.update(get_data(getattr(args, arg_name)))
 
+        # If using an automatic converter or chain, check that no converter-specific arguments were provided
+        if self.name == const.CONVERTER_AUTO or self.name == const.CONVERTER_AUTOCHAIN:
+
+            l_converter_specific_items = []
+            for (to_or_from, flags_or_options) in product(["to", "from"], ["flags", "options"]):
+                arg = f"{to_or_from}_{flags_or_options}"
+                l_converter_specific_items.append((arg, getattr(self, arg)))
+            for arg, val in self.d_converter_args:
+                l_converter_specific_items.append((arg, val))
+
+            l_err_strs: list[str] = []
+            for arg, val in l_converter_specific_items:
+                val = getattr(self, arg)
+                if val:
+                    l_err_strs.append(f"{tc.ERROR}ERROR:{tc.OFF} Argument {tc.MESSAGE}'{val}'{tc.OFF} was provided "
+                                      f"when using the {tc.MESSAGE}'{const.CONVERTER_AUTO}'{tc.OFF} or {tc.MESSAGE}'"
+                                      f"{const.CONVERTER_AUTOCHAIN}'{tc.OFF} keyword for {tc.CODE}`-w/--with`{tc.OFF}."
+                                      "Converter-specific arguments cannot be provided when the converter or chain is "
+                                      "automatically-determined.")
+            if l_err_strs:
+                raise FileConverterInputException("\n".join(l_err_strs))
+
         # Check that the logging mode is valid
         if self.log_mode not in const.L_ALLOWED_LOG_MODES:
             raise FileConverterInputException(f"Unrecognised logging mode: {tc.MESSAGE}'{self.log_mode}'{tc.OFF}. "
