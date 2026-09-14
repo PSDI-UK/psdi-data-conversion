@@ -274,7 +274,7 @@ class ConvertArgs:
         return best_converter.name
 
     def _check_to_format_unique(self):
-        """Check first that the output format is uniquely specified"""
+        """Check that the output format is uniquely specified"""
 
         l_to_formats: list[FormatInfo] = get_format_info(self.to_format, "all")
         if not l_to_formats:
@@ -291,12 +291,8 @@ class ConvertArgs:
                                               "desired format from the following list:\n" +
                                               "\n".join([x.format_oneline() for x in l_to_formats]), help=True)
 
-    def _determine_auto_converter(self):
-        """Automatically determine the converter to use when the 'auto' keyword is used"""
-
-        self._check_to_format_unique()
-
-        # If input format wasn't provided, see first if we can uniquely determine it from the input files
+    def _check_from_formats_unique(self):
+        """Check that the input formats are uniquely specified"""
         if not self.from_format:
             s_input_exts = {os.path.splitext(x)[1] for x in self.l_args}
             if len(s_input_exts) == 1:
@@ -319,21 +315,10 @@ class ConvertArgs:
                            ", ".join([f"{tc.PATH}'{x}'{tc.OFF}"
                                       for x in self.l_args if os.path.splitext(x)[1] in l_bad_exts]))
                     raise FileConverterInputException(msg, help=True)
+                else:
+                    return s_format_infos
 
-                # Determine converters which can handle conversion from each input format to the output format
-                ls_converters = [self._get_possible_converters(x) for x in s_format_infos]
-                s_converters = reduce(lambda s1, s2: s1.intersection(s2), ls_converters)
-
-                if len(s_converters) == 0:
-                    raise FileConverterInputException("No converter is available which can perform a conversion of all "
-                                                      f"input files to {tc.PATH}'{self.to_format}'{tc.OFF}. Please "
-                                                      "try converting files in batches of one type at a time",
-                                                      help=True)
-
-                return self._get_best_converter(s_converters, s_format_infos)
-
-        # If the input format was provided, we can use that directly
-        l_from_formats = get_format_info(self.from_format, "all")
+        l_from_formats: list[FormatInfo] = get_format_info(self.from_format, "all")
         if len(l_from_formats) != 1:
             raise FileConverterInputException(f"When using {tc.MESSAGE}'auto'{tc.OFF} converter, the input format "
                                               "determined from the extension of the input file or specified with "
@@ -341,16 +326,23 @@ class ConvertArgs:
                                               "identify a format. Please use the ID or disambiguated name from the "
                                               "correct format in the following list:\n" +
                                               "\n".join([x.format_oneline() for x in l_from_formats]), help=True)
-        s_converters = self._get_possible_converters(l_from_formats[0])
+        return {l_from_formats[0]}
+
+    def _determine_auto_converter(self):
+        """Automatically determine the converter to use when the 'auto' keyword is used"""
+
+        self._check_to_format_unique()
+        s_from_formats = self._check_from_formats_unique()
+        ls_converters = [self._get_possible_converters(x) for x in s_from_formats]
+        s_converters = reduce(lambda s1, s2: s1.intersection(s2), ls_converters)
 
         if len(s_converters) == 0:
-            raise FileConverterInputException("No converter is available which can perform a direct conversion from "
-                                              f"{tc.PATH}'{self.from_format}'{tc.OFF} to {tc.PATH}'{self.to_format}"
-                                              f"'{tc.OFF}. To check if a chained conversion may be possible, call:\n"
-                                              f"{tc.CODE}{const.CL_SCRIPT_NAME} -l -f {self.from_format} -t "
-                                              f"{self.to_format}{tc.OFF}", help=True)
+            raise FileConverterInputException("No converter is available which can perform a conversion of all "
+                                              f"input files to {tc.PATH}'{self.to_format}'{tc.OFF}. Please "
+                                              "try converting files in batches of one type at a time",
+                                              help=True)
 
-        return self._get_best_converter(s_converters, set(l_from_formats))
+        return self._get_best_converter(s_converters, s_from_formats)
 
 
 def get_argument_parser():
