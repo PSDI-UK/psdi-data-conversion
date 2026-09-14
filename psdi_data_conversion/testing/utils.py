@@ -21,7 +21,8 @@ from unittest.mock import patch
 import py
 import pytest
 
-from psdi_data_conversion.constants import CONVERTER_OB, GLOBAL_LOG_FILENAME, LOG_NONE, OUTPUT_LOG_EXT
+from psdi_data_conversion.constants import (CONVERTER_AUTOCHAIN, CONVERTER_OB, GLOBAL_LOG_FILENAME, LOG_NONE,
+                                            OUTPUT_LOG_EXT)
 from psdi_data_conversion.converter import run_converter, run_converter_chain
 from psdi_data_conversion.converters.openbabel.converter import COORD_GEN_KEY, COORD_GEN_QUAL_KEY
 from psdi_data_conversion.database import get_converter_info, get_format_info
@@ -370,7 +371,7 @@ def _run_single_test_conversion_with_library(test_spec: SingleConversionTestSpec
 
         # If we're provided a target format and converter, turn this into a path
         if ("path" not in conversion_kwargs and test_spec.to_format is not None and
-                test_spec.converter_name is not None):
+                test_spec.converter_name is not None and test_spec.converter_name != CONVERTER_AUTOCHAIN):
             conversion_kwargs["path"] = [(get_converter_info(test_spec.converter_name),
                                           get_format_info(test_spec.to_format))]
         elif test_spec.to_format is not None:
@@ -472,15 +473,18 @@ def _run_single_test_conversion_with_cli(test_spec: SingleConversionTestSpec,
         stdouterr = py.io.StdCaptureFD(in_=False)
 
         if test_spec.expect_success:
-            run_converter_through_cli(filename=qualified_in_filename,
-                                      to_format=test_spec.to_format,
-                                      from_format=test_spec.from_format,
-                                      name=test_spec.converter_name,
-                                      input_dir=input_dir,
-                                      output_dir=output_dir,
-                                      log_file=os.path.join(output_dir, test_spec.log_filename),
-                                      **test_spec.conversion_kwargs)
-            success = True
+            try:
+                run_converter_through_cli(filename=qualified_in_filename,
+                                          to_format=test_spec.to_format,
+                                          from_format=test_spec.from_format,
+                                          name=test_spec.converter_name,
+                                          input_dir=input_dir,
+                                          output_dir=output_dir,
+                                          log_file=os.path.join(output_dir, test_spec.log_filename),
+                                          **test_spec.conversion_kwargs)
+                success = True
+            except SystemExit:
+                success = False
         else:
             with pytest.raises(SystemExit) as exc_info:
                 run_converter_through_cli(filename=qualified_in_filename,
@@ -504,6 +508,13 @@ def _run_single_test_conversion_with_cli(test_spec: SingleConversionTestSpec,
         stdout, stderr = stdouterr.reset()   # Grab stdout and stderr
         # Reset stdout and stderr capture
         stdouterr.done()
+
+    # If failed, print any stdout and stderr
+    if not success:
+        if stdout:
+            print(stdout)
+        if stderr:
+            print(stderr, file=sys.stderr)
 
     # Compile output info for the test and call the callback function if one is provided
     if test_spec.callback:

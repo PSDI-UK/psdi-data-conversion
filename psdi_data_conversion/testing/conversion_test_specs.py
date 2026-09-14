@@ -482,12 +482,12 @@ l_all_test_specs.append(Spec(name="Chain Test - find path",
                              filename="standard_test.mol",
                              from_format=tc.FORMAT_MOLDY,
                              to_format=tc.FORMAT_INCHI,
-                             converter_name=None,
+                             converter_name=const.CONVERTER_AUTOCHAIN,
                              callback=MCB(CheckFileStatus(),
                                           CheckLogContentsSuccess(),
                                           MatchOutputFile("chain_via_cif.inchi")),
                              compatible_with_chain=True,
-                             compatible_with_cli=False,
+                             compatible_with_cli=True,
                              compatible_with_gui=False,
                              compatible_with_single_step=False,
                              ))
@@ -618,7 +618,7 @@ l_library_chain_test_specs = [x for x in l_all_test_specs
 """All test specs which are compatible with being run on the Python library"""
 
 l_cli_test_specs = [x for x in l_all_test_specs
-                    if x.compatible_with_cli and x.compatible_with_single_step and not x.skip_all]
+                    if x.compatible_with_cli and not x.skip_all]
 """All test specs which are compatible with being run on the command-line interface"""
 
 l_gui_test_specs = [x for x in l_all_test_specs

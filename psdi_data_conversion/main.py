@@ -1062,7 +1062,6 @@ def run_from_args(args: ConvertArgs):
         d_conversion_kwargs = {"filename": qualified_filename,
                                "to_format": args.to_format,
                                "from_format": args.from_format,
-                               "data": data,
                                "use_envvars": False,
                                "input_dir": args.input_dir,
                                "output_dir": args.output_dir,
@@ -1077,7 +1076,9 @@ def run_from_args(args: ConvertArgs):
             if args.chain:
                 conversion_result = run_converter_chain(**d_conversion_kwargs)
             else:
-                conversion_result = run_converter(converter=args.name, **d_conversion_kwargs)
+                conversion_result = run_converter(converter=args.name,
+                                                  data=data,
+                                                  **d_conversion_kwargs)
         except FileConverterAbortException as e:
             if not e.logged:
                 print_wrap(f"{tc.ERROR}ERROR:{tc.OFF} Attempt to convert file {filename} aborted with status code "
