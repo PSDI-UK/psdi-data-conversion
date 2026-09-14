@@ -318,6 +318,7 @@ class ConvertArgs:
     def _check_from_formats_unique(self):
         """Check that the input formats are uniquely specified"""
         if not self.from_format:
+
             s_input_exts = {os.path.splitext(x)[1] for x in self.l_args}
             if len(s_input_exts) == 1:
                 self.from_format = s_input_exts.pop()
