@@ -22,7 +22,7 @@ from psdi_data_conversion.constants import (CL_SCRIPT_NAME, CONVERTER_AUTO, CONV
                                             TERM_WIDTH)
 from psdi_data_conversion.converter import (D_CONVERTER_ARGS, L_REGISTERED_CONVERTERS, L_SUPPORTED_CONVERTERS,
                                             converter_is_registered, converter_is_supported,
-                                            get_supported_converter_class, run_converter)
+                                            get_supported_converter_class, run_converter, run_converter_chain)
 from psdi_data_conversion.converters.base import (FileConverterAbortException, FileConverterException,
                                                   FileConverterInputException)
 from psdi_data_conversion.database import (CONVERSION_WEIGHT_MAX, D_FORMAT_PROPERTY_ATTRS, ConversionQualityInfo,
@@ -1056,22 +1056,25 @@ def run_from_args(args: ConvertArgs):
             print_wrap(f"Converting {tc.PATH}'{filename}'{tc.OFF} to {get_format_pretty_name(args.to_format)}...",
                        newline=True)
 
+        d_conversion_kwargs = {"filename": qualified_filename,
+                               "to_format": args.to_format,
+                               "from_format": args.from_format,
+                               "data": data,
+                               "use_envvars": False,
+                               "input_dir": args.input_dir,
+                               "output_dir": args.output_dir,
+                               "no_check": args.no_check,
+                               "strict": args.strict,
+                               "log_file": args.log_file,
+                               "log_mode": args.log_mode,
+                               "log_level": args.log_level,
+                               "delete_input": args.delete_input,
+                               "refresh_local_log": False}
         try:
-            conversion_result = run_converter(filename=qualified_filename,
-                                              to_format=args.to_format,
-                                              from_format=args.from_format,
-                                              converter=args.name,
-                                              data=data,
-                                              use_envvars=False,
-                                              input_dir=args.input_dir,
-                                              output_dir=args.output_dir,
-                                              no_check=args.no_check,
-                                              strict=args.strict,
-                                              log_file=args.log_file,
-                                              log_mode=args.log_mode,
-                                              log_level=args.log_level,
-                                              delete_input=args.delete_input,
-                                              refresh_local_log=False)
+            if args.chain:
+                conversion_result = run_converter_chain(**d_conversion_kwargs)
+            else:
+                conversion_result = run_converter(converter=args.name, **d_conversion_kwargs)
         except FileConverterAbortException as e:
             if not e.logged:
                 print_wrap(f"{tc.ERROR}ERROR:{tc.OFF} Attempt to convert file {filename} aborted with status code "
