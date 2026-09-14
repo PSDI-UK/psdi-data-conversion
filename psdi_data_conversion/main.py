@@ -1059,6 +1059,8 @@ def run_from_args(args: ConvertArgs):
             print_wrap(f"Converting {tc.PATH}'{filename}'{tc.OFF} to {get_format_pretty_name(args.to_format)}...",
                        newline=True)
 
+        # Set up arguments for the conversion function. The dict here is arguments common to whether we run the chain
+        # or normal function
         d_conversion_kwargs = {"filename": qualified_filename,
                                "to_format": args.to_format,
                                "from_format": args.from_format,
