@@ -339,8 +339,8 @@ def test_autochain_ambiguous_to_format():
     assert _compressed_match("is ambiguous and can correspond to multiple possible output formats", e.value)
 
 
-l_arg_strs = product(("to", "from"), ("flags", "options"))
-l_converter_and_arg = product(("auto", "autochain"), [f"--{x[0]}-{x[1]} foo" for x in l_arg_strs])
+l_arg_strs = [f"--{x[0]}-{x[1]} foo" for x in product(("to", "from"), ("flags", "options"))]
+l_converter_and_arg = list(product(("auto", "autochain"), l_arg_strs))
 
 
 @pytest.mark.parametrize("converter, arg_str", l_converter_and_arg)

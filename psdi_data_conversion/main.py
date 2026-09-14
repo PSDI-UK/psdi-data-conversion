@@ -211,8 +211,6 @@ class ConvertArgs:
             for (to_or_from, flags_or_options) in product(["to", "from"], ["flags", "options"]):
                 arg = f"{to_or_from}_{flags_or_options}"
                 l_converter_specific_items.append((arg, getattr(self, arg)))
-            for arg, val in self.d_converter_args:
-                l_converter_specific_items.append((arg, val))
 
             l_err_strs: list[str] = []
             for arg, val in l_converter_specific_items:
