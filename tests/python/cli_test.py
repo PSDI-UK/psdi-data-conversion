@@ -9,6 +9,7 @@ import logging
 import os
 import shlex
 import sys
+from itertools import product
 from tempfile import TemporaryDirectory
 from unittest.mock import patch
 
@@ -336,6 +337,20 @@ def test_autochain_ambiguous_to_format():
     with pytest.raises(FileConverterInputException) as e:
         get_parsed_args(f"file1 -f pdb-0 -t xyz -w {const.CONVERTER_AUTOCHAIN}")
     assert _compressed_match("is ambiguous and can correspond to multiple possible output formats", e.value)
+
+
+l_arg_strs = product(("to", "from"), ("flags", "options"))
+l_converter_and_arg = product(("auto", "autochain"), [f"--{x[0]}-{x[1]} foo" for x in l_arg_strs])
+
+
+@pytest.mark.parametrize("converter, arg_str", l_converter_and_arg)
+def test_auto_no_converter_args(converter, arg_str):
+    """Test that an error is raised if any converter-specific arguments are provided when an automatic converter or
+    chain is requested"""
+    with pytest.raises(FileConverterInputException) as e:
+        get_parsed_args(f"file1 -f pdb-0 -t xyz-0 -w {converter} {arg_str}")
+    assert _compressed_match("Converter-specific arguments cannot be provided when the converter or chain is "
+                             "automatically-determined.", e.value)
 
 
 def test_list_converters(capsys):

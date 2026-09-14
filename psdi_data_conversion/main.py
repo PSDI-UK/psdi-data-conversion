@@ -153,9 +153,11 @@ class ConvertArgs:
             os.makedirs(self._output_dir, exist_ok=True)
 
         # If the converter is set to be automatically determined, do so now
+        self.auto = False
         if not self.name:
             self.name = const.CONVERTER_AUTO
         if self.name == const.CONVERTER_AUTO:
+            self.auto = True
             self.name = self._determine_auto_converter()
 
         if not self.name or self.name == const.CONVERTER_AUTO:
@@ -169,6 +171,7 @@ class ConvertArgs:
             self._check_from_formats_unique()
             self._check_to_format_unique()
             self.chain = True
+            self.auto = True
             self.name = const.CONVERTER_AUTOCHAIN
         else:
             self.chain = False
@@ -202,7 +205,7 @@ class ConvertArgs:
                 self.d_converter_args.update(get_data(getattr(args, arg_name)))
 
         # If using an automatic converter or chain, check that no converter-specific arguments were provided
-        if self.name == const.CONVERTER_AUTO or self.name == const.CONVERTER_AUTOCHAIN:
+        if self.auto:
 
             l_converter_specific_items = []
             for (to_or_from, flags_or_options) in product(["to", "from"], ["flags", "options"]):
