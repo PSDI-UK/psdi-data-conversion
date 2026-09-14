@@ -18,7 +18,8 @@ from itertools import product
 import wraptext
 
 from psdi_data_conversion import constants as const
-from psdi_data_conversion.constants import CL_SCRIPT_NAME, CONVERTER_AUTO, TERM_WIDTH
+from psdi_data_conversion.constants import (CL_SCRIPT_NAME, CONVERTER_AUTO, CONVERTER_AUTOCHAIN, L_CONVERTER_AUTOCHAIN,
+                                            TERM_WIDTH)
 from psdi_data_conversion.converter import (D_CONVERTER_ARGS, L_REGISTERED_CONVERTERS, L_SUPPORTED_CONVERTERS,
                                             converter_is_registered, converter_is_supported,
                                             get_supported_converter_class, run_converter)
@@ -165,38 +166,47 @@ class ConvertArgs:
             raise FileConverterInputException("Could not automatically determine converter for conversion for an "
                                               "unknown reason.")
 
-        # Check the converter is recognized
-        if not converter_is_supported(self.name):
-            msg = wraptext.fill(f"{tc.ERROR}ERROR:{tc.OFF} Converter {tc.MESSAGE}'{self.name}'{tc.OFF} not "
-                                "recognised", width=TERM_WIDTH)
-            msg += f"\n\n{get_supported_converters()}"
-            raise FileConverterInputException(msg, help=True, msg_preformatted=True)
-        elif not converter_is_registered(self.name):
-            converter_name = get_supported_converter_class(self.name).meta.name
-            msg = wraptext.fill(f"{tc.ERROR}ERROR:{tc.OFF} Converter {tc.MESSAGE}'{converter_name}'{tc.OFF} is not "
-                                "registered. It may be possible to register it by installing an appropriate binary for "
-                                "your platform.", width=TERM_WIDTH)
-            msg += f"\n\n{get_supported_converters()}"
-            raise FileConverterInputException(msg, help=True, msg_preformatted=True)
+        # If one of the autochain keywords is used, normalise it to the primary key
+        if self.name in L_CONVERTER_AUTOCHAIN:
+            self.chain = True
+            self.name = CONVERTER_AUTOCHAIN
+        else:
+            self.chain = False
 
-        # Logging mode is valid
+        # If not using a chain, check that the converter is recognised and registered, and get arguments specific to
+        # this converter
+        self.d_converter_args = {}
+        if not self.chain:
+            if not converter_is_supported(self.name):
+                msg = wraptext.fill(f"{tc.ERROR}ERROR:{tc.OFF} Converter {tc.MESSAGE}'{self.name}'{tc.OFF} not "
+                                    "recognised", width=TERM_WIDTH)
+                msg += f"\n\n{get_supported_converters()}"
+                raise FileConverterInputException(msg, help=True, msg_preformatted=True)
+            elif not converter_is_registered(self.name):
+                converter_name = get_supported_converter_class(self.name).meta.name
+                msg = wraptext.fill(f"{tc.ERROR}ERROR:{tc.OFF} Converter {tc.MESSAGE}'{converter_name}'{tc.OFF} "
+                                    "is not registered. It may be possible to register it by installing an "
+                                    "appropriate binary for your platform.", width=TERM_WIDTH)
+                msg += f"\n\n{get_supported_converters()}"
+                raise FileConverterInputException(msg, help=True, msg_preformatted=True)
+
+            # Arguments specific to this converter
+            l_converter_args = D_CONVERTER_ARGS[self.name]
+            if not l_converter_args:
+                l_converter_args = []
+            for arg_name, _, get_data in l_converter_args:
+                # Convert the argument name to how it will be represented in the parsed_args object
+                while arg_name.startswith("-"):
+                    arg_name = arg_name[1:]
+                arg_name = arg_name.replace("-", "_")
+                self.d_converter_args.update(get_data(getattr(args, arg_name)))
+
+        # Check that the logging mode is valid
         if self.log_mode not in const.L_ALLOWED_LOG_MODES:
             raise FileConverterInputException(f"Unrecognised logging mode: {tc.MESSAGE}'{self.log_mode}'{tc.OFF}. "
                                               f"Allowed modes are: " +
                                               ", ".join([f"{tc.MESSAGE}'{x}'{tc.OFF}"
                                                          for x in const.L_ALLOWED_LOG_MODES]), help=True)
-
-        # Arguments specific to this converter
-        self.d_converter_args = {}
-        l_converter_args = D_CONVERTER_ARGS[self.name]
-        if not l_converter_args:
-            l_converter_args = []
-        for arg_name, _, get_data in l_converter_args:
-            # Convert the argument name to how it will be represented in the parsed_args object
-            while arg_name.startswith("-"):
-                arg_name = arg_name[1:]
-            arg_name = arg_name.replace("-", "_")
-            self.d_converter_args.update(get_data(getattr(args, arg_name)))
 
     @property
     def input_dir(self):

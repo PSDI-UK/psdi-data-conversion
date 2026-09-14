@@ -104,6 +104,7 @@ def test_general_arg_parsing():
     assert args.to_format == "pdb"
     assert args.output_dir == f"{cwd}/.."
     assert args.name == const.CONVERTER_C2X
+    assert args.chain is False
     assert args.no_check is True
     assert args.strict is True
     assert args.delete_input is True
@@ -150,6 +151,14 @@ def test_fail_invalid_converter():
     with pytest.raises(FileConverterInputException) as e:
         get_parsed_args("file1.mmcif -t pdb -w FakeConverter")
     assert _compressed_match("Converter 'fakeconverter' not recognised", e.value)
+
+
+@pytest.mark.parametrize("chain_str", const.L_CONVERTER_AUTOCHAIN)
+def test_autochain_args(chain_str):
+    """Test that the parsing correctly detects when an automatic chain is requested"""
+    args = get_parsed_args(f"file1.mmcif -t pdb -w '{chain_str}'")
+    assert args.name == const.CONVERTER_AUTOCHAIN
+    assert args.chain is True
 
 
 def test_fail_bad_coord_gen_type():
