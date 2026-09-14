@@ -18,10 +18,9 @@ from itertools import product
 import wraptext
 
 from psdi_data_conversion import constants as const
-from psdi_data_conversion.constants import CL_SCRIPT_NAME, CONVERTER_AUTO, TERM_WIDTH
 from psdi_data_conversion.converter import (D_CONVERTER_ARGS, L_REGISTERED_CONVERTERS, L_SUPPORTED_CONVERTERS,
                                             converter_is_registered, converter_is_supported,
-                                            get_supported_converter_class, run_converter)
+                                            get_supported_converter_class, run_converter, run_converter_chain)
 from psdi_data_conversion.converters.base import (FileConverterAbortException, FileConverterException,
                                                   FileConverterInputException)
 from psdi_data_conversion.database import (CONVERSION_WEIGHT_MAX, D_FORMAT_PROPERTY_ATTRS, ConversionQualityInfo,
@@ -143,7 +142,7 @@ class ConvertArgs:
         if self.to_format is None:
             msg = wraptext.fill(f"{tc.ERROR}ERROR:{tc.OFF} Output format ({tc.CODE}`-t/--to`{tc.OFF}) must be "
                                 "provided. For information on supported formats and converters, call:\n")
-            msg += f"{tc.CODE}{CL_SCRIPT_NAME} -l{tc.OFF}"
+            msg += f"{tc.CODE}{const.CL_SCRIPT_NAME} -l{tc.OFF}"
             raise FileConverterInputException(msg, msg_preformatted=True, help=True)
 
         # If the output directory doesn't exist, silently create it
@@ -154,49 +153,83 @@ class ConvertArgs:
             os.makedirs(self._output_dir, exist_ok=True)
 
         # If the converter is set to be automatically determined, do so now
+        self.auto = False
         if not self.name:
-            self.name = CONVERTER_AUTO
-        if self.name == CONVERTER_AUTO:
+            self.name = const.CONVERTER_AUTO
+        if self.name == const.CONVERTER_AUTO:
+            self.auto = True
             self.name = self._determine_auto_converter()
 
-        if not self.name or self.name == CONVERTER_AUTO:
+        if not self.name or self.name == const.CONVERTER_AUTO:
             # Double check the name is set to an actual converter - this path shouldn't be possible, but catch it
             # explicitly here just in case, to avoid a more confusing exception later
             raise FileConverterInputException("Could not automatically determine converter for conversion for an "
                                               "unknown reason.")
 
-        # Check the converter is recognized
-        if not converter_is_supported(self.name):
-            msg = wraptext.fill(f"{tc.ERROR}ERROR:{tc.OFF} Converter {tc.MESSAGE}'{self.name}'{tc.OFF} not "
-                                "recognised", width=TERM_WIDTH)
-            msg += f"\n\n{get_supported_converters()}"
-            raise FileConverterInputException(msg, help=True, msg_preformatted=True)
-        elif not converter_is_registered(self.name):
-            converter_name = get_supported_converter_class(self.name).meta.name
-            msg = wraptext.fill(f"{tc.ERROR}ERROR:{tc.OFF} Converter {tc.MESSAGE}'{converter_name}'{tc.OFF} is not "
-                                "registered. It may be possible to register it by installing an appropriate binary for "
-                                "your platform.", width=TERM_WIDTH)
-            msg += f"\n\n{get_supported_converters()}"
-            raise FileConverterInputException(msg, help=True, msg_preformatted=True)
+        # If one of the autochain keywords is used, normalise it to the primary key
+        if self.name in const.L_CONVERTER_AUTOCHAIN:
+            self._check_from_formats_unique()
+            self._check_to_format_unique()
+            self.chain = True
+            self.auto = True
+            self.name = const.CONVERTER_AUTOCHAIN
+        else:
+            self.chain = False
 
-        # Logging mode is valid
+        # If not using a chain, check that the converter is recognised and registered, and get arguments specific to
+        # this converter
+        self.d_converter_args = {}
+        if not self.chain:
+            if not converter_is_supported(self.name):
+                msg = wraptext.fill(f"{tc.ERROR}ERROR:{tc.OFF} Converter {tc.MESSAGE}'{self.name}'{tc.OFF} not "
+                                    "recognised", width=const.TERM_WIDTH)
+                msg += f"\n\n{get_supported_converters()}"
+                raise FileConverterInputException(msg, help=True, msg_preformatted=True)
+            elif not converter_is_registered(self.name):
+                converter_name = get_supported_converter_class(self.name).meta.name
+                msg = wraptext.fill(f"{tc.ERROR}ERROR:{tc.OFF} Converter {tc.MESSAGE}'{converter_name}'{tc.OFF} "
+                                    "is not registered. It may be possible to register it by installing an "
+                                    "appropriate binary for your platform.", width=const.TERM_WIDTH)
+                msg += f"\n\n{get_supported_converters()}"
+                raise FileConverterInputException(msg, help=True, msg_preformatted=True)
+
+            # Arguments specific to this converter
+            l_converter_args = D_CONVERTER_ARGS[self.name]
+            if not l_converter_args:
+                l_converter_args = []
+            for arg_name, _, get_data in l_converter_args:
+                # Convert the argument name to how it will be represented in the parsed_args object
+                while arg_name.startswith("-"):
+                    arg_name = arg_name[1:]
+                arg_name = arg_name.replace("-", "_")
+                self.d_converter_args.update(get_data(getattr(args, arg_name)))
+
+        # If using an automatic converter or chain, check that no converter-specific arguments were provided
+        if self.auto:
+
+            l_converter_specific_items = []
+            for (to_or_from, flags_or_options) in product(["to", "from"], ["flags", "options"]):
+                arg = f"{to_or_from}_{flags_or_options}"
+                l_converter_specific_items.append((arg, getattr(self, arg)))
+
+            l_err_strs: list[str] = []
+            for arg, val in l_converter_specific_items:
+                val = getattr(self, arg)
+                if val:
+                    l_err_strs.append(f"{tc.ERROR}ERROR:{tc.OFF} Argument {tc.MESSAGE}'{val}'{tc.OFF} was provided "
+                                      f"when using the {tc.MESSAGE}'{const.CONVERTER_AUTO}'{tc.OFF} or {tc.MESSAGE}'"
+                                      f"{const.CONVERTER_AUTOCHAIN}'{tc.OFF} keyword for {tc.CODE}`-w/--with`{tc.OFF}."
+                                      "Converter-specific arguments cannot be provided when the converter or chain is "
+                                      "automatically-determined.")
+            if l_err_strs:
+                raise FileConverterInputException("\n".join(l_err_strs))
+
+        # Check that the logging mode is valid
         if self.log_mode not in const.L_ALLOWED_LOG_MODES:
             raise FileConverterInputException(f"Unrecognised logging mode: {tc.MESSAGE}'{self.log_mode}'{tc.OFF}. "
                                               f"Allowed modes are: " +
                                               ", ".join([f"{tc.MESSAGE}'{x}'{tc.OFF}"
                                                          for x in const.L_ALLOWED_LOG_MODES]), help=True)
-
-        # Arguments specific to this converter
-        self.d_converter_args = {}
-        l_converter_args = D_CONVERTER_ARGS[self.name]
-        if not l_converter_args:
-            l_converter_args = []
-        for arg_name, _, get_data in l_converter_args:
-            # Convert the argument name to how it will be represented in the parsed_args object
-            while arg_name.startswith("-"):
-                arg_name = arg_name[1:]
-            arg_name = arg_name.replace("-", "_")
-            self.d_converter_args.update(get_data(getattr(args, arg_name)))
 
     @property
     def input_dir(self):
@@ -264,25 +297,28 @@ class ConvertArgs:
                 best_weight = weight
         return best_converter.name
 
-    def _determine_auto_converter(self):
-        """Automatically determine the converter to use when the 'auto' keyword is used"""
+    def _check_to_format_unique(self):
+        """Check that the output format is uniquely specified"""
 
-        # Check first that the output format is uniquely specified
         l_to_formats: list[FormatInfo] = get_format_info(self.to_format, "all")
         if not l_to_formats:
             raise FileConverterInputException(f"{tc.MESSAGE}'{self.to_format}'{tc.OFF} is not recognised as a valid "
                                               "output format. To see supported formats, call:\n"
-                                              f"{tc.CODE}{CL_SCRIPT_NAME} -l{tc.OFF}", help=True)
+                                              f"{tc.CODE}{const.CL_SCRIPT_NAME} -l{tc.OFF}", help=True)
         elif len(l_to_formats) > 1:
             raise FileConverterInputException(f"{tc.MESSAGE}'{self.to_format}'{tc.OFF} is ambiguous and can correspond "
-                                              f"to multiple possible output formats. When using {tc.MESSAGE}'auto"
-                                              f"'{tc.OFF} converter, both the input and output formats must be "
+                                              f"to multiple possible output formats. When using the {tc.MESSAGE}'"
+                                              f"{const.CONVERTER_AUTO}'{tc.OFF} or {tc.MESSAGE}'"
+                                              f"{const.CONVERTER_AUTOCHAIN}'{tc.OFF} keyword for {tc.CODE}`"
+                                              f"-w/--with`{tc.OFF}, both the input and output formats must be "
                                               "uniquely specified. Please use the disambiguated name or ID for the "
                                               "desired format from the following list:\n" +
                                               "\n".join([x.format_oneline() for x in l_to_formats]), help=True)
 
-        # If input format wasn't provided, see first if we can uniquely determine it from the input files
+    def _check_from_formats_unique(self):
+        """Check that the input formats are uniquely specified"""
         if not self.from_format:
+
             s_input_exts = {os.path.splitext(x)[1] for x in self.l_args}
             if len(s_input_exts) == 1:
                 self.from_format = s_input_exts.pop()
@@ -297,45 +333,44 @@ class ConvertArgs:
                     else:
                         s_format_infos.add(l_format_infos[0])
                 if l_bad_exts:
-                    msg = (f"When using {tc.MESSAGE}'auto'{tc.OFF} converter, either the {tc.CODE}`"
-                           f"-f/--from`{tc.OFF} argument must be provided to specify input format, or else input "
-                           "format must be uniquely identifiable for all input files. The following files could not "
-                           "have their format uniquely identified: " +
+                    msg = (f"When using the {tc.MESSAGE}'{const.CONVERTER_AUTO}'{tc.OFF} or {tc.MESSAGE}'"
+                           f"{const.CONVERTER_AUTOCHAIN}'{tc.OFF} keyword for {tc.CODE}`-w/--with`{tc.OFF}, either "
+                           f"the {tc.CODE}`-f/--from`{tc.OFF} argument must be provided to specify input format, or "
+                           "else input format must be uniquely identifiable for all input files. The following files "
+                           "could not have their format uniquely identified: " +
                            ", ".join([f"{tc.PATH}'{x}'{tc.OFF}"
                                       for x in self.l_args if os.path.splitext(x)[1] in l_bad_exts]))
                     raise FileConverterInputException(msg, help=True)
+                else:
+                    return s_format_infos
 
-                # Determine converters which can handle conversion from each input format to the output format
-                ls_converters = [self._get_possible_converters(x) for x in s_format_infos]
-                s_converters = reduce(lambda s1, s2: s1.intersection(s2), ls_converters)
-
-                if len(s_converters) == 0:
-                    raise FileConverterInputException("No converter is available which can perform a conversion of all "
-                                                      f"input files to {tc.PATH}'{self.to_format}'{tc.OFF}. Please "
-                                                      "try converting files in batches of one type at a time",
-                                                      help=True)
-
-                return self._get_best_converter(s_converters, s_format_infos)
-
-        # If the input format was provided, we can use that directly
-        l_from_formats = get_format_info(self.from_format, "all")
+        l_from_formats: list[FormatInfo] = get_format_info(self.from_format, "all")
         if len(l_from_formats) != 1:
-            raise FileConverterInputException(f"When using {tc.MESSAGE}'auto'{tc.OFF} converter, the input format "
+            raise FileConverterInputException(f"When using the {tc.MESSAGE}'{const.CONVERTER_AUTO}'{tc.OFF} or "
+                                              f"{tc.MESSAGE}'{const.CONVERTER_AUTOCHAIN}'{tc.OFF} keyword for "
+                                              f"{tc.CODE}`-w/--with`{tc.OFF}, the input format "
                                               "determined from the extension of the input file or specified with "
                                               f"{tc.CODE}`-f/--from`{tc.OFF} must unambiguously "
                                               "identify a format. Please use the ID or disambiguated name from the "
                                               "correct format in the following list:\n" +
                                               "\n".join([x.format_oneline() for x in l_from_formats]), help=True)
-        s_converters = self._get_possible_converters(l_from_formats[0])
+        return {l_from_formats[0]}
+
+    def _determine_auto_converter(self):
+        """Automatically determine the converter to use when the 'auto' keyword is used"""
+
+        self._check_to_format_unique()
+        s_from_formats = self._check_from_formats_unique()
+        ls_converters = [self._get_possible_converters(x) for x in s_from_formats]
+        s_converters = reduce(lambda s1, s2: s1.intersection(s2), ls_converters)
 
         if len(s_converters) == 0:
-            raise FileConverterInputException("No converter is available which can perform a direct conversion from "
-                                              f"{tc.PATH}'{self.from_format}'{tc.OFF} to {tc.PATH}'{self.to_format}"
-                                              f"'{tc.OFF}. To check if a chained conversion may be possible, call:\n"
-                                              f"{tc.CODE}{CL_SCRIPT_NAME} -l -f {self.from_format} -t "
-                                              f"{self.to_format}{tc.OFF}", help=True)
+            raise FileConverterInputException("No converter is available which can perform a conversion of all "
+                                              f"input files to {tc.PATH}'{self.to_format}'{tc.OFF}. Please "
+                                              "try converting files in batches of one type at a time",
+                                              help=True)
 
-        return self._get_best_converter(s_converters, set(l_from_formats))
+        return self._get_best_converter(s_converters, s_from_formats)
 
 
 def get_argument_parser():
@@ -370,11 +405,14 @@ def get_argument_parser():
                         f"be created in the {tc.CODE}`-i/--in`{tc.OFF} directory if that was provided, or else in the "
                         "directory containing the first input file.")
     parser.add_argument("-w", "--with", type=str, nargs="+",
-                        help=f"The converter to be used, or else the keyword {tc.MESSAGE}'auto'{tc.OFF}. "
-                        f"{tc.MESSAGE}'auto'{tc.OFF} will automatically determine a suitable converter which can "
-                        "perform the conversion (this may require input/output formats to be unambiguously "
-                        f"specified by using disambiguated names or IDs with {tc.CODE}`-f/--from`{tc.OFF} and "
-                        f"{tc.CODE}`-t/--to`{tc.OFF} if the extensions are ambiguous). Default "
+                        help=f"The converter to be used, or else one of the keywords {tc.MESSAGE}'auto'{tc.OFF} "
+                        f"or {tc.MESSAGE}'auto-chain'{tc.OFF} (aliases {tc.MESSAGE}'autoc'{tc.OFF} and "
+                        f"{tc.MESSAGE}'autochain'{tc.OFF} for the latter).  {tc.MESSAGE}'auto'{tc.OFF} will "
+                        "automatically determine a suitable converter which can perform the conversion (this may "
+                        "require input/output formats to be unambiguously specified by using disambiguated names or "
+                        f"IDs with {tc.CODE}`-f/--from`{tc.OFF} and {tc.CODE}`-t/--to`{tc.OFF} if the extensions are "
+                        f"ambiguous). {tc.MESSAGE}'auto-chain'{tc.OFF} does the same, but will also determine and use "
+                        "a chained conversion if a single-step conversion is not possible. Default "
                         f"{tc.MESSAGE}'auto'{tc.OFF}.")
     parser.add_argument("--delete-input", action="store_true",
                         help="If set, input files will be deleted after conversion, default they will be kept")
@@ -569,7 +607,7 @@ def detail_converter_use(args: ConvertArgs):
         print_wrap("\nFor more information on a format, including its ID (which can be used to specify it uniquely in "
                    "case of ambiguity, and is resilient to database changes affecting the disambiguated names listed "
                    "above), call:\n"
-                   f"{tc.CODE}{CL_SCRIPT_NAME} -l -f <format>{tc.OFF}")
+                   f"{tc.CODE}{const.CL_SCRIPT_NAME} -l -f <format>{tc.OFF}")
 
     if converter_class.allowed_flags is None:
         print_wrap("\nInformation has not been provided about general flags accepted by this converter.", newline=True)
@@ -578,7 +616,7 @@ def detail_converter_use(args: ConvertArgs):
         for flag, d_data, _ in converter_class.allowed_flags:
             help = d_data.get("help", "(No information provided)")
             print(f"  {tc.CODE}{flag}{tc.OFF}")
-            print_wrap(help, width=TERM_WIDTH, initial_indent=" "*4, subsequent_indent=" "*4)
+            print_wrap(help, width=const.TERM_WIDTH, initial_indent=" "*4, subsequent_indent=" "*4)
 
     if converter_class.allowed_options is None:
         print_wrap("\nInformation has not been provided about general options accepted by this converter.",
@@ -645,13 +683,13 @@ def detail_converter_use(args: ConvertArgs):
                 if from_format_ambiguous:
                     print_wrap("\nFor details on input flags and options allowed for this format, please use the "
                                "disambiguated name or ID and call:\n"
-                               f"{tc.CODE}{CL_SCRIPT_NAME} -l {converter_name} -f <input_format>{tc.OFF}")
+                               f"{tc.CODE}{const.CL_SCRIPT_NAME} -l {converter_name} -f <input_format>{tc.OFF}")
             elif input_or_output == "output" and args.to_format:
                 detail_format(args.to_format, "out")
                 if to_format_ambiguous:
                     print_wrap("\nFor details on output flags and options allowed for this format, please use the "
                                "disambiguated name or ID and call:\n"
-                               f"{tc.CODE}{CL_SCRIPT_NAME} -l {converter_name} -t <output_format>{tc.OFF}")
+                               f"{tc.CODE}{const.CL_SCRIPT_NAME} -l {converter_name} -t <output_format>{tc.OFF}")
 
         if len(l_args) == 0:
             continue
@@ -676,13 +714,15 @@ def detail_converter_use(args: ConvertArgs):
     # Now at the end, bring up input/output-format-specific flags and options
     if mention_input_format and mention_output_format:
         print_wrap("For details on input/output flags and options allowed for specific formats, call:\n"
-                   f"{tc.CODE}{CL_SCRIPT_NAME} -l {converter_name} -f <input_format> -t <output_format>{tc.OFF}")
+                   f"{tc.CODE}{const.CL_SCRIPT_NAME} -l {converter_name} -f <input_format> -t <output_format>{tc.OFF}")
     elif mention_input_format:
         print_wrap("For details on input flags and options allowed for a specific format, call:\n"
-                   f"{tc.CODE}{CL_SCRIPT_NAME} -l {converter_name} -f <input_format> [-t <output_format>]{tc.OFF}")
+                   f"{tc.CODE}{const.CL_SCRIPT_NAME} -l {converter_name} -f <input_format> [-t <output_format>]"
+                   f"{tc.OFF}")
     elif mention_output_format:
         print_wrap("For details on output flags and options allowed for a specific format, call:\n"
-                   f"{tc.CODE}{CL_SCRIPT_NAME} -l {converter_name} -t <output_format> [-f <input_format>]{tc.OFF}")
+                   f"{tc.CODE}{const.CL_SCRIPT_NAME} -l {converter_name} -t <output_format> [-f <input_format>]"
+                   f"{tc.OFF}")
 
 
 def list_supported_formats(err=False):
@@ -733,7 +773,7 @@ def list_supported_formats(err=False):
     if err:
         print("")
         print_wrap("For more details on a format, call:")
-        print(f"{tc.CODE}{CL_SCRIPT_NAME} -l -f <format>{tc.OFF}")
+        print(f"{tc.CODE}{const.CL_SCRIPT_NAME} -l -f <format>{tc.OFF}")
 
 
 def detail_format(format_name: str, in_or_out: str | None = None):
@@ -912,7 +952,7 @@ def detail_formats_and_possible_converters(from_format: str, to_format: str):
             print("    " + "\n    ".join(l_possible_unregistered_converters) + "\n")
 
         print_wrap("For details on input/output flags and options allowed by a converter for this conversion, call:")
-        print(f"{tc.CODE}{CL_SCRIPT_NAME} -l <converter name> -f {strip_control_codes(from_name)} -t "
+        print(f"{tc.CODE}{const.CL_SCRIPT_NAME} -l <converter name> -f {strip_control_codes(from_name)} -t "
               f"{strip_control_codes(to_name)}{tc.OFF}")
 
 
@@ -985,16 +1025,16 @@ def detail_converters_and_formats(args: ConvertArgs):
     print("")
 
     print_wrap("For more details on a converter, call:")
-    print(f"{tc.CODE}{CL_SCRIPT_NAME} -l <converter name>{tc.OFF}\n")
+    print(f"{tc.CODE}{const.CL_SCRIPT_NAME} -l <converter name>{tc.OFF}\n")
 
     print_wrap("For more details on a format, call:")
-    print(f"{tc.CODE}{CL_SCRIPT_NAME} -l -f <format>{tc.OFF}\n")
+    print(f"{tc.CODE}{const.CL_SCRIPT_NAME} -l -f <format>{tc.OFF}\n")
 
     print_wrap("For a list of converters that can perform a desired conversion, call:")
-    print(f"{tc.CODE}{CL_SCRIPT_NAME} -l -f <input format> -t <output format>{tc.OFF}\n")
+    print(f"{tc.CODE}{const.CL_SCRIPT_NAME} -l -f <input format> -t <output format>{tc.OFF}\n")
 
     print_wrap("For a list of options provided by a converter for a desired conversion, call:")
-    print(f"{tc.CODE}{CL_SCRIPT_NAME} -l <converter name> -f <input format> -t <output format>{tc.OFF}")
+    print(f"{tc.CODE}{const.CL_SCRIPT_NAME} -l <converter name> -f <input format> -t <output format>{tc.OFF}")
 
 
 def run_from_args(args: ConvertArgs):
@@ -1046,22 +1086,28 @@ def run_from_args(args: ConvertArgs):
             print_wrap(f"Converting {tc.PATH}'{filename}'{tc.OFF} to {get_format_pretty_name(args.to_format)}...",
                        newline=True)
 
+        # Set up arguments for the conversion function. The dict here is arguments common to whether we run the chain
+        # or normal function
+        d_conversion_kwargs = {"filename": qualified_filename,
+                               "to_format": args.to_format,
+                               "from_format": args.from_format,
+                               "use_envvars": False,
+                               "input_dir": args.input_dir,
+                               "output_dir": args.output_dir,
+                               "no_check": args.no_check,
+                               "strict": args.strict,
+                               "log_file": args.log_file,
+                               "log_mode": args.log_mode,
+                               "log_level": args.log_level,
+                               "delete_input": args.delete_input,
+                               "refresh_local_log": False}
         try:
-            conversion_result = run_converter(filename=qualified_filename,
-                                              to_format=args.to_format,
-                                              from_format=args.from_format,
-                                              converter=args.name,
-                                              data=data,
-                                              use_envvars=False,
-                                              input_dir=args.input_dir,
-                                              output_dir=args.output_dir,
-                                              no_check=args.no_check,
-                                              strict=args.strict,
-                                              log_file=args.log_file,
-                                              log_mode=args.log_mode,
-                                              log_level=args.log_level,
-                                              delete_input=args.delete_input,
-                                              refresh_local_log=False)
+            if args.chain:
+                conversion_result = run_converter_chain(**d_conversion_kwargs)
+            else:
+                conversion_result = run_converter(converter=args.name,
+                                                  data=data,
+                                                  **d_conversion_kwargs)
         except FileConverterAbortException as e:
             if not e.logged:
                 print_wrap(f"{tc.ERROR}ERROR:{tc.OFF} Attempt to convert file {filename} aborted with status code "
@@ -1116,7 +1162,7 @@ def main():
     if len(sys.argv) == 1:
         print_wrap(f"See the {tc.PATH}'README.md'{tc.OFF} file for information on using this utility and examples of "
                    "basic usage, or for detailed explanation of arguments call:")
-        print(f"{tc.CODE}{CL_SCRIPT_NAME} -h{tc.OFF}")
+        print(f"{tc.CODE}{const.CL_SCRIPT_NAME} -h{tc.OFF}")
         exit(1)
 
     try:

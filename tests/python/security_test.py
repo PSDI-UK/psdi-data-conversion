@@ -11,6 +11,8 @@ import sys
 from unittest.mock import patch
 
 import pytest
+
+from psdi_data_conversion.constants import CONVERTER_OB
 from psdi_data_conversion.main import main
 from psdi_data_conversion.security import char_is_safe, string_is_safe
 from psdi_data_conversion.testing.utils import get_input_test_data_loc
@@ -92,7 +94,7 @@ def test_format_arg_security(tmp_path_factory, capsys):
     os.symlink(os.path.join(get_input_test_data_loc(), input_filename),
                os.path.join(input_dir, input_filename))
 
-    basic_arg_string = f"{input_filename} -t {to_format} -i {input_dir} -o {output_dir}"
+    basic_arg_string = f"{input_filename} -t {to_format} -i {input_dir} -o {output_dir} -w {CONVERTER_OB}"
 
     # Run for each set of flags that might trigger a security error
     for from_flags, to_flags, from_options, to_options in (("'; stop'", None, None, None),

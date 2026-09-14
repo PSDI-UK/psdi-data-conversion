@@ -9,6 +9,7 @@ import logging
 import os
 import shlex
 import sys
+from itertools import product
 from tempfile import TemporaryDirectory
 from unittest.mock import patch
 
@@ -23,8 +24,8 @@ from psdi_data_conversion.database import (D_FORMAT_PROPERTY_ATTRS, get_conversi
                                            get_out_format_args, get_possible_conversions, get_possible_formats)
 from psdi_data_conversion.main import FileConverterInputException, parse_args
 from psdi_data_conversion.testing.constants import FORMAT_INCHI, FORMAT_MOLDY
-from psdi_data_conversion.testing.conversion_test_specs import l_cla_test_specs
-from psdi_data_conversion.testing.utils import run_test_conversion_with_cla, run_with_arg_string
+from psdi_data_conversion.testing.conversion_test_specs import l_cli_test_specs
+from psdi_data_conversion.testing.utils import run_test_conversion_with_cli, run_with_arg_string
 from psdi_data_conversion.utils import regularize_name, strip_control_codes
 
 
@@ -82,12 +83,12 @@ def setup_test():
     os.chdir(old_cwd)
 
 
-@pytest.mark.parametrize("test_spec", l_cla_test_specs,
+@pytest.mark.parametrize("test_spec", l_cli_test_specs,
                          ids=lambda x: x.name)
 def test_conversions(test_spec):
     """Run all conversion tests in the defined list of test specifications
     """
-    run_test_conversion_with_cla(test_spec)
+    run_test_conversion_with_cli(test_spec)
 
 
 def test_general_arg_parsing():
@@ -104,6 +105,7 @@ def test_general_arg_parsing():
     assert args.to_format == "pdb"
     assert args.output_dir == f"{cwd}/.."
     assert args.name == const.CONVERTER_C2X
+    assert args.chain is False
     assert args.no_check is True
     assert args.strict is True
     assert args.delete_input is True
@@ -262,22 +264,33 @@ def test_auto_converter(auto_str):
     assert args.name == regularize_name(const.CONVERTER_C2X)
 
 
-def test_auto_ambiguous_from_format():
-    """Ensure that the proper error is raised if the input format is ambiguous when using 'auto' converter
+@pytest.mark.parametrize("converter_name", [const.CONVERTER_AUTO, const.CONVERTER_AUTOCHAIN])
+def test_auto_ambiguous_from_format(converter_name):
+    """Ensure that the proper error is raised if the input format is ambiguous when using 'auto(chain)' converter
     """
     with pytest.raises(FileConverterInputException) as e:
-        get_parsed_args("file1 -f pdb -t xyz-0 -w auto")
+        get_parsed_args(f"file1 -f pdb -t xyz-0 -w {converter_name}")
     assert _compressed_match("the input format determined from the extension of the input file or specified "
                              "with `-f/--from` must unambiguously", e.value)
 
 
-def test_auto_ambiguous_ext():
-    """Ensure that the proper error is raised if the input format is ambiguous when using 'auto' converter
+@pytest.mark.parametrize("converter_name", [const.CONVERTER_AUTO, const.CONVERTER_AUTOCHAIN])
+def test_auto_ambiguous_ext(converter_name):
+    """Ensure that the proper error is raised if the input format is ambiguous when using 'auto(chain)' converter
     """
     with pytest.raises(FileConverterInputException) as e:
-        get_parsed_args("file1.pdb -t xyz-0 -w auto")
+        get_parsed_args(f"file1.pdb -t xyz-0 -w {converter_name}")
     assert _compressed_match("the input format determined from the extension of the input file or specified "
                              "with `-f/--from` must unambiguously", e.value)
+
+
+@pytest.mark.parametrize("converter_name", [const.CONVERTER_AUTO, const.CONVERTER_AUTOCHAIN])
+def test_auto_archive_no_from(converter_name):
+    """Ensure that the proper error is raised if the input format is ambiguous when using 'auto(chain)' converter
+    """
+    with pytest.raises(FileConverterInputException) as e:
+        get_parsed_args(f"file1.tar.gz -t xyz-0 -w {converter_name}")
+    assert _compressed_match("Cannot determine input format for file", e.value)
 
 
 def test_auto_multi_ambiguous_ext():
@@ -285,23 +298,25 @@ def test_auto_multi_ambiguous_ext():
     when using 'auto' converter
     """
     with pytest.raises(FileConverterInputException) as e:
-        get_parsed_args("file1.pdb file2.cif -t xyz-0 -w auto")
+        get_parsed_args(f"file1.pdb file2.cif -t xyz-0 -w {const.CONVERTER_AUTO}")
     assert _compressed_match("input format must be uniquely identifiable for all input files.", e.value)
 
 
-def test_auto_invalid_to_format():
-    """Ensure that the proper error is raised if the output format is invalid when using 'auto' converter
+@pytest.mark.parametrize("converter_name", [const.CONVERTER_AUTO, const.CONVERTER_AUTOCHAIN])
+def test_auto_invalid_to_format(converter_name):
+    """Ensure that the proper error is raised if the output format is invalid when using 'auto(chain)' converter
     """
     with pytest.raises(FileConverterInputException) as e:
-        get_parsed_args("file1 -f pdb-0 -t invalid_format -w auto")
+        get_parsed_args(f"file1 -f pdb-0 -t invalid_format -w {converter_name}")
     assert _compressed_match("is not recognised as a valid output format. To see supported formats", e.value)
 
 
-def test_auto_ambiguous_to_format():
-    """Ensure that the proper error is raised if the to format is ambiguous when using 'auto' converter
+@pytest.mark.parametrize("converter_name", [const.CONVERTER_AUTO, const.CONVERTER_AUTOCHAIN])
+def test_auto_ambiguous_to_format(converter_name):
+    """Ensure that the proper error is raised if the to format is ambiguous when using 'auto(chain)' converter
     """
     with pytest.raises(FileConverterInputException) as e:
-        get_parsed_args("file1 -f pdb-0 -t xyz -w auto")
+        get_parsed_args(f"file1 -f pdb-0 -t xyz -w {converter_name}")
     assert _compressed_match("is ambiguous and can correspond to multiple possible output formats", e.value)
 
 
@@ -310,8 +325,30 @@ def test_auto_no_common_converter():
     converter.
     """
     with pytest.raises(FileConverterInputException) as e:
-        get_parsed_args("file1.abi file2.inchi -t pdb-0 -w auto")
+        get_parsed_args(f"file1.abi file2.inchi -t pdb-0 -w {const.CONVERTER_AUTO}")
     assert _compressed_match("No converter is available which can perform a conversion of all input files", e.value)
+
+
+@pytest.mark.parametrize("chain_str", const.L_CONVERTER_AUTOCHAIN)
+def test_autochain_args(chain_str):
+    """Test that the parsing correctly detects when an automatic chain is requested"""
+    args = get_parsed_args(f"file1.mmcif -t pdb-0 -w '{chain_str}'")
+    assert args.name == const.CONVERTER_AUTOCHAIN
+    assert args.chain is True
+
+
+l_arg_strs = [f"--{x[0]}-{x[1]} foo" for x in product(("to", "from"), ("flags", "options"))]
+l_converter_and_arg = list(product(("auto", "autochain"), l_arg_strs))
+
+
+@pytest.mark.parametrize("converter, arg_str", l_converter_and_arg)
+def test_auto_no_converter_args(converter, arg_str):
+    """Test that an error is raised if any converter-specific arguments are provided when an automatic converter or
+    chain is requested"""
+    with pytest.raises(FileConverterInputException) as e:
+        get_parsed_args(f"file1 -f pdb-0 -t xyz-0 -w {converter} {arg_str}")
+    assert _compressed_match("Converter-specific arguments cannot be provided when the converter or chain is "
+                             "automatically-determined.", e.value)
 
 
 def test_list_converters(capsys):

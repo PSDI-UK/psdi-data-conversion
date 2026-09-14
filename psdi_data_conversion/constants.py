@@ -147,6 +147,12 @@ DEFAULT_LISTING_LOG_FILE = "data-convert-list" + LOG_EXT
 # Keyword to automatically determine a converter
 CONVERTER_AUTO = "auto"
 
+# Keyword to automatically determine a conversion chain
+CONVERTER_AUTOCHAIN = "autochain"
+
+# And some variants of the above which are also accepted
+L_CONVERTER_AUTOCHAIN = [CONVERTER_AUTOCHAIN, "autoc", "auto-chain"]
+
 # Converter names
 CONVERTER_OB = 'Open Babel'
 CONVERTER_C2X = 'c2x'

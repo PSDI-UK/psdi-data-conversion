@@ -54,6 +54,7 @@
   - The output format must be unambiguously specified
   - The input format must be unambiguous for all input files
   - If input files of multiple formats are provided, the same converter must be able to handle a conversion of all of them to the output format
+- The 'autochain' keyword (aliases 'autoc' and 'auto-chain') has been added as an option to the `-w/--with` option of the CLI to specify a converter. This works like 'auto', but if a single converter cannot perform the requested conversion, a chain conversion will be automatically determined and run. This has the same restriction as 'auto' that the input and output formats must be unambiguously specified, but not the limitation that a single converter must be able to perform all conversions if a list of files is provided
 
 ### Bugfixes
 
