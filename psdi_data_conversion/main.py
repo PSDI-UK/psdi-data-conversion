@@ -54,13 +54,13 @@ class ConvertArgs:
         self._input_dir: str | None = getattr(args, "in")
         self.to_format: str | None = args.to
         self._output_dir: str | None = args.out
-        converter_name = getattr(args, "with")
-        if isinstance(converter_name, str):
-            self.name = regularize_name(converter_name)
-        elif converter_name:
-            self.name = regularize_name(" ".join(converter_name))
+        raw_converter = getattr(args, "with")
+        if isinstance(raw_converter, str):
+            self.converter = regularize_name(raw_converter)
+        elif raw_converter:
+            self.converter = regularize_name(" ".join(raw_converter))
         else:
-            self.name = None
+            self.converter = None
         self.path = args.path
         self.delete_input = args.delete_input
         self.from_flags: str = args.from_flags.replace(r"\-", "-")
@@ -107,8 +107,8 @@ class ConvertArgs:
             self.quiet = False
 
             # Get the converter name from the arguments if it wasn't provided by -w/--with
-            if not self.name:
-                self.name = regularize_name(" ".join(self.l_args))
+            if not self.converter:
+                self.converter = regularize_name(" ".join(self.l_args))
 
             # For this operation, any other arguments can be ignored
             return
@@ -155,25 +155,25 @@ class ConvertArgs:
 
         # If the converter is set to be automatically determined, do so now
         self.auto = False
-        if not self.name:
-            self.name = const.CONVERTER_AUTO
-        if self.name == const.CONVERTER_AUTO:
+        if not self.converter:
+            self.converter = const.CONVERTER_AUTO
+        if self.converter == const.CONVERTER_AUTO:
             self.auto = True
-            self.name = self._determine_auto_converter()
+            self.converter = self._determine_auto_converter()
 
-        if not self.name or self.name == const.CONVERTER_AUTO:
+        if not self.converter or self.converter == const.CONVERTER_AUTO:
             # Double check the name is set to an actual converter - this path shouldn't be possible, but catch it
             # explicitly here just in case, to avoid a more confusing exception later
             raise FileConverterInputException("Could not automatically determine converter for conversion for an "
                                               "unknown reason.")
 
         # If one of the autochain keywords is used, normalise it to the primary key
-        if self.name in const.L_CONVERTER_AUTOCHAIN:
+        if self.converter in const.L_CONVERTER_AUTOCHAIN:
             self._check_from_formats_unique()
             self._check_to_format_unique()
             self.chain = True
             self.auto = True
-            self.name = const.CONVERTER_AUTOCHAIN
+            self.converter = const.CONVERTER_AUTOCHAIN
         else:
             self.chain = False
 
@@ -181,21 +181,21 @@ class ConvertArgs:
         # this converter
         self.d_converter_args = {}
         if not self.chain:
-            if not converter_is_supported(self.name):
-                msg = wraptext.fill(f"{tc.ERROR}ERROR:{tc.OFF} Converter {tc.MESSAGE}'{self.name}'{tc.OFF} not "
+            if not converter_is_supported(self.converter):
+                msg = wraptext.fill(f"{tc.ERROR}ERROR:{tc.OFF} Converter {tc.MESSAGE}'{self.converter}'{tc.OFF} not "
                                     "recognised", width=const.TERM_WIDTH)
                 msg += f"\n\n{get_supported_converters()}"
                 raise FileConverterInputException(msg, help=True, msg_preformatted=True)
-            elif not converter_is_registered(self.name):
-                converter_name = get_supported_converter_class(self.name).meta.name
-                msg = wraptext.fill(f"{tc.ERROR}ERROR:{tc.OFF} Converter {tc.MESSAGE}'{converter_name}'{tc.OFF} "
+            elif not converter_is_registered(self.converter):
+                raw_converter = get_supported_converter_class(self.converter).meta.name
+                msg = wraptext.fill(f"{tc.ERROR}ERROR:{tc.OFF} Converter {tc.MESSAGE}'{raw_converter}'{tc.OFF} "
                                     "is not registered. It may be possible to register it by installing an "
                                     "appropriate binary for your platform.", width=const.TERM_WIDTH)
                 msg += f"\n\n{get_supported_converters()}"
                 raise FileConverterInputException(msg, help=True, msg_preformatted=True)
 
             # Arguments specific to this converter
-            l_converter_args = D_CONVERTER_ARGS[self.name]
+            l_converter_args = D_CONVERTER_ARGS[self.converter]
             if not l_converter_args:
                 l_converter_args = []
             for arg_name, _, get_data in l_converter_args:
@@ -531,8 +531,8 @@ def detail_converter_use(args: ConvertArgs):
     """Prints output providing information on a specific converter, including the flags and options it allows
     """
 
-    converter_info = get_converter_info(args.name)
-    converter_class = get_supported_converter_class(args.name)
+    converter_info = get_converter_info(args.converter)
+    converter_class = get_supported_converter_class(args.converter)
     converter_name = converter_class.meta.name
 
     print_header("Converter information")
@@ -571,7 +571,7 @@ def detail_converter_use(args: ConvertArgs):
                     print_wrap(f"- {detail_line}")
                 print("")
     else:
-        l_input_formats, l_output_formats = get_possible_formats(args.name)
+        l_input_formats, l_output_formats = get_possible_formats(args.converter)
 
         # If one format was supplied, check if it's supported
         for (format_name, l_formats, to_or_from) in ((args.from_format, l_input_formats, "from"),
@@ -657,7 +657,7 @@ def detail_converter_use(args: ConvertArgs):
                 from_format = args.from_format
                 from_format_ambiguous = True
         if from_format_info:
-            in_flags, in_options = get_in_format_args(args.name, from_format_info)
+            in_flags, in_options = get_in_format_args(args.converter, from_format_info)
             from_format = from_format_info.disambiguated_name
     else:
         in_flags, in_options = [], []
@@ -675,7 +675,7 @@ def detail_converter_use(args: ConvertArgs):
                 to_format = args.to_format
                 to_format_ambiguous = True
         if to_format_info:
-            out_flags, out_options = get_out_format_args(args.name, to_format_info)
+            out_flags, out_options = get_out_format_args(args.converter, to_format_info)
             to_format = to_format_info.disambiguated_name
     else:
         out_flags, out_options = [], []
@@ -1010,16 +1010,16 @@ def list_supported_converters(err=False):
 def detail_converters_and_formats(args: ConvertArgs):
     """Prints details on available converters and formats for the user.
     """
-    if args.name in L_SUPPORTED_CONVERTERS:
+    if args.converter in L_SUPPORTED_CONVERTERS:
         detail_converter_use(args)
-        if args.name not in L_REGISTERED_CONVERTERS:
+        if args.converter not in L_REGISTERED_CONVERTERS:
             print_wrap(f"{tc.WARNING}WARNING:{tc.OFF} This converter is supported by this package but is not "
                        "registered. It may be possible to register it by installing an appropriate binary on your "
                        "system.", err=True)
         return
 
-    elif args.name != "":
-        print_wrap(f"{tc.ERROR}ERROR:{tc.OFF} Converter {tc.MESSAGE}'{args.name}'{tc.OFF} not recognized.",
+    elif args.converter != "":
+        print_wrap(f"{tc.ERROR}ERROR:{tc.OFF} Converter {tc.MESSAGE}'{args.converter}'{tc.OFF} not recognized.",
                    err=True, newline=True)
         list_supported_converters(err=True)
         exit(1)
@@ -1119,7 +1119,7 @@ def run_from_args(args: ConvertArgs):
             if args.chain:
                 conversion_result = run_converter_chain(**d_conversion_kwargs)
             else:
-                conversion_result = run_converter(converter=args.name,
+                conversion_result = run_converter(converter=args.converter,
                                                   data=data,
                                                   **d_conversion_kwargs)
         except FileConverterAbortException as e:
