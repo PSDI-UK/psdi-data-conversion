@@ -13,7 +13,7 @@ import sys
 import textwrap
 from argparse import ArgumentParser
 from functools import reduce
-from itertools import product
+from itertools import pairwise, product
 
 import wraptext
 
@@ -61,7 +61,7 @@ class ConvertArgs:
             self.converter = regularize_name(" ".join(raw_converter))
         else:
             self.converter = None
-        self.path = args.path
+        raw_path: list[str] = args.path
         self.delete_input = args.delete_input
         self.from_flags: str = args.from_flags.replace(r"\-", "-")
         self.to_flags: str = args.to_flags.replace(r"\-", "-")
@@ -123,6 +123,13 @@ class ConvertArgs:
 
         if len(self.l_args) == 0:
             raise FileConverterInputException("One or more names of files to convert must be provided", help=True)
+
+        # If a path has been provided, sort out from_format, converter, and to_format appropriately
+        if raw_path:
+            self.path: list[tuple[ConverterInfo, FormatInfo]] = self._process_path_input(raw_path)
+            # Assuming no errors were raised here, processing the path will result in `self.from_format` being set to
+            # the input even if it was in the path, the path being set as converter-to-format pairs, and
+            # `self.to_format` being set to None even if it was set outside the path
 
         # Ensure we can determine at least one possible format for each file
         if not self.from_format:
@@ -279,6 +286,122 @@ class ConvertArgs:
                 else:
                     self._log_file = os.path.join(self.output_dir, filename_base + const.LOG_EXT)
         return self._log_file
+
+    @staticmethod
+    def _check_path_format_unambiguous(file_format: str | int | FormatInfo,
+                                       allow_not_found: bool = False,
+                                       raise_immediately=False):
+        """Check that a format provided as part of `--path` is unambiguous, and raise an appropriate exception if not"""
+        l_format_info = get_format_info(file_format, "all")
+        msg = ""
+        format_info: FormatInfo | None = None
+
+        if not l_format_info:
+            if allow_not_found:
+                return None, ""
+
+            msg = (f"{tc.ERROR}ERROR:{tc.OFF} {tc.MESSAGE}'{file_format}'{tc.OFF} is not recognised as a valid "
+                   "format.")
+        elif l_format_info > 1:
+            msg = (f"{tc.ERROR}ERROR:{tc.OFF} {tc.MESSAGE}'{file_format}'{tc.OFF} is ambiguous and can correspond "
+                   f"to multiple possible formats. When using the {tc.CODE}`--path`{tc.OFF} argument, all formats "
+                   "must be uniquely specified. Please use the disambiguated name or ID for the desired format from "
+                   "the following list:\n" +
+                   "\n".join([x.format_oneline() for x in l_format_info]))
+        else:
+            format_info = l_format_info[0]
+
+        if msg and raise_immediately:
+            raise FileConverterInputException(msg, help=True)
+
+        return format_info, msg
+
+    def _process_path(self, raw_path: list[str]):
+        """Process he input path, `from_format`, `to_format`, and `converter` to check for any issues and sort it all
+        into a standard format where:
+
+        - `self.from_format` is the `FormatInfo` for the input format
+        - `self.to_format` is None
+        - `self.converter` is None
+        - `self.path` is a list of `ConverterInfo`, `FormatInfo` tuples
+        """
+
+        # Copy of `raw_path`, which we can edit as we go in this method
+        working_path = raw_path[:]
+
+        # First, check the raw path to see if it starts with a format, so we can set that to `self.from_format` (or if
+        # the latter is already set, make sure it matches) and remove it from the path
+        first_path_format_info, first_path_msg = self._check_path_format_unambiguous(raw_path[0], allow_not_found=True)
+        if first_path_format_info:
+            # It looks like the first element of the path is a format. Check that if `self.from_format` is also
+            # provided, it matches
+            if self.from_format:
+                from_format_info, _ = self._check_path_format_unambiguous(self.from_format, raise_immediately=True)
+                if first_path_format_info != from_format_info:
+                    msg = (f"{tc.ERROR}ERROR:{tc.OFF} The format {tc.MESSAGE}'{self.from_format}'{tc.OFF} "
+                           f"provided to {tc.CODE}`-f/--from`{tc.OFF} does not match {tc.MESSAGE}'{raw_path[0]}"
+                           f"'{tc.OFF}, the first format provided to {tc.CODE}`--path`{tc.OFF}. When using {tc.CODE}`"
+                           f"--path`{tc.OFF}, the input format should be provided either to {tc.CODE}`-f/--from"
+                           f"`{tc.OFF} or {tc.CODE}`--path`{tc.OFF}, or the two should match")
+                    raise FileConverterInputException(msg, help=True)
+                self.from_format = from_format_info
+            else:
+                self.from_format = first_path_format_info
+
+            # Reassign `working_path` to not include the `from_format`, so it should be in a consistent format now
+            working_path = raw_path[1:]
+
+        # Next, check if the output format is included in the working path or not
+        last_path_format_info, _ = self._check_path_format_unambiguous(raw_path[-1], allow_not_found=True)
+        if last_path_format_info:
+            # It looks like the last element of the path is a format. Check that if `self.to_format` is also
+            # provided, it matches
+            if self.to_format:
+                from_format_info, _ = self._check_path_format_unambiguous(self.from_format, raise_immediately=True)
+                if last_path_format_info != from_format_info:
+                    msg = (f"{tc.ERROR}ERROR:{tc.OFF} The format {tc.MESSAGE}'{self.to_format}'{tc.OFF} "
+                           f"provided to {tc.CODE}`-t/--to`{tc.OFF} does not match {tc.MESSAGE}'{raw_path[-1]}"
+                           f"'{tc.OFF}, the last format provided to {tc.CODE}`--path`{tc.OFF}. When using {tc.CODE}`"
+                           f"--path`{tc.OFF}, the output format should be provided either to {tc.CODE}`-t/--to"
+                           f"`{tc.OFF} or {tc.CODE}`--path`{tc.OFF}, or the two should match")
+                    raise FileConverterInputException(msg, help=True)
+                self.to_format = None
+        elif self.to_format:
+            working_path.append(self.to_format)
+            self.to_format = None
+        else:
+            msg = (f"{tc.ERROR}ERROR:{tc.OFF} No output format was provided. When using {tc.CODE}`"
+                   f"--path`{tc.OFF}, the output format should be provided either to {tc.CODE}`-t/--to"
+                   f"`{tc.OFF} or {tc.CODE}`--path`{tc.OFF}, or the two should match")
+            raise FileConverterInputException(msg, help=True)
+
+        # At this point, if the path was provided validly, it should be of even length
+        if not len(working_path) % 2 == 0:
+            msg = (f"{tc.ERROR}ERROR:{tc.OFF} The provided {tc.CODE}`--path`{tc.OFF} is invalid due "
+                   "to an incorrect number of elements. Check that it alternates between converters and formats, and "
+                   f"that converter names do not include spaces (e.g. use {tc.MESSAGE}'OpenBabel'{tc.OFF} instead of "
+                   f"{tc.MESSAGE}'Open Babel'{tc.OFF})")
+            raise FileConverterInputException(msg, help=True)
+
+        # Now start constructing the path, checking converters and formats are valid as we go
+        path: list[tuple[ConverterInfo, FormatInfo]] = []
+        l_msgs: list[str] = []
+        for converter, file_format in pairwise(working_path):
+            converter_info, converter_msg = self._check_path_converter_unambiguous(converter)
+            format_info, format_msg = self._check_path_format_unambiguous(file_format)
+            if not converter_msg and not format_msg:
+                path.append(converter_info, format_info)
+            else:
+                if converter_msg:
+                    l_msgs.append(converter_msg)
+                if format_msg:
+                    l_msgs.append(format_msg)
+
+        if l_msgs:
+            msg = "\n".join(l_msgs)
+            raise FileConverterInputException(msg, help=True)
+
+        return path
 
     def _get_possible_converters(self, from_format_info: FormatInfo):
         """Get a list of all converters which can perform a conversion from `from_format` to `self.to_format`"""
