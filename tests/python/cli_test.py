@@ -104,7 +104,7 @@ def test_general_arg_parsing():
     assert args.input_dir == cwd
     assert args.to_format == "pdb"
     assert args.output_dir == f"{cwd}/.."
-    assert args.name == const.CONVERTER_C2X
+    assert args.converter == const.CONVERTER_C2X
     assert args.chain is False
     assert args.no_check is True
     assert args.strict is True
@@ -192,20 +192,20 @@ def test_list_args():
 def test_list_converter():
     """Test that the parsing works if we ask for info on a specific converter"""
     args = get_parsed_args("-l Open Babel")
-    assert args.name == regularize_name("Open Babel")
+    assert args.converter == regularize_name("Open Babel")
     args = get_parsed_args("--list 'Open Babel'")
-    assert args.name == regularize_name("Open Babel")
+    assert args.converter == regularize_name("Open Babel")
     args = get_parsed_args("-l Atomsk")
-    assert args.name == regularize_name("Atomsk")
+    assert args.converter == regularize_name("Atomsk")
 
 
 def test_converter_input():
     """Test that the converter specified with -w/--with is properly parsed
     """
     args = get_parsed_args(f"file1.mmcif -t pdb -w {const.CONVERTER_OB}")
-    assert args.name == regularize_name(const.CONVERTER_OB)
+    assert args.converter == regularize_name(const.CONVERTER_OB)
     args = get_parsed_args(f"file1.mmcif -t pdb -w '{const.CONVERTER_OB}'")
-    assert args.name == regularize_name(const.CONVERTER_OB)
+    assert args.converter == regularize_name(const.CONVERTER_OB)
 
 
 def test_default_input_dir():
@@ -257,11 +257,11 @@ def test_auto_converter(auto_str):
 
     # Test that Open Babel is chosen when expected
     args = get_parsed_args(f"file1.pdb -f pdb-0 -t inchi {auto_str}")
-    assert args.name == regularize_name(const.CONVERTER_OB)
+    assert args.converter == regularize_name(const.CONVERTER_OB)
 
     # Test that c2x is chosen when expected
     args = get_parsed_args(f"file1.pdb -f pdb-0 -t xyz-0 {auto_str}")
-    assert args.name == regularize_name(const.CONVERTER_C2X)
+    assert args.converter == regularize_name(const.CONVERTER_C2X)
 
 
 @pytest.mark.parametrize("converter_name", [const.CONVERTER_AUTO, const.CONVERTER_AUTOCHAIN])
@@ -333,7 +333,7 @@ def test_auto_no_common_converter():
 def test_autochain_args(chain_str):
     """Test that the parsing correctly detects when an automatic chain is requested"""
     args = get_parsed_args(f"file1.mmcif -t pdb-0 -w '{chain_str}'")
-    assert args.name == const.CONVERTER_AUTOCHAIN
+    assert args.converter == const.CONVERTER_AUTOCHAIN
     assert args.chain is True
 
 
