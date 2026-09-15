@@ -382,6 +382,8 @@ def get_argument_parser():
         An argument parser set up with the allowed command-line arguments for this script.
     """
 
+    # Use a custom formatter for the argument parser which adds spaces between argument descriptions for better
+    # readability
     parser = ArgumentParser(formatter_class=CustomHelpFormatter)
 
     # Positional arguments
