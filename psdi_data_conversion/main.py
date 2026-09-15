@@ -61,6 +61,7 @@ class ConvertArgs:
             self.name = regularize_name(" ".join(converter_name))
         else:
             self.name = None
+        self.path = args.path
         self.delete_input = args.delete_input
         self.from_flags: str = args.from_flags.replace(r"\-", "-")
         self.to_flags: str = args.to_flags.replace(r"\-", "-")
@@ -416,6 +417,17 @@ def get_argument_parser():
                         f"ambiguous). {tc.MESSAGE}'auto-chain'{tc.OFF} does the same, but will also determine and use "
                         "a chained conversion if a single-step conversion is not possible. Default "
                         f"{tc.MESSAGE}'auto'{tc.OFF}.")
+    parser.add_argument("--path", type=str, nargs="+",
+                        help=f"Used instead of {tc.CODE}`-w/--with`{tc.OFF} when requesting a chained conversion with "
+                        "a specific path. This should be provided as an alternating series of converters and formats "
+                        f"to specify the conversion pathway, e.g.:{tc.CODE}`-f <source_format> --path <converter 1> "
+                        "<intermediate format 1> [<converter 2> <intermediate format 2> ...] <converter N> "
+                        f"-t <target_format>`{tc.OFF} The source and target formats may alternatively be specified as "
+                        f"the beginning and end of the {tc.CODE}`--path`{tc.OFF} rather than through {tc.CODE}`"
+                        f"-f/--from`{tc.OFF} and {tc.CODE}`-t/--to`{tc.OFF}. When using {tc.CODE}`--path`{tc.OFF}, "
+                        "all formats must be specified unambiguously, and each format and converter must be specified "
+                        f"in a single word (e.g. use {tc.MESSAGE}'OpenBabel'{tc.OFF} or its ID instead of "
+                        f"{tc.MESSAGE}'Open Babel'{tc.OFF}).")
     parser.add_argument("--delete-input", action="store_true",
                         help="If set, input files will be deleted after conversion, default they will be kept")
     parser.add_argument("--from-flags", type=str, default="",
