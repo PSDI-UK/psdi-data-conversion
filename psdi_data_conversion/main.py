@@ -13,7 +13,7 @@ import sys
 import textwrap
 from argparse import ArgumentParser
 from functools import reduce
-from itertools import pairwise, product
+from itertools import batched, product
 
 import wraptext
 
@@ -126,10 +126,12 @@ class ConvertArgs:
 
         # If a path has been provided, sort out from_format, converter, and to_format appropriately
         if raw_path:
-            self.path: list[tuple[ConverterInfo, FormatInfo]] = self._process_path_input(raw_path)
+            self.path: list[tuple[ConverterInfo, FormatInfo]] | None = self._process_path_input(raw_path)
             # Assuming no errors were raised here, processing the path will result in `self.from_format` being set to
             # the input even if it was in the path, the path being set as converter-to-format pairs, and
             # `self.to_format` being set to None even if it was set outside the path
+        else:
+            self.path = None
 
         # Ensure we can determine at least one possible format for each file
         if not self.from_format:
@@ -147,9 +149,10 @@ class ConvertArgs:
             raise FileConverterInputException(f"The provided input directory {tc.PATH}'{self._input_dir}'{tc.OFF} does "
                                               "not exist as a directory", help=True)
 
-        if self.to_format is None:
-            msg = wraptext.fill(f"{tc.ERROR}ERROR:{tc.OFF} Output format ({tc.CODE}`-t/--to`{tc.OFF}) must be "
-                                "provided. For information on supported formats and converters, call:\n")
+        if self.to_format is None and self.path is None:
+            msg = wraptext.fill(f"{tc.ERROR}ERROR:{tc.OFF} Output format must be provided, either through "
+                                f"{tc.CODE}`-t/--to`{tc.OFF} for a direct conversion or {tc.CODE}`--path`{tc.OFF} for "
+                                "a chained conversion. For information on supported formats and converters, call:\n")
             msg += f"{tc.CODE}{const.CL_SCRIPT_NAME} -l{tc.OFF}"
             raise FileConverterInputException(msg, msg_preformatted=True, help=True)
 
@@ -162,25 +165,27 @@ class ConvertArgs:
 
         # If the converter is set to be automatically determined, do so now
         self.auto = False
-        if not self.converter:
+        if not self.converter and not self.path:
             self.converter = const.CONVERTER_AUTO
         if self.converter == const.CONVERTER_AUTO:
             self.auto = True
             self.converter = self._determine_auto_converter()
 
-        if not self.converter or self.converter == const.CONVERTER_AUTO:
+        if (not self.converter or self.converter == const.CONVERTER_AUTO) and not self.path:
             # Double check the name is set to an actual converter - this path shouldn't be possible, but catch it
             # explicitly here just in case, to avoid a more confusing exception later
             raise FileConverterInputException("Could not automatically determine converter for conversion for an "
                                               "unknown reason.")
 
         # If one of the autochain keywords is used, normalise it to the primary key
-        if self.converter in const.L_CONVERTER_AUTOCHAIN:
+        if self.converter in const.L_CONVERTER_AUTOCHAIN and not self.path:
             self._check_from_formats_unique()
             self._check_to_format_unique()
             self.chain = True
             self.auto = True
             self.converter = const.CONVERTER_AUTOCHAIN
+        elif self.path:
+            self.chain = True
         else:
             self.chain = False
 
@@ -214,7 +219,7 @@ class ConvertArgs:
                 self.d_converter_args.update(get_data(getattr(args, arg_name)))
 
         # If using an automatic converter or chain, check that no converter-specific arguments were provided
-        if self.auto:
+        if self.auto or self.chain:
 
             l_converter_specific_items = []
             for (to_or_from, flags_or_options) in product(["to", "from"], ["flags", "options"]):
@@ -294,6 +299,14 @@ class ConvertArgs:
                                        raise_immediately=False):
         """Check that a format provided as part of `--path` is unambiguous, and record an appropriate message (and
         optionally raise an exception) if not"""
+
+        # In this context, the format might be provided as an int represented as a string, so try to convert to int if
+        # possible
+        try:
+            file_format = int(file_format)
+        except ValueError:
+            pass
+
         l_format_info = get_format_info(file_format, "all")
         msg = ""
         format_info: FormatInfo | None = None
@@ -304,7 +317,7 @@ class ConvertArgs:
 
             msg = (f"{tc.ERROR}ERROR:{tc.OFF} {tc.MESSAGE}'{file_format}'{tc.OFF} is not recognised as a valid "
                    "format.")
-        elif l_format_info > 1:
+        elif len(l_format_info) > 1:
             msg = (f"{tc.ERROR}ERROR:{tc.OFF} {tc.MESSAGE}'{file_format}'{tc.OFF} is ambiguous and can correspond "
                    f"to multiple possible formats. When using the {tc.CODE}`--path`{tc.OFF} argument, all formats "
                    "must be uniquely specified. Please use the disambiguated name or ID for the desired format from "
@@ -340,7 +353,7 @@ class ConvertArgs:
 
         return converter_info, ""
 
-    def _process_path(self, raw_path: list[str]):
+    def _process_path_input(self, raw_path: list[str]):
         """Process he input path, `from_format`, `to_format`, and `converter` to check for any issues and sort it all
         into a standard format where:
 
@@ -410,11 +423,11 @@ class ConvertArgs:
         # Now start constructing the path, checking converters and formats are valid as we go
         path: list[tuple[ConverterInfo, FormatInfo]] = []
         l_msgs: list[str] = []
-        for converter, file_format in pairwise(working_path):
+        for converter, file_format in batched(working_path, n=2):
             converter_info, converter_msg = self._check_path_converter_valid(converter)
             format_info, format_msg = self._check_path_format_unambiguous(file_format)
             if not converter_msg and not format_msg:
-                path.append(converter_info, format_info)
+                path.append((converter_info, format_info))
             else:
                 if converter_msg:
                     l_msgs.append(converter_msg)

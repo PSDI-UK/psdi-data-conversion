@@ -23,7 +23,7 @@ from psdi_data_conversion.database import (D_FORMAT_PROPERTY_ATTRS, get_conversi
                                            get_converter_info, get_format_info, get_in_format_args,
                                            get_out_format_args, get_possible_conversions, get_possible_formats)
 from psdi_data_conversion.main import FileConverterInputException, parse_args
-from psdi_data_conversion.testing.constants import FORMAT_INCHI, FORMAT_MOLDY
+from psdi_data_conversion.testing.constants import FORMAT_INCHI, FORMAT_MOLDY, FORMAT_PDB_0
 from psdi_data_conversion.testing.conversion_test_specs import l_cli_test_specs
 from psdi_data_conversion.testing.utils import run_test_conversion_with_cli, run_with_arg_string
 from psdi_data_conversion.utils import regularize_name, strip_control_codes
@@ -106,6 +106,7 @@ def test_general_arg_parsing():
     assert args.output_dir == f"{cwd}/.."
     assert args.converter == const.CONVERTER_C2X
     assert args.chain is False
+    assert args.path is None
     assert args.no_check is True
     assert args.strict is True
     assert args.delete_input is True
@@ -349,6 +350,24 @@ def test_auto_no_converter_args(converter, arg_str):
         get_parsed_args(f"file1 -f pdb-0 -t xyz-0 -w {converter} {arg_str}")
     assert _compressed_match("Converter-specific arguments cannot be provided when the converter or chain is "
                              "automatically-determined.", e.value)
+
+
+l_path_args = [(FORMAT_MOLDY, f"openbabel {FORMAT_PDB_0} atomsk", FORMAT_INCHI),
+               (FORMAT_MOLDY, f"openbabel {FORMAT_PDB_0} atomsk {FORMAT_INCHI}", None),
+               (None, f"{FORMAT_MOLDY} openbabel {FORMAT_PDB_0} atomsk", FORMAT_INCHI),
+               (None, f"{FORMAT_MOLDY} openbabel {FORMAT_PDB_0} atomsk {FORMAT_INCHI}", None)]
+
+
+@pytest.mark.parametrize("from_format, path_str, to_format", l_path_args)
+def test_path_args(from_format: int | None, path_str: str, to_format: int | None):
+    """Test that the parsing correctly interprets a path when one is requested"""
+    arg_str = f"file1 --path {path_str}"
+    if from_format:
+        arg_str += f" -f {from_format}"
+    if to_format:
+        arg_str += f" -t {to_format}"
+    args = get_parsed_args(arg_str)
+    assert args.path
 
 
 def test_list_converters(capsys):
