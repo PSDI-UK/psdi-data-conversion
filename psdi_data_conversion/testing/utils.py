@@ -565,7 +565,10 @@ def run_converter_through_cli(filename: str,
     """
 
     # Start the argument string with the arguments we will always include
-    arg_string = f"{filename} -i {input_dir} -t {to_format} -o {output_dir} -w {name} --log-file {log_file}"
+    arg_string = f"{filename} -i {input_dir} -o {output_dir} -w {name} --log-file {log_file}"
+
+    if to_format:
+        arg_string += f"-t {to_format}"
 
     # For from_format and each argument in the conversion kwargs, convert it to the appropriate argument to be provided
     # to the argument string
@@ -609,6 +612,15 @@ def run_converter_through_cli(filename: str,
                 else:
                     pytest.fail(f"The key 'data[\"{subkey}\"]' was passed to `conversion_kwargs` but could not be "
                                 "interpreted")
+        elif key == "path":
+            arg_string += " --path"
+            for step in val:
+                if len(step) == 2:
+                    converter_info, to_format_info = step
+                else:
+                    converter_info, _,  to_format_info = step
+                arg_string += f" {converter_info.id} {to_format_info.id}"
+
         else:
             pytest.fail(f"The key '{key}' was passed to `conversion_kwargs` but could not be interpreted")
 

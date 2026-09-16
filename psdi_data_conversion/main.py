@@ -335,6 +335,14 @@ class ConvertArgs:
     def _check_path_converter_valid(converter: str | int | ConverterInfo):
         """Check that a converter provided as part of `--path` is valid and registered, and record an appropriate
         message if not"""
+
+        # In this context, the converter might be provided as an int represented as a string, so try to convert to int
+        # if possible
+        try:
+            converter = int(converter)
+        except ValueError:
+            pass
+
         try:
             converter_info = get_converter_info(converter)
         except FileConverterDatabaseException:
@@ -1266,7 +1274,13 @@ def run_from_args(args: ConvertArgs):
                 continue
 
         if not args.quiet:
-            print_wrap(f"Converting {tc.PATH}'{filename}'{tc.OFF} to {get_format_pretty_name(args.to_format)}...",
+            if args.to_format:
+                to_format = args.to_format
+            elif args.path:
+                to_format = args.path[-1][-1]
+            else:
+                raise FileConverterException("Unexpected path reached: no output format specified in input")
+            print_wrap(f"Converting {tc.PATH}'{filename}'{tc.OFF} to {get_format_pretty_name(to_format)}...",
                        newline=True)
 
         # Set up arguments for the conversion function. The dict here is arguments common to whether we run the chain
