@@ -481,7 +481,7 @@ def test_detail_converter_bad_name(capsys):
     with pytest.raises(SystemExit):
         run_with_arg_string("--list bad_converter")
     captured = capsys.readouterr()
-    assert "not recognized" in captured.err
+    assert "not recognised" in captured.err
     assert "Traceback" not in captured.out
     assert "Traceback" not in captured.err
 
