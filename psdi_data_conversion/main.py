@@ -58,7 +58,12 @@ class ConvertArgs:
         if isinstance(raw_converter, str):
             self.converter = regularize_name(raw_converter)
         elif raw_converter:
-            self.converter = regularize_name(" ".join(raw_converter))
+            joined_converter = " ".join(raw_converter)
+            # Check if the converter is provided as an integer, and convert to int if so
+            try:
+                self.converter = int(joined_converter)
+            except ValueError:
+                self.converter = regularize_name(joined_converter)
         else:
             self.converter = None
         raw_path: list[str] = args.path
@@ -108,7 +113,12 @@ class ConvertArgs:
 
             # Get the converter name from the arguments if it wasn't provided by -w/--with
             if not self.converter:
-                self.converter = regularize_name(" ".join(self.l_args))
+                joined_converter = " ".join(self.l_args)
+                # Check if the converter is provided as an integer, and convert to int if so
+                try:
+                    self.converter = int(joined_converter)
+                except ValueError:
+                    self.converter = regularize_name(joined_converter)
 
             # For this operation, any other arguments can be ignored
             return
@@ -1156,7 +1166,7 @@ def get_supported_converters():
     l_converters: list[str] = []
     any_not_registered = False
     for converter_name in L_SUPPORTED_CONVERTERS:
-        converter_text = get_converter_info(converter_name).format_word()
+        converter_text = get_converter_info(converter_name).format_oneline()
         if converter_name not in L_REGISTERED_CONVERTERS:
             converter_text += f" {MSG_NOT_REGISTERED}"
             any_not_registered = True
@@ -1187,17 +1197,17 @@ def list_supported_converters(err=False):
 def detail_converters_and_formats(args: ConvertArgs):
     """Prints details on available converters and formats for the user.
     """
-    if args.converter in L_SUPPORTED_CONVERTERS:
+    if converter_is_supported(args.converter):
         detail_converter_use(args)
-        if args.converter not in L_REGISTERED_CONVERTERS:
+        if not converter_is_registered(args.converter):
             print_wrap(f"{tc.WARNING}WARNING:{tc.OFF} This converter is supported by this package but is not "
                        "registered. it may be registrable by building it on your system and copying the binary to the "
                        f"{tc.PATH}'{const.BIN_PATH_WITH_OS}'{tc.OFF} directory:", err=True)
         return
 
     elif args.converter != "":
-        print_wrap(f"{tc.ERROR}ERROR:{tc.OFF} Converter {tc.MESSAGE}'{args.converter}'{tc.OFF} not recognized.",
-                   err=True, newline=True)
+        print_wrap(f"{tc.ERROR}ERROR:{tc.OFF} Converter {tc.MESSAGE}'{args.converter}'{tc.OFF} not recognised.",
+                   err=True)
         list_supported_converters(err=True)
         exit(1)
     elif args.from_format and args.to_format:
