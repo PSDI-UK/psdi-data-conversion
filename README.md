@@ -37,6 +37,7 @@ This project provides utilities to assist in converting files between the many d
     - [`database`](#database)
   - [Further Information](#further-information)
 - [Using the Online Conversion Service](#using-the-online-conversion-service)
+- [Conversion Chains](#conversion-chains)
 - [Running the Python/Flask app locally](#running-the-pythonflask-app-locally)
   - [Installation and Setup](#installation-and-setup)
   - [Running the App](#running-the-app)
@@ -241,7 +242,8 @@ The full possible syntax for the script is:
 
 ```
 psdi-data-convert <input file 1> [<input file 2> <input file 3> ...] -t/--to <output format> [-f/--from <input file
-format>] [-i/--in <input file location>] [-o/--out <location for output files>] [-w/--with <converter>] [--delete-input]
+format>] [-i/--in <input file location>] [-o/--out <location for output files>] [-w/--with <converter>] [--path
+<converter 1> <intermediate format 1> [<converter 2> <intermediate format 2> ...] <converter N>] [--delete-input]
 [--from-flags '<flags to be provided to the converter for reading input>'] [--to-flags '<flags to be provided to the
 converter for writing output>'] [--from-options '<options to be provided to the converter for reading input>']
 [--to-options '<options to be provided to the converter for writing output>'] [--coord-gen <coordinate generation
@@ -387,6 +389,10 @@ The code documentation for the Python library is published online at https://psd
 ## Using the Online Conversion Service
 
 Enter https://data-conversion.psdi.ac.uk/ in a browser. Guidance on usage is given on each page of the website.
+
+## Conversion Chains
+
+TODO: Section on how to find and perform conversion chains
 
 ## Running the Python/Flask app locally
 
