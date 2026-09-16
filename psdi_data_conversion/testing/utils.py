@@ -568,7 +568,7 @@ def run_converter_through_cli(filename: str,
     arg_string = f"{filename} -i {input_dir} -o {output_dir} -w {name} --log-file {log_file}"
 
     if to_format:
-        arg_string += f"-t {to_format}"
+        arg_string += f" -t {to_format}"
 
     # For from_format and each argument in the conversion kwargs, convert it to the appropriate argument to be provided
     # to the argument string
