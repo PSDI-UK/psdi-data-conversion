@@ -400,14 +400,8 @@ def test_path_ambiguous_format():
                                                        (True, True)])
 def test_path_bad_format_converter(bad_format: bool, bad_converter: bool):
     """Test that an error is raised if a format and/or converter in `path` is invalid"""
-    if bad_format:
-        file_format = "INVALID"
-    else:
-        file_format = FORMAT_MOLDY
-    if bad_converter:
-        converter = "INVALID"
-    else:
-        converter = "openbabel"
+    file_format = "INVALID" if bad_format else FORMAT_MOLDY
+    converter = "INVALID" if bad_converter else "openbabel"
     with pytest.raises(FileConverterInputException) as e:
         get_parsed_args(f"file1 --path {FORMAT_MOLDY} {converter} {file_format} atomsk {FORMAT_INCHI}")
 
