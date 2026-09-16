@@ -1286,6 +1286,8 @@ def run_from_args(args: ConvertArgs):
                                "refresh_local_log": False}
         try:
             if args.chain:
+                if args.path:
+                    d_conversion_kwargs["path"] = args.path
                 conversion_result = run_converter_chain(**d_conversion_kwargs)
             else:
                 conversion_result = run_converter(converter=args.converter,
