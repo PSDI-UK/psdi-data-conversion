@@ -370,6 +370,59 @@ def test_path_args(from_format: int | None, path_str: str, to_format: int | None
     assert args.path
 
 
+def test_path_inconsistent_from_format():
+    """Test that an error is raised if the `from_format` doesn't match the first in the `path`"""
+    with pytest.raises(FileConverterInputException) as e:
+        get_parsed_args(f"file1 -f {FORMAT_PDB_0} --path {FORMAT_MOLDY} openbabel {FORMAT_PDB_0} atomsk "
+                        f"{FORMAT_INCHI}")
+    assert _compressed_match(f"The format '{FORMAT_PDB_0}' provided to `-f/--from` does not match '{FORMAT_MOLDY}"
+                             f"', the first format provided to `--path`", e.value)
+
+
+def test_path_inconsistent_to_format():
+    """Test that an error is raised if the `to_format` doesn't match the last in the `path`"""
+    with pytest.raises(FileConverterInputException) as e:
+        get_parsed_args(f"file1 -t {FORMAT_PDB_0} --path {FORMAT_MOLDY} openbabel {FORMAT_PDB_0} atomsk "
+                        f"{FORMAT_INCHI}")
+    assert _compressed_match(f"The format '{FORMAT_PDB_0}' provided to `-t/--to` does not match '{FORMAT_INCHI}"
+                             f"', the last format provided to `--path`", e.value)
+
+
+def test_path_ambiguous_format():
+    """Test that an error is raised if a format in `path` is ambiguous"""
+    with pytest.raises(FileConverterInputException) as e:
+        get_parsed_args(f"file1 --path {FORMAT_MOLDY} openbabel pdb atomsk {FORMAT_INCHI}")
+    assert _compressed_match("'pdb' is ambiguous and can correspond to multiple possible formats.", e.value)
+
+
+def test_path_bad_format():
+    """Test that an error is raised if a format in `path` is invalid"""
+    with pytest.raises(FileConverterInputException) as e:
+        get_parsed_args(f"file1 --path {FORMAT_MOLDY} openbabel INVALID atomsk {FORMAT_INCHI}")
+    assert _compressed_match("'INVALID' is not recognised as a valid format", e.value)
+
+
+def test_path_bad_converter():
+    """Test that an error is raised if a converter in `path` is invalid"""
+    with pytest.raises(FileConverterInputException) as e:
+        get_parsed_args(f"file1 --path {FORMAT_MOLDY} INVALID {FORMAT_PDB_0} atomsk {FORMAT_INCHI}")
+    assert _compressed_match("'INVALID' is not recognised as a valid converter", e.value)
+
+
+def test_path_unsupported_converter():
+    """Test that an error is raised if a converter in `path` is unsupported"""
+    with pytest.raises(FileConverterInputException) as e:
+        get_parsed_args(f"file1 --path {FORMAT_MOLDY} molconverter {FORMAT_PDB_0} atomsk {FORMAT_INCHI}")
+    assert _compressed_match("Molconverter is not supported", e.value)
+
+
+def test_path_bad_length():
+    """Test that an error is raised if the `path` has a bad length, e.g. due to spaces being used in a converter name"""
+    with pytest.raises(FileConverterInputException) as e:
+        get_parsed_args(f"file1 --path {FORMAT_MOLDY} Open Babel {FORMAT_PDB_0} atomsk {FORMAT_INCHI}")
+    assert _compressed_match("invalid due to an incorrect number of elements", e.value)
+
+
 def test_list_converters(capsys):
     """Test the option to list available converters
     """

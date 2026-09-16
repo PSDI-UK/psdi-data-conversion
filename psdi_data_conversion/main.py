@@ -316,7 +316,7 @@ class ConvertArgs:
                 return None, ""
 
             msg = (f"{tc.ERROR}ERROR:{tc.OFF} {tc.MESSAGE}'{file_format}'{tc.OFF} is not recognised as a valid "
-                   "format.")
+                   f"format in {tc.CODE}`--path`{tc.OFF}")
         elif len(l_format_info) > 1:
             msg = (f"{tc.ERROR}ERROR:{tc.OFF} {tc.MESSAGE}'{file_format}'{tc.OFF} is ambiguous and can correspond "
                    f"to multiple possible formats. When using the {tc.CODE}`--path`{tc.OFF} argument, all formats "
@@ -345,8 +345,13 @@ class ConvertArgs:
                    f"{tc.CODE}`--path`{tc.OFF}")
             return None, msg
 
+        if not converter_is_supported(converter_info):
+            msg = (f"{tc.ERROR}ERROR:{tc.OFF} {tc.MESSAGE}{converter_info.format_word()}{tc.OFF} is not "
+                   f"supported by this package. To see a list of supported converters, call:"
+                   f"{tc.CODE}{const.CL_SCRIPT_NAME} -l{tc.OFF}")
+            return converter_info, msg
         if not converter_is_registered(converter_info):
-            msg = (f"{tc.ERROR}ERROR:{tc.OFF} {tc.MESSAGE}'{converter_info.format_word()}'{tc.OFF} is not "
+            msg = (f"{tc.ERROR}ERROR:{tc.OFF} {tc.MESSAGE}{converter_info.format_word()}{tc.OFF} is not "
                    f"registered. It may be possible to register it by building it on your system and copying its "
                    f"binary to the {tc.PATH}'{const.BIN_PATH_WITH_OS}'{tc.OFF} folder in this project.")
             return converter_info, msg
