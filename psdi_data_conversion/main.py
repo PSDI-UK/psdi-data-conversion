@@ -196,8 +196,9 @@ class ConvertArgs:
             elif not converter_is_registered(self.converter):
                 raw_converter = get_supported_converter_class(self.converter).meta.name
                 msg = wraptext.fill(f"{tc.ERROR}ERROR:{tc.OFF} Converter {tc.MESSAGE}'{raw_converter}'{tc.OFF} "
-                                    "is not registered. It may be possible to register it by installing an "
-                                    "appropriate binary for your platform.", width=const.TERM_WIDTH)
+                                    "is not registered. It may be registrable by building it on your system and "
+                                    f"copying the binary to the {tc.PATH}'{const.BIN_PATH_WITH_OS}'{tc.OFF} directory:",
+                                    width=const.TERM_WIDTH)
                 msg += f"\n\n{get_supported_converters()}"
                 raise FileConverterInputException(msg, help=True, msg_preformatted=True)
 
@@ -291,7 +292,8 @@ class ConvertArgs:
     def _check_path_format_unambiguous(file_format: str | int | FormatInfo,
                                        allow_not_found: bool = False,
                                        raise_immediately=False):
-        """Check that a format provided as part of `--path` is unambiguous, and raise an appropriate exception if not"""
+        """Check that a format provided as part of `--path` is unambiguous, and record an appropriate message (and
+        optionally raise an exception) if not"""
         l_format_info = get_format_info(file_format, "all")
         msg = ""
         format_info: FormatInfo | None = None
@@ -315,6 +317,28 @@ class ConvertArgs:
             raise FileConverterInputException(msg, help=True)
 
         return format_info, msg
+
+    @staticmethod
+    def _check_path_converter_valid(converter: str | int | ConverterInfo):
+        """Check that a converter provided as part of `--path` is valid and registered, and record an appropriate
+        message if not"""
+        try:
+            converter_info = get_converter_info(converter)
+        except FileConverterDatabaseException:
+            msg = (f"{tc.ERROR}ERROR:{tc.OFF} {tc.MESSAGE}'{converter}'{tc.OFF} is not recognised as a valid "
+                   f"converter in {tc.CODE}`--path`{tc.OFF}. Check that you've entered all converter names in "
+                   f"{tc.CODE}`--path`{tc.OFF} without spaces (e.g. use {tc.MESSAGE}'OpenBabel'{tc.OFF} instead of "
+                   f"{tc.MESSAGE}'Open Babel'{tc.OFF}), and that you alternated converters and formats in "
+                   f"{tc.CODE}`--path`{tc.OFF}")
+            return None, msg
+
+        if not converter_is_registered(converter_info):
+            msg = (f"{tc.ERROR}ERROR:{tc.OFF} {tc.MESSAGE}'{converter_info.format_word()}'{tc.OFF} is not "
+                   f"registered. It may be possible to register it by building it on your system and copying its "
+                   f"binary to the {tc.PATH}'{const.BIN_PATH_WITH_OS}'{tc.OFF} folder in this project.")
+            return converter_info, msg
+
+        return converter_info, ""
 
     def _process_path(self, raw_path: list[str]):
         """Process he input path, `from_format`, `to_format`, and `converter` to check for any issues and sort it all
@@ -387,7 +411,7 @@ class ConvertArgs:
         path: list[tuple[ConverterInfo, FormatInfo]] = []
         l_msgs: list[str] = []
         for converter, file_format in pairwise(working_path):
-            converter_info, converter_msg = self._check_path_converter_unambiguous(converter)
+            converter_info, converter_msg = self._check_path_converter_valid(converter)
             format_info, format_msg = self._check_path_format_unambiguous(file_format)
             if not converter_msg and not format_msg:
                 path.append(converter_info, format_info)
@@ -1074,8 +1098,10 @@ def detail_formats_and_possible_converters(from_format: str, to_format: str):
             continue
         elif len(l_possible_registered_converters) == 0:
             print_wrap(f"No registered converters can perform a conversion from {from_name} to "
-                       f"{to_name}, however the following converters are supported by this package on other "
-                       "platforms and can perform this conversion:", newline=True)
+                       f"{to_name}, however the following converters are supported by this package "
+                       "and can perform this conversion, but are not currently registered. They may be registrable by "
+                       "building them on your system and copying the binary to the "
+                       f"{tc.PATH}'{const.BIN_PATH_WITH_OS}'{tc.OFF} directory:", newline=True)
             print("\n    ".join(l_possible_unregistered_converters))
             continue
 
@@ -1084,8 +1110,10 @@ def detail_formats_and_possible_converters(from_format: str, to_format: str):
         print("    " + "\n    ".join(l_possible_registered_converters) + "\n")
         if l_possible_unregistered_converters:
             print("")
-            print_wrap("Additionally, the following converters are supported by this package on other platforms and "
-                       "can perform this conversion:", newline=True)
+            print_wrap("Additionally, the following converters are supported by this package "
+                       "and can perform this conversion, but are not currently registered. They may be registrable by "
+                       "building them on your system and copying the binary to the "
+                       f"{tc.PATH}'{const.BIN_PATH_WITH_OS}'{tc.OFF} directory:", newline=True)
             print("    " + "\n    ".join(l_possible_unregistered_converters) + "\n")
 
         print_wrap("For details on input/output flags and options allowed by a converter for this conversion, call:")
@@ -1137,8 +1165,8 @@ def detail_converters_and_formats(args: ConvertArgs):
         detail_converter_use(args)
         if args.converter not in L_REGISTERED_CONVERTERS:
             print_wrap(f"{tc.WARNING}WARNING:{tc.OFF} This converter is supported by this package but is not "
-                       "registered. It may be possible to register it by installing an appropriate binary on your "
-                       "system.", err=True)
+                       "registered. it may be registrable by building it on your system and copying the binary to the "
+                       f"{tc.PATH}'{const.BIN_PATH_WITH_OS}'{tc.OFF} directory:", err=True)
         return
 
     elif args.converter != "":

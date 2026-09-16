@@ -60,8 +60,11 @@ DEFAULT_MAX_FILE_SIZE_LOGGED_IN = 50 * MEGABYTE
 DEFAULT_MAX_FILE_SIZE_LOGGED_OUT = 1 * MEGABYTE
 DEFAULT_MAX_FILE_SIZE_OB = 1 * MEGABYTE
 
+# Paths in the project
 DEFAULT_INPUT_DIR = './psdi_data_conversion/static/uploads'
 DEFAULT_OUTPUT_DIR = './psdi_data_conversion/static/downloads'
+BIN_PATH = "psdi_data_conversion/bin/"
+BIN_PATH_WITH_OS = f"{BIN_PATH}<os>/"
 
 # Filename of the database, relative to the base of the python package
 DATABASE_FILENAME = "static/data/data.json"
