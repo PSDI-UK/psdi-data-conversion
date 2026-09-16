@@ -23,7 +23,7 @@ from psdi_data_conversion.database import (D_FORMAT_PROPERTY_ATTRS, get_conversi
                                            get_converter_info, get_format_info, get_in_format_args,
                                            get_out_format_args, get_possible_conversions, get_possible_formats)
 from psdi_data_conversion.main import FileConverterInputException, parse_args
-from psdi_data_conversion.testing.constants import FORMAT_INCHI, FORMAT_MOLDY
+from psdi_data_conversion.testing.constants import FORMAT_INCHI, FORMAT_MOLDY, FORMAT_PDB_0
 from psdi_data_conversion.testing.conversion_test_specs import l_cli_test_specs
 from psdi_data_conversion.testing.utils import run_test_conversion_with_cli, run_with_arg_string
 from psdi_data_conversion.utils import regularize_name, strip_control_codes
@@ -104,8 +104,9 @@ def test_general_arg_parsing():
     assert args.input_dir == cwd
     assert args.to_format == "pdb"
     assert args.output_dir == f"{cwd}/.."
-    assert args.name == const.CONVERTER_C2X
+    assert args.converter == const.CONVERTER_C2X
     assert args.chain is False
+    assert args.path is None
     assert args.no_check is True
     assert args.strict is True
     assert args.delete_input is True
@@ -137,7 +138,7 @@ def test_fail_no_to_format():
     """Test that the parsing fails if output format isn't specified"""
     with pytest.raises(FileConverterInputException) as e:
         get_parsed_args("file1.mmcif")
-    assert _compressed_match("Output format (`-t/--to`) must be provided", e.value)
+    assert _compressed_match("Output format must be provided", e.value)
 
 
 def test_fail_no_input_dir():
@@ -192,20 +193,20 @@ def test_list_args():
 def test_list_converter():
     """Test that the parsing works if we ask for info on a specific converter"""
     args = get_parsed_args("-l Open Babel")
-    assert args.name == regularize_name("Open Babel")
+    assert args.converter == regularize_name("Open Babel")
     args = get_parsed_args("--list 'Open Babel'")
-    assert args.name == regularize_name("Open Babel")
+    assert args.converter == regularize_name("Open Babel")
     args = get_parsed_args("-l Atomsk")
-    assert args.name == regularize_name("Atomsk")
+    assert args.converter == regularize_name("Atomsk")
 
 
 def test_converter_input():
     """Test that the converter specified with -w/--with is properly parsed
     """
     args = get_parsed_args(f"file1.mmcif -t pdb -w {const.CONVERTER_OB}")
-    assert args.name == regularize_name(const.CONVERTER_OB)
+    assert args.converter == regularize_name(const.CONVERTER_OB)
     args = get_parsed_args(f"file1.mmcif -t pdb -w '{const.CONVERTER_OB}'")
-    assert args.name == regularize_name(const.CONVERTER_OB)
+    assert args.converter == regularize_name(const.CONVERTER_OB)
 
 
 def test_default_input_dir():
@@ -257,11 +258,11 @@ def test_auto_converter(auto_str):
 
     # Test that Open Babel is chosen when expected
     args = get_parsed_args(f"file1.pdb -f pdb-0 -t inchi {auto_str}")
-    assert args.name == regularize_name(const.CONVERTER_OB)
+    assert args.converter == regularize_name(const.CONVERTER_OB)
 
     # Test that c2x is chosen when expected
     args = get_parsed_args(f"file1.pdb -f pdb-0 -t xyz-0 {auto_str}")
-    assert args.name == regularize_name(const.CONVERTER_C2X)
+    assert args.converter == regularize_name(const.CONVERTER_C2X)
 
 
 @pytest.mark.parametrize("converter_name", [const.CONVERTER_AUTO, const.CONVERTER_AUTOCHAIN])
@@ -333,7 +334,7 @@ def test_auto_no_common_converter():
 def test_autochain_args(chain_str):
     """Test that the parsing correctly detects when an automatic chain is requested"""
     args = get_parsed_args(f"file1.mmcif -t pdb-0 -w '{chain_str}'")
-    assert args.name == const.CONVERTER_AUTOCHAIN
+    assert args.converter == const.CONVERTER_AUTOCHAIN
     assert args.chain is True
 
 
@@ -349,6 +350,80 @@ def test_auto_no_converter_args(converter, arg_str):
         get_parsed_args(f"file1 -f pdb-0 -t xyz-0 -w {converter} {arg_str}")
     assert _compressed_match("Converter-specific arguments cannot be provided when the converter or chain is "
                              "automatically-determined.", e.value)
+
+
+l_path_args = [(FORMAT_MOLDY, f"openbabel {FORMAT_PDB_0} atomsk", FORMAT_INCHI),
+               (FORMAT_MOLDY, f"openbabel {FORMAT_PDB_0} atomsk {FORMAT_INCHI}", None),
+               (None, f"{FORMAT_MOLDY} openbabel {FORMAT_PDB_0} atomsk", FORMAT_INCHI),
+               (None, f"{FORMAT_MOLDY} openbabel {FORMAT_PDB_0} atomsk {FORMAT_INCHI}", None)]
+
+
+@pytest.mark.parametrize("from_format, path_str, to_format", l_path_args)
+def test_path_args(from_format: int | None, path_str: str, to_format: int | None):
+    """Test that the parsing correctly interprets a path when one is requested"""
+    arg_str = f"file1 --path {path_str}"
+    if from_format:
+        arg_str += f" -f {from_format}"
+    if to_format:
+        arg_str += f" -t {to_format}"
+    args = get_parsed_args(arg_str)
+    assert args.path
+
+
+def test_path_inconsistent_from_format():
+    """Test that an error is raised if the `from_format` doesn't match the first in the `path`"""
+    with pytest.raises(FileConverterInputException) as e:
+        get_parsed_args(f"file1 -f {FORMAT_PDB_0} --path {FORMAT_MOLDY} openbabel {FORMAT_PDB_0} atomsk "
+                        f"{FORMAT_INCHI}")
+    assert _compressed_match(f"The format '{FORMAT_PDB_0}' provided to `-f/--from` does not match '{FORMAT_MOLDY}"
+                             f"', the first format provided to `--path`", e.value)
+
+
+def test_path_inconsistent_to_format():
+    """Test that an error is raised if the `to_format` doesn't match the last in the `path`"""
+    with pytest.raises(FileConverterInputException) as e:
+        get_parsed_args(f"file1 -t {FORMAT_PDB_0} --path {FORMAT_MOLDY} openbabel {FORMAT_PDB_0} atomsk "
+                        f"{FORMAT_INCHI}")
+    assert _compressed_match(f"The format '{FORMAT_PDB_0}' provided to `-t/--to` does not match '{FORMAT_INCHI}"
+                             f"', the last format provided to `--path`", e.value)
+
+
+def test_path_ambiguous_format():
+    """Test that an error is raised if a format in `path` is ambiguous"""
+    with pytest.raises(FileConverterInputException) as e:
+        get_parsed_args(f"file1 --path {FORMAT_MOLDY} openbabel pdb atomsk {FORMAT_INCHI}")
+    assert _compressed_match("'pdb' is ambiguous and can correspond to multiple possible formats.", e.value)
+
+
+@pytest.mark.parametrize("bad_format, bad_converter", [(True, False),
+                                                       (False, True),
+                                                       (True, True)])
+def test_path_bad_format_converter(bad_format: bool, bad_converter: bool):
+    """Test that an error is raised if a format and/or converter in `path` is invalid"""
+    file_format = "INVALID" if bad_format else FORMAT_MOLDY
+    converter = "INVALID" if bad_converter else "openbabel"
+    with pytest.raises(FileConverterInputException) as e:
+        get_parsed_args(f"file1 --path {FORMAT_MOLDY} {converter} {file_format} atomsk {FORMAT_INCHI}")
+
+    if bad_format:
+        assert _compressed_match("'INVALID' is not recognised as a valid format", e.value)
+
+    if bad_converter:
+        assert _compressed_match("'INVALID' is not recognised as a valid converter", e.value)
+
+
+def test_path_unsupported_converter():
+    """Test that an error is raised if a converter in `path` is unsupported"""
+    with pytest.raises(FileConverterInputException) as e:
+        get_parsed_args(f"file1 --path {FORMAT_MOLDY} molconverter {FORMAT_PDB_0} atomsk {FORMAT_INCHI}")
+    assert _compressed_match("Molconverter is not supported", e.value)
+
+
+def test_path_bad_length():
+    """Test that an error is raised if the `path` has a bad length, e.g. due to spaces being used in a converter name"""
+    with pytest.raises(FileConverterInputException) as e:
+        get_parsed_args(f"file1 --path {FORMAT_MOLDY} Open Babel {FORMAT_PDB_0} atomsk {FORMAT_INCHI}")
+    assert _compressed_match("invalid due to an incorrect number of elements", e.value)
 
 
 def test_list_converters(capsys):
@@ -406,7 +481,7 @@ def test_detail_converter_bad_name(capsys):
     with pytest.raises(SystemExit):
         run_with_arg_string("--list bad_converter")
     captured = capsys.readouterr()
-    assert "not recognized" in captured.err
+    assert "not recognised" in captured.err
     assert "Traceback" not in captured.out
     assert "Traceback" not in captured.err
 
