@@ -334,7 +334,7 @@ def test_conversion_pathways():
     assert db.get_conversion_pathway(tc.FORMAT_CIF, tc.FORMAT_ABINIT) is None
 
     # Check that we get the expected single-step conversion for a known direct conversion
-    cif_to_inchi_path = db.get_conversion_pathway(tc.FORMAT_CIF, tc.FORMAT_INCHI, only="registered")
+    cif_to_inchi_path = db.get_conversion_pathway(tc.FORMAT_CIF, tc.FORMAT_INCHI)
     assert len(cif_to_inchi_path) == 1
     converter_info, in_format_info, out_format_info = cif_to_inchi_path[0]
     assert converter_info.name == regularize_name(const.CONVERTER_OB)

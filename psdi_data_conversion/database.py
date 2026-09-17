@@ -1403,7 +1403,7 @@ class ConversionsTable:
     def get_conversion_pathway(self,
                                in_format: str | int | UUID | FormatInfo,
                                out_format: str | int | UUID | FormatInfo,
-                               only: Literal["all"] | Literal["supported"] | Literal["registered"] = "all"
+                               only: Literal["all"] | Literal["supported"] | Literal["registered"] = "registered"
                                ) -> list[tuple[ConverterInfo, FormatInfo, FormatInfo]] | None:
         """Gets a pathway to convert from one format to another
         """
@@ -2228,7 +2228,7 @@ def get_possible_conversions(in_format: str | int | UUID | FormatInfo,
 
 def get_conversion_pathway(in_format: str | int | UUID | FormatInfo,
                            out_format: str | int | UUID | FormatInfo,
-                           only: Literal["all"] | Literal["supported"] | Literal["registered"] = "all"
+                           only: Literal["all"] | Literal["supported"] | Literal["registered"] = "registered"
                            ) -> list[tuple[ConverterInfo, FormatInfo, FormatInfo]] | None:
     """Get a list of conversions that can be performed to convert one format to another. This is primarily used when a
     direct conversion is not supported by any individual converter. Only one possible pathway will be returned,
@@ -2245,10 +2245,10 @@ def get_conversion_pathway(in_format: str | int | UUID | FormatInfo,
         extension, ID, or FormatInfo
     only : Literal["all"] | Literal["supported"] | Literal["registered"], optional
         Which converters to limit the pathway search to:
-        - "all" (default): All known converters
+        - "all": All known converters
         - "supported": Only converters supported by this utility, even if not currently available (e.g. they don't work
           on your OS)
-        - "registered": Only converters supported by this utility and currently available
+        - "registered" (default): Only converters supported by this utility and currently available
 
     Returns
     -------
