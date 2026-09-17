@@ -1146,18 +1146,27 @@ class ConversionsTable:
 
         # We make separate graphs for all known conversions, all supported conversions, and all registered conversions
         self.graph: ig.Graph
+        self.graph_unweighted: ig.Graph
         self.supported_graph: ig.Graph
+        self.supported_graph_unweighted: ig.Graph
         self.registered_graph: ig.Graph
+        self.registered_graph_unweighted: ig.Graph
 
-        for support_type, l_conversions in (("", l_converts_to),
-                                            ("supported_", l_supported_conversions),
-                                            ("registered_", l_registered_conversions)):
+        for support_type, weight_type, l_conversions in (("", "", l_converts_to),
+                                                         ("", "_unweighted", l_converts_to),
+                                                         ("supported_", "", l_supported_conversions),
+                                                         ("supported_", "_unweighted", l_supported_conversions),
+                                                         ("registered_", "", l_registered_conversions),
+                                                         ("registered_", "_unweighted", l_registered_conversions)):
             # Calculate conversion weights if they aren't already stored in the database
-            l_conv_weights = [x[DB_WEIGHT_KEY] if x.get(DB_WEIGHT_KEY) else
-                              calc_conversion_weight(self.parent.get_converter_info(x[DB_CONV_ID_KEY]),
-                                                     self.parent.get_format_info(x[DB_IN_ID_KEY]),
-                                                     self.parent.get_format_info(x[DB_OUT_ID_KEY]))
-                              for x in l_conversions]
+            if weight_type == "_unweighted":
+                l_conv_weights = [1 for x in l_conversions]
+            else:
+                l_conv_weights = [x[DB_WEIGHT_KEY] if x.get(DB_WEIGHT_KEY) else
+                                  calc_conversion_weight(self.parent.get_converter_info(x[DB_CONV_ID_KEY]),
+                                                         self.parent.get_format_info(x[DB_IN_ID_KEY]),
+                                                         self.parent.get_format_info(x[DB_OUT_ID_KEY]))
+                                  for x in l_conversions]
             graph = ig.Graph(n=num_formats,
                              directed=True,
                              # Each vertex stores the ID of the primary format
@@ -1170,20 +1179,24 @@ class ConversionsTable:
                                                        for x in l_conversions],
                                          "weight": l_conv_weights})
 
-            setattr(self, support_type+"graph", graph)
+            setattr(self, f"{support_type}graph{weight_type}", graph)
 
     def _get_desired_graph(self,
-                           only: Literal["all"] | Literal["supported"] | Literal["registered"] = "all") -> ig.Graph:
+                           only: Literal["all"] | Literal["supported"] | Literal["registered"] = "registered",
+                           unweighted=False) -> ig.Graph:
         if only == "all":
-            return self.graph
+            support_type = ""
         elif only == "supported":
-            return self.supported_graph
-        elif only == "registered":
-            return self.registered_graph
+            support_type = "supported_"
         else:
-            raise ValueError(f"Invalid value {tc.PATH}'{only}'{tc.OFF} for keyword argument "
-                             f"{tc.CODE}`only`{tc.OFF}. Allowed values are {tc.PATH}'all'{tc.OFF} "
-                             f"(default), {tc.PATH}'supported'{tc.OFF}, and {tc.PATH}'registered'{tc.OFF}.")
+            support_type = "registered_"
+
+        if unweighted:
+            weight_type = "_unweighted"
+        else:
+            weight_type = ""
+
+        return getattr(self, f"{support_type}graph{weight_type}")
 
     def _get_possible_converters(self, in_format_info: FormatInfo, out_format_info: FormatInfo,
                                  only: Literal["all"] | Literal["supported"] | Literal["registered"] = "all"):
@@ -1403,23 +1416,15 @@ class ConversionsTable:
     def _get_l_paths(self,
                      in_format_info: FormatInfo,
                      out_format_info: FormatInfo,
-                     only: Literal["all"] | Literal["supported"] | Literal["registered"] = "registered"
-                     ):
+                     only: Literal["all"] | Literal["supported"] | Literal["registered"] = "registered",
+                     include: Literal["best"] | Literal["shortest"] = "best"):
         """Get a raw list of paths from the graph of conversion pathways"""
 
         # Check if the formats are the same
         if in_format_info is out_format_info:
             return []
 
-        # First check if direct conversion is possible
-        l_possible_direct_conversions = self.get_possible_conversions(
-            in_format=in_format_info, out_format=out_format_info)
-        if l_possible_direct_conversions:
-            # Use whichever conversion has the lowest weight
-            l_possible_direct_conversions.sort(key=lambda x: self.get_conversion_weight(*x))
-            return l_possible_direct_conversions
-
-        graph: ig.Graph = self._get_desired_graph(only)
+        graph: ig.Graph = self._get_desired_graph(only=only, unweighted=(include == "shortest"))
 
         # Query the graph for the shortest paths to perform this conversion. If no conversions are possible, igraph
         # will print a warning, which we catch and suppress here
@@ -1501,7 +1506,7 @@ class ConversionsTable:
         in_format_info = self.parent.get_format_info(in_format)
         out_format_info = self.parent.get_format_info(out_format)
 
-        l_paths = self._get_l_paths(in_format_info, out_format_info, only=only)
+        l_paths = self._get_l_paths(in_format_info, out_format_info, only=only, include=include)
 
         # Check if any paths are possible
         if not l_paths or not l_paths[0]:
