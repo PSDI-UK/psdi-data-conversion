@@ -981,7 +981,7 @@ def detail_format(format_name: str, in_or_out: str | None = None):
 
     if len(l_format_info) == 0:
         print_wrap(f"{tc.ERROR}ERROR:{tc.OFF} Format {tc.MESSAGE}'{format_name}'{tc.OFF} not recognised",
-                   err=True, newline=True)
+                   err=True)
         list_supported_formats(err=True)
         exit(1)
 
