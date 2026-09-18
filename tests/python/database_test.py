@@ -371,11 +371,27 @@ def test_conversion_pathway_from_alias():
 
 
 def test_conversion_pathway_to_alias():
-    # Test that if a conversion is requested to an alias, that alias is retained in the output path
+    """Test that if a conversion is requested to an alias, that alias is retained in the output path"""
     to_alias_path = db.get_conversion_pathway(tc.FORMAT_MOLDY, tc.FORMAT_MOLD_ALIAS)
     assert len(to_alias_path) > 1, "Test is only valid if path has at least 2 steps"
     assert to_alias_path[-1][2].id == tc.FORMAT_MOLD_ALIAS
     _check_path_valid(to_alias_path)
+
+
+def test_conversion_pathways_best():
+    """Test that we can successfully get a list of all equally-low-weight conversion pathways for a desired conversion
+    """
+    l_best_paths = db.get_possible_conversion_pathways(tc.FORMAT_MOLD, tc.FORMAT_MOLDY, include="best")
+    for path in l_best_paths:
+        _check_path_valid(path)
+
+
+def test_conversion_pathways_shortest():
+    """Test that we can successfully get a list of all equally-short conversion pathways for a desired conversion
+    """
+    l_best_paths = db.get_possible_conversion_pathways(tc.FORMAT_MOLD, tc.FORMAT_MOLDY, include="shortest")
+    for path in l_best_paths:
+        _check_path_valid(path)
 
 
 @pytest.fixture(scope="module")

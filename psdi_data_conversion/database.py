@@ -1429,8 +1429,8 @@ class ConversionsTable:
         # Query the graph for the shortest paths to perform this conversion. If no conversions are possible, igraph
         # will print a warning, which we catch and suppress here
         with catch_warnings(record=True) as l_warnings:
-            l_paths: list[list[int]] = graph.get_shortest_paths(self.d_indices_from_uuids[in_format_info.id],
-                                                                to=self.d_indices_from_uuids[out_format_info.id])
+            l_paths: list[list[int]] = graph.get_all_shortest_paths(self.d_indices_from_uuids[in_format_info.id],
+                                                                    to=self.d_indices_from_uuids[out_format_info.id])
             for warning in l_warnings:
                 if "Couldn't reach some vertices" not in str(warning.message):
                     print(warning, file=sys.stderr)
