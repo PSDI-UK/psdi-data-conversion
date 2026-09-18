@@ -826,7 +826,7 @@ def run_converter_chain(filename: str,
     # If `to_format` was provided, determine the best path to use
     if to_format:
         to_format_info = get_format_info(to_format)
-        path = get_conversion_pathway(from_format_info, to_format_info, only="registered")
+        path = get_conversion_pathway(from_format_info, to_format_info)
 
     # Set the maximum file size based on permission level and which converter is being used, if it isn't explicitly
     # specified

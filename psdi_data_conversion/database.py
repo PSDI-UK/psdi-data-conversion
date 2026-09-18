@@ -1146,18 +1146,27 @@ class ConversionsTable:
 
         # We make separate graphs for all known conversions, all supported conversions, and all registered conversions
         self.graph: ig.Graph
+        self.graph_unweighted: ig.Graph
         self.supported_graph: ig.Graph
+        self.supported_graph_unweighted: ig.Graph
         self.registered_graph: ig.Graph
+        self.registered_graph_unweighted: ig.Graph
 
-        for support_type, l_conversions in (("", l_converts_to),
-                                            ("supported_", l_supported_conversions),
-                                            ("registered_", l_registered_conversions)):
+        for support_type, weight_type, l_conversions in (("", "", l_converts_to),
+                                                         ("", "_unweighted", l_converts_to),
+                                                         ("supported_", "", l_supported_conversions),
+                                                         ("supported_", "_unweighted", l_supported_conversions),
+                                                         ("registered_", "", l_registered_conversions),
+                                                         ("registered_", "_unweighted", l_registered_conversions)):
             # Calculate conversion weights if they aren't already stored in the database
-            l_conv_weights = [x[DB_WEIGHT_KEY] if x.get(DB_WEIGHT_KEY) else
-                              calc_conversion_weight(self.parent.get_converter_info(x[DB_CONV_ID_KEY]),
-                                                     self.parent.get_format_info(x[DB_IN_ID_KEY]),
-                                                     self.parent.get_format_info(x[DB_OUT_ID_KEY]))
-                              for x in l_conversions]
+            if weight_type == "_unweighted":
+                l_conv_weights = [1 for x in l_conversions]
+            else:
+                l_conv_weights = [x[DB_WEIGHT_KEY] if x.get(DB_WEIGHT_KEY) else
+                                  calc_conversion_weight(self.parent.get_converter_info(x[DB_CONV_ID_KEY]),
+                                                         self.parent.get_format_info(x[DB_IN_ID_KEY]),
+                                                         self.parent.get_format_info(x[DB_OUT_ID_KEY]))
+                                  for x in l_conversions]
             graph = ig.Graph(n=num_formats,
                              directed=True,
                              # Each vertex stores the ID of the primary format
@@ -1170,20 +1179,24 @@ class ConversionsTable:
                                                        for x in l_conversions],
                                          "weight": l_conv_weights})
 
-            setattr(self, support_type+"graph", graph)
+            setattr(self, f"{support_type}graph{weight_type}", graph)
 
     def _get_desired_graph(self,
-                           only: Literal["all"] | Literal["supported"] | Literal["registered"] = "all") -> ig.Graph:
+                           only: Literal["all"] | Literal["supported"] | Literal["registered"] = "registered",
+                           unweighted=False) -> ig.Graph:
         if only == "all":
-            return self.graph
+            support_type = ""
         elif only == "supported":
-            return self.supported_graph
-        elif only == "registered":
-            return self.registered_graph
+            support_type = "supported_"
         else:
-            raise ValueError(f"Invalid value {tc.PATH}'{only}'{tc.OFF} for keyword argument "
-                             f"{tc.CODE}`only`{tc.OFF}. Allowed values are {tc.PATH}'all'{tc.OFF} "
-                             f"(default), {tc.PATH}'supported'{tc.OFF}, and {tc.PATH}'registered'{tc.OFF}.")
+            support_type = "registered_"
+
+        if unweighted:
+            weight_type = "_unweighted"
+        else:
+            weight_type = ""
+
+        return getattr(self, f"{support_type}graph{weight_type}")
 
     def _get_possible_converters(self, in_format_info: FormatInfo, out_format_info: FormatInfo,
                                  only: Literal["all"] | Literal["supported"] | Literal["registered"] = "all"):
@@ -1400,52 +1413,44 @@ class ConversionsTable:
 
         return l_possible_conversions
 
-    def get_conversion_pathway(self,
-                               in_format: str | int | UUID | FormatInfo,
-                               out_format: str | int | UUID | FormatInfo,
-                               only: Literal["all"] | Literal["supported"] | Literal["registered"] = "all"
-                               ) -> list[tuple[ConverterInfo, FormatInfo, FormatInfo]] | None:
-        """Gets a pathway to convert from one format to another
-        """
-
-        in_format_info = self.parent.get_format_info(in_format)
-        out_format_info = self.parent.get_format_info(out_format)
+    def _get_l_paths(self,
+                     in_format_info: FormatInfo,
+                     out_format_info: FormatInfo,
+                     only: Literal["all"] | Literal["supported"] | Literal["registered"] = "registered",
+                     include: Literal["best"] | Literal["shortest"] = "best"):
+        """Get a raw list of paths from the graph of conversion pathways"""
 
         # Check if the formats are the same
         if in_format_info is out_format_info:
-            return None
+            return []
 
-        # First check if direct conversion is possible
-        l_possible_direct_conversions = self.get_possible_conversions(in_format=in_format, out_format=out_format)
-        if l_possible_direct_conversions:
-            # Use whichever conversion has the lowest weight
-            l_possible_direct_conversions.sort(key=lambda x: self.get_conversion_weight(*x))
-            return [l_possible_direct_conversions[0]]
-
-        graph: ig.Graph = self._get_desired_graph(only)
+        graph: ig.Graph = self._get_desired_graph(only=only, unweighted=(include == "shortest"))
 
         # Query the graph for the shortest paths to perform this conversion. If no conversions are possible, igraph
         # will print a warning, which we catch and suppress here
         with catch_warnings(record=True) as l_warnings:
-            l_paths: list[list[int]] = graph.get_shortest_paths(self.d_indices_from_uuids[in_format_info.id],
-                                                                to=self.d_indices_from_uuids[out_format_info.id])
+            l_paths: list[list[int]] = graph.get_all_shortest_paths(self.d_indices_from_uuids[in_format_info.id],
+                                                                    to=self.d_indices_from_uuids[out_format_info.id])
             for warning in l_warnings:
                 if "Couldn't reach some vertices" not in str(warning.message):
                     print(warning, file=sys.stderr)
+        return l_paths
 
-        # Check if any paths are possible
-        if not l_paths or not l_paths[0]:
-            return None
+    def _format_path(self,
+                     path,
+                     in_format_info: FormatInfo,
+                     out_format_info: FormatInfo,
+                     only: Literal["all"] | Literal["supported"] | Literal["registered"] = "registered"
+                     ):
+        """Format a raw path into the desired output format"""
 
-        # Any paths returned here are equally valid, so just pick the first returned
-        best_path: list[int] = l_paths[0]
+        graph: ig.Graph = self._get_desired_graph(only)
 
-        # Output the best path in the desired format
         l_steps: list[tuple[str, FormatInfo, FormatInfo]] = []
-        for i in range(len(best_path)-1):
-            source_index = best_path[i]
+        for i in range(len(path)-1):
+            source_index = path[i]
             source_id: int = self.d_uuids_from_indices[source_index]
-            target_index: int = best_path[i+1]
+            target_index: int = path[i+1]
             target_id: int = self.d_uuids_from_indices[target_index]
             converter_name: str = graph.es.select(_source=source_index, _target=target_index)[0][DB_NAME_KEY]
             l_steps.append((get_converter_info(converter_name),
@@ -1459,6 +1464,60 @@ class ConversionsTable:
             l_steps[-1] = l_steps[-1][0], l_steps[-1][1], out_format_info
 
         return l_steps
+
+    def get_conversion_pathway(self,
+                               in_format: str | int | UUID | FormatInfo,
+                               out_format: str | int | UUID | FormatInfo,
+                               only: Literal["all"] | Literal["supported"] | Literal["registered"] = "registered"
+                               ) -> list[tuple[ConverterInfo, FormatInfo, FormatInfo]] | None:
+        """Gets a pathway to convert from one format to another
+        """
+
+        in_format_info = self.parent.get_format_info(in_format)
+        out_format_info = self.parent.get_format_info(out_format)
+
+        l_paths = self._get_l_paths(in_format_info, out_format_info, only=only)
+
+        # Check if any paths are possible
+        if not l_paths or not l_paths[0]:
+            return None
+
+        # Any paths returned here are equally valid, so just pick the first returned
+        best_path: list[int] = l_paths[0]
+
+        return self._format_path(best_path, in_format_info, out_format_info, only=only)
+
+    def get_possible_conversion_pathways(self,
+                                         in_format: str | int | UUID | FormatInfo,
+                                         out_format: str | int | UUID | FormatInfo,
+                                         only: (Literal["all"] | Literal["supported"] |
+                                                Literal["registered"]) = "registered",
+                                         include: Literal["best"] | Literal["shortest"] = "best"
+                                         ) -> list[list[tuple[ConverterInfo, FormatInfo, FormatInfo]]]:
+        """As `get_conversion_pathway`, but instead of returning just one pathway, returns a list of pathways meeting
+        the `include` criterion:
+
+        "best": Include all pathways that are assessed as equally best based on the pathfinding weight criteria (which
+            takes into account data and precision loss in each step of the conversion chain)
+
+        "shortest": Include all pathways with an equally low number of steps
+        """
+
+        in_format_info = self.parent.get_format_info(in_format)
+        out_format_info = self.parent.get_format_info(out_format)
+
+        l_paths = self._get_l_paths(in_format_info, out_format_info, only=only, include=include)
+
+        # Check if any paths are possible
+        if not l_paths or not l_paths[0]:
+            return []
+
+        l_formatted_paths = []
+
+        for path in l_paths:
+            l_formatted_paths.append(self._format_path(path, in_format_info, out_format_info, only=only))
+
+        return l_formatted_paths
 
     def get_possible_formats(self,
                              converter: str | int | UUID | ConverterInfo,
@@ -2228,7 +2287,7 @@ def get_possible_conversions(in_format: str | int | UUID | FormatInfo,
 
 def get_conversion_pathway(in_format: str | int | UUID | FormatInfo,
                            out_format: str | int | UUID | FormatInfo,
-                           only: Literal["all"] | Literal["supported"] | Literal["registered"] = "all"
+                           only: Literal["all"] | Literal["supported"] | Literal["registered"] = "registered"
                            ) -> list[tuple[ConverterInfo, FormatInfo, FormatInfo]] | None:
     """Get a list of conversions that can be performed to convert one format to another. This is primarily used when a
     direct conversion is not supported by any individual converter. Only one possible pathway will be returned,
@@ -2245,10 +2304,10 @@ def get_conversion_pathway(in_format: str | int | UUID | FormatInfo,
         extension, ID, or FormatInfo
     only : Literal["all"] | Literal["supported"] | Literal["registered"], optional
         Which converters to limit the pathway search to:
-        - "all" (default): All known converters
+        - "all": All known converters
         - "supported": Only converters supported by this utility, even if not currently available (e.g. they don't work
           on your OS)
-        - "registered": Only converters supported by this utility and currently available
+        - "registered" (default): Only converters supported by this utility and currently available
 
     Returns
     -------
@@ -2269,6 +2328,26 @@ def get_conversion_pathway(in_format: str | int | UUID | FormatInfo,
     return get_database().conversions_table.get_conversion_pathway(in_format=in_format,
                                                                    out_format=out_format,
                                                                    only=only)
+
+
+def get_possible_conversion_pathways(in_format: str | int | UUID | FormatInfo,
+                                     out_format: str | int | UUID | FormatInfo,
+                                     only: Literal["all"] | Literal["supported"] | Literal["registered"] = "registered",
+                                     include: Literal["best"] | Literal["shortest"] = "best"
+                                     ) -> list[list[tuple[ConverterInfo, FormatInfo, FormatInfo]]]:
+    """As `get_conversion_pathway`, but instead of returning just one pathway, returns a list of pathways meeting the
+    `include` criterion:
+
+    "best": Include all pathways that are assessed as equally best based on the pathfinding weight criteria (which
+        takes into account data and precision loss in each step of the conversion chain)
+
+    "shortest": Include all pathways with an equally low number of steps
+    """
+
+    return get_database().conversions_table.get_possible_conversion_pathways(in_format=in_format,
+                                                                             out_format=out_format,
+                                                                             only=only,
+                                                                             include=include)
 
 
 def disambiguate_formats(converter: str | int | UUID | ConverterInfo,
