@@ -1339,7 +1339,7 @@ class ConversionsTable:
                               converter: str | int | UUID | ConverterInfo,
                               in_format: str | int | UUID | FormatInfo,
                               out_format: str | int | UUID | FormatInfo,
-                              bits: Literal["all"] | Literal["top"] | Literal["bottom"]) -> int:
+                              bits: Literal["all"] | Literal["top"] | Literal["bottom"] = "all") -> int:
         """Get the weight for a desired conversion.
 
         Parameters
