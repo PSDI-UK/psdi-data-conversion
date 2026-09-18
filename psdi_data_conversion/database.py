@@ -1498,7 +1498,8 @@ class ConversionsTable:
                                                                     weights=CONV_WEIGHT_TOP_KEY
                                                                     if include == "best" else None)
             for warning in l_warnings:
-                if "Couldn't reach some vertices" not in str(warning.message):
+                if ("Couldn't reach some vertices" not in str(warning.message) and
+                        "Couldn't reach some of the requested target vertices" not in str(warning.message)):
                     print(warning, file=sys.stderr)
 
         # If we're just getting the shortest paths, we have all we need now, so return them
