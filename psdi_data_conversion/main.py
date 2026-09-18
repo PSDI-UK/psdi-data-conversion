@@ -1031,17 +1031,17 @@ def detail_formats_and_possible_converters(from_format: str, to_format: str):
 
     try:
         get_format_info(from_format, which=0)
-    except KeyError:
+    except (KeyError, FileConverterDatabaseException):
         either_format_failed = True
         print_wrap(f"{tc.ERROR}ERROR:{tc.OFF} Input format {tc.MESSAGE}'{from_format}'{tc.OFF} not recognised",
-                   newline=True, err=True)
+                   err=True)
 
     try:
         get_format_info(to_format, which=0)
-    except KeyError:
+    except (KeyError, FileConverterDatabaseException):
         either_format_failed = True
         print_wrap(f"{tc.ERROR}ERROR:{tc.OFF} Output format {tc.MESSAGE}'{from_format}'{tc.OFF} not recognised",
-                   newline=True, err=True)
+                   err=True)
 
     if either_format_failed:
         # Let the user know about formats which are allowed
