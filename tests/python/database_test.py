@@ -324,16 +324,18 @@ def test_conversion_table(database):
     assert db.get_format_info(tc.FORMAT_CIF) in l_out_formats
 
 
-def test_conversion_pathways():
-    """Tests of determining conversion pathways between formats"""
-
-    # Check that we get `None` for converting from one format to itself
+def test_conversion_pathway_to_self():
+    """Test that we get `None` for converting from one format to itself"""
     assert db.get_conversion_pathway(tc.FORMAT_CIF, tc.FORMAT_CIF) is None
 
-    # Check that we get `None` for an impossible conversion
+
+def test_conversion_pathway_impossible():
+    """Test that we get `None` for an impossible conversion"""
     assert db.get_conversion_pathway(tc.FORMAT_CIF, tc.FORMAT_ABINIT) is None
 
-    # Check that we get the expected single-step conversion for a known direct conversion
+
+def test_conversion_pathway_direct():
+    """Test that we get the expected single-step conversion for a known direct conversion"""
     cif_to_inchi_path = db.get_conversion_pathway(tc.FORMAT_CIF, tc.FORMAT_INCHI)
     assert len(cif_to_inchi_path) == 1
     converter_info, in_format_info, out_format_info = cif_to_inchi_path[0]
@@ -341,39 +343,39 @@ def test_conversion_pathways():
     assert in_format_info.id == tc.FORMAT_CIF
     assert out_format_info.id == tc.FORMAT_INCHI
 
-    # Test getting a multi-step conversion - it's possible this will become direct in the future if a new converter is
-    # added, so the test is a bit loose here
+
+def _check_path_valid(path):
+    for i in range(len(path)-1):
+        # Output format of each step should match input of next
+        assert path[i][2] is path[i+1][1]
+        # Each step should use a different converter
+        assert path[i][0] != path[i+1][0]
+
+
+def test_conversion_pathway_multistep():
+    """Test getting a multi-step conversion - it's possible this will become direct in the future if a new converter is
+    added, so the test is a bit loose here"""
     inchi_to_moldy_path = db.get_conversion_pathway(tc.FORMAT_INCHI, tc.FORMAT_MOLDY)
     assert len(inchi_to_moldy_path) <= 2
     assert inchi_to_moldy_path[0][1].id == tc.FORMAT_INCHI
     assert inchi_to_moldy_path[-1][2].id == tc.FORMAT_MOLDY
-    for i in range(len(inchi_to_moldy_path)-1):
-        # Output format of each step should match input of next
-        assert inchi_to_moldy_path[i][2] is inchi_to_moldy_path[i+1][1]
-        # Each step should use a different converter
-        assert inchi_to_moldy_path[i][0] != inchi_to_moldy_path[i+1][0]
+    _check_path_valid(inchi_to_moldy_path)
 
 
-def test_conversion_pathways_with_aliases():
-    """Tests of how format aliases are handled in getting conversion pathways"""
-
-    # Test that if a conversion is requested from an alias, that alias is retained in the input path
+def test_conversion_pathway_from_alias():
+    """Test that if a conversion is requested from an alias, that alias is retained in the input path"""
     from_alias_path = db.get_conversion_pathway(tc.FORMAT_MOLD_ALIAS, tc.FORMAT_MOLDY)
     assert len(from_alias_path) > 1, "Test is only valid if path has at least 2 steps"
     assert from_alias_path[0][1].id == tc.FORMAT_MOLD_ALIAS
+    _check_path_valid(from_alias_path)
 
+
+def test_conversion_pathway_to_alias():
     # Test that if a conversion is requested to an alias, that alias is retained in the output path
     to_alias_path = db.get_conversion_pathway(tc.FORMAT_MOLDY, tc.FORMAT_MOLD_ALIAS)
     assert len(to_alias_path) > 1, "Test is only valid if path has at least 2 steps"
     assert to_alias_path[-1][2].id == tc.FORMAT_MOLD_ALIAS
-
-    # Test that each path is still valid
-    for path in from_alias_path, to_alias_path:
-        for i in range(len(path)-1):
-            # Output format of each step should match input of next
-            assert path[i][2] is path[i+1][1]
-            # Each step should use a different converter
-            assert path[i][0] != path[i+1][0]
+    _check_path_valid(to_alias_path)
 
 
 @pytest.fixture(scope="module")
