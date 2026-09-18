@@ -23,7 +23,7 @@ from psdi_data_conversion.converter import (D_CONVERTER_ARGS, L_REGISTERED_CONVE
                                             get_supported_converter_class, run_converter, run_converter_chain)
 from psdi_data_conversion.converters.base import (FileConverterAbortException, FileConverterException,
                                                   FileConverterInputException)
-from psdi_data_conversion.database import (CONVERSION_WEIGHT_MAX, D_FORMAT_PROPERTY_ATTRS, ConversionQualityInfo,
+from psdi_data_conversion.database import (CONV_WEIGHT_MAX, D_FORMAT_PROPERTY_ATTRS, ConversionQualityInfo,
                                            ConverterInfo, FileConverterDatabaseException, FormatInfo,
                                            disambiguate_formats, get_conversion_pathway, get_conversion_quality,
                                            get_conversion_weight, get_converter_info, get_format_info,
@@ -471,7 +471,7 @@ class ConvertArgs:
 
     def _get_best_converter(self, s_converters: set[ConverterInfo], s_from_formats: set[FormatInfo]) -> ConverterInfo:
         """Determine the best converter from which has the lowest total weight across all formats"""
-        best_weight: int = CONVERSION_WEIGHT_MAX
+        best_weight: int = CONV_WEIGHT_MAX
         best_converter = None
         for converter_info in s_converters:
             weight = sum([get_conversion_weight(converter_info, x, self.to_format)

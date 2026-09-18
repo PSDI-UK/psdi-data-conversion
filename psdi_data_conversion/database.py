@@ -124,7 +124,7 @@ D_PROP_BITS = {
 D_PROP_WEIGHTS = {key: 1 << bit for key, bit in D_PROP_BITS.items()}
 
 # Maximum possible conversion weight
-CONVERSION_WEIGHT_MAX = 1 << 64 - 1
+CONV_WEIGHT_MAX = 1 << 64 - 1
 
 # Number of bits the property weight section is offset within the full weight when everything is combined into a single
 # 64-bit integer
@@ -151,6 +151,14 @@ CONV_WEIGHT_BIT_OFFSET = 0
 
 # Default converter weight, which is used if no explicit weight is set
 CONV_WEIGHT_DEFAULT = 1 << (TIME_WEIGHT_BIT_OFFSET - CONV_WEIGHT_BIT_OFFSET - 2)
+
+# Bit splitting the top and lower halves of the conversion weight
+CONV_WEIGHT_SPLIT_BIT = 32
+
+# Keys for storing the edge weight data in the graph
+CONV_WEIGHT_KEY = "weight"
+CONV_WEIGHT_TOP_KEY = "weight_top"
+CONV_WEIGHT_BOTTOM_KEY = "weight_bottom"
 
 logger = getLogger(__name__)
 
@@ -1146,27 +1154,23 @@ class ConversionsTable:
 
         # We make separate graphs for all known conversions, all supported conversions, and all registered conversions
         self.graph: ig.Graph
-        self.graph_unweighted: ig.Graph
         self.supported_graph: ig.Graph
-        self.supported_graph_unweighted: ig.Graph
         self.registered_graph: ig.Graph
-        self.registered_graph_unweighted: ig.Graph
 
-        for support_type, weight_type, l_conversions in (("", "", l_converts_to),
-                                                         ("", "_unweighted", l_converts_to),
-                                                         ("supported_", "", l_supported_conversions),
-                                                         ("supported_", "_unweighted", l_supported_conversions),
-                                                         ("registered_", "", l_registered_conversions),
-                                                         ("registered_", "_unweighted", l_registered_conversions)):
+        for support_type, l_conversions in (("", l_converts_to),
+                                            ("supported_", l_supported_conversions),
+                                            ("registered_", l_registered_conversions)):
+
             # Calculate conversion weights if they aren't already stored in the database
-            if weight_type == "_unweighted":
-                l_conv_weights = [1 for x in l_conversions]
-            else:
-                l_conv_weights = [x[DB_WEIGHT_KEY] if x.get(DB_WEIGHT_KEY) else
-                                  calc_conversion_weight(self.parent.get_converter_info(x[DB_CONV_ID_KEY]),
-                                                         self.parent.get_format_info(x[DB_IN_ID_KEY]),
-                                                         self.parent.get_format_info(x[DB_OUT_ID_KEY]))
-                                  for x in l_conversions]
+            l_conv_weights = [x[DB_WEIGHT_KEY] if x.get(DB_WEIGHT_KEY) else
+                              calc_conversion_weight(self.parent.get_converter_info(x[DB_CONV_ID_KEY]),
+                                                     self.parent.get_format_info(x[DB_IN_ID_KEY]),
+                                                     self.parent.get_format_info(x[DB_OUT_ID_KEY]))
+                              for x in l_conversions]
+            # So as to not overload igraph, we also store split the 64-bit weights into the top and lower 32-bits
+            l_conv_weights_top = [x >> CONV_WEIGHT_SPLIT_BIT for x in l_conv_weights]
+            l_conv_weights_bottom = [x-x_top for x, x_top in zip(l_conv_weights, l_conv_weights_top)]
+
             graph = ig.Graph(n=num_formats,
                              directed=True,
                              # Each vertex stores the ID of the primary format
@@ -1177,26 +1181,24 @@ class ConversionsTable:
                              edge_attrs={DB_CONV_ID_KEY: [x[DB_CONV_ID_KEY] for x in l_conversions],
                                          DB_NAME_KEY: [self.parent.get_converter_info(x[DB_CONV_ID_KEY]).name
                                                        for x in l_conversions],
-                                         "weight": l_conv_weights})
+                                         CONV_WEIGHT_KEY: l_conv_weights,
+                                         CONV_WEIGHT_TOP_KEY: l_conv_weights_top,
+                                         CONV_WEIGHT_BOTTOM_KEY: l_conv_weights_bottom})
 
-            setattr(self, f"{support_type}graph{weight_type}", graph)
+            setattr(self, f"{support_type}graph", graph)
 
-    def _get_desired_graph(self,
-                           only: Literal["all"] | Literal["supported"] | Literal["registered"] = "registered",
-                           unweighted=False) -> ig.Graph:
+    def _get_desired_graph(self, only: Literal["all"] | Literal["supported"] | Literal["registered"] = "registered"
+                           ) -> ig.Graph:
         if only == "all":
             support_type = ""
         elif only == "supported":
             support_type = "supported_"
-        else:
+        elif only == "registered":
             support_type = "registered_"
-
-        if unweighted:
-            weight_type = "_unweighted"
         else:
-            weight_type = ""
+            raise ValueError(f"Invalue value '{only}' passed to `only` kwarg of `_get_desired_graph`")
 
-        return getattr(self, f"{support_type}graph{weight_type}")
+        return getattr(self, f"{support_type}graph")
 
     def _get_possible_converters(self, in_format_info: FormatInfo, out_format_info: FormatInfo,
                                  only: Literal["all"] | Literal["supported"] | Literal["registered"] = "all"):
@@ -1336,7 +1338,8 @@ class ConversionsTable:
     def get_conversion_weight(self,
                               converter: str | int | UUID | ConverterInfo,
                               in_format: str | int | UUID | FormatInfo,
-                              out_format: str | int | UUID | FormatInfo):
+                              out_format: str | int | UUID | FormatInfo,
+                              bits: Literal["all"] | Literal["top"] | Literal["bottom"]) -> int:
         """Get the weight for a desired conversion.
 
         Parameters
@@ -1347,11 +1350,15 @@ class ConversionsTable:
             The extension, ID, or info of the converter of the input file format
         out_format : str | int | UUID | FormatInfo
             The extension, ID, or info of the converter of the output file format
+        bits : Literal["all"] | Literal["top"] | Literal["bottom"]
+            (Used when 64-bit ints are too large for some purposes) Whether to get the full weight ("all"), just the top
+            half of the bits ("top"), or just the lower half of the bits ("bottom")
 
         Returns
         -------
         int
-            The 64-bit combined weight of this conversion
+            The 64-bit combined weight of this conversion (unless bits=="top" or bits=="bottom", in which case the top
+            or bottom 32 bits of the weight will be returned)
 
         Raises
         ------
@@ -1371,7 +1378,58 @@ class ConversionsTable:
                                                  f"with converter {converter_info.pretty_name} is not supported",
                                                  help=True)
 
-        return l_edges[0]["weight"]
+        if bits == "top":
+            return l_edges[0][CONV_WEIGHT_TOP_KEY]
+        elif bits == "bottom":
+            return l_edges[0][CONV_WEIGHT_BOTTOM_KEY]
+        else:
+            return l_edges[0][CONV_WEIGHT_KEY]
+
+    def _get_step_weight(self,
+                         step: tuple[ConverterInfo, FormatInfo, FormatInfo] | int,
+                         bits: Literal["all"] | Literal["top"] | Literal["bottom"],
+                         only: Literal["all"] | Literal["supported"] | Literal["registered"] = "registered") -> int:
+        if isinstance(step, int):
+            edge: ig.Edge = self._get_desired_graph(only=only).es[step]
+            if bits == "top":
+                return edge[CONV_WEIGHT_TOP_KEY]
+            elif bits == "bottom":
+                return edge[CONV_WEIGHT_BOTTOM_KEY]
+            else:
+                return edge[CONV_WEIGHT_KEY]
+
+        return self.get_conversion_weight(*step, bits=bits)
+
+    def get_path_weight(self,
+                        path: list[tuple[ConverterInfo, FormatInfo, FormatInfo] | int],
+                        bits: Literal["all"] | Literal["top"] | Literal["bottom"],
+                        only: Literal["all"] | Literal["supported"] | Literal["registered"] = "registered"):
+        """Get the weight for a desired conversion.
+
+        Parameters
+        ----------
+        path: list[tuple[ConverterInfo, FormatInfo, FormatInfo] | int]
+            The conversion path, such as returned by `get_conversion_pathway`. The integer representation of steps is
+            used when referring to the internal indices of edges of the graphs
+        bits : Literal["all"] | Literal["top"] | Literal["bottom"]
+            (Used when 64-bit ints are too large for some purposes) Whether to get the full weight ("all"), just the top
+            half of the bits ("top"), or just the lower half of the bits ("bottom")
+        only : Literal["all"] | Literal["supported"] | Literal["registered"], optional
+            Only used internally, when `path` is passed as a list of edges, to identify which graph the edge indices
+            correspond to
+
+        Returns
+        -------
+        int
+            The 64-bit combined weight of this conversion (unless bits=="top" or bits=="bottom", in which case the top
+            or bottom 32 bits of the weight will be returned)
+
+        Raises
+        ------
+        FileConverterDatabaseException
+            If the requested conversion is not possible
+        """
+        return sum([self._get_step_weight(step, bits, only) for step in path])
 
     def get_possible_conversions(self,
                                  in_format: str | int | UUID | FormatInfo,
@@ -1387,6 +1445,12 @@ class ConversionsTable:
             The extension, ID, or info of the converter of the input file format
         out_format : str | int | UUID | FormatInfo
             The extension, ID, or info of the converter of the output file format
+        only : Literal["all"] | Literal["supported"] | Literal["registered"], optional
+            Which converters to limit the search to:
+            - "all": All known converters
+            - "supported": Only converters supported by this utility, even if not currently available (e.g. they don't
+            work on your OS)
+            - "registered" (default): Only converters supported by this utility and currently available
 
         Returns
         -------
@@ -1424,17 +1488,39 @@ class ConversionsTable:
         if in_format_info is out_format_info:
             return []
 
-        graph: ig.Graph = self._get_desired_graph(only=only, unweighted=(include == "shortest"))
+        graph: ig.Graph = self._get_desired_graph(only=only)
 
         # Query the graph for the shortest paths to perform this conversion. If no conversions are possible, igraph
         # will print a warning, which we catch and suppress here
         with catch_warnings(record=True) as l_warnings:
             l_paths: list[list[int]] = graph.get_all_shortest_paths(self.d_indices_from_uuids[in_format_info.id],
-                                                                    to=self.d_indices_from_uuids[out_format_info.id])
+                                                                    to=self.d_indices_from_uuids[out_format_info.id],
+                                                                    weights=CONV_WEIGHT_TOP_KEY
+                                                                    if include == "best" else None)
             for warning in l_warnings:
                 if "Couldn't reach some vertices" not in str(warning.message):
                     print(warning, file=sys.stderr)
-        return l_paths
+
+        # If we're just getting the shortest paths, we have all we need now, so return them
+        if include == "shortest":
+            return l_paths
+
+        # If no paths are possible, return here
+        if not l_paths:
+            return l_paths
+
+        # igraph can't handle full 64-bit weights, so the shortest paths will only be based on the top half of the bits.
+        # We now thus want to filter the paths to just those with the lowest weights
+
+        # Sort paths by their weight
+        l_paths_and_weights = list(zip(l_paths, [self.get_path_weight(x, "bottom", only) for x in l_paths]))
+        l_paths_and_weights.sort(key=lambda x: x[1])
+
+        # Filter to only the paths with the equally-lowest weight
+        lowest_weight = l_paths_and_weights[0][1]
+        l_lowest_weight_paths = [x[0] for x in l_paths_and_weights if x[1] == lowest_weight]
+
+        return l_lowest_weight_paths
 
     def _format_path(self,
                      path,
