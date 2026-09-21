@@ -1261,9 +1261,11 @@ class ConversionsTable:
                                                      self.parent.get_format_info(x[DB_IN_ID_KEY]),
                                                      self.parent.get_format_info(x[DB_OUT_ID_KEY]))
                               for x in l_conversions]
-            # So as to not overload igraph, we also store split the 64-bit weights into the top and lower 32-bits
-            l_conv_weights_top = [x >> CONV_WEIGHT_SPLIT_BIT for x in l_conv_weights]
-            l_conv_weights_bottom = [x-x_top for x, x_top in zip(l_conv_weights, l_conv_weights_top)]
+            # So as to not overload igraph, we also store split the 64-bit weights into the top and lower sections of
+            # bits. We add 1 to each weight to ensure that all weights are non-zero
+            l_conv_weights_top = [(x >> CONV_WEIGHT_SPLIT_BIT) + 1 for x in l_conv_weights]
+            l_conv_weights_bottom = [x-(x_top-1 << CONV_WEIGHT_SPLIT_BIT)+1
+                                     for x, x_top in zip(l_conv_weights, l_conv_weights_top)]
 
             graph = ig.Graph(n=num_formats,
                              directed=True,
