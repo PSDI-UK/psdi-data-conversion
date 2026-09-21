@@ -40,6 +40,8 @@
     - The `formats.json` database now has support for aliases - formats that represent the same file structure, but with a different expected extension. At present, aliases cannot be added through the "extra_formats" entry in a converter's `data.json` file, and must be added directly to the `formats.json` file
 - The convenience script `psdi-data-convert-create-plugin` has been added to create a stub for a new converter plugin
 - The database method `get_converter_info` can now be called without a `name` argument, and will return a list of info on all converters
+- The database method `get_conversion_pathway` now returns a `ConversionPath` object, which is a subclass of `list`, instead of a simple list. This class has some additional methods to get the total weight of the path, a string name for it, and a check that the path is valid (in case it's manually changed)
+- New database method: `get_possible_conversion_pathways`, which returns a list of `ConversionPath` pathways, filtered either to all which are equally-low-weight (default) or equally-short
 - The converter info provided by queries to the database methods now contains member variables `supported` and `registered` indicating the status of the converter:
   - Both `False`: The converter is known to exist, but we currently provide no support for it
   - `supported==True`, `registered==False`: This package has a plugin ready to support this converter, but it cannot currently be used due to e.g. a required binary being missing which must be provided by the user
