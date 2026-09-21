@@ -349,19 +349,11 @@ def test_conversion_pathway_direct():
     assert out_format_info.id == tc.FORMAT_INCHI
 
 
-def _check_path_valid(path):
-    for i in range(len(path)):
-        # Check that this step corresponds to a valid conversion
-        step = path[i]
-        assert db.disambiguate_formats(*step)
-
-        # Compare this step to the next if it isn't the last
-        if i < len(path)-1:
-            next_step = path[i+1]
-            # Output format of each step should match input of next
-            assert step[2] is next_step[1]
-            # Each step should use a different converter
-            assert step[0] != next_step[0]
+def _check_path_valid(path: db.ConversionPath):
+    """Check that a path is valid and each step uses a different converter"""
+    assert path.is_valid()
+    s_converters = {step.converter for step in path}
+    assert len(s_converters) == len(path)
 
 
 def test_conversion_pathway_multistep():

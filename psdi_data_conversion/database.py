@@ -1125,7 +1125,7 @@ class ConversionQualityInfo:
         return ConversionQualityInfo(Conversion(converter, in_format, out_format), *args, **kwargs)
 
 
-class ConversionPath(list):
+class ConversionPath(list[Conversion]):
     """A path of conversion steps"""
 
     def __init__(self, iterable=None):
@@ -1157,7 +1157,7 @@ class ConversionPath(list):
             return False
 
         # Output format of each step should match input of next
-        if not all([self[i].to_format is self[i+1].from_format for i in range(len(self)-1)]):
+        if not all([self[i].out_format is self[i+1].in_format for i in range(len(self)-1)]):
             return False
 
         return True
@@ -1173,10 +1173,6 @@ class ConversionPath(list):
 
     def __hash__(self):
         return hash(tuple([hash(step) for step in self]))
-
-
-TConversionPath = ConversionPath[Conversion]
-"""Properly-typed `ConversionPath`, used as a shortcut for type hints"""
 
 
 class ConversionsTable:
@@ -1583,7 +1579,7 @@ class ConversionsTable:
 
         graph: ig.Graph = self._get_desired_graph(only)
 
-        path: TConversionPath = ConversionPath()
+        path = ConversionPath()
         for i in range(len(raw_path)-1):
             source_index = raw_path[i]
             source_id: int = self.d_uuids_from_indices[source_index]
@@ -1606,7 +1602,7 @@ class ConversionsTable:
                                in_format: str | int | UUID | FormatInfo,
                                out_format: str | int | UUID | FormatInfo,
                                only: Literal["all"] | Literal["supported"] | Literal["registered"] = "registered"
-                               ) -> TConversionPath | None:
+                               ) -> ConversionPath | None:
         """Gets a pathway to convert from one format to another
         """
 
@@ -1629,7 +1625,7 @@ class ConversionsTable:
                                          only: (Literal["all"] | Literal["supported"] |
                                                 Literal["registered"]) = "registered",
                                          include: Literal["best"] | Literal["shortest"] = "best"
-                                         ) -> list[TConversionPath]:
+                                         ) -> list[ConversionPath]:
         """As `get_conversion_pathway`, but instead of returning just one pathway, returns a list of pathways meeting
         the `include` criterion:
 
@@ -2419,7 +2415,7 @@ def get_possible_conversions(in_format: str | int | UUID | FormatInfo,
 def get_conversion_pathway(in_format: str | int | UUID | FormatInfo,
                            out_format: str | int | UUID | FormatInfo,
                            only: Literal["all"] | Literal["supported"] | Literal["registered"] = "registered"
-                           ) -> TConversionPath | None:
+                           ) -> ConversionPath | None:
     """Get a list of conversions that can be performed to convert one format to another. This is primarily used when a
     direct conversion is not supported by any individual converter. Only one possible pathway will be returned,
     prioritising pathways which do not lose lose and then re-extrapolate any information stored by some formats and not
@@ -2442,7 +2438,7 @@ def get_conversion_pathway(in_format: str | int | UUID | FormatInfo,
 
     Returns
     -------
-    TConversionPath | None
+    ConversionPath | None
         Will return `None` if no conversion pathway is possible or if the input and output formats are the same.
         Otherwise, will return a `ConversionPath`, which is a list of `Conversion` steps in the pathway, each being a
         `NamedTuple` of:
@@ -2466,7 +2462,7 @@ def get_possible_conversion_pathways(in_format: str | int | UUID | FormatInfo,
                                      out_format: str | int | UUID | FormatInfo,
                                      only: Literal["all"] | Literal["supported"] | Literal["registered"] = "registered",
                                      include: Literal["best"] | Literal["shortest"] = "best"
-                                     ) -> list[TConversionPath]:
+                                     ) -> list[ConversionPath]:
     """As `get_conversion_pathway`, but instead of returning just one pathway, returns a list of pathways meeting the
     `include` criterion:
 
