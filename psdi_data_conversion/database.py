@@ -1032,19 +1032,35 @@ class PropertyConversionInfo:
             self.description = self.description.format(self.label)
 
 
+class Conversion(NamedTuple):
+    """NamedTuple giving the basic details of a conversion - the input format, output format, and converter"""
+
+    converter: ConverterInfo
+    """The info object for the converter"""
+
+    in_format: FormatInfo
+    """The info object for the input file format"""
+
+    out_format: FormatInfo
+    """The info object for the output file format"""
+
+    def is_valid(self):
+        """Whether or not this represents a valid conversion"""
+        return bool(disambiguate_formats(*self))
+
+    def get_weight(self,
+                   bits: Literal["all"] | Literal["top"] | Literal["bottom"] = "all"):
+        """The weight of this conversion, representing the amount of potential data loss"""
+        return get_database().conversions_table.get_conversion_weight(*self, bits=bits)
+
+
 @dataclass
 class ConversionQualityInfo:
     """Class describing the quality of a conversion from one format to another with a given converter.
     """
 
-    converter: ConverterInfo
-    """The info for the converter"""
-
-    in_format: FormatInfo
-    """The info for the input file format"""
-
-    out_format: FormatInfo
-    """The info for the output file format"""
+    conversion: Conversion
+    """The basic information of the conversion as a Conversion NamedTuple"""
 
     qual_str: str
     """A string describing the quality of the conversion"""
@@ -1056,9 +1072,6 @@ class ConversionQualityInfo:
     """A dict of PropertyConversionInfo objects, which provide information on each property's support in the
     input and output file formats and a note on the implications
     """
-
-    weight: int
-    """The full weight for the conversion, for the purpose of determining optimal conversion pathways"""
 
     prop_weight: int | None = field(init=False, repr=False, default=None)
     """The property weight for the conversion, based on how many format properties are/might be lost"""
@@ -1077,8 +1090,93 @@ class ConversionQualityInfo:
         self.prop_weight, self.prec_weight, self.time_weight, self.conv_weight = split_conversion_weight(self.weight)
 
     @property
+    def converter(self):
+        """The info object for the converter"""
+        return self.conversion.converter
+
+    @property
     def converter_name(self):
-        return self.converter.name
+        return self.conversion.converter.name
+
+    @property
+    def in_format(self):
+        """The info object for the input file format"""
+        return self.conversion.in_format
+
+    @property
+    def out_format(self):
+        """The info object for the output file format"""
+        return self.conversion.out_format
+
+    @cached_property
+    def valid(self):
+        """The full weight for the conversion, for the purpose of determining optimal conversion pathways"""
+        return self.conversion.is_valid()
+
+    @cached_property
+    def weight(self,
+               bits: Literal["all"] | Literal["top"] | Literal["bottom"] = "all"):
+        """The full weight for the conversion, for the purpose of determining optimal conversion pathways"""
+        return self.conversion.get_weight(bits=bits)
+
+    @staticmethod
+    def factory(converter: ConverterInfo, in_format: FormatInfo, out_format: FormatInfo, *args, **kwargs):
+        """Construct the object from the basic info, making the `Conversion` NamedTuple it contains"""
+        return ConversionQualityInfo(Conversion(converter, in_format, out_format), *args, **kwargs)
+
+
+class ConversionPath(list):
+    """A path of conversion steps"""
+
+    def __init__(self, iterable=None):
+        if not iterable:
+            super().__init__()
+            return
+        super().__init__(iterable)
+        # Check that all items are of the correct type
+        if not all([isinstance(x, Conversion) for x in self]):
+            raise TypeError(f"{tc.CODE}`ConversionPath`{tc.OFF} must be initialised with an iterable of {tc.CODE}`"
+                            f"Conversion`{tc.OFF} objects")
+
+    def __setitem__(self, key, value):
+        if not isinstance(value, Conversion):
+            raise TypeError(f"{tc.CODE}`ConversionPath`{tc.OFF} items must be set to {tc.CODE}`Conversion`{tc.OFF} "
+                            "objects")
+        return super().__setitem__(key, value)
+
+    def get_weight(self,
+                   bits: Literal["all"] | Literal["top"] | Literal["bottom"] = "all"):
+        """The weight for the full path"""
+        return sum([x.get_weight(bits=bits) for x in self])
+
+    def is_valid(self):
+        """Whether or not the path represents a valid series of steps"""
+
+        # Check that all individual steps are valid
+        if not all([x.is_valid() for x in self]):
+            return False
+
+        # Output format of each step should match input of next
+        if not all([self[i].to_format is self[i+1].from_format for i in range(len(self)-1)]):
+            return False
+
+        return True
+
+    def get_name(self):
+        """Get a string representing the path"""
+        if len(self) == 0:
+            return ""
+        name = self[0].in_format.disambiguated_name
+        for step in self:
+            name += f"-{step.out_format.disambiguated_name}"
+        return name
+
+    def __hash__(self):
+        return hash(tuple([hash(step) for step in self]))
+
+
+TConversionPath = ConversionPath[Conversion]
+"""Properly-typed `ConversionPath`, used as a shortcut for type hints"""
 
 
 class ConversionsTable:
@@ -1324,16 +1422,12 @@ class ConversionsTable:
         details = "\n".join(
             [d_prop_conversion_info[x].description for x in l_props if d_prop_conversion_info[x].description])
 
-        weight = calc_conversion_weight(self.parent.get_converter_info(converter),
-                                        in_format_info, out_format_info)
-
-        return ConversionQualityInfo(converter=converter_info,
-                                     in_format=in_format_info,
-                                     out_format=out_format_info,
-                                     qual_str=qual_str,
-                                     details=details,
-                                     d_prop_conversion_info=d_prop_conversion_info,
-                                     weight=weight)
+        return ConversionQualityInfo.factory(converter=converter_info,
+                                             in_format=in_format_info,
+                                             out_format=out_format_info,
+                                             qual_str=qual_str,
+                                             details=details,
+                                             d_prop_conversion_info=d_prop_conversion_info)
 
     def get_conversion_weight(self,
                               converter: str | int | UUID | ConverterInfo,
@@ -1384,52 +1478,6 @@ class ConversionsTable:
             return l_edges[0][CONV_WEIGHT_BOTTOM_KEY]
         else:
             return l_edges[0][CONV_WEIGHT_KEY]
-
-    def _get_step_weight(self,
-                         step: tuple[ConverterInfo, FormatInfo, FormatInfo] | int,
-                         bits: Literal["all"] | Literal["top"] | Literal["bottom"],
-                         only: Literal["all"] | Literal["supported"] | Literal["registered"] = "registered") -> int:
-        if isinstance(step, int):
-            edge: ig.Edge = self._get_desired_graph(only=only).es[step]
-            if bits == "top":
-                return edge[CONV_WEIGHT_TOP_KEY]
-            elif bits == "bottom":
-                return edge[CONV_WEIGHT_BOTTOM_KEY]
-            else:
-                return edge[CONV_WEIGHT_KEY]
-
-        return self.get_conversion_weight(*step, bits=bits)
-
-    def get_path_weight(self,
-                        path: list[tuple[ConverterInfo, FormatInfo, FormatInfo] | int],
-                        bits: Literal["all"] | Literal["top"] | Literal["bottom"],
-                        only: Literal["all"] | Literal["supported"] | Literal["registered"] = "registered"):
-        """Get the weight for a desired conversion.
-
-        Parameters
-        ----------
-        path: list[tuple[ConverterInfo, FormatInfo, FormatInfo] | int]
-            The conversion path, such as returned by `get_conversion_pathway`. The integer representation of steps is
-            used when referring to the internal indices of edges of the graphs
-        bits : Literal["all"] | Literal["top"] | Literal["bottom"]
-            (Used when 64-bit ints are too large for some purposes) Whether to get the full weight ("all"), just the top
-            half of the bits ("top"), or just the lower half of the bits ("bottom")
-        only : Literal["all"] | Literal["supported"] | Literal["registered"], optional
-            Only used internally, when `path` is passed as a list of edges, to identify which graph the edge indices
-            correspond to
-
-        Returns
-        -------
-        int
-            The 64-bit combined weight of this conversion (unless bits=="top" or bits=="bottom", in which case the top
-            or bottom 32 bits of the weight will be returned)
-
-        Raises
-        ------
-        FileConverterDatabaseException
-            If the requested conversion is not possible
-        """
-        return sum([self._get_step_weight(step, bits, only) for step in path])
 
     def get_possible_conversions(self,
                                  in_format: str | int | UUID | FormatInfo,
@@ -1493,14 +1541,17 @@ class ConversionsTable:
         # Query the graph for the shortest paths to perform this conversion. If no conversions are possible, igraph
         # will print a warning, which we catch and suppress here
         with catch_warnings(record=True) as l_warnings:
-            l_paths: list[list[int]] = graph.get_all_shortest_paths(self.d_indices_from_uuids[in_format_info.id],
-                                                                    to=self.d_indices_from_uuids[out_format_info.id],
-                                                                    weights=CONV_WEIGHT_TOP_KEY
-                                                                    if include == "best" else None)
+            l_raw_paths: list[list[int]] = (
+                graph.get_all_shortest_paths(self.d_indices_from_uuids[in_format_info.id],
+                                             to=self.d_indices_from_uuids[out_format_info.id],
+                                             weights=CONV_WEIGHT_TOP_KEY
+                                             if include == "best" else None))
             for warning in l_warnings:
                 if ("Couldn't reach some vertices" not in str(warning.message) and
                         "Couldn't reach some of the requested target vertices" not in str(warning.message)):
                     print(warning, file=sys.stderr)
+
+        l_paths = [self._format_path(x, in_format_info, out_format_info, only) for x in l_raw_paths]
 
         # If we're just getting the shortest paths, we have all we need now, so return them
         if include == "shortest":
@@ -1514,49 +1565,48 @@ class ConversionsTable:
         # We now thus want to filter the paths to just those with the lowest weights
 
         # Sort paths by their weight
-        l_paths_and_weights = list(zip(l_paths, [self.get_path_weight(x, "bottom", only) for x in l_paths]))
-        l_paths_and_weights.sort(key=lambda x: x[1])
+        l_paths.sort(key=lambda x: x.get_weight())
 
         # Filter to only the paths with the equally-lowest weight
-        lowest_weight = l_paths_and_weights[0][1]
-        l_lowest_weight_paths = [x[0] for x in l_paths_and_weights if x[1] == lowest_weight]
+        lowest_weight = l_paths[0].get_weight()
+        l_lowest_weight_paths = [x for x in l_paths if x.get_weight() == lowest_weight]
 
         return l_lowest_weight_paths
 
     def _format_path(self,
-                     path,
+                     raw_path,
                      in_format_info: FormatInfo,
                      out_format_info: FormatInfo,
                      only: Literal["all"] | Literal["supported"] | Literal["registered"] = "registered"
                      ):
-        """Format a raw path into the desired output format"""
+        """Format a raw path into the `ConversionPath` output format"""
 
         graph: ig.Graph = self._get_desired_graph(only)
 
-        l_steps: list[tuple[str, FormatInfo, FormatInfo]] = []
-        for i in range(len(path)-1):
-            source_index = path[i]
+        path: TConversionPath = ConversionPath()
+        for i in range(len(raw_path)-1):
+            source_index = raw_path[i]
             source_id: int = self.d_uuids_from_indices[source_index]
-            target_index: int = path[i+1]
+            target_index: int = raw_path[i+1]
             target_id: int = self.d_uuids_from_indices[target_index]
             converter_name: str = graph.es.select(_source=source_index, _target=target_index)[0][DB_NAME_KEY]
-            l_steps.append((get_converter_info(converter_name),
-                            self.parent.get_format_info(source_id),
-                            self.parent.get_format_info(target_id)))
+            path.append(Conversion(get_converter_info(converter_name),
+                                   self.parent.get_format_info(source_id),
+                                   self.parent.get_format_info(target_id)))
 
-        # If the in or out format is an alias, make sure the path references that particular alias
+        # If the input or output format is an alias, make sure the path references that particular alias
         if not in_format_info.is_primary:
-            l_steps[0] = l_steps[0][0], in_format_info, l_steps[0][2]
+            path[0] = path[0]._replace(in_format=in_format_info)
         if not out_format_info.is_primary:
-            l_steps[-1] = l_steps[-1][0], l_steps[-1][1], out_format_info
+            path[-1] = path[-1]._replace(out_format=out_format_info)
 
-        return l_steps
+        return path
 
     def get_conversion_pathway(self,
                                in_format: str | int | UUID | FormatInfo,
                                out_format: str | int | UUID | FormatInfo,
                                only: Literal["all"] | Literal["supported"] | Literal["registered"] = "registered"
-                               ) -> list[tuple[ConverterInfo, FormatInfo, FormatInfo]] | None:
+                               ) -> TConversionPath | None:
         """Gets a pathway to convert from one format to another
         """
 
@@ -1569,10 +1619,9 @@ class ConversionsTable:
         if not l_paths or not l_paths[0]:
             return None
 
-        # Any paths returned here are equally valid, so just pick the first returned
-        best_path: list[int] = l_paths[0]
-
-        return self._format_path(best_path, in_format_info, out_format_info, only=only)
+        # Any paths returned here are equally valid. For stability, pick the first alphabetically by name
+        l_paths.sort(key=lambda x: x.get_name())
+        return l_paths[0]
 
     def get_possible_conversion_pathways(self,
                                          in_format: str | int | UUID | FormatInfo,
@@ -1580,7 +1629,7 @@ class ConversionsTable:
                                          only: (Literal["all"] | Literal["supported"] |
                                                 Literal["registered"]) = "registered",
                                          include: Literal["best"] | Literal["shortest"] = "best"
-                                         ) -> list[list[tuple[ConverterInfo, FormatInfo, FormatInfo]]]:
+                                         ) -> list[TConversionPath]:
         """As `get_conversion_pathway`, but instead of returning just one pathway, returns a list of pathways meeting
         the `include` criterion:
 
@@ -1599,12 +1648,7 @@ class ConversionsTable:
         if not l_paths or not l_paths[0]:
             return []
 
-        l_formatted_paths = []
-
-        for path in l_paths:
-            l_formatted_paths.append(self._format_path(path, in_format_info, out_format_info, only=only))
-
-        return l_formatted_paths
+        return l_paths
 
     def get_possible_formats(self,
                              converter: str | int | UUID | ConverterInfo,
@@ -2375,7 +2419,7 @@ def get_possible_conversions(in_format: str | int | UUID | FormatInfo,
 def get_conversion_pathway(in_format: str | int | UUID | FormatInfo,
                            out_format: str | int | UUID | FormatInfo,
                            only: Literal["all"] | Literal["supported"] | Literal["registered"] = "registered"
-                           ) -> list[tuple[ConverterInfo, FormatInfo, FormatInfo]] | None:
+                           ) -> TConversionPath | None:
     """Get a list of conversions that can be performed to convert one format to another. This is primarily used when a
     direct conversion is not supported by any individual converter. Only one possible pathway will be returned,
     prioritising pathways which do not lose lose and then re-extrapolate any information stored by some formats and not
@@ -2398,11 +2442,12 @@ def get_conversion_pathway(in_format: str | int | UUID | FormatInfo,
 
     Returns
     -------
-    list[tuple[ConverterInfo, FormatInfo, FormatInfo]] | None
+    TConversionPath | None
         Will return `None` if no conversion pathway is possible or if the input and output formats are the same.
-        Otherwise, will return a list of steps in the pathway, each being a tuple of:
+        Otherwise, will return a `ConversionPath`, which is a list of `Conversion` steps in the pathway, each being a
+        `NamedTuple` of:
 
-        converter_info : ConverterInfo
+        converter : ConverterInfo
             Info on the converter used to perform this step
         in_format : FormatInfo
             Input format for this step (if the first step, will be the input format to this function, otherwise will be
@@ -2421,7 +2466,7 @@ def get_possible_conversion_pathways(in_format: str | int | UUID | FormatInfo,
                                      out_format: str | int | UUID | FormatInfo,
                                      only: Literal["all"] | Literal["supported"] | Literal["registered"] = "registered",
                                      include: Literal["best"] | Literal["shortest"] = "best"
-                                     ) -> list[list[tuple[ConverterInfo, FormatInfo, FormatInfo]]]:
+                                     ) -> list[TConversionPath]:
     """As `get_conversion_pathway`, but instead of returning just one pathway, returns a list of pathways meeting the
     `include` criterion:
 
