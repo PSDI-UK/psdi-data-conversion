@@ -338,18 +338,30 @@ def test_conversion_pathway_direct():
     """Test that we get the expected single-step conversion for a known direct conversion"""
     cif_to_inchi_path = db.get_conversion_pathway(tc.FORMAT_CIF, tc.FORMAT_INCHI)
     assert len(cif_to_inchi_path) == 1
-    converter_info, in_format_info, out_format_info = cif_to_inchi_path[0]
+
+    # Check this step is a valid conversion
+    step = cif_to_inchi_path[0]
+    assert db.disambiguate_formats(*step)
+
+    converter_info, in_format_info, out_format_info = step
     assert converter_info.name == regularize_name(const.CONVERTER_OB)
     assert in_format_info.id == tc.FORMAT_CIF
     assert out_format_info.id == tc.FORMAT_INCHI
 
 
 def _check_path_valid(path):
-    for i in range(len(path)-1):
-        # Output format of each step should match input of next
-        assert path[i][2] is path[i+1][1]
-        # Each step should use a different converter
-        assert path[i][0] != path[i+1][0]
+    for i in range(len(path)):
+        # Check that this step corresponds to a valid conversion
+        step = path[i]
+        assert db.disambiguate_formats(*step)
+
+        # Compare this step to the next if it isn't the last
+        if i < len(path)-1:
+            next_step = path[i+1]
+            # Output format of each step should match input of next
+            assert step[2] is next_step[1]
+            # Each step should use a different converter
+            assert step[0] != next_step[0]
 
 
 def test_conversion_pathway_multistep():
