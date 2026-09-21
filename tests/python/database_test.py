@@ -356,10 +356,14 @@ def _check_path_valid(path: db.ConversionPath):
     assert len(s_converters) == len(path)
 
 
-def test_conversion_pathway_multistep():
+@pytest.fixture(scope="module")
+def inchi_to_moldy_path():
+    return db.get_conversion_pathway(tc.FORMAT_INCHI, tc.FORMAT_MOLDY)
+
+
+def test_conversion_pathway_multistep(inchi_to_moldy_path):
     """Test getting a multi-step conversion - it's possible this will become direct in the future if a new converter is
     added, so the test is a bit loose here"""
-    inchi_to_moldy_path = db.get_conversion_pathway(tc.FORMAT_INCHI, tc.FORMAT_MOLDY)
     assert len(inchi_to_moldy_path) <= 2
     assert inchi_to_moldy_path[0][1].id == tc.FORMAT_INCHI
     assert inchi_to_moldy_path[-1][2].id == tc.FORMAT_MOLDY
@@ -382,20 +386,38 @@ def test_conversion_pathway_to_alias():
     _check_path_valid(to_alias_path)
 
 
-def test_conversion_pathways_best():
+@pytest.fixture(scope="module")
+def l_best_inchi_to_moldy_paths():
+    return db.get_possible_conversion_pathways(tc.FORMAT_INCHI, tc.FORMAT_MOLDY, include="best")
+
+
+def test_conversion_pathways_best(l_best_inchi_to_moldy_paths):
     """Test that we can successfully get a list of all equally-low-weight conversion pathways for a desired conversion
     """
-    l_best_paths = db.get_possible_conversion_pathways(tc.FORMAT_MOLD, tc.FORMAT_MOLDY, include="best")
-    for path in l_best_paths:
+    for path in l_best_inchi_to_moldy_paths:
         _check_path_valid(path)
 
 
-def test_conversion_pathways_shortest():
+@pytest.fixture(scope="module")
+def l_shortest_inchi_to_moldy_paths():
+    return db.get_possible_conversion_pathways(tc.FORMAT_INCHI, tc.FORMAT_MOLDY, include="shortest")
+
+
+def test_conversion_pathways_shortest(l_shortest_inchi_to_moldy_paths):
     """Test that we can successfully get a list of all equally-short conversion pathways for a desired conversion
     """
-    l_best_paths = db.get_possible_conversion_pathways(tc.FORMAT_MOLD, tc.FORMAT_MOLDY, include="shortest")
-    for path in l_best_paths:
+    for path in l_shortest_inchi_to_moldy_paths:
         _check_path_valid(path)
+
+
+def test_conversion_pathways_different_amounts(inchi_to_moldy_path,
+                                               l_best_inchi_to_moldy_paths,
+                                               l_shortest_inchi_to_moldy_paths):
+    """Test that the different methods of getting paths give sane results - that the one path is one of the best paths,
+    and the best paths are all included in the shortest paths"""
+    assert inchi_to_moldy_path in l_best_inchi_to_moldy_paths
+    for path in l_best_inchi_to_moldy_paths:
+        assert path in l_shortest_inchi_to_moldy_paths
 
 
 @pytest.fixture(scope="module")
