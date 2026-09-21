@@ -324,56 +324,116 @@ def test_conversion_table(database):
     assert db.get_format_info(tc.FORMAT_CIF) in l_out_formats
 
 
-def test_conversion_pathways():
-    """Tests of determining conversion pathways between formats"""
-
-    # Check that we get `None` for converting from one format to itself
+def test_conversion_pathway_to_self():
+    """Test that we get `None` for converting from one format to itself"""
     assert db.get_conversion_pathway(tc.FORMAT_CIF, tc.FORMAT_CIF) is None
 
-    # Check that we get `None` for an impossible conversion
+
+def test_conversion_pathway_impossible():
+    """Test that we get `None` for an impossible conversion"""
     assert db.get_conversion_pathway(tc.FORMAT_CIF, tc.FORMAT_ABINIT) is None
 
-    # Check that we get the expected single-step conversion for a known direct conversion
-    cif_to_inchi_path = db.get_conversion_pathway(tc.FORMAT_CIF, tc.FORMAT_INCHI, only="registered")
+
+def test_conversion_pathway_direct():
+    """Test that we get the expected single-step conversion for a known direct conversion"""
+    cif_to_inchi_path = db.get_conversion_pathway(tc.FORMAT_CIF, tc.FORMAT_INCHI)
     assert len(cif_to_inchi_path) == 1
-    converter_info, in_format_info, out_format_info = cif_to_inchi_path[0]
+
+    # Check this step is a valid conversion
+    step = cif_to_inchi_path[0]
+    assert db.disambiguate_formats(*step)
+
+    converter_info, in_format_info, out_format_info = step
     assert converter_info.name == regularize_name(const.CONVERTER_OB)
     assert in_format_info.id == tc.FORMAT_CIF
     assert out_format_info.id == tc.FORMAT_INCHI
 
-    # Test getting a multi-step conversion - it's possible this will become direct in the future if a new converter is
-    # added, so the test is a bit loose here
-    inchi_to_moldy_path = db.get_conversion_pathway(tc.FORMAT_INCHI, tc.FORMAT_MOLDY)
+
+def _check_path_valid(path: db.ConversionPath):
+    """Check that a path is valid and each step uses a different converter"""
+    assert path.is_valid()
+    s_converters = {step.converter for step in path}
+    assert len(s_converters) == len(path)
+
+
+@pytest.fixture(scope="module")
+def inchi_to_moldy_path() -> db.ConversionPath:
+    return db.get_conversion_pathway(tc.FORMAT_INCHI, tc.FORMAT_MOLDY)
+
+
+def test_conversion_pathway_multistep(inchi_to_moldy_path: db.ConversionPath):
+    """Test getting a multi-step conversion - it's possible this will become direct in the future if a new converter is
+    added, so the test is a bit loose here"""
     assert len(inchi_to_moldy_path) <= 2
     assert inchi_to_moldy_path[0][1].id == tc.FORMAT_INCHI
     assert inchi_to_moldy_path[-1][2].id == tc.FORMAT_MOLDY
-    for i in range(len(inchi_to_moldy_path)-1):
-        # Output format of each step should match input of next
-        assert inchi_to_moldy_path[i][2] is inchi_to_moldy_path[i+1][1]
-        # Each step should use a different converter
-        assert inchi_to_moldy_path[i][0] != inchi_to_moldy_path[i+1][0]
+    _check_path_valid(inchi_to_moldy_path)
 
 
-def test_conversion_pathways_with_aliases():
-    """Tests of how format aliases are handled in getting conversion pathways"""
-
-    # Test that if a conversion is requested from an alias, that alias is retained in the input path
+def test_conversion_pathway_from_alias():
+    """Test that if a conversion is requested from an alias, that alias is retained in the input path"""
     from_alias_path = db.get_conversion_pathway(tc.FORMAT_MOLD_ALIAS, tc.FORMAT_MOLDY)
     assert len(from_alias_path) > 1, "Test is only valid if path has at least 2 steps"
     assert from_alias_path[0][1].id == tc.FORMAT_MOLD_ALIAS
+    _check_path_valid(from_alias_path)
 
-    # Test that if a conversion is requested to an alias, that alias is retained in the output path
+
+def test_conversion_pathway_to_alias():
+    """Test that if a conversion is requested to an alias, that alias is retained in the output path"""
     to_alias_path = db.get_conversion_pathway(tc.FORMAT_MOLDY, tc.FORMAT_MOLD_ALIAS)
     assert len(to_alias_path) > 1, "Test is only valid if path has at least 2 steps"
     assert to_alias_path[-1][2].id == tc.FORMAT_MOLD_ALIAS
+    _check_path_valid(to_alias_path)
 
-    # Test that each path is still valid
-    for path in from_alias_path, to_alias_path:
-        for i in range(len(path)-1):
-            # Output format of each step should match input of next
-            assert path[i][2] is path[i+1][1]
-            # Each step should use a different converter
-            assert path[i][0] != path[i+1][0]
+
+@pytest.fixture(scope="module")
+def l_best_inchi_to_moldy_paths():
+    return db.get_possible_conversion_pathways(tc.FORMAT_INCHI, tc.FORMAT_MOLDY, include="best")
+
+
+def test_conversion_pathways_best(l_best_inchi_to_moldy_paths: list[db.ConversionPath]):
+    """Test that we can successfully get a list of all equally-low-weight conversion pathways for a desired conversion
+    """
+    weight = None
+    for path in l_best_inchi_to_moldy_paths:
+        _check_path_valid(path)
+        if weight is None:
+            weight = path.get_weight()
+        else:
+            assert weight == path.get_weight()
+
+
+@pytest.fixture(scope="module")
+def l_shortest_inchi_to_moldy_paths():
+    return db.get_possible_conversion_pathways(tc.FORMAT_INCHI, tc.FORMAT_MOLDY, include="shortest")
+
+
+def test_conversion_pathways_shortest(l_shortest_inchi_to_moldy_paths: list[db.ConversionPath]):
+    """Test that we can successfully get a list of all equally-short conversion pathways for a desired conversion
+    """
+    for path in l_shortest_inchi_to_moldy_paths:
+        _check_path_valid(path)
+
+
+def test_conversion_pathways_different_amounts(inchi_to_moldy_path: db.ConversionPath,
+                                               l_best_inchi_to_moldy_paths: list[db.ConversionPath],
+                                               l_shortest_inchi_to_moldy_paths: list[db.ConversionPath]):
+    """Test that the different methods of getting paths give sane results - that the one path is one of the best paths,
+    and the best paths are all included in the shortest paths"""
+
+    assert inchi_to_moldy_path in l_best_inchi_to_moldy_paths
+
+    lowest_weight = inchi_to_moldy_path.get_weight()
+    shortest_len = len(inchi_to_moldy_path)
+
+    for best_path in l_best_inchi_to_moldy_paths:
+        assert best_path.get_weight() == lowest_weight
+        assert best_path in l_shortest_inchi_to_moldy_paths
+
+    for shortest_path in l_shortest_inchi_to_moldy_paths:
+        assert len(shortest_path) == shortest_len
+        if shortest_path not in l_best_inchi_to_moldy_paths:
+            assert shortest_path.get_weight() > lowest_weight
 
 
 @pytest.fixture(scope="module")
