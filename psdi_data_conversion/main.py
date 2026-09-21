@@ -23,7 +23,7 @@ from psdi_data_conversion.converter import (D_CONVERTER_ARGS, L_REGISTERED_CONVE
                                             get_supported_converter_class, run_converter, run_converter_chain)
 from psdi_data_conversion.converters.base import (FileConverterAbortException, FileConverterException,
                                                   FileConverterInputException)
-from psdi_data_conversion.database import (CONVERSION_WEIGHT_MAX, D_FORMAT_PROPERTY_ATTRS, ConversionQualityInfo,
+from psdi_data_conversion.database import (CONV_WEIGHT_MAX, D_FORMAT_PROPERTY_ATTRS, ConversionQualityInfo,
                                            ConverterInfo, FileConverterDatabaseException, FormatInfo,
                                            disambiguate_formats, get_conversion_pathway, get_conversion_quality,
                                            get_conversion_weight, get_converter_info, get_format_info,
@@ -471,7 +471,7 @@ class ConvertArgs:
 
     def _get_best_converter(self, s_converters: set[ConverterInfo], s_from_formats: set[FormatInfo]) -> ConverterInfo:
         """Determine the best converter from which has the lowest total weight across all formats"""
-        best_weight: int = CONVERSION_WEIGHT_MAX
+        best_weight: int = CONV_WEIGHT_MAX
         best_converter = None
         for converter_info in s_converters:
             weight = sum([get_conversion_weight(converter_info, x, self.to_format)
@@ -981,7 +981,7 @@ def detail_format(format_name: str, in_or_out: str | None = None):
 
     if len(l_format_info) == 0:
         print_wrap(f"{tc.ERROR}ERROR:{tc.OFF} Format {tc.MESSAGE}'{format_name}'{tc.OFF} not recognised",
-                   err=True, newline=True)
+                   err=True)
         list_supported_formats(err=True)
         exit(1)
 
@@ -1031,17 +1031,17 @@ def detail_formats_and_possible_converters(from_format: str, to_format: str):
 
     try:
         get_format_info(from_format, which=0)
-    except KeyError:
+    except (KeyError, FileConverterDatabaseException):
         either_format_failed = True
         print_wrap(f"{tc.ERROR}ERROR:{tc.OFF} Input format {tc.MESSAGE}'{from_format}'{tc.OFF} not recognised",
-                   newline=True, err=True)
+                   err=True)
 
     try:
         get_format_info(to_format, which=0)
-    except KeyError:
+    except (KeyError, FileConverterDatabaseException):
         either_format_failed = True
         print_wrap(f"{tc.ERROR}ERROR:{tc.OFF} Output format {tc.MESSAGE}'{from_format}'{tc.OFF} not recognised",
-                   newline=True, err=True)
+                   err=True)
 
     if either_format_failed:
         # Let the user know about formats which are allowed
