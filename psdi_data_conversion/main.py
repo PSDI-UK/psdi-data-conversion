@@ -13,9 +13,10 @@ import sys
 import textwrap
 from argparse import ArgumentParser
 from functools import reduce
-from itertools import batched, product
+from itertools import product
 
 import wraptext
+from compatibility import batched
 
 from psdi_data_conversion import constants as const
 from psdi_data_conversion.converter import (D_CONVERTER_ARGS, L_REGISTERED_CONVERTERS, L_SUPPORTED_CONVERTERS,
