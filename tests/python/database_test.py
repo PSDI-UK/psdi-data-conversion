@@ -32,55 +32,63 @@ def test_load(database):
     assert new_database is database
 
 
-def test_converter_info(database):
+@pytest.fixture(scope="module")
+def l_converter_info():
+    return db.get_converter_info()
+
+
+@pytest.mark.parametrize("converter", L_SUPPORTED_CONVERTERS)
+def test_converter_info_supported(converter, l_converter_info: list[db.ConverterInfo]):
+    """Test that info is available for all supported converters"""
+    l_converter_names = [x.name for x in l_converter_info]
+    assert converter in l_converter_names
+
+
+@pytest.mark.parametrize("converter", L_SUPPORTED_CONVERTERS)
+def test_converter_info_valid(converter,
+                              database,
+                              subtests):
     """Test that we can get the expected information on each converter
     """
 
-    l_converter_info = db.get_converter_info()
-    l_converter_names = [x.name for x in l_converter_info]
+    converter_info: db.ConverterInfo = db.get_converter_info(converter)
 
-    # Check that all supported converters are in this list
-    for name in L_SUPPORTED_CONVERTERS:
-        assert name in l_converter_names
+    assert converter_info is not None
 
-    for converter_info in l_converter_info:
+    # Check the name and pretty name are correct
+    name = converter_info.name
+    assert regularize_name(converter_info.pretty_name) == name
+    assert converter == name
 
-        if converter_info is None:
-            continue
+    # Check database is properly set as parent
+    assert converter_info.parent == database
 
-        # Check the name and pretty name are correct
-        name = converter_info.name
-        assert regularize_name(converter_info.pretty_name) == name
+    # Check name matches
+    assert converter_info.name == name
 
-        # Check database is properly set as parent
-        assert converter_info.parent == database
+    # Check ID is of proper type and an allowed value
+    assert isinstance(converter_info.id, int)
+    assert converter_info.id > 0
 
-        # Check name matches
-        assert converter_info.name == name
+    # Check that the UUID matches the ID
+    assert converter_info.uuid == UUID(int=converter_info.id)
 
-        # Check ID is of proper type and an allowed value
-        assert isinstance(converter_info.id, int)
-        assert converter_info.id > 0
+    # Check description has some text in it
+    assert isinstance(converter_info.description, str)
+    assert len(converter_info.description) > 0
 
-        # Check that the UUID matches the ID
-        assert converter_info.uuid == UUID(int=converter_info.id)
+    # Check URL appears reasonable
+    assert isinstance(converter_info.url, str)
+    assert "http" in converter_info.url
 
-        # Check description has some text in it
-        assert isinstance(converter_info.description, str)
-        assert len(converter_info.description) > 0
-
-        # Check URL appears reasonable
-        assert isinstance(converter_info.url, str)
-        assert "http" in converter_info.url
-
-        # Check that this converter's info can be retrieved through all supported methods
-        assert converter_info is db.get_converter_info(converter_info)
-        assert converter_info is db.get_converter_info(converter_info.id)
-        assert converter_info is db.get_converter_info(UUID(int=converter_info.id))
-        assert converter_info is db.get_converter_info(str(UUID(int=converter_info.id)))
-        assert converter_info is db.get_converter_info(UUID(int=converter_info.id).hex)
-        assert converter_info is db.get_converter_info(converter_info.name)
-        assert converter_info is db.get_converter_info(converter_info.pretty_name)
+    # Check that this converter's info can be retrieved through all supported methods
+    assert converter_info is db.get_converter_info(converter_info)
+    assert converter_info is db.get_converter_info(converter_info.id)
+    assert converter_info is db.get_converter_info(UUID(int=converter_info.id))
+    assert converter_info is db.get_converter_info(str(UUID(int=converter_info.id)))
+    assert converter_info is db.get_converter_info(UUID(int=converter_info.id).hex)
+    assert converter_info is db.get_converter_info(converter_info.name)
+    assert converter_info is db.get_converter_info(converter_info.pretty_name)
 
 
 def test_format_args():
