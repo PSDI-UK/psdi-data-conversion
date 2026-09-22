@@ -32,6 +32,8 @@ jobs:
         uses: actions/checkout@v7
 
       # We run Python tests on 3.11 since we want all the core functionality to work on this version and not need 3.12
+      # 3.12 is additionally test when branches are pushed to `main` in case anything breaks there, but not here to save
+      # time since that's going to be a rare occurrence
       - name: Set up Python 3.11
         uses: actions/setup-python@v7
         with:
