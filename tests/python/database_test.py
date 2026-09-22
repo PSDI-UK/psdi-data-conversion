@@ -53,42 +53,47 @@ def test_converter_info_valid(converter,
 
     converter_info: db.ConverterInfo = db.get_converter_info(converter)
 
-    assert converter_info is not None
+    with subtests.test("Test converter info is found"):
+        assert converter_info is not None
 
-    # Check the name and pretty name are correct
     name = converter_info.name
-    assert regularize_name(converter_info.pretty_name) == name
-    assert converter == name
 
-    # Check database is properly set as parent
-    assert converter_info.parent == database
+    with subtests.test("Test pretty name matches name if regularized"):
+        assert regularize_name(converter_info.pretty_name) == name
 
-    # Check name matches
-    assert converter_info.name == name
+    with subtests.test("Test the name matches the name used in the input list"):
+        assert converter == name
 
-    # Check ID is of proper type and an allowed value
-    assert isinstance(converter_info.id, int)
-    assert converter_info.id > 0
+    with subtests.test("Test database is properly set as parent"):
+        assert converter_info.parent == database
 
-    # Check that the UUID matches the ID
-    assert converter_info.uuid == UUID(int=converter_info.id)
+    with subtests.test("Test ID is of proper type and an allowed value"):
+        assert isinstance(converter_info.id, int)
+        assert converter_info.id > 0
 
-    # Check description has some text in it
-    assert isinstance(converter_info.description, str)
-    assert len(converter_info.description) > 0
+    with subtests.test("Test that the UUID matches the ID"):
+        assert converter_info.uuid == UUID(int=converter_info.id)
 
-    # Check URL appears reasonable
-    assert isinstance(converter_info.url, str)
-    assert "http" in converter_info.url
+    with subtests.test("Test description has some text in it"):
+        assert isinstance(converter_info.description, str)
+        assert len(converter_info.description) > 0
 
-    # Check that this converter's info can be retrieved through all supported methods
-    assert converter_info is db.get_converter_info(converter_info)
-    assert converter_info is db.get_converter_info(converter_info.id)
-    assert converter_info is db.get_converter_info(UUID(int=converter_info.id))
-    assert converter_info is db.get_converter_info(str(UUID(int=converter_info.id)))
-    assert converter_info is db.get_converter_info(UUID(int=converter_info.id).hex)
-    assert converter_info is db.get_converter_info(converter_info.name)
-    assert converter_info is db.get_converter_info(converter_info.pretty_name)
+    with subtests.test("Test URL appears reasonable"):
+        assert isinstance(converter_info.url, str)
+        assert "http" in converter_info.url
+
+    with subtests.test("Test get info from itself"):
+        assert converter_info is db.get_converter_info(converter_info)
+    with subtests.test("Test get info from ID"):
+        assert converter_info is db.get_converter_info(converter_info.id)
+    with subtests.test("Test get info from UUID"):
+        assert converter_info is db.get_converter_info(UUID(int=converter_info.id))
+    with subtests.test("Test get info from UUID as string"):
+        assert converter_info is db.get_converter_info(str(UUID(int=converter_info.id)))
+    with subtests.test("Test get info from UUID as hex"):
+        assert converter_info is db.get_converter_info(UUID(int=converter_info.id).hex)
+    with subtests.test("Test get info from pretty name"):
+        assert converter_info is db.get_converter_info(converter_info.pretty_name)
 
 
 def test_format_args():
