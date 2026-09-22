@@ -7,13 +7,13 @@ Different versions of methods etc. to help with compatibility with different ver
 used where possible, with fallback to implementations here if not
 """
 
-from collections.abc import Generator, Iterable
-
 __all__ = ["batched"]
 
 try:
     from itertools import batched
 except ImportError:
+
+    from collections.abc import Generator, Iterable
 
     def batched(x: Iterable, n: int) -> Generator[tuple]:
         """Fallback implementation of `itertools.batched`, which was introduced in Python 3.12"""
