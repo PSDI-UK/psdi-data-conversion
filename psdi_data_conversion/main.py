@@ -16,9 +16,9 @@ from functools import reduce
 from itertools import product
 
 import wraptext
-from compatibility import batched
 
 from psdi_data_conversion import constants as const
+from psdi_data_conversion.compatibility import batched
 from psdi_data_conversion.converter import (D_CONVERTER_ARGS, L_REGISTERED_CONVERTERS, L_SUPPORTED_CONVERTERS,
                                             converter_is_registered, converter_is_supported,
                                             get_supported_converter_class, run_converter, run_converter_chain)
