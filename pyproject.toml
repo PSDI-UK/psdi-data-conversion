@@ -50,12 +50,12 @@ local_scheme = "no-local-version"
 # If using a fixed version, stop commenting out here
 
 [project.optional-dependencies]
-test = ["pytest==8", "coverage"]
+test = ["pytest==9.0.3", "coverage"]
 gui = ["Flask", "requests"]
 gui-test = [
   "Flask",
   "requests",
-  "pytest==8",
+  "pytest==9.0.3",
   "coverage",
   "selenium",
   "webdriver_manager",
