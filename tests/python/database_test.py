@@ -417,23 +417,29 @@ def test_conversion_pathways_shortest(l_shortest_inchi_to_moldy_paths: list[db.C
 
 def test_conversion_pathways_different_amounts(inchi_to_moldy_path: db.ConversionPath,
                                                l_best_inchi_to_moldy_paths: list[db.ConversionPath],
-                                               l_shortest_inchi_to_moldy_paths: list[db.ConversionPath]):
+                                               l_shortest_inchi_to_moldy_paths: list[db.ConversionPath],
+                                               subtests):
     """Test that the different methods of getting paths give sane results - that the one path is one of the best paths,
     and the best paths are all included in the shortest paths"""
 
-    assert inchi_to_moldy_path in l_best_inchi_to_moldy_paths
+    with subtests.test("Single path in best paths"):
+        assert inchi_to_moldy_path in l_best_inchi_to_moldy_paths
 
     lowest_weight = inchi_to_moldy_path.get_weight()
     shortest_len = len(inchi_to_moldy_path)
 
-    for best_path in l_best_inchi_to_moldy_paths:
-        assert best_path.get_weight() == lowest_weight
-        assert best_path in l_shortest_inchi_to_moldy_paths
+    for i, best_path in enumerate(l_best_inchi_to_moldy_paths):
+        with subtests.test("Best paths have min weight", i=i):
+            assert best_path.get_weight() == lowest_weight
+        with subtests.test("Best paths in shortest paths", i=i):
+            assert best_path in l_shortest_inchi_to_moldy_paths
 
-    for shortest_path in l_shortest_inchi_to_moldy_paths:
-        assert len(shortest_path) == shortest_len
+    for i, shortest_path in enumerate(l_shortest_inchi_to_moldy_paths):
+        with subtests.test("Shortest paths have shortest length", i=i):
+            assert len(shortest_path) == shortest_len
         if shortest_path not in l_best_inchi_to_moldy_paths:
-            assert shortest_path.get_weight() > lowest_weight
+            with subtests.test("Shortest paths not in best have higher weight", i=i):
+                assert shortest_path.get_weight() > lowest_weight
 
 
 @pytest.fixture(scope="module")
