@@ -96,75 +96,87 @@ def test_converter_info_valid(converter,
         assert converter_info is db.get_converter_info(converter_info.pretty_name)
 
 
-def test_format_args():
+def test_format_args(subtests):
     """Test that we can get the flags and options allowed for specific formats for a given converter
     """
     converter_name = const.CONVERTER_OB
     in_format = tc.FORMAT_PDB_0
     out_format = tc.FORMAT_CIF
 
-    l_in_flags, _ = db.get_in_format_args(converter_name, in_format)
-    l_out_flags, _ = db.get_out_format_args(converter_name, out_format)
+    with subtests.test("Test in flags are correct"):
+        l_in_flags, _ = db.get_in_format_args(converter_name, in_format)
+        l_in_flag_names = [x.name for x in l_in_flags]
+        assert "b" in l_in_flag_names
+        assert "c" in l_in_flag_names
+        assert "s" in l_in_flag_names
 
-    l_in_flag_names = [x.name for x in l_in_flags]
-    l_out_flag_names = [x.name for x in l_out_flags]
+    with subtests.test("Test out flags are correct"):
+        l_out_flags, _ = db.get_out_format_args(converter_name, out_format)
+        l_out_flag_names = [x.name for x in l_out_flags]
+        assert "g" in l_out_flag_names
 
-    assert "b" in l_in_flag_names
-    assert "c" in l_in_flag_names
-    assert "s" in l_in_flag_names
+    with subtests.test("Test that we can find a specific in flag"):
+        in_flag_info_0 = l_in_flags[0]
+        assert db.get_in_format_args(converter_name, in_format, in_flag_info_0.name) is in_flag_info_0
 
-    assert "g" in l_out_flag_names
+    with subtests.test("Test that we can find a specific out flag"):
+        out_flag_info_0 = l_out_flags[0]
+        assert db.get_out_format_args(converter_name, out_format, out_flag_info_0.name) is out_flag_info_0
 
-    # Check that we can find a specific argument
-    in_flag_info_0 = l_in_flags[0]
-    assert db.get_in_format_args(converter_name, in_format, in_flag_info_0.name) is in_flag_info_0
-    out_flag_info_0 = l_out_flags[0]
-    assert db.get_out_format_args(converter_name, out_format, out_flag_info_0.name) is out_flag_info_0
-
-    # Check that the UUID is constructed appropriately for the info objects
-    assert in_flag_info_0.uuid == UUID(int=in_flag_info_0.id)
-    assert out_flag_info_0.uuid == UUID(int=out_flag_info_0.id)
+    with subtests.test("Test in flag UUID is correctly constructed"):
+        assert in_flag_info_0.uuid == UUID(int=in_flag_info_0.id)
+    with subtests.test("Test out flag UUID is correctly constructed"):
+        assert out_flag_info_0.uuid == UUID(int=out_flag_info_0.id)
 
 
-def test_format_info(database):
+@pytest.mark.parametrize("name, id", (("pdb", tc.FORMAT_PDB_0), ("inchikey", tc.FORMAT_INCHIKEY),
+                         ("mmcif", tc.FORMAT_MMCIF), ("inchi", tc.FORMAT_INCHI), ("molreport", tc.FORMAT_MOLREPORT)))
+def test_format_info(name, id, database, subtests):
     """Test that we can get the expected information on a few test formats
     """
 
-    for name, id in (("pdb", tc.FORMAT_PDB_0), ("inchikey", tc.FORMAT_INCHIKEY), ("mmcif", tc.FORMAT_MMCIF),
-                     ("inchi", tc.FORMAT_INCHI), ("molreport", tc.FORMAT_MOLREPORT)):
+    format_info = db.get_format_info(id)
 
-        format_info = db.get_format_info(id)
-
-        # Check database is properly set as parent
+    with subtests.test("Test database is properly set as parent"):
         assert format_info.parent == database
 
-        # Check name matches
+    with subtests.test("Test name matches"):
         assert format_info.name == name
 
-        # Check that the UUID is constructed appropriately
+    with subtests.test("Test that the UUID is constructed appropriately"):
         assert format_info.uuid == UUID(int=format_info.id)
 
-        # Check that this format's info can be retrieved through all supported methods
+    # Check that this format's info can be retrieved through all supported methods
+    with subtests.test("Test get format info from itself"):
         assert format_info is db.get_format_info(format_info)
+    with subtests.test("Test get format info from ID"):
         assert format_info is db.get_format_info(format_info.id)
+    with subtests.test("Test get format info from UUID"):
         assert format_info is db.get_format_info(UUID(int=format_info.id))
+    with subtests.test("Test get format info from UUID as string"):
         assert format_info is db.get_format_info(str(UUID(int=format_info.id)))
+    with subtests.test("Test get format info from UUID as hex"):
         assert format_info is db.get_format_info(UUID(int=format_info.id).hex)
+    with subtests.test("Test get format info from name"):
         assert format_info is db.get_format_info(format_info.name, which=0)
+    with subtests.test("Test get format info from disambiguated name"):
         assert format_info is db.get_format_info(format_info.disambiguated_name)
 
-        # Check properties are as expected
+    # Check properties are as expected
 
+    with subtests.test("Test composition property is correct"):
         if name in ("pdb", "mmcif", "inchi", "molreport"):
             assert format_info.composition, name
         else:
             assert not format_info.composition, name
 
+    with subtests.test("Test connections property is correct"):
         if name in ("pdb", "inchi", "molreport"):
             assert format_info.connections, name
         else:
             assert not format_info.connections, name
 
+    with subtests.test("Test 2D and 3D properties are correct"):
         if name in ("pdb", "mmcif"):
             assert format_info.two_dim, name
             assert format_info.three_dim, name
@@ -185,115 +197,124 @@ def ent_format_info():
     return db.get_format_info(tc.FORMAT_ENT)
 
 
-def test_format_alias_equality(pdb_format_info: db.FormatInfo, ent_format_info: db.FormatInfo):
+def test_format_alias_equality(pdb_format_info: db.FormatInfo, ent_format_info: db.FormatInfo, subtests):
     """Test that format aliases are separate but share common info"""
 
-    # These objects should not be the same
-    assert ent_format_info != pdb_format_info
+    with subtests.test("Test alias format infos aren't the same object"):
+        assert ent_format_info != pdb_format_info
 
-    # But they should share the same common format info
-    assert ent_format_info.format_common_info is pdb_format_info.format_common_info
+    with subtests.test("Test alias format infos share the same common format info"):
+        assert ent_format_info.format_common_info is pdb_format_info.format_common_info
 
 
-def test_format_alias_primary(pdb_format_info: db.FormatInfo, ent_format_info: db.FormatInfo):
+def test_format_alias_primary(pdb_format_info: db.FormatInfo, ent_format_info: db.FormatInfo, subtests):
     """Test that format aliases properly indicate which is the primary in all appropriate ways"""
 
-    # Check the "is_primary" indicator
-    assert not ent_format_info.is_primary
-    assert pdb_format_info.is_primary
+    with subtests.test("Test the alias format info isn't labelled as primary"):
+        assert not ent_format_info.is_primary
+    with subtests.test("Test the primary format info is labelled as primary"):
+        assert pdb_format_info.is_primary
 
-    # Both should reference PDB as the primary, in both ID and name
-    assert ent_format_info.primary_id != ent_format_info.id
-    assert ent_format_info.primary_name != ent_format_info.name
-    assert ent_format_info.primary_id == pdb_format_info.id
-    assert ent_format_info.primary_name == pdb_format_info.name
+    with subtests.test("Test the alias format references the primary as primary ID"):
+        assert ent_format_info.primary_id != ent_format_info.id
+        assert ent_format_info.primary_id == pdb_format_info.id
 
-    assert pdb_format_info.primary_id == pdb_format_info.id
-    assert pdb_format_info.primary_name == pdb_format_info.name
+    with subtests.test("Test the alias format references the primary as primary name"):
+        assert ent_format_info.primary_name != ent_format_info.name
+        assert ent_format_info.primary_name == pdb_format_info.name
+
+    with subtests.test("Test the primary format references itself as primary ID"):
+        assert pdb_format_info.primary_id == pdb_format_info.id
+
+    with subtests.test("Test the primary format references itself as primary name"):
+        assert pdb_format_info.primary_name == pdb_format_info.name
 
 
-def test_format_alias_dicts(pdb_format_info: db.FormatInfo, ent_format_info: db.FormatInfo):
+def test_format_alias_dicts(pdb_format_info: db.FormatInfo, ent_format_info: db.FormatInfo, subtests):
     """Test that format aliases dicts of IDs and extensions behave appropriately"""
 
-    # The alias extension dicts of each should be the same and should include the ID and name of each
-    assert ent_format_info.d_alias_exts is pdb_format_info.d_alias_exts
+    with subtests.test("Test the alias dicts are the same"):
+        assert ent_format_info.d_alias_exts is pdb_format_info.d_alias_exts
 
-    assert ent_format_info.d_alias_exts[ent_format_info.id] == ent_format_info.name
-    assert pdb_format_info.d_alias_exts[pdb_format_info.id] == pdb_format_info.name
+    with subtests.test("Test the alias dict includes alias format"):
+        assert ent_format_info.d_alias_exts[ent_format_info.id] == ent_format_info.name
+    with subtests.test("Test the alias dict includes primary format"):
+        assert ent_format_info.d_alias_exts[pdb_format_info.id] == pdb_format_info.name
 
 
-def test_format_alias_graph(database: db.DataConversionDatabase):
+def test_format_alias_graph(database: db.DataConversionDatabase, subtests):
     """Test that format aliases are handled correctly in the graphs"""
     d_indices_from_uuids = database.conversions_table.d_indices_from_uuids
     d_uuids_from_indices = database.conversions_table.d_uuids_from_indices
 
-    # Both the "pdb" format and its alias "ent" format should point to the same index in the graph
-    assert d_indices_from_uuids[tc.FORMAT_PDB_0] == d_indices_from_uuids[tc.FORMAT_ENT]
+    with subtests.test("Test both formats point to same vertex"):
+        assert d_indices_from_uuids[tc.FORMAT_PDB_0] == d_indices_from_uuids[tc.FORMAT_ENT]
 
-    # The UUID pointed back to from this index should be solely the PDB format
-    assert d_uuids_from_indices[d_indices_from_uuids[tc.FORMAT_ENT]] == tc.FORMAT_PDB_0
+    with subtests.test("Test the vertex points back to the primary format"):
+        assert d_uuids_from_indices[d_indices_from_uuids[tc.FORMAT_ENT]] == tc.FORMAT_PDB_0
 
 
-def test_format_info_options():
+def test_format_info_options(subtests):
     """Test that we can get the expected information on a few test formats
     """
 
-    # Check that we get an exception for an ambiguous format if we don't request which
-    with pytest.raises(db.FileConverterDatabaseException):
+    with subtests.test("Ambiguous format raises an error"), pytest.raises(db.FileConverterDatabaseException):
         db.get_format_info("pdb")
 
     # Check that requesting all possibilities works as expected
     l_pdb_infos = db.get_format_info("pdb", which="all")
-    assert l_pdb_infos[0] != l_pdb_infos[1]
-    assert l_pdb_infos[0] == db.get_format_info("pdb", which=0)
-    assert l_pdb_infos[1] == db.get_format_info("pdb", which=1)
+    with subtests.test("Returned possibilities are different"):
+        assert l_pdb_infos[0] != l_pdb_infos[1]
+    for i in range(len(l_pdb_infos)):
+        with subtests.test("Can get each returned possibility with `which`", i=i):
+            assert l_pdb_infos[i] == db.get_format_info("pdb", which=i)
+        with subtests.test("Disambiguated name for each format works"):
+            assert db.get_format_info(f"pdb-{i}") == l_pdb_infos[i]
 
-    # Check that the shortcut for which format works
-    assert db.get_format_info("pdb-0") == l_pdb_infos[0]
-    assert db.get_format_info("pdb-1") == l_pdb_infos[1]
+    with subtests.test("Disambiguated name doesn't cause any problems even if the format is unambiguous"):
+        assert db.get_format_info("cif-0") == db.get_format_info("cif")
 
-    # Check that the shortcut doesn't cause any problems even if the format is unambiguous
-    assert db.get_format_info("cif-0") == db.get_format_info("cif")
+    with subtests.test("Right disambiguated name for unambiguous format"):
+        assert db.get_format_info("cif").disambiguated_name == "cif"
+    for i in range(len(l_pdb_infos)):
+        with subtests.test("Right disambiguated name for ambiguous format", i=i):
+            assert db.get_format_info(f"pdb-{i}").disambiguated_name == f"pdb-{i}"
 
-    # Check that the format info provides the right disambiguated name
-    assert db.get_format_info("cif").disambiguated_name == "cif"
-    assert db.get_format_info("pdb-0").disambiguated_name == "pdb-0"
-    assert db.get_format_info("pdb-1").disambiguated_name == "pdb-1"
-
-    # Check that formats are case-insensitive
-    assert db.get_format_info("PDB-0") is db.get_format_info("pdb-0")
+    with subtests.test("Formats are case-insensitive"):
+        assert db.get_format_info("PDB-0") is db.get_format_info("pdb-0")
 
 
-def test_disambiguate_format():
+def test_disambiguate_format(subtests):
     """Test that we can disambiguate formats when only one combination is possible for a conversion
     """
 
-    # Test that we can disambiguate the right pdb format
-    in_format, out_format = db.disambiguate_formats(const.CONVERTER_OB, "pdb", "cif")
-    assert in_format == db.get_format_info(tc.FORMAT_PDB_0)
-    assert out_format == db.get_format_info(tc.FORMAT_CIF)
+    with subtests.test("Can disambiguate only PDB format supported by Open Babel"):
+        in_format, out_format = db.disambiguate_formats(const.CONVERTER_OB, "pdb", "cif")
+        assert (in_format, out_format) == (db.get_format_info(tc.FORMAT_PDB_0), db.get_format_info(tc.FORMAT_CIF))
 
-    # Test we get the expected exception if no conversion is possible
-    with pytest.raises(db.FileConverterDatabaseException, match="is not supported"):
+    with (subtests.test("Error if no conversion is possible"),
+          pytest.raises(db.FileConverterDatabaseException, match="is not supported")):
         db.disambiguate_formats(const.CONVERTER_C2X, "ins", "cml")
 
-    # Test we get the expected exception if multiple conversions are possible
-    with pytest.raises(db.FileConverterDatabaseException, match="is ambiguous"):
+    with (subtests.test("Error if multiple conversions are possible"),
+          pytest.raises(db.FileConverterDatabaseException, match="is ambiguous")):
         db.disambiguate_formats(const.CONVERTER_C2X, "cif", "pdb")
 
 
-def test_conversion_table(database):
+def test_conversion_table(database: db.DataConversionDatabase, subtests):
     """Test that we can access data from the conversions table properly
     """
 
-    # Check the conversions table parent is set properly
     conversions_table = database.conversions_table
-    assert conversions_table.parent is database
 
-    # Check we can get the correct conversion quality
-    assert db.get_conversion_quality(const.CONVERTER_OB, tc.FORMAT_PDB_0,
-                                     tc.FORMAT_CIF).qual_str == const.QUAL_VERYGOOD
-    assert db.get_conversion_quality(const.CONVERTER_ATO, tc.FORMAT_XYZ_1, tc.FORMAT_INCHI) is None
+    with subtests.test("Table parent is set up properly"):
+        assert conversions_table.parent is database
+
+    with subtests.test("Get quality for possible conversion"):
+        assert db.get_conversion_quality(const.CONVERTER_OB, tc.FORMAT_PDB_0,
+                                         tc.FORMAT_CIF).qual_str == const.QUAL_VERYGOOD
+    with subtests.test("Get None quality for impossible conversion"):
+        assert db.get_conversion_quality(const.CONVERTER_ATO, tc.FORMAT_XYZ_1, tc.FORMAT_INCHI) is None
 
     # Do some detailed checks on one conversion
     xyz_format_info = db.get_format_info(tc.FORMAT_XYZ_1)
@@ -302,39 +323,55 @@ def test_conversion_table(database):
     # "xyz" is ambiguous, but only one possibility has a valid conversion here, so check that we get that one
     qual = db.get_conversion_quality(const.CONVERTER_OB, "xyz", inchi_format_info)
 
-    assert qual.qual_str == const.QUAL_OKAY
-    assert qual.in_format is db.get_format_info(xyz_format_info)
-    assert qual.out_format is db.get_format_info(inchi_format_info)
+    with subtests.test("Quality is okay as expected"):
+        assert qual.qual_str == const.QUAL_OKAY
+    with subtests.test("Quality references proper in format"):
+        assert qual.in_format is db.get_format_info(xyz_format_info)
+    with subtests.test("Quality references proper out format"):
+        assert qual.out_format is db.get_format_info(inchi_format_info)
 
     details = qual.details
 
     # Check the details are as expected
-    assert const.QUAL_NOTE_OUT_MISSING.format(const.QUAL_2D_LABEL) in details
-    assert const.QUAL_NOTE_OUT_MISSING.format(const.QUAL_3D_LABEL) in details
-    assert const.QUAL_NOTE_IN_MISSING.format(const.QUAL_CONN_LABEL) in details
-    assert const.QUAL_COMP_LABEL not in details
+    with subtests.test("Quality notes that 2D is missing in out format"):
+        assert const.QUAL_NOTE_OUT_MISSING.format(const.QUAL_2D_LABEL) in details
+    with subtests.test("Quality notes that 3D is missing in out format"):
+        assert const.QUAL_NOTE_OUT_MISSING.format(const.QUAL_3D_LABEL) in details
+    with subtests.test("Quality notes that connections is missing in in format"):
+        assert const.QUAL_NOTE_IN_MISSING.format(const.QUAL_CONN_LABEL) in details
+    with subtests.test("Quality notes don't mention composition"):
+        assert const.QUAL_COMP_LABEL not in details
 
-    # Check we don't have any extra lines in the details
-    assert "\n\n" not in details
-    assert not details.startswith("\n")
-    assert not details.endswith("\n")
+    with subtests.test("No double line breaks in details"):
+        assert "\n\n" not in details
+    with subtests.test("Details doesn't start with a line break"):
+        assert not details.startswith("\n")
+    with subtests.test("Details doesn't end with a line break"):
+        assert not details.endswith("\n")
 
     # Check the property info dict is as expected (mostly covered by details check, so just a couple checks here)
     comp_prop_info = qual.d_prop_conversion_info[const.QUAL_COMP_KEY]
-    assert comp_prop_info.input_supported is True
-    assert comp_prop_info.output_supported is True
-    assert comp_prop_info.label == const.QUAL_COMP_LABEL
-    assert comp_prop_info.description == ""
+    with subtests.test("Quality info dict notes composition is supported in in format"):
+        assert comp_prop_info.input_supported is True
+    with subtests.test("Quality info dict notes composition is supported in out format"):
+        assert comp_prop_info.output_supported is True
+    with subtests.test("Quality info dict has correct label for composition"):
+        assert comp_prop_info.label == const.QUAL_COMP_LABEL
+    with subtests.test("Quality info dict has correct description for composition"):
+        assert comp_prop_info.description == ""
 
-    # Check we can get a list of possible converters for a given conversion
-    l_possible_conversions = db.get_possible_conversions("pdb", "cif")
-    assert (db.get_converter_info(const.CONVERTER_OB), db.get_format_info("pdb", which=0),
-            db.get_format_info("cif", which=0)) in l_possible_conversions
+    with subtests.test("Get possible conversion from database method for it"):
+        l_possible_conversions = db.get_possible_conversions("pdb", "cif")
+        assert (db.get_converter_info(const.CONVERTER_OB), db.get_format_info("pdb", which=0),
+                db.get_format_info("cif", which=0)) in l_possible_conversions
 
     # Check that we can get a list of possible input/outpat formats for a given converter
-    l_in_formats, l_out_formats = db.get_possible_formats(const.CONVERTER_OB)
-    assert db.get_format_info(tc.FORMAT_PDB_0) in l_in_formats
-    assert db.get_format_info(tc.FORMAT_CIF) in l_out_formats
+    with subtests.test("Get expected input/output formats for converter"):
+        l_in_formats, l_out_formats = db.get_possible_formats(const.CONVERTER_OB)
+        with subtests.test("List contains an expected input format"):
+            assert db.get_format_info(tc.FORMAT_PDB_0) in l_in_formats
+        with subtests.test("List contains an expected output format"):
+            assert db.get_format_info(tc.FORMAT_CIF) in l_out_formats
 
 
 def test_conversion_pathway_to_self():
@@ -347,26 +384,33 @@ def test_conversion_pathway_impossible():
     assert db.get_conversion_pathway(tc.FORMAT_CIF, tc.FORMAT_ABINIT) is None
 
 
-def test_conversion_pathway_direct():
+def test_conversion_pathway_direct(subtests):
     """Test that we get the expected single-step conversion for a known direct conversion"""
-    cif_to_inchi_path = db.get_conversion_pathway(tc.FORMAT_CIF, tc.FORMAT_INCHI)
-    assert len(cif_to_inchi_path) == 1
+    with subtests.test("Get a single-step path for a direct conversion"):
+        cif_to_inchi_path = db.get_conversion_pathway(tc.FORMAT_CIF, tc.FORMAT_INCHI)
+        assert len(cif_to_inchi_path) == 1
 
     # Check this step is a valid conversion
-    step = cif_to_inchi_path[0]
-    assert db.disambiguate_formats(*step)
+    with subtests.test("Step represents a valid conversion"):
+        step = cif_to_inchi_path[0]
+        assert step.is_valid()
 
     converter_info, in_format_info, out_format_info = step
-    assert converter_info.name == regularize_name(const.CONVERTER_OB)
-    assert in_format_info.id == tc.FORMAT_CIF
-    assert out_format_info.id == tc.FORMAT_INCHI
+    with subtests.test("Converter info in step is correct"):
+        assert converter_info.name == regularize_name(const.CONVERTER_OB)
+    with subtests.test("In format info in step is correct"):
+        assert in_format_info.id == tc.FORMAT_CIF
+    with subtests.test("Out format info in step is correct"):
+        assert out_format_info.id == tc.FORMAT_INCHI
 
 
-def _check_path_valid(path: db.ConversionPath):
+def _check_path_valid(path: db.ConversionPath, subtests):
     """Check that a path is valid and each step uses a different converter"""
-    assert path.is_valid()
-    s_converters = {step.converter for step in path}
-    assert len(s_converters) == len(path)
+    with subtests.test("Path is valid", name=path.get_name()):
+        assert path.is_valid()
+    with subtests.test("All converters in path unique", name=path.get_name()):
+        s_converters = {step.converter for step in path}
+        assert len(s_converters) == len(path)
 
 
 @pytest.fixture(scope="module")
@@ -374,29 +418,38 @@ def inchi_to_moldy_path() -> db.ConversionPath:
     return db.get_conversion_pathway(tc.FORMAT_INCHI, tc.FORMAT_MOLDY)
 
 
-def test_conversion_pathway_multistep(inchi_to_moldy_path: db.ConversionPath):
+def test_conversion_pathway_multistep(inchi_to_moldy_path: db.ConversionPath, subtests):
     """Test getting a multi-step conversion - it's possible this will become direct in the future if a new converter is
     added, so the test is a bit loose here"""
-    assert len(inchi_to_moldy_path) <= 2
-    assert inchi_to_moldy_path[0][1].id == tc.FORMAT_INCHI
-    assert inchi_to_moldy_path[-1][2].id == tc.FORMAT_MOLDY
-    _check_path_valid(inchi_to_moldy_path)
+
+    with subtests.test("Path is as short as expected"):
+        assert len(inchi_to_moldy_path) <= 2
+
+    _check_path_valid(inchi_to_moldy_path, subtests)
 
 
-def test_conversion_pathway_from_alias():
+def test_conversion_pathway_from_alias(subtests):
     """Test that if a conversion is requested from an alias, that alias is retained in the input path"""
+
     from_alias_path = db.get_conversion_pathway(tc.FORMAT_MOLD_ALIAS, tc.FORMAT_MOLDY)
     assert len(from_alias_path) > 1, "Test is only valid if path has at least 2 steps"
-    assert from_alias_path[0][1].id == tc.FORMAT_MOLD_ALIAS
-    _check_path_valid(from_alias_path)
+
+    with subtests.test("In format of path is the alias requested"):
+        assert from_alias_path[0][1].id == tc.FORMAT_MOLD_ALIAS
+
+    _check_path_valid(from_alias_path, subtests)
 
 
-def test_conversion_pathway_to_alias():
+def test_conversion_pathway_to_alias(subtests):
     """Test that if a conversion is requested to an alias, that alias is retained in the output path"""
+
     to_alias_path = db.get_conversion_pathway(tc.FORMAT_MOLDY, tc.FORMAT_MOLD_ALIAS)
     assert len(to_alias_path) > 1, "Test is only valid if path has at least 2 steps"
-    assert to_alias_path[-1][2].id == tc.FORMAT_MOLD_ALIAS
-    _check_path_valid(to_alias_path)
+
+    with subtests.test("Out format of path is the alias requested"):
+        assert to_alias_path[-1][2].id == tc.FORMAT_MOLD_ALIAS
+
+    _check_path_valid(to_alias_path, subtests)
 
 
 @pytest.fixture(scope="module")
@@ -404,16 +457,17 @@ def l_best_inchi_to_moldy_paths():
     return db.get_possible_conversion_pathways(tc.FORMAT_INCHI, tc.FORMAT_MOLDY, include="best")
 
 
-def test_conversion_pathways_best(l_best_inchi_to_moldy_paths: list[db.ConversionPath]):
+def test_conversion_pathways_best(l_best_inchi_to_moldy_paths: list[db.ConversionPath], subtests):
     """Test that we can successfully get a list of all equally-low-weight conversion pathways for a desired conversion
     """
     weight = None
     for path in l_best_inchi_to_moldy_paths:
-        _check_path_valid(path)
+        _check_path_valid(path, subtests)
         if weight is None:
             weight = path.get_weight()
         else:
-            assert weight == path.get_weight()
+            with subtests.test("All paths have the same weight", name=path.get_name()):
+                assert path.get_weight() == weight
 
 
 @pytest.fixture(scope="module")
@@ -421,11 +475,22 @@ def l_shortest_inchi_to_moldy_paths():
     return db.get_possible_conversion_pathways(tc.FORMAT_INCHI, tc.FORMAT_MOLDY, include="shortest")
 
 
-def test_conversion_pathways_shortest(l_shortest_inchi_to_moldy_paths: list[db.ConversionPath]):
+def test_conversion_pathways_shortest(l_shortest_inchi_to_moldy_paths: list[db.ConversionPath],
+                                      inchi_to_moldy_path: db.ConversionPath, subtests):
     """Test that we can successfully get a list of all equally-short conversion pathways for a desired conversion
     """
+    path_length = None
+    min_weight = inchi_to_moldy_path.get_weight()
     for path in l_shortest_inchi_to_moldy_paths:
-        _check_path_valid(path)
+        _check_path_valid(path, subtests)
+        _check_path_valid(path, subtests)
+        if path_length is None:
+            path_length = len(path)
+        else:
+            with subtests.test("All paths have the same length", name=path.get_name()):
+                assert path_length == len(path)
+            with subtests.test("All paths have equal or more weight than best", name=path.get_name()):
+                assert path.get_weight() >= min_weight
 
 
 def test_conversion_pathways_different_amounts(inchi_to_moldy_path: db.ConversionPath,
@@ -546,11 +611,15 @@ def test_calc_conversion_weight(format_all, format_none, max_prop_weight, conver
 @pytest.mark.parametrize("prop_weight, prec_weight, time_weight, conv_weight", [(0, 0, 0, 0),
                                                                                 (65535, 65535, 255, 255),
                                                                                 (2788794, 1254542, 122, 234)])
-def test_split_conversion_weight(prop_weight, prec_weight, time_weight, conv_weight):
+def test_split_conversion_weight(prop_weight, prec_weight, time_weight, conv_weight, subtests):
     """Test that the function to split the conversion weight works as expected"""
     split_weight = db.split_conversion_weight(db.combine_conversion_weight(
         prop_weight, prec_weight, time_weight, conv_weight))
-    assert split_weight.prop_weight == prop_weight
-    assert split_weight.prec_weight == prec_weight
-    assert split_weight.time_weight == time_weight
-    assert split_weight.conv_weight == conv_weight
+    with subtests.test("Property weight is correctly split out from full weight"):
+        assert split_weight.prop_weight == prop_weight
+    with subtests.test("Precision weight is correctly split out from full weight"):
+        assert split_weight.prec_weight == prec_weight
+    with subtests.test("Time weight is correctly split out from full weight"):
+        assert split_weight.time_weight == time_weight
+    with subtests.test("Converter weight is correctly split out from full weight"):
+        assert split_weight.conv_weight == conv_weight
