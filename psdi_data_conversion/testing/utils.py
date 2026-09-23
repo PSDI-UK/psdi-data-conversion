@@ -464,6 +464,11 @@ def run_test_conversion_with_cli(test_spec: ConversionTestSpec,
     test_spec : ConversionTestSpec
         The specification for the test or series of tests to be run
     """
+
+    if subtests is None:
+        from psdi_data_conversion.compatibility import DummySubtests
+        subtests = DummySubtests()
+
     # Make temporary directories for the input and output files to be stored in
     with TemporaryDirectory("_input") as input_dir, TemporaryDirectory("_output") as output_dir:
         # Iterate over the test spec to run each individual test it defines
@@ -473,17 +478,19 @@ def run_test_conversion_with_cli(test_spec: ConversionTestSpec,
             if single_test_spec.skip:
                 print(f"Skipping single test spec {test_index}: {single_test_spec}")
                 continue
-            print(f"Skipping single test spec {test_index}: {single_test_spec}")
+            print(f"Running single test spec {test_index}: {single_test_spec}")
             _run_single_test_conversion_with_cli(test_spec=single_test_spec,
                                                  input_dir=input_dir,
-                                                 output_dir=output_dir)
-            print(f"Success for test spec {test_index}")
+                                                 output_dir=output_dir,
+                                                 subtests=subtests,
+                                                 test_index=test_index)
 
 
 def _run_single_test_conversion_with_cli(test_spec: SingleConversionTestSpec,
                                          input_dir: str,
                                          output_dir: str,
-                                         subtests=None):
+                                         subtests,
+                                         test_index: int):
     """Runs a single test conversion through the command-line interface.
 
     Parameters
@@ -494,6 +501,10 @@ def _run_single_test_conversion_with_cli(test_spec: SingleConversionTestSpec,
         A directory which can be used to store input data
     output_dir : str
         A directory which can be used to create output data
+    subtests : pytest.Subtests
+        Pytest's subtests fixture, or else a compatible dummy replacement
+    test_index : int
+        The index of this in the overall test spec
     """
 
     # Symlink the input file to the input directory
@@ -505,45 +516,49 @@ def _run_single_test_conversion_with_cli(test_spec: SingleConversionTestSpec,
         pass
 
     # Capture stdout and stderr while we run this test. We use a try block to stop capturing as soon as testing finishes
-    try:
-        stdouterr = py.io.StdCaptureFD(in_=False)
 
-        if test_spec.expect_success:
-            try:
-                run_converter_through_cli(filename=qualified_in_filename,
-                                          to_format=test_spec.to_format,
-                                          from_format=test_spec.from_format,
-                                          name=test_spec.converter_name,
-                                          input_dir=input_dir,
-                                          output_dir=output_dir,
-                                          log_file=os.path.join(output_dir, test_spec.log_filename),
-                                          **test_spec.conversion_kwargs)
-                success = True
-            except SystemExit:
-                success = False
-        else:
-            with pytest.raises(SystemExit) as exc_info:
-                run_converter_through_cli(filename=qualified_in_filename,
-                                          to_format=test_spec.to_format,
-                                          from_format=test_spec.from_format,
-                                          name=test_spec.converter_name,
-                                          input_dir=input_dir,
-                                          output_dir=output_dir,
-                                          log_file=os.path.join(output_dir, test_spec.log_filename),
-                                          **test_spec.conversion_kwargs)
-            # Get the success from whether or not the exit code is 0
-            success = not exc_info.value.code
-
-        qualified_out_filename = os.path.realpath(os.path.join(output_dir, test_spec.out_filename))
-
-        # Determine success based on whether or not the output file exists with non-zero size
-        if not os.path.isfile(qualified_out_filename) or os.path.getsize(qualified_out_filename) == 0:
+    if test_spec.expect_success:
+        try:
+            stdouterr = py.io.StdCaptureFD(in_=False)
+            run_converter_through_cli(filename=qualified_in_filename,
+                                      to_format=test_spec.to_format,
+                                      from_format=test_spec.from_format,
+                                      name=test_spec.converter_name,
+                                      input_dir=input_dir,
+                                      output_dir=output_dir,
+                                      log_file=os.path.join(output_dir, test_spec.log_filename),
+                                      **test_spec.conversion_kwargs)
+            success = True
+        except SystemExit:
             success = False
+        finally:
+            stdout, stderr = stdouterr.reset()   # Grab stdout and stderr
+            # Reset stdout and stderr capture
+            stdouterr.done()
+    else:
+        with pytest.raises(SystemExit) as exc_info:
+            try:
+                stdouterr = py.io.StdCaptureFD(in_=False)
+                run_converter_through_cli(filename=qualified_in_filename,
+                                          to_format=test_spec.to_format,
+                                          from_format=test_spec.from_format,
+                                          name=test_spec.converter_name,
+                                          input_dir=input_dir,
+                                          output_dir=output_dir,
+                                          log_file=os.path.join(output_dir, test_spec.log_filename),
+                                          **test_spec.conversion_kwargs)
+            finally:
+                stdout, stderr = stdouterr.reset()   # Grab stdout and stderr
+                # Reset stdout and stderr capture
+                stdouterr.done()
+        # Get the success from whether or not the exit code is 0
+        success = not exc_info.value.code
 
-    finally:
-        stdout, stderr = stdouterr.reset()   # Grab stdout and stderr
-        # Reset stdout and stderr capture
-        stdouterr.done()
+    qualified_out_filename = os.path.realpath(os.path.join(output_dir, test_spec.out_filename))
+
+    # Determine success based on whether or not the output file exists with non-zero size
+    if not os.path.isfile(qualified_out_filename) or os.path.getsize(qualified_out_filename) == 0:
+        success = False
 
     # If failed, print any stdout and stderr
     if not success:
