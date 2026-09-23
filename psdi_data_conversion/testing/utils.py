@@ -303,9 +303,16 @@ class SingleConversionTestSpec:
         """The unqualified name of the global log file which stores info on all conversions."""
         return GLOBAL_LOG_FILENAME
 
+    def __str__(self):
+        """Simplified string representation"""
+        d_out = {key: val for key, val in self.__dict__.items() if not key.startswith("_")}
+        del d_out["skip"], d_out["callback"]
+        return "{" + ", ".join([f'{key}: {str(val)}' for key, val in d_out.items()]) + "}"
+
 
 def run_test_conversion_with_library(test_spec: ConversionTestSpec,
-                                     chain=False):
+                                     chain=False,
+                                     subtests=None):
     """Runs a test conversion or series thereof through a call to the python library's `run_converter` function
     (if `chain` is False) or `run_converter_chain` function (if `chain` is True).
 
@@ -315,26 +322,38 @@ def run_test_conversion_with_library(test_spec: ConversionTestSpec,
         The specification for the test or series of tests to be run
     chain : bool
         Whether or not to run through the chain conversion function
+    subtests : pytest.Subtests
+        Pytest's subtests fixture, or else a compatible dummy replacement
     """
+
+    if subtests is None:
+        from psdi_data_conversion.compatibility import DummySubtests
+        subtests = DummySubtests()
+
     # Make temporary directories for the input and output files to be stored in
     with TemporaryDirectory("_input") as input_dir, TemporaryDirectory("_output") as output_dir:
         # Iterate over the test spec to run each individual test it defines
-        for single_test_spec in test_spec:
+        for test_index, single_test_spec in enumerate(test_spec):
+            if test_index != 0:
+                print()
             if single_test_spec.skip:
-                print(f"Skipping single test spec {single_test_spec}")
+                print(f"Skipping single test spec {test_index}: {single_test_spec}")
                 continue
-            print(f"Running single test spec: {single_test_spec}")
+            print(f"Running single test spec {test_index}: {single_test_spec}")
             _run_single_test_conversion_with_library(test_spec=single_test_spec,
                                                      input_dir=input_dir,
                                                      output_dir=output_dir,
-                                                     chain=chain)
-            print(f"Success for test spec: {single_test_spec}")
+                                                     chain=chain,
+                                                     subtests=subtests,
+                                                     test_index=test_index)
 
 
 def _run_single_test_conversion_with_library(test_spec: SingleConversionTestSpec,
                                              input_dir: str,
                                              output_dir: str,
-                                             chain: bool):
+                                             chain: bool,
+                                             subtests,
+                                             test_index: int):
     """Runs a single test conversion through a call to python library's `run_converter` function
     (if `chain` is False) or `run_converter_chain` function (if `chain` is True).
 
@@ -348,6 +367,10 @@ def _run_single_test_conversion_with_library(test_spec: SingleConversionTestSpec
         A directory which can be used to create output data
     chain : bool
         Whether or not to run through the chain conversion function
+    subtests : pytest.Subtests
+        Pytest's subtests fixture, or else a compatible dummy replacement
+    test_index : int
+        The index of this in the overall test spec
     """
 
     # Symlink the input file to the input directory
@@ -382,33 +405,41 @@ def _run_single_test_conversion_with_library(test_spec: SingleConversionTestSpec
         conversion_kwargs["to_format"] = test_spec.to_format
 
     # Capture stdout and stderr while we run this test. We use a try block to stop capturing as soon as testing finishes
-    try:
-        stdouterr = py.io.StdCaptureFD(in_=False)
 
-        exc_info: pytest.ExceptionInfo | None = None
-        if test_spec.expect_success:
-            run_func(filename=test_spec.filename,
-                     from_format=test_spec.from_format,
-                     input_dir=input_dir,
-                     output_dir=output_dir,
-                     **conversion_kwargs)
-            success = True
-        else:
-            with pytest.raises(Exception) as exc_info:
-                run_func(filename=qualified_in_filename,
+    exc_info: pytest.ExceptionInfo | None = None
+    success = False
+    if test_spec.expect_success:
+        with subtests.test("Run conversion through library expecting success", test_index=test_index):
+            try:
+                stdouterr = py.io.StdCaptureFD(in_=False)
+                run_func(filename=test_spec.filename,
                          from_format=test_spec.from_format,
                          input_dir=input_dir,
                          output_dir=output_dir,
                          **conversion_kwargs)
-            success = False
-
-    finally:
-        stdout, stderr = stdouterr.reset()   # Grab stdout and stderr
-        # Reset stdout and stderr capture
-        stdouterr.done()
+                success = True
+            finally:
+                stdout, stderr = stdouterr.reset()   # Grab stdout and stderr
+                # Reset stdout and stderr capture
+                stdouterr.done()
+    else:
+        with subtests.test("Run conversion through library expecting success", test_index=test_index):
+            with pytest.raises(Exception) as exc_info:
+                try:
+                    stdouterr = py.io.StdCaptureFD(in_=False)
+                    run_func(filename=qualified_in_filename,
+                             from_format=test_spec.from_format,
+                             input_dir=input_dir,
+                             output_dir=output_dir,
+                             **conversion_kwargs)
+                finally:
+                    stdout, stderr = stdouterr.reset()   # Grab stdout and stderr
+                    # Reset stdout and stderr capture
+                    stdouterr.done()
+            success = True
 
     # Compile output info for the test and call the callback function if one is provided
-    if test_spec.callback:
+    if success and test_spec.callback:
         test_info = ConversionTestInfo(run_type="library",
                                        chain=chain,
                                        test_spec=test_spec,
@@ -418,12 +449,14 @@ def _run_single_test_conversion_with_library(test_spec: SingleConversionTestSpec
                                        captured_stdout=stdout,
                                        captured_stderr=stderr,
                                        exc_info=exc_info)
-        callback_msg = test_spec.callback(test_info)
-        if callback_msg:
-            pytest.fail(callback_msg)
+        with subtests.test("Run callback"):
+            callback_msg = test_spec.callback(test_info)
+            if callback_msg:
+                pytest.fail(callback_msg)
 
 
-def run_test_conversion_with_cli(test_spec: ConversionTestSpec):
+def run_test_conversion_with_cli(test_spec: ConversionTestSpec,
+                                 subtests=None):
     """Runs a test conversion or series thereof through the command-line interface.
 
     Parameters
@@ -434,20 +467,23 @@ def run_test_conversion_with_cli(test_spec: ConversionTestSpec):
     # Make temporary directories for the input and output files to be stored in
     with TemporaryDirectory("_input") as input_dir, TemporaryDirectory("_output") as output_dir:
         # Iterate over the test spec to run each individual test it defines
-        for single_test_spec in test_spec:
+        for test_index, single_test_spec in enumerate(test_spec):
+            if test_index != 0:
+                print()
             if single_test_spec.skip:
-                print(f"Skipping single test spec {single_test_spec}")
+                print(f"Skipping single test spec {test_index}: {single_test_spec}")
                 continue
-            print(f"Running single test spec: {single_test_spec}")
+            print(f"Skipping single test spec {test_index}: {single_test_spec}")
             _run_single_test_conversion_with_cli(test_spec=single_test_spec,
                                                  input_dir=input_dir,
                                                  output_dir=output_dir)
-            print(f"Success for test spec: {single_test_spec}")
+            print(f"Success for test spec {test_index}")
 
 
 def _run_single_test_conversion_with_cli(test_spec: SingleConversionTestSpec,
                                          input_dir: str,
-                                         output_dir: str):
+                                         output_dir: str,
+                                         subtests=None):
     """Runs a single test conversion through the command-line interface.
 
     Parameters
@@ -538,6 +574,7 @@ def run_converter_through_cli(filename: str,
                               output_dir: str,
                               log_file: str,
                               from_format: str | None = None,
+                              subtests=None,
                               **conversion_kwargs):
     """Runs a test conversion through the command-line interface
 

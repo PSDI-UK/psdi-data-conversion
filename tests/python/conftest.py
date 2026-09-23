@@ -21,3 +21,25 @@ except ImportError:
     @pytest.fixture
     def subtests():
         return DummySubtests()
+
+# VSCode workaround so that if any subtests fail, the whole test is reported as failed in VSCode, from
+# https://github.com/microsoft/vscode-python/issues/25824#issuecomment-4460161647
+from collections.abc import Generator
+
+_calling = set[str]()
+
+
+@pytest.hookimpl(wrapper=True)
+def pytest_runtest_call(item: pytest.Item) -> Generator[None]:
+    _calling.add(item.nodeid)
+    yield
+    _calling.remove(item.nodeid)
+
+
+@pytest.hookimpl(wrapper=True)
+def pytest_runtest_makereport(item: pytest.Item,
+                              call: pytest.CallInfo) -> Generator[None, pytest.TestReport, pytest.TestReport]:
+    report = yield
+    if call.when == "call" and item.nodeid in _calling:
+        report.nodeid += "(subtest)"
+    return report
