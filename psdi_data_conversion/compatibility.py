@@ -7,7 +7,9 @@ Different versions of methods etc. to help with compatibility with different ver
 used where possible, with fallback to implementations here if not
 """
 
-__all__ = ["batched"]
+from contextlib import AbstractContextManager, contextmanager
+
+__all__ = ["batched", "DummySubtests"]
 
 try:
     from itertools import batched
@@ -31,3 +33,20 @@ except ImportError:
             if not l_out:
                 return
             yield tuple(l_out)
+
+
+@contextmanager
+def _dummy_context_manager():
+    yield
+    return
+
+
+class DummySubtests:
+    """Dummy subtests fixture - fallback for subtests is to just set up a dummy context manager, which will result
+    in any subtest failing immediately failing the enclosing test"""
+
+    def __init__(*args, **kwargs):
+        return
+
+    def test(self, *args, **kwargs) -> AbstractContextManager:
+        return _dummy_context_manager()

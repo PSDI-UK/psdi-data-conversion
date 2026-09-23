@@ -16,22 +16,7 @@ try:
     _ = Subtests
 except ImportError:
 
-    from contextlib import AbstractContextManager, contextmanager
-
-    @contextmanager
-    def dummy_context_manager():
-        yield
-        return
-
-    class DummySubtests:
-        """Dummy subtests fixture - fallback for subtests is to just set up a dummy context manager, which will result
-        in any subtest failing immediately failing the enclosing test"""
-
-        def __init__(*args, **kwargs):
-            return
-
-        def test(self, *args, **kwargs) -> AbstractContextManager:
-            return dummy_context_manager()
+    from psdi_data_conversion.compatibility import DummySubtests
 
     @pytest.fixture
     def subtests():
