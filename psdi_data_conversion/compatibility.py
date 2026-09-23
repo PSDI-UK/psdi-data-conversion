@@ -42,7 +42,7 @@ def _dummy_context_manager():
 
 
 class DummySubtests:
-    """Dummy subtests fixture - fallback for subtests is to just set up a dummy context manager, which will result
+    """Fallback for Pytest's `subtests` fixtrue, which just sets up a dummy context manager which will result
     in any subtest failing immediately failing the enclosing test"""
 
     def __init__(*args, **kwargs):
