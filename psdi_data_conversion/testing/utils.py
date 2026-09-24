@@ -311,8 +311,8 @@ class SingleConversionTestSpec:
 
 
 def run_test_conversion_with_library(test_spec: ConversionTestSpec,
-                                     chain=False,
-                                     subtests=None):
+                                     subtests,
+                                     chain=False):
     """Runs a test conversion or series thereof through a call to the python library's `run_converter` function
     (if `chain` is False) or `run_converter_chain` function (if `chain` is True).
 
@@ -320,10 +320,10 @@ def run_test_conversion_with_library(test_spec: ConversionTestSpec,
     ----------
     test_spec : ConversionTestSpec
         The specification for the test or series of tests to be run
-    chain : bool
-        Whether or not to run through the chain conversion function
     subtests : pytest.Subtests
         Pytest's subtests fixture, or else a compatible dummy replacement
+    chain : bool
+        Whether or not to run through the chain conversion function
     """
 
     if subtests is None:
@@ -456,7 +456,7 @@ def _run_single_test_conversion_with_library(test_spec: SingleConversionTestSpec
 
 
 def run_test_conversion_with_cli(test_spec: ConversionTestSpec,
-                                 subtests=None):
+                                 subtests):
     """Runs a test conversion or series thereof through the command-line interface.
 
     Parameters
@@ -464,10 +464,6 @@ def run_test_conversion_with_cli(test_spec: ConversionTestSpec,
     test_spec : ConversionTestSpec
         The specification for the test or series of tests to be run
     """
-
-    if subtests is None:
-        from psdi_data_conversion.compatibility import DummySubtests
-        subtests = DummySubtests()
 
     # Make temporary directories for the input and output files to be stored in
     with TemporaryDirectory("_input") as input_dir, TemporaryDirectory("_output") as output_dir:
