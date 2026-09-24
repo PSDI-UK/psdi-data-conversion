@@ -601,7 +601,7 @@ def get_argument_parser():
                         f"ambiguous). {tc.MESSAGE}'auto-chain'{tc.OFF} does the same, but will also determine and use "
                         "a chained conversion if a single-step conversion is not possible. Default "
                         f"{tc.MESSAGE}'auto'{tc.OFF}.")
-    parser.add_argument("--path", type=str, nargs="+",
+    parser.add_argument("--path", type=str, nargs="+", default=None,
                         help=f"Used instead of {tc.CODE}`-w/--with`{tc.OFF} when requesting a chained conversion with "
                         "a specific path. This should be provided as an alternating series of converters and formats "
                         f"to specify the conversion pathway, e.g.:{tc.CODE}`-f <source_format> --path <converter 1> "
@@ -663,8 +663,19 @@ def get_argument_parser():
 
     # Keyword arguments for alternative functionality
     parser.add_argument("-l", "--list", action="store_true",
-                        help="If provided alone, lists all available converters. If the name of a converter is "
-                             "provided, gives information on the converter and any command-line flags it accepts.")
+                        help="If provided alone, lists all available converters. Otherwise, provides information on "
+                        f"converters provided with {tc.CODE}`-w/--with'{tc.OFF} and/or input/output formats provided "
+                        f"with {tc.CODE}`-f/--from`{tc.OFF} and {tc.CODE}`-t/--to`{tc.OFF}")
+    parser.add_argument("--lp", "--lpaths", "--listpaths", type=str, default=False,
+                        help=f"When provided alongside {tc.CODE}`-f/--from`{tc.OFF} and {tc.CODE}`-t/--to`{tc.OFF}, "
+                        "will list direct and chained conversion pathways between the formats. The number of paths "
+                        f"listed depends on the value provided to {tc.CODE}`--lp`{tc.OFF}: {tc.MESSAGE}'one'{tc.OFF} "
+                        f"(default) will return just one of the best (lowest-weight) paths, {tc.MESSAGE}'best'{tc.OFF} "
+                        f"will return all equally-lowest-weight paths, and {tc.MESSAGE}'short'{tc.OFF} or {tc.MESSAGE}'"
+                        f"shortest'{tc.OFF} will return all equally-shortest paths. So e.g. {tc.CODE}`"
+                        f"psdi-data-convert --lp best -f fmt1 -t fmt2`{tc.OFF} will return all conversion pathways "
+                        f"from format {tc.MESSAGE}'fmt1'{tc.OFF} to format {tc.MESSAGE}'fmt2'{tc.OFF} with the lowest "
+                        "possible weight.")
 
     # Logging/stdout arguments
     parser.add_argument("-g", "--log-file", type=str, default=None,
