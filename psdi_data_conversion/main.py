@@ -613,7 +613,7 @@ def get_argument_parser():
                         f"in a single word (e.g. use {tc.MESSAGE}'OpenBabel'{tc.OFF} or its ID instead of "
                         f"{tc.MESSAGE}'Open Babel'{tc.OFF}).")
     parser.add_argument("--delete-input", action="store_true",
-                        help="If set, input files will be deleted after conversion, default they will be kept")
+                        help="If set, input files will be deleted after conversion, default they will be kept.")
     parser.add_argument("--from-flags", type=str, default="",
                         help="String of concatenated one-letter flags for how to read the input file, e.g. "
                         f"{tc.CODE}`--from-flags xyz`{tc.OFF} will set flags {tc.CODE}x{tc.OFF}, {tc.CODE}y{tc.OFF}, "
@@ -652,7 +652,7 @@ def get_argument_parser():
                         help="If set, will not perform a pre-check in the database on the validity of a conversion. "
                         "Setting this will result in a less human-friendly error message (or may even falsely indicate "
                         "success) if the conversion is not supported, but will save some execution time. Recommended "
-                        "only for automated execution after the user has confirmed a conversion is supported")
+                        "only for automated execution after the user has confirmed a conversion is supported.")
 
     # Keyword arguments specific to converters
     for converter_name in L_REGISTERED_CONVERTERS:
@@ -665,7 +665,7 @@ def get_argument_parser():
     parser.add_argument("-l", "--list", action="store_true",
                         help="If provided alone, lists all available converters. Otherwise, provides information on "
                         f"converters provided with {tc.CODE}`-w/--with'{tc.OFF} and/or input/output formats provided "
-                        f"with {tc.CODE}`-f/--from`{tc.OFF} and {tc.CODE}`-t/--to`{tc.OFF}")
+                        f"with {tc.CODE}`-f/--from`{tc.OFF} and {tc.CODE}`-t/--to`{tc.OFF}.")
     parser.add_argument("--lp", "--lpaths", "--listpaths", type=str, default=False,
                         help=f"When provided alongside {tc.CODE}`-f/--from`{tc.OFF} and {tc.CODE}`-t/--to`{tc.OFF}, "
                         "will list direct and chained conversion pathways between the formats. The number of paths "
@@ -701,7 +701,7 @@ def get_argument_parser():
                         help=f"The desired level to log at. Allowed values are: {tc.MESSAGE}'DEBUG'{tc.OFF}, "
                         f"{tc.MESSAGE}'INFO'{tc.OFF}, {tc.MESSAGE}'WARNING'{tc.OFF}, {tc.MESSAGE}'ERROR'{tc.OFF}, "
                         f"{tc.MESSAGE}'CRITICAL'{tc.OFF}. Default: {tc.MESSAGE}'INFO'{tc.OFF} for logging to file, "
-                        f"{tc.MESSAGE}'WARNING'{tc.OFF} for logging to stdout")
+                        f"{tc.MESSAGE}'WARNING'{tc.OFF} for logging to stdout.")
 
     return parser
 
