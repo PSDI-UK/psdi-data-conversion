@@ -78,6 +78,7 @@ class ConvertArgs:
 
         # Keyword arguments for alternative functionality
         self.list: bool = args.list
+        self.listpaths: str | None = args.lp.lower() if args.lp else None
 
         # Logging/stdout arguments
         self.log_mode: bool = args.log_mode
@@ -106,22 +107,23 @@ class ConvertArgs:
         except ValueError:
             pass
 
-        # Special handling for listing converters
-        if self.list:
+        # Special handling for listing info
+
+        # Get the converter name from the arguments if it wasn't provided by -w/--with
+        if self.list and not self.converter:
+            joined_converter = " ".join(self.l_args)
+            # Check if the converter is provided as an integer, and convert to int if so
+            try:
+                self.converter = int(joined_converter)
+            except ValueError:
+                self.converter = regularize_name(joined_converter)
+
+        if self.list or self.listpaths:
             # Force log mode to stdout and turn off quiet
             self.log_mode = const.LOG_STDOUT
             self.quiet = False
 
-            # Get the converter name from the arguments if it wasn't provided by -w/--with
-            if not self.converter:
-                joined_converter = " ".join(self.l_args)
-                # Check if the converter is provided as an integer, and convert to int if so
-                try:
-                    self.converter = int(joined_converter)
-                except ValueError:
-                    self.converter = regularize_name(joined_converter)
-
-            # For this operation, any other arguments can be ignored
+            # For these operations, any other arguments can be ignored
             return
 
         # Quiet mode is equivalent to logging mode == LOGGING_NONE, so normalize them if either is set
@@ -482,7 +484,7 @@ class ConvertArgs:
                 best_weight = weight
         return best_converter.name
 
-    def _check_to_format_unique(self):
+    def _check_to_format_unique(self, listpaths_mode=False):
         """Check that the output format is uniquely specified"""
 
         l_to_formats: list[FormatInfo] = get_format_info(self.to_format, "all")
@@ -491,18 +493,21 @@ class ConvertArgs:
                                               "output format. To see supported formats, call:\n"
                                               f"{tc.CODE}{const.CL_SCRIPT_NAME} -l{tc.OFF}", help=True)
         elif len(l_to_formats) > 1:
-            raise FileConverterInputException(f"{tc.MESSAGE}'{self.to_format}'{tc.OFF} is ambiguous and can correspond "
-                                              f"to multiple possible output formats. When using the {tc.MESSAGE}'"
-                                              f"{const.CONVERTER_AUTO}'{tc.OFF} or {tc.MESSAGE}'"
-                                              f"{const.CONVERTER_AUTOCHAIN}'{tc.OFF} keyword for {tc.CODE}`"
-                                              f"-w/--with`{tc.OFF}, both the input and output formats must be "
-                                              "uniquely specified. Please use the disambiguated name or ID for the "
-                                              "desired format from the following list:\n" +
-                                              "\n".join([x.format_oneline() for x in l_to_formats]), help=True)
+            msg = (f"{tc.MESSAGE}'{self.to_format}'{tc.OFF} is ambiguous and can correspond "
+                   f"to multiple possible output formats. ")
+            if listpaths_mode:
+                msg += (f"When using {tc.CODE}'--lp/--lpaths/--listpaths'{tc.OFF}, ")
+            else:
+                msg += (f"When using the {tc.MESSAGE}'{const.CONVERTER_AUTO}'{tc.OFF} or {tc.MESSAGE}'"
+                        f"{const.CONVERTER_AUTOCHAIN}'{tc.OFF} keyword for {tc.CODE}`-w/--with`{tc.OFF}, ")
+            msg += ("both the input and output formats must be uniquely specified. Please use the disambiguated name "
+                    "or ID for the desired format from the following list:\n" +
+                    "\n".join([x.format_oneline() for x in l_to_formats]))
+            raise FileConverterInputException(msg, help=True)
 
-    def _check_from_formats_unique(self):
+    def _check_from_formats_unique(self, listpaths_mode=False):
         """Check that the input formats are uniquely specified"""
-        if not self.from_format:
+        if not listpaths_mode and not self.from_format:
 
             s_input_exts = {os.path.splitext(x)[1] for x in self.l_args}
             if len(s_input_exts) == 1:
@@ -531,14 +536,20 @@ class ConvertArgs:
 
         l_from_formats: list[FormatInfo] = get_format_info(self.from_format, "all")
         if len(l_from_formats) != 1:
-            raise FileConverterInputException(f"When using the {tc.MESSAGE}'{const.CONVERTER_AUTO}'{tc.OFF} or "
-                                              f"{tc.MESSAGE}'{const.CONVERTER_AUTOCHAIN}'{tc.OFF} keyword for "
-                                              f"{tc.CODE}`-w/--with`{tc.OFF}, the input format "
-                                              "determined from the extension of the input file or specified with "
-                                              f"{tc.CODE}`-f/--from`{tc.OFF} must unambiguously "
-                                              "identify a format. Please use the ID or disambiguated name from the "
-                                              "correct format in the following list:\n" +
-                                              "\n".join([x.format_oneline() for x in l_from_formats]), help=True)
+            msg = (f"{tc.MESSAGE}'{self.to_format}'{tc.OFF} is ambiguous and can correspond "
+                   f"to multiple possible output formats. ")
+            if listpaths_mode:
+                msg += (f"When using {tc.CODE}'--lp/--lpaths/--listpaths'{tc.OFF}, the input format specified with "
+                        f"{tc.CODE}`-f/--from`{tc.OFF} ")
+            else:
+                msg += (f"When using the {tc.MESSAGE}'{const.CONVERTER_AUTO}'{tc.OFF} or {tc.MESSAGE}'"
+                        f"{const.CONVERTER_AUTOCHAIN}'{tc.OFF} keyword for {tc.CODE}`-w/--with`{tc.OFF}, the input "
+                        f"format determined from the extension of the input file or specified with {tc.CODE}`-f/--from"
+                        f"`{tc.OFF} ")
+            msg += ("must unambiguously identify a format. Please use the disambiguated name or ID for the desired "
+                    "format from the following list:\n" +
+                    "\n".join([x.format_oneline() for x in l_from_formats]))
+            raise FileConverterInputException(msg, help=True)
         return {l_from_formats[0]}
 
     def _determine_auto_converter(self):
@@ -666,7 +677,7 @@ def get_argument_parser():
                         help="If provided alone, lists all available converters. Otherwise, provides information on "
                         f"converters provided with {tc.CODE}`-w/--with'{tc.OFF} and/or input/output formats provided "
                         f"with {tc.CODE}`-f/--from`{tc.OFF} and {tc.CODE}`-t/--to`{tc.OFF}.")
-    parser.add_argument("--lp", "--lpaths", "--listpaths", type=str, default=False,
+    parser.add_argument("--lp", "--lpaths", "--listpaths", type=str, nargs="?", const="one", default=None,
                         help=f"When provided alongside {tc.CODE}`-f/--from`{tc.OFF} and {tc.CODE}`-t/--to`{tc.OFF}, "
                         "will list direct and chained conversion pathways between the formats. The number of paths "
                         f"listed depends on the value provided to {tc.CODE}`--lp`{tc.OFF}: {tc.MESSAGE}'one'{tc.OFF} "
@@ -1269,6 +1280,31 @@ def detail_converters_and_formats(args: ConvertArgs):
     print(f"{tc.CODE}{const.CL_SCRIPT_NAME} -l <converter name> -f <input format> -t <output format>{tc.OFF}")
 
 
+def detail_pathways(args: ConvertArgs):
+    """Prints details on possible conversion pathways between two formats.
+    """
+
+    LP_MODE_ONE = "one"
+    LP_MODE_BEST = "best"
+    LP_MODE_SHORT = "short"
+    LP_MODE_SHORTEST = "shortest"
+    L_LP_MODES = [LP_MODE_ONE, LP_MODE_BEST, LP_MODE_SHORT, LP_MODE_SHORTEST]
+
+    # Check that the mode for how many pathways to return is valid
+    if args.listpaths not in L_LP_MODES:
+        raise FileConverterInputException(f"The mode provided to {tc.CODE}`--lp/--lpaths/--listpaths`{tc.OFF} is "
+                                          f"invalid. Valid modes are: " + ", ".join([f"{tc.MESSAGE}'{x}'{tc.OFF}"
+                                                                                     for x in L_LP_MODES]),
+                                          help=True)
+
+    # Check that the listing mode is valid
+    if not args.to_format and args.from_format:
+        raise FileConverterInputException(f"When using {tc.CODE}`--lp/--lpaths/--listpaths`{tc.OFF} to list conversion "
+                                          f"pathways, the input and output format must be uniquely specified with "
+                                          f"{tc.CODE}`-f/--from`{tc.OFF} and {tc.CODE}`-f/--from`{tc.OFF} respectively",
+                                          help=True)
+
+
 def run_from_args(args: ConvertArgs):
     """Workhorse function to perform primary execution of this script, using the provided parsed arguments.
 
@@ -1281,6 +1317,14 @@ def run_from_args(args: ConvertArgs):
     # Check if we've been asked to list options
     if args.list:
         return detail_converters_and_formats(args)
+
+    # Check if we've been asked to list possible conversion pathways
+    if args.listpaths:
+        return detail_pathways(args)
+
+    # If we listed any info, return now and don't proceed with conversion
+    if args.list or args.listpaths:
+        return
 
     data = {"success": "unknown",
             "from_flags": args.from_flags,
