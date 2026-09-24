@@ -445,7 +445,7 @@ def _run_single_test_conversion_with_library(test_spec: SingleConversionTestSpec
                                        captured_stdout=stdout,
                                        captured_stderr=stderr,
                                        exc_info=exc_info)
-        with subtests.test("Run callback"):
+        with subtests.test("Run callback", test_index=test_index):
             callback_msg = test_spec.callback(test_info)
             if callback_msg:
                 pytest.fail(callback_msg)
@@ -570,7 +570,7 @@ def _run_single_test_conversion_with_cli(test_spec: SingleConversionTestSpec,
                                        success=success,
                                        captured_stdout=stdout,
                                        captured_stderr=stderr)
-        with subtests.test("Run callback"):
+        with subtests.test("Run callback", test_index=test_index):
             callback_msg = test_spec.callback(test_info)
             if callback_msg:
                 pytest.fail(callback_msg)

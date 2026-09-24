@@ -105,9 +105,14 @@ def test_initial_frontpage(driver: WebDriver):
         driver.find_element(By.XPATH, "//select[@id='success']/option")
 
 
+@pytest.fixture(scope="module")
+def gui_test_spect_runner(driver):
+    return GuiTestSpecRunner(driver=driver, origin=origin)
+
+
 @pytest.mark.parametrize("test_spec", l_gui_test_specs,
                          ids=lambda x: x.name)
-def test_conversions(driver, test_spec):
+def test_conversions(gui_test_spect_runner, test_spec, subtests):
     """Run all conversion tests in the defined list of test specifications
     """
-    GuiTestSpecRunner(driver=driver, origin=origin).run(test_spec)
+    gui_test_spect_runner.run(test_spec, subtests)
