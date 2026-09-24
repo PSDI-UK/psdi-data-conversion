@@ -326,10 +326,6 @@ def run_test_conversion_with_library(test_spec: ConversionTestSpec,
         Whether or not to run through the chain conversion function
     """
 
-    if subtests is None:
-        from psdi_data_conversion.compatibility import DummySubtests
-        subtests = DummySubtests()
-
     # Make temporary directories for the input and output files to be stored in
     with TemporaryDirectory("_input") as input_dir, TemporaryDirectory("_output") as output_dir:
         # Iterate over the test spec to run each individual test it defines
