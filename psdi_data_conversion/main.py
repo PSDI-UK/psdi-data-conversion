@@ -906,6 +906,25 @@ def detail_converter_use(args: ConvertArgs):
                 print_wrap(arg_info.info,
                            initial_indent=" "*(ARG_LEN+2),
                            subsequent_indent=" "*(ARG_LEN+2))
+        print("")
+        if input_or_output == "input":
+            arg_type = "from"
+        else:
+            arg_type = "to"
+        msg = (f"{input_or_output.capitalize()} {flag_or_option}s can be used with the {tc.CODE}`"
+               f"--{arg_type}_{flag_or_option} <value(s)>`{tc.OFF} command-line argument. ")
+        if flag_or_option == "flag":
+            msg += (f" Flags should be provided concatenated into a single word, e.g. {tc.CODE}`"
+                    f"--{arg_type}_{flag_or_option} xyz`{tc.OFF} will set flags {tc.CODE}x{tc.OFF}, {tc.CODE}y"
+                    f"{tc.OFF}, and {tc.CODE}z{tc.OFF}.")
+        else:
+            msg += (f" Options should be provided as a string of space-separated \"words\". Each \"words\" "
+                    "in this string should start with the letter indicating which option is being used, followed "
+                    f"by the value for that option. E.g. {tc.CODE}`--{arg_type}_options a1 b2`{tc.OFF} will set the "
+                    f"value {tc.MESSAGE}'1'{tc.OFF} for option {tc.CODE}a{tc.OFF} and the value "
+                    f"{tc.MESSAGE}'2'{tc.OFF} for option {tc.CODE}b{tc.OFF}.")
+
+        print_wrap(msg)
 
     print("")
 
