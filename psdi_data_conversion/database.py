@@ -1481,7 +1481,7 @@ class ConversionsTable:
                                  in_format: str | int | UUID | FormatInfo,
                                  out_format: str | int | UUID | FormatInfo,
                                  only: Literal["all"] | Literal["supported"] | Literal["registered"] = "all"
-                                 ) -> list[tuple[ConverterInfo, FormatInfo, FormatInfo]]:
+                                 ) -> list[Conversion]:
         """Get a list of converters which can perform a conversion from one format to another, disambiguating in the
         case of ambiguous formats and providing IDs for input/output formats for possible conversions
 
@@ -1518,8 +1518,8 @@ class ConversionsTable:
             l_converter_names = self._get_possible_converters(in_format_info, out_format_info, only=only)
 
             for converter_name in l_converter_names:
-                l_possible_conversions.append((self.parent.get_converter_info(converter_name),
-                                               in_format_info, out_format_info))
+                l_possible_conversions.append(Conversion(self.parent.get_converter_info(converter_name),
+                                                         in_format_info, out_format_info))
 
         return l_possible_conversions
 
@@ -2390,8 +2390,7 @@ def get_conversion_weight(converter: str | int | UUID | ConverterInfo,
 
 
 def get_possible_conversions(in_format: str | int | UUID | FormatInfo,
-                             out_format: str | int | UUID | FormatInfo) -> list[
-                                 tuple[ConverterInfo, FormatInfo, FormatInfo]]:
+                             out_format: str | int | UUID | FormatInfo) -> list[Conversion]:
     """Get a list of converters which can perform a conversion from one format to another and disambiguate in the case
     of ambiguous input/output formats
 
@@ -2404,7 +2403,7 @@ def get_possible_conversions(in_format: str | int | UUID | FormatInfo,
 
     Returns
     -------
-    list[tuple[ConverterInfo, FormatInfo, FormatInfo]]
+    list[Conversion]
         A list of tuples, where each tuple's first item is the ConverterInfo of a converter which can perform a matching
         conversion, the second is the info of the input format for this conversion, and the third is the info of the
         output format

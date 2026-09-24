@@ -43,18 +43,19 @@ def setup_test() -> None:
 
 @pytest.mark.parametrize("test_spec", l_library_test_specs,
                          ids=lambda x: x.name)
-def test_conversions(test_spec):
+def test_conversions(test_spec, subtests: pytest.Subtests):
     """Run all conversion tests in the defined list of test specifications
     """
-    run_test_conversion_with_library(test_spec, chain=False)
+    with subtests.test(""):
+        run_test_conversion_with_library(test_spec, subtests=subtests, chain=False)
 
 
 @pytest.mark.parametrize("test_spec", l_library_chain_test_specs,
                          ids=lambda x: x.name)
-def test_chain_conversions(test_spec):
+def test_chain_conversions(test_spec, subtests):
     """Run all chain conversion tests in the defined list of test specifications
     """
-    run_test_conversion_with_library(test_spec, chain=True)
+    run_test_conversion_with_library(test_spec, subtests=subtests, chain=True)
 
 
 def test_envvars():

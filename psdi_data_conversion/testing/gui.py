@@ -84,7 +84,7 @@ class GuiTestSpecRunner():
     origin: str = DEFAULT_ORIGIN
     """The address of the homepage of the testing server"""
 
-    def run(self, test_spec: ConversionTestSpec):
+    def run(self, test_spec: ConversionTestSpec, subtests):
         """Run the test conversions outlined in a test spec"""
 
         self._test_spec = test_spec
@@ -93,19 +93,18 @@ class GuiTestSpecRunner():
         with TemporaryDirectory("_input") as input_dir, TemporaryDirectory("_output") as output_dir:
 
             # Iterate over the test spec to run each individual test it defines
-            for single_test_spec in test_spec:
+            for test_index, single_test_spec in enumerate(test_spec):
                 if single_test_spec.skip:
-                    print(f"Skipping single test spec {single_test_spec}")
+                    print(f"Skipping single test spec {test_index}: {single_test_spec}")
                     continue
-
-                print(f"Running single test spec: {single_test_spec}")
+                print(f"Running single test spec {test_index}: {single_test_spec}")
 
                 GuiSingleTestSpecRunner(parent=self,
                                         input_dir=input_dir,
                                         output_dir=output_dir,
-                                        single_test_spec=single_test_spec).run()
-
-                print(f"Success for test spec: {single_test_spec}")
+                                        single_test_spec=single_test_spec,
+                                        subtests=subtests,
+                                        test_index=test_index).run()
 
 
 class GuiSingleTestSpecRunner:
@@ -116,7 +115,9 @@ class GuiSingleTestSpecRunner:
                  parent: GuiTestSpecRunner,
                  input_dir: str,
                  output_dir: str,
-                 single_test_spec: SingleConversionTestSpec):
+                 single_test_spec: SingleConversionTestSpec,
+                 subtests,
+                 test_index: int):
         """
 
         Parameters
@@ -129,11 +130,17 @@ class GuiSingleTestSpecRunner:
             The temporary directory to be used for output data
         single_test_spec : SingleConversionTestSpec
             The test spec that is currently being tested
+        subtests : pytest.Subtests
+            Pytest's subtests fixture, or else a compatible dummy replacement
+        test_index : int
+            The index of this in the overall test spec
         """
 
         self.input_dir: str = input_dir
         self.output_dir: str = output_dir
         self.single_test_spec: SingleConversionTestSpec = single_test_spec
+        self.subtests = subtests
+        self.test_index: int = test_index
 
         # Inherit data from the parent class
 
@@ -227,20 +234,23 @@ class GuiSingleTestSpecRunner:
         """Run the conversion outlined in the test spec"""
 
         exc_info: pytest.ExceptionInfo | None = None
+        success = False
         if self.single_test_spec.expect_success:
-            try:
-                self._run_conversion()
-                success = False
-            except Exception:
-                print(f"Unexpected exception raised for single test spec {self.single_test_spec}")
-                raise
+            with self.subtests.test("Run conversion through GUI expecting success", test_index=self.test_index):
+                try:
+                    self._run_conversion()
+                    success = True
+                except Exception:
+                    print(f"Unexpected exception raised for single test spec {self.single_test_spec}")
+                    raise
         else:
-            with pytest.raises(FileConverterException) as exc_info:
-                self._run_conversion()
-            success = False
+            with self.subtests.test("Run conversion through GUI expecting failure", test_index=self.test_index):
+                with pytest.raises(FileConverterException) as exc_info:
+                    self._run_conversion()
+                success = True
 
         # Compile output info for the test and call the callback function if one is provided
-        if self.single_test_spec.callback:
+        if success and self.single_test_spec.callback:
             test_info = ConversionTestInfo(run_type="gui",
                                            chain=False,
                                            test_spec=self.single_test_spec,
@@ -248,9 +258,10 @@ class GuiSingleTestSpecRunner:
                                            output_dir=self.output_dir,
                                            success=success,
                                            exc_info=exc_info)
-            callback_msg = self.single_test_spec.callback(test_info)
-            if callback_msg:
-                pytest.fail(callback_msg)
+            with self.subtests.test("Run callback", test_index=self.test_index):
+                callback_msg = self.single_test_spec.callback(test_info)
+                if callback_msg:
+                    pytest.fail(callback_msg)
 
     def _run_conversion(self):
         """Run a conversion through the GUI

@@ -85,10 +85,10 @@ def setup_test():
 
 @pytest.mark.parametrize("test_spec", l_cli_test_specs,
                          ids=lambda x: x.name)
-def test_conversions(test_spec):
+def test_conversions(test_spec, subtests):
     """Run all conversion tests in the defined list of test specifications
     """
-    run_test_conversion_with_cli(test_spec)
+    run_test_conversion_with_cli(test_spec, subtests)
 
 
 def test_general_arg_parsing():

@@ -1,7 +1,7 @@
-"""tests/python/conftest.py
+"""tests/gui/conftest.py
 ===============
 
-Created 2026-09-22 by Bryan Gillis.
+Created 2026-09-24 by Bryan Gillis.
 
 Setup for all tests in this folder
 """
