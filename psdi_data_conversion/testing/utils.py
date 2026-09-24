@@ -423,7 +423,7 @@ def _run_single_test_conversion_with_library(test_spec: SingleConversionTestSpec
                 # Reset stdout and stderr capture
                 stdouterr.done()
     else:
-        with subtests.test("Run conversion through library expecting success", test_index=test_index):
+        with subtests.test("Run conversion through library expecting failure", test_index=test_index):
             with pytest.raises(Exception) as exc_info:
                 try:
                     stdouterr = py.io.StdCaptureFD(in_=False)
@@ -517,26 +517,9 @@ def _run_single_test_conversion_with_cli(test_spec: SingleConversionTestSpec,
 
     # Capture stdout and stderr while we run this test. We use a try block to stop capturing as soon as testing finishes
 
+    success = False
     if test_spec.expect_success:
-        try:
-            stdouterr = py.io.StdCaptureFD(in_=False)
-            run_converter_through_cli(filename=qualified_in_filename,
-                                      to_format=test_spec.to_format,
-                                      from_format=test_spec.from_format,
-                                      name=test_spec.converter_name,
-                                      input_dir=input_dir,
-                                      output_dir=output_dir,
-                                      log_file=os.path.join(output_dir, test_spec.log_filename),
-                                      **test_spec.conversion_kwargs)
-            success = True
-        except SystemExit:
-            success = False
-        finally:
-            stdout, stderr = stdouterr.reset()   # Grab stdout and stderr
-            # Reset stdout and stderr capture
-            stdouterr.done()
-    else:
-        with pytest.raises(SystemExit) as exc_info:
+        with subtests.test("Run conversion through CLI expecting success", test_index=test_index):
             try:
                 stdouterr = py.io.StdCaptureFD(in_=False)
                 run_converter_through_cli(filename=qualified_in_filename,
@@ -547,12 +530,30 @@ def _run_single_test_conversion_with_cli(test_spec: SingleConversionTestSpec,
                                           output_dir=output_dir,
                                           log_file=os.path.join(output_dir, test_spec.log_filename),
                                           **test_spec.conversion_kwargs)
+                success = True
             finally:
                 stdout, stderr = stdouterr.reset()   # Grab stdout and stderr
                 # Reset stdout and stderr capture
                 stdouterr.done()
-        # Get the success from whether or not the exit code is 0
-        success = not exc_info.value.code
+    else:
+        with subtests.test("Run conversion through CLI expecting failure", test_index=test_index):
+            with pytest.raises(SystemExit) as exc_info:
+                try:
+                    stdouterr = py.io.StdCaptureFD(in_=False)
+                    run_converter_through_cli(filename=qualified_in_filename,
+                                              to_format=test_spec.to_format,
+                                              from_format=test_spec.from_format,
+                                              name=test_spec.converter_name,
+                                              input_dir=input_dir,
+                                              output_dir=output_dir,
+                                              log_file=os.path.join(output_dir, test_spec.log_filename),
+                                              **test_spec.conversion_kwargs)
+                finally:
+                    stdout, stderr = stdouterr.reset()   # Grab stdout and stderr
+                    # Reset stdout and stderr capture
+                    stdouterr.done()
+            # Get the success from whether or not the exit code is 0
+            success = not exc_info.value.code
 
     qualified_out_filename = os.path.realpath(os.path.join(output_dir, test_spec.out_filename))
 
@@ -577,9 +578,10 @@ def _run_single_test_conversion_with_cli(test_spec: SingleConversionTestSpec,
                                        success=success,
                                        captured_stdout=stdout,
                                        captured_stderr=stderr)
-        callback_msg = test_spec.callback(test_info)
-        if callback_msg:
-            pytest.fail(callback_msg)
+        with subtests.test("Run callback"):
+            callback_msg = test_spec.callback(test_info)
+            if callback_msg:
+                pytest.fail(callback_msg)
 
 
 def run_converter_through_cli(filename: str,
