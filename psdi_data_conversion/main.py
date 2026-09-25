@@ -24,11 +24,12 @@ from psdi_data_conversion.converter import (D_CONVERTER_ARGS, L_REGISTERED_CONVE
                                             get_supported_converter_class, run_converter, run_converter_chain)
 from psdi_data_conversion.converters.base import (FileConverterAbortException, FileConverterException,
                                                   FileConverterInputException)
-from psdi_data_conversion.database import (CONV_WEIGHT_MAX, D_FORMAT_PROPERTY_ATTRS, ConversionQualityInfo,
-                                           ConverterInfo, FileConverterDatabaseException, FormatInfo,
-                                           disambiguate_formats, get_conversion_pathway, get_conversion_quality,
-                                           get_conversion_weight, get_converter_info, get_format_info,
-                                           get_format_pretty_name, get_in_format_args, get_out_format_args,
+from psdi_data_conversion.database import (CONV_WEIGHT_MAX, D_FORMAT_PROPERTY_ATTRS, Conversion, ConversionPath,
+                                           ConversionQualityInfo, ConverterInfo, FileConverterDatabaseException,
+                                           FormatInfo, disambiguate_formats, get_conversion_pathway,
+                                           get_conversion_quality, get_conversion_weight, get_converter_info,
+                                           get_format_info, get_format_pretty_name, get_in_format_args,
+                                           get_out_format_args, get_possible_conversion_pathways,
                                            get_possible_conversions, get_possible_formats)
 from psdi_data_conversion.file_io import split_archive_ext
 from psdi_data_conversion.log_utility import get_log_level_from_str
@@ -1156,47 +1157,58 @@ def detail_formats_and_possible_converters(from_format: str, to_format: str):
         else:
             print()
 
-        from_name = possible_from_format.format_word()
-        to_name = possible_to_format.format_word()
+        detail_possible_conversions(possible_from_format, possible_to_format, l_possible_conversions)
 
-        l_conversions_matching_formats = [x for x in l_possible_conversions
-                                          if x[1] == possible_from_format and x[2] == possible_to_format]
 
-        l_possible_registered_converters = [x[0].format_word()
-                                            for x in l_conversions_matching_formats
-                                            if x[0].name in L_REGISTERED_CONVERTERS]
-        l_possible_unregistered_converters = [x[0].format_word()
-                                              for x in l_conversions_matching_formats
-                                              if x[0].name in L_SUPPORTED_CONVERTERS
-                                              and x[0].name not in L_REGISTERED_CONVERTERS]
+def detail_possible_conversions(from_format: FormatInfo,
+                                to_format: FormatInfo,
+                                l_possible_conversions: list[Conversion] | None = None):
+    """Prints out information on direct conversions between two formats"""
 
-        if len(l_possible_registered_converters)+len(l_possible_unregistered_converters) == 0:
-            print_wrap(f"No converters are available which can perform a conversion from {from_name} to "
-                       f"{to_name}")
-            continue
-        elif len(l_possible_registered_converters) == 0:
-            print_wrap(f"No registered converters can perform a conversion from {from_name} to "
-                       f"{to_name}, however the following converters are supported by this package "
-                       "and can perform this conversion, but are not currently registered. They may be registrable by "
-                       "building them on your system and copying the binary to the "
-                       f"{tc.PATH}'{const.BIN_PATH_WITH_OS}'{tc.OFF} directory:", newline=True)
-            print("\n    ".join(l_possible_unregistered_converters))
-            continue
+    if not l_possible_conversions:
+        l_possible_conversions = get_possible_conversions(from_format, to_format)
 
-        print_wrap(f"The following registered converters can convert from {from_name} to "
-                   f"{to_name}:", newline=True)
-        print("    " + "\n    ".join(l_possible_registered_converters) + "\n")
-        if l_possible_unregistered_converters:
-            print("")
-            print_wrap("Additionally, the following converters are supported by this package "
-                       "and can perform this conversion, but are not currently registered. They may be registrable by "
-                       "building them on your system and copying the binary to the "
-                       f"{tc.PATH}'{const.BIN_PATH_WITH_OS}'{tc.OFF} directory:", newline=True)
-            print("    " + "\n    ".join(l_possible_unregistered_converters) + "\n")
+    from_name = from_format.format_word()
+    to_name = to_format.format_word()
 
-        print_wrap("For details on input/output flags and options allowed by a converter for this conversion, call:")
-        print(f"{tc.CODE}{const.CL_SCRIPT_NAME} -l <converter name> -f {strip_control_codes(from_name)} -t "
-              f"{strip_control_codes(to_name)}{tc.OFF}")
+    l_conversions_matching_formats = [x for x in l_possible_conversions
+                                      if x.in_format == from_format and x.out_format == to_format]
+
+    l_possible_registered_converters = [x.converter.format_word()
+                                        for x in l_conversions_matching_formats
+                                        if x.converter.name in L_REGISTERED_CONVERTERS]
+    l_possible_unregistered_converters = [x.converter.format_word()
+                                          for x in l_conversions_matching_formats
+                                          if x.converter.name in L_SUPPORTED_CONVERTERS
+                                          and x.converter.name not in L_REGISTERED_CONVERTERS]
+
+    if len(l_possible_registered_converters)+len(l_possible_unregistered_converters) == 0:
+        print_wrap(f"No converters are available which can perform a conversion from {from_name} to "
+                   f"{to_name}")
+        return
+    elif len(l_possible_registered_converters) == 0:
+        print_wrap(f"No registered converters can perform a conversion from {from_name} to "
+                   f"{to_name}, however the following converters are supported by this package "
+                   "and can perform this conversion, but are not currently registered. They may be registrable by "
+                   "building them on your system and copying the binary to the "
+                   f"{tc.PATH}'{const.BIN_PATH_WITH_OS}'{tc.OFF} directory:", newline=True)
+        print("\n    ".join(l_possible_unregistered_converters))
+        return
+
+    print_wrap(f"The following registered converters can convert from {from_name} to "
+               f"{to_name}:", newline=True)
+    print("    " + "\n    ".join(l_possible_registered_converters) + "\n")
+    if l_possible_unregistered_converters:
+        print("")
+        print_wrap("Additionally, the following converters are supported by this package "
+                   "and can perform this conversion, but are not currently registered. They may be registrable by "
+                   "building them on your system and copying the binary to the "
+                   f"{tc.PATH}'{const.BIN_PATH_WITH_OS}'{tc.OFF} directory:", newline=True)
+        print("    " + "\n    ".join(l_possible_unregistered_converters) + "\n")
+
+    print_wrap("For details on input/output flags and options allowed by a converter for this conversion, call:")
+    print(f"{tc.CODE}{const.CL_SCRIPT_NAME} -l <converter name> -f {strip_control_codes(from_name)} -t "
+          f"{strip_control_codes(to_name)}{tc.OFF}")
 
 
 def get_supported_converters():
@@ -1291,12 +1303,55 @@ def detail_pathways(args: ConvertArgs):
                                                                                      for x in const.L_LP_MODES]),
                                           help=True)
 
-    # Check that the listing mode is valid
-    if not args.to_format and args.from_format:
+    # Check that both an input and output format are provided. Note that when this mode is set, the arguments setup will
+    # already check that both are specified uniquely
+    if not args.from_format and args.to_format:
         raise FileConverterInputException(f"When using {tc.CODE}`--lp/--lpaths/--listpaths`{tc.OFF} to list conversion "
                                           f"pathways, the input and output format must be uniquely specified with "
                                           f"{tc.CODE}`-f/--from`{tc.OFF} and {tc.CODE}`-f/--from`{tc.OFF} respectively",
                                           help=True)
+
+    from_format = get_format_info(args.from_format)
+    to_format = get_format_info(args.to_format)
+
+    # First, check if a direct conversion is possible
+    l_direct_conversions = get_possible_conversions(from_format, to_format)
+    if l_direct_conversions:
+        print_header("Direct Conversion")
+        detail_possible_conversions(from_format, to_format, l_direct_conversions)
+        # If at least one direct conversion can be performed with a registered converter, we can return here
+        if any([converter in L_REGISTERED_CONVERTERS for converter in [x.converter for x in l_direct_conversions]]):
+            return
+
+    print_header("Conversion Pathways")
+
+    # Construct the list of conversion pathways we'll want to display for the user
+    l_paths: list[ConversionPath]
+
+    if args.listpaths == const.LP_MODE_ONE:
+        path = get_conversion_pathway(in_format=from_format, out_format=to_format)
+        # `path` might be None if no paths are possible. We'll use an empty list to represent that fact
+        l_paths = [path] if path else []
+    elif args.listpaths == const.LP_MODE_BEST:
+        l_paths = get_possible_conversion_pathways(in_format=from_format, out_format=to_format, include="best")
+    else:
+        l_paths = get_possible_conversion_pathways(in_format=from_format, out_format=to_format, include="shortest")
+
+    if not l_paths:
+        # No pathway is possible. For now, just report this. TODO: Add some logic here to try to figure out why,
+        # and give the user a better idea of the reason
+        print_wrap(f"No conversion pathway is possible from {from_format.format_word()} to {to_format.format_word()}")
+        return
+
+    # Sort the paths by lowest weight first, and name second
+    l_paths.sort(key=lambda x: (x.get_weight(), x.get_name()))
+
+    for i, path in enumerate(l_paths):
+
+        if i != 0:
+            print("---\n")
+
+        print_wrap(path.format_details(), newline=True)
 
 
 def run_from_args(args: ConvertArgs):
