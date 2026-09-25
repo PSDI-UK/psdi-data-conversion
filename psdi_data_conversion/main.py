@@ -119,6 +119,22 @@ class ConvertArgs:
             except ValueError:
                 self.converter = regularize_name(joined_converter)
 
+        if self.listpaths:
+
+            # Check that the mode for how many pathways to return is valid
+            if self.listpaths not in const.L_LP_MODES:
+                raise FileConverterInputException(f"The mode provided to {tc.CODE}`--lp/--lpaths/--listpaths`{tc.OFF} "
+                                                  f"is invalid. Valid modes are: " +
+                                                  ", ".join([f"{tc.MESSAGE}'{x}'{tc.OFF}" for x in const.L_LP_MODES]),
+                                                  help=True)
+
+            # Check that both an input and output format are provided
+            if not (self.from_format and self.to_format):
+                raise FileConverterInputException(f"When using {tc.CODE}`--lp/--lpaths/--listpaths`{tc.OFF} to list "
+                                                  f"conversion pathways, the input and output format must be uniquely "
+                                                  f"specified with {tc.CODE}`-f/--from`{tc.OFF} and {tc.CODE}`"
+                                                  f"-f/--from`{tc.OFF} respectively", help=True)
+
         if self.list or self.listpaths:
             # Force log mode to stdout and turn off quiet
             self.log_mode = const.LOG_STDOUT
@@ -1296,21 +1312,6 @@ def detail_pathways(args: ConvertArgs):
     """Prints details on possible conversion pathways between two formats.
     """
 
-    # Check that the mode for how many pathways to return is valid
-    if args.listpaths not in const.L_LP_MODES:
-        raise FileConverterInputException(f"The mode provided to {tc.CODE}`--lp/--lpaths/--listpaths`{tc.OFF} is "
-                                          f"invalid. Valid modes are: " + ", ".join([f"{tc.MESSAGE}'{x}'{tc.OFF}"
-                                                                                     for x in const.L_LP_MODES]),
-                                          help=True)
-
-    # Check that both an input and output format are provided. Note that when this mode is set, the arguments setup will
-    # already check that both are specified uniquely
-    if not args.from_format and args.to_format:
-        raise FileConverterInputException(f"When using {tc.CODE}`--lp/--lpaths/--listpaths`{tc.OFF} to list conversion "
-                                          f"pathways, the input and output format must be uniquely specified with "
-                                          f"{tc.CODE}`-f/--from`{tc.OFF} and {tc.CODE}`-f/--from`{tc.OFF} respectively",
-                                          help=True)
-
     from_format = get_format_info(args.from_format)
     to_format = get_format_info(args.to_format)
 
@@ -1320,7 +1321,8 @@ def detail_pathways(args: ConvertArgs):
         print_header("Direct Conversion")
         detail_possible_conversions(from_format, to_format, l_direct_conversions)
         # If at least one direct conversion can be performed with a registered converter, we can return here
-        if any([converter in L_REGISTERED_CONVERTERS for converter in [x.converter for x in l_direct_conversions]]):
+        if any([converter.name in L_REGISTERED_CONVERTERS for converter in
+                [x.converter for x in l_direct_conversions]]):
             return
 
     print_header("Conversion Pathways")
@@ -1501,15 +1503,7 @@ def main():
     try:
         args = parse_args()
     except FileConverterInputException as e:
-        if not e.help:
-            raise
-        # If we get an exception with the help flag set, it's likely due to user error, so don't bother them with a
-        # traceback and simply print the message to stderr
-        if e.msg_preformatted:
-            print(e, file=sys.stderr)
-        else:
-            print_wrap(f"{tc.ERROR}ERROR:{tc.OFF} {e}", err=True)
-        exit(1)
+        handle_raised_exception(e)
 
     if (args.log_mode == const.LOG_SIMPLE or args.log_mode == const.LOG_FULL) and args.log_file:
         # Delete any previous local log if it exists
@@ -1526,11 +1520,28 @@ def main():
     logging.debug(f"# Beginning execution of script {tc.CODE}`%s`{tc.OFF}", __file__)
     logging.debug("#")
 
-    run_from_args(args)
+    try:
+        run_from_args(args)
+    except FileConverterException as e:
+        handle_raised_exception(e)
 
     logging.debug("#")
     logging.debug(f"# Finished execution of script {tc.CODE}`%s`{tc.OFF}", __file__)
     logging.debug("#")
+
+
+def handle_raised_exception(e: FileConverterException):
+    """If a recognised exception is raised, handle it appropriately, including writing out a helpful message to the user
+    """
+    if not e.help:
+        raise
+    # If we get an exception with the help flag set, it's likely due to user error, so don't bother them with a
+    # traceback and simply print the message to stderr
+    if e.msg_preformatted:
+        print(e, file=sys.stderr)
+    else:
+        print_wrap(f"{tc.ERROR}ERROR:{tc.OFF} {e}", err=True)
+    exit(1)
 
 
 if __name__ == "__main__":

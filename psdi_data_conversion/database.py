@@ -1053,10 +1053,13 @@ class Conversion(NamedTuple):
         """The weight of this conversion, representing the amount of potential data loss"""
         return get_database().conversions_table.get_conversion_weight(*self, bits=bits)
 
+    def format_weight(self):
+        return f"{tc.NUMBER}{hex(self.get_weight())}{tc.OFF}"
+
     def format_oneline(self):
         """Formats the conversion as a string"""
-        return (f"{self.in_format.format_inline()} to {self.out_format.format_inline()} with "
-                f"{self.converter.format_inline()}. Weight: {tc.NUMBER}{self.get_weight()}{tc.OFF}")
+        return (f"{self.in_format.format_word()} to {self.out_format.format_word()} with "
+                f"{self.converter.format_word()}. Weight: {self.format_weight()}")
 
 
 @dataclass
@@ -1179,14 +1182,18 @@ class ConversionPath(list[Conversion]):
             name += f"-{step.out_format.disambiguated_name}"
         return name
 
+    def format_weight(self):
+        return f"{tc.NUMBER}{hex(self.get_weight())}{tc.OFF}"
+
     def format_details(self):
         """Format the full details of the path as a string"""
         if len(self) == 0:
             raise ValueError("Conversion pathway is empty")
         msg = ""
         for step in self:
-            msg += step.format_oneline() + "\n"
-        msg += f"Total weight:  {tc.NUMBER}{self.get_weight()}{tc.NUMBER}"
+            msg += f"- {step.format_oneline()}\n"
+        msg += f"Total weight: {self.format_weight()}"
+        return msg
 
 
 class ConversionsTable:
