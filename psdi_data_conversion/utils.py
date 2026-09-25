@@ -48,7 +48,7 @@ class TextColors:
     DARKYELLOW = WARNING = "\033[33m"
     """Start coloring dark yellow"""
 
-    BLUE = ID = "\033[94m"
+    BLUE = PATH = "\033[94m"
     """Start coloring blue"""
 
     DARKBLUE = "\033[34m"
@@ -60,10 +60,10 @@ class TextColors:
     DARKMAGENTA = "\033[35m"
     """Start coloring dark magenta"""
 
-    CYAN = PATH = MESSAGE = "\033[96m"
+    CYAN = MESSAGE = "\033[96m"
     """Start coloring cyan"""
 
-    DARKCYAN = "\033[36m"
+    DARKCYAN = NUMBER = ID = "\033[36m"
     """Start coloring dark cyan"""
 
     # Text formatting codes
