@@ -49,6 +49,13 @@ MAX_FILESIZE_EV = "MAX_FILESIZE"
 MAX_FILESIZE_OB_EV = "MAX_FILESIZE_OB"
 SERVICE_MODE_EV = "SERVICE_MODE"
 
+# Modes for listing paths in the CLI
+LP_MODE_ONE = "one"
+LP_MODE_BEST = "best"
+LP_MODE_SHORT = "short"
+LP_MODE_SHORTEST = "shortest"
+L_LP_MODES = [LP_MODE_ONE, LP_MODE_BEST, LP_MODE_SHORT, LP_MODE_SHORTEST]
+
 # Files and Folders
 # -----------------
 

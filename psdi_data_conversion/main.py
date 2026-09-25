@@ -629,13 +629,13 @@ def get_argument_parser():
                         help="String of concatenated one-letter flags for how to read the input file, e.g. "
                         f"{tc.CODE}`--from-flags xyz`{tc.OFF} will set flags {tc.CODE}x{tc.OFF}, {tc.CODE}y{tc.OFF}, "
                         f"and {tc.CODE}z{tc.OFF}. To list the flags supported for a given input format, call e.g. "
-                        f"{tc.CODE}`psdi-data-convert -l -f <format> -w Open Babel`{tc.OFF} at the command-line "
+                        f"{tc.CODE}`{const.CL_SCRIPT_NAME} -l -f <format> -w Open Babel`{tc.OFF} at the command-line "
                         "and look for the \"Allowed input flags\" section, if one exists.")
     parser.add_argument("--to-flags", type=str, default="",
                         help="String of concatenated one-letter flags for how to write the output file, e.g. "
                         f"{tc.CODE}`--from-flags xyz`{tc.OFF} will set flags {tc.CODE}x{tc.OFF}, {tc.CODE}y{tc.OFF}, "
                         f"and {tc.CODE}z{tc.OFF}. To list the flags supported for a given output format, call e.g. "
-                        f"{tc.CODE}`psdi-data-convert -l -t <format> -w Open Babel`{tc.OFF} at the command-line "
+                        f"{tc.CODE}`{const.CL_SCRIPT_NAME} -l -t <format> -w Open Babel`{tc.OFF} at the command-line "
                         "and look for the \"Allowed output flags\" section, if one exists.")
     parser.add_argument("--from-options", type=str, default="",
                         help="String of space-separated options for how to read the input file. Each option \"word\" "
@@ -644,8 +644,8 @@ def get_argument_parser():
                         f"value {tc.MESSAGE}'1'{tc.OFF} for option {tc.CODE}a{tc.OFF} and the value "
                         f"{tc.MESSAGE}'2'{tc.OFF} for option {tc.CODE}b{tc.OFF}. To list the options supported for a "
                         f"given input format, call e.g. "
-                        f"{tc.CODE}`psdi-data-convert -l -f <format> -w Open Babel`{tc.OFF} at the command-line and "
-                        "look for the \"Allowed input options\" section, if one exists.")
+                        f"{tc.CODE}`{const.CL_SCRIPT_NAME} -l -f <format> -w Open Babel`{tc.OFF} at the command-line "
+                        "and look for the \"Allowed input options\" section, if one exists.")
     parser.add_argument("--to-options", type=str, default="",
                         help="String of space-separated options for how to read the input output. Each option \"word\" "
                         "in this string should start with the letter indicating which option is being used, followed "
@@ -653,8 +653,8 @@ def get_argument_parser():
                         f"value {tc.MESSAGE}'1'{tc.OFF} for option {tc.CODE}a{tc.OFF} and the value "
                         f"{tc.MESSAGE}'2'{tc.OFF} for option {tc.CODE}b{tc.OFF}. To list the options supported for a "
                         f"given input format, call e.g. "
-                        f"{tc.CODE}`psdi-data-convert -l -t <format> -w Open Babel`{tc.OFF} at the command-line and "
-                        "look for the \"Allowed output options\" section, if one exists.")
+                        f"{tc.CODE}`{const.CL_SCRIPT_NAME} -l -t <format> -w Open Babel`{tc.OFF} at the command-line "
+                        "and look for the \"Allowed output options\" section, if one exists.")
     parser.add_argument("-s", "--strict", action="store_true",
                         help="If set, will fail if one of the input files has the wrong extension (including those "
                         "contained in archives, but not the archive files themselves). Otherwise, will only print a "
@@ -684,9 +684,9 @@ def get_argument_parser():
                         f"(default) will return just one of the best (lowest-weight) paths, {tc.MESSAGE}'best'{tc.OFF} "
                         f"will return all equally-lowest-weight paths, and {tc.MESSAGE}'short'{tc.OFF} or {tc.MESSAGE}'"
                         f"shortest'{tc.OFF} will return all equally-shortest paths. So e.g. {tc.CODE}`"
-                        f"psdi-data-convert --lp best -f fmt1 -t fmt2`{tc.OFF} will return all conversion pathways "
-                        f"from format {tc.MESSAGE}'fmt1'{tc.OFF} to format {tc.MESSAGE}'fmt2'{tc.OFF} with the lowest "
-                        "possible weight.")
+                        f"{const.CL_SCRIPT_NAME} --lp best -f fmt1 -t fmt2`{tc.OFF} will return all conversion "
+                        f"pathways from format {tc.MESSAGE}'fmt1'{tc.OFF} to format {tc.MESSAGE}'fmt2'{tc.OFF} with "
+                        "the lowest possible weight.")
 
     # Logging/stdout arguments
     parser.add_argument("-g", "--log-file", type=str, default=None,
@@ -1284,17 +1284,11 @@ def detail_pathways(args: ConvertArgs):
     """Prints details on possible conversion pathways between two formats.
     """
 
-    LP_MODE_ONE = "one"
-    LP_MODE_BEST = "best"
-    LP_MODE_SHORT = "short"
-    LP_MODE_SHORTEST = "shortest"
-    L_LP_MODES = [LP_MODE_ONE, LP_MODE_BEST, LP_MODE_SHORT, LP_MODE_SHORTEST]
-
     # Check that the mode for how many pathways to return is valid
-    if args.listpaths not in L_LP_MODES:
+    if args.listpaths not in const.L_LP_MODES:
         raise FileConverterInputException(f"The mode provided to {tc.CODE}`--lp/--lpaths/--listpaths`{tc.OFF} is "
                                           f"invalid. Valid modes are: " + ", ".join([f"{tc.MESSAGE}'{x}'{tc.OFF}"
-                                                                                     for x in L_LP_MODES]),
+                                                                                     for x in const.L_LP_MODES]),
                                           help=True)
 
     # Check that the listing mode is valid
