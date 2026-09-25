@@ -24,11 +24,12 @@ from psdi_data_conversion.converter import (D_CONVERTER_ARGS, L_REGISTERED_CONVE
                                             get_supported_converter_class, run_converter, run_converter_chain)
 from psdi_data_conversion.converters.base import (FileConverterAbortException, FileConverterException,
                                                   FileConverterInputException)
-from psdi_data_conversion.database import (CONV_WEIGHT_MAX, D_FORMAT_PROPERTY_ATTRS, ConversionQualityInfo,
-                                           ConverterInfo, FileConverterDatabaseException, FormatInfo,
-                                           disambiguate_formats, get_conversion_pathway, get_conversion_quality,
-                                           get_conversion_weight, get_converter_info, get_format_info,
-                                           get_format_pretty_name, get_in_format_args, get_out_format_args,
+from psdi_data_conversion.database import (CONV_WEIGHT_MAX, D_FORMAT_PROPERTY_ATTRS, Conversion, ConversionPath,
+                                           ConversionQualityInfo, ConverterInfo, FileConverterDatabaseException,
+                                           FormatInfo, disambiguate_formats, get_conversion_pathway,
+                                           get_conversion_quality, get_conversion_weight, get_converter_info,
+                                           get_format_info, get_format_pretty_name, get_in_format_args,
+                                           get_out_format_args, get_possible_conversion_pathways,
                                            get_possible_conversions, get_possible_formats)
 from psdi_data_conversion.file_io import split_archive_ext
 from psdi_data_conversion.log_utility import get_log_level_from_str
@@ -78,6 +79,7 @@ class ConvertArgs:
 
         # Keyword arguments for alternative functionality
         self.list: bool = args.list
+        self.listpaths: str | None = args.lp.lower() if args.lp else None
 
         # Logging/stdout arguments
         self.log_mode: bool = args.log_mode
@@ -106,22 +108,23 @@ class ConvertArgs:
         except ValueError:
             pass
 
-        # Special handling for listing converters
-        if self.list:
+        # Special handling for listing info
+
+        # Get the converter name from the arguments if it wasn't provided by -w/--with
+        if self.list and not self.converter:
+            joined_converter = " ".join(self.l_args)
+            # Check if the converter is provided as an integer, and convert to int if so
+            try:
+                self.converter = int(joined_converter)
+            except ValueError:
+                self.converter = regularize_name(joined_converter)
+
+        if self.list or self.listpaths:
             # Force log mode to stdout and turn off quiet
             self.log_mode = const.LOG_STDOUT
             self.quiet = False
 
-            # Get the converter name from the arguments if it wasn't provided by -w/--with
-            if not self.converter:
-                joined_converter = " ".join(self.l_args)
-                # Check if the converter is provided as an integer, and convert to int if so
-                try:
-                    self.converter = int(joined_converter)
-                except ValueError:
-                    self.converter = regularize_name(joined_converter)
-
-            # For this operation, any other arguments can be ignored
+            # For these operations, any other arguments can be ignored
             return
 
         # Quiet mode is equivalent to logging mode == LOGGING_NONE, so normalize them if either is set
@@ -482,7 +485,7 @@ class ConvertArgs:
                 best_weight = weight
         return best_converter.name
 
-    def _check_to_format_unique(self):
+    def _check_to_format_unique(self, listpaths_mode=False):
         """Check that the output format is uniquely specified"""
 
         l_to_formats: list[FormatInfo] = get_format_info(self.to_format, "all")
@@ -491,18 +494,21 @@ class ConvertArgs:
                                               "output format. To see supported formats, call:\n"
                                               f"{tc.CODE}{const.CL_SCRIPT_NAME} -l{tc.OFF}", help=True)
         elif len(l_to_formats) > 1:
-            raise FileConverterInputException(f"{tc.MESSAGE}'{self.to_format}'{tc.OFF} is ambiguous and can correspond "
-                                              f"to multiple possible output formats. When using the {tc.MESSAGE}'"
-                                              f"{const.CONVERTER_AUTO}'{tc.OFF} or {tc.MESSAGE}'"
-                                              f"{const.CONVERTER_AUTOCHAIN}'{tc.OFF} keyword for {tc.CODE}`"
-                                              f"-w/--with`{tc.OFF}, both the input and output formats must be "
-                                              "uniquely specified. Please use the disambiguated name or ID for the "
-                                              "desired format from the following list:\n" +
-                                              "\n".join([x.format_oneline() for x in l_to_formats]), help=True)
+            msg = (f"{tc.MESSAGE}'{self.to_format}'{tc.OFF} is ambiguous and can correspond "
+                   f"to multiple possible output formats. ")
+            if listpaths_mode:
+                msg += (f"When using {tc.CODE}'--lp/--lpaths/--listpaths'{tc.OFF}, ")
+            else:
+                msg += (f"When using the {tc.MESSAGE}'{const.CONVERTER_AUTO}'{tc.OFF} or {tc.MESSAGE}'"
+                        f"{const.CONVERTER_AUTOCHAIN}'{tc.OFF} keyword for {tc.CODE}`-w/--with`{tc.OFF}, ")
+            msg += ("both the input and output formats must be uniquely specified. Please use the disambiguated name "
+                    "or ID for the desired format from the following list:\n" +
+                    "\n".join([x.format_oneline() for x in l_to_formats]))
+            raise FileConverterInputException(msg, help=True)
 
-    def _check_from_formats_unique(self):
+    def _check_from_formats_unique(self, listpaths_mode=False):
         """Check that the input formats are uniquely specified"""
-        if not self.from_format:
+        if not listpaths_mode and not self.from_format:
 
             s_input_exts = {os.path.splitext(x)[1] for x in self.l_args}
             if len(s_input_exts) == 1:
@@ -531,14 +537,20 @@ class ConvertArgs:
 
         l_from_formats: list[FormatInfo] = get_format_info(self.from_format, "all")
         if len(l_from_formats) != 1:
-            raise FileConverterInputException(f"When using the {tc.MESSAGE}'{const.CONVERTER_AUTO}'{tc.OFF} or "
-                                              f"{tc.MESSAGE}'{const.CONVERTER_AUTOCHAIN}'{tc.OFF} keyword for "
-                                              f"{tc.CODE}`-w/--with`{tc.OFF}, the input format "
-                                              "determined from the extension of the input file or specified with "
-                                              f"{tc.CODE}`-f/--from`{tc.OFF} must unambiguously "
-                                              "identify a format. Please use the ID or disambiguated name from the "
-                                              "correct format in the following list:\n" +
-                                              "\n".join([x.format_oneline() for x in l_from_formats]), help=True)
+            msg = (f"{tc.MESSAGE}'{self.to_format}'{tc.OFF} is ambiguous and can correspond "
+                   f"to multiple possible output formats. ")
+            if listpaths_mode:
+                msg += (f"When using {tc.CODE}'--lp/--lpaths/--listpaths'{tc.OFF}, the input format specified with "
+                        f"{tc.CODE}`-f/--from`{tc.OFF} ")
+            else:
+                msg += (f"When using the {tc.MESSAGE}'{const.CONVERTER_AUTO}'{tc.OFF} or {tc.MESSAGE}'"
+                        f"{const.CONVERTER_AUTOCHAIN}'{tc.OFF} keyword for {tc.CODE}`-w/--with`{tc.OFF}, the input "
+                        f"format determined from the extension of the input file or specified with {tc.CODE}`-f/--from"
+                        f"`{tc.OFF} ")
+            msg += ("must unambiguously identify a format. Please use the disambiguated name or ID for the desired "
+                    "format from the following list:\n" +
+                    "\n".join([x.format_oneline() for x in l_from_formats]))
+            raise FileConverterInputException(msg, help=True)
         return {l_from_formats[0]}
 
     def _determine_auto_converter(self):
@@ -601,7 +613,7 @@ def get_argument_parser():
                         f"ambiguous). {tc.MESSAGE}'auto-chain'{tc.OFF} does the same, but will also determine and use "
                         "a chained conversion if a single-step conversion is not possible. Default "
                         f"{tc.MESSAGE}'auto'{tc.OFF}.")
-    parser.add_argument("--path", type=str, nargs="+",
+    parser.add_argument("--path", type=str, nargs="+", default=None,
                         help=f"Used instead of {tc.CODE}`-w/--with`{tc.OFF} when requesting a chained conversion with "
                         "a specific path. This should be provided as an alternating series of converters and formats "
                         f"to specify the conversion pathway, e.g.:{tc.CODE}`-f <source_format> --path <converter 1> "
@@ -613,18 +625,18 @@ def get_argument_parser():
                         f"in a single word (e.g. use {tc.MESSAGE}'OpenBabel'{tc.OFF} or its ID instead of "
                         f"{tc.MESSAGE}'Open Babel'{tc.OFF}).")
     parser.add_argument("--delete-input", action="store_true",
-                        help="If set, input files will be deleted after conversion, default they will be kept")
+                        help="If set, input files will be deleted after conversion, default they will be kept.")
     parser.add_argument("--from-flags", type=str, default="",
                         help="String of concatenated one-letter flags for how to read the input file, e.g. "
                         f"{tc.CODE}`--from-flags xyz`{tc.OFF} will set flags {tc.CODE}x{tc.OFF}, {tc.CODE}y{tc.OFF}, "
                         f"and {tc.CODE}z{tc.OFF}. To list the flags supported for a given input format, call e.g. "
-                        f"{tc.CODE}`psdi-data-convert -l -f <format> -w Open Babel`{tc.OFF} at the command-line "
+                        f"{tc.CODE}`{const.CL_SCRIPT_NAME} -l -f <format> -w Open Babel`{tc.OFF} at the command-line "
                         "and look for the \"Allowed input flags\" section, if one exists.")
     parser.add_argument("--to-flags", type=str, default="",
                         help="String of concatenated one-letter flags for how to write the output file, e.g. "
                         f"{tc.CODE}`--from-flags xyz`{tc.OFF} will set flags {tc.CODE}x{tc.OFF}, {tc.CODE}y{tc.OFF}, "
                         f"and {tc.CODE}z{tc.OFF}. To list the flags supported for a given output format, call e.g. "
-                        f"{tc.CODE}`psdi-data-convert -l -t <format> -w Open Babel`{tc.OFF} at the command-line "
+                        f"{tc.CODE}`{const.CL_SCRIPT_NAME} -l -t <format> -w Open Babel`{tc.OFF} at the command-line "
                         "and look for the \"Allowed output flags\" section, if one exists.")
     parser.add_argument("--from-options", type=str, default="",
                         help="String of space-separated options for how to read the input file. Each option \"word\" "
@@ -633,8 +645,8 @@ def get_argument_parser():
                         f"value {tc.MESSAGE}'1'{tc.OFF} for option {tc.CODE}a{tc.OFF} and the value "
                         f"{tc.MESSAGE}'2'{tc.OFF} for option {tc.CODE}b{tc.OFF}. To list the options supported for a "
                         f"given input format, call e.g. "
-                        f"{tc.CODE}`psdi-data-convert -l -f <format> -w Open Babel`{tc.OFF} at the command-line and "
-                        "look for the \"Allowed input options\" section, if one exists.")
+                        f"{tc.CODE}`{const.CL_SCRIPT_NAME} -l -f <format> -w Open Babel`{tc.OFF} at the command-line "
+                        "and look for the \"Allowed input options\" section, if one exists.")
     parser.add_argument("--to-options", type=str, default="",
                         help="String of space-separated options for how to read the input output. Each option \"word\" "
                         "in this string should start with the letter indicating which option is being used, followed "
@@ -642,8 +654,8 @@ def get_argument_parser():
                         f"value {tc.MESSAGE}'1'{tc.OFF} for option {tc.CODE}a{tc.OFF} and the value "
                         f"{tc.MESSAGE}'2'{tc.OFF} for option {tc.CODE}b{tc.OFF}. To list the options supported for a "
                         f"given input format, call e.g. "
-                        f"{tc.CODE}`psdi-data-convert -l -t <format> -w Open Babel`{tc.OFF} at the command-line and "
-                        "look for the \"Allowed output options\" section, if one exists.")
+                        f"{tc.CODE}`{const.CL_SCRIPT_NAME} -l -t <format> -w Open Babel`{tc.OFF} at the command-line "
+                        "and look for the \"Allowed output options\" section, if one exists.")
     parser.add_argument("-s", "--strict", action="store_true",
                         help="If set, will fail if one of the input files has the wrong extension (including those "
                         "contained in archives, but not the archive files themselves). Otherwise, will only print a "
@@ -652,7 +664,7 @@ def get_argument_parser():
                         help="If set, will not perform a pre-check in the database on the validity of a conversion. "
                         "Setting this will result in a less human-friendly error message (or may even falsely indicate "
                         "success) if the conversion is not supported, but will save some execution time. Recommended "
-                        "only for automated execution after the user has confirmed a conversion is supported")
+                        "only for automated execution after the user has confirmed a conversion is supported.")
 
     # Keyword arguments specific to converters
     for converter_name in L_REGISTERED_CONVERTERS:
@@ -663,8 +675,19 @@ def get_argument_parser():
 
     # Keyword arguments for alternative functionality
     parser.add_argument("-l", "--list", action="store_true",
-                        help="If provided alone, lists all available converters. If the name of a converter is "
-                             "provided, gives information on the converter and any command-line flags it accepts.")
+                        help="If provided alone, lists all available converters. Otherwise, provides information on "
+                        f"converters provided with {tc.CODE}`-w/--with'{tc.OFF} and/or input/output formats provided "
+                        f"with {tc.CODE}`-f/--from`{tc.OFF} and {tc.CODE}`-t/--to`{tc.OFF}.")
+    parser.add_argument("--lp", "--lpaths", "--listpaths", type=str, nargs="?", const="one", default=None,
+                        help=f"When provided alongside {tc.CODE}`-f/--from`{tc.OFF} and {tc.CODE}`-t/--to`{tc.OFF}, "
+                        "will list direct and chained conversion pathways between the formats. The number of paths "
+                        f"listed depends on the value provided to {tc.CODE}`--lp`{tc.OFF}: {tc.MESSAGE}'one'{tc.OFF} "
+                        f"(default) will return just one of the best (lowest-weight) paths, {tc.MESSAGE}'best'{tc.OFF} "
+                        f"will return all equally-lowest-weight paths, and {tc.MESSAGE}'short'{tc.OFF} or {tc.MESSAGE}'"
+                        f"shortest'{tc.OFF} will return all equally-shortest paths. So e.g. {tc.CODE}`"
+                        f"{const.CL_SCRIPT_NAME} --lp best -f fmt1 -t fmt2`{tc.OFF} will return all conversion "
+                        f"pathways from format {tc.MESSAGE}'fmt1'{tc.OFF} to format {tc.MESSAGE}'fmt2'{tc.OFF} with "
+                        "the lowest possible weight.")
 
     # Logging/stdout arguments
     parser.add_argument("-g", "--log-file", type=str, default=None,
@@ -690,7 +713,7 @@ def get_argument_parser():
                         help=f"The desired level to log at. Allowed values are: {tc.MESSAGE}'DEBUG'{tc.OFF}, "
                         f"{tc.MESSAGE}'INFO'{tc.OFF}, {tc.MESSAGE}'WARNING'{tc.OFF}, {tc.MESSAGE}'ERROR'{tc.OFF}, "
                         f"{tc.MESSAGE}'CRITICAL'{tc.OFF}. Default: {tc.MESSAGE}'INFO'{tc.OFF} for logging to file, "
-                        f"{tc.MESSAGE}'WARNING'{tc.OFF} for logging to stdout")
+                        f"{tc.MESSAGE}'WARNING'{tc.OFF} for logging to stdout.")
 
     return parser
 
@@ -1134,47 +1157,58 @@ def detail_formats_and_possible_converters(from_format: str, to_format: str):
         else:
             print()
 
-        from_name = possible_from_format.format_word()
-        to_name = possible_to_format.format_word()
+        detail_possible_conversions(possible_from_format, possible_to_format, l_possible_conversions)
 
-        l_conversions_matching_formats = [x for x in l_possible_conversions
-                                          if x[1] == possible_from_format and x[2] == possible_to_format]
 
-        l_possible_registered_converters = [x[0].format_word()
-                                            for x in l_conversions_matching_formats
-                                            if x[0].name in L_REGISTERED_CONVERTERS]
-        l_possible_unregistered_converters = [x[0].format_word()
-                                              for x in l_conversions_matching_formats
-                                              if x[0].name in L_SUPPORTED_CONVERTERS
-                                              and x[0].name not in L_REGISTERED_CONVERTERS]
+def detail_possible_conversions(from_format: FormatInfo,
+                                to_format: FormatInfo,
+                                l_possible_conversions: list[Conversion] | None = None):
+    """Prints out information on direct conversions between two formats"""
 
-        if len(l_possible_registered_converters)+len(l_possible_unregistered_converters) == 0:
-            print_wrap(f"No converters are available which can perform a conversion from {from_name} to "
-                       f"{to_name}")
-            continue
-        elif len(l_possible_registered_converters) == 0:
-            print_wrap(f"No registered converters can perform a conversion from {from_name} to "
-                       f"{to_name}, however the following converters are supported by this package "
-                       "and can perform this conversion, but are not currently registered. They may be registrable by "
-                       "building them on your system and copying the binary to the "
-                       f"{tc.PATH}'{const.BIN_PATH_WITH_OS}'{tc.OFF} directory:", newline=True)
-            print("\n    ".join(l_possible_unregistered_converters))
-            continue
+    if not l_possible_conversions:
+        l_possible_conversions = get_possible_conversions(from_format, to_format)
 
-        print_wrap(f"The following registered converters can convert from {from_name} to "
-                   f"{to_name}:", newline=True)
-        print("    " + "\n    ".join(l_possible_registered_converters) + "\n")
-        if l_possible_unregistered_converters:
-            print("")
-            print_wrap("Additionally, the following converters are supported by this package "
-                       "and can perform this conversion, but are not currently registered. They may be registrable by "
-                       "building them on your system and copying the binary to the "
-                       f"{tc.PATH}'{const.BIN_PATH_WITH_OS}'{tc.OFF} directory:", newline=True)
-            print("    " + "\n    ".join(l_possible_unregistered_converters) + "\n")
+    from_name = from_format.format_word()
+    to_name = to_format.format_word()
 
-        print_wrap("For details on input/output flags and options allowed by a converter for this conversion, call:")
-        print(f"{tc.CODE}{const.CL_SCRIPT_NAME} -l <converter name> -f {strip_control_codes(from_name)} -t "
-              f"{strip_control_codes(to_name)}{tc.OFF}")
+    l_conversions_matching_formats = [x for x in l_possible_conversions
+                                      if x.in_format == from_format and x.out_format == to_format]
+
+    l_possible_registered_converters = [x.converter.format_word()
+                                        for x in l_conversions_matching_formats
+                                        if x.converter.name in L_REGISTERED_CONVERTERS]
+    l_possible_unregistered_converters = [x.converter.format_word()
+                                          for x in l_conversions_matching_formats
+                                          if x.converter.name in L_SUPPORTED_CONVERTERS
+                                          and x.converter.name not in L_REGISTERED_CONVERTERS]
+
+    if len(l_possible_registered_converters)+len(l_possible_unregistered_converters) == 0:
+        print_wrap(f"No converters are available which can perform a conversion from {from_name} to "
+                   f"{to_name}")
+        return
+    elif len(l_possible_registered_converters) == 0:
+        print_wrap(f"No registered converters can perform a conversion from {from_name} to "
+                   f"{to_name}, however the following converters are supported by this package "
+                   "and can perform this conversion, but are not currently registered. They may be registrable by "
+                   "building them on your system and copying the binary to the "
+                   f"{tc.PATH}'{const.BIN_PATH_WITH_OS}'{tc.OFF} directory:", newline=True)
+        print("\n    ".join(l_possible_unregistered_converters))
+        return
+
+    print_wrap(f"The following registered converters can convert from {from_name} to "
+               f"{to_name}:", newline=True)
+    print("    " + "\n    ".join(l_possible_registered_converters) + "\n")
+    if l_possible_unregistered_converters:
+        print("")
+        print_wrap("Additionally, the following converters are supported by this package "
+                   "and can perform this conversion, but are not currently registered. They may be registrable by "
+                   "building them on your system and copying the binary to the "
+                   f"{tc.PATH}'{const.BIN_PATH_WITH_OS}'{tc.OFF} directory:", newline=True)
+        print("    " + "\n    ".join(l_possible_unregistered_converters) + "\n")
+
+    print_wrap("For details on input/output flags and options allowed by a converter for this conversion, call:")
+    print(f"{tc.CODE}{const.CL_SCRIPT_NAME} -l <converter name> -f {strip_control_codes(from_name)} -t "
+          f"{strip_control_codes(to_name)}{tc.OFF}")
 
 
 def get_supported_converters():
@@ -1258,6 +1292,68 @@ def detail_converters_and_formats(args: ConvertArgs):
     print(f"{tc.CODE}{const.CL_SCRIPT_NAME} -l <converter name> -f <input format> -t <output format>{tc.OFF}")
 
 
+def detail_pathways(args: ConvertArgs):
+    """Prints details on possible conversion pathways between two formats.
+    """
+
+    # Check that the mode for how many pathways to return is valid
+    if args.listpaths not in const.L_LP_MODES:
+        raise FileConverterInputException(f"The mode provided to {tc.CODE}`--lp/--lpaths/--listpaths`{tc.OFF} is "
+                                          f"invalid. Valid modes are: " + ", ".join([f"{tc.MESSAGE}'{x}'{tc.OFF}"
+                                                                                     for x in const.L_LP_MODES]),
+                                          help=True)
+
+    # Check that both an input and output format are provided. Note that when this mode is set, the arguments setup will
+    # already check that both are specified uniquely
+    if not args.from_format and args.to_format:
+        raise FileConverterInputException(f"When using {tc.CODE}`--lp/--lpaths/--listpaths`{tc.OFF} to list conversion "
+                                          f"pathways, the input and output format must be uniquely specified with "
+                                          f"{tc.CODE}`-f/--from`{tc.OFF} and {tc.CODE}`-f/--from`{tc.OFF} respectively",
+                                          help=True)
+
+    from_format = get_format_info(args.from_format)
+    to_format = get_format_info(args.to_format)
+
+    # First, check if a direct conversion is possible
+    l_direct_conversions = get_possible_conversions(from_format, to_format)
+    if l_direct_conversions:
+        print_header("Direct Conversion")
+        detail_possible_conversions(from_format, to_format, l_direct_conversions)
+        # If at least one direct conversion can be performed with a registered converter, we can return here
+        if any([converter in L_REGISTERED_CONVERTERS for converter in [x.converter for x in l_direct_conversions]]):
+            return
+
+    print_header("Conversion Pathways")
+
+    # Construct the list of conversion pathways we'll want to display for the user
+    l_paths: list[ConversionPath]
+
+    if args.listpaths == const.LP_MODE_ONE:
+        path = get_conversion_pathway(in_format=from_format, out_format=to_format)
+        # `path` might be None if no paths are possible. We'll use an empty list to represent that fact
+        l_paths = [path] if path else []
+    elif args.listpaths == const.LP_MODE_BEST:
+        l_paths = get_possible_conversion_pathways(in_format=from_format, out_format=to_format, include="best")
+    else:
+        l_paths = get_possible_conversion_pathways(in_format=from_format, out_format=to_format, include="shortest")
+
+    if not l_paths:
+        # No pathway is possible. For now, just report this. TODO: Add some logic here to try to figure out why,
+        # and give the user a better idea of the reason
+        print_wrap(f"No conversion pathway is possible from {from_format.format_word()} to {to_format.format_word()}")
+        return
+
+    # Sort the paths by lowest weight first, and name second
+    l_paths.sort(key=lambda x: (x.get_weight(), x.get_name()))
+
+    for i, path in enumerate(l_paths):
+
+        if i != 0:
+            print("---\n")
+
+        print_wrap(path.format_details(), newline=True)
+
+
 def run_from_args(args: ConvertArgs):
     """Workhorse function to perform primary execution of this script, using the provided parsed arguments.
 
@@ -1270,6 +1366,14 @@ def run_from_args(args: ConvertArgs):
     # Check if we've been asked to list options
     if args.list:
         return detail_converters_and_formats(args)
+
+    # Check if we've been asked to list possible conversion pathways
+    if args.listpaths:
+        return detail_pathways(args)
+
+    # If we listed any info, return now and don't proceed with conversion
+    if args.list or args.listpaths:
+        return
 
     data = {"success": "unknown",
             "from_flags": args.from_flags,
