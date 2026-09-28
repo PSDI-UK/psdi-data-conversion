@@ -8,11 +8,12 @@ Python module provide utilities for accessing the converter database
 from __future__ import annotations
 
 import json
+import math
 import sys
 import warnings
 from dataclasses import dataclass, field
 from functools import cached_property, lru_cache
-from itertools import product
+from itertools import pairwise, product
 from logging import getLogger
 from pathlib import Path
 from typing import Any, Literal, NamedTuple, overload
@@ -26,7 +27,7 @@ from psdi_data_conversion.converter import (L_REGISTERED_CONVERTERS, L_SUPPORTED
                                             get_registered_converter_class)
 from psdi_data_conversion.converters.base import FileConverter, FileConverterException
 from psdi_data_conversion.file_io import get_package_path
-from psdi_data_conversion.utils import JsonDict, regularize_name, tc
+from psdi_data_conversion.utils import JsonDict, displaylen, regularize_name, tc
 
 # We have to use a default ID which isn't Falsey, since 0 is a valid ID
 DEFAULT_ID = -1
@@ -109,8 +110,17 @@ DB_OUT_FLAGS_ID_KEY_BASE = "flags_out_id"
 DB_IN_OPTIONS_ID_KEY_BASE = "argflags_in_id"
 DB_OUT_OPTIONS_ID_KEY_BASE = "argflags_out_id"
 
+# Messages and formatting strings
+MSG_CONVERSION_ONELINE = "{} to {} with {}    Weight: {}"
+L_CONVERSION_ONELINE_SPLIT_POINTS = [x for x in MSG_CONVERSION_ONELINE.split("{}") if x]
+MSG_TOTAL_WEIGHT = "Total weight: {}"
+
 # Chaining constants
 # ------------------
+
+# Maximum possible conversion weight
+CONV_WEIGHT_BIT_CEILING = 60
+CONV_WEIGHT_MAX = (1 << CONV_WEIGHT_BIT_CEILING) - 1
 
 # Each format property is assigned a weight with a different power of 2, plus a weight for taking any conversion step at
 # all, to account for miscellaneous lossiness from a conversion that can't be quantified
@@ -122,9 +132,6 @@ D_PROP_BITS = {
     const.QUAL_CONN_KEY: 0
 }
 D_PROP_WEIGHTS = {key: 1 << bit for key, bit in D_PROP_BITS.items()}
-
-# Maximum possible conversion weight
-CONV_WEIGHT_MAX = 1 << 64 - 1
 
 # Number of bits the property weight section is offset within the full weight when everything is combined into a single
 # 64-bit integer
@@ -148,6 +155,10 @@ TIME_WEIGHT_BIT_OFFSET = 8
 # Number of bits the converter weight section is offset within the full weight when everything is combined into a single
 # 64-bit integer
 CONV_WEIGHT_BIT_OFFSET = 0
+
+# A list of where bit sections of the total weight begin (not inclusive) and end (inclusive)
+L_WEIGHT_BIT_BORDERS = [CONV_WEIGHT_BIT_CEILING, PROP_WEIGHT_BIT_OFFSET, PREC_WEIGHT_BIT_OFFSET,
+                        TIME_WEIGHT_BIT_OFFSET, CONV_WEIGHT_BIT_OFFSET]
 
 # Default converter weight, which is used if no explicit weight is set
 CONV_WEIGHT_DEFAULT = 1 << (TIME_WEIGHT_BIT_OFFSET - CONV_WEIGHT_BIT_OFFSET - 2)
@@ -1053,6 +1064,11 @@ class Conversion(NamedTuple):
         """The weight of this conversion, representing the amount of potential data loss"""
         return get_database().conversions_table.get_conversion_weight(*self, bits=bits)
 
+    def format_oneline(self):
+        """Formats the conversion as a string"""
+        return MSG_CONVERSION_ONELINE.format(self.in_format.format_word(), self.out_format.format_word(),
+                                             self.converter.format_word(), format_weight(self.get_weight()))
+
 
 @dataclass
 class ConversionQualityInfo:
@@ -1144,6 +1160,9 @@ class ConversionPath(list[Conversion]):
                             "objects")
         return super().__setitem__(key, value)
 
+    def __hash__(self):
+        return hash(tuple([hash(step) for step in self]))
+
     def get_weight(self,
                    bits: Literal["all"] | Literal["top"] | Literal["bottom"] = "all"):
         """The weight for the full path"""
@@ -1171,8 +1190,120 @@ class ConversionPath(list[Conversion]):
             name += f"-{step.out_format.disambiguated_name}"
         return name
 
-    def __hash__(self):
-        return hash(tuple([hash(step) for step in self]))
+    @staticmethod
+    def _align_step_strs(l_step_raw_strs: list[str]):
+
+        # We want to format all steps to align them, so split them into parts
+        ll_step_parts: list[list[str]] = []
+        L_CONVERSION_ONELINE_SPLIT_POINTS = [x for x in MSG_CONVERSION_ONELINE.split("{}") if x]
+        for step_raw_str in l_step_raw_strs:
+            l_step_parts: list[str] = []
+            tail = step_raw_str
+            for split_point in L_CONVERSION_ONELINE_SPLIT_POINTS:
+                head, tail = tail.split(split_point)
+                l_step_parts.append(head)
+            l_step_parts.append(tail)
+            ll_step_parts.append(l_step_parts)
+
+        # Get the maximum length of each part
+        l_part_max_lens: list[int] = []
+        for i in range(len(L_CONVERSION_ONELINE_SPLIT_POINTS)+1):
+            l_part_max_lens.append(max([len(l_step_parts[i]) for l_step_parts in ll_step_parts]))
+
+        # Recompile the strings with each part padded to the maximum length
+        l_step_strs: list[str] = []
+        for l_step_parts in ll_step_parts:
+            step_str = ""
+            for i, part in enumerate(l_step_parts):
+                step_str += f"{part:<{l_part_max_lens[i]}}"
+                if i < len(L_CONVERSION_ONELINE_SPLIT_POINTS):
+                    step_str += L_CONVERSION_ONELINE_SPLIT_POINTS[i]
+            l_step_strs.append(step_str)
+
+        return l_step_strs
+
+    @staticmethod
+    def _format_total_weight_strs(l_total_weights: list[int], aligned_step_str: str):
+        weight_split_point = L_CONVERSION_ONELINE_SPLIT_POINTS[-1]
+        len_before_weight = displaylen(aligned_step_str.split(weight_split_point)[0]) + len(weight_split_point)
+        l_total_weight_strs: list[str] = []
+
+        for total_weight in l_total_weights:
+            l_total_weight_strs.append(f"{MSG_TOTAL_WEIGHT.split("{}")[0]:>{len_before_weight}}" +
+                                       format_weight(total_weight, color=tc.DARKNUMBER))
+        return l_total_weight_strs
+
+    def _get_step_detail_strs(self, align=True):
+
+        if len(self) == 0:
+            raise ValueError("Conversion pathway is empty")
+
+        l_step_strs = [f"{i+1}) {step.format_oneline()}" for i, step in enumerate(self)]
+        if align:
+            l_step_strs = self._align_step_strs(l_step_strs)
+
+        return l_step_strs
+
+    def _get_detail_lines(self):
+
+        l_step_strs = self._get_step_detail_strs()
+
+        weight_str = self._format_total_weight_strs([self.get_weight()], l_step_strs[0])[0]
+
+        return l_step_strs, weight_str
+
+    def _format_path_details(self, l_step_strs: list[str], weight_str: str, show_command: bool):
+        msg = "\n".join(l_step_strs) + f"\n{weight_str}"
+        if show_command:
+            msg += f"\nInvoke with: {tc.CODE}`--path"
+
+            for i, step in enumerate(self):
+                if i == 0:
+                    msg += f" {step.in_format.id}"
+                msg += f" {step.converter.name}"
+                msg += f" {step.out_format.id}"
+
+            msg += f"`{tc.OFF}"
+        return msg
+
+    def format_detailed(self, show_command=False):
+        """Format the full details of the path as a string"""
+
+        l_step_strs, weight_str = self._get_detail_lines()
+
+        return self._format_path_details(l_step_strs, weight_str, show_command=show_command)
+
+    @staticmethod
+    def format_multiple_detailed(l_paths: list[ConversionPath], show_command=False):
+        """Format details of a list of paths, aligning them all"""
+
+        # We first get a list of all step detail strings across all paths, and align them
+        all_step_strs: list[str] = []
+        l_weights: list[int] = []
+        for path in l_paths:
+            all_step_strs += path._get_step_detail_strs(align=False)
+            l_weights.append(path.get_weight())
+        l_aligned_step_strs = ConversionPath._align_step_strs(all_step_strs)
+
+        # Get the weight string for each path
+        l_weight_strs = ConversionPath._format_total_weight_strs(l_weights, l_aligned_step_strs[0])
+
+        # Now construct the details string for each path
+        l_path_strs = [""]*len(l_paths)
+
+        # As we iterate over steps in paths again, keep track of the corresponding index in the list of aligned strings
+        global_step_index = 0
+
+        for path_index in range(len(l_paths)):
+            path = l_paths[path_index]
+            l_step_strs = [""]*len(path)
+            for local_step_index in range(len(path)):
+                l_step_strs[local_step_index] = l_aligned_step_strs[global_step_index]
+                global_step_index += 1
+            l_path_strs[path_index] = path._format_path_details(l_step_strs, l_weight_strs[path_index],
+                                                                show_command=show_command)
+
+        return "\n\n".join(l_path_strs)
 
 
 class ConversionsTable:
@@ -1645,6 +1776,9 @@ class ConversionsTable:
         # Check if any paths are possible
         if not l_paths or not l_paths[0]:
             return []
+
+        # Sort the list by weight, then by name
+        l_paths.sort(key=lambda x: (x.get_weight(), x.get_name()))
 
         return l_paths
 
@@ -2900,3 +3034,29 @@ def split_conversion_weight(conversion_weight: int):
     conv_weight = conversion_weight >> CONV_WEIGHT_BIT_OFFSET
 
     return ConversionWeightParts(prop_weight, prec_weight, time_weight, conv_weight)
+
+
+def _simple_hex(x: int):
+    """Formats an integer as a hex string without the '0x' prefix"""
+    return hex(x)[2:]
+
+
+def format_weight(weight: int, color=tc.NUMBER):
+    """Formats a weight integer into a more convenient format"""
+
+    l_hex_parts: list[str] = []
+    for weight_part, bit_borders in zip(split_conversion_weight(weight), pairwise(L_WEIGHT_BIT_BORDERS)):
+
+        weight_str = _simple_hex(weight_part)
+
+        # We want to pad the hex string to the maximum size it could possibly be, for consistent sizing of each
+        # component. We get the total size in base 2from the difference between highest and lowest bit for each
+        # component. Divide this by 4 and take the ceiling to get the total size in hex
+        total_hex_len = math.ceil((bit_borders[0]-bit_borders[1])/4)
+
+        # Format it padded with zeros on the left up to this total length
+        l_hex_parts.append(f"{weight_str:0>{total_hex_len}}")
+
+    hex_weight_str = "-".join(l_hex_parts)
+
+    return f"{color}{hex_weight_str}{tc.OFF}"

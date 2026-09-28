@@ -19,9 +19,11 @@ from psdi_data_conversion import constants as const
 from psdi_data_conversion.converter import D_CONVERTER_ARGS, L_REGISTERED_CONVERTERS, get_registered_converter_class
 from psdi_data_conversion.converters.openbabel.converter import (COORD_GEN_KEY, COORD_GEN_QUAL_KEY, DEFAULT_COORD_GEN,
                                                                  DEFAULT_COORD_GEN_QUAL)
-from psdi_data_conversion.database import (D_FORMAT_PROPERTY_ATTRS, get_conversion_pathway, get_conversion_quality,
-                                           get_converter_info, get_format_info, get_in_format_args,
-                                           get_out_format_args, get_possible_conversions, get_possible_formats)
+from psdi_data_conversion.database import (D_FORMAT_PROPERTY_ATTRS, MSG_CONVERSION_ONELINE, Conversion, format_weight,
+                                           get_conversion_pathway, get_conversion_quality, get_converter_info,
+                                           get_format_info, get_in_format_args, get_out_format_args,
+                                           get_possible_conversion_pathways, get_possible_conversions,
+                                           get_possible_formats)
 from psdi_data_conversion.main import FileConverterInputException, parse_args
 from psdi_data_conversion.testing.constants import FORMAT_INCHI, FORMAT_MOLDY, FORMAT_PDB_0
 from psdi_data_conversion.testing.conversion_test_specs import l_cli_test_specs
@@ -245,10 +247,12 @@ def test_log_file_list_mode():
     assert args.log_file == const.DEFAULT_LISTING_LOG_FILE
 
 
-def _check_no_errors(captured):
+def _check_no_errors(captured, subtests):
     """Check that no errors were produced in output"""
-    assert not captured.err
-    assert "Traceback" not in captured.out
+    with subtests.test("There's no output to stderr"):
+        assert not captured.err
+    with subtests.test("There aren't any tracebacks in stdout"):
+        assert "Traceback" not in captured.out
 
 
 @pytest.mark.parametrize("auto_str", ["", "-w auto", "-w Auto", "--with AUTO"])
@@ -426,7 +430,7 @@ def test_path_bad_length():
     assert _compressed_match("invalid due to an incorrect number of elements", e.value)
 
 
-def test_list_converters(capsys):
+def test_list_converters(capsys, subtests):
     """Test the option to list available converters
     """
     run_with_arg_string("--list")
@@ -436,11 +440,11 @@ def test_list_converters(capsys):
         converter_name = get_registered_converter_class(converter_rname).meta.name
         assert converter_name in captured.out, converter_name
 
-    _check_no_errors(captured)
+    _check_no_errors(captured, subtests)
 
 
 @pytest.mark.parametrize("converter_name", L_REGISTERED_CONVERTERS)
-def test_detail_converter(capsys, converter_name):
+def test_detail_converter(capsys, converter_name, subtests):
     """Test the option to provide detail on a converter
     """
 
@@ -472,7 +476,7 @@ def test_detail_converter(capsys, converter_name):
         assert _compressed_match(f"{out_format.disambiguated_name}{input_allowed}yes{out_format.description}",
                                  captured.out)
 
-    _check_no_errors(captured)
+    _check_no_errors(captured, subtests)
 
 
 def test_detail_converter_bad_name(capsys):
@@ -486,17 +490,17 @@ def test_detail_converter_bad_name(capsys):
     assert "Traceback" not in captured.err
 
 
-def test_detail_converter_with(capsys):
+def test_detail_converter_with(capsys, subtests):
     """Test that we can also provide the converter name with -w/--with
     """
     run_with_arg_string(f"-l -w {const.CONVERTER_C2X}")
     captured = capsys.readouterr()
-    _check_no_errors(captured)
+    _check_no_errors(captured, subtests)
     assert const.CONVERTER_C2X in captured.out
     assert const.CONVERTER_OB not in captured.out
 
 
-def test_get_conversions(capsys):
+def test_get_conversions(capsys, subtests):
     """Test the option to get information on converters which can perform a desired conversion
     """
     in_format = "xyz-1"
@@ -506,7 +510,7 @@ def test_get_conversions(capsys):
     run_with_arg_string(f"-l -f {in_format} -t {out_format}")
     captured = capsys.readouterr()
 
-    _check_no_errors(captured)
+    _check_no_errors(captured, subtests)
 
     assert bool(l_conversions) == _compressed_match("The following registered converters can convert from "
                                                     f"{in_format} to {out_format}:", captured.out)
@@ -520,8 +524,17 @@ def test_get_conversions(capsys):
             assert not _compressed_match(converter_info.pretty_name, captured.out)
 
 
-def test_list_chain(capsys):
-    """Test the ability to get a pathway for a chained conversion
+def _check_step_details_present(step: Conversion, captured, subtests, **kwargs):
+    with subtests.test("Display each step of the chain properly", **kwargs):
+        assert _compressed_match(MSG_CONVERSION_ONELINE.format(step.in_format.format_word(),
+                                                               step.out_format.format_word(),
+                                                               step.converter.format_word(),
+                                                               format_weight(step.get_weight())),
+                                 captured.out)
+
+
+def test_list_chain_if_not_direct(capsys, subtests):
+    """Test the ability to get a pathway for a chained conversion if no direct conversion is possible
     """
     in_format = get_format_info(FORMAT_MOLDY)
     out_format = get_format_info(FORMAT_INCHI)
@@ -531,21 +544,22 @@ def test_list_chain(capsys):
     run_with_arg_string(f"-l -f {in_format.id} -t {out_format.id}")
     captured = capsys.readouterr()
 
-    _check_no_errors(captured)
+    _check_no_errors(captured, subtests)
 
-    assert _compressed_match(f"No direct conversions are possible from {in_format.format_word()} to "
-                             f"{out_format.format_word()}", captured.out)
+    with subtests.test("Indicate no direct conversions possible"):
+        assert _compressed_match(f"No direct conversions are possible from {in_format.format_word()} to "
+                                 f"{out_format.format_word()}", captured.out)
 
-    assert _compressed_match(f"A chained conversion is possible from {in_format.format_word()} to "
-                             f"{out_format.format_word()} using registered converters:", captured.out)
+    with subtests.test("Indicate chained conversion is possible"):
+        assert _compressed_match(f"A chained conversion is possible from {in_format.format_word()} to "
+                                 f"{out_format.format_word()} using registered converters:", captured.out)
 
     for i, step in enumerate(pathway):
-        assert _compressed_match(f"{i+1}) Convert from {step[1].format_word()} to {step[2].format_word()} with "
-                                 f"{step[0].format_word()}", captured.out)
+        _check_step_details_present(step, captured, subtests, i=i)
 
 
-def test_list_chain_impossible(capsys):
-    """Test that we get the expected output when a chained conversion is not possible
+def test_list_conversion_impossible(capsys, subtests):
+    """Test that we get the expected output from listing when a chained conversion is not possible
     """
 
     in_format = "cif"
@@ -559,10 +573,52 @@ def test_list_chain_impossible(capsys):
     # Check that igraph's warning is suppressed
     assert not _compressed_match("Couldn't reach some vertices", captured.out)
 
-    _check_no_errors(captured)
+    _check_no_errors(captured, subtests)
 
 
-def test_conversion_info_open_babel(capsys):
+@pytest.mark.parametrize("include", ("one", "best", "shortest"))
+def test_list_possible_chains(include, capsys, subtests):
+    """Test that we can get lowest-weight chains with `--lp`"""
+
+    in_format = FORMAT_INCHI
+    out_format = FORMAT_MOLDY
+    if include == "one":
+        l_pathways = [get_conversion_pathway(in_format, out_format)]
+    else:
+        l_pathways = get_possible_conversion_pathways(in_format, out_format, include=include)
+
+    run_with_arg_string(f"--lp {include} -f {in_format} -t {out_format}")
+    captured = capsys.readouterr()
+
+    with subtests.test("Explanatory test present"):
+        assert _compressed_match("Conversion pathways are listed below", captured.out)
+
+    _check_no_errors(captured, subtests)
+
+    for i, pathway in enumerate(l_pathways):
+        for j, step in enumerate(pathway):
+            _check_step_details_present(step, captured, subtests, include=include, i=i, j=j)
+
+
+def test_list_chain_impossible(capsys, subtests):
+    """Test that we get the expected output from listing chains when no chained conversion is possible
+    """
+
+    in_format = "cif"
+    out_format = "abinit"
+
+    run_with_arg_string(f"--lp -f {in_format} -t {out_format}")
+    captured = capsys.readouterr()
+
+    assert _compressed_match(f"No conversion pathway is possible from {in_format} to {out_format}.", captured.out)
+
+    # Check that igraph's warning is suppressed
+    assert not _compressed_match("Couldn't reach some vertices", captured.out)
+
+    _check_no_errors(captured, subtests)
+
+
+def test_conversion_info_open_babel(capsys, subtests):
     """Test that we get the expected information on the 'Open Babel' converter
     """
 
@@ -576,7 +632,7 @@ def test_conversion_info_open_babel(capsys):
     run_with_arg_string(f"-l {converter_name.lower()} -f {in_format} -t {out_format}")
     captured = capsys.readouterr()
 
-    _check_no_errors(captured)
+    _check_no_errors(captured, subtests)
 
     # Check that conversion quality details are in the output as expected
     assert _compressed_match(f"Conversion from {in_format} to {out_format} with {converter_name} is "
@@ -607,7 +663,7 @@ def test_conversion_info_open_babel(capsys):
 
 
 @pytest.mark.parametrize("converter_name", [const.CONVERTER_C2X, const.CONVERTER_ATO])
-def test_conversion_info_others(capsys, converter_name):
+def test_conversion_info_others(capsys, converter_name, subtests):
     """Test that we get the expected information on other converters
     """
 
@@ -618,7 +674,7 @@ def test_conversion_info_others(capsys, converter_name):
     run_with_arg_string(f"-l {converter_name} -f {in_format} -t {out_format}")
 
     captured = capsys.readouterr()
-    _check_no_errors(captured)
+    _check_no_errors(captured, subtests)
 
     # Check that conversion quality details are in the output as expected
     assert _compressed_match(f"Conversion from {in_format} to {out_format} with {converter_name} is "
@@ -628,7 +684,7 @@ def test_conversion_info_others(capsys, converter_name):
     assert _compressed_match(const.QUAL_NOTE_OUT_MISSING.format(const.QUAL_CONN_LABEL), captured.out)
 
 
-def test_format_info(capsys):
+def test_format_info(capsys, subtests):
     """Test that we can successfully get information on a file format"""
 
     # Try to get info on an unambiguous format
@@ -639,7 +695,7 @@ def test_format_info(capsys):
 
     captured = capsys.readouterr()
 
-    _check_no_errors(captured)
+    _check_no_errors(captured, subtests)
 
     # Check for basic format information
     assert _compressed_match(f"{in_format_info.disambiguated_name} (ID {in_format_info.id}): " +
@@ -656,7 +712,7 @@ def test_format_info(capsys):
             assert _compressed_match(label + " unknown whether or not to be supported", captured.out)
 
 
-def test_format_info_ambiguous(capsys):
+def test_format_info_ambiguous(capsys, subtests):
     """Test that we get expected information for an ambiguous format"""
 
     out_format = "pdb"
@@ -665,7 +721,7 @@ def test_format_info_ambiguous(capsys):
 
     captured = capsys.readouterr()
 
-    _check_no_errors(captured)
+    _check_no_errors(captured, subtests)
 
     assert _compressed_match(f"WARNING: Format '{out_format}' is ambiguous", captured.out)
 
