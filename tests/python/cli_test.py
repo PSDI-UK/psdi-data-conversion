@@ -558,8 +558,8 @@ def test_list_chain_if_not_direct(capsys, subtests):
         _check_step_details_present(step, captured, subtests, i=i)
 
 
-def test_list_chain_impossible(capsys, subtests):
-    """Test that we get the expected output when a chained conversion is not possible
+def test_list_conversion_impossible(capsys, subtests):
+    """Test that we get the expected output from listing when a chained conversion is not possible
     """
 
     in_format = "cif"
@@ -598,6 +598,24 @@ def test_list_possible_chains(include, capsys, subtests):
     for i, pathway in enumerate(l_pathways):
         for j, step in enumerate(pathway):
             _check_step_details_present(step, captured, subtests, include=include, i=i, j=j)
+
+
+def test_list_chain_impossible(capsys, subtests):
+    """Test that we get the expected output from listing chains when no chained conversion is possible
+    """
+
+    in_format = "cif"
+    out_format = "abinit"
+
+    run_with_arg_string(f"--lp -f {in_format} -t {out_format}")
+    captured = capsys.readouterr()
+
+    assert _compressed_match(f"No conversion pathway is possible from {in_format} to {out_format}.", captured.out)
+
+    # Check that igraph's warning is suppressed
+    assert not _compressed_match("Couldn't reach some vertices", captured.out)
+
+    _check_no_errors(captured, subtests)
 
 
 def test_conversion_info_open_babel(capsys, subtests):

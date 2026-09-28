@@ -1352,7 +1352,7 @@ def detail_pathways(args: ConvertArgs):
     if not l_paths:
         # No pathway is possible. For now, just report this. TODO: Add some logic here to try to figure out why,
         # and give the user a better idea of the reason
-        print_wrap(f"No conversion pathway is possible from {from_format.format_word()} to {to_format.format_word()}")
+        print_wrap(f"No conversion pathway is possible from {from_format.format_word()} to {to_format.format_word()}.")
         return
 
     print_wrap("Conversion pathways are listed below, sorted from lowest to highest weight. The weight represents an "
