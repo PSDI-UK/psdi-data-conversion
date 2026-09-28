@@ -1129,8 +1129,9 @@ def detail_formats_and_possible_converters(from_format: str, to_format: str):
         if len(l_from_formats) == 1 and len(l_to_formats) == 1:
 
             for only in "registered", "supported", "all":
-                pathway = get_conversion_pathway(l_from_formats[0], l_to_formats[0], only=only)
-                if pathway is None:
+                l_pathways = get_possible_conversion_pathways(l_from_formats[0], l_to_formats[0],
+                                                              only=only, include="shortest")
+                if not l_pathways:
                     continue
 
                 if only == "registered" or only == "supported":
@@ -1140,12 +1141,17 @@ def detail_formats_and_possible_converters(from_format: str, to_format: str):
                 print_wrap(f"A chained conversion is possible from {from_format_name} to {to_format_name} using "
                            f"{converter_type_needed} converters:")
 
-                for i, step in enumerate(pathway):
-                    print_wrap(f"{i+1}) Convert from {step[1].format_word()} to {step[2].format_word()} with "
-                               f"{step[0].format_word()}")
+                print_wrap(l_pathways[0].format_detailed(show_command=True))
 
                 print()
-                print_wrap("Chained conversion is not yet supported by this utility, but will be added soon")
+
+                # If more pathways are possible, recommend the command to list them all
+                if len(l_pathways) > 1:
+                    print_wrap(f"To see other possible conversion pathways, call:\n"
+                               f"{tc.CODE}{const.CL_SCRIPT_NAME} --lp <best/shortest> -f {from_format} -t "
+                               f"{to_format}{tc.OFF}\n"
+                               f"({tc.MESSAGE}'best'{tc.OFF} for all equally-low-weight paths, {tc.MESSAGE}'shortest"
+                               f"'{tc.OFF} for all equally-short paths)")
 
                 break
 
@@ -1162,7 +1168,11 @@ def detail_formats_and_possible_converters(from_format: str, to_format: str):
     l_to_formats = list(set([x[2] for x in l_possible_conversions]))
     l_to_formats.sort(key=lambda x: x.disambiguated_name)
 
-    # Loop over all possible combinations of formats
+    # End here if no direct conversions are possible
+    if len(l_from_formats)*len(l_to_formats) == 0:
+        return
+
+    # Print Conversion information for all combinations of formats
     print_header("Conversion")
 
     first_loop = True
@@ -1344,9 +1354,6 @@ def detail_pathways(args: ConvertArgs):
         # and give the user a better idea of the reason
         print_wrap(f"No conversion pathway is possible from {from_format.format_word()} to {to_format.format_word()}")
         return
-
-    # Sort the paths by lowest weight first, and name second
-    l_paths.sort(key=lambda x: (x.get_weight(), x.get_name()))
 
     print_wrap("Conversion pathways are listed below, sorted from lowest to highest weight. The weight represents an "
                "estimate of how much data loss is expected in this path, plus some other factors to help break ties. "

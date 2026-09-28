@@ -1238,7 +1238,7 @@ class ConversionPath(list[Conversion]):
         if len(self) == 0:
             raise ValueError("Conversion pathway is empty")
 
-        l_step_strs = [f"- {step.format_oneline()}" for step in self]
+        l_step_strs = [f"{i+1}) {step.format_oneline()}" for i, step in enumerate(self)]
         if align:
             l_step_strs = self._align_step_strs(l_step_strs)
 
@@ -1776,6 +1776,9 @@ class ConversionsTable:
         # Check if any paths are possible
         if not l_paths or not l_paths[0]:
             return []
+
+        # Sort the list by weight, then by name
+        l_paths.sort(key=lambda x: (x.get_weight(), x.get_name()))
 
         return l_paths
 
