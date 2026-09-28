@@ -1348,6 +1348,26 @@ def detail_pathways(args: ConvertArgs):
     # Sort the paths by lowest weight first, and name second
     l_paths.sort(key=lambda x: (x.get_weight(), x.get_name()))
 
+    print_wrap("Conversion pathways are listed below, sorted from lowest to highest weight. The weight represents an "
+               "estimate of how much data loss is expected in this path, plus some other factors to help break ties. "
+               "The weight is represented by joined hex values in the format <property weight>-<precision weight>-"
+               "<time weight>-<converter weight> (listed in descending order of importance). A detailed explanation "
+               f"can be found in the file {tc.PATH}'doc/conversion_chaining.md'{tc.OFF} in the project source, but in "
+               "brief:\n"
+               "\n"
+               f"{tc.BOLD}Property weight:{tc.OFF} A non-zero value here indicates a class of information is "
+               "completely lost in the conversion, e.g. if the input format can represent connection information while "
+               "the output cannot.\n"
+               "\n"
+               f"{tc.BOLD}Precision weight:{tc.OFF} Scales with how many digits of precision in numerical values are "
+               "lost\n"
+               "\n"
+               f"{tc.BOLD}Time weight:{tc.OFF} Scales with how much time the conversion takes\n"
+               "\n"
+               f"{tc.BOLD}Converter weight:{tc.OFF} Tie-breaking factor, with converters which have been supported by "
+               "this package given lower weights, as they're likely to work more reliably\n"
+               "\n---\n")
+
     print_wrap(ConversionPath.format_multiple_detailed(l_paths, show_command=True))
     print("")
 
