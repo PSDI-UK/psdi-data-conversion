@@ -1252,19 +1252,29 @@ class ConversionPath(list[Conversion]):
 
         return l_step_strs, weight_str
 
-    @staticmethod
-    def _format_steps_and_weight(l_step_strs: list[str], weight_str: str):
-        return "\n".join(l_step_strs) + f"\n{weight_str}"
+    def _format_path_details(self, l_step_strs: list[str], weight_str: str, show_command: bool):
+        msg = "\n".join(l_step_strs) + f"\n{weight_str}"
+        if show_command:
+            msg += f"\nInvoke with: {tc.CODE}`--path"
 
-    def format_detailed(self):
+            for i, step in enumerate(self):
+                if i == 0:
+                    msg += f" {step.in_format.id}"
+                msg += f" {step.converter.name}"
+                msg += f" {step.out_format.id}"
+
+            msg += f"`{tc.OFF}"
+        return msg
+
+    def format_detailed(self, show_command=False):
         """Format the full details of the path as a string"""
 
         l_step_strs, weight_str = self._get_detail_lines()
 
-        return self._format_steps_and_weight(l_step_strs, weight_str)
+        return self._format_path_details(l_step_strs, weight_str, show_command=show_command)
 
     @staticmethod
-    def format_multiple_detailed(l_paths: list[ConversionPath]):
+    def format_multiple_detailed(l_paths: list[ConversionPath], show_command=False):
         """Format details of a list of paths, aligning them all"""
 
         # We first get a list of all step detail strings across all paths, and align them
@@ -1290,9 +1300,10 @@ class ConversionPath(list[Conversion]):
             for local_step_index in range(len(path)):
                 l_step_strs[local_step_index] = l_aligned_step_strs[global_step_index]
                 global_step_index += 1
-            l_path_strs[path_index] = ConversionPath._format_steps_and_weight(l_step_strs, l_weight_strs[path_index])
+            l_path_strs[path_index] = path._format_path_details(l_step_strs, l_weight_strs[path_index],
+                                                                show_command=show_command)
 
-        return "\n---\n\n".join(l_path_strs)
+        return "\n\n".join(l_path_strs)
 
 
 class ConversionsTable:
