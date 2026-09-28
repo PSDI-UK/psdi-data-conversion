@@ -27,7 +27,7 @@ from psdi_data_conversion.converter import (L_REGISTERED_CONVERTERS, L_SUPPORTED
                                             get_registered_converter_class)
 from psdi_data_conversion.converters.base import FileConverter, FileConverterException
 from psdi_data_conversion.file_io import get_package_path
-from psdi_data_conversion.utils import JsonDict, regularize_name, tc
+from psdi_data_conversion.utils import JsonDict, displaylen, regularize_name, tc
 
 # We have to use a default ID which isn't Falsey, since 0 is a valid ID
 DEFAULT_ID = -1
@@ -1062,7 +1062,7 @@ class Conversion(NamedTuple):
     def format_oneline(self):
         """Formats the conversion as a string"""
         return (f"{self.in_format.format_word()} to {self.out_format.format_word()} with "
-                f"{self.converter.format_word()}. Weight: {format_weight(self.get_weight())}")
+                f"{self.converter.format_word()}    Weight: {format_weight(self.get_weight())}")
 
 
 @dataclass
@@ -1185,14 +1185,46 @@ class ConversionPath(list[Conversion]):
             name += f"-{step.out_format.disambiguated_name}"
         return name
 
-    def format_details(self):
+    def format_detailed(self):
         """Format the full details of the path as a string"""
+
         if len(self) == 0:
             raise ValueError("Conversion pathway is empty")
-        msg = ""
-        for step in self:
-            msg += f"- {step.format_oneline()}\n"
-        msg += f"Total weight: {format_weight(self.get_weight())}"
+
+        # Get each step formatted
+        l_step_raw_strs = [f"- {step.format_oneline()}\n" for step in self]
+
+        # We want to format all steps to align them, so split them into parts
+        ll_step_parts: list[list[str]] = []
+        l_step_split_points = (" to ", " with ", " Weight: ")
+        for step_raw_str in l_step_raw_strs:
+            l_step_parts: list[str] = []
+            tail = step_raw_str
+            for split_point in l_step_split_points:
+                head, tail = tail.split(split_point)
+                l_step_parts.append(head)
+            l_step_parts.append(tail)
+            ll_step_parts.append(l_step_parts)
+
+        # Get the maximum length of each part
+        l_part_max_lens: list[int] = []
+        for i in range(len(l_step_split_points)+1):
+            l_part_max_lens.append(max([len(l_step_parts[i]) for l_step_parts in ll_step_parts]))
+
+        # Recompile the strings with each part padded to the maximum length
+        l_step_strs: list[str] = []
+        for l_step_parts in ll_step_parts:
+            step_str = ""
+            for i, part in enumerate(l_step_parts):
+                step_str += f"{part:<{l_part_max_lens[i]}}"
+                if i < len(l_step_split_points):
+                    step_str += l_step_split_points[i]
+            l_step_strs.append(step_str)
+
+        msg = "".join(l_step_strs)
+        weight_split_point = " Weight: "
+        len_before_weight = displaylen(l_step_strs[0].split(weight_split_point)[0]) + len(weight_split_point)
+        msg += f"{"Total weight: ":>{len_before_weight}}" + f"{format_weight(self.get_weight())}"
         return msg
 
 

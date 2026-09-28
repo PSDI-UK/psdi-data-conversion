@@ -1353,7 +1353,7 @@ def detail_pathways(args: ConvertArgs):
         if i != 0:
             print("---\n")
 
-        print_wrap(path.format_details(), newline=True)
+        print_wrap(path.format_detailed(), newline=True)
 
 
 def run_from_args(args: ConvertArgs):
