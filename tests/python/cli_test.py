@@ -19,10 +19,11 @@ from psdi_data_conversion import constants as const
 from psdi_data_conversion.converter import D_CONVERTER_ARGS, L_REGISTERED_CONVERTERS, get_registered_converter_class
 from psdi_data_conversion.converters.openbabel.converter import (COORD_GEN_KEY, COORD_GEN_QUAL_KEY, DEFAULT_COORD_GEN,
                                                                  DEFAULT_COORD_GEN_QUAL)
-from psdi_data_conversion.database import (D_FORMAT_PROPERTY_ATTRS, MSG_CONVERSION_ONELINE, format_weight,
+from psdi_data_conversion.database import (D_FORMAT_PROPERTY_ATTRS, MSG_CONVERSION_ONELINE, Conversion, format_weight,
                                            get_conversion_pathway, get_conversion_quality, get_converter_info,
                                            get_format_info, get_in_format_args, get_out_format_args,
-                                           get_possible_conversions, get_possible_formats)
+                                           get_possible_conversion_pathways, get_possible_conversions,
+                                           get_possible_formats)
 from psdi_data_conversion.main import FileConverterInputException, parse_args
 from psdi_data_conversion.testing.constants import FORMAT_INCHI, FORMAT_MOLDY, FORMAT_PDB_0
 from psdi_data_conversion.testing.conversion_test_specs import l_cli_test_specs
@@ -523,6 +524,15 @@ def test_get_conversions(capsys, subtests):
             assert not _compressed_match(converter_info.pretty_name, captured.out)
 
 
+def _check_step_details_present(step: Conversion, captured, subtests, **kwargs):
+    with subtests.test("Display each step of the chain properly", **kwargs):
+        assert _compressed_match(MSG_CONVERSION_ONELINE.format(step.in_format.format_word(),
+                                                               step.out_format.format_word(),
+                                                               step.converter.format_word(),
+                                                               format_weight(step.get_weight())),
+                                 captured.out)
+
+
 def test_list_chain_if_not_direct(capsys, subtests):
     """Test the ability to get a pathway for a chained conversion if no direct conversion is possible
     """
@@ -545,12 +555,7 @@ def test_list_chain_if_not_direct(capsys, subtests):
                                  f"{out_format.format_word()} using registered converters:", captured.out)
 
     for i, step in enumerate(pathway):
-        with subtests.test("Display each step of the chain properly", i=i):
-            assert _compressed_match(MSG_CONVERSION_ONELINE.format(step.in_format.format_word(),
-                                                                   step.out_format.format_word(),
-                                                                   step.converter.format_word(),
-                                                                   format_weight(step.get_weight())),
-                                     captured.out)
+        _check_step_details_present(step, captured, subtests, i=i)
 
 
 def test_list_chain_impossible(capsys, subtests):
@@ -569,6 +574,30 @@ def test_list_chain_impossible(capsys, subtests):
     assert not _compressed_match("Couldn't reach some vertices", captured.out)
 
     _check_no_errors(captured, subtests)
+
+
+@pytest.mark.parametrize("include", ("one", "best", "shortest"))
+def test_list_possible_chains(include, capsys, subtests):
+    """Test that we can get lowest-weight chains with `--lp`"""
+
+    in_format = FORMAT_INCHI
+    out_format = FORMAT_MOLDY
+    if include == "one":
+        l_pathways = [get_conversion_pathway(in_format, out_format)]
+    else:
+        l_pathways = get_possible_conversion_pathways(in_format, out_format, include=include)
+
+    run_with_arg_string(f"--lp {include} -f {in_format} -t {out_format}")
+    captured = capsys.readouterr()
+
+    with subtests.test("Explanatory test present"):
+        assert _compressed_match("Conversion pathways are listed below", captured.out)
+
+    _check_no_errors(captured, subtests)
+
+    for i, pathway in enumerate(l_pathways):
+        for j, step in enumerate(pathway):
+            _check_step_details_present(step, captured, subtests, include=include, i=i, j=j)
 
 
 def test_conversion_info_open_babel(capsys, subtests):
