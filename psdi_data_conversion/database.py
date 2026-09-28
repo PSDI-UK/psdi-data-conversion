@@ -8,11 +8,12 @@ Python module provide utilities for accessing the converter database
 from __future__ import annotations
 
 import json
+import math
 import sys
 import warnings
 from dataclasses import dataclass, field
 from functools import cached_property, lru_cache
-from itertools import product
+from itertools import pairwise, product
 from logging import getLogger
 from pathlib import Path
 from typing import Any, Literal, NamedTuple, overload
@@ -112,6 +113,10 @@ DB_OUT_OPTIONS_ID_KEY_BASE = "argflags_out_id"
 # Chaining constants
 # ------------------
 
+# Maximum possible conversion weight
+CONV_WEIGHT_BIT_CEILING = 60
+CONV_WEIGHT_MAX = (1 << CONV_WEIGHT_BIT_CEILING) - 1
+
 # Each format property is assigned a weight with a different power of 2, plus a weight for taking any conversion step at
 # all, to account for miscellaneous lossiness from a conversion that can't be quantified
 D_PROP_BITS = {
@@ -122,9 +127,6 @@ D_PROP_BITS = {
     const.QUAL_CONN_KEY: 0
 }
 D_PROP_WEIGHTS = {key: 1 << bit for key, bit in D_PROP_BITS.items()}
-
-# Maximum possible conversion weight
-CONV_WEIGHT_MAX = 1 << 64 - 1
 
 # Number of bits the property weight section is offset within the full weight when everything is combined into a single
 # 64-bit integer
@@ -148,6 +150,10 @@ TIME_WEIGHT_BIT_OFFSET = 8
 # Number of bits the converter weight section is offset within the full weight when everything is combined into a single
 # 64-bit integer
 CONV_WEIGHT_BIT_OFFSET = 0
+
+# A list of where bit sections of the total weight begin (not inclusive) and end (inclusive)
+L_WEIGHT_BIT_BORDERS = [CONV_WEIGHT_BIT_CEILING, PROP_WEIGHT_BIT_OFFSET, PREC_WEIGHT_BIT_OFFSET,
+                        TIME_WEIGHT_BIT_OFFSET, CONV_WEIGHT_BIT_OFFSET]
 
 # Default converter weight, which is used if no explicit weight is set
 CONV_WEIGHT_DEFAULT = 1 << (TIME_WEIGHT_BIT_OFFSET - CONV_WEIGHT_BIT_OFFSET - 2)
@@ -1053,13 +1059,10 @@ class Conversion(NamedTuple):
         """The weight of this conversion, representing the amount of potential data loss"""
         return get_database().conversions_table.get_conversion_weight(*self, bits=bits)
 
-    def format_weight(self):
-        return f"{tc.NUMBER}{hex(self.get_weight())}{tc.OFF}"
-
     def format_oneline(self):
         """Formats the conversion as a string"""
         return (f"{self.in_format.format_word()} to {self.out_format.format_word()} with "
-                f"{self.converter.format_word()}. Weight: {self.format_weight()}")
+                f"{self.converter.format_word()}. Weight: {format_weight(self.get_weight())}")
 
 
 @dataclass
@@ -1182,9 +1185,6 @@ class ConversionPath(list[Conversion]):
             name += f"-{step.out_format.disambiguated_name}"
         return name
 
-    def format_weight(self):
-        return f"{tc.NUMBER}{hex(self.get_weight())}{tc.OFF}"
-
     def format_details(self):
         """Format the full details of the path as a string"""
         if len(self) == 0:
@@ -1192,7 +1192,7 @@ class ConversionPath(list[Conversion]):
         msg = ""
         for step in self:
             msg += f"- {step.format_oneline()}\n"
-        msg += f"Total weight: {self.format_weight()}"
+        msg += f"Total weight: {format_weight(self.get_weight())}"
         return msg
 
 
@@ -2921,3 +2921,29 @@ def split_conversion_weight(conversion_weight: int):
     conv_weight = conversion_weight >> CONV_WEIGHT_BIT_OFFSET
 
     return ConversionWeightParts(prop_weight, prec_weight, time_weight, conv_weight)
+
+
+def _simple_hex(x: int):
+    """Formats an integer as a hex string without the '0x' prefix"""
+    return hex(x)[2:]
+
+
+def format_weight(weight: int):
+    """Formats a weight integer into a more convenient format"""
+
+    l_hex_parts: list[str] = []
+    for weight_part, bit_borders in zip(split_conversion_weight(weight), pairwise(L_WEIGHT_BIT_BORDERS)):
+
+        weight_str = _simple_hex(weight_part)
+
+        # We want to pad the hex string to the maximum size it could possibly be, for consistent sizing of each
+        # component. We get the total size in base 2from the difference between highest and lowest bit for each
+        # component. Divide this by 4 and take the ceiling to get the total size in hex
+        total_hex_len = math.ceil((bit_borders[0]-bit_borders[1])/4)
+
+        # Format it padded with zeros on the left up to this total length
+        l_hex_parts.append(f"{weight_str:0>{total_hex_len}}")
+
+    hex_weight_str = "-".join(l_hex_parts)
+
+    return f"{tc.NUMBER}{hex_weight_str}{tc.OFF}"
