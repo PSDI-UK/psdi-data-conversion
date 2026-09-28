@@ -1349,6 +1349,7 @@ def detail_pathways(args: ConvertArgs):
     l_paths.sort(key=lambda x: (x.get_weight(), x.get_name()))
 
     print_wrap(ConversionPath.format_multiple_detailed(l_paths))
+    print("")
 
 
 def run_from_args(args: ConvertArgs):
