@@ -1348,12 +1348,7 @@ def detail_pathways(args: ConvertArgs):
     # Sort the paths by lowest weight first, and name second
     l_paths.sort(key=lambda x: (x.get_weight(), x.get_name()))
 
-    for i, path in enumerate(l_paths):
-
-        if i != 0:
-            print("---\n")
-
-        print_wrap(path.format_detailed(), newline=True)
+    print_wrap(ConversionPath.format_multiple_detailed(l_paths))
 
 
 def run_from_args(args: ConvertArgs):

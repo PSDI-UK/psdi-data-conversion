@@ -63,7 +63,7 @@ class TextColors:
     CYAN = MESSAGE = NUMBER = "\033[96m"
     """Start coloring cyan"""
 
-    DARKCYAN = "\033[36m"
+    DARKCYAN = DARKNUMBER = "\033[36m"
     """Start coloring dark cyan"""
 
     # Text formatting codes

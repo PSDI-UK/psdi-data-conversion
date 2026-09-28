@@ -110,6 +110,11 @@ DB_OUT_FLAGS_ID_KEY_BASE = "flags_out_id"
 DB_IN_OPTIONS_ID_KEY_BASE = "argflags_in_id"
 DB_OUT_OPTIONS_ID_KEY_BASE = "argflags_out_id"
 
+# Messages and formatting strings
+MSG_CONVERSION_ONELINE = "{} to {} with {}    Weight: {}"
+L_CONVERSION_ONELINE_SPLIT_POINTS = [x for x in MSG_CONVERSION_ONELINE.split("{}") if x]
+MSG_TOTAL_WEIGHT = "Total weight: {}"
+
 # Chaining constants
 # ------------------
 
@@ -1061,8 +1066,8 @@ class Conversion(NamedTuple):
 
     def format_oneline(self):
         """Formats the conversion as a string"""
-        return (f"{self.in_format.format_word()} to {self.out_format.format_word()} with "
-                f"{self.converter.format_word()}    Weight: {format_weight(self.get_weight())}")
+        return MSG_CONVERSION_ONELINE.format(self.in_format.format_word(), self.out_format.format_word(),
+                                             self.converter.format_word(), format_weight(self.get_weight()))
 
 
 @dataclass
@@ -1185,22 +1190,16 @@ class ConversionPath(list[Conversion]):
             name += f"-{step.out_format.disambiguated_name}"
         return name
 
-    def format_detailed(self):
-        """Format the full details of the path as a string"""
-
-        if len(self) == 0:
-            raise ValueError("Conversion pathway is empty")
-
-        # Get each step formatted
-        l_step_raw_strs = [f"- {step.format_oneline()}\n" for step in self]
+    @staticmethod
+    def _align_step_strs(l_step_raw_strs: list[str]):
 
         # We want to format all steps to align them, so split them into parts
         ll_step_parts: list[list[str]] = []
-        l_step_split_points = (" to ", " with ", " Weight: ")
+        L_CONVERSION_ONELINE_SPLIT_POINTS = [x for x in MSG_CONVERSION_ONELINE.split("{}") if x]
         for step_raw_str in l_step_raw_strs:
             l_step_parts: list[str] = []
             tail = step_raw_str
-            for split_point in l_step_split_points:
+            for split_point in L_CONVERSION_ONELINE_SPLIT_POINTS:
                 head, tail = tail.split(split_point)
                 l_step_parts.append(head)
             l_step_parts.append(tail)
@@ -1208,7 +1207,7 @@ class ConversionPath(list[Conversion]):
 
         # Get the maximum length of each part
         l_part_max_lens: list[int] = []
-        for i in range(len(l_step_split_points)+1):
+        for i in range(len(L_CONVERSION_ONELINE_SPLIT_POINTS)+1):
             l_part_max_lens.append(max([len(l_step_parts[i]) for l_step_parts in ll_step_parts]))
 
         # Recompile the strings with each part padded to the maximum length
@@ -1217,15 +1216,83 @@ class ConversionPath(list[Conversion]):
             step_str = ""
             for i, part in enumerate(l_step_parts):
                 step_str += f"{part:<{l_part_max_lens[i]}}"
-                if i < len(l_step_split_points):
-                    step_str += l_step_split_points[i]
+                if i < len(L_CONVERSION_ONELINE_SPLIT_POINTS):
+                    step_str += L_CONVERSION_ONELINE_SPLIT_POINTS[i]
             l_step_strs.append(step_str)
 
-        msg = "".join(l_step_strs)
-        weight_split_point = " Weight: "
-        len_before_weight = displaylen(l_step_strs[0].split(weight_split_point)[0]) + len(weight_split_point)
-        msg += f"{"Total weight: ":>{len_before_weight}}" + f"{format_weight(self.get_weight())}"
-        return msg
+        return l_step_strs
+
+    @staticmethod
+    def _format_total_weight_strs(l_total_weights: list[int], aligned_step_str: str):
+        weight_split_point = L_CONVERSION_ONELINE_SPLIT_POINTS[-1]
+        len_before_weight = displaylen(aligned_step_str.split(weight_split_point)[0]) + len(weight_split_point)
+        l_total_weight_strs: list[str] = []
+
+        for total_weight in l_total_weights:
+            l_total_weight_strs.append(f"{MSG_TOTAL_WEIGHT.split("{}")[0]:>{len_before_weight}}" +
+                                       format_weight(total_weight, color=tc.DARKNUMBER))
+        return l_total_weight_strs
+
+    def _get_step_detail_strs(self, align=True):
+
+        if len(self) == 0:
+            raise ValueError("Conversion pathway is empty")
+
+        l_step_strs = [f"- {step.format_oneline()}" for step in self]
+        if align:
+            l_step_strs = self._align_step_strs(l_step_strs)
+
+        return l_step_strs
+
+    def _get_detail_lines(self):
+
+        l_step_strs = self._get_step_detail_strs()
+
+        weight_str = self._format_total_weight_strs([self.get_weight()], l_step_strs[0])[0]
+
+        return l_step_strs, weight_str
+
+    @staticmethod
+    def _format_steps_and_weight(l_step_strs: list[str], weight_str: str):
+        return "\n".join(l_step_strs) + f"\n{weight_str}"
+
+    def format_detailed(self):
+        """Format the full details of the path as a string"""
+
+        l_step_strs, weight_str = self._get_detail_lines()
+
+        return self._format_steps_and_weight(l_step_strs, weight_str)
+
+    @staticmethod
+    def format_multiple_detailed(l_paths: list[ConversionPath]):
+        """Format details of a list of paths, aligning them all"""
+
+        # We first get a list of all step detail strings across all paths, and align them
+        all_step_strs: list[str] = []
+        l_weights: list[int] = []
+        for path in l_paths:
+            all_step_strs += path._get_step_detail_strs(align=False)
+            l_weights.append(path.get_weight())
+        l_aligned_step_strs = ConversionPath._align_step_strs(all_step_strs)
+
+        # Get the weight string for each path
+        l_weight_strs = ConversionPath._format_total_weight_strs(l_weights, l_aligned_step_strs[0])
+
+        # Now construct the details string for each path
+        l_path_strs = [""]*len(l_paths)
+
+        # As we iterate over steps in paths again, keep track of the corresponding index in the list of aligned strings
+        global_step_index = 0
+
+        for path_index in range(len(l_paths)):
+            path = l_paths[path_index]
+            l_step_strs = [""]*len(path)
+            for local_step_index in range(len(path)):
+                l_step_strs[local_step_index] = l_aligned_step_strs[global_step_index]
+                global_step_index += 1
+            l_path_strs[path_index] = ConversionPath._format_steps_and_weight(l_step_strs, l_weight_strs[path_index])
+
+        return "\n---\n\n".join(l_path_strs)
 
 
 class ConversionsTable:
@@ -2960,7 +3027,7 @@ def _simple_hex(x: int):
     return hex(x)[2:]
 
 
-def format_weight(weight: int):
+def format_weight(weight: int, color=tc.NUMBER):
     """Formats a weight integer into a more convenient format"""
 
     l_hex_parts: list[str] = []
@@ -2978,4 +3045,4 @@ def format_weight(weight: int):
 
     hex_weight_str = "-".join(l_hex_parts)
 
-    return f"{tc.NUMBER}{hex_weight_str}{tc.OFF}"
+    return f"{color}{hex_weight_str}{tc.OFF}"
