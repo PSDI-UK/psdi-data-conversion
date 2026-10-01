@@ -1229,7 +1229,7 @@ class ConversionPath(list[Conversion]):
         l_total_weight_strs: list[str] = []
 
         for total_weight in l_total_weights:
-            l_total_weight_strs.append(f"{MSG_TOTAL_WEIGHT.split("{}")[0]:>{len_before_weight}}" +
+            l_total_weight_strs.append(f"{MSG_TOTAL_WEIGHT.split('{}')[0]:>{len_before_weight}}" +
                                        format_weight(total_weight, color=tc.DARKNUMBER))
         return l_total_weight_strs
 
