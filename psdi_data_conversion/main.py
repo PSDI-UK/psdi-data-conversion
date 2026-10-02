@@ -808,7 +808,6 @@ def detail_converter_use(args: ConvertArgs):
                            "conversion:")
                 for detail_line in qual.details.split("\n"):
                     print_wrap(f"- {detail_line}")
-                print("")
     else:
         l_input_formats, l_output_formats = get_possible_formats(args.converter)
 
@@ -967,13 +966,13 @@ def detail_converter_use(args: ConvertArgs):
         else:
             arg_type = "to"
         msg = (f"{input_or_output.capitalize()} {flag_or_option}s can be used with the {tc.CODE}`"
-               f"--{arg_type}_{flag_or_option} <value(s)>`{tc.OFF} command-line argument. ")
+               f"--{arg_type}_{flag_or_option}s <value(s)>`{tc.OFF} command-line argument. ")
         if flag_or_option == "flag":
-            msg += (f" Flags should be provided concatenated into a single word, e.g. {tc.CODE}`"
-                    f"--{arg_type}_{flag_or_option} xyz`{tc.OFF} will set flags {tc.CODE}x{tc.OFF}, {tc.CODE}y"
+            msg += (f"Flags should be provided concatenated into a single word, e.g. {tc.CODE}`"
+                    f"--{arg_type}_flags xyz`{tc.OFF} will set flags {tc.CODE}x{tc.OFF}, {tc.CODE}y"
                     f"{tc.OFF}, and {tc.CODE}z{tc.OFF}.")
         else:
-            msg += (f" Options should be provided as a string of space-separated 'words'. Each 'words' "
+            msg += (f"Options should be provided as a string of space-separated 'words'. Each 'words' "
                     "in this string should start with the letter indicating which option is being used, followed "
                     f"by the value for that option. E.g. {tc.CODE}`--{arg_type}_options a1 b2`{tc.OFF} will set the "
                     f"value {tc.MESSAGE}'1'{tc.OFF} for option {tc.CODE}a{tc.OFF} and the value "
@@ -1287,7 +1286,7 @@ def list_supported_converters(err=False):
         file = sys.stderr
     else:
         file = sys.stdout
-    print(get_supported_converters() + "\n", file=file)
+    print(get_supported_converters(), file=file)
 
 
 def detail_converters_and_formats(args: ConvertArgs):
@@ -1538,7 +1537,20 @@ def main():
                    f"request information about possible conversions. See the {tc.PATH}'README.md'{tc.OFF} file for "
                    "information on using this utility and examples of basic usage, or for detailed explanation of "
                    "arguments call:")
-        print(f"{tc.CODE}{const.CL_SCRIPT_NAME} -h{tc.OFF}", file=sys.stderr)
+        print(f"{tc.CODE}{const.CL_SCRIPT_NAME} -h{tc.OFF}\n", file=sys.stderr)
+
+        print_wrap("Some examples of basic commands:", newline=True)
+
+        print_wrap("Show supported converters and formats:")
+        print(f"{tc.CODE}{const.CL_SCRIPT_NAME} -l{tc.OFF}\n", file=sys.stderr)
+
+        print_wrap("Get information on possible conversions from <fmt1> to <fmt2>:")
+        print(f"{tc.CODE}{const.CL_SCRIPT_NAME} -l -f <fmt1> -t <fmt2>{tc.OFF}\n", file=sys.stderr)
+
+        print_wrap("Convert from <fmt1> to <fmt2> with converter <conv> (or try to select a converter automatically if "
+                   "one isn't specified):")
+        print(f"{tc.CODE}{const.CL_SCRIPT_NAME} <filename> -f <fmt1> -t <fmt2> [-w <conv>]{tc.OFF}", file=sys.stderr)
+
         exit(1)
 
     try:
