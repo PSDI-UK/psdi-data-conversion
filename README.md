@@ -37,7 +37,6 @@ This project provides utilities to assist in converting files between the many d
     - [`database`](#database)
   - [Further Information](#further-information)
 - [Using the Online Conversion Service](#using-the-online-conversion-service)
-- [Conversion Chains](#conversion-chains)
 - [Running the Python/Flask app locally](#running-the-pythonflask-app-locally)
   - [Installation and Setup](#installation-and-setup)
   - [Running the App](#running-the-app)
@@ -276,7 +275,7 @@ As all format (and converter) IDs are UUIDs, the standard UUID format is also ac
 psdi-data-conversion nacl.mmcif -t 863024da-8e1f-46e5-992c-b14bcc258a84 -w c2x
 ```
 
-The "<format>-0" pattern can be used with any format, even if it's unambiguous, and will be interpreted as the first instance of the format in the database with valid conversions. Note that as the database expands in future versions and more valid conversions are added, these disambiguated names may change, so it is recommended to use the format's ID or UUID in scripts and with the library to ensure consistency between versions of this package.
+The "<format>-0" pattern can be used with any format, even if it's unambiguous, and will be interpreted as the first instance of the format in the database with valid conversions. Note that as the database expands in future versions and more valid conversions are added, these disambiguated names may change, so it is recommended to use the format's ID or UUID in scripts and code to ensure consistency between versions of this package.
 
 It was necessary to update IDs in v0.4.0 to use UUIDs, but for all future versions there should be no need to change IDs, so these can be treated as stable between versions, whereas the same cannot be guaranteed for disambiguated names, which should only be used for one-time executions. If you need to update from before this version, see the `v0.4.0` section of `CHANGELOG.md` for guidance.
 
@@ -313,6 +312,14 @@ psdi-data-convert -l <converter name> [-f <input format>] [-t <output format>]
 ```
 
 If an input format is provided, information on input flags and options accepted by the converter for this format will be provided, and similar for if an output format is provided.
+
+In some cases, a direct conversion between two formats with a single converter won't be possible, but a chained conversion using multiple converters will be. When this is the case, a possible path will be recommended, and more can be requested using the special `--lp` argument in place of `-l`, with the argument after it ("one", "best", or "shortest") specifying how many paths to list:
+
+- "one" (default) - Only display a single path, even if other equally-good paths are available
+- "best" - Display all equally-good paths. This is determined through a "weight" parameter, which takes into account any format properties (such as whether or not a format supports connection information) which are lost along the path, precision loss (number of digits of information stored), as well as other tie-breaking factors
+- "shortest" - Display all equally-shortest paths
+
+The algorithm used to determine weights cannot take into account all possible factors of a conversion, so it is best to test a path to ensure it works as desired, and see if there are any differences between paths not captured by the weights (e.g. some paths may result in data extrapolation while others won't - the weights only take data loss into account, not extrapolation).
 
 ## Python Library
 
@@ -389,10 +396,6 @@ The code documentation for the Python library is published online at https://psd
 ## Using the Online Conversion Service
 
 Enter https://data-conversion.psdi.ac.uk/ in a browser. Guidance on usage is given on each page of the website.
-
-## Conversion Chains
-
-TODO: Section on how to find and perform conversion chains
 
 ## Running the Python/Flask app locally
 
