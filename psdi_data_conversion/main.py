@@ -600,101 +600,22 @@ def get_argument_parser():
     parser = ArgumentParser(formatter_class=CustomHelpFormatter)
 
     # Positional arguments
-    parser.add_argument("l_args", type=str, nargs="*",
+    parser.add_argument("l_args", type=str, nargs="*", metavar="ARG [ARG ...]",
                         help="Normally, file(s) to be converted or zip/tar archives thereof. If an archive or archives "
                         "are provided, the output will be packed into an archive of the same type. Filenames should be "
                         "provided as either relative to the input directory (default current directory) or absolute. "
                         f"If the {tc.CODE}`-l/--list`{tc.OFF} flag is set, instead the name of a "
                         "converter can be used here to get information on it.")
 
-    # Keyword arguments for standard conversion
-    parser.add_argument("-f", "--from", type=str, default=None,
-                        help=f"The input (convert from) file extension (e.g. {tc.MESSAGE}'smi'{tc.OFF}). If not "
-                        "provided, will attempt to auto-detect format from extension of input file.")
-    parser.add_argument("-i", "--in", type=str, default=None,
-                        help="The directory containing the input file(s), default current directory.")
-    parser.add_argument("-t", "--to", type=str, default=None,
-                        help=f"The output (convert to) file extension (e.g. {tc.MESSAGE}'cmi'{tc.OFF}).")
-    parser.add_argument("-o", "--out", type=str, default=None,
-                        help="The directory where output files should be created. If not provided, output files will "
-                        f"be created in the {tc.CODE}`-i/--in`{tc.OFF} directory if that was provided, or else in the "
-                        "directory containing the first input file.")
-    parser.add_argument("-w", "--with", type=str, nargs="+",
-                        help=f"The converter to be used, or else one of the keywords {tc.MESSAGE}'auto'{tc.OFF} "
-                        f"or {tc.MESSAGE}'auto-chain'{tc.OFF} (aliases {tc.MESSAGE}'autoc'{tc.OFF} and "
-                        f"{tc.MESSAGE}'autochain'{tc.OFF} for the latter).  {tc.MESSAGE}'auto'{tc.OFF} will "
-                        "automatically determine a suitable converter which can perform the conversion (this may "
-                        "require input/output formats to be unambiguously specified by using disambiguated names or "
-                        f"IDs with {tc.CODE}`-f/--from`{tc.OFF} and {tc.CODE}`-t/--to`{tc.OFF} if the extensions are "
-                        f"ambiguous). {tc.MESSAGE}'auto-chain'{tc.OFF} does the same, but will also determine and use "
-                        "a chained conversion if a single-step conversion is not possible. Default "
-                        f"{tc.MESSAGE}'auto'{tc.OFF}.")
-    parser.add_argument("--path", type=str, nargs="+", default=None,
-                        help=f"Used instead of {tc.CODE}`-w/--with`{tc.OFF} when requesting a chained conversion with "
-                        "a specific path. This should be provided as an alternating series of converters and formats "
-                        f"to specify the conversion pathway, e.g.:{tc.CODE}`-f <source_format> --path <converter 1> "
-                        "<intermediate format 1> [<converter 2> <intermediate format 2> ...] <converter N> "
-                        f"-t <target_format>`{tc.OFF} The source and target formats may alternatively be specified as "
-                        f"the beginning and end of the {tc.CODE}`--path`{tc.OFF} rather than through {tc.CODE}`"
-                        f"-f/--from`{tc.OFF} and {tc.CODE}`-t/--to`{tc.OFF}. When using {tc.CODE}`--path`{tc.OFF}, "
-                        "all formats must be specified unambiguously, and each format and converter must be specified "
-                        f"in a single word (e.g. use {tc.MESSAGE}'OpenBabel'{tc.OFF} or its ID instead of "
-                        f"{tc.MESSAGE}'Open Babel'{tc.OFF}).")
-    parser.add_argument("--delete-input", action="store_true",
-                        help="If set, input files will be deleted after conversion, default they will be kept.")
-    parser.add_argument("--from-flags", type=str, default="",
-                        help="String of concatenated one-letter flags for how to read the input file, e.g. "
-                        f"{tc.CODE}`--from-flags xyz`{tc.OFF} will set flags {tc.CODE}x{tc.OFF}, {tc.CODE}y{tc.OFF}, "
-                        f"and {tc.CODE}z{tc.OFF}. To list the flags supported for a given input format, call e.g. "
-                        f"{tc.CODE}`{const.CL_SCRIPT_NAME} -l -f <format> -w Open Babel`{tc.OFF} at the command-line "
-                        "and look for the \"Allowed input flags\" section, if one exists.")
-    parser.add_argument("--to-flags", type=str, default="",
-                        help="String of concatenated one-letter flags for how to write the output file, e.g. "
-                        f"{tc.CODE}`--from-flags xyz`{tc.OFF} will set flags {tc.CODE}x{tc.OFF}, {tc.CODE}y{tc.OFF}, "
-                        f"and {tc.CODE}z{tc.OFF}. To list the flags supported for a given output format, call e.g. "
-                        f"{tc.CODE}`{const.CL_SCRIPT_NAME} -l -t <format> -w Open Babel`{tc.OFF} at the command-line "
-                        "and look for the \"Allowed output flags\" section, if one exists.")
-    parser.add_argument("--from-options", type=str, default="",
-                        help="String of space-separated options for how to read the input file. Each option \"word\" "
-                        "in this string should start with the letter indicating which option is being used, followed "
-                        f"by the value for that option. E.g. {tc.CODE}`--from_options a1 b2`{tc.OFF} will set the "
-                        f"value {tc.MESSAGE}'1'{tc.OFF} for option {tc.CODE}a{tc.OFF} and the value "
-                        f"{tc.MESSAGE}'2'{tc.OFF} for option {tc.CODE}b{tc.OFF}. To list the options supported for a "
-                        f"given input format, call e.g. "
-                        f"{tc.CODE}`{const.CL_SCRIPT_NAME} -l -f <format> -w Open Babel`{tc.OFF} at the command-line "
-                        "and look for the \"Allowed input options\" section, if one exists.")
-    parser.add_argument("--to-options", type=str, default="",
-                        help="String of space-separated options for how to read the input output. Each option \"word\" "
-                        "in this string should start with the letter indicating which option is being used, followed "
-                        f"by the value for that option. E.g. {tc.CODE}`--to_options a1 b2`{tc.OFF} will set the "
-                        f"value {tc.MESSAGE}'1'{tc.OFF} for option {tc.CODE}a{tc.OFF} and the value "
-                        f"{tc.MESSAGE}'2'{tc.OFF} for option {tc.CODE}b{tc.OFF}. To list the options supported for a "
-                        f"given input format, call e.g. "
-                        f"{tc.CODE}`{const.CL_SCRIPT_NAME} -l -t <format> -w Open Babel`{tc.OFF} at the command-line "
-                        "and look for the \"Allowed output options\" section, if one exists.")
-    parser.add_argument("-s", "--strict", action="store_true",
-                        help="If set, will fail if one of the input files has the wrong extension (including those "
-                        "contained in archives, but not the archive files themselves). Otherwise, will only print a "
-                        "warning in this case.")
-    parser.add_argument("--nc", "--no-check", action="store_true",
-                        help="If set, will not perform a pre-check in the database on the validity of a conversion. "
-                        "Setting this will result in a less human-friendly error message (or may even falsely indicate "
-                        "success) if the conversion is not supported, but will save some execution time. Recommended "
-                        "only for automated execution after the user has confirmed a conversion is supported.")
+    g_mode = parser.add_argument_group("Modes", "Arguments which invoke a different mode of "
+                                       "operation for the CLI")
 
-    # Keyword arguments specific to converters
-    for converter_name in L_REGISTERED_CONVERTERS:
-        l_converter_args = D_CONVERTER_ARGS[converter_name]
-        if l_converter_args:
-            for arg_name, kwargs, _ in l_converter_args:
-                parser.add_argument(arg_name, **kwargs)
-
-    # Keyword arguments for alternative functionality
-    parser.add_argument("-l", "--list", action="store_true",
+    # Arguments for alternative functionality
+    g_mode.add_argument("-l", "--list", action="store_true",
                         help="If provided alone, lists all available converters. Otherwise, provides information on "
-                        f"converters provided with {tc.CODE}`-w/--with'{tc.OFF} and/or input/output formats provided "
+                        f"converters provided with {tc.CODE}`-w/--with`{tc.OFF} and/or input/output formats provided "
                         f"with {tc.CODE}`-f/--from`{tc.OFF} and {tc.CODE}`-t/--to`{tc.OFF}.")
-    parser.add_argument("--lp", "--lpaths", "--listpaths", type=str, nargs="?", const="one", default=None,
+    g_mode.add_argument("--lp", "--lpaths", "--listpaths", type=str, nargs="?", const="one", default=None,
                         help=f"When provided alongside {tc.CODE}`-f/--from`{tc.OFF} and {tc.CODE}`-t/--to`{tc.OFF}, "
                         "will list direct and chained conversion pathways between the formats. The number of paths "
                         f"listed depends on the value provided to {tc.CODE}`--lp`{tc.OFF}: {tc.MESSAGE}'one'{tc.OFF} "
@@ -705,31 +626,126 @@ def get_argument_parser():
                         f"pathways from format {tc.MESSAGE}'fmt1'{tc.OFF} to format {tc.MESSAGE}'fmt2'{tc.OFF} with "
                         "the lowest possible weight.")
 
-    # Logging/stdout arguments
-    parser.add_argument("-g", "--log-file", type=str, default=None,
-                        help="The name of the file to log to. This can be provided relative to the current directory "
-                        f"(e.g. {tc.PATH}'../logs/log-file.txt'{tc.OFF}) or fully qualified (e.g. "
-                        f"{tc.PATH}'/path/to/log-file.txt'{tc.OFF}). If not provided, the log file will be named after "
-                        f"the first input file (+{tc.PATH}'.log'{tc.OFF}) and placed in the output directory "
-                        f"(specified with {tc.CODE}`-o/--out`{tc.OFF}). In {tc.MESSAGE}'full'{tc.OFF} logging mode "
-                        "(not recommended with this interface), this will apply only to logs from the outermost level "
-                        "of the script if explicitly specified. If not explicitly specified, those logs will be sent "
-                        "to stderr.")
-    parser.add_argument("--log-mode", type=str, default=const.LOG_SIMPLE,
-                        help="How logs should be stored. Allowed values are: "
-                        f"{tc.MESSAGE}'full'{tc.OFF}: Multi-file logging, not recommended for the CLI, but allowed "
-                        "for a compatible interface with the public web app. "
-                        f"{tc.MESSAGE}'simple'{tc.OFF}: Logs saved to one file. "
-                        f"{tc.MESSAGE}'stdout'{tc.OFF}: Output logs and errors only to stdout. "
-                        f"{tc.MESSAGE}'none'{tc.OFF}: Output only errors to stdout.")
-    parser.add_argument("-q", "--quiet", action="store_true",
-                        help="If set, all terminal output aside from errors will be suppressed and no log file will be "
-                             "generated.")
-    parser.add_argument("--log-level", type=str, default=None,
-                        help=f"The desired level to log at. Allowed values are: {tc.MESSAGE}'DEBUG'{tc.OFF}, "
-                        f"{tc.MESSAGE}'INFO'{tc.OFF}, {tc.MESSAGE}'WARNING'{tc.OFF}, {tc.MESSAGE}'ERROR'{tc.OFF}, "
-                        f"{tc.MESSAGE}'CRITICAL'{tc.OFF}. Default: {tc.MESSAGE}'INFO'{tc.OFF} for logging to file, "
-                        f"{tc.MESSAGE}'WARNING'{tc.OFF} for logging to stdout.")
+    g_standard = parser.add_argument_group("Standard conversion arguments", "")
+
+    g_standard.add_argument("-f", "--from", type=str, default=None,
+                            help=f"The input (convert from) file extension (e.g. {tc.MESSAGE}'smi'{tc.OFF}). If not "
+                            "provided, will attempt to auto-detect format from extension of input file.")
+    g_standard.add_argument("-i", "--in", type=str, default=None,
+                            help="The directory containing the input file(s), default current directory.")
+    g_standard.add_argument("-t", "--to", type=str, default=None,
+                            help=f"The output (convert to) file extension (e.g. {tc.MESSAGE}'cmi'{tc.OFF}).")
+    g_standard.add_argument("-o", "--out", type=str, default=None,
+                            help="The directory where output files should be created. If not provided, output files "
+                            f"will be created in the {tc.CODE}`-i/--in`{tc.OFF} directory if that was provided, or "
+                            "else in the directory containing the first input file.")
+    g_standard.add_argument("-w", "--with", type=str, nargs="+",
+                            help=f"The converter to be used, or else one of the keywords {tc.MESSAGE}'auto'{tc.OFF} "
+                            f"or {tc.MESSAGE}'auto-chain'{tc.OFF} (aliases {tc.MESSAGE}'autoc'{tc.OFF} and "
+                            f"{tc.MESSAGE}'autochain'{tc.OFF} for the latter).  {tc.MESSAGE}'auto'{tc.OFF} will "
+                            "automatically determine a suitable converter which can perform the conversion (this may "
+                            "require input/output formats to be unambiguously specified by using disambiguated names "
+                            f"or IDs with {tc.CODE}`-f/--from`{tc.OFF} and {tc.CODE}`-t/--to`{tc.OFF} if the "
+                            f"extensions are ambiguous). {tc.MESSAGE}'auto-chain'{tc.OFF} does the same, but will "
+                            "also determine and use a chained conversion if a single-step conversion is not possible. "
+                            f"Default {tc.MESSAGE}'auto'{tc.OFF}.")
+
+    g_advanced = parser.add_argument_group("Advanced conversion arguments", "")
+
+    g_advanced.add_argument("--path", type=str, nargs="+", default=None,
+                            help=f"Used instead of {tc.CODE}`-w/--with`{tc.OFF} when requesting a chained conversion "
+                            "with a specific path. This should be provided as an alternating series of converters and "
+                            "formats to specify the conversion pathway, e.g.:{tc.CODE}`-f <source_format> --path "
+                            "<converter 1> <intermediate format 1> [<converter 2> <intermediate format 2> ...] "
+                            f"<converter N> -t <target_format>`{tc.OFF} The source and target formats may "
+                            f"alternatively be specified as the beginning and end of the {tc.CODE}`--path`{tc.OFF} "
+                            f"rather than through {tc.CODE}`-f/--from`{tc.OFF} and {tc.CODE}`-t/--to`{tc.OFF}. When "
+                            f"using {tc.CODE}`--path`{tc.OFF}, all formats must be specified unambiguously, and each "
+                            f"format and converter must be specified in a single word (e.g. use {tc.MESSAGE}'OpenBabel"
+                            f"'{tc.OFF} or its ID instead of {tc.MESSAGE}'Open Babel'{tc.OFF}).")
+
+    g_advanced.add_argument("--from-flags", type=str, default="",
+                            help="String of concatenated one-letter flags for how to read the input file, e.g. "
+                            f"{tc.CODE}`--from-flags xyz`{tc.OFF} will set flags {tc.CODE}x{tc.OFF}, {tc.CODE}y"
+                            f"{tc.OFF}, and {tc.CODE}z{tc.OFF}. To list the flags supported for a given input format, "
+                            f"call e.g. {tc.CODE}`{const.CL_SCRIPT_NAME} -l -f <format> -w Open Babel`{tc.OFF} at the "
+                            "command-line and look for the 'Allowed input flags' section, if one exists.")
+    g_advanced.add_argument("--to-flags", type=str, default="",
+                            help="String of concatenated one-letter flags for how to write the output file, e.g. "
+                            f"{tc.CODE}`--from-flags xyz`{tc.OFF} will set flags {tc.CODE}x{tc.OFF}, {tc.CODE}y"
+                            f"{tc.OFF}, and {tc.CODE}z{tc.OFF}. To list the flags supported for a given output format, "
+                            f"call e.g. {tc.CODE}`{const.CL_SCRIPT_NAME} -l -t <format> -w Open Babel`{tc.OFF} at the "
+                            "command-line and look for the 'Allowed output flags' section, if one exists.")
+    g_advanced.add_argument("--from-options", type=str, default="",
+                            help="String of space-separated options for how to read the input file. Each option "
+                            "'word' in this string should start with the letter indicating which option is being "
+                            f"used, followed by the value for that option. E.g. {tc.CODE}`--from_options a1 b2"
+                            f"`{tc.OFF} will set the value {tc.MESSAGE}'1'{tc.OFF} for option {tc.CODE}a{tc.OFF} and "
+                            f"the value {tc.MESSAGE}'2'{tc.OFF} for option {tc.CODE}b{tc.OFF}. To list the options "
+                            f"supported for a given input format, call e.g. {tc.CODE}`{const.CL_SCRIPT_NAME} -l -f "
+                            f"<format> -w Open Babel`{tc.OFF} at the command-line and look for the 'Allowed input "
+                            "options' section, if one exists.")
+    g_advanced.add_argument("--to-options", type=str, default="",
+                            help="String of space-separated options for how to read the input output. Each option "
+                            "'word' in this string should start with the letter indicating which option is being used, "
+                            f"followed by the value for that option. E.g. {tc.CODE}`--to_options a1 b2`{tc.OFF} will "
+                            f"set the value {tc.MESSAGE}'1'{tc.OFF} for option {tc.CODE}a{tc.OFF} and the value "
+                            f"{tc.MESSAGE}'2'{tc.OFF} for option {tc.CODE}b{tc.OFF}. To list the options supported for "
+                            f"a given input format, call e.g. {tc.CODE}`{const.CL_SCRIPT_NAME} -l -t <format> -w Open "
+                            f"Babel`{tc.OFF} at the command-line and look for the 'Allowed output options' section, "
+                            "if one exists.")
+
+    # Keyword arguments specific to converters
+    for converter_name in L_REGISTERED_CONVERTERS:
+        l_converter_args = D_CONVERTER_ARGS[converter_name]
+        if l_converter_args:
+            converter_info = get_converter_info(converter_name)
+            g_converter = parser.add_argument_group(f"{converter_info.format_word()} arguments", "Arguments "
+                                                    f"specific to using the {converter_info.format_word()} converter")
+            for arg_name, kwargs, _ in l_converter_args:
+                g_converter.add_argument(arg_name, **kwargs)
+
+    g_logging = parser.add_argument_group("Logging arguments", "")
+
+    g_logging.add_argument("-g", "--log-file", type=str, default=None,
+                           help="The name of the file to log to. This can be provided relative to the current "
+                           f"directory (e.g. {tc.PATH}'../logs/log-file.txt'{tc.OFF}) or fully qualified (e.g. "
+                           f"{tc.PATH}'/path/to/log-file.txt'{tc.OFF}). If not provided, the log file will be named "
+                           f"after the first input file (+{tc.PATH}'.log'{tc.OFF}) and placed in the output directory "
+                           f"(specified with {tc.CODE}`-o/--out`{tc.OFF}). In {tc.MESSAGE}'full'{tc.OFF} logging mode "
+                           "(not recommended with this interface), this will apply only to logs from the outermost "
+                           "level of the script if explicitly specified. If not explicitly specified, those logs will "
+                           "be sent to stderr.")
+    g_logging.add_argument("--log-mode", type=str, default=const.LOG_SIMPLE,
+                           help="How logs should be stored. Allowed values are: "
+                           f"{tc.MESSAGE}'full'{tc.OFF}: Multi-file logging, not recommended for the CLI, but allowed "
+                           "for a compatible interface with the public web app. "
+                           f"{tc.MESSAGE}'simple'{tc.OFF}: Logs saved to one file. "
+                           f"{tc.MESSAGE}'stdout'{tc.OFF}: Output logs and errors only to stdout. "
+                           f"{tc.MESSAGE}'none'{tc.OFF}: Output only errors to stdout.")
+    g_logging.add_argument("-q", "--quiet", action="store_true",
+                           help="If set, all terminal output aside from errors will be suppressed and no log file will "
+                           "be generated.")
+    g_logging.add_argument("--log-level", type=str, default=None,
+                           help=f"The desired level to log at. Allowed values are: {tc.MESSAGE}'DEBUG'{tc.OFF}, "
+                           f"{tc.MESSAGE}'INFO'{tc.OFF}, {tc.MESSAGE}'WARNING'{tc.OFF}, {tc.MESSAGE}'ERROR'{tc.OFF}, "
+                           f"{tc.MESSAGE}'CRITICAL'{tc.OFF}. Default: {tc.MESSAGE}'INFO'{tc.OFF} for logging to file, "
+                           f"{tc.MESSAGE}'WARNING'{tc.OFF} for logging to stdout.")
+
+    g_other = parser.add_argument_group("Other arguments", "")
+
+    g_other.add_argument("--delete-input", action="store_true",
+                         help="If set, input files will be deleted after conversion, default they will be kept.")
+    g_other.add_argument("-s", "--strict", action="store_true",
+                         help="If set, will fail if one of the input files has the wrong extension (including those "
+                         "contained in archives, but not the archive files themselves). Otherwise, will only print a "
+                         "warning in this case.")
+    g_other.add_argument("--nc", "--no-check", action="store_true",
+                         help="If set, will not perform a pre-check in the database on the validity of a conversion. "
+                         "Setting this will result in a less human-friendly error message (or may even falsely "
+                         "indicate success) if the conversion is not supported, but will save some execution time. "
+                         "Recommended only for automated execution after the user has confirmed a conversion is "
+                         "supported.")
 
     return parser
 
@@ -957,7 +973,7 @@ def detail_converter_use(args: ConvertArgs):
                     f"--{arg_type}_{flag_or_option} xyz`{tc.OFF} will set flags {tc.CODE}x{tc.OFF}, {tc.CODE}y"
                     f"{tc.OFF}, and {tc.CODE}z{tc.OFF}.")
         else:
-            msg += (f" Options should be provided as a string of space-separated \"words\". Each \"words\" "
+            msg += (f" Options should be provided as a string of space-separated 'words'. Each 'words' "
                     "in this string should start with the letter indicating which option is being used, followed "
                     f"by the value for that option. E.g. {tc.CODE}`--{arg_type}_options a1 b2`{tc.OFF} will set the "
                     f"value {tc.MESSAGE}'1'{tc.OFF} for option {tc.CODE}a{tc.OFF} and the value "
@@ -1518,9 +1534,11 @@ def main():
 
     # If no inputs were provided, print a message about usage
     if len(sys.argv) == 1:
-        print_wrap(f"See the {tc.PATH}'README.md'{tc.OFF} file for information on using this utility and examples of "
-                   "basic usage, or for detailed explanation of arguments call:")
-        print(f"{tc.CODE}{const.CL_SCRIPT_NAME} -h{tc.OFF}")
+        print_wrap(f"{tc.ERROR}ERROR:{tc.OFF} One or more argument must be supplied to specify the conversion or "
+                   f"request information about possible conversions. See the {tc.PATH}'README.md'{tc.OFF} file for "
+                   "information on using this utility and examples of basic usage, or for detailed explanation of "
+                   "arguments call:")
+        print(f"{tc.CODE}{const.CL_SCRIPT_NAME} -h{tc.OFF}", file=sys.stderr)
         exit(1)
 
     try:
