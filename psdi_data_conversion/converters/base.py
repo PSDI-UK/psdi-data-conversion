@@ -7,6 +7,7 @@ Base class and information for file format converters
 
 
 import abc
+import json
 import logging
 import os
 import subprocess
@@ -16,6 +17,7 @@ from collections.abc import Callable
 from copy import deepcopy
 from dataclasses import dataclass
 from typing import Any
+from uuid import UUID
 
 from psdi_data_conversion import constants as const
 from psdi_data_conversion import log_utility
@@ -30,6 +32,12 @@ try:
     from werkzeug.exceptions import HTTPException
 except ImportError:
     HTTPException = None
+
+
+class FileConverterSetupException(ImportError):
+    """Exception class for problems occurring when setting up a FileConverter class
+    """
+    pass
 
 
 class FileConverterException(RuntimeError):
@@ -76,9 +84,70 @@ class FileConverterSizeException(FileConverterAbortException):
 
 
 class FileConverterInputException(FileConverterException):
-    """Exception class to represent errors encountered with input parameters for the data conversion script.
+    """Exception class to represent errors encountered with any type of input.
     """
     pass
+
+
+class FileConverterInputFileException(FileConverterInputException):
+    """Exception class to represent errors encountered with the input file.
+    """
+    pass
+
+
+class FileConverterArgException(FileConverterInputException):
+    """Exception class to represent errors encountered with input arguments.
+    """
+    pass
+
+
+class FileConverterUnsupportedException(FileConverterInputException):
+    """Exception class to represent errors caused by an unsupported conversion being requested.
+    """
+    pass
+
+
+@dataclass
+class FileConverterMeta:
+    """Class containing meta information for a file converter
+    """
+    id: int | None = None
+    name: str | None = None
+    desc: str | None = None
+    info: str | None = None
+    url: str | None = None
+    supports_ambiguous_extensions: bool | None = None
+    database_key_prefix: str | None = None
+
+    @property
+    def uuid(self):
+        try:
+            return UUID(int=self.id)
+        except ValueError:
+            return None
+
+    @staticmethod
+    def load(converter_path: str):
+        """Factory method to create a `FileConverterMeta` object for a converter by loading the `data.json` file
+        contained in the same folder as the provided filename
+        """
+        data_path = os.path.join(os.path.split(converter_path)[0], "data.json")
+        if not os.path.isfile(data_path):
+            raise FileConverterSetupException(f"Expected converter data file {data_path} does not exist")
+
+        try:
+            data: dict[str, Any] = json.load(open(data_path))["converter"]
+        except json.JSONDecodeError as e:
+            raise FileConverterSetupException(f"Converter data file {data_path} could not be parsed. Error: {e}")
+
+        meta_kwargs: dict[str, str] = {}
+        try:
+            for key in "id", "name", "desc", "info", "url", "supports_ambiguous_extensions", "database_key_prefix":
+                meta_kwargs[key] = data[key]
+        except KeyError as e:
+            raise FileConverterSetupException(f"Converter data file {data_path} is missing required data. Error: {e}")
+
+        return FileConverterMeta(**meta_kwargs)
 
 
 if HTTPException is not None:
@@ -119,15 +188,11 @@ class FileConverter:
     """Class to handle conversion of files from one type to another
     """
 
+    meta = FileConverterMeta()
+    """Metadata about the converter"""
+
     # Class variables and methods which must/can be overridden by subclasses
     # ----------------------------------------------------------------------
-
-    name: str | None = None
-    """Name of the converter - must be overridden in each subclass to name each converter uniquely"""
-
-    info: str | None = None
-    """General info about the converter - can be overridden in a subclass to add information about a converter which
-    isn't covered in its database entry, such as notes on its support."""
 
     allowed_flags: tuple[tuple[str, dict, Callable], ...] | None = None
     """List of flags allowed for the converter (flags are arguments that are set by being present, and don't require a
@@ -142,12 +207,45 @@ class FileConverter:
     argument parser's `add_argument` method, and callable function to get a dict of needed info for them.
     As with flags, an empty tuple should be provided if the converter does not accept any options"""
 
-    database_key_prefix: str | None = None
-    """The prefix used in the database for keys related to this converter"""
+    @property
+    def id(self):
+        """The converter ID, which will be taken from its `data.json` file"""
+        return self.meta.id
 
-    supports_ambiguous_extensions: bool = False
-    """Whether or not this converter supports formats which share the same extension. This is used to enforce stricter
-    but less user-friendly requirements on format specification"""
+    @property
+    def uuid(self):
+        """The converter UUID, which will be taken from its `data.json` file"""
+        return self.meta.uuid
+
+    @property
+    def name(self):
+        """The converter name, which will be taken from its `data.json` file"""
+        return self.meta.name
+
+    @property
+    def desc(self):
+        """The converter description, which will be taken from its `data.json` file"""
+        return self.meta.desc
+
+    @property
+    def info(self):
+        """The converter info, which will be taken from its `data.json` file"""
+        return self.meta.info
+
+    @property
+    def url(self):
+        """The converter url, which will be taken from its `data.json` file"""
+        return self.meta.url
+
+    @property
+    def supports_ambiguous_extensions(self):
+        """Whether or not the converter supports ambiguous extensions, which will be taken from its `data.json` file"""
+        return self.meta.supports_ambiguous_extensions
+
+    @property
+    def database_key_prefix(self):
+        """The converter database key prefix, which will be taken from its `data.json` file"""
+        return self.meta.database_key_prefix
 
     @abc.abstractmethod
     def _convert(self):
@@ -274,8 +372,7 @@ class FileConverter:
         try:
 
             if max_file_size is None:
-                from psdi_data_conversion.converters.openbabel import CONVERTER_OB
-                if self.name == CONVERTER_OB:
+                if self.meta.name == const.CONVERTER_OB:
                     self.max_file_size = const.DEFAULT_MAX_FILE_SIZE_OB
                 else:
                     self.max_file_size = const.DEFAULT_MAX_FILE_SIZE
@@ -285,8 +382,7 @@ class FileConverter:
             # Set values from envvars if desired
             if use_envvars:
                 # Get the maximum allowed size from the envvar for it
-                from psdi_data_conversion.converters.openbabel import CONVERTER_OB
-                if self.name == CONVERTER_OB:
+                if self.meta.name == const.CONVERTER_OB:
                     ev_max_file_size = os.environ.get(const.MAX_FILESIZE_OB_EV)
                 else:
                     ev_max_file_size = os.environ.get(const.MAX_FILESIZE_EV)
@@ -335,8 +431,8 @@ class FileConverter:
                 if os.path.exists(qualified_in_filename):
                     self.in_filename = qualified_in_filename
                 else:
-                    FileConverterInputException(f"Input file {self.in_filename} not found, either absolute or relative "
-                                                f"to {self.input_dir}")
+                    FileConverterInputFileException(f"Input file {self.in_filename} not found, either absolute or "
+                                                    f"relative to {self.input_dir}")
 
             # Create directory 'downloads' if not extant.
             if not os.path.exists(self.output_dir):
@@ -353,12 +449,12 @@ class FileConverter:
             if not no_check:
                 from psdi_data_conversion.database import get_conversion_quality
                 qual = get_conversion_quality(self.name,
-                                              self.from_format_info.id,
-                                              self.to_format_info.id)
+                                              self.from_format_info,
+                                              self.to_format_info)
                 if not qual:
-                    raise FileConverterInputException(f"Conversion from {self.from_format_info.name} to "
-                                                      f"{self.to_format_info.name} "
-                                                      f"with {self.name} is not supported.", help=True)
+                    raise FileConverterUnsupportedException(f"Conversion from {self.from_format_info.name} to "
+                                                            f"{self.to_format_info.name} "
+                                                            f"with {self.meta.name} is not supported.", help=True)
                 if qual.details:
                     msg = (":\nPotential data loss or extrapolation issues with the conversion from "
                            f"{self.from_format_info.name} to {self.to_format_info.name}:\n")
@@ -418,8 +514,8 @@ class FileConverter:
                 self._local_logger_level = const.DEFAULT_LOCAL_LOGGER_LEVEL
                 self._stdout_output_level = logging.ERROR
             else:
-                raise FileConverterInputException(f"ERROR: Unrecognised logging option: {self.log_mode}. Allowed "
-                                                  f"options are: {const.L_ALLOWED_LOG_MODES}")
+                raise FileConverterArgException(f"ERROR: Unrecognised logging option: {self.log_mode}. Allowed "
+                                                f"options are: {const.L_ALLOWED_LOG_MODES}")
         if self.log_mode in (const.LOG_FULL, const.LOG_FULL_FORCE):
             return self._setup_server_loggers()
 
@@ -595,7 +691,7 @@ class FileConverter:
         self._abort(message=self.err, logged=True)
 
     def _create_message(self) -> str:
-        """Create a log of options passed to the converter - this method should be overloaded to log any information
+        """Create a log of options passed to the converter - this method should be overridden to log any information
         unique to a specific converter.
         """
 
@@ -616,8 +712,8 @@ class FileConverter:
         # empty or whitespace will be stripped by the logger, so we use a lone colon, which looks least obtrusive
         return (":\n"
                 f"File name:         {self.filename_base}\n"
-                f"From:              {self.from_format_info.name} ({self.from_format_info.note})\n"
-                f"To:                {self.to_format} ({self.to_format_info.note})\n"
+                f"From:              {self.from_format_info.name} ({self.from_format_info.description})\n"
+                f"To:                {self.to_format} ({self.to_format_info.description})\n"
                 f"Converter:         {self.name}\n")
 
     def _log_success(self):
@@ -691,7 +787,7 @@ class FileConverter:
         """
         from psdi_data_conversion.database import get_conversion_quality
 
-        conversion_quality = get_conversion_quality(converter_name=self.name,
+        conversion_quality = get_conversion_quality(converter=self.name,
                                                     in_format=self.from_format_info.id,
                                                     out_format=self.to_format_info.id)
         if not conversion_quality:
@@ -763,15 +859,15 @@ class ScriptFileConverter(FileConverter):
         """Get the list of arguments which will be passed to the script"""
 
         from_flags = self.data.get("from_flags", "")
-        to_flags = self.data.get("from_flags", "")
+        to_flags = self.data.get("to_flags", "")
         from_options = self.data.get("from_options", "")
-        to_options = self.data.get("from_options", "")
+        to_options = self.data.get("to_options", "")
 
         # Check that all user-provided input passes security checks
         for user_args in [from_flags, to_flags, from_options, to_options]:
             if not string_is_safe(user_args):
-                raise FileConverterInputException(f"Provided argument '{user_args}' does not pass security check - it "
-                                                  f"must match the regex {SAFE_STRING_RE.pattern}.", help=True)
+                raise FileConverterArgException(f"Provided argument '{user_args}' does not pass security check - it "
+                                                f"must match the regex {SAFE_STRING_RE.pattern}.", help=True)
 
         return ['--' + self.to_format_info.name, self.in_filename, self.out_filename, from_flags, to_flags,
                 from_options, to_options]

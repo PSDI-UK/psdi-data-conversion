@@ -13,6 +13,7 @@ from dataclasses import dataclass, field
 from tempfile import TemporaryDirectory
 
 from psdi_data_conversion.constants import DATETIME_RE_RAW
+from psdi_data_conversion.database import get_format_info
 from psdi_data_conversion.file_io import unpack_zip_or_tar
 from psdi_data_conversion.log_utility import string_with_placeholders_matches
 from psdi_data_conversion.testing.constants import OUTPUT_TEST_DATA_LOC_IN_PROJECT
@@ -59,6 +60,28 @@ class CheckFileStatus:
     expect_global_log_exists: bool | None = None
     """Whether to expect that the global log exists (zero-size allowed) or not. If None, will not check either way."""
 
+    expect_input_files_exist: list[str] | None = None
+    """A list of input files which are expected to exist"""
+
+    expect_input_files_not_exist: list[str] | None = None
+    """A list of input files which are expected to not exist"""
+
+    expect_output_files_exist: list[str] | None = None
+    """A list of output files which are expected to exist"""
+
+    expect_output_files_not_exist: list[str] | None = None
+    """A list of output files which are expected to not exist"""
+
+    def __post_init__(self):
+        if self.expect_input_files_exist is None:
+            self.expect_input_files_exist = []
+        if self.expect_input_files_not_exist is None:
+            self.expect_input_files_not_exist = []
+        if self.expect_output_files_exist is None:
+            self.expect_output_files_exist = []
+        if self.expect_output_files_not_exist is None:
+            self.expect_output_files_not_exist = []
+
     def __call__(self, test_info: ConversionTestInfo) -> str:
         """Perform the check on output file and log status"""
 
@@ -90,6 +113,7 @@ class CheckFileStatus:
             l_errors.append(f"ERROR: Output file from conversion '{qualified_out_filename}' exists, but was expected "
                             "to not exist")
 
+        # Check the status of the log file
         qualified_log_filename = test_info.qualified_log_filename
         if self.expect_log_exists:
             if not os.path.isfile(qualified_log_filename):
@@ -102,6 +126,7 @@ class CheckFileStatus:
             l_errors.append(f"ERROR: Log file from conversion '{qualified_log_filename}' exists, but was expected "
                             "to not exist")
 
+        # Check the status of the global log file
         qualified_global_log_filename = test_info.qualified_global_log_filename
         if self.expect_global_log_exists:
             if not os.path.isfile(qualified_global_log_filename):
@@ -110,6 +135,40 @@ class CheckFileStatus:
         elif self.expect_global_log_exists is False and os.path.isfile(qualified_global_log_filename):
             l_errors.append(f"ERROR: Global log file from conversion '{qualified_global_log_filename}' exists, but was "
                             "expected to not exist")
+
+        # Check the status of input files expected to exist
+        for input_file in self.expect_input_files_exist:
+            qualified_input_file = os.path.join(test_info.input_dir, input_file)
+            if not os.path.isfile(qualified_input_file):
+                l_errors.append(f"ERROR: Expected file for conversion '{qualified_input_file}' does not "
+                                "exist")
+            elif os.path.getsize(qualified_input_file) == 0:
+                l_errors.append(f"ERROR: Expected file for conversion '{qualified_input_file}' exists but "
+                                "is unexpectedly empty")
+
+        # Check the status of input files expected to not exist
+        for input_file in self.expect_input_files_not_exist:
+            qualified_input_file = os.path.join(test_info.input_dir, input_file)
+            if os.path.isfile(qualified_input_file):
+                l_errors.append(f"ERROR: File from conversion '{qualified_input_file}' exists, but was "
+                                "expected to not exist")
+
+        # Check the status of output files expected to exist
+        for output_file in self.expect_output_files_exist:
+            qualified_output_file = os.path.join(test_info.output_dir, output_file)
+            if not os.path.isfile(qualified_output_file):
+                l_errors.append(f"ERROR: Expected file for conversion '{qualified_output_file}' does not "
+                                "exist")
+            elif os.path.getsize(qualified_output_file) == 0:
+                l_errors.append(f"ERROR: Expected file for conversion '{qualified_output_file}' exists but "
+                                "is unexpectedly empty")
+
+        # Check the status of output files expected to not exist
+        for output_file in self.expect_output_files_not_exist:
+            qualified_output_file = os.path.join(test_info.output_dir, output_file)
+            if os.path.isfile(qualified_output_file):
+                l_errors.append(f"ERROR: File from conversion '{qualified_output_file}' exists, but was "
+                                "expected to not exist")
 
         # Join any errors for output
         res = "\n".join(l_errors)
@@ -126,6 +185,10 @@ class CheckArchiveContents:
 
     to_format: str
     """Format (extension) that all files in the archive should have"""
+
+    def __post_init__(self):
+        """Make sure that however the to_format was provided, it's changed into the extension"""
+        self.to_format = get_format_info(self.to_format).name
 
     def __call__(self, test_info: ConversionTestInfo):
         """Run the check on archive contents"""
@@ -147,6 +210,9 @@ class CheckArchiveContents:
                 if not os.path.isfile(os.path.join(extract_dir, filename)):
                     l_errors.append(f"ERROR: Expected file '{filename}' was not found in archive "
                                     f"{qualified_out_filename}")
+                elif os.path.getsize(os.path.join(extract_dir, filename)) == 0:
+                    l_errors.append(f"ERROR: Expected file '{filename}' was found in archive "
+                                    f"{qualified_out_filename} but was unexpectedly empty")
 
         return "\n".join(l_errors)
 
@@ -339,8 +405,8 @@ class CheckException:
     def __call__(self, test_info: ConversionTestInfo) -> str:
         """Perform the check on the exception"""
 
-        # Skip check on CLA, since this won't catch any exceptions
-        if test_info.run_type == "cla":
+        # Skip check on CLI, since this won't catch any exceptions
+        if test_info.run_type == "cli":
             return ""
 
         # Confirm that an exception was indeed raised

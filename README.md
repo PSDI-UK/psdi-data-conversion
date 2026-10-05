@@ -7,7 +7,7 @@ This project provides utilities to assist in converting files between the many d
 
 - Online web service
 - Version of the web app you can download and run locally (e.g. if you need to convert files which exceed the online app's file size limit)
-- Command-line application, to run conversions from a terminal
+- Command-line interface, to run conversions from a terminal
 - Python library
 
 ## Quick Links
@@ -23,7 +23,7 @@ This project provides utilities to assist in converting files between the many d
 - [Requirements](#requirements)
   - [Python](#python)
   - [Other Dependencies](#other-dependencies)
-- [Command-Line Application](#command-line-application)
+- [Command-Line Interface](#command-line-interface)
   - [Installation](#installation)
   - [Execution](#execution)
     - [Data Conversion](#data-conversion)
@@ -40,6 +40,7 @@ This project provides utilities to assist in converting files between the many d
 - [Running the Python/Flask app locally](#running-the-pythonflask-app-locally)
   - [Installation and Setup](#installation-and-setup)
   - [Running the App](#running-the-app)
+- [Extending Functionality](#extending-functionality)
 - [Testing](#testing)
 - [Troubleshooting](#troubleshooting)
   - [Unable to convert archives of files](#unable-to-convert-archives-of-files)
@@ -64,17 +65,24 @@ This project provides utilities to assist in converting files between the many d
 - `psdi_data_conversion` (Primary source directory)
   - `bin`
     - (Precompiled binaries for running file format converters)
+  - `converters`
+    - `base.py` (Base class for converter plugins)
+    - (Folders for converter plugins, each with the below structure)
+    - `example` (Example converter plugin)
+      - `converter.py` (Executable code to run the converter)
+      - `data.json` (Data on the converter, the formats it supports, and the conversions it can perform)
   - `static` (Static code and assets for the web app)
-    - `content`
-      - (HTML assets for the web app)
-    - `downloads` (created by app.py if not extant)
+    - `data`
+      - `formats.json`
+      - `data.json` (Generated singular database file, read by the library, CLI, and web app for information on converters, formats, and conversions)
+    - `downloads` (created by the web app if not extant)
     - `img`
       - (image assets for the web app)
     - `javascript`
       - (JavaScript code for the web app)
     - `styles`
       - (CSS stylesheets for the web app)
-    - `uploads` (created by app.py if not extant)
+    - `uploads` (created by the web app if not extant)
   - `templates`
     - (HTML assets rendered by Flask for the web app)
   - `__init.py__`
@@ -87,7 +95,7 @@ This project provides utilities to assist in converting files between the many d
   - `gui`
     - (Unit tests for the GUI, aka the local version of the web app)
   - `python`
-    - (Unit tests for the Python library and command-line application)
+    - (Unit tests for the Python library and command-line interface)
 - `CHANGELOG.md` (Updates since initial public release)
 - `CONTRIBUTING.md` (Guidelines and information for contributors to the project)
 - `DOCKERFILE` (Dockerfile for image containerising PSDI's data conversion service)
@@ -174,11 +182,11 @@ Required to run unit tests on the web app (`pip install 'psdi-data-conversion[gu
 
 In addition to the dependencies listed above, this project uses the assets made public by PSDI's common style project at https://github.com/PSDI-UK/psdi-common-style. The latest versions of these assets are copied to this project periodically (using the scripts in the `scripts` directory). In case a future release of these assets causes a breaking change in this project, the file `fetch-common-style.conf` can be modified to set a previous fixed version to download and use until this project is updated to work with the latest version of the assets.
 
-## Command-Line Application
+## Command-Line Interface
 
 ### Installation
 
-The CLA and Python library are installed together. This project is available on PyPI, and so can be installed via pip with:
+The CLI and Python library are installed together. This project is available on PyPI, and so can be installed via pip with:
 
 ```bash
 pip install psdi-data-conversion
@@ -227,13 +235,14 @@ Data conversion is the default mode of the script. At its most basic, the syntax
 psdi-data-convert filename.ext1 -t ext2
 ```
 
-This will convert the file 'filename.ext1' to format 'ext2' using the default converter (Open Babel). A list of files can also be provided, and they will each be converted in turn.
+This will convert the file 'filename.ext1' to format 'ext2' using an automatically-determined suitable converter (if one can be determined - in the case of ambiguous file formats, it may be necessary to provide more information). A list of files can also be provided, and they will each be converted in turn.
 
 The full possible syntax for the script is:
 
 ```
 psdi-data-convert <input file 1> [<input file 2> <input file 3> ...] -t/--to <output format> [-f/--from <input file
-format>] [-i/--in <input file location>] [-o/--out <location for output files>] [-w/--with <converter>] [--delete-input]
+format>] [-i/--in <input file location>] [-o/--out <location for output files>] [-w/--with <converter>] [--path
+<converter 1> <intermediate format 1> [<converter 2> <intermediate format 2> ...] <converter N>] [--delete-input]
 [--from-flags '<flags to be provided to the converter for reading input>'] [--to-flags '<flags to be provided to the
 converter for writing output>'] [--from-options '<options to be provided to the converter for reading input>']
 [--to-options '<options to be provided to the converter for writing output>'] [--coord-gen <coordinate generation
@@ -243,28 +252,32 @@ options] [-s/--strict] [--nc/--no-check] [-q/--quiet] [-g/--log-file <log file n
 
 Call `psdi-data-convert -h` for details on each of these options.
 
-Note that some requested conversions may involve ambiguous formats which share the same extension. In this case, the application will print a warning and list possible matching formats, with IDs and disambiguating names that can be used to specify which one. For instance, the `c2x` converter can convert into two variants of the `pdb` format, and if you ask it to convert to `pdb` without specifying which one, you'll see:
+Note that some requested conversions may involve ambiguous formats which share the same extension. In this case, the application will print a warning and list possible matching formats, with IDs and disambiguating names that can be used to specify which one. For instance, the `c2x` converter can convert into two variants of the `pdb` format, and if you ask it to convert from `mmcif` to `pdb` without specifying which one, you'll see:
 
 ```
-WARNING: Format 'pdb' is ambiguous and could refer to multiple formats. It may be necessary to explicitly specify which
-you want to use when calling this script, e.g. with '-f pdb-0' - see the disambiguated names in the list below:
-
-9: pdb-0 (Protein Data Bank)
-...
-
-259: pdb-1 (Protein Data Bank with atoms numbered)
-...
+ERROR: Conversion from mmcif to 'pdb' with converter 'c2x' is ambiguous. Please use the ID or disambiguated name (listed
+below) of the desired conversion. Possible matching conversions are:
+    mmcif (ID 111142745790695896928946860948434358952) to pdb-0 (ID 178366529166858241161075106138867206788)
+    mmcif (ID 111142745790695896928946860948434358952) to pdb-1 (ID 325652524238156842953511960586864188646)
 ```
 
-This provides the IDs ("9" and "259") and disambiguating names ("pdb-0" and "pdb-1") for the matching formats. Either can be used in the call to the converter, e.g.:
+This provides the IDs (`178366529166858241161075106138867206788` and `325652524238156842953511960586864188646`) and disambiguated names (`pdb-0` and `pdb-1`) for the matching formats. Either can be used in the call to the converter, e.g.:
 
 ```bash
-psdi-data-conversion nacl.cif -t 9 -w c2x
+psdi-data-conversion nacl.mmcif -t 178366529166858241161075106138867206788 -w c2x
 # Or equivalently:
-psdi-data-conversion nacl.cif -t pdb-0 -w c2x
+psdi-data-conversion nacl.mmcif -t pdb-0 -w c2x
 ```
 
-The "<format>-0" pattern can be used with any format, even if it's unambiguous, and will be interpreted as the first instance of the format in the database with valid conversions. Note that as the database expands in future versions and more valid conversions are added, these disambiguated names may change, so it is recommended to use the format's ID in scripts and with the library to ensure consistency between versions of this package.
+As all format (and converter) IDs are UUIDs, the standard UUID format is also accepted:
+
+```bash
+psdi-data-conversion nacl.mmcif -t 863024da-8e1f-46e5-992c-b14bcc258a84 -w c2x
+```
+
+The "<format>-0" pattern can be used with any format, even if it's unambiguous, and will be interpreted as the first instance of the format in the database with valid conversions. Note that as the database expands in future versions and more valid conversions are added, these disambiguated names may change, so it is recommended to use the format's ID or UUID in scripts and code to ensure consistency between versions of this package.
+
+It was necessary to update IDs in v0.4.0 to use UUIDs, but for all future versions there should be no need to change IDs, so these can be treated as stable between versions, whereas the same cannot be guaranteed for disambiguated names, which should only be used for one-time executions. If you need to update from before this version, see the `v0.4.0` section of `CHANGELOG.md` for guidance.
 
 #### Requesting Information on Possible Conversions
 
@@ -300,11 +313,19 @@ psdi-data-convert -l <converter name> [-f <input format>] [-t <output format>]
 
 If an input format is provided, information on input flags and options accepted by the converter for this format will be provided, and similar for if an output format is provided.
 
+In some cases, a direct conversion between two formats with a single converter won't be possible, but a chained conversion using multiple converters will be. When this is the case, a possible path will be recommended, and more can be requested using the special `--lp` argument in place of `-l`, with the argument after it ("one", "best", or "shortest") specifying how many paths to list:
+
+- "one" (default) - Only display a single path, even if other equally-good paths are available
+- "best" - Display all equally-good paths. This is determined through a "weight" parameter, which takes into account any format properties (such as whether or not a format supports connection information) which are lost along the path, precision loss (number of digits of information stored), as well as other tie-breaking factors
+- "shortest" - Display all equally-shortest paths
+
+The algorithm used to determine weights cannot take into account all possible factors of a conversion, so it is best to test a path to ensure it works as desired, and see if there are any differences between paths not captured by the weights (e.g. some paths may result in data extrapolation while others won't - the weights only take data loss into account, not extrapolation).
+
 ## Python Library
 
 ### Installation
 
-The CLA and Python library are installed together. See the [above instructions for installing the CLA](#installation), which will also install the Python library.
+The CLI and Python library are installed together. See the [above instructions for installing the CLI](#installation), which will also install the Python library.
 
 ### Use
 
@@ -333,10 +354,10 @@ from psdi_data_conversion.converter import run_converter
 For a simple conversion, this can be used via:
 
 ```python
-run_converter(filename, to_format, name=name, data=data)
+run_converter(filename, to_format, converter=name, data=data)
 ```
 
-Where `filename` is the name of the file to convert (either fully-qualified or relative to the current directory), `to_format` is the desired format to convert to (e.g. `"pdb"`), `name` is the name of the converter to use (default "Open Babel"), and `data` is a dict of any extra information required by the specific converter being used, such as flags for how to read/write input/output files (default empty dict).
+Where `filename` is the name of the file to convert (either fully-qualified or relative to the current directory), `to_format` is the desired format to convert to (e.g. `"pdb"`), `converter` is the name or ID of the converter to use (default "Open Babel"), and `data` is a dict of any extra information required by the specific converter being used, such as flags for how to read/write input/output files (default empty dict).
 
 See the method's documentation via `help(run_converter)` after importing it for further details on usage.
 
@@ -394,7 +415,7 @@ pip install '.[gui]'
 
 **Note:** This project uses git to determine the version number. If you clone the repository, you won't have to do anything special here, but if you get the source e.g. by extracting a release archive, you'll have to do one additional step before running the command above. If you have git installed, simply run `git init` in the project directory and it will be able to install. Otherwise, edit the project's `pyproject.toml` file to uncomment the line that sets a fixed version, and comment out the lines that set it up to determine the version from git - these are pointed out in the comments there.
 
-If your system does not allow installation in this manner, it may be necessary to set up a virtual environment. See the instructions in the [command-line application installation](#installation) section above for how to do that, and then try to install again once you've set one up and activated it.
+If your system does not allow installation in this manner, it may be necessary to set up a virtual environment. See the instructions in the [command-line interface installation](#installation) section above for how to do that, and then try to install again once you've set one up and activated it.
 
 ### Running the App
 
@@ -407,19 +428,11 @@ The local version has some customisable options for running it, which can can be
 
 ## Extending Functionality
 
-The Python library and CLA are written to make it easy to extend the functionality of this package to use other file format converters. This can be done by downloading or cloning the project's source from it's GitHub Repository (https://github.com/PSDI-UK/psdi-data-conversion), editing the code to add your converter following the guidance in the "[Adding File Format Converters](https://github.com/PSDI-UK/psdi-data-conversion/blob/main/CONTRIBUTING.md#adding-file-format-converters)" section of CONTRIBUTING.md to integrate it with the Python code, and installing the modified package on your system via:
-
-```bash
-pip install --editable '.[test]'
-```
-
-(This command uses the `--editable` option and optional `test` dependencies to ease the process of testing and debugging your changes.)
-
-Note that when adding a converter in this manner, information on its possible conversions will not be added to the database, and so these will not show up when you run the CLA with the `-l/--list` option. You will also need to add the `--nc/--no-check` option when running conversions to skip the database check that the conversion is allowed.
+The Python library and CLI are written to make it easy to extend the functionality of this package to use other file format converters. This can be done by downloading or cloning the project's source from it's GitHub Repository (https://github.com/PSDI-UK/psdi-data-conversion), editing the code to add your converter following the guidance in the "[Adding File Format Converters](https://github.com/PSDI-UK/psdi-data-conversion/blob/main/CONTRIBUTING.md#adding-file-format-converters)" section of CONTRIBUTING.md.
 
 ## Testing
 
-To test the CLA and Python library, install the optional testing requirements locally (ideally within a virtual environment) and test with pytest by executing the following commands from this project's directory:
+To test the CLI and Python library, install the optional testing requirements locally (ideally within a virtual environment) and test with pytest by executing the following commands from this project's directory:
 
 ```bash
 pip install '.[test]'
@@ -458,7 +471,7 @@ You may see the error:
 OSError: [Errno 24] Too many open files
 ```
 
-while running the command-line application, using the Python library, or running tests This error is caused by a program hitting the limit of the number of open filehandles allowed by the OS. This limit is typically set to 1024 on Linux systems and 256 on MacOS systems, and thus this issue occurs much more often on the latter. You can see what your current limit is by running the command:
+while running the command-line interface, using the Python library, or running tests This error is caused by a program hitting the limit of the number of open filehandles allowed by the OS. This limit is typically set to 1024 on Linux systems and 256 on MacOS systems, and thus this issue occurs much more often on the latter. You can see what your current limit is by running the command:
 
 ```bash
 ulimit -a | grep "open files"
@@ -517,38 +530,39 @@ To remedy this, try explicitly specifying the format, rather than letting the ap
 ```base
 $ psdi-data-convert -l -f mol -t xyz
 WARNING: Format 'mol' is ambiguous and could refer to multiple formats. It may be necessary to explicitly specify which
-you want to use when calling this script, e.g. with '-f mol-0' - see the disambiguated names in the list below:
+you want to use when calling this script, e.g. with '-f mol-0' or using its ID - see the disambiguated names and IDs in
+the list below:
 
-18: mol-0 (MDL MOL)
+mol-0 (ID: 14163986051707882465586360841029029139): MDL MOL
 - Atomic composition is supported
 - Atomic connections are supported
 - 2D atomic coordinates are supported
 - 3D atomic coordinates are supported
 
-216: mol-1 (MOLDY)
+mol-1 (ID: 72959745128074324821901268400337732406): MOLDY
 - Atomic composition is unknown whether or not to be supported
 - Atomic connections are unknown whether or not to be supported
 - 2D atomic coordinates are unknown whether or not to be supported
 - 3D atomic coordinates are unknown whether or not to be supported
 
 WARNING: Format 'xyz' is ambiguous and could refer to multiple formats. It may be necessary to explicitly specify which
-you want to use when calling this script, e.g. with '-f xyz-0' - see the disambiguated names in the list below:
+you want to use when calling this script, e.g. with '-f xyz-0' or using its ID - see the disambiguated names and IDs in
+the list below:
 
-20: xyz-0 (XYZ cartesian coordinates)
-- Atomic composition is supported
-- Atomic connections are not supported
-- 2D atomic coordinates are supported
-- 3D atomic coordinates are supported
-
-284: xyz-1 (Extended XYZ (adds lattice vectors))
+xyz-0 (ID: 46290705721393589047128301807650178748): Extended XYZ (adds lattice vectors)
 - Atomic composition is unknown whether or not to be supported
 - Atomic connections are unknown whether or not to be supported
 - 2D atomic coordinates are unknown whether or not to be supported
 - 3D atomic coordinates are unknown whether or not to be supported
 
+xyz-1 (ID: 50135205643343990489495467470022579507): XYZ cartesian coordinates
+- Atomic composition is supported
+- Atomic connections are not supported
+- 2D atomic coordinates are supported
+- 3D atomic coordinates are supported
+
 The following registered converters can convert from mol-0 to xyz-0:
 
-    Open Babel
     c2x
 
 For details on input/output flags and options allowed by a converter for this conversion, call:
@@ -557,27 +571,28 @@ psdi-data-convert -l <converter name> -f mol-0 -t xyz-0
 The following registered converters can convert from mol-0 to xyz-1:
 
     c2x
+    Open Babel
 
 For details on input/output flags and options allowed by a converter for this conversion, call:
 psdi-data-convert -l <converter name> -f mol-0 -t xyz-1
 
-The following registered converters can convert from mol-1 to xyz-0:
+No converters are available which can perform a conversion from mol-1 to xyz-0
+
+The following registered converters can convert from mol-1 to xyz-1:
 
     Atomsk
 
 For details on input/output flags and options allowed by a converter for this conversion, call:
-psdi-data-convert -l <converter name> -f mol-1 -t xyz-0
-
-No converters are available which can perform a conversion from mol-1 to xyz-1
+psdi-data-convert -l <converter name> -f mol-1 -t xyz-1
 ```
 
-This output indicates that the application is aware of two formats which share the `mol` extension: MDL MOL and MOLDY. It lists the ID, disambiguated name, and description of each: ID `18` and disambiguated name `mol-0` for MDL MOL, and ID `216` and disambiguated name `mol-1` for MOLDY. The XYZ format similarly has two variants which can be converted to.
+This output indicates that the application is aware of two formats which share the `mol` extension: MDL MOL and MOLDY. It lists the ID, disambiguated name, and description of each: ID `14163986051707882465586360841029029139` and disambiguated name `mol-0` for MDL MOL, and ID `72959745128074324821901268400337732406216` and disambiguated name `mol-1` for MOLDY. The XYZ format similarly has two variants which can be converted to.
 
-The program then lists converters which can handle the requested conversion, revealing a potential pitfall: The Open Babel and c2x converters can convert from MDL MOL to XYZ, which the Atomsk converter can convert from MOLDY to XYZ. If you don't specify which format you're converting from, the script might assume you meant to use the other one, if that's the only one compatible with the converter you've requested (or with the default converter, Open Babel, if you didn't explicitly request one). So to be careful here, it's best to specify this input format unambiguously.
+The program then lists converters which can handle the requested conversion, revealing a potential pitfall: The Open Babel and c2x converters can convert from MDL MOL to XYZ, while the Atomsk converter can convert from MOLDY to XYZ. If you don't specify which format you're converting from, the script might assume you meant to use the other one, if that's the only one compatible with the converter you've requested (or with the default converter, Open Babel, if you didn't explicitly request one). So to be careful here, it's best to specify this input format unambiguously.
 
-Since in this example you have an MDL MOL file, you would use `-f 18` or `-f mol-0` to explicitly specify it in the command-line, or similarly provide one of these to the `from_format` argument of `run_converter` within Python. The application will then properly handle it, including alerting you if you request a conversion that isn't supported by your requested converter (e.g. if you request a conversion of this MDL MOL file to XYZ with Atomsk).
+Since in this example you have an MDL MOL file, you would use `-f 14163986051707882465586360841029029139` or `-f mol-0` to explicitly specify it in the command-line, or similarly provide one of these to the `from_format` argument of `run_converter` within Python. The application will then properly handle it, including alerting you if you request a conversion that isn't supported by your requested converter (e.g. if you request a conversion of the MDL MOL file to XYZ with Atomsk).
 
-Important note: The disambiguated name is generated dynamically and isn't stored in the database, and in rare cases may change for some formats in future versions of this application which expand support to more formats and conversions. For uses which require forward-compatibility with future versions of this application, the ID should be used instead. You can obtain the ID for any format via the command: `psdi-data-convert -l -f <format-name>`.
+Important note: The disambiguated name is generated dynamically and isn't stored in the database, and may change for some formats in future versions of this application which rework the database or expand support to more formats and conversions. For uses which require forward-compatibility with future versions of this application, the ID should be used instead. You can obtain the ID for any format via the command: `psdi-data-convert -l -f <format-name>`.
 
 #### Other known issues
 

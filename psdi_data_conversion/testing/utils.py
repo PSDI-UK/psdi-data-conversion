@@ -11,8 +11,9 @@ import shlex
 import sys
 from collections.abc import Callable, Iterable
 from dataclasses import dataclass, field
-from functools import lru_cache
+from functools import cached_property
 from math import isclose
+from pathlib import Path
 from tempfile import TemporaryDirectory
 from typing import Any
 from unittest.mock import patch
@@ -20,58 +21,45 @@ from unittest.mock import patch
 import py
 import pytest
 
-from psdi_data_conversion.constants import CONVERTER_DEFAULT, GLOBAL_LOG_FILENAME, LOG_NONE, OUTPUT_LOG_EXT
-from psdi_data_conversion.converter import run_converter
-from psdi_data_conversion.converters.openbabel import COORD_GEN_KEY, COORD_GEN_QUAL_KEY
-from psdi_data_conversion.database import get_format_info
+from psdi_data_conversion.constants import (CONVERTER_AUTOCHAIN, CONVERTER_OB, GLOBAL_LOG_FILENAME, LOG_NONE,
+                                            OUTPUT_LOG_EXT)
+from psdi_data_conversion.converter import run_converter, run_converter_chain
+from psdi_data_conversion.converters.openbabel.converter import COORD_GEN_KEY, COORD_GEN_QUAL_KEY
+from psdi_data_conversion.database import get_converter_info, get_format_info
 from psdi_data_conversion.dist import LINUX_LABEL, get_dist
-from psdi_data_conversion.file_io import get_package_path, is_archive, split_archive_ext
+from psdi_data_conversion.file_io import is_archive, split_archive_ext
 from psdi_data_conversion.main import main as data_convert_main
-from psdi_data_conversion.testing.constants import (INPUT_TEST_DATA_LOC_IN_PROJECT, OUTPUT_TEST_DATA_LOC_IN_PROJECT,
-                                                    TEST_DATA_LOC_IN_PROJECT)
+from psdi_data_conversion.testing.constants import (FORMAT_PDB_0, INPUT_TEST_DATA_LOC_IN_PROJECT,
+                                                    OUTPUT_TEST_DATA_LOC_IN_PROJECT, TEST_DATA_LOC_IN_PROJECT)
+from psdi_data_conversion.utils import get_project_path
 
 
-@lru_cache(maxsize=1)
-def get_project_path() -> str:
-    """Gets the absolute path to where the project is on disk, using the package path to find it and checking that it
-    contains the expected files
-
-    Returns
-    -------
-    str
-    """
-
-    project_path = os.path.abspath(os.path.join(get_package_path(), ".."))
-
-    # Check that the project path contains the expected test_data folder
-    if not os.path.isdir(os.path.join(project_path, TEST_DATA_LOC_IN_PROJECT)):
-        raise FileNotFoundError(f"Project path was expected to be '{project_path}', but this does not contain the "
-                                f"expected directory '{TEST_DATA_LOC_IN_PROJECT}'")
-
-    return project_path
-
-
-def get_path_in_project(filename):
+def get_path_in_project(filename: str, test_path: Path | None = None):
     """Get the realpath to a file contained within the project, given its project-relative path"""
 
-    abs_path = os.path.abspath(os.path.join(get_project_path(), filename))
+    if test_path:
+        project_path: Path = test_path
+    else:
+        project_path = get_project_path()
+
+    abs_path = (project_path / filename).resolve()
 
     return abs_path
 
 
-def get_test_data_loc():
+def get_test_data_loc(test_path: Path | None = None):
     """Get the realpath of the base directory containing all data for tests"""
-    return get_path_in_project(TEST_DATA_LOC_IN_PROJECT)
+    return get_path_in_project(TEST_DATA_LOC_IN_PROJECT, test_path=test_path)
 
 
-def get_input_test_data_loc():
+def get_input_test_data_loc(test_path: Path | None = None):
     """Get the realpath of the base directory containing input data for tests"""
-    return get_path_in_project(INPUT_TEST_DATA_LOC_IN_PROJECT)
+    return get_path_in_project(INPUT_TEST_DATA_LOC_IN_PROJECT, test_path=test_path)
 
 
-def get_output_test_data_loc():
+def get_output_test_data_loc(test_path: Path | None = None):
     """Get the realpath of the base directory containing expected output data for tests"""
-    return get_path_in_project(OUTPUT_TEST_DATA_LOC_IN_PROJECT)
+    return get_path_in_project(OUTPUT_TEST_DATA_LOC_IN_PROJECT, test_path=test_path)
 
 
 @dataclass
@@ -79,7 +67,10 @@ class ConversionTestInfo:
     """Information about a tested conversion."""
 
     run_type: str
-    """One of "library", "cla", or "gui", describing which type of test run was performed"""
+    """One of "library", "cli", or "gui", describing which type of test run was performed"""
+
+    chain: bool
+    """Whether or not this test was run as a chain conversion"""
 
     test_spec: SingleConversionTestSpec
     """The specification of the test conversion which was run to produce this"""
@@ -102,22 +93,22 @@ class ConversionTestInfo:
     exc_info: pytest.ExceptionInfo | None = None
     """If the test conversion raised an exception, that exception's info, otherwise None"""
 
-    @property
+    @cached_property
     def qualified_in_filename(self):
         """Get the fully-qualified name of the input file"""
         return os.path.realpath(os.path.join(self.input_dir, self.test_spec.filename))
 
-    @property
+    @cached_property
     def qualified_out_filename(self):
         """Get the fully-qualified name of the output file"""
         return os.path.realpath(os.path.join(self.output_dir, self.test_spec.out_filename))
 
-    @property
+    @cached_property
     def qualified_log_filename(self):
         """Get the fully-qualified name of the log file"""
         return os.path.realpath(os.path.join(self.output_dir, self.test_spec.log_filename))
 
-    @property
+    @cached_property
     def qualified_global_log_filename(self):
         """Get the fully-qualified name of the log file"""
         return self.test_spec.global_log_filename
@@ -138,13 +129,16 @@ class ConversionTestSpec:
     filename: str | Iterable[str] = "nacl.cif"
     """The name of the input file, relative to the input test data location, or a list thereof"""
 
-    to_format: str | int | Iterable[str | int] = "pdb"
+    to_format: str | int | Iterable[str | int] = FORMAT_PDB_0
     """The format to test converting the input file to, or a list thereof"""
 
     from_format: str | int | Iterable[str | int] | None = None
     """The format of the input file, when it needs to be explicitly specified"""
 
-    converter_name: str | Iterable[str] = CONVERTER_DEFAULT
+    ex_out_filename: str | Iterable[str] | None = None
+    """The expected name of the output file, when it needs to be explicitly specified"""
+
+    converter_name: str | Iterable[str] = CONVERTER_OB
     """The name of the converter to be used for the test, or a list thereof"""
 
     conversion_kwargs: dict[str, Any] | Iterable[dict[str, Any]] = field(default_factory=dict)
@@ -168,11 +162,17 @@ class ConversionTestSpec:
     compatible_with_library: bool = True
     """Whether or not this test spec is compatible with being run through the Python library, default True"""
 
-    compatible_with_cla: bool = True
-    """Whether or not this test spec is compatible with being run through the command-line application, default True"""
+    compatible_with_cli: bool = True
+    """Whether or not this test spec is compatible with being run through the command-line interface, default True"""
 
     compatible_with_gui: bool = True
     """Whether or not this test spec is compatible with being run through the GUI, default True"""
+
+    compatible_with_single_step: bool = True
+    """Whether or not this test spec is compatible with single-step conversions, default True"""
+
+    compatible_with_chain: bool = True
+    """Whether or not this test spec is compatible with chain conversions, default False"""
 
     def __post_init__(self):
         """Regularize the lengths of all attribute lists, in case some were provided as single values and others as
@@ -255,7 +255,10 @@ class SingleConversionTestSpec:
     from_format: str | int | None = None
     """The format of the input file, when it needs to be explicitly specified"""
 
-    converter_name: str | Iterable[str] = CONVERTER_DEFAULT
+    ex_out_filename: str | None = None
+    """The expected name of the output file"""
+
+    converter_name: str | Iterable[str] = CONVERTER_OB
     """The name of the converter to be used for the test"""
 
     conversion_kwargs: dict[str, Any] = field(default_factory=dict)
@@ -273,17 +276,24 @@ class SingleConversionTestSpec:
     should take as its only argument a `ConversionTestInfo` and return a string. The string should be empty if the check
     is passed and should explain the failure otherwise."""
 
-    @property
+    @cached_property
     def out_filename(self) -> str:
         """The unqualified name of the output file which should have been created by the conversion."""
-        to_format_name = get_format_info(self.to_format, which=0).name
+        if self.ex_out_filename is not None:
+            return self.ex_out_filename
+
+        if self.to_format:
+            to_format_name = get_format_info(self.to_format, which=0).name
+        else:
+            to_format_name = self.conversion_kwargs["path"][-1][-1].name
+
         if not is_archive(self.filename):
             return f"{os.path.splitext(self.filename)[0]}.{to_format_name}"
         else:
             filename_base, ext = split_archive_ext(os.path.basename(self.filename))
             return f"{filename_base}-{to_format_name}{ext}"
 
-    @property
+    @cached_property
     def log_filename(self) -> str:
         """The unqualified name of the log file which should have been created by the conversion."""
         return f"{split_archive_ext(self.filename)[0]}{OUTPUT_LOG_EXT}"
@@ -293,33 +303,55 @@ class SingleConversionTestSpec:
         """The unqualified name of the global log file which stores info on all conversions."""
         return GLOBAL_LOG_FILENAME
 
+    def __str__(self):
+        """Simplified string representation"""
+        d_out = {key: val for key, val in self.__dict__.items() if not key.startswith("_")}
+        del d_out["skip"], d_out["callback"]
+        return "{" + ", ".join([f'{key}: {str(val)}' for key, val in d_out.items()]) + "}"
 
-def run_test_conversion_with_library(test_spec: ConversionTestSpec):
-    """Runs a test conversion or series thereof through a call to the python library's `run_converter` function.
+
+def run_test_conversion_with_library(test_spec: ConversionTestSpec,
+                                     subtests,
+                                     chain=False):
+    """Runs a test conversion or series thereof through a call to the python library's `run_converter` function
+    (if `chain` is False) or `run_converter_chain` function (if `chain` is True).
 
     Parameters
     ----------
     test_spec : ConversionTestSpec
         The specification for the test or series of tests to be run
+    subtests : pytest.Subtests
+        Pytest's subtests fixture, or else a compatible dummy replacement
+    chain : bool
+        Whether or not to run through the chain conversion function
     """
+
     # Make temporary directories for the input and output files to be stored in
     with TemporaryDirectory("_input") as input_dir, TemporaryDirectory("_output") as output_dir:
         # Iterate over the test spec to run each individual test it defines
-        for single_test_spec in test_spec:
+        for test_index, single_test_spec in enumerate(test_spec):
+            if test_index != 0:
+                print()
             if single_test_spec.skip:
-                print(f"Skipping single test spec {single_test_spec}")
+                print(f"Skipping single test spec {test_index}: {single_test_spec}")
                 continue
-            print(f"Running single test spec: {single_test_spec}")
+            print(f"Running single test spec {test_index}: {single_test_spec}")
             _run_single_test_conversion_with_library(test_spec=single_test_spec,
                                                      input_dir=input_dir,
-                                                     output_dir=output_dir)
-            print(f"Success for test spec: {single_test_spec}")
+                                                     output_dir=output_dir,
+                                                     chain=chain,
+                                                     subtests=subtests,
+                                                     test_index=test_index)
 
 
 def _run_single_test_conversion_with_library(test_spec: SingleConversionTestSpec,
                                              input_dir: str,
-                                             output_dir: str):
-    """Runs a single test conversion through a call to the python library's `run_converter` function.
+                                             output_dir: str,
+                                             chain: bool,
+                                             subtests,
+                                             test_index: int):
+    """Runs a single test conversion through a call to python library's `run_converter` function
+    (if `chain` is False) or `run_converter_chain` function (if `chain` is True).
 
     Parameters
     ----------
@@ -329,6 +361,12 @@ def _run_single_test_conversion_with_library(test_spec: SingleConversionTestSpec
         A directory which can be used to store input data
     output_dir : str
         A directory which can be used to create output data
+    chain : bool
+        Whether or not to run through the chain conversion function
+    subtests : pytest.Subtests
+        Pytest's subtests fixture, or else a compatible dummy replacement
+    test_index : int
+        The index of this in the overall test spec
     """
 
     # Symlink the input file to the input directory
@@ -339,39 +377,67 @@ def _run_single_test_conversion_with_library(test_spec: SingleConversionTestSpec
     except FileExistsError:
         pass
 
+    conversion_kwargs = {**test_spec.conversion_kwargs}
+    if chain:
+        run_func = run_converter_chain
+
+        # Modify arguments to be appropriate for a chain conversion
+
+        # Turn data into a list of data
+        if "data" in conversion_kwargs:
+            conversion_kwargs["l_data"] = [conversion_kwargs["data"]]
+            del conversion_kwargs["data"]
+
+        # If we're provided a target format and converter, turn this into a path
+        if ("path" not in conversion_kwargs and test_spec.to_format is not None and
+                test_spec.converter_name is not None and test_spec.converter_name != CONVERTER_AUTOCHAIN):
+            conversion_kwargs["path"] = [(get_converter_info(test_spec.converter_name),
+                                          get_format_info(test_spec.to_format))]
+        elif test_spec.to_format is not None:
+            conversion_kwargs["to_format"] = test_spec.to_format
+    else:
+        run_func = run_converter
+        conversion_kwargs["converter"] = test_spec.converter_name
+        conversion_kwargs["to_format"] = test_spec.to_format
+
     # Capture stdout and stderr while we run this test. We use a try block to stop capturing as soon as testing finishes
-    try:
-        stdouterr = py.io.StdCaptureFD(in_=False)
 
-        exc_info: pytest.ExceptionInfo | None = None
-        if test_spec.expect_success:
-            run_converter(filename=test_spec.filename,
-                          to_format=test_spec.to_format,
-                          from_format=test_spec.from_format,
-                          name=test_spec.converter_name,
-                          input_dir=input_dir,
-                          output_dir=output_dir,
-                          **test_spec.conversion_kwargs)
-            success = True
-        else:
+    exc_info: pytest.ExceptionInfo | None = None
+    success = False
+    if test_spec.expect_success:
+        with subtests.test("Run conversion through library expecting success", test_index=test_index):
+            try:
+                stdouterr = py.io.StdCaptureFD(in_=False)
+                run_func(filename=test_spec.filename,
+                         from_format=test_spec.from_format,
+                         input_dir=input_dir,
+                         output_dir=output_dir,
+                         **conversion_kwargs)
+                success = True
+            finally:
+                stdout, stderr = stdouterr.reset()   # Grab stdout and stderr
+                # Reset stdout and stderr capture
+                stdouterr.done()
+    else:
+        with subtests.test("Run conversion through library expecting failure", test_index=test_index):
             with pytest.raises(Exception) as exc_info:
-                run_converter(filename=qualified_in_filename,
-                              to_format=test_spec.to_format,
-                              from_format=test_spec.from_format,
-                              name=test_spec.converter_name,
-                              input_dir=input_dir,
-                              output_dir=output_dir,
-                              **test_spec.conversion_kwargs)
-            success = False
-
-    finally:
-        stdout, stderr = stdouterr.reset()   # Grab stdout and stderr
-        # Reset stdout and stderr capture
-        stdouterr.done()
+                try:
+                    stdouterr = py.io.StdCaptureFD(in_=False)
+                    run_func(filename=qualified_in_filename,
+                             from_format=test_spec.from_format,
+                             input_dir=input_dir,
+                             output_dir=output_dir,
+                             **conversion_kwargs)
+                finally:
+                    stdout, stderr = stdouterr.reset()   # Grab stdout and stderr
+                    # Reset stdout and stderr capture
+                    stdouterr.done()
+            success = True
 
     # Compile output info for the test and call the callback function if one is provided
-    if test_spec.callback:
+    if success and test_spec.callback:
         test_info = ConversionTestInfo(run_type="library",
+                                       chain=chain,
                                        test_spec=test_spec,
                                        input_dir=input_dir,
                                        output_dir=output_dir,
@@ -379,37 +445,45 @@ def _run_single_test_conversion_with_library(test_spec: SingleConversionTestSpec
                                        captured_stdout=stdout,
                                        captured_stderr=stderr,
                                        exc_info=exc_info)
-        callback_msg = test_spec.callback(test_info)
-        if callback_msg:
-            pytest.fail(callback_msg)
+        with subtests.test("Run callback", test_index=test_index):
+            callback_msg = test_spec.callback(test_info)
+            if callback_msg:
+                pytest.fail(callback_msg)
 
 
-def run_test_conversion_with_cla(test_spec: ConversionTestSpec):
-    """Runs a test conversion or series thereof through the command-line application.
+def run_test_conversion_with_cli(test_spec: ConversionTestSpec,
+                                 subtests):
+    """Runs a test conversion or series thereof through the command-line interface.
 
     Parameters
     ----------
     test_spec : ConversionTestSpec
         The specification for the test or series of tests to be run
     """
+
     # Make temporary directories for the input and output files to be stored in
     with TemporaryDirectory("_input") as input_dir, TemporaryDirectory("_output") as output_dir:
         # Iterate over the test spec to run each individual test it defines
-        for single_test_spec in test_spec:
+        for test_index, single_test_spec in enumerate(test_spec):
+            if test_index != 0:
+                print()
             if single_test_spec.skip:
-                print(f"Skipping single test spec {single_test_spec}")
+                print(f"Skipping single test spec {test_index}: {single_test_spec}")
                 continue
-            print(f"Running single test spec: {single_test_spec}")
-            _run_single_test_conversion_with_cla(test_spec=single_test_spec,
+            print(f"Running single test spec {test_index}: {single_test_spec}")
+            _run_single_test_conversion_with_cli(test_spec=single_test_spec,
                                                  input_dir=input_dir,
-                                                 output_dir=output_dir)
-            print(f"Success for test spec: {single_test_spec}")
+                                                 output_dir=output_dir,
+                                                 subtests=subtests,
+                                                 test_index=test_index)
 
 
-def _run_single_test_conversion_with_cla(test_spec: SingleConversionTestSpec,
+def _run_single_test_conversion_with_cli(test_spec: SingleConversionTestSpec,
                                          input_dir: str,
-                                         output_dir: str):
-    """Runs a single test conversion through the command-line application.
+                                         output_dir: str,
+                                         subtests,
+                                         test_index: int):
+    """Runs a single test conversion through the command-line interface.
 
     Parameters
     ----------
@@ -419,6 +493,10 @@ def _run_single_test_conversion_with_cla(test_spec: SingleConversionTestSpec,
         A directory which can be used to store input data
     output_dir : str
         A directory which can be used to create output data
+    subtests : pytest.Subtests
+        Pytest's subtests fixture, or else a compatible dummy replacement
+    test_index : int
+        The index of this in the overall test spec
     """
 
     # Symlink the input file to the input directory
@@ -430,22 +508,13 @@ def _run_single_test_conversion_with_cla(test_spec: SingleConversionTestSpec,
         pass
 
     # Capture stdout and stderr while we run this test. We use a try block to stop capturing as soon as testing finishes
-    try:
-        stdouterr = py.io.StdCaptureFD(in_=False)
 
-        if test_spec.expect_success:
-            run_converter_through_cla(filename=qualified_in_filename,
-                                      to_format=test_spec.to_format,
-                                      from_format=test_spec.from_format,
-                                      name=test_spec.converter_name,
-                                      input_dir=input_dir,
-                                      output_dir=output_dir,
-                                      log_file=os.path.join(output_dir, test_spec.log_filename),
-                                      **test_spec.conversion_kwargs)
-            success = True
-        else:
-            with pytest.raises(SystemExit) as exc_info:
-                run_converter_through_cla(filename=qualified_in_filename,
+    success = False
+    if test_spec.expect_success:
+        with subtests.test("Run conversion through CLI expecting success", test_index=test_index):
+            try:
+                stdouterr = py.io.StdCaptureFD(in_=False)
+                run_converter_through_cli(filename=qualified_in_filename,
                                           to_format=test_spec.to_format,
                                           from_format=test_spec.from_format,
                                           name=test_spec.converter_name,
@@ -453,41 +522,68 @@ def _run_single_test_conversion_with_cla(test_spec: SingleConversionTestSpec,
                                           output_dir=output_dir,
                                           log_file=os.path.join(output_dir, test_spec.log_filename),
                                           **test_spec.conversion_kwargs)
+                success = True
+            finally:
+                stdout, stderr = stdouterr.reset()   # Grab stdout and stderr
+                # Reset stdout and stderr capture
+                stdouterr.done()
+    else:
+        with subtests.test("Run conversion through CLI expecting failure", test_index=test_index):
+            with pytest.raises(SystemExit) as exc_info:
+                try:
+                    stdouterr = py.io.StdCaptureFD(in_=False)
+                    run_converter_through_cli(filename=qualified_in_filename,
+                                              to_format=test_spec.to_format,
+                                              from_format=test_spec.from_format,
+                                              name=test_spec.converter_name,
+                                              input_dir=input_dir,
+                                              output_dir=output_dir,
+                                              log_file=os.path.join(output_dir, test_spec.log_filename),
+                                              **test_spec.conversion_kwargs)
+                finally:
+                    stdout, stderr = stdouterr.reset()   # Grab stdout and stderr
+                    # Reset stdout and stderr capture
+                    stdouterr.done()
             # Get the success from whether or not the exit code is 0
             success = not exc_info.value.code
 
-        qualified_out_filename = os.path.realpath(os.path.join(output_dir, test_spec.out_filename))
+    qualified_out_filename = os.path.realpath(os.path.join(output_dir, test_spec.out_filename))
 
-        # Determine success based on whether or not the output file exists with non-zero size
-        if not os.path.isfile(qualified_out_filename) or os.path.getsize(qualified_out_filename) == 0:
-            success = False
+    # Determine success based on whether or not the output file exists with non-zero size
+    if not os.path.isfile(qualified_out_filename) or os.path.getsize(qualified_out_filename) == 0:
+        success = False
 
-    finally:
-        stdout, stderr = stdouterr.reset()   # Grab stdout and stderr
-        # Reset stdout and stderr capture
-        stdouterr.done()
+    # If failed, print any stdout and stderr
+    if not success:
+        if stdout:
+            print(stdout)
+        if stderr:
+            print(stderr, file=sys.stderr)
 
     # Compile output info for the test and call the callback function if one is provided
     if test_spec.callback:
-        test_info = ConversionTestInfo(run_type="cla",
+        test_info = ConversionTestInfo(run_type="cli",
+                                       chain=False,
                                        test_spec=test_spec,
                                        input_dir=input_dir,
                                        output_dir=output_dir,
                                        success=success,
                                        captured_stdout=stdout,
                                        captured_stderr=stderr)
-        callback_msg = test_spec.callback(test_info)
-        if callback_msg:
-            pytest.fail(callback_msg)
+        with subtests.test("Run callback", test_index=test_index):
+            callback_msg = test_spec.callback(test_info)
+            if callback_msg:
+                pytest.fail(callback_msg)
 
 
-def run_converter_through_cla(filename: str,
+def run_converter_through_cli(filename: str,
                               to_format: str,
                               name: str,
                               input_dir: str,
                               output_dir: str,
                               log_file: str,
                               from_format: str | None = None,
+                              subtests=None,
                               **conversion_kwargs):
     """Runs a test conversion through the command-line interface
 
@@ -515,7 +611,10 @@ def run_converter_through_cla(filename: str,
     """
 
     # Start the argument string with the arguments we will always include
-    arg_string = f"{filename} -i {input_dir} -t {to_format} -o {output_dir} -w {name} --log-file {log_file}"
+    arg_string = f"{filename} -i {input_dir} -o {output_dir} -w {name} --log-file {log_file}"
+
+    if to_format:
+        arg_string += f" -t {to_format}"
 
     # For from_format and each argument in the conversion kwargs, convert it to the appropriate argument to be provided
     # to the argument string
@@ -538,7 +637,7 @@ def run_converter_through_cla(filename: str,
         elif key == "max_file_size":
             if val != 0:
                 pytest.fail("Test specification imposes a maximum file size, which isn't compatible with the "
-                            "command-line application.")
+                            "command-line interface.")
         elif key == "data":
             for subkey, subval in val.items():
                 if subkey == "from_flags":
@@ -559,6 +658,15 @@ def run_converter_through_cla(filename: str,
                 else:
                     pytest.fail(f"The key 'data[\"{subkey}\"]' was passed to `conversion_kwargs` but could not be "
                                 "interpreted")
+        elif key == "path":
+            arg_string += " --path"
+            for step in val:
+                if len(step) == 2:
+                    converter_info, to_format_info = step
+                else:
+                    converter_info, _,  to_format_info = step
+                arg_string += f" {converter_info.id} {to_format_info.id}"
+
         else:
             pytest.fail(f"The key '{key}' was passed to `conversion_kwargs` but could not be interpreted")
 

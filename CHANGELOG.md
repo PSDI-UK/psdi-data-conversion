@@ -1,5 +1,94 @@
 # Changelog for PSDI Data Conversion
 
+## v0.4.0
+
+### **Breaking Changes**
+
+- The IDs of all formats, converters, and arguments have been changed from indices to UUIDs. This is necessary to allow new converter plugins to be added without fearing ID collisions. This has the following direct and indirect impacts which may require changes in code using the Python library or CLI:
+  - All IDs of formats, converts, and arguments have been changed. The `doc` folder contains three `.json` files which list what these changes were, providing dicts of the old IDs to the new IDs, so these can be referenced to convert any IDs used to the new UUIDs
+  - Some attributes of the `DataConversionDatabase` class returned by the method `psdi_data_conversion.database.get_database` have been deprecated, since the change from indices to UUIDs makes them non-functional or misleading. These are:
+    - `d_converter_info` -> Renamed to `d_converter_info_from_name` (since now there's also a dict from ID). Previous name is still functional for now, but will give a deprecation warning
+    - `l_converter_info` -> Fully deprecated. Functionality now replaced by `d_converter_info_from_id` (to look up by UUID) and `l_unsorted_converter_info` (to get an unsorted list, similar to using `list(self.d_converter_info_from_id.values())`)
+    - `d_format_info` -> Renamed to `d_format_info_from_name` (since now there's also a dict from ID). Previous name is still functional for now, but will give a deprecation warning
+    - `l_format_info` -> Fully deprecated. Functionality now replaced by `d_format_info_from_id` (to look up by UUID) and `l_unsorted_format_info` (to get an unsorted list, similar to using `list(self.d_format_info_from_id.values())`)
+  - Some attributes of the `ConverterInfo` class returned by various methods in `psdi_data_conversion.database` to get information on a converter have been deprecated, since the change from indices to UUIDs makes them non-functional. These are:
+    - `l_in_flag_info` -> Fully deprecated. Functionality now replaced by `d_in_flag_info` (to look up by UUID) and `l_unsorted_in_flag_info` (to get an unsorted list, similar to using `list(self.d_in_flag_info.values())`)
+    - `l_out_flag_info` -> Ditto, replaced by `d_out_flag_info` and `l_unsorted_out_flag_info`
+    - `l_in_option_info` -> Ditto, replaced by `d_in_option_info` and `l_unsorted_in_option_info`
+    - `l_out_option_info` -> Ditto, replaced by `d_out_option_info` and `l_unsorted_out_option_info`
+  - Since the graphs of the `ConversionsTable` class (`graph`, `supported_graph`, and `registered_graph`) don't support UUIDs as vertex IDs, they internally use indices for these vertices, which are generated at runtime. To support converting between UUIDs and vertex indices, the following dicts have been added to this class:
+    - `d_indices_from_uuids`
+    - `d_uuids_from_indices`
+- The converter plugin Python files have been moved from `psdi_data_conversion.converters.{name}` to `psdi_data_conversion.converters.{name}.converter`
+- The `ConversionQualityInfo` object returned by the method `psdi_data_conversion.database.get_conversion_quality` will now have attributes `in_format` and `out_format` always be `FormatInfo` objects, rather than the types of these matching the types of the formats input to this method
+- The internals of the `FileConverter` base class from `psdi_data_conversion.converters.base` have been reworked alongside database changes. This results in most data about an individual converter being stored within its `meta` attribute now, which is of the new `FileConverterMeta` class. The old attributes remain as properties which reference these to avoid breaking existing code as much as possible, but as it's to be deprecated for properties to also be class methods, these will not be accessible from the class itself, and instead must be accessed from the `meta` attribute. That is:
+  - `FileConverter.name` used to work, but now won't. Use `FileConverter.meta.name` instead (or equivalent with any subclass of `FileConverter`)
+  - `x = FileConverter(); x.name` still works. `x.meta.name` can be equivalently be used, but isn't needed
+- The `psdi_data_conversion.database` module has been refactored to provide a more consistent interface, which has resulted in some properties and kwargs changing name:
+  - The `ArgInfo`, `ConverterInfo`, and `FormatInfo` now all inherit from a common `DBInfo` class with shared properties `id`, `name`, `description`, `info` (extended description), and `parent`. Some previously-existing properties have been renamed to one of these for consistencies (with deprecated aliases left behind until they're removed in a future version):
+    - `ArgInfo.flag` is now `ArgInfo.name`
+    - `FormatInfo.note` is now `FormatInfo.description`
+  - Functions which accept a converter and/or file format(s) as arguments have been normalised to use the kwargs `converter`, `in_format`, `out_format`, and `file_format` (the latter for a format that could be either input or output) to refer to them, which will accept the converter/format specified by its name (if suitably unambiguous), ID/UUID, or `ConverterInfo`/`FormatInfo` object
+- Similarly, functions in the `psdi_data_conversion.converter` module which previously took a converter `name` as a kwarg now take `converter` (which still accepts a name, but also an ID or `ConverterInfo` object)
+- The default behaviour of the CLI when no converter is specified is now to use the 'auto' keyword to automatically determine a converter, rather than defaulting to 'Open Babel'. Since this functionality requires the input and output format to be uniquely specified (and can't rely on the converter requested to disambiguate them) some commands which previously worked under the assumption that Open Babel would be used for the conversion will no longer work, such as `psdi-data-convert file.mmcif -t pdb` - 'pdb' is ambiguous but Open Babel only supports one version of it, so when Open Babel was the default, this could be disambiguated. But with 'auto' as the default, it's necessary to know which variant is desired. Conversely, using 'auto' as the default allows conversions that Open Babel can't perform to now be run without specifying a converter.
+
+### New and Changed Functionality
+
+- The database structure has been reworked so that now converter plugins "own" all data specifically relevant to them, stored in the `data.json` file in their plugin folder. For the time being, the singular database file is still used on runtime, but rather than this file being maintained manually, it is now generated from the new script `psdi-data-convert-install-plugins`
+  - The one piece of database information which isn't "owned" by converter plugins is the list of formats, since multiple converters can handle the same format in many cases, and allowing converters to own this information could result in different converters using different UUIDs for the same format. This is now stored in the file `psdi_data_conversion/static/data/formats.json`
+    - For formats which the converter supports but which do not already exist in the database, these can be provided in the "extra_formats" entry in its `data.json` file. The installation script will check in case any of these share an extension with a format already in the database. If any are found, the script will abort with an alert to double-check that these formats are new, and confirm if so
+    - The `formats.json` database now has support for aliases - formats that represent the same file structure, but with a different expected extension. At present, aliases cannot be added through the "extra_formats" entry in a converter's `data.json` file, and must be added directly to the `formats.json` file
+- The convenience script `psdi-data-convert-create-plugin` has been added to create a stub for a new converter plugin
+- The database method `get_converter_info` can now be called without a `name` argument, and will return a list of info on all converters
+- The database method `get_conversion_pathway` now returns a `ConversionPath` object, which is a subclass of `list`, instead of a simple list. This class has some additional methods to get the total weight of the path, a string name for it, and a check that the path is valid (in case it's manually changed)
+- New database method: `get_possible_conversion_pathways`, which returns a list of `ConversionPath` pathways, filtered either to all which are equally-low-weight (default) or equally-short
+- The converter info provided by queries to the database methods now contains member variables `supported` and `registered` indicating the status of the converter:
+  - Both `False`: The converter is known to exist, but we currently provide no support for it
+  - `supported==True`, `registered==False`: This package has a plugin ready to support this converter, but it cannot currently be used due to e.g. a required binary being missing which must be provided by the user
+  - Both `True`: The converter is supported and ready to use
+- `ConverterInfo`, `FormatInfo`, `FlagInfo`, `OptionInfo`, and individual converter classes now have a `uuid` property which provides the ID converted to a UUID class
+- In order to help determine optimal conversion pathways when a direct conversion is not possible, conversions are now assigned weights in the database based on information loss and expected conversion time. These are now used in the shortest-path algorithm to determine indirect conversions
+- Added method `run_converter_chain` to `psdi_data_conversion.converter`, which can run a chained conversion, either with a provided path or by determining an optimal chain from the source to target format
+- The database used by the Python library now has support for format aliases - formats which represent the same file structure but with different extensions. This has the following practical changes for users:
+  - When extensions are being checked (as is the default when formats are requested from the GUI), formats with any of the extensions used by an alias will be accepted. E.g. since "ent" is an alias for the "pdb" format, a bulk conversion of "pdb" files can include some with the "ent" extension without issue
+  - When chained conversion pathways are requested, only the format arbirtarily labelled as "primary" will be used for intermediate formats (meaning that the user won't be offered multiple pathways which differ only by which extension the intermediate format uses)
+- The 'auto' keyword has been added as an option to the `-w/--with` option of the CLI to specify a converter. When this is used, a converter will be automatically determined which can perform the desired conversion, using the same heuristics as are used to determine the best chained conversion pathways, but limited to only single-step conversions. This has the following requirements:
+  - The output format must be unambiguously specified
+  - The input format must be unambiguous for all input files
+  - If input files of multiple formats are provided, the same converter must be able to handle a conversion of all of them to the output format
+- The 'autochain' keyword (aliases 'autoc' and 'auto-chain') has been added as an option to the `-w/--with` option of the CLI to specify a converter. This works like 'auto', but if a single converter cannot perform the requested conversion, a chain conversion will be automatically determined and run. This has the same restriction as 'auto' that the input and output formats must be unambiguously specified, but not the limitation that a single converter must be able to perform all conversions if a list of files is provided
+- Conversion chains may now be requested by providing the `--path` option to the CLI instead of `-w/--with`. This should be provided as an alternating series of converters and formats to specify the conversion pathway, e.g.: `-f <source_format> --path <converter 1> <intermediate format 1> [<converter 2> <intermediate format 2> ...] <converter N> -t <target_format>`. The source and target formats may alternatively be specified as the beginning and end of the `--path` rather than through `-f/--from` and `-t/--to`. Conversion chains run through the CLI are not yet compatible with converter-specific format arguments via `--to-flags`, `--to-options`, etc.
+- Information on possible conversion chains may now be requested from the CLI by providing the `--lp/--lpaths/--listpaths` option, followed by the desired input and output format (both of which might be uniquely specified) to `-f/--from` and `-t/--to` respectively. `--lp` has modes "one", "best", and "shortest", which determine how many possible paths to output - just one, all equally-low-weight, and all-equally-short, respectively, e.g. `psdi-data-convert --lp shortest -f inchi -t 72959745128074324821901268400337732406`
+
+### Bugfixes
+
+- Fixed a CLI bug where if the user requested info about a conversion where one of the formats is ambiguous, they would be shown a stack trace instead of a helpful message
+- Fixed a CLI bug where if requesting info on both a converter and format, the user would always be told that conversion to/from the format with this converter was not possible
+- Fixed a bug where script file converters would use input arguments as both input/output arguments (none were yet supported, but would have caused issues with future support if not fixed)
+
+### Stylistic and Inteface Changes
+
+- The output of the command-line interface and other scripts has been updated to use colors to highlight notable syntax (e.g. code snippets are shaded light yellow)
+- Various messages output by the CLI have been improved to provide more useful information to the user (e.g. the message if it's run without any arguments will now display some example commands)
+
+### Documentation Changes
+
+- Fixed incorrect output type in documentation for database methods `get_in_format_args` and `get_out_format_args`
+- Improved the error output for the database method `get_converter_info` if the converter name is not recognised, providing a list of known names
+
+### Testing Changes
+
+- Tests which reference specific formats have been changed to reference format IDs to avoid potentially breaking in the future if/when new formats are added with clashing names (with the exception of tests where the specific goal is to test using other methods of referencing formats)
+- Various unit tests have been split to better represent one test case per test
+- The subtests feature introduced in `pytest` 9.0 is now used in various tests, primarily to label different aspects of test cases and allow all these aspects to be tested even if one fails. Compatibility with earlier versions of `pytest` is maintained by implementing a fallback of using the `subtests` fixture as an empty context manager, which results in a failure of any subtest immediately failing the whole test if earlier versions of `pytest` are used
+  - As subtests are a new feature, they aren't yet well-supported by many tools which interface with `pytest`. Notably, VSCode's test runner will report a test as passed even if subtests are failed. We've implemented a workaround for this in `conftest.py`, though there are reports that this workaround breaks `junit` output of `pytest`. This isn't likely to be an issue for this project, but there may be other unreported side-effects of this workaround, so it can be reconsidered if other issues are found
+
+## v0.3.25
+
+### Miscellaneous Changes:
+
+- Removed outage banner
+
 ## v0.3.26
 
 ### Miscellaneous Changes:
@@ -126,7 +215,7 @@
 
 ### New and Changed Functionality
 
-- When listing formats supported by a given converter in the command-line application, the description of each format will also be shown in the table
+- When listing formats supported by a given converter in the command-line interface, the description of each format will also be shown in the table
 - A warning will now be printed to stderr and logged if an unrecognised format flag or option is provided for conversion with Open Babel
 
 ### Bugfixes

@@ -24,8 +24,9 @@ from selenium.webdriver.support.ui import WebDriverWait
 from psdi_data_conversion.constants import STATUS_CODE_GENERAL
 from psdi_data_conversion.converters.base import (FileConverterAbortException, FileConverterException,
                                                   FileConverterInputException)
-from psdi_data_conversion.converters.openbabel import (COORD_GEN_KEY, COORD_GEN_QUAL_KEY, DEFAULT_COORD_GEN_QUAL,
-                                                       L_ALLOWED_COORD_GEN_QUALS, L_ALLOWED_COORD_GENS)
+from psdi_data_conversion.converters.openbabel.converter import (COORD_GEN_KEY, COORD_GEN_QUAL_KEY,
+                                                                 DEFAULT_COORD_GEN_QUAL, L_ALLOWED_COORD_GEN_QUALS,
+                                                                 L_ALLOWED_COORD_GENS)
 from psdi_data_conversion.database import get_format_info
 from psdi_data_conversion.file_io import split_archive_ext
 from psdi_data_conversion.testing.constants import DEFAULT_ORIGIN
@@ -83,7 +84,7 @@ class GuiTestSpecRunner():
     origin: str = DEFAULT_ORIGIN
     """The address of the homepage of the testing server"""
 
-    def run(self, test_spec: ConversionTestSpec):
+    def run(self, test_spec: ConversionTestSpec, subtests):
         """Run the test conversions outlined in a test spec"""
 
         self._test_spec = test_spec
@@ -92,19 +93,18 @@ class GuiTestSpecRunner():
         with TemporaryDirectory("_input") as input_dir, TemporaryDirectory("_output") as output_dir:
 
             # Iterate over the test spec to run each individual test it defines
-            for single_test_spec in test_spec:
+            for test_index, single_test_spec in enumerate(test_spec):
                 if single_test_spec.skip:
-                    print(f"Skipping single test spec {single_test_spec}")
+                    print(f"Skipping single test spec {test_index}: {single_test_spec}")
                     continue
-
-                print(f"Running single test spec: {single_test_spec}")
+                print(f"Running single test spec {test_index}: {single_test_spec}")
 
                 GuiSingleTestSpecRunner(parent=self,
                                         input_dir=input_dir,
                                         output_dir=output_dir,
-                                        single_test_spec=single_test_spec).run()
-
-                print(f"Success for test spec: {single_test_spec}")
+                                        single_test_spec=single_test_spec,
+                                        subtests=subtests,
+                                        test_index=test_index).run()
 
 
 class GuiSingleTestSpecRunner:
@@ -115,7 +115,9 @@ class GuiSingleTestSpecRunner:
                  parent: GuiTestSpecRunner,
                  input_dir: str,
                  output_dir: str,
-                 single_test_spec: SingleConversionTestSpec):
+                 single_test_spec: SingleConversionTestSpec,
+                 subtests,
+                 test_index: int):
         """
 
         Parameters
@@ -128,11 +130,17 @@ class GuiSingleTestSpecRunner:
             The temporary directory to be used for output data
         single_test_spec : SingleConversionTestSpec
             The test spec that is currently being tested
+        subtests : pytest.Subtests
+            Pytest's subtests fixture, or else a compatible dummy replacement
+        test_index : int
+            The index of this in the overall test spec
         """
 
         self.input_dir: str = input_dir
         self.output_dir: str = output_dir
         self.single_test_spec: SingleConversionTestSpec = single_test_spec
+        self.subtests = subtests
+        self.test_index: int = test_index
 
         # Inherit data from the parent class
 
@@ -164,7 +172,27 @@ class GuiSingleTestSpecRunner:
 
         # Get the format info for each format, which we'll use to get the name and note of each
         self._from_format_info = get_format_info(from_format, which=0)
-        self._to_format_info = get_format_info(single_test_spec.to_format, which=0)
+        to_format = single_test_spec.to_format
+        self._to_format_info = get_format_info(to_format, which=0)
+
+        # Store the desired extension for each format
+        if isinstance(from_format, int):
+            self._from_format_ext = self._from_format_info.d_alias_exts[from_format]
+        elif isinstance(from_format, str) and len(from_format) < 32:
+            self._from_format_ext = from_format
+        else:
+            self._from_format_ext = self._from_format_info.name
+        if self._from_format_ext.startswith("."):
+            self._from_format_ext = self._from_format_ext[1:]
+
+        if isinstance(to_format, int):
+            self._to_format_ext = self._to_format_info.d_alias_exts[to_format]
+        elif isinstance(to_format, str) and len(to_format) < 32:
+            self._to_format_ext = to_format
+        else:
+            self._to_format_ext = self._to_format_info.name
+        if self._to_format_ext.startswith("."):
+            self._to_format_ext = self._to_format_ext[1:]
 
         # For each argument in the conversion kwargs, interpret it as the appropriate option for this conversion,
         # overriding defaults set above
@@ -206,29 +234,34 @@ class GuiSingleTestSpecRunner:
         """Run the conversion outlined in the test spec"""
 
         exc_info: pytest.ExceptionInfo | None = None
+        success = False
         if self.single_test_spec.expect_success:
-            try:
-                self._run_conversion()
-                success = False
-            except Exception:
-                print(f"Unexpected exception raised for single test spec {self.single_test_spec}")
-                raise
+            with self.subtests.test("Run conversion through GUI expecting success", test_index=self.test_index):
+                try:
+                    self._run_conversion()
+                    success = True
+                except Exception:
+                    print(f"Unexpected exception raised for single test spec {self.single_test_spec}")
+                    raise
         else:
-            with pytest.raises(FileConverterException) as exc_info:
-                self._run_conversion()
-            success = False
+            with self.subtests.test("Run conversion through GUI expecting failure", test_index=self.test_index):
+                with pytest.raises(FileConverterException) as exc_info:
+                    self._run_conversion()
+                success = True
 
         # Compile output info for the test and call the callback function if one is provided
-        if self.single_test_spec.callback:
+        if success and self.single_test_spec.callback:
             test_info = ConversionTestInfo(run_type="gui",
+                                           chain=False,
                                            test_spec=self.single_test_spec,
                                            input_dir=self.input_dir,
                                            output_dir=self.output_dir,
                                            success=success,
                                            exc_info=exc_info)
-            callback_msg = self.single_test_spec.callback(test_info)
-            if callback_msg:
-                pytest.fail(callback_msg)
+            with self.subtests.test("Run callback", test_index=self.test_index):
+                callback_msg = self.single_test_spec.callback(test_info)
+                if callback_msg:
+                    pytest.fail(callback_msg)
 
     def _run_conversion(self):
         """Run a conversion through the GUI
@@ -287,12 +320,12 @@ class GuiSingleTestSpecRunner:
         wait_for_element(self.driver, "//select[@id='fromList']/option")
 
         # Select from_format from the 'from' list.
-        full_from_format = f"{self._from_format_info.name}: {self._from_format_info.note}"
+        full_from_format = f"{self._from_format_ext}: {self._from_format_info.description}"
         self.driver.find_element(
             By.XPATH, f"//select[@id='fromList']/option[starts-with(.,'{full_from_format}')]").click()
 
         # Select to_format from the 'to' list.
-        full_to_format = f"{self._to_format_info.name}: {self._to_format_info.note}"
+        full_to_format = f"{self._to_format_ext}: {self._to_format_info.description}"
         self.driver.find_element(
             By.XPATH, f"//select[@id='toList']/option[starts-with(.,'{full_to_format}')]").click()
 
@@ -443,8 +476,10 @@ class GuiSingleTestSpecRunner:
         directory.
         """
         # Check for the presence of the output file
+        # TODO: Ensure output file is created with the properly-indicated extension
         if not os.path.isfile(self._output_file):
-            raise FileConverterAbortException("ERROR: No output file was produced. Log contents:\n" +
+            raise FileConverterAbortException("ERROR: No output file was produced at expected location "
+                                              f"{self._output_file}. Log contents:\n" +
                                               open(self._log_file, "r").read())
 
         # Move the output file and log file to the expected locations

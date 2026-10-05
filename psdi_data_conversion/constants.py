@@ -49,6 +49,13 @@ MAX_FILESIZE_EV = "MAX_FILESIZE"
 MAX_FILESIZE_OB_EV = "MAX_FILESIZE_OB"
 SERVICE_MODE_EV = "SERVICE_MODE"
 
+# Modes for listing paths in the CLI
+LP_MODE_ONE = "one"
+LP_MODE_BEST = "best"
+LP_MODE_SHORT = "short"
+LP_MODE_SHORTEST = "shortest"
+L_LP_MODES = [LP_MODE_ONE, LP_MODE_BEST, LP_MODE_SHORT, LP_MODE_SHORTEST]
+
 # Files and Folders
 # -----------------
 
@@ -60,8 +67,11 @@ DEFAULT_MAX_FILE_SIZE_LOGGED_IN = 50 * MEGABYTE
 DEFAULT_MAX_FILE_SIZE_LOGGED_OUT = 1 * MEGABYTE
 DEFAULT_MAX_FILE_SIZE_OB = 1 * MEGABYTE
 
+# Paths in the project
 DEFAULT_INPUT_DIR = './psdi_data_conversion/static/uploads'
 DEFAULT_OUTPUT_DIR = './psdi_data_conversion/static/downloads'
+BIN_PATH = "psdi_data_conversion/bin/"
+BIN_PATH_WITH_OS = f"{BIN_PATH}<os>/"
 
 # Filename of the database, relative to the base of the python package
 DATABASE_FILENAME = "static/data/data.json"
@@ -144,8 +154,19 @@ DEFAULT_LISTING_LOG_FILE = "data-convert-list" + LOG_EXT
 # Converter names are determined based on the modules present in the 'converters' package by the 'converter' module
 # This module contains constant dicts and lists of registered converters
 
-# Default converter - this must match the name of one of the registered converters
-CONVERTER_DEFAULT = 'Open Babel'
+# Keyword to automatically determine a converter
+CONVERTER_AUTO = "auto"
+
+# Keyword to automatically determine a conversion chain
+CONVERTER_AUTOCHAIN = "autochain"
+
+# And some variants of the above which are also accepted
+L_CONVERTER_AUTOCHAIN = [CONVERTER_AUTOCHAIN, "autoc", "auto-chain"]
+
+# Converter names
+CONVERTER_OB = 'Open Babel'
+CONVERTER_C2X = 'c2x'
+CONVERTER_ATO = 'Atomsk'
 
 # File format properties which are used to judge conversion quality - KEY is the key for it in the database, and LABEL
 # is how we want to print it out for the user
@@ -191,10 +212,13 @@ STATUS_CODE_GENERAL = 500
 
 # Error messages
 ERR_CONVERTER_NOT_RECOGNISED = "Converter {} not recognized. Allowed converters are: "
-ERR_WRONG_EXTENSIONS = "Input file '{file}' does not have expected extension '{ext}'"
+ERR_WRONG_EXTENSION = "Input file '{file}' does not have expected extension '{ext}'"
+ERR_WRONG_EXTENSION_MULT = "Input file '{file}' does not have one of the following expected extensions: "
 ERR_EMPTY_ARCHIVE = "No files to convert were contained in archive"
 ERR_CONVERSION_FAILED = ("File conversion failed for one or more files. Lines from the output log "
                          "{} which indicate possible sources of error: ")
+ERR_CHAIN_CONVERSION_FAILED = ("Chain file conversion failed. Lines from the output log "
+                               "{} which indicate possible sources of error: ")
 
 # Misc
 # ----

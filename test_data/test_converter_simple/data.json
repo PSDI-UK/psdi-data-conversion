@@ -1,0 +1,45 @@
+{
+    "converter": {
+        "id": null,
+        "name": "TestSimple",
+        "desc": "TestSimple desc",
+        "info": "TestSimple note",
+        "url": "https://github.com/PSDI-UK/psdi-data-conversion",
+        "supports_ambiguous_extensions": null,
+        "database_key_prefix": null
+    },
+    "extra_formats": [
+        {
+            "id": 0,
+            "extension": "ex",
+            "format": "ex0",
+            "note": "Example format 0",
+            "composition": true,
+            "connections": true,
+            "two_dim": true,
+            "three_dim": true
+        },
+        {
+            "id": 1,
+            "extension": "ex",
+            "format": "ex1",
+            "note": "Example format 1",
+            "composition": true,
+            "connections": true,
+            "two_dim": true,
+            "three_dim": true
+        }
+    ],
+    "supported_formats": [
+        0,
+        1
+    ],
+    "in_only_formats": [],
+    "out_only_formats": [],
+    "supported_conversions": [],
+    "unsupported_conversions": [],
+    "in_flags": [],
+    "out_flags": [],
+    "in_options": [],
+    "out_options": []
+}
