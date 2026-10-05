@@ -66,9 +66,10 @@
 - Fixed a CLI bug where if requesting info on both a converter and format, the user would always be told that conversion to/from the format with this converter was not possible
 - Fixed a bug where script file converters would use input arguments as both input/output arguments (none were yet supported, but would have caused issues with future support if not fixed)
 
-### Stylistic Changes
+### Stylistic and Inteface Changes
 
 - The output of the command-line interface and other scripts has been updated to use colors to highlight notable syntax (e.g. code snippets are shaded light yellow)
+- Various messages output by the CLI have been improved to provide more useful information to the user (e.g. the message if it's run without any arguments will now display some example commands)
 
 ### Documentation Changes
 
@@ -79,6 +80,8 @@
 
 - Tests which reference specific formats have been changed to reference format IDs to avoid potentially breaking in the future if/when new formats are added with clashing names (with the exception of tests where the specific goal is to test using other methods of referencing formats)
 - Various unit tests have been split to better represent one test case per test
+- The subtests feature introduced in `pytest` 9.0 is now used in various tests, primarily to label different aspects of test cases and allow all these aspects to be tested even if one fails. Compatibility with earlier versions of `pytest` is maintained by implementing a fallback of using the `subtests` fixture as an empty context manager, which results in a failure of any subtest immediately failing the whole test if earlier versions of `pytest` are used
+  - As subtests are a new feature, they aren't yet well-supported by many tools which interface with `pytest`. Notably, VSCode's test runner will report a test as passed even if subtests are failed. We've implemented a workaround for this in `conftest.py`, though there are reports that this workaround breaks `junit` output of `pytest`. This isn't likely to be an issue for this project, but there may be other unreported side-effects of this workaround, so it can be reconsidered if other issues are found
 
 ## v0.3.25
 
