@@ -73,7 +73,7 @@ def run_from_args(args):
 
     logger.debug("# Entering function `run_from_args`")
 
-    l_formats: list[dict] = json.load(open("psdi_data_conversion/static/data/formats.json"))['formats']
+    l_formats: list[dict] = json.load(open("psdi_data_conversion/converters/formats.json"))['formats']
     d_aliases = {x['id']: x['alias_of'] for x in l_formats if x.get('alias_of')}
 
     plugins_path = Path("psdi_data_conversion/converters").resolve()

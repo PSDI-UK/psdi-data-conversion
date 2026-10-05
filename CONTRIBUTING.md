@@ -171,7 +171,7 @@ A new converter can be integrated with the Python layer of the code through the 
 
 8. Next, edit the `data.json` file in the package to set information about the converter. Start by filling in the `converter.name`, `converter.desc`, `converter.info`, and `converter.url` entries. The `name` attribute of the class is the most important, as it will be what needs to be specified in the command-line to request this converter. `desc` is a brief description of the converter, `info` is more detailed information and usage notes, and `url` is an appropriate URL for it
 
-9. If this converter supports any formats which are not listed in the `psdi_data_conversion/static/data/formats.json` database file, add information on them here. Assign them IDs in the range 0-9999 and reference them using these IDs when filling out the rest of this file. The installation script will replace these with UUIDs when it's run.
+9. If this converter supports any formats which are not listed in the `psdi_data_conversion/converters/formats.json` database file, add information on them here. Assign them IDs in the range 0-9999 and reference them using these IDs when filling out the rest of this file. The installation script will replace these with UUIDs when it's run.
 
 10. Add lists of the IDs or UUIDs (in integer form) of the formats this converter fully supports (can be used as both input and output), supports as input only, and supports as output only to the `supported_formats`, `in_only_formats`, and `out_only_formats` entries respectively.
 

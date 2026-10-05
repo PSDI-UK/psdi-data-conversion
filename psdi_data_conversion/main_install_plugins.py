@@ -122,7 +122,8 @@ def sort_db(db_dir: Path, project_path: Path):
     db_path = db_dir / "data.json"
     db_out: JsonMainDict = json.load(open(db_path))
 
-    formats_path = db_dir / "formats.json"
+    conv_path = project_path / "psdi_data_conversion/converters"
+    formats_path = conv_path / "formats.json"
     d_formats_out: JsonMainDict = json.load(open(formats_path))
 
     db_out = get_sorted_dict(db_out)
@@ -142,7 +143,6 @@ def sort_db(db_dir: Path, project_path: Path):
         db_out[db.DB_CONVERTS_TO_KEY][i] = get_sorted_dict(d, L_CONVERTS_TO_SORT_ORDER)
 
     # Get the directory containing converter plugins
-    conv_path = project_path / "psdi_data_conversion/converters"
     for qual_dir in conv_path.iterdir():
         dir = qual_dir.parts[-1]
         if dir in ("example", "template", "script_template"):
