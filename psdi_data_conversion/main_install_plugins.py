@@ -208,12 +208,12 @@ def get_support_ambig_ext(db_conv: JsonMainDict, db_out: JsonMainDict):
     return False
 
 
-def load_expanded_formats_info(db_dir: Path):
+def load_expanded_formats_info(conv_dir: Path):
     """Load the formats database, expanding entries on all formats which are simply listed as an alias of another to
     contain their full info, and linking primary entries to all their aliases
     """
 
-    l_in_format_info: list[JsonDict] = json.load(open(db_dir / FORMATS_DATAFILE))[db.DB_FORMATS_KEY]
+    l_in_format_info: list[JsonDict] = json.load(open(conv_dir / FORMATS_DATAFILE))[db.DB_FORMATS_KEY]
     d_in_format_info = {x["id"]: x for x in l_in_format_info}
 
     # Start creating a dict of all format aliases
@@ -299,7 +299,7 @@ def run_from_args(args):
         d_conv_db[qual_conv_path] = json.load(open(qual_conv_path / PLUGIN_DATAFILE))
 
     # Load the formats data and check and process new formats
-    l_format_info, d_format_aliases = load_expanded_formats_info(db_dir)
+    l_format_info, d_format_aliases = load_expanded_formats_info(conv_parent_path)
     d_format_info_for_ext: dict[str, list[JsonDict]] = {}
     for format_info in l_format_info:
         ext = format_info[db.DB_FORMAT_EXT_KEY]
