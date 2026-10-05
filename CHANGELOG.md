@@ -89,6 +89,13 @@
 
 - Removed outage banner
 
+## v0.3.26
+
+### Miscellaneous Changes:
+
+- Updated TLS certificate
+- Fixed some syntax errors in GitHub workflows
+
 ## v0.3.23
 
 ### Bugfixes
