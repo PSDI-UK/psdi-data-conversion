@@ -149,19 +149,19 @@ def get_wrapped_str(s: str, color: str | None = None, **kwargs):
     return wraptext.fill(s_colored, width=TERM_WIDTH, **kwargs)
 
 
-CODE_RE = re.compile(f"({tc.CODE.replace('[', r'\[')}`.*`{tc.OFF.replace('[', r'\[')})")
-
-
 def print_wrap(s: str, newline=False, err=False, **kwargs):
     """Print a string wrapped to the terminal width
     """
+
+    code_re = re.compile(f"({tc.CODE.replace('[', r'\[')}`.*`{tc.OFF.replace('[', r'\[')})")
+
     if err:
         file = sys.stderr
     else:
         file = sys.stdout
     for line in s.split("\n"):
         # Check for any code segments in the line
-        l_segments = CODE_RE.split(line)
+        l_segments = code_re.split(line)
         for i, segment in enumerate(l_segments):
             if i % 2 == 0:
                 print(get_wrapped_str(segment, **kwargs), file=file, end=None)
