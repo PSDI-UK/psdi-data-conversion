@@ -180,9 +180,9 @@ class ConvertArgs:
                                               "not exist as a directory", help=True)
 
         if self.to_format is None and self.path is None:
-            msg = wraptext.fill(f"{tc.ERROR}ERROR:{tc.OFF} Output format must be provided, either through "
-                                f"{tc.CODE}`-t/--to`{tc.OFF} for a direct conversion or {tc.CODE}`--path`{tc.OFF} for "
-                                "a chained conversion. For information on supported formats and converters, call:\n")
+            msg = wraptext.fill(f"Output format must be provided, either through {tc.CODE}`-t/--to`{tc.OFF} for "
+                                f"a direct conversion or {tc.CODE}`--path`{tc.OFF} for a chained conversion. For "
+                                "information on supported formats and converters, call:\n")
             msg += f"{tc.CODE}{const.CL_SCRIPT_NAME} -l{tc.OFF}"
             raise FileConverterInputException(msg, msg_preformatted=True, help=True)
 
@@ -224,16 +224,15 @@ class ConvertArgs:
         self.d_converter_args = {}
         if not self.chain:
             if not converter_is_supported(self.converter):
-                msg = wraptext.fill(f"{tc.ERROR}ERROR:{tc.OFF} Converter {tc.MESSAGE}'{self.converter}'{tc.OFF} not "
-                                    "recognised", width=const.TERM_WIDTH)
+                msg = wraptext.fill(f"Converter {tc.MESSAGE}'{self.converter}'{tc.OFF} not recognised",
+                                    width=const.TERM_WIDTH)
                 msg += f"\n\n{get_supported_converters()}"
                 raise FileConverterInputException(msg, help=True, msg_preformatted=True)
             elif not converter_is_registered(self.converter):
                 raw_converter = get_supported_converter_class(self.converter).meta.name
-                msg = wraptext.fill(f"{tc.ERROR}ERROR:{tc.OFF} Converter {tc.MESSAGE}'{raw_converter}'{tc.OFF} "
-                                    "is not registered. It may be registrable by building it on your system and "
-                                    f"copying the binary to the {tc.PATH}'{const.BIN_PATH_WITH_OS}'{tc.OFF} directory:",
-                                    width=const.TERM_WIDTH)
+                msg = wraptext.fill(f"Converter {tc.MESSAGE}'{raw_converter}'{tc.OFF} is not registered. It may "
+                                    "be registrable by building it on your system and copying the binary to the "
+                                    f"{tc.PATH}'{const.BIN_PATH_WITH_OS}'{tc.OFF} directory:", width=const.TERM_WIDTH)
                 msg += f"\n\n{get_supported_converters()}"
                 raise FileConverterInputException(msg, help=True, msg_preformatted=True)
 
@@ -260,10 +259,10 @@ class ConvertArgs:
             for arg, val in l_converter_specific_items:
                 val = getattr(self, arg)
                 if val:
-                    l_err_strs.append(f"{tc.ERROR}ERROR:{tc.OFF} Argument {tc.MESSAGE}'{val}'{tc.OFF} was provided "
-                                      f"when using the {tc.MESSAGE}'{const.CONVERTER_AUTO}'{tc.OFF} or {tc.MESSAGE}'"
-                                      f"{const.CONVERTER_AUTOCHAIN}'{tc.OFF} keyword for {tc.CODE}`-w/--with`{tc.OFF}."
-                                      "Converter-specific arguments cannot be provided when the converter or chain is "
+                    l_err_strs.append(f"Argument {tc.MESSAGE}'{val}'{tc.OFF} was provided when using the {tc.MESSAGE}'"
+                                      f"{const.CONVERTER_AUTO}'{tc.OFF} or {tc.MESSAGE}'{const.CONVERTER_AUTOCHAIN}"
+                                      f"'{tc.OFF} keyword for {tc.CODE}`-w/--with`{tc.OFF}. Converter-specific "
+                                      "arguments cannot be provided when the converter or chain is "
                                       "automatically-determined.")
             if l_err_strs:
                 raise FileConverterInputException("\n".join(l_err_strs))
@@ -345,14 +344,13 @@ class ConvertArgs:
             if allow_not_found:
                 return None, ""
 
-            msg = (f"{tc.ERROR}ERROR:{tc.OFF} {tc.MESSAGE}'{file_format}'{tc.OFF} is not recognised as a valid "
-                   f"format in {tc.CODE}`--path`{tc.OFF}")
+            msg = (f"{tc.MESSAGE}'{file_format}'{tc.OFF} is not recognised as a valid format in {tc.CODE}`--path"
+                   f"`{tc.OFF}")
         elif len(l_format_info) > 1:
-            msg = (f"{tc.ERROR}ERROR:{tc.OFF} {tc.MESSAGE}'{file_format}'{tc.OFF} is ambiguous and can correspond "
-                   f"to multiple possible formats. When using the {tc.CODE}`--path`{tc.OFF} argument, all formats "
-                   "must be uniquely specified. Please use the disambiguated name or ID for the desired format from "
-                   "the following list:\n" +
-                   "\n".join([x.format_oneline() for x in l_format_info]))
+            msg = (f"{tc.MESSAGE}'{file_format}'{tc.OFF} is ambiguous and can correspond to multiple possible "
+                   f"formats. When using the {tc.CODE}`--path`{tc.OFF} argument, all formats must be uniquely "
+                   "specified. Please use the disambiguated name or ID for the desired format from the following "
+                   "list:\n" + "\n".join([x.format_oneline() for x in l_format_info]))
         else:
             format_info = l_format_info[0]
 
@@ -418,11 +416,11 @@ class ConvertArgs:
             if self.from_format:
                 from_format_info, _ = self._check_path_format_unambiguous(self.from_format, raise_immediately=True)
                 if first_path_format_info != from_format_info:
-                    msg = (f"{tc.ERROR}ERROR:{tc.OFF} The format {tc.MESSAGE}'{self.from_format}'{tc.OFF} "
-                           f"provided to {tc.CODE}`-f/--from`{tc.OFF} does not match {tc.MESSAGE}'{raw_path[0]}"
-                           f"'{tc.OFF}, the first format provided to {tc.CODE}`--path`{tc.OFF}. When using {tc.CODE}`"
-                           f"--path`{tc.OFF}, the input format should be provided either to {tc.CODE}`-f/--from"
-                           f"`{tc.OFF} or {tc.CODE}`--path`{tc.OFF}, or the two should match")
+                    msg = (f"The format {tc.MESSAGE}'{self.from_format}'{tc.OFF} provided to {tc.CODE}`-f/--from"
+                           f"`{tc.OFF} does not match {tc.MESSAGE}'{raw_path[0]}'{tc.OFF}, the first format provided "
+                           f"to {tc.CODE}`--path`{tc.OFF}. When using {tc.CODE}`--path`{tc.OFF}, the input format "
+                           f"should be provided either to {tc.CODE}`-f/--from`{tc.OFF} or {tc.CODE}`--path`{tc.OFF}, "
+                           "or the two should match")
                     raise FileConverterInputException(msg, help=True)
                 self.from_format = from_format_info
             else:
@@ -439,28 +437,28 @@ class ConvertArgs:
             if self.to_format:
                 from_format_info, _ = self._check_path_format_unambiguous(self.from_format, raise_immediately=True)
                 if last_path_format_info != from_format_info:
-                    msg = (f"{tc.ERROR}ERROR:{tc.OFF} The format {tc.MESSAGE}'{self.to_format}'{tc.OFF} "
-                           f"provided to {tc.CODE}`-t/--to`{tc.OFF} does not match {tc.MESSAGE}'{raw_path[-1]}"
-                           f"'{tc.OFF}, the last format provided to {tc.CODE}`--path`{tc.OFF}. When using {tc.CODE}`"
-                           f"--path`{tc.OFF}, the output format should be provided either to {tc.CODE}`-t/--to"
-                           f"`{tc.OFF} or {tc.CODE}`--path`{tc.OFF}, or the two should match")
+                    msg = (f"The format {tc.MESSAGE}'{self.to_format}'{tc.OFF} provided to {tc.CODE}`-t/--to"
+                           f"`{tc.OFF} does not match {tc.MESSAGE}'{raw_path[-1]}'{tc.OFF}, the last format provided "
+                           f"to {tc.CODE}`--path`{tc.OFF}. When using {tc.CODE}`--path`{tc.OFF}, the output format "
+                           f"should be provided either to {tc.CODE}`-t/--to`{tc.OFF} or {tc.CODE}`--path`{tc.OFF}, or "
+                           "the two should match")
                     raise FileConverterInputException(msg, help=True)
                 self.to_format = None
         elif self.to_format:
             working_path.append(self.to_format)
             self.to_format = None
         else:
-            msg = (f"{tc.ERROR}ERROR:{tc.OFF} No output format was provided. When using {tc.CODE}`"
-                   f"--path`{tc.OFF}, the output format should be provided either to {tc.CODE}`-t/--to"
-                   f"`{tc.OFF} or {tc.CODE}`--path`{tc.OFF}, or the two should match")
+            msg = (f"No output format was provided. When using {tc.CODE}`--path`{tc.OFF}, the output "
+                   f"format should be provided either to {tc.CODE}`-t/--to`{tc.OFF} or {tc.CODE}`--path`{tc.OFF}, or "
+                   "the two should match")
             raise FileConverterInputException(msg, help=True)
 
         # At this point, if the path was provided validly, it should be of even length
         if not len(working_path) % 2 == 0:
-            msg = (f"{tc.ERROR}ERROR:{tc.OFF} The provided {tc.CODE}`--path`{tc.OFF} is invalid due "
-                   "to an incorrect number of elements. Check that it alternates between converters and formats, and "
-                   f"that converter names do not include spaces (e.g. use {tc.MESSAGE}'OpenBabel'{tc.OFF} instead of "
-                   f"{tc.MESSAGE}'Open Babel'{tc.OFF})")
+            msg = (f"The provided {tc.CODE}`--path`{tc.OFF} is invalid due to an incorrect number of "
+                   "elements. Check that it alternates between converters and formats, and that converter names do "
+                   f"not include spaces (e.g. use {tc.MESSAGE}'OpenBabel'{tc.OFF} instead of {tc.MESSAGE}'"
+                   f"Open Babel'{tc.OFF})")
             raise FileConverterInputException(msg, help=True)
 
         # Now start constructing the path, checking converters and formats are valid as we go
