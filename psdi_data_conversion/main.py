@@ -587,7 +587,7 @@ class ConvertArgs:
                                                   "automatic conversion is not possible. Please try an automatic "
                                                   f"chained conversion with {tc.CODE}`-w autochain`{tc.OFF} or "
                                                   f"search for chained conversions with {tc.CODE}`--lp best -f "
-                                                  f"{self.from_format} -t {self.to_format}", help=True)
+                                                  f"{self.from_format} -t {self.to_format}`{tc.OFF}", help=True)
 
         return self._get_best_converter(s_converters, s_from_formats)
 
