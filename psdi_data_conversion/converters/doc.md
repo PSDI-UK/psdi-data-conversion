@@ -9,7 +9,7 @@ This folder contains the following files and directories:
 **Files:**
 
 - `__init__.py` (Standard Python package file)
-- `base.py` (Defines the base Python classes for converter plugins)
+- `base.py` (Defines the base Python class for converter plugins)
 - `doc.md` (This file)
 - `formats.json` (Source file for database information on file formats)
 
@@ -40,3 +40,35 @@ The `formats.json` file in this folder is the source file for information about 
   - **connections** - How atoms are connected to each other
 - **precision** (int or `null`) - How many base-10 digits of numerical information are stored for e.g. positional information (most formats are flexible in this and can support more digits. If in doubt, use the value output by "default", whatever feels best as the default for you)
 - **alias_of** - Used only for alternate extensions of formats, alongside only the **extension** and **id** keys, the former providing the alternate extension, **id** being a new ID for this, and **alias_of** providing the ID of the primary format object which stores the remaining information about this format
+
+## Plugin Folders
+
+Each plugin folder contains the following files:
+
+- `__init__.py` (Standard Python package file)
+- `converter.py` (Python code, specialising the base converter class for this plugin)
+- `data.json` (Source file for database information on this converter)
+
+In the case of converters which are not yet supported by this package, the folder may contain only the `data.json` file so that the package can describe the converter's capabilities.
+
+### `converter.py`
+
+This file provides the Python code to perform a conversion, either by performing it directly, calling library functions to perform it, or calling out to a Bash script or other executable to perform it. The structure of this file is best understood by example, so see the `example/converter.py` file for the basic structure of, as well as working examples in `openbabel/converter.py`, `c2x/converter.py`, and `atomsk/converter.py`. Some notes on each of these:
+
+Open Babel has a Python package `openbabel` which is used here to run the conversion. This package is listed in the "dependencies" section of this project's `pyproject.toml` file in the root directory. Similar will need to be done for any other plugins which rely on an external Python package available via `pip`, and then the project will need to be reinstalled to test it. The remainder of the code in `openbabel/converter.py` handles translating the input information into the format expected by Open Babel, creating appropriate logs, and translation the output information back into the expected format.
+
+The Atomsk and c2x plugins use prepackaged binaries to perform conversions, each wrapped by a Bash script. For this common use case, we provide a specialised version of the converter base class, `ScriptFileConverter`, which handles most of the work of forwarding the conversion to the script. This subclass requires the name of the script to be provided in the `script` class variable, and in the case where the script then calls a binary, for the binary name to be provided as `required_bin`. The script must exist in the folder `psdi_data_conversion/scripts/`, and binaries in `psdi_data_conversion/bin/<os>/` (where `<os>` is the operating system the binary is compiled for).
+
+The `ScriptFileConverter` class by default passes the following arguments to the called script, in order:
+
+- Name of output format
+- Input filename (fully-qualified)
+- Output filename (fully-qualified)
+- Input format flags (concatenated)
+- Output format flags (concatenated)
+- Input format options (space-separated)
+- Output format options (space-separated)
+
+It is likely that this will need to be customised for some converters, e.g. the lists of input and output format options each being space-separated can result in ambiguity if a format option can apply to both the input and output format. The method `_get_script_args` can be inherited/overridden to do this - see the example for c2x, where it's modified to specify the name of the output format in the way that c2x will recognise it, which differs in some cases from our format names.
+
+### `data.json`
