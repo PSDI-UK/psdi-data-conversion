@@ -172,7 +172,8 @@ def print_wrap(s: str, newline=False, err=False, **kwargs):
                     non_breaking_line += segment
                 else:
                     non_breaking_line += segment.replace(" ", "\u00a0").replace("-", "\u2011")
-            wrapped_line = get_wrapped_str(non_breaking_line, **kwargs).replace("\u00a0", " ").replace("\u2011", "-")
+            wrapped_line = get_wrapped_str(non_breaking_line, break_long_words=False,
+                                           **kwargs).replace("\u00a0", " ").replace("\u2011", "-")
             print(wrapped_line, file=file)
     if newline:
         print("")
