@@ -553,14 +553,14 @@ class ConvertArgs:
 
         l_from_formats: list[FormatInfo] = get_format_info(self.from_format, "all")
         if len(l_from_formats) != 1:
-            msg = (f"{tc.MESSAGE}'{self.to_format}'{tc.OFF} is ambiguous and can correspond "
+            msg = (f"{tc.MESSAGE}'{self.from_format}'{tc.OFF} is ambiguous and can correspond "
                    f"to multiple possible output formats. ")
             if listpaths_mode:
                 msg += (f"When using {tc.CODE}'--lp/--lpaths/--listpaths'{tc.OFF}, the input format specified with "
                         f"{tc.CODE}`-f/--from`{tc.OFF} ")
             else:
                 msg += (f"When using the {tc.MESSAGE}'{const.CONVERTER_AUTO}'{tc.OFF} or {tc.MESSAGE}'"
-                        f"{const.CONVERTER_AUTOCHAIN}'{tc.OFF} keyword for {tc.CODE}`-w/--with`{tc.OFF}, the input "
+                        f"{const.CONVERTER_AUTOCHAIN}'{tc.OFF} keyword for {tc.CODE}`-w/--with`{tc.OFF}, the output "
                         f"format determined from the extension of the input file or specified with {tc.CODE}`-f/--from"
                         f"`{tc.OFF} ")
             msg += ("must unambiguously identify a format. Please use the disambiguated name or ID for the desired "
