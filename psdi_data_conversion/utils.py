@@ -153,7 +153,7 @@ def print_wrap(s: str, newline=False, err=False, **kwargs):
     """Print a string wrapped to the terminal width
     """
 
-    code_re = re.compile(f"({tc.CODE.replace('[', r'\[')}`.*`{tc.OFF.replace('[', r'\[')})")
+    code_re = re.compile(f"({tc.CODE.replace('[', r'\[')}`.*?`{tc.OFF.replace('[', r'\[')})")
 
     if err:
         file = sys.stderr
@@ -162,12 +162,18 @@ def print_wrap(s: str, newline=False, err=False, **kwargs):
     for line in s.split("\n"):
         # Check for any code segments in the line
         l_segments = code_re.split(line)
-        for i, segment in enumerate(l_segments):
-            if i % 2 == 0:
-                print(get_wrapped_str(segment, **kwargs), file=file, end=None)
-            else:
-                print(segment, file=file, end=None)
-        print
+        if len(l_segments) == 1:
+            print(get_wrapped_str(line, **kwargs), file=file)
+        else:
+            # Make all code segments non-breaking while determining the wrap, then undo it when printing
+            non_breaking_line = ""
+            for i, segment in enumerate(l_segments):
+                if i % 2 == 0:
+                    non_breaking_line += segment
+                else:
+                    non_breaking_line += segment.replace(" ", "\u00a0").replace("-", "\u2011")
+            wrapped_line = get_wrapped_str(non_breaking_line, **kwargs).replace("\u00a0", " ").replace("\u2011", "-")
+            print(wrapped_line, file=file)
     if newline:
         print("")
 
