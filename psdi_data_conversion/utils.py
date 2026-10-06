@@ -153,7 +153,7 @@ def print_wrap(s: str, newline=False, err=False, **kwargs):
     """Print a string wrapped to the terminal width
     """
 
-    code_re = re.compile(f"({tc.CODE.replace('[', r'\[')}`.*?`{tc.OFF.replace('[', r'\[')})")
+    code_re = re.compile("(" + tc.CODE.replace('[', r'\[') + "`.*?`" + tc.OFF.replace('[', r'\[') + ")")
 
     if err:
         file = sys.stderr
