@@ -152,12 +152,29 @@ def get_wrapped_str(s: str, color: str | None = None, **kwargs):
 def print_wrap(s: str, newline=False, err=False, **kwargs):
     """Print a string wrapped to the terminal width
     """
+
+    code_re = re.compile("(" + tc.CODE.replace('[', r'\[') + "`.*?`" + tc.OFF.replace('[', r'\[') + ")")
+
     if err:
         file = sys.stderr
     else:
         file = sys.stdout
     for line in s.split("\n"):
-        print(get_wrapped_str(line, **kwargs), file=file)
+        # Check for any code segments in the line
+        l_segments = code_re.split(line)
+        if len(l_segments) == 1:
+            print(get_wrapped_str(line, **kwargs), file=file)
+        else:
+            # Make all code segments non-breaking while determining the wrap, then undo it when printing
+            non_breaking_line = ""
+            for i, segment in enumerate(l_segments):
+                if i % 2 == 0:
+                    non_breaking_line += segment
+                else:
+                    non_breaking_line += segment.replace(" ", "\u00a0").replace("-", "\u2011")
+            wrapped_line = get_wrapped_str(non_breaking_line, break_long_words=False,
+                                           **kwargs).replace("\u00a0", " ").replace("\u2011", "-")
+            print(wrapped_line, file=file)
     if newline:
         print("")
 
