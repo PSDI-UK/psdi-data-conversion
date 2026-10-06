@@ -560,7 +560,7 @@ class ConvertArgs:
                         f"{tc.CODE}`-f/--from`{tc.OFF} ")
             else:
                 msg += (f"When using the {tc.MESSAGE}'{const.CONVERTER_AUTO}'{tc.OFF} or {tc.MESSAGE}'"
-                        f"{const.CONVERTER_AUTOCHAIN}'{tc.OFF} keyword for {tc.CODE}`-w/--with`{tc.OFF}, the output "
+                        f"{const.CONVERTER_AUTOCHAIN}'{tc.OFF} keyword for {tc.CODE}`-w/--with`{tc.OFF}, the input "
                         f"format determined from the extension of the input file or specified with {tc.CODE}`-f/--from"
                         f"`{tc.OFF} ")
             msg += ("must unambiguously identify a format. Please use the disambiguated name or ID for the desired "
