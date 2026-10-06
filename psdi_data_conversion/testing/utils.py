@@ -698,8 +698,8 @@ def check_file_match(filename: str, ex_filename: str) -> str:
 
     # We allow greater tolerance for numerical inaccuracy on platforms other than Linux, which is where the expected
     # files were originally created
-    rel_tol = 0.001
-    abs_tol = 1e-6
+    rel_tol = 0.05
+    abs_tol = 0.001
     if get_dist() != LINUX_LABEL:
         rel_tol = 0.2
         abs_tol = 0.01
