@@ -576,10 +576,18 @@ class ConvertArgs:
         s_converters = reduce(lambda s1, s2: s1.intersection(s2), ls_converters)
 
         if len(s_converters) == 0:
-            raise FileConverterInputException("No converter is available which can perform a conversion of all "
-                                              f"input files to {tc.PATH}'{self.to_format}'{tc.OFF}. Please "
-                                              "try converting files in batches of one type at a time",
-                                              help=True)
+            if len(s_from_formats) > 1:
+                raise FileConverterInputException("No converter is available which can perform a conversion of all "
+                                                  f"input files to {tc.MESSAGE}'{self.to_format}'{tc.OFF}. Please "
+                                                  "try converting files in batches of one type at a time",
+                                                  help=True)
+            else:
+                raise FileConverterInputException("No converter is available which can perform a conversion of "
+                                                  f"{self.from_format} to {tc.MESSAGE}'{self.to_format}'{tc.OFF}, so "
+                                                  "automatic conversion is not possible. Please try an automatic "
+                                                  f"chained conversion with {tc.CODE}`-w autochain`{tc.OFF} or "
+                                                  f"search for chained conversions with {tc.CODE}`--lp best -f "
+                                                  f"{self.from_format} -t {self.to_format}", help=True)
 
         return self._get_best_converter(s_converters, s_from_formats)
 
