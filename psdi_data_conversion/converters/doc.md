@@ -2,6 +2,8 @@
 
 This folder contains code and information for converter plugins, to allow external converters to interface with this service. This file documents the structure, as well as documents the structure of the `.json` files used for the database, since that format doesn't allow comments.
 
+Further information on adding converter plugins can be found in the "Adding File Format Converters" section of `CONTRIBUTING.md` in the root of this project.
+
 ## Structure
 
 This folder contains the following files and directories:
