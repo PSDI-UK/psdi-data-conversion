@@ -108,6 +108,12 @@ class ConvertArgs:
         except ValueError:
             pass
 
+        # If formats include a leading full-stop, strip it now
+        if isinstance(self.from_format, str) and self.from_format.startswith("."):
+            self.from_format = self.from_format[1:]
+        if isinstance(self.to_format, str) and self.to_format.startswith("."):
+            self.to_format = self.to_format[1:]
+
         # Special handling for listing info
 
         # Get the converter name from the arguments if it wasn't provided by -w/--with
@@ -526,7 +532,7 @@ class ConvertArgs:
 
             s_input_exts = {os.path.splitext(x)[1] for x in self.l_args}
             if len(s_input_exts) == 1:
-                self.from_format = s_input_exts.pop()
+                self.from_format = s_input_exts.pop()[1:]
             else:
                 # Check if there's exactly one possible format for each extension
                 s_format_infos = set()
@@ -583,11 +589,12 @@ class ConvertArgs:
                                                   help=True)
             else:
                 raise FileConverterInputException("No converter is available which can perform a conversion of "
-                                                  f"{self.from_format} to {tc.MESSAGE}'{self.to_format}'{tc.OFF}, so "
-                                                  "automatic conversion is not possible. Please try an automatic "
-                                                  f"chained conversion with {tc.CODE}`-w autochain`{tc.OFF} or "
-                                                  f"search for chained conversions with {tc.CODE}`--lp best -f "
-                                                  f"{self.from_format} -t {self.to_format}`{tc.OFF}", help=True)
+                                                  f"{tc.MESSAGE}'{self.from_format}'{tc.OFF} to {tc.MESSAGE}'"
+                                                  f"{self.to_format}'{tc.OFF}, so automatic conversion is not "
+                                                  "possible. Please try an automatic chained conversion with "
+                                                  f"{tc.CODE}`-w autochain`{tc.OFF} or search for chained conversions "
+                                                  f"with {tc.CODE}`--lp best -f {self.from_format} -t {self.to_format}"
+                                                  f"`{tc.OFF}", help=True)
 
         return self._get_best_converter(s_converters, s_from_formats)
 
