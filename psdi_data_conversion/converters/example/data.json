@@ -129,8 +129,8 @@
         {
             "id": null,
             "option": "A",
-            "description": "Example option A",
-            "brief": "optionA",
+            "description": "Example option A, which takes an integer",
+            "brief": "int",
             "further_info": "N/A",
             "format_ids": [
                 1,
@@ -142,8 +142,8 @@
         {
             "id": null,
             "option": "B",
-            "description": "Example option B",
-            "brief": "optionB",
+            "description": "Example option B, which takes an element",
+            "brief": "element",
             "further_info": "N/A",
             "format_ids": [
                 0,
