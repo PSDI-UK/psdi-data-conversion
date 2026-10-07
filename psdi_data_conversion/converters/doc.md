@@ -72,3 +72,36 @@ The `ScriptFileConverter` class by default passes the following arguments to the
 It is likely that this will need to be customised for some converters, e.g. the lists of input and output format options each being space-separated can result in ambiguity if a format option can apply to both the input and output format. The method `_get_script_args` can be inherited/overridden to do this - see the example for c2x, where it's modified to specify the name of the output format in the way that c2x will recognise it, which differs in some cases from our format names.
 
 ### `data.json`
+
+The `data.json` file in each plugin folder stores the source database information about each converter. Before the plugin is installed, it may be left in a "pre-installed" state, where certain keys are left either entirely undefined or in a temporary state. The keys where this is possible are marked with a question-mark (?) in the list below, along with instructions on how to leave it .
+
+The structure of this file is best understood by looking at the example of it at `example/data.json`, along with the documentation below.
+
+#### "converter"
+
+The top-level "converter" key stores an object which contains the general metadata about the converter, with the following keys:
+
+- **id**? (int) - The UUID assigned to the converter
+
+* **name** (string) - The name of the converter (formatted as you wish it to be displayed to the user, e.g. "Open Babel")
+* **desc** (string) - A brief description of the converter, which can fit alongside its name and ID on a single line
+* **info** (string) - Further detailed information on the converter, however long it needs to be
+* **url** (string) - A URL associated with the converter
+* **supports_ambiguous_extensions**? (bool) - Used for internal optimisation to store if the converter supports any formats which share the same extension (liable to be removed in a future version as the improvement is marginal compared to the cost of keeping this)
+* **database_key_prefix** (string or `null`) - A short (two-character) prefix which will be used for keys in the compiled database which are associated with this converter. These keys are used to associate input/output format options with the converter. If none of these are available or supported yet, this key may be left as `null`
+
+#### "extra_formats"?
+
+The top-level "extra-formats" key is used entirely for pre-installation purposes. This provides a list of formats supported by this converter which have not yet been added to the `formats.json` file. The installation process will check through these formats and warn if any of them look like they might already be in the database. If any such cases are found, it will ask the user to either use the existing format definition or else label the new format explicitly as new by adding the item `"confirmed_new": true` to it.
+
+Aside from the potential "confirmed_new" key, the only difference in structure of the format objects here and those in the `formats.json` file is that here, the formats may be assigned temporary IDs in the range 0-9999 (for ease of use while manually building the file), which will be replaced with proper UUIDs when installed.
+
+### Conversion support
+
+The keys "supported_formats", "in_only_formats", "out_only_formats", "supported_conversions", and "unsupported_conversions" are used to specify which format conversions it supports. These keys are structured to minimise manual setup work under the assumption that as a defauly, converters will support a set of formats as input, an overlapping set of formats as output, and will allow conversion from any of the input formats to any of the output formats.
+
+The three keys "supported_formats", "in_only_formats", and "out_only_formats" are thus used to list the IDs of formats which are:
+
+- **supported_formats** - Supported as both input and output
+- **in_only_formats** - Supported as input only
+- **out_only_formats** - Supported as output only
