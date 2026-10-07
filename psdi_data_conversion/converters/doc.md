@@ -73,7 +73,7 @@ It is likely that this will need to be customised for some converters, e.g. the 
 
 ### `data.json`
 
-The `data.json` file in each plugin folder stores the source database information about each converter. Before the plugin is installed, it may be left in a "pre-installed" state, where certain keys are left either entirely undefined or in a temporary state. The keys where this is possible are marked with a question-mark (?) in the list below, along with instructions on how to leave it .
+The `data.json` file in each plugin folder stores the source database information about each converter. Before the plugin is installed, it may be left in a "pre-installed" state, where certain keys are left either entirely undefined or in a temporary state. The keys where this is possible are marked with a question-mark (?) in the list below, along with instructions on how it can be left before installation.
 
 The structure of this file is best understood by looking at the example of it at `example/data.json`, along with the documentation below.
 
@@ -81,7 +81,7 @@ The structure of this file is best understood by looking at the example of it at
 
 The top-level "converter" key stores an object which contains the general metadata about the converter, with the following keys:
 
-- **id**? (int) - The UUID assigned to the converter
+- **id**? (int) - The UUID assigned to the converter, expressed as an integer. Can be left as `null` pre-installation and one will be assigned to it
 
 * **name** (string) - The name of the converter (formatted as you wish it to be displayed to the user, e.g. "Open Babel")
 * **desc** (string) - A brief description of the converter, which can fit alongside its name and ID on a single line
@@ -105,3 +105,22 @@ The three keys "supported_formats", "in_only_formats", and "out_only_formats" ar
 - **supported_formats** - Supported as both input and output
 - **in_only_formats** - Supported as input only
 - **out_only_formats** - Supported as output only
+
+In the case that there are additional conversions that are possible but aren't represented by this, they can be listed individually with the "supported_conversions" key, providing the "in_id" and "out_id" for the IDs of the input and output formats respectively, and optionally a "degree_of_success" for comments on the quality of the conversion.
+
+It is similarly possible to exclude conversions which are represented by the above structure with the "unsupported_conversions" key, providing the "in_id" and "out_id" keys for the IDs of the input and output formats of the unsupported conversion.
+
+In all cases where IDs are referred to here, either permanent UUIDs of formats in the database or temporary IDs assigned to extra formats in this file may be used. In the latter case, they will be updated to permanent UUIDs when first installed and UUIDs are assigned to the new formats.
+
+### Format-specific arguments
+
+The keys "in_flags", "out_flags", "in_options", and "out_options" are used to list arguments the converter supports for how to read/process input files ("in_flags" and "in_options") or how to write output files ("out_flags" and "out_options"). Here, "flags" refers to arguments which don't take any value, while "options" take a value.
+
+Each of these keys provides a list of objects describing each argument, each with the following keys:
+
+- **id**? (int) - The UUID assigned to the argument, expressed as an integer. Can be left as `null` pre-installation and one will be assigned for it
+- **flag** or **option** (string) - The value which the user will input to invoke this flag or option
+- **description** (string) - A brief description of the argument, which can fit in a single line
+- **brief** (string) - Options only, a placeholder for the value to be provided to the option (e.g. "num", "element", "true/false", "etc.")
+- **further_info** (string) - An extended description of the argument, if necessary
+- **format_ids** (list of ints) - A list of the IDs of formats that this argument is applicable to
