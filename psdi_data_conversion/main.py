@@ -583,11 +583,12 @@ class ConvertArgs:
                                                   help=True)
             else:
                 raise FileConverterInputException("No converter is available which can perform a conversion of "
-                                                  f"{self.from_format} to {tc.MESSAGE}'{self.to_format}'{tc.OFF}, so "
-                                                  "automatic conversion is not possible. Please try an automatic "
-                                                  f"chained conversion with {tc.CODE}`-w autochain`{tc.OFF} or "
-                                                  f"search for chained conversions with {tc.CODE}`--lp best -f "
-                                                  f"{self.from_format} -t {self.to_format}`{tc.OFF}", help=True)
+                                                  f"{tc.MESSAGE}'{self.from_format}'{tc.OFF} to {tc.MESSAGE}'"
+                                                  f"{self.to_format}'{tc.OFF}, so automatic conversion is not "
+                                                  "possible. Please try an automatic chained conversion with "
+                                                  f"{tc.CODE}`-w autochain`{tc.OFF} or search for chained conversions "
+                                                  f"with {tc.CODE}`--lp best -f {self.from_format} -t {self.to_format}"
+                                                  f"`{tc.OFF}", help=True)
 
         return self._get_best_converter(s_converters, s_from_formats)
 
