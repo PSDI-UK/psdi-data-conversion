@@ -148,6 +148,13 @@ PREC_GAP_BITS = 2
 # 64-bit integer
 PREC_WEIGHT_BIT_OFFSET = 16
 
+# Format weights based on how reliable it is in conversions
+FORMAT_WEIGHT_UNKNOWN = 1 << 6
+FORMAT_WEIGHT_BAD = 1 << 6
+FORMAT_WEIGHT_OKAY = 1 << 4
+FORMAT_WEIGHT_GOOD = 1 << 2
+FORMAT_WEIGHT_GREAT = 1 << 0
+
 # Number of bits the format weight section is offset within the full weight when everything is combined into a single
 # 64-bit integer
 FORMAT_WEIGHT_BIT_OFFSET = 8
@@ -821,6 +828,9 @@ class FormatCommonInfo(DBInfo):
     precision: int | None = None
     """The precision of numeric information in the format, as the number of decimal places, or 0 if unknown"""
 
+    weight: int | None = None
+    """The weight of the format, based on experience of how reliable it is in conversions"""
+
     def __post_init__(self):
         """Finish initialising the object"""
 
@@ -872,7 +882,8 @@ class FormatCommonInfo(DBInfo):
                                               two_dim=d_single_format_info.get(DB_FORMAT_2D_KEY),
                                               three_dim=d_single_format_info.get(DB_FORMAT_3D_KEY),
                                               connections=d_single_format_info.get(DB_FORMAT_CONN_KEY),
-                                              precision=d_single_format_info.get(DB_FORMAT_PRECISION_KEY))
+                                              precision=d_single_format_info.get(DB_FORMAT_PRECISION_KEY),
+                                              weight=d_single_format_info.get(DB_WEIGHT_KEY))
         return format_common_info
 
     @cached_property
@@ -963,6 +974,11 @@ class FormatInfo(DBInfo):
     def precision(self):
         """The precision of numeric information in the format, as the number of decimal places, or 0 if unknown"""
         return self.format_common_info.precision
+
+    @property
+    def weight(self):
+        """The weight of the format, based on experience of how reliable it is in conversions"""
+        return self.format_common_info.weight
 
     @cached_property
     def disambiguated_name(self) -> str:
@@ -2895,7 +2911,10 @@ def calc_conversion_format_weight(converter: str | int | UUID | ConverterInfo,
     int
         64-bit bit weight, representing the weight based on how reliable the format is for conversions from experience
     """
-    return 0
+    out_weight = out_format.weight
+    if out_weight:
+        return out_weight
+    return FORMAT_WEIGHT_UNKNOWN
 
 
 def calc_conversion_conv_weight(converter: str | int | UUID | ConverterInfo,
