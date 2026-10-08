@@ -526,7 +526,8 @@
             "two_dim": true,
             "three_dim": true,
             "connections": false,
-            "precision": 5
+            "precision": 5,
+            "weight": 16
         },
         {
             "extension": "ck",
@@ -592,7 +593,8 @@
             "two_dim": true,
             "three_dim": true,
             "connections": false,
-            "precision": 17
+            "precision": 17,
+            "weight": 16
         },
         {
             "extension": "CONTCAR",
@@ -603,7 +605,8 @@
             "two_dim": true,
             "three_dim": true,
             "connections": false,
-            "precision": null
+            "precision": null,
+            "weight": 16
         },
         {
             "extension": "CONTFF",
@@ -718,7 +721,8 @@
             "two_dim": true,
             "three_dim": true,
             "connections": false,
-            "precision": 6
+            "precision": 6,
+            "weight": 16
         },
         {
             "extension": "cube",
@@ -964,7 +968,8 @@
             "two_dim": true,
             "three_dim": true,
             "connections": false,
-            "precision": 10
+            "precision": 10,
+            "weight": 16
         },
         {
             "extension": "fa",
@@ -1563,7 +1568,8 @@
             "two_dim": null,
             "three_dim": null,
             "connections": null,
-            "precision": null
+            "precision": null,
+            "weight": 64
         },
         {
             "extension": "lmpdat",
@@ -1661,7 +1667,8 @@
             "two_dim": true,
             "three_dim": true,
             "connections": true,
-            "precision": 8
+            "precision": 8,
+            "weight": 4
         },
         {
             "extension": "mgf",
@@ -1694,7 +1701,8 @@
             "two_dim": true,
             "three_dim": true,
             "connections": false,
-            "precision": 5
+            "precision": 5,
+            "weight": 16
         },
         {
             "extension": "mmd",
@@ -2163,7 +2171,8 @@
             "two_dim": true,
             "three_dim": true,
             "connections": false,
-            "precision": 21
+            "precision": 21,
+            "weight": 4
         },
         {
             "extension": "POSFF",
@@ -2833,7 +2842,8 @@
             "two_dim": true,
             "three_dim": true,
             "connections": false,
-            "precision": 10
+            "precision": 10,
+            "weight": 16
         },
         {
             "extension": "xyz",
@@ -2844,7 +2854,8 @@
             "two_dim": true,
             "three_dim": true,
             "connections": false,
-            "precision": 10
+            "precision": 10,
+            "weight": 16
         },
         {
             "extension": "yob",
