@@ -148,9 +148,9 @@ PREC_GAP_BITS = 2
 # 64-bit integer
 PREC_WEIGHT_BIT_OFFSET = 16
 
-# Number of bits the time weight section is offset within the full weight when everything is combined into a single
+# Number of bits the format weight section is offset within the full weight when everything is combined into a single
 # 64-bit integer
-TIME_WEIGHT_BIT_OFFSET = 8
+FORMAT_WEIGHT_BIT_OFFSET = 8
 
 # Number of bits the converter weight section is offset within the full weight when everything is combined into a single
 # 64-bit integer
@@ -158,10 +158,10 @@ CONV_WEIGHT_BIT_OFFSET = 0
 
 # A list of where bit sections of the total weight begin (not inclusive) and end (inclusive)
 L_WEIGHT_BIT_BORDERS = [CONV_WEIGHT_BIT_CEILING, PROP_WEIGHT_BIT_OFFSET, PREC_WEIGHT_BIT_OFFSET,
-                        TIME_WEIGHT_BIT_OFFSET, CONV_WEIGHT_BIT_OFFSET]
+                        FORMAT_WEIGHT_BIT_OFFSET, CONV_WEIGHT_BIT_OFFSET]
 
 # Default converter weight, which is used if no explicit weight is set
-CONV_WEIGHT_DEFAULT = 1 << (TIME_WEIGHT_BIT_OFFSET - CONV_WEIGHT_BIT_OFFSET - 2)
+CONV_WEIGHT_DEFAULT = 1 << (FORMAT_WEIGHT_BIT_OFFSET - CONV_WEIGHT_BIT_OFFSET - 2)
 
 # Bit splitting the top and lower halves of the conversion weight
 CONV_WEIGHT_SPLIT_BIT = 32
@@ -1095,15 +1095,15 @@ class ConversionQualityInfo:
     prec_weight: int | None = field(init=False, repr=False, default=None)
     """The precision weight for the conversion, based on how much precision is/might be lost"""
 
-    time_weight: int | None = field(init=False, repr=False, default=None)
-    """The time weight for the conversion, based on the estimated time to perform it"""
+    format_weight: int | None = field(init=False, repr=False, default=None)
+    """The format weight for the conversion, based on how reliable formats are in conversions from experience"""
 
     conv_weight: int | None = field(init=False, repr=False, default=None)
     """The converter for the conversion, based on how well-supported the converter is (roughly)"""
 
     def __post_init__(self):
         """Finalise setting up the class"""
-        self.prop_weight, self.prec_weight, self.time_weight, self.conv_weight = split_conversion_weight(self.weight)
+        self.prop_weight, self.prec_weight, self.format_weight, self.conv_weight = split_conversion_weight(self.weight)
 
     @property
     def converter(self):
@@ -1307,30 +1307,7 @@ class ConversionPath(list[Conversion]):
 
 
 class ConversionsTable:
-    """Class providing information on available file format conversions.
-
-    Information on internal data handling of this class:
-
-    The idea here is that we need to be able to get information on whether a converter can handle a conversion from one
-    file format to another. This results in 3D data storage, with dimensions: Converter, Input Format, Output Format.
-    The most important operations are (in roughly descending order of importance):
-
-    - For a given Converter, Input Format, and Output Format, get whether or not the conversion is possible, and the
-    degree of success if it is possible.
-    - For a given Input Format and Output Format, list available Converters and their degrees of success
-    - For a given Converter, list available Input Formats and Output Formats
-    - For a given Input Format, list available Output Formats and Converters, and the degree of success of each
-
-    At date of implementation, the data comprises 9 Converters and 280 Input/Output Formats, for 705,600 possibilities,
-    increasing linearly with the number of converters and quadratically with the number of formats. (Self-to-self format
-    conversions don't need to be stored, but this may not be a useful optimisation.)
-
-    Conversion data is available for 23,013 Converter, Input, Output values, or ~3% of the total possible conversions.
-    While this could currently work as a sparse array, it will likely be filled to become denser over time, so a dense
-    representation makes the most sense.
-
-    The present implementation uses a list-of-lists-of-lists approach, to avoid adding NumPy as a dependency
-    until/unless efficiency concerns motivate it in the future.
+    """Class providing information on available file format conversions
     """
 
     def __init__(self,
@@ -2896,10 +2873,10 @@ def calc_conversion_prec_weight(converter: str | int | UUID | ConverterInfo,
     return 1 << PREC_GAP_BITS*prec_loss
 
 
-def calc_conversion_time_weight(converter: str | int | UUID | ConverterInfo,
-                                in_format: str | int | UUID | FormatInfo,
-                                out_format: str | int | UUID | FormatInfo) -> int:
-    """Get the time weight for a conversion from `in_format_info` to `out_format_info` (not including the offset
+def calc_conversion_format_weight(converter: str | int | UUID | ConverterInfo,
+                                  in_format: str | int | UUID | FormatInfo,
+                                  out_format: str | int | UUID | FormatInfo) -> int:
+    """Get the format weight for a conversion from `in_format_info` to `out_format_info` (not including the offset
     applied to it when stored in the total weight)
 
     TODO: Implement properly
@@ -2916,7 +2893,7 @@ def calc_conversion_time_weight(converter: str | int | UUID | ConverterInfo,
     Returns
     -------
     int
-        64-bit bit weight, representing the weight based on the conversion time (implementation TBD)
+        64-bit bit weight, representing the weight based on how reliable the format is for conversions from experience
     """
     return 0
 
@@ -2939,7 +2916,7 @@ def calc_conversion_conv_weight(converter: str | int | UUID | ConverterInfo,
     Returns
     -------
     int
-        64-bit bit weight, representing the weight based on the conversion time (implementation TBD)
+        64-bit bit weight, representing the weight based on the converter
     """
     # Get the info for all input
     converter_info = get_converter_info(converter)
@@ -2971,11 +2948,11 @@ def calc_conversion_weight(converter: str | int | UUID | ConverterInfo,
 
     return combine_conversion_weight(calc_conversion_prop_weight(converter_info, in_format_info, out_format_info),
                                      calc_conversion_prec_weight(converter_info, in_format_info, out_format_info),
-                                     calc_conversion_time_weight(converter_info, in_format_info, out_format_info),
+                                     calc_conversion_format_weight(converter_info, in_format_info, out_format_info),
                                      calc_conversion_conv_weight(converter_info, in_format_info, out_format_info))
 
 
-def combine_conversion_weight(prop_weight: int, prec_weight: int, time_weight: int, conv_weight: int):
+def combine_conversion_weight(prop_weight: int, prec_weight: int, format_weight: int, conv_weight: int):
     """Calculate the combined weight for a conversion from its component weights. The weights must be in the provided
     range, or else the output will have undefined behaviour
 
@@ -2985,10 +2962,10 @@ def combine_conversion_weight(prop_weight: int, prec_weight: int, time_weight: i
         The conversion property weight, in the range 0 <= prop_weight < 2**16
     prec_weight : int
         The conversion precision weight, in the range 0 <= prec_weight < 2**32
-    time_weight : int
-        The conversion time weight, in the range 0 <= time_weight < 2**8
+    format_weight : int
+        The conversion format weight, in the range 0 <= format_weight < 2**8
     conv_weight : int
-        The converter weight, in the range 0 <= time_weight < 2**8
+        The converter weight, in the range 0 <= conv_weight < 2**8
 
     Returns
     -------
@@ -2997,14 +2974,14 @@ def combine_conversion_weight(prop_weight: int, prec_weight: int, time_weight: i
     """
     return ((prop_weight << PROP_WEIGHT_BIT_OFFSET) +
             (prec_weight << PREC_WEIGHT_BIT_OFFSET) +
-            (time_weight << TIME_WEIGHT_BIT_OFFSET) +
+            (format_weight << FORMAT_WEIGHT_BIT_OFFSET) +
             (conv_weight << CONV_WEIGHT_BIT_OFFSET))
 
 
 class ConversionWeightParts(NamedTuple):
     prop_weight: int
     prec_weight: int
-    time_weight: int
+    format_weight: int
     conv_weight: int
 
 
@@ -3019,7 +2996,7 @@ def split_conversion_weight(conversion_weight: int):
     Returns
     -------
     ConversionWeightParts
-        NamedTuple of prop_weight, prec_weight, and time_weight
+        NamedTuple of prop_weight, prec_weight, format_weight, and conv_weight
     """
 
     prop_weight = conversion_weight >> PROP_WEIGHT_BIT_OFFSET
@@ -3028,12 +3005,12 @@ def split_conversion_weight(conversion_weight: int):
     prec_weight = conversion_weight >> PREC_WEIGHT_BIT_OFFSET
     conversion_weight -= prec_weight << PREC_WEIGHT_BIT_OFFSET
 
-    time_weight = conversion_weight >> TIME_WEIGHT_BIT_OFFSET
-    conversion_weight -= time_weight << TIME_WEIGHT_BIT_OFFSET
+    format_weight = conversion_weight >> FORMAT_WEIGHT_BIT_OFFSET
+    conversion_weight -= format_weight << FORMAT_WEIGHT_BIT_OFFSET
 
     conv_weight = conversion_weight >> CONV_WEIGHT_BIT_OFFSET
 
-    return ConversionWeightParts(prop_weight, prec_weight, time_weight, conv_weight)
+    return ConversionWeightParts(prop_weight, prec_weight, format_weight, conv_weight)
 
 
 def _simple_hex(x: int):

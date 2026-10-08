@@ -608,18 +608,18 @@ def test_calc_conversion_weight(format_all, format_none, max_prop_weight, conver
                                                       (converter_ob.weight << db.CONV_WEIGHT_BIT_OFFSET))
 
 
-@pytest.mark.parametrize("prop_weight, prec_weight, time_weight, conv_weight", [(0, 0, 0, 0),
-                                                                                (65535, 65535, 255, 255),
-                                                                                (2788794, 1254542, 122, 234)])
-def test_split_conversion_weight(prop_weight, prec_weight, time_weight, conv_weight, subtests):
+@pytest.mark.parametrize("prop_weight, prec_weight, format_weight, conv_weight", [(0, 0, 0, 0),
+                                                                                  (65535, 65535, 255, 255),
+                                                                                  (2788794, 1254542, 122, 234)])
+def test_split_conversion_weight(prop_weight, prec_weight, format_weight, conv_weight, subtests):
     """Test that the function to split the conversion weight works as expected"""
     split_weight = db.split_conversion_weight(db.combine_conversion_weight(
-        prop_weight, prec_weight, time_weight, conv_weight))
+        prop_weight, prec_weight, format_weight, conv_weight))
     with subtests.test("Property weight is correctly split out from full weight"):
         assert split_weight.prop_weight == prop_weight
     with subtests.test("Precision weight is correctly split out from full weight"):
         assert split_weight.prec_weight == prec_weight
-    with subtests.test("Time weight is correctly split out from full weight"):
-        assert split_weight.time_weight == time_weight
+    with subtests.test("Format weight is correctly split out from full weight"):
+        assert split_weight.format_weight == format_weight
     with subtests.test("Converter weight is correctly split out from full weight"):
         assert split_weight.conv_weight == conv_weight
