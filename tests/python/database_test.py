@@ -184,6 +184,14 @@ def test_format_info(name, id, database, subtests):
             assert not format_info.two_dim, name
             assert not format_info.three_dim, name
 
+    with subtests.test("format weight is correct"):
+        if name == "pdb":
+            assert format_info.weight == db.FORMAT_WEIGHT_GREAT
+        elif name == "mmcif":
+            assert format_info.weight == db.FORMAT_WEIGHT_OKAY
+        else:
+            assert format_info.weight is None
+
 # "ent" is an alias of the PDB format info. Check various aspects of each to ensure they work correctly
 
 
@@ -595,31 +603,49 @@ def test_calc_conversion_precision_weight(database, in_prec, out_prec, ex_weight
     assert db.calc_conversion_prec_weight(converter_ob, in_format, out_format) == ex_weight
 
 
+def test_calc_conversion_format_weight(format_all, format_none, converter_ob):
+    """Test that getting the full conversion weight is calculated as expected"""
+
+    # Input format weight should be irrelevant
+    in_format: db.FormatInfo = deepcopy(format_all)
+    in_format.format_common_info.weight = 15
+
+    # Output format weight is what matters
+    out_format: db.FormatInfo = deepcopy(format_none)
+    out_format.format_common_info.weight = 3
+
+    assert db.calc_conversion_format_weight(converter_ob, in_format,
+                                            out_format) == out_format.format_common_info.weight
+
+
 def test_calc_conversion_weight(format_all, format_none, max_prop_weight, converter_ob):
     """Test that getting the full conversion weight is calculated as expected"""
     in_format: db.FormatInfo = deepcopy(format_all)
     in_format.format_common_info.precision = 24
     out_format: db.FormatInfo = deepcopy(format_none)
     out_format.format_common_info.precision = 18
+    out_format.format_common_info.weight = 3
 
     assert db.calc_conversion_weight(converter_ob, in_format,
                                      out_format,) == ((max_prop_weight << db.PROP_WEIGHT_BIT_OFFSET) +
                                                       (1 << 6*db.PREC_GAP_BITS << db.PREC_WEIGHT_BIT_OFFSET) +
+                                                      (out_format.format_common_info.weight <<
+                                                       db.FORMAT_WEIGHT_BIT_OFFSET) +
                                                       (converter_ob.weight << db.CONV_WEIGHT_BIT_OFFSET))
 
 
-@pytest.mark.parametrize("prop_weight, prec_weight, time_weight, conv_weight", [(0, 0, 0, 0),
-                                                                                (65535, 65535, 255, 255),
-                                                                                (2788794, 1254542, 122, 234)])
-def test_split_conversion_weight(prop_weight, prec_weight, time_weight, conv_weight, subtests):
+@pytest.mark.parametrize("prop_weight, prec_weight, format_weight, conv_weight", [(0, 0, 0, 0),
+                                                                                  (65535, 65535, 255, 255),
+                                                                                  (2788794, 1254542, 122, 234)])
+def test_split_conversion_weight(prop_weight, prec_weight, format_weight, conv_weight, subtests):
     """Test that the function to split the conversion weight works as expected"""
     split_weight = db.split_conversion_weight(db.combine_conversion_weight(
-        prop_weight, prec_weight, time_weight, conv_weight))
+        prop_weight, prec_weight, format_weight, conv_weight))
     with subtests.test("Property weight is correctly split out from full weight"):
         assert split_weight.prop_weight == prop_weight
     with subtests.test("Precision weight is correctly split out from full weight"):
         assert split_weight.prec_weight == prec_weight
-    with subtests.test("Time weight is correctly split out from full weight"):
-        assert split_weight.time_weight == time_weight
+    with subtests.test("Format weight is correctly split out from full weight"):
+        assert split_weight.format_weight == format_weight
     with subtests.test("Converter weight is correctly split out from full weight"):
         assert split_weight.conv_weight == conv_weight
