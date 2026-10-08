@@ -73,7 +73,7 @@ DB_URL_KEY = "url"
 # Keys for format general info in the database - some are duplicated here so they're also stored in the same format as
 # other keys here
 DB_FORMAT_EXT_KEY = "extension"
-DB_FORMAT_C2X_KEY = "format"
+DB_FORMAT_C2X_KEY = "c2x_format"
 DB_FORMAT_NOTE_KEY = "note"
 DB_FORMAT_ALIASES_KEY = "aliases"
 DB_FORMAT_ALIAS_OF_KEY = "alias_of"

@@ -185,7 +185,12 @@ def test_format_info(name, id, database, subtests):
             assert not format_info.three_dim, name
 
     with subtests.test("format weight is correct"):
-        assert format_info.weight is None
+        if name == "pdb":
+            assert format_info.weight == db.FORMAT_WEIGHT_GREAT
+        elif name == "mmcif":
+            assert format_info.weight == db.FORMAT_WEIGHT_OKAY
+        else:
+            assert format_info.weight is None
 
 # "ent" is an alias of the PDB format info. Check various aspects of each to ensure they work correctly
 
