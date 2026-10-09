@@ -73,7 +73,7 @@
 
 ### Formatting and Refactoring Changes
 
-- Renamed the "format" key in database files "c2x_format" for clarity
+- Renamed the "format" key in database files "cx_format" for clarity
 
 ### Documentation Changes
 

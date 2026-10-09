@@ -6,13 +6,12 @@
         "info": "Further, even more detailed information on this example converter plugin, such as specific usage instructions",
         "url": "https://www.example.com",
         "supports_ambiguous_extensions": null,
-        "database_key_prefix": null
+        "database_key_prefix": "ex"
     },
     "extra_formats": [
         {
             "id": 0,
             "extension": "ex",
-            "c2x_format": "ex0",
             "note": "Example format 0",
             "composition": true,
             "connections": true,
@@ -22,7 +21,7 @@
         {
             "id": 1,
             "extension": "ex",
-            "c2x_format": "ex1",
+            "ex_format": "ex1",
             "note": "Example format 1",
             "composition": true,
             "connections": true,
@@ -32,7 +31,7 @@
         {
             "id": 2,
             "extension": "ex",
-            "c2x_format": "ex2",
+            "ex_format": "ex2",
             "note": "Example format 2",
             "composition": true,
             "connections": true,
@@ -42,7 +41,7 @@
         {
             "id": 3,
             "extension": "ex",
-            "c2x_format": "ex3",
+            "ex_format": "ex3",
             "note": "Example format 3",
             "composition": true,
             "connections": true,
@@ -51,8 +50,7 @@
         },
         {
             "id": 4,
-            "extension": "ex",
-            "c2x_format": "ex4",
+            "extension": "ex4",
             "note": "Example format 4 - This one is marked as 'confirmed_new', which indicates that the existing formats in the database have been checked and this isn't already there.",
             "composition": true,
             "connections": true,

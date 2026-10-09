@@ -10,6 +10,7 @@ Entry-point file for the script to install converter plugins.
 
 import json
 import os
+import re
 import textwrap
 from argparse import ArgumentParser
 from collections import OrderedDict
@@ -43,8 +44,8 @@ THRESHOLD_FORMAT_ID = 9999
 L_CONVERTER_SORT_ORDER = [db.DB_NAME_KEY, db.DB_DESCRIPTION_KEY, db.DB_FURTHER_INFO_KEY, db.DB_ID_KEY,
                           db.DB_URL_KEY, db.DB_KEY_PREFIX_KEY, db.DB_WEIGHT_KEY, db.DB_SUPPORT_AMBIG_EXT_KEY]
 L_CONVERTS_TO_SORT_ORDER = [db.DB_CONV_ID_KEY, db.DB_IN_ID_KEY, db.DB_OUT_ID_KEY, db.DB_SUCCESS_KEY, db.DB_WEIGHT_KEY]
-L_FORMATS_SORT_ORDER = [db.DB_FORMAT_EXT_KEY, db.DB_FORMAT_NOTE_KEY, db.DB_ID_KEY, db.DB_FORMAT_C2X_KEY,
-                        db.DB_FORMAT_ALIASES_KEY, db.DB_FORMAT_ALIAS_OF_KEY,
+L_FORMATS_SORT_ORDER = [db.DB_FORMAT_EXT_KEY, db.DB_FORMAT_NOTE_KEY, db.DB_ID_KEY,
+                        f"(.*){db.DB_FORMAT_CONV_NAME_KEY_TAIL}", db.DB_FORMAT_ALIASES_KEY, db.DB_FORMAT_ALIAS_OF_KEY,
                         db.DB_FORMAT_COMP_KEY, db.DB_FORMAT_2D_KEY, db.DB_FORMAT_3D_KEY, db.DB_FORMAT_CONN_KEY,
                         db.DB_FORMAT_PRECISION_KEY, db.DB_WEIGHT_KEY, db.DB_FORMAT_CONFIRMED_NEW_KEY]
 L_ARG_INFO_ORDER = [db.DB_FLAG_KEY, db.DB_BRIEF_KEY, db.DB_DESCRIPTION_KEY, db.DB_FURTHER_INFO_KEY, db.DB_ID_KEY]
@@ -96,19 +97,38 @@ def get_format_info_str(format_info: JsonDict):
             f"{format_info[db.DB_FORMAT_NOTE_KEY]}")
 
 
-def get_sorted_dict(d: dict, l_order: list | None = None):
+def _get_item_sorting_key(key, l_order: list[str] | None):
+    if not l_order:
+        return key
+    if key in l_order:
+        return (l_order.index(key), "")
+    for i, order_re in enumerate(l_order):
+        if ".*" not in order_re:
+            continue
+        match = re.match(order_re, key)
+        if match:
+            return (i, match.group(0))
+    return key
+
+
+def get_sorted_dict(d: dict, l_order: list[str] | None = None):
     """Returns an ordered dict with a provided sorting order"""
     if l_order is None:
         return OrderedDict(sorted(d.items(), key=lambda item: item[0]))
-    return OrderedDict(sorted(d.items(), key=lambda item: l_order.index(item[0])))
+    return OrderedDict(sorted(d.items(), key=lambda item: _get_item_sorting_key(item[0], l_order)))
 
 
-def sort_json_list(l_d: list[JsonDict], l_order: list | None = None):
+def sort_json_list(l_d: list[JsonDict], l_order: list[str] | None = None):
     """Sorts a list of JSON dicts based on values of keys, using the provided list of descending-order importance of
     keys in sorting
     """
+    s_all_keys: set[str] = set()
+    [s_all_keys := s_all_keys.union({x for x in d.keys()}) for d in l_d]
+    l_all_keys = list(s_all_keys)
+    l_all_keys.sort(key=lambda key: _get_item_sorting_key(key, l_order))
+
     def get_key(d: JsonDict):
-        l_key = [d.get(x, "") for x in l_order]
+        l_key = [d.get(x, "") for x in l_all_keys]
         for i, key in enumerate(l_key):
             if isinstance(key, str):
                 l_key[i] = (key.lower(), key)
@@ -590,14 +610,18 @@ def run_from_args(args):
                                   for x in l_arg_format_order]
 
             for d_in_arg_info in db_conv[in_key]:
-                d_out_arg_info: JsonDict = {
-                    db.DB_DESCRIPTION_KEY: d_in_arg_info[db.DB_DESCRIPTION_KEY],
-                    db.DB_FLAG_KEY: d_in_arg_info[db.DB_FLAG_KEY],
-                    db.DB_FURTHER_INFO_KEY: d_in_arg_info[db.DB_FURTHER_INFO_KEY],
-                    db.DB_ID_KEY: d_in_arg_info[db.DB_ID_KEY],
-                }
+                d_out_arg_info: JsonDict = {db.DB_DESCRIPTION_KEY: d_in_arg_info[db.DB_DESCRIPTION_KEY]}
+
+                if db.DB_FLAG_KEY in d_in_arg_info:
+                    d_out_arg_info[db.DB_FLAG_KEY] = d_in_arg_info[db.DB_FLAG_KEY]
+                else:
+                    d_out_arg_info[db.DB_FLAG_KEY] = d_in_arg_info[db.DB_OPTION_KEY]
+                d_out_arg_info[db.DB_FURTHER_INFO_KEY] = d_in_arg_info[db.DB_FURTHER_INFO_KEY]
+                d_out_arg_info[db.DB_ID_KEY] = d_in_arg_info[db.DB_ID_KEY]
+
                 if db.DB_BRIEF_KEY in d_in_arg_info:
                     d_out_arg_info[db.DB_BRIEF_KEY] = d_in_arg_info[db.DB_BRIEF_KEY]
+
                 d_out_arg_info = get_sorted_dict(d_out_arg_info, L_ARG_INFO_ORDER)
                 l_arg_info.append(d_out_arg_info)
 

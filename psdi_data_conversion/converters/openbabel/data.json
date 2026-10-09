@@ -2430,7 +2430,7 @@
         },
         {
             "id": 292949778859097492488249851740597693496,
-            "flag": "h",
+            "option": "h",
             "description": "Output explicit hydrogens as such.",
             "further_info": "N/A",
             "format_ids": [
@@ -2442,7 +2442,7 @@
     "out_options": [
         {
             "id": 105184455730336140044842445001895339047,
-            "flag": "f",
+            "option": "f",
             "brief": "atomno",
             "description": "Specify the first atom.",
             "further_info": "This atom will be used to begin the SMILES string.",
@@ -2452,7 +2452,7 @@
         },
         {
             "id": 250227397955262514763751103269649255166,
-            "flag": "l",
+            "option": "l",
             "brief": "atomno",
             "description": "Specify the last atom.",
             "further_info": "The output will be rearranged so that any additional SMILES added to the end will be attached to this atom.",
@@ -2462,7 +2462,7 @@
         },
         {
             "id": 40139984520616070383782793672838718932,
-            "flag": "F",
+            "option": "F",
             "brief": "atom numbers",
             "description": "Generate SMILES for a fragment.",
             "further_info": "The atom numbers should be specified like 1 2 4 7.",
@@ -2472,7 +2472,7 @@
         },
         {
             "id": 93181372742419186168469107127813195629,
-            "flag": "b",
+            "option": "b",
             "brief": "colour",
             "description": "Background colour (default is white).",
             "further_info": "For example, 'yellow' or '#88ff00' ('none' is transparent and leaving blank is black with white bonds). The atom symbol colours work with black and white backgrounds, but may not with other colours.",
@@ -2483,7 +2483,7 @@
         },
         {
             "id": 97084403334073705414476187091722909316,
-            "flag": "B",
+            "option": "B",
             "brief": "colour",
             "description": "Bond colour (default is black).",
             "further_info": "For example, 'yellow' or '#88ff00.'",
@@ -2494,7 +2494,7 @@
         },
         {
             "id": 323599753065386983926207489964392974822,
-            "flag": "c",
+            "option": "c",
             "brief": "num",
             "description": "Number of columns in table.",
             "further_info": "N/A",
@@ -2505,7 +2505,7 @@
         },
         {
             "id": 162285304569404001719475102706361935181,
-            "flag": "c",
+            "option": "c",
             "brief": "num",
             "description": "Coordinate multiplier (default is 20).",
             "further_info": "N/A",
@@ -2515,7 +2515,7 @@
         },
         {
             "id": 138747749753282344854037471677246972969,
-            "flag": "c",
+            "option": "c",
             "brief": "vectorcells",
             "description": "Set the cell vectors if not present.",
             "further_info": "For example, 10.0,0.0,0.0,10.0,0.0,0.0,0.0,20.0",
@@ -2525,7 +2525,7 @@
         },
         {
             "id": 336516441309818026539881668400659335986,
-            "flag": "d",
+            "option": "d",
             "brief": "length",
             "description": "Set the length of the boundary box around the molecule.",
             "further_info": "The default is to make a cube around the molecule, adding 50% to the most positive and negative cartesian coordinate.",
@@ -2535,7 +2535,7 @@
         },
         {
             "id": 225235816327043734615447715076841125296,
-            "flag": "d",
+            "option": "d",
             "brief": "densities",
             "description": "For each surface, specify the point density (default is 1.0 angstrom^2).",
             "further_info": "A comma-separated list of densities.",
@@ -2545,7 +2545,7 @@
         },
         {
             "id": 10609525677933720530598472175259051076,
-            "flag": "f",
+            "option": "f",
             "brief": "id",
             "description": "Fingerprint type.",
             "further_info": "N/A",
@@ -2555,7 +2555,7 @@
         },
         {
             "id": 232276570872254564769599161092120188157,
-            "flag": "f",
+            "option": "f",
             "brief": "num",
             "description": "Fingerprint type.",
             "further_info": "If not specified, the default fingerprint (currently FP2) is used.",
@@ -2565,7 +2565,7 @@
         },
         {
             "id": 40402304534510400591402387827996970048,
-            "flag": "f",
+            "option": "f",
             "brief": "num",
             "description": "Indicate the level of the output file: 0 (default), 1 or 2.",
             "further_info": "N/A",
@@ -2575,7 +2575,7 @@
         },
         {
             "id": 325330637633227574923724053679373055916,
-            "flag": "F",
+            "option": "F",
             "brief": "atom numbers",
             "description": "Generate Canonical SMILES for a fragment.",
             "further_info": "The atom numbers should be specified like 1 2 4 7.",
@@ -2585,7 +2585,7 @@
         },
         {
             "id": 244915029481966975939602977628138769471,
-            "flag": "h",
+            "option": "h",
             "brief": "characters",
             "description": "Image height in characters (default is width/aspect).",
             "further_info": "N/A",
@@ -2595,7 +2595,7 @@
         },
         {
             "id": 301970072866725320100402691631052307210,
-            "flag": "h",
+            "option": "h",
             "brief": "pixels",
             "description": "Image height (or from image size).",
             "further_info": "N/A",
@@ -2605,7 +2605,7 @@
         },
         {
             "id": 8762485185995092936479413497870376998,
-            "flag": "h",
+            "option": "h",
             "brief": "condition",
             "description": "Highlight mol if condition is met.",
             "further_info": "The condition can use descriptors and properties. See documentation on --filter option for details. To highlight in a particular colour, follow the condition by a colour.",
@@ -2615,7 +2615,7 @@
         },
         {
             "id": 17234240716048427625873321154642898811,
-            "flag": "k",
+            "option": "k",
             "brief": "basis",
             "description": "Specify basis set to use.",
             "further_info": "For example, ST0-3G.",
@@ -2625,7 +2625,7 @@
         },
         {
             "id": 196374543695238003712344328419864749021,
-            "flag": "k",
+            "option": "k",
             "brief": "keywords",
             "description": "Use the specified keywords for input.",
             "further_info": "N/A",
@@ -2641,7 +2641,7 @@
         },
         {
             "id": 23708333195782037081070065942223277719,
-            "flag": "L",
+            "option": "L",
             "brief": "num",
             "description": "Levels (default is 2).",
             "further_info": "N/A",
@@ -2651,7 +2651,7 @@
         },
         {
             "id": 156032533081064231066416777159027677258,
-            "flag": "m",
+            "option": "m",
             "brief": "model-type",
             "description": "BAS (ball-and-stick), SPF (space-fill) or CST (capped sticks).",
             "further_info": "The default option is ball-and-stick.",
@@ -2661,7 +2661,7 @@
         },
         {
             "id": 31073431934879301448296753862169903674,
-            "flag": "m",
+            "option": "m",
             "brief": "num",
             "description": "Indicate the mode for level 2 output files.",
             "further_info": "0 (default) is for acceleration and 1 for forces.",
@@ -2671,7 +2671,7 @@
         },
         {
             "id": 232830303725816416830160369534645374651,
-            "flag": "N",
+            "option": "N",
             "brief": "prefix",
             "description": "Add namespace prefix to elements.",
             "further_info": "N/A",
@@ -2682,7 +2682,7 @@
         },
         {
             "id": 258971809916342333902809833091148443613,
-            "flag": "N",
+            "option": "N",
             "brief": "num",
             "description": "Fold to specified number of bits, 32, 64, 128, etc.",
             "further_info": "N/A",
@@ -2694,7 +2694,7 @@
         },
         {
             "id": 282607743693161351483751880808396394123,
-            "flag": "N",
+            "option": "N",
             "brief": "num",
             "description": "Maximum number of objects to be output.",
             "further_info": "N/A",
@@ -2705,7 +2705,7 @@
         },
         {
             "id": 332842487290809689527585333154553577312,
-            "flag": "o",
+            "option": "o",
             "brief": "ordering",
             "description": "Output in user-specified order.",
             "further_info": "Ordering should be specified like 4-2-1-3 for a 4-atom molecule. This gives canonical labels 1,2,3,4 to atoms 4,2,1,3 respectively, so that atom 4 will be visited first and the remaining atoms visited in a depth-first manner following the lowest canonical labels.",
@@ -2715,7 +2715,7 @@
         },
         {
             "id": 20411944908981846635902818032756448865,
-            "flag": "p",
+            "option": "p",
             "brief": "pixels",
             "description": "Image size (default is 300).",
             "further_info": "N/A",
@@ -2725,7 +2725,7 @@
         },
         {
             "id": 173861797168679163945786714659971312212,
-            "flag": "p",
+            "option": "p",
             "brief": "num",
             "description": "px Scale to bond length (single mol only).",
             "further_info": "N/A",
@@ -2735,7 +2735,7 @@
         },
         {
             "id": 328023308422144570004275306596113671778,
-            "flag": "p",
+            "option": "p",
             "brief": "radius",
             "description": "Radius of the probe atom in angstroms (default is 0.0).",
             "further_info": "N/A",
@@ -2745,7 +2745,7 @@
         },
         {
             "id": 44781744047971876590449378183239499514,
-            "flag": "p",
+            "option": "p",
             "brief": "radius",
             "description": "Radius of the probe particle in angstroms (default is 0.0).",
             "further_info": "N/A",
@@ -2755,7 +2755,7 @@
         },
         {
             "id": 288910274501513475855764567764030344674,
-            "flag": "P",
+            "option": "P",
             "brief": "num",
             "description": "px Single mol in defined size image.",
             "further_info": "N/A",
@@ -2765,7 +2765,7 @@
         },
         {
             "id": 301950271895209060435173535328946706433,
-            "flag": "q",
+            "option": "q",
             "brief": "water-model",
             "description": "Set atomic charges for water.",
             "further_info": "The two options are SPC (default) or SPCE.",
@@ -2775,7 +2775,7 @@
         },
         {
             "id": 195938460682957678042993474187599478335,
-            "flag": "r",
+            "option": "r",
             "brief": "radii",
             "description": "Create a surface for each VDW radius (default is 1.0).",
             "further_info": "A comma-separated list of VDW radius multiples.",
@@ -2785,7 +2785,7 @@
         },
         {
             "id": 315307018273561474481017911810292352005,
-            "flag": "r",
+            "option": "r",
             "brief": "num",
             "description": "Number of rows in table.",
             "further_info": "N/A",
@@ -2796,7 +2796,7 @@
         },
         {
             "id": 242398111523456983753082153571839494769,
-            "flag": "s",
+            "option": "s",
             "brief": "scale",
             "description": "Scale-factor for VDW radius in angstroms (default is 1.0).",
             "further_info": "N/A",
@@ -2806,7 +2806,7 @@
         },
         {
             "id": 156857766143400107745848147309922585201,
-            "flag": "t",
+            "option": "t",
             "brief": "text",
             "description": "Use 'text' as source in header.",
             "further_info": "N/A",
@@ -2816,7 +2816,7 @@
         },
         {
             "id": 321688130672467743573935950687520488073,
-            "flag": "T",
+            "option": "T",
             "brief": "max seconds",
             "description": "Specify the canonicalisation timeout.",
             "further_info": "Canonicalisation can take a while for symmetrical molecules and so a timeout is used. The default is 5 seconds.",
@@ -2826,7 +2826,7 @@
         },
         {
             "id": 24584209870757418954399238411192592037,
-            "flag": "u",
+            "option": "u",
             "brief": "element list",
             "description": "Sort atoms by list of element symbols provided in comma-separated string without spaces.",
             "further_info": "N/A",
@@ -2836,7 +2836,7 @@
         },
         {
             "id": 333697690061226017510916056129192021268,
-            "flag": "w",
+            "option": "w",
             "brief": "characters",
             "description": "Image width in characters (default is 79).",
             "further_info": "N/A",
@@ -2846,7 +2846,7 @@
         },
         {
             "id": 211968172269513986092002223396145590160,
-            "flag": "w",
+            "option": "w",
             "brief": "pixels",
             "description": "Image width (or from image size).",
             "further_info": "N/A",
@@ -2856,7 +2856,7 @@
         },
         {
             "id": 32103657256870147412387310216723726582,
-            "flag": "y",
+            "option": "y",
             "brief": "additional chunk ID",
             "description": "Write to a chunk with specified ID.",
             "further_info": "N/A",
@@ -2866,7 +2866,7 @@
         },
         {
             "id": 249686303728268315167896865047224593082,
-            "flag": "z",
+            "option": "z",
             "brief": "list of atoms",
             "description": "Specify the order to write out atoms.",
             "further_info": "atom1 atom2 ... (atom1 first, atom2 second, etc.). The remaining atoms are written in the default order or (if option w is specified) in order of atomic number.",
@@ -2878,7 +2878,7 @@
         },
         {
             "id": 165664503965286629347311391458795051275,
-            "flag": "T",
+            "option": "T",
             "brief": "param",
             "description": "Truncate InChI according to various parameters.",
             "further_info": "/formula (formula only). /connect (formula and connectivity only). /nostereo (ignore E/Z and sp3 stereochemistry). /nosp3 (ignore sp3 stereochemistry). /noEZ (ignore E/Z stereochemistry). /nochg (ignore charge and protonation). /noiso (ignore isotopes). Note that these can be combined (e.g., /nochg/noiso).",
