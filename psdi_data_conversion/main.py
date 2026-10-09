@@ -308,17 +308,17 @@ class ConvertArgs:
 
                 # Find the path to this file
                 if not os.path.isfile(first_filename):
+                    msg = f"Input file {tc.PATH}'{first_filename}'{tc.OFF} cannot be found"
                     if self.from_format:
                         test_filename = first_filename + f".{self.from_format}"
                         if os.path.isfile(test_filename):
                             first_filename = test_filename
                         else:
-                            raise FileConverterInputException(f"Input file {tc.PATH}'{first_filename}'{tc.OFF} cannot "
-                                                              f"be found. Also checked for {tc.PATH}'{test_filename}"
-                                                              f"'{tc.OFF}.", help=True)
+                            if not first_filename.endswith(f".{self.from_format}"):
+                                msg += f" either at the provided location or at {tc.PATH}'{test_filename}'{tc.OFF}."
+                            raise FileConverterInputException(msg, help=True)
                     else:
-                        raise FileConverterInputException(f"Input file {tc.PATH}'{first_filename}'{tc.OFF} cannot be "
-                                                          "found.", help=True)
+                        raise FileConverterInputException(msg, help=True)
 
                 filename_base = os.path.split(split_archive_ext(first_filename)[0])[1]
                 if self.log_mode == const.LOG_FULL:
