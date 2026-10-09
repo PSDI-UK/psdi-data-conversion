@@ -12,7 +12,7 @@
         {
             "id": 0,
             "extension": "ex",
-            "c2x_format": "ex0",
+            "cx_format": "ex0",
             "note": "Example format 0",
             "composition": true,
             "connections": true,
@@ -22,7 +22,7 @@
         {
             "id": 1,
             "extension": "ex",
-            "c2x_format": "ex1",
+            "cx_format": "ex1",
             "note": "Example format 1",
             "composition": true,
             "connections": true,
@@ -32,7 +32,7 @@
         {
             "id": 2,
             "extension": "ex",
-            "c2x_format": "ex2",
+            "cx_format": "ex2",
             "note": "Example format 2",
             "composition": true,
             "connections": true,
@@ -42,7 +42,7 @@
         {
             "id": 3,
             "extension": "ex",
-            "c2x_format": "ex3",
+            "cx_format": "ex3",
             "note": "Example format 3",
             "composition": true,
             "connections": true,
@@ -52,7 +52,7 @@
         {
             "id": 4,
             "extension": "mol",
-            "c2x_format": "newmol",
+            "cx_format": "newmol",
             "note": "Example format 4 - new format with the 'mol' extension",
             "composition": true,
             "connections": true,

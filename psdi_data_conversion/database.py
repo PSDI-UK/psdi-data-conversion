@@ -73,7 +73,7 @@ DB_URL_KEY = "url"
 # Keys for format general info in the database - some are duplicated here so they're also stored in the same format as
 # other keys here
 DB_FORMAT_EXT_KEY = "extension"
-DB_FORMAT_C2X_KEY = "c2x_format"
+DB_FORMAT_C2X_KEY = "cx_format"
 DB_FORMAT_NOTE_KEY = "note"
 DB_FORMAT_ALIASES_KEY = "aliases"
 DB_FORMAT_ALIAS_OF_KEY = "alias_of"
@@ -810,7 +810,7 @@ class FormatCommonInfo(DBInfo):
     d_alias_exts: dict[int, str] | None = None
     """Dict of IDs of aliases and their respective extensions"""
 
-    c2x_format: str | None = None
+    cx_format: str | None = None
     """The name of this format as the c2x converter expects it"""
 
     composition: bool | None = None
@@ -843,8 +843,8 @@ class FormatCommonInfo(DBInfo):
         if self.d_alias_exts is None:
             self.d_alias_exts = {}
 
-        if self.c2x_format is None:
-            self.c2x_format = self.primary_name
+        if self.cx_format is None:
+            self.cx_format = self.primary_name
 
     # __hash__ needs to be inherited explicitly for dataclasses since they redefine __eq__
     __hash__ = DBInfo.__hash__
@@ -877,7 +877,7 @@ class FormatCommonInfo(DBInfo):
                                               description=d_single_format_info.get(DB_FORMAT_NOTE_KEY, ""),
                                               parent=parent,
                                               d_alias_exts=d_alias_exts,
-                                              c2x_format=d_single_format_info.get(DB_FORMAT_C2X_KEY),
+                                              cx_format=d_single_format_info.get(DB_FORMAT_C2X_KEY),
                                               composition=d_single_format_info.get(DB_FORMAT_COMP_KEY),
                                               two_dim=d_single_format_info.get(DB_FORMAT_2D_KEY),
                                               three_dim=d_single_format_info.get(DB_FORMAT_3D_KEY),
@@ -946,9 +946,9 @@ class FormatInfo(DBInfo):
         return self.format_common_info.d_alias_exts
 
     @property
-    def c2x_format(self):
+    def cx_format(self):
         """The name of this format as the c2x converter expects it"""
-        return self.format_common_info.c2x_format
+        return self.format_common_info.cx_format
 
     @property
     def composition(self):

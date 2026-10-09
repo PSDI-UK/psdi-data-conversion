@@ -12,7 +12,7 @@
         {
             "id": 0,
             "extension": "ex",
-            "c2x_format": "ex0",
+            "cx_format": "ex0",
             "note": "Example format 0",
             "composition": true,
             "connections": true,
@@ -22,7 +22,7 @@
         {
             "id": 1,
             "extension": "ex",
-            "c2x_format": "ex1",
+            "cx_format": "ex1",
             "note": "Example format 1",
             "composition": true,
             "connections": true,

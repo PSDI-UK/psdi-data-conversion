@@ -26,7 +26,7 @@ class C2xFileConverter(ScriptFileConverter):
         l_script_args = super()._get_script_args()
 
         # Update the output format to c2x style
-        l_script_args[0] = "--" + self.to_format_info.c2x_format
+        l_script_args[0] = "--" + self.to_format_info.cx_format
 
         # TODO - check if the input file has an extension which will be accepted by c2x for its format, and handle if
         # not
