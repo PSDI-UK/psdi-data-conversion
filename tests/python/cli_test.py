@@ -374,6 +374,13 @@ def test_path_args(from_format: int | None, path_str: str, to_format: int | None
     assert args.path
 
 
+def test_path_consistent_from_format():
+    """Test that no error is raised if the `from_format` matches the first in the `path`"""
+    args = get_parsed_args(f"file1 -f {FORMAT_MOLDY} --path {FORMAT_MOLDY} openbabel {FORMAT_PDB_0} atomsk "
+                           f"{FORMAT_INCHI}")
+    assert args.path
+
+
 def test_path_inconsistent_from_format():
     """Test that an error is raised if the `from_format` doesn't match the first in the `path`"""
     with pytest.raises(FileConverterInputException) as e:
@@ -381,6 +388,13 @@ def test_path_inconsistent_from_format():
                         f"{FORMAT_INCHI}")
     assert _compressed_match(f"The format '{FORMAT_PDB_0}' provided to `-f/--from` does not match '{FORMAT_MOLDY}"
                              f"', the first format provided to `--path`", e.value)
+
+
+def test_path_consistent_to_format():
+    """Test that no error is raised if the `to_format` matches the last in the `path`"""
+    args = get_parsed_args(f"file1 -t {FORMAT_INCHI} --path {FORMAT_MOLDY} openbabel {FORMAT_PDB_0} atomsk "
+                           f"{FORMAT_INCHI}")
+    assert args.path
 
 
 def test_path_inconsistent_to_format():
