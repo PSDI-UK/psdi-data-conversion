@@ -1568,19 +1568,20 @@ def main():
 
     try:
         args = parse_args()
+
+        if (args.log_mode == const.LOG_SIMPLE or args.log_mode == const.LOG_FULL) and args.log_file:
+            # Delete any previous local log if it exists
+            try:
+                os.remove(args.log_file)
+            except FileNotFoundError:
+                pass
+            logging.basicConfig(filename=args.log_file, level=args.log_level,
+                                format=const.LOG_FORMAT, datefmt=const.TIMESTAMP_FORMAT)
+        else:
+            logging.basicConfig(level=args.log_level, format=const.LOG_FORMAT)
+
     except FileConverterInputException as e:
         handle_raised_exception(e)
-
-    if (args.log_mode == const.LOG_SIMPLE or args.log_mode == const.LOG_FULL) and args.log_file:
-        # Delete any previous local log if it exists
-        try:
-            os.remove(args.log_file)
-        except FileNotFoundError:
-            pass
-        logging.basicConfig(filename=args.log_file, level=args.log_level,
-                            format=const.LOG_FORMAT, datefmt=const.TIMESTAMP_FORMAT)
-    else:
-        logging.basicConfig(level=args.log_level, format=const.LOG_FORMAT)
 
     logging.debug("#")
     logging.debug(f"# Beginning execution of script {tc.CODE}`%s`{tc.OFF}", __file__)
