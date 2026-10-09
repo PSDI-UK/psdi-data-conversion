@@ -441,8 +441,8 @@ class ConvertArgs:
             # It looks like the last element of the path is a format. Check that if `self.to_format` is also
             # provided, it matches
             if self.to_format:
-                from_format_info, _ = self._check_path_format_unambiguous(self.from_format, raise_immediately=True)
-                if last_path_format_info != from_format_info:
+                to_format_info, _ = self._check_path_format_unambiguous(self.to_format, raise_immediately=True)
+                if last_path_format_info != to_format_info:
                     msg = (f"The format {tc.MESSAGE}'{self.to_format}'{tc.OFF} provided to {tc.CODE}`-t/--to"
                            f"`{tc.OFF} does not match {tc.MESSAGE}'{raw_path[-1]}'{tc.OFF}, the last format provided "
                            f"to {tc.CODE}`--path`{tc.OFF}. When using {tc.CODE}`--path`{tc.OFF}, the output format "
