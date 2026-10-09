@@ -6,13 +6,13 @@
         "info": "TestSimple note",
         "url": "https://github.com/PSDI-UK/psdi-data-conversion",
         "supports_ambiguous_extensions": null,
-        "database_key_prefix": null
+        "database_key_prefix": "ex"
     },
     "extra_formats": [
         {
             "id": 0,
             "extension": "ex",
-            "cx_format": "ex0",
+            "ex_format": "ex0",
             "note": "Example format 0",
             "composition": true,
             "connections": true,
@@ -22,7 +22,7 @@
         {
             "id": 1,
             "extension": "ex",
-            "cx_format": "ex1",
+            "ex_format": "ex1",
             "note": "Example format 1",
             "composition": true,
             "connections": true,

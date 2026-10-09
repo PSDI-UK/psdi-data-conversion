@@ -73,7 +73,7 @@ DB_URL_KEY = "url"
 # Keys for format general info in the database - some are duplicated here so they're also stored in the same format as
 # other keys here
 DB_FORMAT_EXT_KEY = "extension"
-DB_FORMAT_C2X_KEY = "cx_format"
+DB_FORMAT_CONV_NAME_KEY_TAIL = "_format"
 DB_FORMAT_NOTE_KEY = "note"
 DB_FORMAT_ALIASES_KEY = "aliases"
 DB_FORMAT_ALIAS_OF_KEY = "alias_of"
@@ -103,6 +103,7 @@ DB_OUT_OPTIONS_FORMATS_KEY_BASE = "format_to_argflags_out"
 
 # Keys for argument info in the database
 DB_FLAG_KEY = "flag"
+DB_OPTION_KEY = "option"
 DB_BRIEF_KEY = "brief"
 DB_FORMAT_ID_KEY = "formats_id"
 DB_IN_FLAGS_ID_KEY_BASE = "flags_in_id"
@@ -425,7 +426,7 @@ class ConverterInfo(DBInfo):
                              DB_OUT_FLAGS_FORMATS_KEY_BASE,
                              DB_IN_OPTIONS_FORMATS_KEY_BASE,
                              DB_OUT_OPTIONS_FORMATS_KEY_BASE):
-                _arg_info[key_base] = d_data.get(_key_prefix + key_base)
+                _arg_info[key_base] = d_data.get(_key_prefix + key_base, [])
 
         return ConverterInfo(id=d_single_converter_info.get(DB_ID_KEY, DEFAULT_ID),
                              name=regularize_name(name),
@@ -474,7 +475,6 @@ class ConverterInfo(DBInfo):
                                     (out_key_base, "out")):
 
             d_arg_info: dict[int, ArgInfo] = {}
-
             for d_single_arg_info in self._arg_info[key_base]:
                 name: str = d_single_arg_info[DB_FLAG_KEY]
                 arg_id: int = d_single_arg_info[DB_ID_KEY]
@@ -807,11 +807,11 @@ class FormatCommonInfo(DBInfo):
     primary_id: int = DEFAULT_ID
     """The primary ID of this format"""
 
-    d_alias_exts: dict[int, str] | None = None
+    d_alias_exts: dict[int, str] = field(default_factory=dict)
     """Dict of IDs of aliases and their respective extensions"""
 
-    cx_format: str | None = None
-    """The name of this format as the c2x converter expects it"""
+    d_conv_names: dict[str, str] = field(default_factory=dict)
+    """Dict providing the names of this format by different converters, keyed by their DB prefixes"""
 
     composition: bool | None = None
     """Whether or not this format stores composition information"""
@@ -840,12 +840,6 @@ class FormatCommonInfo(DBInfo):
         if self.id == DEFAULT_ID:
             self.id = self.primary_id
 
-        if self.d_alias_exts is None:
-            self.d_alias_exts = {}
-
-        if self.cx_format is None:
-            self.cx_format = self.primary_name
-
     # __hash__ needs to be inherited explicitly for dataclasses since they redefine __eq__
     __hash__ = DBInfo.__hash__
 
@@ -872,12 +866,17 @@ class FormatCommonInfo(DBInfo):
         if d_alias_exts is None:
             d_alias_exts = {primary_id: primary_name}
 
+        d_conv_names: dict[str, str] = {}
+        for key, val in d_single_format_info.items():
+            if key.endswith(DB_FORMAT_CONV_NAME_KEY_TAIL):
+                d_conv_names[key[:-len(DB_FORMAT_CONV_NAME_KEY_TAIL)]] = val
+
         format_common_info = FormatCommonInfo(primary_name=primary_name,
                                               primary_id=primary_id,
                                               description=d_single_format_info.get(DB_FORMAT_NOTE_KEY, ""),
                                               parent=parent,
                                               d_alias_exts=d_alias_exts,
-                                              cx_format=d_single_format_info.get(DB_FORMAT_C2X_KEY),
+                                              d_conv_names=d_conv_names,
                                               composition=d_single_format_info.get(DB_FORMAT_COMP_KEY),
                                               two_dim=d_single_format_info.get(DB_FORMAT_2D_KEY),
                                               three_dim=d_single_format_info.get(DB_FORMAT_3D_KEY),
@@ -946,9 +945,9 @@ class FormatInfo(DBInfo):
         return self.format_common_info.d_alias_exts
 
     @property
-    def cx_format(self):
-        """The name of this format as the c2x converter expects it"""
-        return self.format_common_info.cx_format
+    def d_conv_names(self):
+        """Dict providing the names of this format by different converters, keyed by their DB prefixes"""
+        return self.format_common_info.d_conv_names
 
     @property
     def composition(self):
