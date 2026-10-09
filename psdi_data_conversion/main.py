@@ -308,17 +308,17 @@ class ConvertArgs:
 
                 # Find the path to this file
                 if not os.path.isfile(first_filename):
+                    msg = f"Input file {tc.PATH}'{first_filename}'{tc.OFF} cannot be found"
                     if self.from_format:
                         test_filename = first_filename + f".{self.from_format}"
                         if os.path.isfile(test_filename):
                             first_filename = test_filename
                         else:
-                            raise FileConverterInputException(f"Input file {tc.PATH}'{first_filename}'{tc.OFF} cannot "
-                                                              f"be found. Also checked for {tc.PATH}'{test_filename}"
-                                                              f"'{tc.OFF}.", help=True)
+                            if not first_filename.endswith(f".{self.from_format}"):
+                                msg += f" either at the provided location or at {tc.PATH}'{test_filename}'{tc.OFF}."
+                            raise FileConverterInputException(msg, help=True)
                     else:
-                        raise FileConverterInputException(f"Input file {tc.PATH}'{first_filename}'{tc.OFF} cannot be "
-                                                          "found.", help=True)
+                        raise FileConverterInputException(msg, help=True)
 
                 filename_base = os.path.split(split_archive_ext(first_filename)[0])[1]
                 if self.log_mode == const.LOG_FULL:
@@ -441,8 +441,8 @@ class ConvertArgs:
             # It looks like the last element of the path is a format. Check that if `self.to_format` is also
             # provided, it matches
             if self.to_format:
-                from_format_info, _ = self._check_path_format_unambiguous(self.from_format, raise_immediately=True)
-                if last_path_format_info != from_format_info:
+                to_format_info, _ = self._check_path_format_unambiguous(self.to_format, raise_immediately=True)
+                if last_path_format_info != to_format_info:
                     msg = (f"The format {tc.MESSAGE}'{self.to_format}'{tc.OFF} provided to {tc.CODE}`-t/--to"
                            f"`{tc.OFF} does not match {tc.MESSAGE}'{raw_path[-1]}'{tc.OFF}, the last format provided "
                            f"to {tc.CODE}`--path`{tc.OFF}. When using {tc.CODE}`--path`{tc.OFF}, the output format "
@@ -1568,19 +1568,20 @@ def main():
 
     try:
         args = parse_args()
+
+        if (args.log_mode == const.LOG_SIMPLE or args.log_mode == const.LOG_FULL) and args.log_file:
+            # Delete any previous local log if it exists
+            try:
+                os.remove(args.log_file)
+            except FileNotFoundError:
+                pass
+            logging.basicConfig(filename=args.log_file, level=args.log_level,
+                                format=const.LOG_FORMAT, datefmt=const.TIMESTAMP_FORMAT)
+        else:
+            logging.basicConfig(level=args.log_level, format=const.LOG_FORMAT)
+
     except FileConverterInputException as e:
         handle_raised_exception(e)
-
-    if (args.log_mode == const.LOG_SIMPLE or args.log_mode == const.LOG_FULL) and args.log_file:
-        # Delete any previous local log if it exists
-        try:
-            os.remove(args.log_file)
-        except FileNotFoundError:
-            pass
-        logging.basicConfig(filename=args.log_file, level=args.log_level,
-                            format=const.LOG_FORMAT, datefmt=const.TIMESTAMP_FORMAT)
-    else:
-        logging.basicConfig(level=args.log_level, format=const.LOG_FORMAT)
 
     logging.debug("#")
     logging.debug(f"# Beginning execution of script {tc.CODE}`%s`{tc.OFF}", __file__)
