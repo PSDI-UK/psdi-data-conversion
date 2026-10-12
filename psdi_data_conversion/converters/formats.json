@@ -600,14 +600,8 @@
         },
         {
             "extension": "exyz",
-            "note": "Extended XYZ cartesian coordinates",
             "id": 211724617318004434893467139293681820081,
-            "composition": true,
-            "two_dim": true,
-            "three_dim": true,
-            "connections": false,
-            "precision": 10,
-            "weight": 16
+            "alias_of": 263103856753653653660664324931631115042
         },
         {
             "extension": "fa",
@@ -1641,8 +1635,8 @@
         },
         {
             "extension": "sxyz",
-            "note": "Special XYZ cartesian coordinates",
-            "id": 222610172317530966501505361564720053204
+            "id": 222610172317530966501505361564720053204,
+            "alias_of": 308725769058274787777843151211771367883
         },
         {
             "extension": "sy2",
@@ -1851,6 +1845,23 @@
             "three_dim": true,
             "connections": false,
             "precision": 11
+        },
+        {
+            "extension": "xyz",
+            "note": "Atomsk extended XYZ cartesian coordinates",
+            "id": 263103856753653653660664324931631115042,
+            "at_format": "exyz",
+            "composition": true,
+            "two_dim": true,
+            "three_dim": true,
+            "connections": false,
+            "precision": 10
+        },
+        {
+            "extension": "xyz",
+            "note": "Atomsk special XYZ cartesian coordinates",
+            "id": 308725769058274787777843151211771367883,
+            "at_format": "sxyz"
         },
         {
             "extension": "xyz",
