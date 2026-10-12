@@ -16,6 +16,7 @@ import traceback
 from collections.abc import Callable
 from copy import deepcopy
 from dataclasses import dataclass
+from functools import cached_property
 from typing import Any
 from uuid import UUID
 
@@ -294,6 +295,22 @@ class FileConverter:
         description). This should be overridden for each converter class if it uses any format-specific output options.
         """
         return ()
+
+    @cached_property
+    def from_format_name(self):
+        """The name of the input format as this converter refers to it"""
+        if (not self.database_key_prefix or
+                self.database_key_prefix not in self.from_format_info.d_conv_names):
+            return self.from_format_info.name
+        return self.from_format_info.d_conv_names[self.database_key_prefix]
+
+    @cached_property
+    def to_format_name(self):
+        """The name of the output format as this converter refers to it"""
+        if (not self.database_key_prefix or
+                self.database_key_prefix not in self.to_format_info.d_conv_names):
+            return self.to_format_info.name
+        return self.to_format_info.d_conv_names[self.database_key_prefix]
 
     # Base class functionality
     # ------------------------

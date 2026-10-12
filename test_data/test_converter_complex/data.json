@@ -6,13 +6,13 @@
         "info": "TestComplex note",
         "url": "https://github.com/PSDI-UK/psdi-data-conversion",
         "supports_ambiguous_extensions": null,
-        "database_key_prefix": null
+        "database_key_prefix": "ex"
     },
     "extra_formats": [
         {
             "id": 0,
             "extension": "ex",
-            "c2x_format": "ex0",
+            "ex_format": "ex0",
             "note": "Example format 0",
             "composition": true,
             "connections": true,
@@ -22,7 +22,7 @@
         {
             "id": 1,
             "extension": "ex",
-            "c2x_format": "ex1",
+            "ex_format": "ex1",
             "note": "Example format 1",
             "composition": true,
             "connections": true,
@@ -32,7 +32,7 @@
         {
             "id": 2,
             "extension": "ex",
-            "c2x_format": "ex2",
+            "ex_format": "ex2",
             "note": "Example format 2",
             "composition": true,
             "connections": true,
@@ -42,7 +42,7 @@
         {
             "id": 3,
             "extension": "ex",
-            "c2x_format": "ex3",
+            "ex_format": "ex3",
             "note": "Example format 3",
             "composition": true,
             "connections": true,
@@ -52,7 +52,7 @@
         {
             "id": 4,
             "extension": "mol",
-            "c2x_format": "newmol",
+            "ex_format": "newmol",
             "note": "Example format 4 - new format with the 'mol' extension",
             "composition": true,
             "connections": true,

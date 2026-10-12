@@ -224,6 +224,9 @@ function displayLevelChemInfo(entries) {
 
 // Determine a statement of quality based on level of chemical information and populate the converter select box.
 function getQuality(entries, rows) {
+    if (!entries[0] || !entries[1])
+        return;
+
     var composition_in = entries[0].composition,
         composition_out = entries[1].composition,
         connections_in = entries[0].connections,
