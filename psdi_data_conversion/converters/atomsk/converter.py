@@ -6,25 +6,7 @@ Atomsk file converter
 import os
 
 from psdi_data_conversion.converters.base import FileConverterMeta, ScriptFileConverter
-
-
-def replace_extension(filename: str, new_ext: str):
-    """Replace the extension of a filename with a new extension"""
-
-    # Strip all extensions from the filename
-    stripped_filename = filename
-    last_stripped_filename = None
-    while stripped_filename != last_stripped_filename:
-        last_stripped_filename = stripped_filename
-        stripped_filename, _ = os.path.splitext(stripped_filename)
-
-    # Get the extension with a full-stop at the beginning
-    if new_ext.startswith("."):
-        ext = new_ext
-    else:
-        ext = "." + new_ext
-
-    return stripped_filename + ext
+from psdi_data_conversion.utils import replace_extension
 
 
 class AtomskFileConverter(ScriptFileConverter):

@@ -7,6 +7,7 @@ Miscellaneous utility functions used by this project
 
 import argparse
 import json
+import os
 import re
 import sys
 from functools import lru_cache
@@ -198,6 +199,25 @@ def regularize_name(name: str):
         The regularized name, e.g. "openbabel"
     """
     return name.lower().replace(" ", "")
+
+
+def replace_extension(filename: str, new_ext: str):
+    """Replace the extension of a filename with a new extension"""
+
+    # Strip all extensions from the filename
+    stripped_filename = filename
+    last_stripped_filename = None
+    while stripped_filename != last_stripped_filename:
+        last_stripped_filename = stripped_filename
+        stripped_filename, _ = os.path.splitext(stripped_filename)
+
+    # Get the extension with a full-stop at the beginning
+    if new_ext.startswith("."):
+        ext = new_ext
+    else:
+        ext = "." + new_ext
+
+    return stripped_filename + ext
 
 
 class CustomHelpFormatter(argparse.HelpFormatter):
