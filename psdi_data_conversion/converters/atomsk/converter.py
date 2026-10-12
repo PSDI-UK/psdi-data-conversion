@@ -59,11 +59,33 @@ class AtomskFileConverter(ScriptFileConverter):
         we check for that here and correct it
         """
 
-        super()._convert()
+        # Delete the output file if it already exists
+        if os.path.exists(self.out_filename):
+            os.remove(self.out_filename)
 
+        # Check if we might need to delete an intermediate file too, and do so
+        intermediate_filename: str = ""
+        backup_filename: str = ""
         if self.to_format_info.primary_name != self.to_format_name:
-            incorrect_out_filename = replace_extension(self.out_filename, self.to_format_info.primary_name)
-            os.rename(incorrect_out_filename, self.out_filename)
+            intermediate_filename = replace_extension(self.out_filename, self.to_format_info.primary_name)
+            if os.path.exists(intermediate_filename):
+                # Create a name for a backup file we'll keep of any intermediate file if one exists
+                backup_filename = intermediate_filename + ".bak"
+                while os.path.exists(backup_filename):
+                    backup_filename = backup_filename + ".bak"
+                os.rename(intermediate_filename, backup_filename)
+
+        try:
+
+            super()._convert()
+
+            # If an intermediate filename was used, rename to the proper output filename now
+            if intermediate_filename:
+                os.rename(intermediate_filename, self.out_filename)
+
+        finally:
+            if intermediate_filename and backup_filename:
+                os.rename(backup_filename, intermediate_filename)
 
 
 # Assign this converter to the `converter` variable - this lets the psdi_data_conversion.converter module detect and
