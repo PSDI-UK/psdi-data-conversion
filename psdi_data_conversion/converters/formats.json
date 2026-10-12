@@ -604,6 +604,17 @@
             "alias_of": 263103856753653653660664324931631115042
         },
         {
+            "extension": "exyz",
+            "note": "Open Babel Extended XYZ cartesian coordinates",
+            "id": 315764226980616072821651336802589394742,
+            "composition": true,
+            "two_dim": true,
+            "three_dim": true,
+            "connections": false,
+            "precision": 10,
+            "weight": 16
+        },
+        {
             "extension": "fa",
             "note": "FASTA (genetic sequences)",
             "id": 127325448333808099218652406615021461466
