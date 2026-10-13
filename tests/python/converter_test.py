@@ -43,11 +43,10 @@ def setup_test() -> None:
 
 @pytest.mark.parametrize("test_spec", l_library_test_specs,
                          ids=lambda x: x.name)
-def test_conversions(test_spec, subtests: pytest.Subtests):
+def test_conversions(test_spec, subtests):
     """Run all conversion tests in the defined list of test specifications
     """
-    with subtests.test(""):
-        run_test_conversion_with_library(test_spec, subtests=subtests, chain=False)
+    run_test_conversion_with_library(test_spec, subtests=subtests, chain=False)
 
 
 @pytest.mark.parametrize("test_spec", l_library_chain_test_specs,
@@ -58,32 +57,34 @@ def test_chain_conversions(test_spec, subtests):
     run_test_conversion_with_library(test_spec, subtests=subtests, chain=True)
 
 
-def test_envvars():
+def test_envvars(subtests):
     """Test that setting appropriate envvars will set them for a file converter
     """
 
     test_file_size = 1234
     os.environ[const.MAX_FILESIZE_EV] = str(test_file_size)
 
-    converter = C2xFileConverter(filename="1NE6.mmcif",
-                                 to_format=tc.FORMAT_PDB_0,
-                                 use_envvars=True,)
-    assert math.isclose(converter.max_file_size, test_file_size*const.MEGABYTE)
+    with subtests.test("test file size set correctly with envvars"):
+        converter = C2xFileConverter(filename="1NE6.mmcif",
+                                     to_format=tc.FORMAT_PDB_0,
+                                     use_envvars=True,)
+        assert math.isclose(converter.max_file_size, test_file_size*const.MEGABYTE)
 
-    # And also check it isn't applied if we don't ask it to use envvars
-    converter_no_ev = C2xFileConverter(filename="1NE6.mmcif",
-                                       to_format=tc.FORMAT_PDB_0,
-                                       use_envvars=False,)
-    assert not math.isclose(converter_no_ev.max_file_size, test_file_size*const.MEGABYTE)
+    with subtests.test("test file size not set without envvars"):
+        converter_no_ev = C2xFileConverter(filename="1NE6.mmcif",
+                                           to_format=tc.FORMAT_PDB_0,
+                                           use_envvars=False,)
+        assert not math.isclose(converter_no_ev.max_file_size, test_file_size*const.MEGABYTE)
 
-    # And check that OB uses its own EV
-    converter = OpenBabelFileConverter(filename="1NE6.mmcif",
-                                       to_format=tc.FORMAT_PDB_0,
-                                       use_envvars=True,)
-    assert not math.isclose(converter.max_file_size, test_file_size*const.MEGABYTE)
+    with subtests.test("Open Babel uses its own EV for max filesize - not set by general EV"):
+        converter_ob = OpenBabelFileConverter(filename="1NE6.mmcif",
+                                              to_format=tc.FORMAT_PDB_0,
+                                              use_envvars=True,)
+        assert not math.isclose(converter_ob.max_file_size, test_file_size*const.MEGABYTE)
 
-    os.environ[const.MAX_FILESIZE_OB_EV] = str(test_file_size)
-    converter = OpenBabelFileConverter(filename="1NE6.mmcif",
-                                       to_format=tc.FORMAT_PDB_0,
-                                       use_envvars=True,)
-    assert math.isclose(converter.max_file_size, test_file_size*const.MEGABYTE)
+    with subtests.test("Open Babel uses its own EV for max filesize - set by its own EV"):
+        os.environ[const.MAX_FILESIZE_OB_EV] = str(test_file_size)
+        converter_ob_limited = OpenBabelFileConverter(filename="1NE6.mmcif",
+                                                      to_format=tc.FORMAT_PDB_0,
+                                                      use_envvars=True,)
+        assert math.isclose(converter_ob_limited.max_file_size, test_file_size*const.MEGABYTE)
