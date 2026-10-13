@@ -205,8 +205,8 @@ def replace_extension(filename: str, new_ext: str):
     """Replace the extension of a filename with a new extension"""
 
     # Strip all extensions from the filename
-    stripped_filename = filename
-    last_stripped_filename = None
+    last_stripped_filename = filename
+    stripped_filename, _ = os.path.splitext(filename)
     while stripped_filename != last_stripped_filename:
         last_stripped_filename = stripped_filename
         stripped_filename, _ = os.path.splitext(stripped_filename)
