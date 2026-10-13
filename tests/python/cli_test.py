@@ -25,7 +25,7 @@ from psdi_data_conversion.database import (D_FORMAT_PROPERTY_ATTRS, MSG_CONVERSI
                                            get_possible_conversion_pathways, get_possible_conversions,
                                            get_possible_formats)
 from psdi_data_conversion.main import FileConverterInputException, parse_args
-from psdi_data_conversion.testing.constants import FORMAT_INCHI, FORMAT_MOLDY, FORMAT_PDB_0
+from psdi_data_conversion.testing.constants import FORMAT_INCHI, FORMAT_MOL, FORMAT_MOLDY, FORMAT_PDB_0
 from psdi_data_conversion.testing.conversion_test_specs import l_cli_test_specs
 from psdi_data_conversion.testing.utils import run_test_conversion_with_cli, run_with_arg_string
 from psdi_data_conversion.utils import regularize_name, strip_control_codes
@@ -726,6 +726,24 @@ def test_format_info(capsys, subtests):
                 assert _compressed_match(label + " not supported", captured.out)
             else:
                 assert _compressed_match(label + " unknown whether or not to be supported", captured.out)
+
+
+@pytest.mark.parametrize("in_format", [FORMAT_PDB_0, FORMAT_MOL])
+def test_format_aliases(in_format, capsys, subtests):
+    """Test that when a format has aliases, they're printed in the info about it"""
+
+    in_format_info = get_format_info(in_format)
+    run_with_arg_string(f"-l -f {in_format}")
+
+    captured = capsys.readouterr()
+
+    _check_no_errors(captured, subtests)
+
+    l_other_alias_ids = [x for x in in_format_info.format_common_info.d_alias_exts.keys()
+                         if x != in_format_info.id]
+    for other_alias_id in l_other_alias_ids:
+        with subtests.test("info for alias is present", id=other_alias_id):
+            assert _compressed_match(get_format_info(other_alias_id).format_inline(), captured.out)
 
 
 def test_format_info_ambiguous(capsys, subtests):
