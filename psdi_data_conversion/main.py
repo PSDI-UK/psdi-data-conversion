@@ -24,13 +24,13 @@ from psdi_data_conversion.converter import (D_CONVERTER_ARGS, L_REGISTERED_CONVE
                                             get_supported_converter_class, run_converter, run_converter_chain)
 from psdi_data_conversion.converters.base import (FileConverterAbortException, FileConverterException,
                                                   FileConverterInputException)
-from psdi_data_conversion.database import (CONV_WEIGHT_MAX, D_FORMAT_PROPERTY_ATTRS, Conversion, ConversionPath,
-                                           ConversionQualityInfo, ConverterInfo, FileConverterDatabaseException,
-                                           FormatInfo, disambiguate_formats, get_conversion_pathway,
-                                           get_conversion_quality, get_conversion_weight, get_converter_info,
-                                           get_format_info, get_format_pretty_name, get_in_format_args,
-                                           get_out_format_args, get_possible_conversion_pathways,
-                                           get_possible_conversions, get_possible_formats)
+from psdi_data_conversion.database import (CONV_WEIGHT_MAX, Conversion, ConversionPath, ConversionQualityInfo,
+                                           ConverterInfo, FileConverterDatabaseException, FormatInfo,
+                                           disambiguate_formats, get_conversion_pathway, get_conversion_quality,
+                                           get_conversion_weight, get_converter_info, get_format_info,
+                                           get_format_pretty_name, get_in_format_args, get_out_format_args,
+                                           get_possible_conversion_pathways, get_possible_conversions,
+                                           get_possible_formats)
 from psdi_data_conversion.file_io import split_archive_ext
 from psdi_data_conversion.log_utility import get_log_level_from_str
 from psdi_data_conversion.utils import (CustomHelpFormatter, displaylen, print_header, print_wrap, regularize_name,
@@ -1094,19 +1094,7 @@ def detail_format(format_name: str, in_or_out: str | None = None):
         else:
             print()
 
-        # Print the format's basic details
-        print_wrap(format_info.format_oneline())
-
-        # Print whether or not it supports each possible property
-        for attr, label in D_FORMAT_PROPERTY_ATTRS.items():
-            support_str = label
-            if getattr(format_info, attr):
-                support_str += " supported"
-            elif getattr(format_info, attr) is False:
-                support_str += " not supported"
-            else:
-                support_str += " unknown whether or not to be supported"
-            print_wrap(f"- {support_str}")
+        print_wrap(format_info.format_detailed())
 
 
 def detail_formats_and_possible_converters(from_format: str, to_format: str):
