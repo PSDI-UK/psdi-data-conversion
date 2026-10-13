@@ -31,7 +31,20 @@ from psdi_data_conversion.file_io import is_archive, split_archive_ext
 from psdi_data_conversion.main import main as data_convert_main
 from psdi_data_conversion.testing.constants import (FORMAT_PDB_0, INPUT_TEST_DATA_LOC_IN_PROJECT,
                                                     OUTPUT_TEST_DATA_LOC_IN_PROJECT, TEST_DATA_LOC_IN_PROJECT)
-from psdi_data_conversion.utils import get_project_path
+from psdi_data_conversion.utils import get_project_path, strip_control_codes
+
+
+def compress_text(s: str):
+    """Strips whitespace and control codes from output to ease comparisons without worrying about things like line-
+    wrapping"""
+    return strip_control_codes(s.replace("\n", "").replace(" ", ""))
+
+
+def compressed_match(s1, s2):
+    """Assert that s1 is contained in s2, ignoring control codes and whitespace"""
+    s1_compressed = compress_text(str(s1))
+    s2_compressed = compress_text(str(s2))
+    return s1_compressed in s2_compressed
 
 
 def get_path_in_project(filename: str, test_path: Path | None = None):
