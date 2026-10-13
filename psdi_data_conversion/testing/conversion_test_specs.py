@@ -32,6 +32,8 @@ l_all_test_specs.append(Spec(name="Standard Single Test",
 """A quick single test, functioning mostly as a smoke test for things going right in the simplest case"""
 
 simple_success_callback = MCB(CheckFileStatus(), CheckLogContentsSuccess())
+"""A standardised callback which checks that the output file and log exist, and that the log indicates likely success"""
+
 l_all_test_specs.append(Spec(name="Standard Multiple Tests",
                              filename=["1NE6.mmcif",
                                        "hemoglobin.pdb", "aceticacid.mol", "nacl.cif",
@@ -71,6 +73,16 @@ l_all_test_specs.append(Spec(name="c2x Formats Tests",
 """Test converting with c2x to a few different formats which require special input. This test isn't run in the GUI
 solely to save on resources, since there are unlikely to be any GUI-specific issues raised by this test that aren't
 caught in others."""
+
+l_all_test_specs.append(Spec(name="Atomsk Formats Tests",
+                             to_format=[tc.FORMAT_XYZ_2, tc.FORMAT_XYZ_3,
+                                        tc.FORMAT_ATOMSK_EXYZ, tc.FORMAT_ATOMSK_SXYZ],
+                             converter_name=const.CONVERTER_ATO,
+                             callback=simple_success_callback,
+                             compatible_with_gui=False,
+                             ))
+"""Test converting with Atomsk to a few different formats which have special filename handling. As before, not run in
+the GUI to save resources."""
 
 l_all_test_specs.append(Spec(name="Converter Name Sensitivity Tests",
                              converter_name=["open babel", "oPeNbaBEL", "C2X", "atomsk"],
