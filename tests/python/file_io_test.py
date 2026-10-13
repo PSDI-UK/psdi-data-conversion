@@ -55,7 +55,7 @@ l_bases = ["foo", "foo.txt", "footar", "foo-1.0.3"]
 l_exts = [".zip", ".tar", ".tar.gz", ".gz"]
 
 
-@pytest.mark.parametrize("base, ext", product(l_bases, l_exts))
+@pytest.mark.parametrize("base, ext", list(product(l_bases, l_exts)))
 def test_split_archive_ext(base, ext):
     """Test the function to split a filename with a possible archive extension"""
 
