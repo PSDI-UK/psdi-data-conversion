@@ -1003,6 +1003,32 @@ class FormatInfo(DBInfo):
         """Use the disambiguated name for the formatted name"""
         return f"{tc.BOLD}{self.disambiguated_name}{tc.OFF}"
 
+    def format_detailed(self):
+        """Detail any aliases the format has and what properties it supports"""
+        msg = super().format_detailed()
+
+        # Print whether or not it supports each possible property
+        for attr, label in D_FORMAT_PROPERTY_ATTRS.items():
+            support_str = label
+            if getattr(self, attr):
+                support_str += " supported"
+            elif getattr(self, attr) is False:
+                support_str += " not supported"
+            else:
+                support_str += " unknown whether or not to be supported"
+            msg += f"\n- {support_str}"
+
+        # List any aliases the format has
+        l_alias_ids = list(self.format_common_info.d_alias_exts.keys())
+        if len(l_alias_ids) > 1:
+            l_other_alias_ids = [x for x in l_alias_ids if x != self.id]
+            if len(l_other_alias_ids) == 1:
+                msg += f"\nAlias: {get_format_info(l_other_alias_ids[0]).format_inline()}"
+            else:
+                msg += "\nAliases: " + ", ".join([get_format_info(x).format_inline() for x in l_other_alias_ids])
+
+        return msg
+
     @staticmethod
     def from_db(parent: DataConversionDatabase,
                 d_single_format_info: dict[str, bool | int | str | None],
