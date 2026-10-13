@@ -712,18 +712,20 @@ def test_format_info(capsys, subtests):
     _check_no_errors(captured, subtests)
 
     # Check for basic format information
-    assert _compressed_match(f"{in_format_info.disambiguated_name} (ID {in_format_info.id}): " +
-                             in_format_info.description, captured.out)
+    with subtests.test("basic format information is present"):
+        assert _compressed_match(f"{in_format_info.disambiguated_name} (ID {in_format_info.id}): " +
+                                 in_format_info.description, captured.out)
 
     # Check for property information
     for attr, label in D_FORMAT_PROPERTY_ATTRS.items():
-        support_status = getattr(in_format_info, attr)
-        if support_status:
-            assert _compressed_match(label + " supported", captured.out)
-        elif support_status is False:
-            assert _compressed_match(label + " not supported", captured.out)
-        else:
-            assert _compressed_match(label + " unknown whether or not to be supported", captured.out)
+        with subtests.test(f"{attr} support is correct"):
+            support_status = getattr(in_format_info, attr)
+            if support_status:
+                assert _compressed_match(label + " supported", captured.out)
+            elif support_status is False:
+                assert _compressed_match(label + " not supported", captured.out)
+            else:
+                assert _compressed_match(label + " unknown whether or not to be supported", captured.out)
 
 
 def test_format_info_ambiguous(capsys, subtests):
@@ -737,28 +739,32 @@ def test_format_info_ambiguous(capsys, subtests):
 
     _check_no_errors(captured, subtests)
 
-    assert _compressed_match(f"WARNING: Format '{out_format}' is ambiguous", captured.out)
+    with subtests.test("ambiguous warning is present"):
+        assert _compressed_match(f"WARNING: Format '{out_format}' is ambiguous", captured.out)
 
     for out_format_info in l_out_format_info:
-        assert _compressed_match(out_format_info.format_oneline(), captured.out)
+        with subtests.test("each possible match is present", id=out_format_info.id):
+            assert _compressed_match(out_format_info.format_oneline(), captured.out)
 
 
-def test_format_info_in_unrecognised(capsys):
+def test_format_info_in_unrecognised(capsys, subtests):
     """Test we get expected errors for unrecognised input format"""
 
     in_format = 99999
-    with pytest.raises(SystemExit):
+    with subtests.test("CLI exit on unrecognised format"), pytest.raises(SystemExit):
         run_with_arg_string(f"-l -f {in_format}")
 
-    assert _compressed_match(f"ERROR: Format '{in_format}' not recognised", capsys.readouterr().err)
+    with subtests.test("unrecognised error present"):
+        assert _compressed_match(f"ERROR: Format '{in_format}' not recognised", capsys.readouterr().err)
 
 
-def test_format_info_out_unrecognised(capsys):
+def test_format_info_out_unrecognised(capsys, subtests):
     """Test we get expected errors for unrecognised output format"""
 
     out_format = "not_a_format"
 
-    with pytest.raises(SystemExit):
+    with subtests.test("CLI exit on unrecognised format"), pytest.raises(SystemExit):
         run_with_arg_string(f"-l -t {out_format}")
 
-    assert _compressed_match(f"ERROR: Format '{out_format}' not recognised", capsys.readouterr().err)
+    with subtests.test("unrecognised error present"):
+        assert _compressed_match(f"ERROR: Format '{out_format}' not recognised", capsys.readouterr().err)
