@@ -55,10 +55,11 @@ class PluginManagementBase:
     _conv_data: utils.JsonMainDict | None = None
 
     @pytest.fixture(autouse=True)
-    def _setup(self, mock_repo):
+    def _setup(self, mock_repo, subtests):
         """Setup for each test"""
         self.mock_repo = mock_repo
         self.conv_path = self.mock_repo / "psdi_data_conversion/converters"
+        self.subtests = subtests
 
     def _reset_plugin_info(self):
         self._conv_module_text = None
@@ -116,10 +117,12 @@ class TestCreatePlugin(PluginManagementBase):
 
         process = subprocess.run(l_args, capture_output=True, text=True, env=env)
 
-        if not expect_fail and process.returncode:
-            pytest.fail(f"Plugin creation failed with return code {process.returncode} and stderr:\n{process.stderr}")
-        elif expect_fail and not process.returncode:
-            pytest.fail(f"Plugin creation succeeded when failure was expected with stdout:\n{process.stdout}")
+        with self.subtests.test("plugin creation succeeded/failed when expected"):
+            if not expect_fail and process.returncode:
+                pytest.fail(
+                    f"Plugin creation failed with return code {process.returncode} and stderr:\n{process.stderr}")
+            elif expect_fail and not process.returncode:
+                pytest.fail(f"Plugin creation succeeded when failure was expected with stdout:\n{process.stdout}")
 
         if check and not expect_fail:
             self._check_plugin(name, label=label, script=script)
@@ -132,37 +135,56 @@ class TestCreatePlugin(PluginManagementBase):
             label = "_".join(name.split()).lower()
 
         self.plugin_path: Path = self.conv_path / label
-        assert self.plugin_path.is_dir()
-        assert (self.plugin_path / "__init__.py").is_file()
-        assert self.conv_module_path.is_file()
-        assert self.data_path.is_file()
+        with self.subtests.test("plugin path exists"):
+            assert self.plugin_path.is_dir()
+        with self.subtests.test("plugin __init__.py exists"):
+            assert (self.plugin_path / "__init__.py").is_file()
+        with self.subtests.test("plugin converter module exists"):
+            assert self.conv_module_path.is_file()
+        with self.subtests.test("plugin data file exists"):
+            assert self.data_path.is_file()
 
         # Check that the converter module was created as expected
         pascal_name = "".join([x.capitalize() for x in name.split(" ")]).replace(" ", "")
-        assert f"{pascal_name} file converter" in self.conv_module_text
-        if not script:
-            assert f"class {pascal_name}FileConverter(FileConverter)" in self.conv_module_text
-        else:
-            assert f"class {pascal_name}FileConverter(ScriptFileConverter)" in self.conv_module_text
-        assert f"File converter specialised to use {pascal_name} for conversions" in self.conv_module_text
-        assert f"converter = {pascal_name}FileConverter" in self.conv_module_text
+
+        with self.subtests.test("plugin description present in converter module"):
+            assert f"{pascal_name} file converter" in self.conv_module_text
+
+        with self.subtests.test("plugin class specified correctly in converter module"):
+            if not script:
+                assert f"class {pascal_name}FileConverter(FileConverter)" in self.conv_module_text
+            else:
+                assert f"class {pascal_name}FileConverter(ScriptFileConverter)" in self.conv_module_text
+
+        with self.subtests.test("plugin class docstring correct"):
+            assert f"File converter specialised to use {pascal_name} for conversions" in self.conv_module_text
+        with self.subtests.test("`converter` variable properly set"):
+            assert f"converter = {pascal_name}FileConverter" in self.conv_module_text
 
         # Check that the data was created as expected
         conv_meta: utils.JsonDict = self.conv_data[db.DB_CONVERTER_KEY]
-        assert conv_meta[db.DB_ID_KEY] is None
-        assert conv_meta[db.DB_NAME_KEY] == name
-        assert conv_meta[db.DB_DESC_KEY] == f"{name} converter plugin"
-        assert conv_meta[db.DB_INFO_KEY] == ""
-        assert conv_meta[db.DB_URL_KEY] == ""
-        assert conv_meta[db.DB_SUPPORT_AMBIG_EXT_KEY] is None
-        assert conv_meta[db.DB_KEY_PREFIX_KEY] is None
+        with self.subtests.test("ID is correct in data file"):
+            assert conv_meta[db.DB_ID_KEY] is None
+        with self.subtests.test("name is correct in data file"):
+            assert conv_meta[db.DB_NAME_KEY] == name
+        with self.subtests.test("description is correct in data file"):
+            assert conv_meta[db.DB_DESC_KEY] == f"{name} converter plugin"
+        with self.subtests.test("info is correct in data file"):
+            assert conv_meta[db.DB_INFO_KEY] == ""
+        with self.subtests.test("URL is correct in data file"):
+            assert conv_meta[db.DB_URL_KEY] == ""
+        with self.subtests.test("ambiguous extension is correct in data file"):
+            assert conv_meta[db.DB_SUPPORT_AMBIG_EXT_KEY] is None
+        with self.subtests.test("db key prefix is correct in data file"):
+            assert conv_meta[db.DB_KEY_PREFIX_KEY] is None
 
         for key in (db.DB_EXTRA_FORMATS_KEY, db.DB_SUPPORTED_FORMATS_KEY, db.DB_IN_ONLY_FORMATS_KEY,
                     db.DB_OUT_ONLY_FORMATS_KEY, db.DB_SUPPORTED_CONVERSIONS_KEY, db.DB_UNSUPPORTED_CONVERSIONS_KEY,
                     db.DB_IN_FLAGS_KEY, db.DB_OUT_FLAGS_KEY, db.DB_IN_OPTIONS_KEY, db.DB_OUT_OPTIONS_KEY):
             val: list = self.conv_data[key]
-            assert isinstance(self.conv_data[key], list)
-            assert len(val) == 0
+            with self.subtests.test(f"{key} is an empty list in data file"):
+                assert isinstance(self.conv_data[key], list)
+                assert len(val) == 0
 
     def test_create_plugin_name_only(self):
         """Test creating a plugin in a simple case where just a name is supplied"""
@@ -184,18 +206,22 @@ class TestCreatePlugin(PluginManagementBase):
         """Test that we get a failure when there's a name clash"""
         self._run_create_plugin(self.PLUGIN_NAME, check=False)
         process = self._run_create_plugin(self.PLUGIN_NAME, label=self.TEST_PLUGIN_LABEL, expect_fail=True)
-        assert f"Name '{self.PLUGIN_NAME}' clashes" in process.stderr
+        with self.subtests.test("name clash error reported"):
+            assert f"Name '{self.PLUGIN_NAME}' clashes" in process.stderr
 
     def test_create_plugin_label_clash(self):
         """Test that we get a failure when there's a label clash"""
         self._run_create_plugin(self.PLUGIN_NAME, label=self.TEST_PLUGIN_LABEL, check=False)
         process = self._run_create_plugin(self.PLUGIN_NAME_2, label=self.TEST_PLUGIN_LABEL, expect_fail=True)
-        assert f"Label '{self.TEST_PLUGIN_LABEL}' clashes" in process.stderr
+        with self.subtests.test("label clash error reported"):
+            assert f"Label '{self.TEST_PLUGIN_LABEL}' clashes" in process.stderr
 
     def test_create_plugin_unconvertable_name(self):
         """Test we get a failure if the name can't be converted to a valid label"""
         process = self._run_create_plugin(self.UNCONVERTABLE_NAME, expect_fail=True)
-        assert f"A valid label could not be generated from converter name '{self.UNCONVERTABLE_NAME}'" in process.stderr
+        with self.subtests.test("unconvertible name error reported"):
+            assert (f"A valid label could not be generated from converter name '{self.UNCONVERTABLE_NAME}'"
+                    in process.stderr)
 
     def test_create_plugin_unconvertable_name_with_label(self):
         """Test that we can use an unconvertable name if we also provide a valid label"""
@@ -204,12 +230,14 @@ class TestCreatePlugin(PluginManagementBase):
     def test_create_plugin_invalid_label_caps(self):
         """Test we get a failure if the provided label is invalid due to including capital letters"""
         process = self._run_create_plugin(self.PLUGIN_NAME, label=self.INVALID_LABEL_CAPS, expect_fail=True)
-        assert f"Label '{self.INVALID_LABEL_CAPS}' is invalid" in utils.strip_control_codes(process.stderr)
+        with self.subtests.test("invalid label error reported"):
+            assert f"Label '{self.INVALID_LABEL_CAPS}' is invalid" in utils.strip_control_codes(process.stderr)
 
     def test_create_plugin_invalid_label_chars(self):
         """Test we get a failure if the provided label is invalid due to including invalid characters"""
         process = self._run_create_plugin(self.PLUGIN_NAME, label=self.INVALID_LABEL_CHAR, expect_fail=True)
-        assert f"Label '{self.INVALID_LABEL_CHAR}' is invalid" in utils.strip_control_codes(process.stderr)
+        with self.subtests.test("invalid label error reported"):
+            assert f"Label '{self.INVALID_LABEL_CHAR}' is invalid" in utils.strip_control_codes(process.stderr)
 
 
 class TestInstallPlugins(PluginManagementBase):
@@ -222,10 +250,11 @@ class TestInstallPlugins(PluginManagementBase):
                TEST_PATH_KEY: str(self.mock_repo),
                TEST_DATA_KEY: "True"}
 
-        process = subprocess.run(l_args, capture_output=True, text=True, env=env)
-        if process.returncode:
-            pytest.fail(
-                f"Test plugin creation failed with return code {process.returncode} and stderr:\n{process.stderr}")
+        with self.subtests.test("test plugin created successfully"):
+            process = subprocess.run(l_args, capture_output=True, text=True, env=env)
+            if process.returncode:
+                pytest.fail(f"Test plugin creation failed with return code {process.returncode} and "
+                            f"stderr:\n{process.stderr}")
 
         return process
 
@@ -241,11 +270,12 @@ class TestInstallPlugins(PluginManagementBase):
 
         process = subprocess.run(l_args, capture_output=True, text=True, env=env)
 
-        if not expect_fail and process.returncode:
-            pytest.fail(f"Plugin installation failed with return code {process.returncode}, stdout:\n{process.stdout}\n"
-                        f"and stderr:\n{process.stderr}")
-        elif expect_fail and not process.returncode:
-            pytest.fail(f"Plugin installation succeeded when failure was expected with stdout:\n{process.stdout}")
+        with self.subtests.test("plugin installation succeeded/failed as expected"):
+            if not expect_fail and process.returncode:
+                pytest.fail(f"Plugin installation failed with return code {process.returncode}, "
+                            f"stdout:\n{process.stdout}\nand stderr:\n{process.stderr}")
+            elif expect_fail and not process.returncode:
+                pytest.fail(f"Plugin installation succeeded when failure was expected with stdout:\n{process.stdout}")
 
         return process
 
@@ -258,38 +288,54 @@ class TestInstallPlugins(PluginManagementBase):
 
         # Look through the converter's data to check that it all appears to be installed
         conv_meta: utils.JsonDict = conv_data[db.DB_CONVERTER_KEY]
-        assert conv_meta[db.DB_ID_KEY] > THRESHOLD_FORMAT_ID
-        assert conv_meta[db.DB_SUPPORT_AMBIG_EXT_KEY] is not None
+        with self.subtests.test("id appears valid"):
+            assert conv_meta[db.DB_ID_KEY] > THRESHOLD_FORMAT_ID
+        with self.subtests.test("ambiguous extension key is set"):
+            assert conv_meta[db.DB_SUPPORT_AMBIG_EXT_KEY] is not None
 
-        # Check that no extra formats remain in the converter's data
-        assert len(conv_data[db.DB_EXTRA_FORMATS_KEY]) == 0
+        with self.subtests.test("no extra formats remain in the converter's data"):
+            assert len(conv_data[db.DB_EXTRA_FORMATS_KEY]) == 0
 
         # Check that all referenced format IDs have been converted to UUIDs
         for key in (db.DB_SUPPORTED_FORMATS_KEY, db.DB_IN_ONLY_FORMATS_KEY, db.DB_OUT_ONLY_FORMATS_KEY):
             for format_id in conv_data[key]:
-                assert format_id > THRESHOLD_FORMAT_ID
+                with self.subtests.test("format ID converted to UUID", key=key, format_id=format_id):
+                    assert format_id > THRESHOLD_FORMAT_ID
 
         for key in (db.DB_SUPPORTED_CONVERSIONS_KEY, db.DB_UNSUPPORTED_CONVERSIONS_KEY):
             for d_conversion in conv_data[key]:
-                assert d_conversion[db.DB_IN_ID_KEY] > THRESHOLD_FORMAT_ID
-                assert d_conversion[db.DB_OUT_ID_KEY] > THRESHOLD_FORMAT_ID
+                with self.subtests.test("input format ID converted to UUID",
+                                        key=key, format_id=d_conversion[db.DB_IN_ID_KEY]):
+                    assert d_conversion[db.DB_IN_ID_KEY] > THRESHOLD_FORMAT_ID
+                with self.subtests.test("output format ID converted to UUID",
+                                        key=key, format_id=d_conversion[db.DB_OUT_ID_KEY]):
+                    assert d_conversion[db.DB_OUT_ID_KEY] > THRESHOLD_FORMAT_ID
 
         for key in (db.DB_IN_FLAGS_KEY, db.DB_OUT_FLAGS_KEY, db.DB_IN_OPTIONS_KEY, db.DB_OUT_OPTIONS_KEY):
             for d_flag in conv_data[key]:
                 for format_id in d_flag[db.DB_FORMAT_ID_LIST_KEY]:
-                    assert format_id > THRESHOLD_FORMAT_ID
+                    with self.subtests.test("flag/option format ID converted to UUID", key=key,
+                                            flag=d_flag.get(db.DB_FLAG_KEY, d_flag.get(db.DB_OPTION_KEY)),
+                                            format_id=format_id):
+                        assert format_id > THRESHOLD_FORMAT_ID
 
         # Check that all information about the converter is now in the proper database file
         os.environ[TEST_PATH_KEY] = str(self.mock_repo)
         database = db.load_database(prune=False)
         conv_info: db.ConverterInfo = database.get_converter_info(conv_meta[db.DB_ID_KEY])
 
-        assert conv_info.id == conv_meta[db.DB_ID_KEY]
-        assert conv_info.pretty_name == conv_meta[db.DB_NAME_KEY]
-        assert conv_info.description == conv_meta[db.DB_DESC_KEY]
-        assert conv_info.url == conv_meta[db.DB_URL_KEY]
-        assert conv_info.supported is False
-        assert conv_info.registered is False
+        with self.subtests.test("ID is set in the database file"):
+            assert conv_info.id == conv_meta[db.DB_ID_KEY]
+        with self.subtests.test("name is set in the database file"):
+            assert conv_info.pretty_name == conv_meta[db.DB_NAME_KEY]
+        with self.subtests.test("description is set in the database file"):
+            assert conv_info.description == conv_meta[db.DB_DESC_KEY]
+        with self.subtests.test("URL is set in the database file"):
+            assert conv_info.url == conv_meta[db.DB_URL_KEY]
+        with self.subtests.test("converter labeled as not supported"):
+            assert conv_info.supported is False
+        with self.subtests.test("converter labeled as not registered"):
+            assert conv_info.registered is False
 
     def test_simple_install(self):
         """Test installing a simple plugin"""
@@ -311,8 +357,9 @@ class TestInstallPlugins(PluginManagementBase):
         self.plugin_path = self.conv_path / "test_converter_questionable"
         conv_data_init = self.conv_data
 
-        process = self._run_install_plugins(expect_fail=True)
-        assert process.returncode == 2
+        with self.subtests.test("process fails with special returncode 2"):
+            process = self._run_install_plugins(expect_fail=True)
+            assert process.returncode == 2
 
         # Check that the converter's data hasn't been changed
 
@@ -320,7 +367,8 @@ class TestInstallPlugins(PluginManagementBase):
         self.plugin_path = self.conv_path / "test_converter_questionable"
         conv_data_post_install = self.conv_data
 
-        assert conv_data_init == conv_data_post_install
+        with self.subtests.test("converter data hasn't been changed"):
+            assert conv_data_init == conv_data_post_install
 
     def test_questionable_install_success(self):
         """Test that an installation with a questionable format succeeds if it is confirmed as new"""
@@ -360,5 +408,6 @@ class TestInstallPlugins(PluginManagementBase):
             converter = database.get_converter_info(d_converts_to[db.DB_CONV_ID_KEY])
             in_format = database.get_format_info(d_converts_to[db.DB_IN_ID_KEY])
             out_format = database.get_format_info(d_converts_to[db.DB_OUT_ID_KEY])
-            assert (database.conversions_table.get_conversion_weight(converter, in_format, out_format) ==
-                    db.calc_conversion_weight(converter, in_format, out_format))
+            with self.subtests.test("calculated conversion weight stored in the database"):
+                assert (database.conversions_table.get_conversion_weight(converter, in_format, out_format) ==
+                        db.calc_conversion_weight(converter, in_format, out_format))
