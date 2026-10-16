@@ -2,10 +2,9 @@
 }} {% endblock %} {% block hero_title %}Download{% endblock %} {% block
 gui_content %}
 <p>
-  The PSDI Data Conversion service can be downloaded for local use. This is
-  recommended when you wish to convert sensitive, convert files exceeding the
-  size limit for the public service, or access it via the command-line or Python
-  library.
+  The PSDI Data Conversion service can be downloaded for local use. This is recommended when you wish to convert
+  sensitive files or files exceeding the size limit for the public service, or to access it via the command-line or
+  Python library, which include some additional features such as support for chained conversions.
 </p>
 
 <h2>Installation</h2>
@@ -14,9 +13,7 @@ gui_content %}
 
 <ul>
   <li>
-    <a href="https://pypi.org/project/psdi-data-conversion/"
-      >PSDI Data Conversion Service on PyPI</a
-    >
+    <a href="https://pypi.org/project/psdi-data-conversion/">PSDI Data Conversion Service on PyPI</a>
   </li>
 </ul>
 
@@ -39,15 +36,12 @@ gui_content %}
 
 <ul>
   <li>
-    <a href="https://github.com/PSDI-UK/psdi-data-conversion"
-      >PSDI Data Conversion Project on GitHub</a
-    >
+    <a href="https://github.com/PSDI-UK/psdi-data-conversion">PSDI Data Conversion Project on GitHub</a>
   </li>
 </ul>
 
-The project’s source code is available on GitHub at the link above. If you wish
-to install it from source, you can clone the repository, and then install it
-via:
+The project’s source code is available on GitHub at the link above. If you wish to install it from source, you can clone
+the repository and then install it via:
 
 <pre><code class="secondary">pip install '.[gui-test]'</code></pre>
 
@@ -55,7 +49,7 @@ via:
   The <code class="secondary">[gui-test]</code> portion installs all optional
   components for running the local webpage and testing all project components.
   See the project’s <code class="secondary">pyproject.toml</code> file for other
-  possible optional dependencies sets that can be installed.
+  possible optional dependency sets that can be installed.
 </p>
 
 <h2>Use</h2>
@@ -67,7 +61,7 @@ via:
     <strong>Local Gui:</strong> Run the script
     <code class="secondary">psdi-data-convert-gui</code> to start the server.
     Append the <code class="secondary">--help</code> option for to see optional
-    arguments (generally not required for end-users)
+    arguments (most of which are only used for development purposes)
   </li>
   <li>
     <strong>Command-Line Interface:</strong> Run the script
@@ -90,15 +84,10 @@ via:
 
 <ul>
   <li>
-    <a
-      href="https://github.com/PSDI-UK/psdi-data-conversion/blob/main/README.md"
-      >README</a
-    >
+    <a href="https://github.com/PSDI-UK/psdi-data-conversion/blob/main/README.md">README</a>
   </li>
   <li>
-    <a href="https://psdi-uk.github.io/psdi-data-conversion/"
-      >Code Documentation</a
-    >
+    <a href="https://psdi-uk.github.io/psdi-data-conversion/">Code Documentation</a>
   </li>
 </ul>
 {% endblock %}
