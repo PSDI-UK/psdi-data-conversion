@@ -271,7 +271,7 @@ class ConvertArgs:
                                       "arguments cannot be provided when the converter or chain is "
                                       "automatically-determined.")
             if l_err_strs:
-                raise FileConverterInputException("\n".join(l_err_strs))
+                raise FileConverterInputException("\n".join(l_err_strs), help=True)
 
         # Check that the logging mode is valid
         if self.log_mode not in const.L_ALLOWED_LOG_MODES:
