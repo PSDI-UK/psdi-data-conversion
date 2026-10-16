@@ -37,18 +37,27 @@
         indicated filters the options (case insensitive); for example, typing “can” or “NON” reduces the number of
         options to one: “can: Canonical SMILES.”
       </p>
-      <p>When converting multiple files with, say, extension cif within an archive (e.g., ZIP), select "cif:
-        Crystallographic Information File."
+      <p>When converting multiple files with, say, extension cif within an archive (e.g., ZIP), select the extension of
+        the contained files, not the exception of the archive - in this case: "cif: Crystallographic Information File."
       </p>
       <p>If you change your mind about a conversion, click the “Reset” button.</p>
       <p>When both formats have been selected, converters able to carry out this conversion appear in the
         “Conversion options” box below along with an indication of conversion quality (many conversions not yet
         tested) and whether or not the converter is supported on this site.</p>
       {% if service_mode %}
-      <p><strong>Note for mobile users:</strong> On phone and tablet browsers, the format selection will only update
-        after you finish typing. In order to see the matching formats, you will then have to tap the selection box,
-        which will bring up a list of the matching formats which you can select from.</p>
+      <p class="mobile-only"><strong>Note for mobile users:</strong> On phone and tablet browsers, the format selection
+        will only update after you finish typing. In order to see the matching formats, you will then have to tap the
+        selection box, which will bring up a list of the matching formats which you can select from.</p>
       {% endif %}
+      <p><strong>Conversion not available?</strong> The GUI interface for this service only supports direct conversions
+        between file formats. Many additional conversions are possible via multi-step “chained” conversions, which are
+        supported by the
+        {% if service_mode %}
+        <a href="./download.htm">downloadable command-line interface</a>.
+        {% else %}
+        command-line interface.
+        {% endif %}
+      </p>
 
     </div>
     <hr class="small-screen-only">
@@ -78,8 +87,8 @@
         Format/Conversion” in the navigation bar.
       </p>
       {% if service_mode %}
-      <p><strong>Note for mobile users:</strong> On phone and tablet browsers, you will need to tap the select box to
-        see a list of the available converters, which you will then be able to select from.</p>
+      <p class="mobile-only"><strong>Note for mobile users:</strong> On phone and tablet browsers, you will need to tap
+        the select box to see a list of the available converters, which you will then be able to select from.</p>
       {% endif %}
     </div>
     <hr class="small-screen-only">
