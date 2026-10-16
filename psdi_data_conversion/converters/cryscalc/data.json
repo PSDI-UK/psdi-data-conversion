@@ -1,0 +1,40 @@
+{
+    "converter": {
+        "name": "CRYSCALC",
+        "desc": "University of Rennes",
+        "info": "",
+        "id": 314520102903760985481871418805567142726,
+        "url": "https://cdifx.univ-rennes1.fr/progs/cryscalc/cryscalc_main.htm",
+        "database_key_prefix": null,
+        "supports_ambiguous_extensions": false
+    },
+    "extra_formats": [],
+    "supported_formats": [
+        214908995963617485636855366710271712886,
+        265228661700132434943151283693896395164,
+        327200745458547092709635496941629709670
+    ],
+    "in_only_formats": [],
+    "out_only_formats": [
+        50135205643343990489495467470022579507
+    ],
+    "supported_conversions": [],
+    "unsupported_conversions": [
+        {
+            "in_id": 214908995963617485636855366710271712886,
+            "out_id": 327200745458547092709635496941629709670
+        },
+        {
+            "in_id": 265228661700132434943151283693896395164,
+            "out_id": 50135205643343990489495467470022579507
+        },
+        {
+            "in_id": 327200745458547092709635496941629709670,
+            "out_id": 50135205643343990489495467470022579507
+        }
+    ],
+    "in_flags": [],
+    "in_options": [],
+    "out_flags": [],
+    "out_options": []
+}

@@ -62,7 +62,7 @@ def post_convert():
 
         # Otherwise, find the format with the matching note
         for possible_format in l_possible_formats:
-            if possible_format.note in full_note:
+            if possible_format.description in full_note:
                 d_formats[format_label] = possible_format
                 break
         else:
@@ -95,7 +95,7 @@ def post_convert():
 
             # Check for anticipated exceptions, and write a simpler message for them
             for err_message in (const.ERR_CONVERSION_FAILED, const.ERR_CONVERTER_NOT_RECOGNISED,
-                                const.ERR_EMPTY_ARCHIVE, const.ERR_WRONG_EXTENSIONS):
+                                const.ERR_EMPTY_ARCHIVE, const.ERR_WRONG_EXTENSION, const.ERR_WRONG_EXTENSION_MULT):
                 if log_utility.string_with_placeholders_matches(err_message, str(e)):
                     with open(qualified_output_log, "w") as fo:
                         fo.write(str(e))
