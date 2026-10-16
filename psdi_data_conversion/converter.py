@@ -378,11 +378,10 @@ def check_from_format(filename: str,
         If `strict` is True and the the file does not end with the expected exception
     """
 
-    # Get the name of the format
-    from psdi_data_conversion.database import get_format_info
-    from_format_name = "." + get_format_info(from_format).name
+    # Chevk against each possible name of the format
 
-    l_allowed_exts = list(get_format_info(from_format).d_alias_exts.values())
+    from psdi_data_conversion.database import get_format_info
+    l_allowed_exts = list(get_format_info(from_format, which=0).d_alias_exts.values())
     for from_format_name in l_allowed_exts:
         if filename.endswith(from_format_name):
             return True

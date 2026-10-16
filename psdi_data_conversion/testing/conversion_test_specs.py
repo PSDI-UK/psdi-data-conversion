@@ -35,34 +35,38 @@ simple_success_callback = MCB(CheckFileStatus(), CheckLogContentsSuccess())
 """A standardised callback which checks that the output file and log exist, and that the log indicates likely success"""
 
 l_all_test_specs.append(Spec(name="Standard Multiple Tests",
-                             filename=["1NE6.mmcif",
-                                       "hemoglobin.pdb", "aceticacid.mol", "nacl.cif",
-                                       "hemoglobin.pdb", "hemoglobin.pdb", "hemoglobin.pdb",
-                                       "nacl.cif",
+                             filename=["1NE6.mmcif", "aceticacid.mol", "nacl.cif",
+                                       "ethanol.xyz",
                                        "hemoglobin.pdb", "hemoglobin.pdb", "nacl.cif",
-                                       "ethanol.xyz"],
-                             to_format=[tc.FORMAT_PDB_0,
-                                        tc.FORMAT_CIF, tc.FORMAT_ML2, tc.FORMAT_XYZ_1,
-                                        tc.FORMAT_CIF, tc.FORMAT_XYZ_1, tc.FORMAT_SXYZ,
-                                        tc.FORMAT_XYZ_1,
-                                        tc.FORMAT_CIF, tc.FORMAT_XYZ_0, tc.FORMAT_XYZ_0,
-                                        tc.FORMAT_CML],
-                             from_format=[None,
-                                          tc.FORMAT_PDB_0, tc.FORMAT_MOL, None,
-                                          tc.FORMAT_PDB_0, tc.FORMAT_PDB_0, tc.FORMAT_PDB_0,
-                                          None,
+                                       "hemoglobin.pdb", "nacl.cif"],
+                             to_format=[tc.FORMAT_PDB_0, tc.FORMAT_ML2, tc.FORMAT_XYZ_1,
+                                        tc.FORMAT_CML,
+                                        tc.FORMAT_XYZ_1, tc.FORMAT_SXYZ, tc.FORMAT_XYZ_1,
+                                        tc.FORMAT_XYZ_0, tc.FORMAT_XYZ_0],
+                             from_format=[None, tc.FORMAT_MOL, None,
+                                          tc.FORMAT_XYZ_1,
                                           tc.FORMAT_PDB_0, tc.FORMAT_PDB_0, None,
-                                          tc.FORMAT_XYZ_1],
-                             converter_name=[const.CONVERTER_OB,
-                                             const.CONVERTER_OB, const.CONVERTER_OB, const.CONVERTER_OB,
+                                          tc.FORMAT_PDB_0, None],
+                             converter_name=[const.CONVERTER_OB, const.CONVERTER_OB, const.CONVERTER_OB,
+                                             const.CONVERTER_OB,
                                              const.CONVERTER_ATO, const.CONVERTER_ATO, const.CONVERTER_ATO,
-                                             const.CONVERTER_ATO,
-                                             const.CONVERTER_C2X, const.CONVERTER_C2X, const.CONVERTER_C2X,
-                                             const.CONVERTER_OB],
+                                             const.CONVERTER_C2X, const.CONVERTER_C2X],
                              callback=simple_success_callback,
                              ))
 """A basic set of test conversions which we expect to succeed without issue, running conversions with each of the
-Open Babel, Atomsk, and c2x converters"""
+Open Babel, Atomsk, and c2x converter"""
+
+l_all_test_specs.append(Spec(name="Disambiguation Tests",
+                             filename="hemoglobin.pdb",
+                             to_format=tc.FORMAT_CIF,
+                             from_format=None,
+                             converter_name=[const.CONVERTER_OB, const.CONVERTER_ATO, const.CONVERTER_C2X,],
+                             callback=simple_success_callback,
+                             compatible_with_chain=False,
+                             ))
+"""Some more test conversions which we expect to succeed without issue, but which require disambiguating the input
+format with each of the Open Babel, Atomsk, and c2x converters. Isn't tested with the chain conversion runner, as that
+requires unambiguous input formats"""
 
 l_all_test_specs.append(Spec(name="c2x Formats Tests",
                              to_format=[tc.FORMAT_RES_1, tc.FORMAT_ABI, tc.FORMAT_POSCAR, tc.FORMAT_CML],
