@@ -408,6 +408,16 @@ def test_auto_no_converter_args(converter, arg_str, subtests):
                                 "automatically-determined.", e.value)
 
 
+@pytest.mark.parametrize("arg_str", l_arg_strs)
+def test_path_no_converter_args(arg_str, subtests):
+    """Test that an error is raised if any converter-specific arguments are provided when chained conversion is
+    requested via `path`"""
+    with subtests.test("get input exception"), pytest.raises(FileConverterInputException) as e:
+        _get_parsed_args(f"file1 --path {FORMAT_INCHI} openbabel {FORMAT_PDB_0} atomsk {FORMAT_MOLDY} {arg_str}")
+    with subtests.test("correct error message"):
+        assert compressed_match("Converter-specific arguments are not yet supported for chained conversions.", e.value)
+
+
 l_path_args = [(FORMAT_MOLDY, f"openbabel {FORMAT_PDB_0} atomsk", FORMAT_INCHI),
                (FORMAT_MOLDY, f"openbabel {FORMAT_PDB_0} atomsk {FORMAT_INCHI}", None),
                (None, f"{FORMAT_MOLDY} openbabel {FORMAT_PDB_0} atomsk", FORMAT_INCHI),
