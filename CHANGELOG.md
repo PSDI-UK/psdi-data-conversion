@@ -70,6 +70,9 @@
 
 - The output of the command-line interface and other scripts has been updated to use colors to highlight notable syntax (e.g. code snippets are shaded light yellow)
 - Various messages output by the CLI have been improved to provide more useful information to the user (e.g. the message if it's run without any arguments will now display some example commands)
+- Added note to the GUI about chained conversions being possible with the CLI
+- Cleaned up various text and typos in the GUI
+- Hid notes for mobile users on the GUI when not using a mobile browser
 
 ### Formatting and Refactoring Changes
 
