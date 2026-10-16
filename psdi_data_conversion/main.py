@@ -265,11 +265,17 @@ class ConvertArgs:
             for arg, val in l_converter_specific_items:
                 val = getattr(self, arg)
                 if val:
-                    l_err_strs.append(f"Argument {tc.MESSAGE}'{val}'{tc.OFF} was provided when using the {tc.MESSAGE}'"
-                                      f"{const.CONVERTER_AUTO}'{tc.OFF} or {tc.MESSAGE}'{const.CONVERTER_AUTOCHAIN}"
-                                      f"'{tc.OFF} keyword for {tc.CODE}`-w/--with`{tc.OFF}. Converter-specific "
-                                      "arguments cannot be provided when the converter or chain is "
-                                      "automatically-determined.")
+                    err_str = f"Argument {tc.MESSAGE}'{val}'{tc.OFF} was provided when using the "
+                    if self.auto:
+                        err_str += (f"{tc.MESSAGE}'{const.CONVERTER_AUTO}'{tc.OFF} or {tc.MESSAGE}'"
+                                    f"{const.CONVERTER_AUTOCHAIN}'{tc.OFF} keyword for {tc.CODE}`-w/--with`{tc.OFF}. "
+                                    "Converter-specific arguments cannot be provided when the converter or chain is "
+                                    "automatically-determined.")
+                    else:
+                        err_str += (f"{tc.CODE}`--path`{tc.OFF} argument to specify a chained conversion pathway. "
+                                    "Converter-specific arguments are not yet supported for chained conversions. If "
+                                    "these are necessary, please run the conversion manually in separate steps.")
+                    l_err_strs.append(err_str)
             if l_err_strs:
                 raise FileConverterInputException("\n".join(l_err_strs), help=True)
 
