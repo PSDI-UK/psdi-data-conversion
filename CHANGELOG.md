@@ -1,4 +1,11 @@
-# Changelog for PSDI Data Conversion
+# Changelog for PSDI Data Conversion## v0.3.25
+
+## v0.3.26
+
+### Miscellaneous Changes:
+
+- Updated TLS certificate
+- Fixed some syntax errors in GitHub workflows
 
 ## v0.4.0
 
