@@ -32,7 +32,7 @@ This project provides utilities to assist in converting files between the many d
   - [Installation](#installation-1)
   - [Use](#use)
     - [`run_converter`](#run_converter)
-    - [`get_converter`](#get_converter)
+    - [`run_converter_chain`](#run_converter_chain)
     - [`constants`](#constants)
     - [`database`](#database)
   - [Further Information](#further-information)
@@ -363,6 +363,61 @@ Where `filename` is the name of the file to convert (either fully-qualified or r
 See the method's documentation via `help(run_converter)` after importing it for further details on usage.
 
 Note that as with running the application through the command-line, some extra care may be needed in the case that the input or output format is ambiguous - see the [Data Conversion](#data-conversion) section above for more details on this. As with running through the command-line, a format's ID or disambiguated name must be used in the case of ambiguity.
+
+#### `run_converter_chain`
+
+This is an alternative method to run a file conversion, which allows running multi-step "chain" conversions. It can be used in largely the same way as `run_converter`, with a few notable differences highlighted here. It can be imported via:
+
+```python
+from psdi_data_conversion.converter import run_converter
+```
+
+and used via either:
+
+```python
+run_converter_chain(filename, to_format=to_format, **kwargs)
+```
+
+or
+
+```python
+run_converter_chain(filename, path=l_steps, l_data=l_data, **kwargs)
+```
+
+The former method will automatically determine a conversion pathway based on internal heuristics which prioritise minimising data loss in conversions and perform the conversion using that pathway. The latter method uses a pathway explicitly provided by the user, and also allows for a list of `data` objects for each individual step to customise the conversion (in the same format as used for `run_converter`).
+
+`l_steps` here should be a list of steps, where each step is a tuple of:
+
+- Converter to be used for this step
+- (Optional) Input format for this step
+- Output format for this step
+
+Conversion pathways for a desired conversion may be obtained via the method:
+
+```python
+from psdi_data_conversion.database import get_possible_conversion_pathways
+l_pathways = get_possible_conversion_pathways(in_format=in_format, out_format=out_format, include=("best" OR "shortest"))
+```
+
+where `include="best"` will return all equally-low-weight paths per the internal heuristics used to determine the best paths and `include="shortest"` will return all equally-shortest pathways. These paths can be detailed in a human-friendly manner with the `format_detailed()` method of each, e.g.:
+
+```
+>>> print(l_pathways[0].format_detailed())
+1) inchi to pdb-0 with Open Babel    Weight: 000-00000001-01-01
+2) pdb-0 to mol-1 with Atomsk        Weight: 001-00000001-40-03
+                               Total weight: 001-00000002-41-04
+```
+
+This can be used to select a desired path, which can then be passed to `run_converter_chain`:
+
+```python
+l_pathways = get_possible_conversion_pathways(in_format=in_format, out_format=out_format)
+run_converter_chain(filename, path=l_pathways[0], l_data=l_data, **kwargs)
+```
+
+See the method's documentation via `help(run_converter_chain)` after importing it for further details on usage.
+
+As with `run_converter`, extra care may need to be taken if the input or output format is ambiguous. This is more of an issue with running chain conversions, as the library is unable to use the desired converter to try to disambiguate formats.
 
 #### `constants`
 

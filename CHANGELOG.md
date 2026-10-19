@@ -7,6 +7,12 @@
 - Updated TLS certificate
 - Fixed some syntax errors in GitHub workflows
 
+## v0.4.1
+
+### Documentation Changes
+
+- Added section on running chained conversions with the Python library to the README
+
 ## v0.4.0
 
 ### **Breaking Changes**
@@ -89,6 +95,8 @@
 
 - Fixed incorrect output type in documentation for database methods `get_in_format_args` and `get_out_format_args`
 - Improved the error output for the database method `get_converter_info` if the converter name is not recognised, providing a list of known names
+- Added sections to the README discussing new chained conversion functionality
+- Added file `psdi_data_conversion/converters/doc.md`, which documents the structure of converter plugins
 
 ### Testing Changes
 
