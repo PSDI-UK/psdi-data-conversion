@@ -247,11 +247,13 @@ format>] [-i/--in <input file location>] [-o/--out <location for output files>] 
 [--from-flags '<flags to be provided to the converter for reading input>'] [--to-flags '<flags to be provided to the
 converter for writing output>'] [--from-options '<options to be provided to the converter for reading input>']
 [--to-options '<options to be provided to the converter for writing output>'] [--coord-gen <coordinate generation
-options] [-s/--strict] [--nc/--no-check] [-q/--quiet] [-g/--log-file <log file name] [--log-level <level>] [--log-mode
-<mode>]
+options] [-s/--strict] [-n/--no-clobber] [--nc/--no-check] [-q/--quiet] [-g/--log-file <log file name] [--log-level
+<level>] [--log-mode <mode>]
 ```
 
 Call `psdi-data-convert -h` for details on each of these options.
+
+The name of the output file will be determined from the name of the input file (with its extension stripped if applicable) and the name of the output format. E.g. an input file named "file.inchi" or "file" converted to `pdb` will result in an output filename of "file.pdb". In the case that a file by this name already exists, it will be overwritten unless the argument `-n/--no-clobber` is set, in which case an error message will be returned.
 
 Note that some requested conversions may involve ambiguous formats which share the same extension. In this case, the application will print a warning and list possible matching formats, with IDs and disambiguating names that can be used to specify which one. For instance, the `c2x` converter can convert into two variants of the `pdb` format, and if you ask it to convert from `mmcif` to `pdb` without specifying which one, you'll see:
 
@@ -359,6 +361,8 @@ run_converter(filename, to_format, converter=name, data=data)
 ```
 
 Where `filename` is the name of the file to convert (either fully-qualified or relative to the current directory), `to_format` is the desired format to convert to (e.g. `"pdb"`), `converter` is the name or ID of the converter to use (default "Open Babel"), and `data` is a dict of any extra information required by the specific converter being used, such as flags for how to read/write input/output files (default empty dict).
+
+The name of the output file will be determined from the name of the input file (with its extension stripped if applicable) and the name of the output format. E.g. an input file named "file.inchi" or "file" converted to `pdb` will result in an output filename of "file.pdb". In the case that a file by this name already exists, it will be overwritten unless the argument `no_clobber=True` is set, in which case a `FileExistsError` exception will be raised.
 
 See the method's documentation via `help(run_converter)` after importing it for further details on usage.
 

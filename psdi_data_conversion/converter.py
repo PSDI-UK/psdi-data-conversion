@@ -413,6 +413,7 @@ def run_converter(filename: str,
                   converter: str | int | UUID | Any = const.CONVERTER_OB,
                   input_dir=const.DEFAULT_INPUT_DIR,
                   output_dir=const.DEFAULT_OUTPUT_DIR,
+                  no_clobber=False,
                   strict=False,
                   permission_level: Literal[0, 1, 2] = const.PERMISSION_LOCAL,
                   archive_output=True,
@@ -446,6 +447,9 @@ def run_converter(filename: str,
         The location of input files relative to the current directory
     output_dir : str
         The location of output files relative to the current directory
+    no_clobber : bool
+        If False (default), will overwrite the output converted file if it exists. If True, will instead raise a
+        `FileExistsError` and leave it untouched
     strict : bool
         If True and `from_format` is not None, will fail if any input file has the wrong extension (including files
         within archives, but not the archives themselves). Otherwise, will only print a warning in this case
@@ -457,6 +461,8 @@ def run_converter(filename: str,
         If True (default) and the input file is an archive (i.e. zip or tar file), the converted files will be archived
         into a file of the same format, their logs will be combined into a single log, and the converted files and
         individual logs will be deleted
+    data : dict[str, Any] | None
+        A dict providing any other data needed by the converter
     max_file_size : float
         The maximum allowed file size for input/output files, in MB, default 1 MB for Open Babel, unlimited for other
         converters. If 0, will be unlimited. If an archive of files is provided, this will apply to the total of all
@@ -466,7 +472,7 @@ def run_converter(filename: str,
         supported with the specified converter
     log_file : str | None
         If provided, all logging will go to a single file or stream. Otherwise, logs will be split up among multiple
-        files for server-style logging.
+        files for server-style logging
     log_mode : str
         How logs should be stored. Allowed values are:
         - 'full' - Multi-file logging, only recommended when running as a public web app
@@ -727,6 +733,7 @@ def run_converter_chain(filename: str,
                         from_format: str | int | UUID | Any | None = None,
                         input_dir=const.DEFAULT_INPUT_DIR,
                         output_dir=const.DEFAULT_OUTPUT_DIR,
+                        no_clobber=False,
                         l_data: list[dict[str, Any]] | None = None,
                         delete_input: bool = False,
                         max_file_size: float | None = None,
@@ -753,23 +760,49 @@ def run_converter_chain(filename: str,
     from_format : str | int | FormatInfo | None
         The format to convert from, as the file extension (e.g. "pdb"), ID, UUID, or FormatInfo. If not provided,
         will be determined from the extension of `filename`
+    abort_callback : Callable[[int], None]
+        Function to be called if the conversion hits an error and must be aborted, default `abort_raise`, which
+        raises an appropriate exception
+    use_envvars : bool
+        If set to True, environment variables will be checked for any that set options for this class and used,
+        default False
+    input_dir : str
+        The location of input files relative to the current directory
+    output_dir : str
+        The location of output files relative to the current directory
+    no_clobber : bool
+        If False (default), will overwrite the output converted file if it exists. If True, will instead raise a
+        `FileExistsError` and leave it untouched
+    strict : bool
+        If True and `from_format` is not None, will fail if any input file has the wrong extension (including files
+        within archives, but not the archives themselves). Otherwise, will only print a warning in this case
+    archive_output : bool
+        If True (default) and the input file is an archive (i.e. zip or tar file), the converted files will be archived
+        into a file of the same format, their logs will be combined into a single log, and the converted files and
+        individual logs will be deleted
     l_data : list[dict[str, Any] | None] | None
         A list of `data` dicts for each step of the conversion chain, providing any other data needed by the converter
         used for the respective step. May only be provided if `path` is also provided, and must have the same length as
         `path`
-    delete_input : bool
-        Whether or not to delete input files after conversion, default False
-    permission_level : Literal[0,1,2]
-        Integer representing the permissions level of the user requesting the conversion. 2 (default) indicates running
-        in local mode, so maximum permissions. 1 indicates running in service mode with a logged-in user, 0 indicates
-        running in service mode with a logged-out user
-    max_file_size : float
-        The maximum allowed file size for input/output files, in MB, default 1 MB for Open Babel, unlimited for other
-        converters. If 0, will be unlimited. If an archive of files is provided, this will apply to the total of all
-        files contained in it
     log_file : str | None
         If provided, all logging will go to a single file or stream. Otherwise, logs will be split up among multiple
-        files for server-style logging.
+        files for server-style logging
+    log_mode : str
+        How logs should be stored. Allowed values are:
+        - 'full' - Multi-file logging, only recommended when running as a public web app
+        - 'simple' - Logs saved to one file
+        - 'stdout' - Output logs and errors only to stdout
+        - 'none' - Output only errors to stdout
+    log_level : int | None
+        The level to log output at. If None (default), the level will depend on the chosen `log_mode`:
+        - 'full' or 'simple': INFO
+        - 'stdout' - INFO to stdout, no logging to file
+        - 'none' - ERROR to stdout, no logging to file
+    refresh_local_log : bool
+        If True, the local log generated from this run will be overwritten. If False it will be appended to. Default
+        True
+    delete_input : bool
+        Whether or not to delete input files after conversion, default False
 
     Returns
     -------
@@ -782,6 +815,8 @@ def run_converter_chain(filename: str,
         If the converter isn't recognized or there's some other issue with the input
     FileConverterAbortException
         If something goes wrong during the conversion process
+    FileExistsError
+        If the output file already exists and `no_clobber=True` is set
     """
 
     from psdi_data_conversion.database import ConverterInfo, FormatInfo, get_conversion_pathway, get_format_info
