@@ -25,6 +25,7 @@ from psdi_data_conversion import log_utility
 from psdi_data_conversion.dist import bin_exists, get_bin_path, get_dist
 from psdi_data_conversion.file_io import get_package_path
 from psdi_data_conversion.security import SAFE_STRING_RE, string_is_safe
+from psdi_data_conversion.utils import tc
 
 try:
     # werkzeug is installed in the optional dependency Flask. It's only used here to recognize an exception type,
@@ -597,11 +598,11 @@ class FileConverter:
                 if not self.no_clobber:
                     self.logger.debug(
                         f"Output file {self.out_filename} exists and no_clobber=True, so raising exception")
-                    raise FileConverterOutputFileException(f"Output file {self.out_filename} already exists",
-                                                           help=True)
+                    raise FileConverterOutputFileException(f"Output file {tc.PATH}'{self.out_filename}'{tc.OFF} "
+                                                           "already exists", help=True)
                 else:
-                    self.logger.debug(
-                        f"Output file {self.out_filename} exists and no_clobber=False, so deleting it")
+                    self.logger.debug(f"Output file {tc.PATH}'{self.out_filename}'{tc.OFF} exists and {tc.CODE}`"
+                                      f"no_clobber=False`{tc.OFF}, so deleting it")
                     os.remove(self.out_filename)
 
             self.logger.debug("Starting file conversion")
@@ -614,13 +615,13 @@ class FileConverter:
             if isinstance(e, l_abort_exceptions):
                 # Log the error if it hasn't yet been logged
                 if not hasattr(e, "logged") or e.logged is False:
-                    self.logger.error(f"Unexpected exception raised while running the converter, of type '{type(e)}' "
-                                      f"with message: {str(e)}")
+                    self.logger.error(f"Unexpected exception raised while running the converter, of type {tc.CODE}`"
+                                      f"{type(e)}`{tc.OFF} with message: {str(e)}")
                     e.logged = True
                 raise
             if not (isinstance(e, FileConverterException) and e.help):
                 self.logger.error(f"Exception triggering an abort was raised while running the converter. Exception "
-                                  f"was type '{type(e)}', with message: {str(e)}")
+                                  f"was type {tc.CODE}`{type(e)}`{tc.OFF}, with message: {str(e)}")
                 if e:
                     e.logged = True
             self._abort(message="The application encountered an error while running the converter:\n" +

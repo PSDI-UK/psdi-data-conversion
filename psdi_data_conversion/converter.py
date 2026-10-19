@@ -266,7 +266,7 @@ def get_converter(*args, converter=const.CONVERTER_OB, **converter_kwargs) -> ba
         The location of output files relative to the current directory
     no_clobber : bool
         If False (default), will overwrite the output converted file if it exists. If True, will instead raise a
-        `FileExistsError` and leave it untouched
+        `FileConverterOutputFileException` and leave it untouched
     max_file_size : float
         The maximum allowed file size for input/output files, in MB, default 1 MB for Open Babel, unlimited for other
         converters. If 0, will be unlimited. If an archive of files is provided, this will apply to the total of all
@@ -451,7 +451,7 @@ def run_converter(filename: str,
         The location of output files relative to the current directory
     no_clobber : bool
         If False (default), will overwrite the output converted file if it exists. If True, will instead raise a
-        `FileExistsError` and leave it untouched
+        `FileConverterOutputFileException` and leave it untouched
     strict : bool
         If True and `from_format` is not None, will fail if any input file has the wrong extension (including files
         within archives, but not the archives themselves). Otherwise, will only print a warning in this case
@@ -773,7 +773,7 @@ def run_converter_chain(filename: str,
         The location of output files relative to the current directory
     no_clobber : bool
         If False (default), will overwrite the output converted file if it exists. If True, will instead raise a
-        `FileExistsError` and leave it untouched
+        `FileConverterOutputFileException` and leave it untouched
     strict : bool
         If True and `from_format` is not None, will fail if any input file has the wrong extension (including files
         within archives, but not the archives themselves). Otherwise, will only print a warning in this case
@@ -816,7 +816,7 @@ def run_converter_chain(filename: str,
         If the converter isn't recognized or there's some other issue with the input
     FileConverterAbortException
         If something goes wrong during the conversion process
-    FileExistsError
+    FileConverterOutputFileException
         If the output file already exists and `no_clobber=True` is set
     """
 
