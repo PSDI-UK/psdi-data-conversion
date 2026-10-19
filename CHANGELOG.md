@@ -1,5 +1,11 @@
 # Changelog for PSDI Data Conversion
 
+## v0.4.1
+
+### Documentation Changes
+
+- Added section on running chained conversions with the Python library to the README
+
 ## v0.4.0
 
 ### **Breaking Changes**
