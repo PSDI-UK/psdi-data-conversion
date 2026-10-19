@@ -264,6 +264,9 @@ def get_converter(*args, converter=const.CONVERTER_OB, **converter_kwargs) -> ba
         The location of input files relative to the current directory
     output_dir : str
         The location of output files relative to the current directory
+    no_clobber : bool
+        If False (default), will overwrite the output converted file if it exists. If True, will instead raise a
+        `FileExistsError` and leave it untouched
     max_file_size : float
         The maximum allowed file size for input/output files, in MB, default 1 MB for Open Babel, unlimited for other
         converters. If 0, will be unlimited. If an archive of files is provided, this will apply to the total of all
@@ -413,7 +416,6 @@ def run_converter(filename: str,
                   converter: str | int | UUID | Any = const.CONVERTER_OB,
                   input_dir=const.DEFAULT_INPUT_DIR,
                   output_dir=const.DEFAULT_OUTPUT_DIR,
-                  no_clobber=False,
                   strict=False,
                   permission_level: Literal[0, 1, 2] = const.PERMISSION_LOCAL,
                   archive_output=True,
@@ -733,7 +735,6 @@ def run_converter_chain(filename: str,
                         from_format: str | int | UUID | Any | None = None,
                         input_dir=const.DEFAULT_INPUT_DIR,
                         output_dir=const.DEFAULT_OUTPUT_DIR,
-                        no_clobber=False,
                         l_data: list[dict[str, Any]] | None = None,
                         delete_input: bool = False,
                         max_file_size: float | None = None,

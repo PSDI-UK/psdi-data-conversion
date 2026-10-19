@@ -96,6 +96,12 @@ class FileConverterInputFileException(FileConverterInputException):
     pass
 
 
+class FileConverterOutputFileException(FileConverterInputException):
+    """Exception class to represent errors encountered with the output file.
+    """
+    pass
+
+
 class FileConverterArgException(FileConverterInputException):
     """Exception class to represent errors encountered with input arguments.
     """
@@ -324,6 +330,7 @@ class FileConverter:
                  use_envvars=False,
                  input_dir=const.DEFAULT_INPUT_DIR,
                  output_dir=const.DEFAULT_OUTPUT_DIR,
+                 no_clobber=False,
                  max_file_size=None,
                  no_check=False,
                  log_file: str | None = None,
@@ -412,6 +419,7 @@ class FileConverter:
             self.to_format = to_format
             self.input_dir = input_dir
             self.output_dir = output_dir
+            self.no_clobber = no_clobber
             self.log_file = log_file
             self.log_mode = log_mode
             self.log_level = log_level
@@ -583,6 +591,18 @@ class FileConverter:
         try:
             self.logger.debug("Checking input file size")
             self._check_input_file_size_and_status()
+
+            self.logger.debug(f"Checking if output file {self.out_filename} exists")
+            if os.path.exists(self.out_filename):
+                if not self.no_clobber:
+                    self.logger.debug(
+                        f"Output file {self.out_filename} exists and no_clobber=True, so raising exception")
+                    raise FileConverterOutputFileException(f"Output file {self.out_filename} already exists",
+                                                           help=True)
+                else:
+                    self.logger.debug(
+                        f"Output file {self.out_filename} exists and no_clobber=False, so deleting it")
+                    os.remove(self.out_filename)
 
             self.logger.debug("Starting file conversion")
             self._convert()
