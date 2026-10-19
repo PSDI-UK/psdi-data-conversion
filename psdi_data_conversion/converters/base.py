@@ -596,7 +596,7 @@ class FileConverter:
 
             self.logger.debug(f"Checking if output file {self.out_filename} exists")
             if os.path.exists(self.out_filename):
-                if not self.no_clobber:
+                if self.no_clobber:
                     self.logger.debug(f"Output file {tc.PATH}'{self.out_filename}'{tc.OFF} exists and no_clobber=True, "
                                       "so raising exception")
                     raise FileConverterOutputFileException(f"Output file {tc.PATH}'{self.out_filename}'{tc.OFF} "
