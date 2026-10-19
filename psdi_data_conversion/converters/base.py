@@ -25,7 +25,7 @@ from psdi_data_conversion import log_utility
 from psdi_data_conversion.dist import bin_exists, get_bin_path, get_dist
 from psdi_data_conversion.file_io import get_package_path
 from psdi_data_conversion.security import SAFE_STRING_RE, string_is_safe
-from psdi_data_conversion.utils import tc
+from psdi_data_conversion.utils import replace_extension, tc
 
 try:
     # werkzeug is installed in the optional dependency Flask. It's only used here to recognize an exception type,
@@ -465,8 +465,8 @@ class FileConverter:
                 os.makedirs(self.output_dir, exist_ok=True)
 
             self.local_filename = os.path.split(self.in_filename)[1]
-            self.filename_base = os.path.splitext(self.local_filename)[0]
-            self.out_filename = f"{self.output_dir}/{self.filename_base}.{self.to_format_info.name}"
+            self.out_filename = os.path.join(self.output_dir,
+                                             replace_extension(self.local_filename, self.to_format_info.name))
 
             # Set up files to log to
             self._setup_loggers()
@@ -569,7 +569,8 @@ class FileConverter:
         if self.log_mode == const.LOG_FULL_FORCE:
             self.output_log = self.log_file
         else:
-            self.output_log = os.path.join(self.output_dir, f"{self.filename_base}{const.OUTPUT_LOG_EXT}")
+            self.output_log = os.path.join(self.output_dir,
+                                           replace_extension(self.local_filename, const.OUTPUT_LOG_EXT))
 
         # If any previous log exists, delete it
         if os.path.exists(self.output_log):
@@ -596,14 +597,18 @@ class FileConverter:
             self.logger.debug(f"Checking if output file {self.out_filename} exists")
             if os.path.exists(self.out_filename):
                 if not self.no_clobber:
-                    self.logger.debug(
-                        f"Output file {self.out_filename} exists and no_clobber=True, so raising exception")
+                    self.logger.debug(f"Output file {tc.PATH}'{self.out_filename}'{tc.OFF} exists and no_clobber=True, "
+                                      "so raising exception")
                     raise FileConverterOutputFileException(f"Output file {tc.PATH}'{self.out_filename}'{tc.OFF} "
                                                            "already exists", help=True)
                 else:
                     self.logger.debug(f"Output file {tc.PATH}'{self.out_filename}'{tc.OFF} exists and {tc.CODE}`"
                                       f"no_clobber=False`{tc.OFF}, so deleting it")
-                    os.remove(self.out_filename)
+                    try:
+                        os.remove(self.out_filename)
+                    except OSError:
+                        raise FileConverterOutputFileException(f"Output file {tc.PATH}'{self.out_filename}'{tc.OFF} "
+                                                               "already exists and cannot be removed", help=True)
 
             self.logger.debug("Starting file conversion")
             self._convert()
@@ -749,7 +754,7 @@ class FileConverter:
         # We want the entries to all line up, so we need a dummy line at the top to force a newline break - anything
         # empty or whitespace will be stripped by the logger, so we use a lone colon, which looks least obtrusive
         return (":\n"
-                f"File name:         {self.filename_base}\n"
+                f"File name:         {self.local_filename}\n"
                 f"From:              {self.from_format_info.name} ({self.from_format_info.description})\n"
                 f"To:                {self.to_format} ({self.to_format_info.description})\n"
                 f"Converter:         {self.name}\n")
