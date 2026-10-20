@@ -166,6 +166,14 @@ class ConversionTestSpec:
     array. This should typically only be used when debugging to skip working tests to more easily focus on non-working
     tests"""
 
+    setup: (Callable[[ConversionTestSpec], None] |
+            Iterable[Callable[[ConversionTestSpec], None]] | None) = None
+    """Function to be called immediately before the conversion is performed to perform setup tasks. It should take as
+    its only argument a `ConversionTestSpec` (which will be this object) and return nothing. It should not be expected
+    to fail under normal circumstances, even if the conversion or callback does. Setup callbacks are not compatible with
+    being run through the GUI - an exception will be raised on init if a setup is provided and
+    `compatible_with_gui==True`"""
+
     callback: (Callable[[ConversionTestInfo], str] |
                Iterable[Callable[[ConversionTestInfo], str]] | None) = None
     """Function to be called after the conversion is performed to check in detail whether results are as expected. It
@@ -241,6 +249,14 @@ class ConversionTestSpec:
         # Check if all tests should be skipped
         self.skip_all = all(self.skip)
 
+        # Check for validity
+
+        # If any setup tasks are provided, the test should be marked as not compatible with the GUI
+        if self.compatible_with_gui and any(self.setup):
+            raise ValueError("`ConversionTestSpec` initialised as compatible with GUI and with setup tasks. Setup "
+                             "tasks are not compatible with GUI tests, so this should be marked as "
+                             "`compatible_with_gui=False`")
+
     def __len__(self):
         """Get the length from the member - valid only after `__post_init__` has been called"""
         return self._len
@@ -284,6 +300,12 @@ class SingleConversionTestSpec:
     skip: bool = False
     """If set to True, this test will be skipped, always returning success"""
 
+    setup: (Callable[[ConversionTestSpec], None] |
+            Iterable[Callable[[ConversionTestSpec], None]] | None) = None
+    """Function to be called immediately before the conversion is performed to perform setup tasks. It should take as
+    its only argument a `ConversionTestSpec` (which will be this object) and return nothing. It should not be expected
+    to fail under normal circumstances, even if the conversion or callback does."""
+
     callback: (Callable[[ConversionTestInfo], str] | None) = None
     """Function to be called after the conversion is performed to check in detail whether results are as expected. It
     should take as its only argument a `ConversionTestInfo` and return a string. The string should be empty if the check
@@ -319,7 +341,7 @@ class SingleConversionTestSpec:
     def __str__(self):
         """Simplified string representation"""
         d_out = {key: val for key, val in self.__dict__.items() if not key.startswith("_")}
-        del d_out["skip"], d_out["callback"]
+        del d_out["skip"], d_out["setup"], d_out["callback"]
         return "{" + ", ".join([f'{key}: {str(val)}' for key, val in d_out.items()]) + "}"
 
 
@@ -412,6 +434,11 @@ def _run_single_test_conversion_with_library(test_spec: SingleConversionTestSpec
         run_func = run_converter
         conversion_kwargs["converter"] = test_spec.converter_name
         conversion_kwargs["to_format"] = test_spec.to_format
+
+    # Run applicable setup tasks - this isn't contained in a subtest as we don't expect this to normally fail, and if it
+    # does, the rest of the test shouldn't be run
+    if test_spec.setup:
+        test_spec.setup(test_spec)
 
     # Capture stdout and stderr while we run this test. We use a try block to stop capturing as soon as testing finishes
 
@@ -519,6 +546,11 @@ def _run_single_test_conversion_with_cli(test_spec: SingleConversionTestSpec,
                    qualified_in_filename)
     except FileExistsError:
         pass
+
+    # Run applicable setup tasks - this isn't contained in a subtest as we don't expect this to normally fail, and if it
+    # does, the rest of the test shouldn't be run
+    if test_spec.setup:
+        test_spec.setup(test_spec)
 
     # Capture stdout and stderr while we run this test. We use a try block to stop capturing as soon as testing finishes
 
