@@ -15,7 +15,7 @@ from functools import cached_property
 from math import isclose
 from pathlib import Path
 from tempfile import TemporaryDirectory
-from typing import Any
+from typing import Any, Concatenate
 from unittest.mock import patch
 
 import py
@@ -166,13 +166,13 @@ class ConversionTestSpec:
     array. This should typically only be used when debugging to skip working tests to more easily focus on non-working
     tests"""
 
-    setup: (Callable[[ConversionTestSpec], None] |
-            Iterable[Callable[[ConversionTestSpec], None]] | None) = None
+    setup: (Callable[Concatenate[SingleConversionTestSpec, ...], None] |
+            Iterable[Callable[Concatenate[SingleConversionTestSpec, ...], None]] | None) = None
     """Function to be called immediately before the conversion is performed to perform setup tasks. It should take as
-    its only argument a `ConversionTestSpec` (which will be this object) and return nothing. It should not be expected
-    to fail under normal circumstances, even if the conversion or callback does. Setup callbacks are not compatible with
-    being run through the GUI - an exception will be raised on init if a setup is provided and
-    `compatible_with_gui==True`"""
+    its first argument a `SingleConversionTestSpec`, `**kwargs` (with potentially relevant arguments split out), and
+    return nothing. It should not be expected to fail under normal circumstances, even if the conversion or callback
+    does. Setup callbacks are not compatible with being run through the GUI - an exception will be raised on init if a
+    setup is provided and `compatible_with_gui==True`"""
 
     callback: (Callable[[ConversionTestInfo], str] |
                Iterable[Callable[[ConversionTestInfo], str]] | None) = None
@@ -300,11 +300,11 @@ class SingleConversionTestSpec:
     skip: bool = False
     """If set to True, this test will be skipped, always returning success"""
 
-    setup: (Callable[[ConversionTestSpec], None] |
-            Iterable[Callable[[ConversionTestSpec], None]] | None) = None
+    setup: Callable[Concatenate[SingleConversionTestSpec, ...], None] | None = None
     """Function to be called immediately before the conversion is performed to perform setup tasks. It should take as
-    its only argument a `ConversionTestSpec` (which will be this object) and return nothing. It should not be expected
-    to fail under normal circumstances, even if the conversion or callback does."""
+    its first argument a `SingleConversionTestSpec` (which will be this object), `**kwargs` (with potentially relevant
+    arguments split out), and return nothing. It should not be expected to fail under normal circumstances, even if the
+    conversion or callback does."""
 
     callback: (Callable[[ConversionTestInfo], str] | None) = None
     """Function to be called after the conversion is performed to check in detail whether results are as expected. It
@@ -438,7 +438,7 @@ def _run_single_test_conversion_with_library(test_spec: SingleConversionTestSpec
     # Run applicable setup tasks - this isn't contained in a subtest as we don't expect this to normally fail, and if it
     # does, the rest of the test shouldn't be run
     if test_spec.setup:
-        test_spec.setup(test_spec)
+        test_spec.setup(test_spec, input_dir=input_dir, output_dir=output_dir, chain=chain)
 
     # Capture stdout and stderr while we run this test. We use a try block to stop capturing as soon as testing finishes
 
