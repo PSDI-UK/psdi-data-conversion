@@ -8,7 +8,6 @@ import os
 import sys
 from argparse import Namespace
 from datetime import datetime
-from functools import cached_property
 from hashlib import md5
 from subprocess import run
 from traceback import format_exc
@@ -131,11 +130,11 @@ class SiteEnv:
 
         # Warn if the default secret is being used
         if self.service_mode and self._keycloak_secret == DEFAULT_KEYCLOAK_SECRET:
-            print(f"\n{TextColors.YELLOW}!!! WARNING !!! \n"
+            print(f"\n{TextColors.WARNING}!!! WARNING !!! \n"
                   "The default keycloak secret is being used, which is not secure. In a production "
                   f"deployment, the keycloak secret must be set using the {KEYCLOAK_SECRET_EV} environmental "
                   "variable. \n"
-                  f"!!! WARNING !!!{TextColors.OFF}\n",
+                  f"!!! WARNING !!!{TextColors.ENDC}\n",
                   file=sys.stderr)
 
         self.keycloak_redirect_url: str = self._determine_value(ev=KEYCLOAK_REDIRECT_URL_EV,
@@ -146,14 +145,18 @@ class SiteEnv:
                                                                   value_type=int,
                                                                   default=DEFAULT_SESSION_TIMEOUT_SECONDS)
 
-    @cached_property
+        self._kwargs: dict[str, str] | None = None
+        """Cached value for dict containing all env values"""
+
+    @property
     def kwargs(self) -> dict[str, str]:
         """Get a dict which can be used to provide kwargs for rendering a template"""
-        kwargs = {}
-        for key, val in self.__dict__.items():
-            if not key.startswith("_"):
-                kwargs[key] = val
-        return kwargs
+        if not self._kwargs:
+            self._kwargs = {}
+            for key, val in self.__dict__.items():
+                if not key.startswith("_"):
+                    self._kwargs[key] = val
+        return self._kwargs
 
     def get_keycloak_secret(self) -> str:
         """Get the private KeyCloak secret"""

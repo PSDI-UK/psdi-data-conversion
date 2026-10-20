@@ -11,8 +11,6 @@ import sys
 from unittest.mock import patch
 
 import pytest
-
-from psdi_data_conversion.constants import CONVERTER_OB
 from psdi_data_conversion.main import main
 from psdi_data_conversion.security import char_is_safe, string_is_safe
 from psdi_data_conversion.testing.utils import get_input_test_data_loc
@@ -26,39 +24,58 @@ def run_with_arg_string(s):
         main()
 
 
-@pytest.mark.parametrize("c", ("a", "0", "W", "0", ".", "-", "+", "*", "=", "$", " ", "\t", "\n", "/", "\\"))
-def test_char_is_safe_true(c):
-    """Test the `char_is_safe` function returns True for various safe characters"""
-    assert char_is_safe(c)
+def test_char_is_safe():
+    """Tests of the `char_is_safe` function.
+    """
+    # Test some strings we expect to pass
+    assert char_is_safe("a")
+    assert char_is_safe("0")
+    assert char_is_safe("W")
+    assert char_is_safe("0")
+    assert char_is_safe(".")
+    assert char_is_safe("-")
+    assert char_is_safe("+")
+    assert char_is_safe("*")
+    assert char_is_safe("=")
+    assert char_is_safe("$")
+    assert char_is_safe(" ")
+    assert char_is_safe("\t")
+    assert char_is_safe("\n")
+    assert char_is_safe("/")
+    assert char_is_safe("\\")
+
+    # Test some strings we expect to fail
+    assert not char_is_safe("}")
+    assert not char_is_safe("\"")
+    assert not char_is_safe("'")
+    assert not char_is_safe(";")
+    assert not char_is_safe("&")
+    assert not char_is_safe("|")
+    assert not char_is_safe("`")
+    assert not char_is_safe("")
+    assert not char_is_safe("aa")
 
 
-@pytest.mark.parametrize("c", ("}", "\"", "'", ";", "&", "|", "`", "", "aa"))
-def test_char_is_safe_false(c):
-    """Test the `char_is_safe` function returns False for various unsafe characters"""
-    assert not char_is_safe(c)
+def test_string_is_safe():
+    """Tests of the `string_is_safe` function.
+    """
+    # Test some strings we expect to pass
+    assert string_is_safe("alphabet_and_D16IT5")
+    assert string_is_safe("like_a_file.name")
+    assert string_is_safe("-0.5+15*2/3=0")
+    assert string_is_safe("\tmy\nmultiline string")
+    assert string_is_safe("path/to/my/file")
+    assert string_is_safe("C:\\windows\\style\\path")
+
+    # Test some strings we expect to fail
+    assert not string_is_safe("file.txt; hack_the_mainframe")
+    assert not string_is_safe("} ")
+    assert not string_is_safe("this & that")
+    assert not string_is_safe("now | never")
+    assert not string_is_safe("`backticked command`")
 
 
-@pytest.mark.parametrize("s", ("alphabet_and_D16IT5", "like_a_file.name", "-0.5+15*2/3=0", "\tmy\nmultiline string",
-                               "path/to/my/file", "C:\\windows\\style\\path"))
-def test_string_is_safe_true(s):
-    """Test the `string_is_safe` function returns True for various safe strings"""
-    assert string_is_safe(s)
-
-
-@pytest.mark.parametrize("s", ("file.txt; hack_the_mainframe", "} ", "this & that", "now | never",
-                               "`backticked command`"))
-def test_string_is_safe_false(s):
-    """Test the `string_is_safe` function returns False for various unsafe strings"""
-    assert not string_is_safe(s)
-
-
-@pytest.mark.parametrize("from_flags, to_flags, from_options, to_options", (("'; stop'", None, None, None),
-                                                                            (None, "'`command`'", None, None),
-                                                                            (None, None, "'this & that'", None),
-                                                                            (None, None, None, "(nope)"),
-                                                                            (None, None, None, "'now || never'"),
-                                                                            (None, None, None, "'} a b'"),))
-def test_format_arg_security(from_flags, to_flags, from_options, to_options, tmp_path_factory, capsys, subtests):
+def test_format_arg_security(tmp_path_factory, capsys):
     """Test that format flags are processed correctly and results in the right conversions
     """
     input_dir = tmp_path_factory.mktemp("input")
@@ -75,27 +92,33 @@ def test_format_arg_security(from_flags, to_flags, from_options, to_options, tmp
     os.symlink(os.path.join(get_input_test_data_loc(), input_filename),
                os.path.join(input_dir, input_filename))
 
-    arg_string = f"{input_filename} -t {to_format} -i {input_dir} -o {output_dir} -w {CONVERTER_OB}"
+    basic_arg_string = f"{input_filename} -t {to_format} -i {input_dir} -o {output_dir}"
 
-    if from_flags is not None:
-        arg_string += f" --from-flags {from_flags}"
-    if to_flags is not None:
-        arg_string += f" --to-flags {to_flags}"
-    if from_options is not None:
-        arg_string += f" --from-options {from_options}"
-    if to_options is not None:
-        arg_string += f" --to-options {to_options}"
+    # Run for each set of flags that might trigger a security error
+    for from_flags, to_flags, from_options, to_options in (("'; stop'", None, None, None),
+                                                           (None, "'`command`'", None, None),
+                                                           (None, None, "'this & that'", None),
+                                                           (None, None, None, "(nope)"),
+                                                           (None, None, None, "'now || never'"),
+                                                           (None, None, None, "'} a b'"),):
 
-    # Run the conversion
-    with subtests.test("system exit raised"), pytest.raises(SystemExit):
-        run_with_arg_string(arg_string)
+        arg_string = basic_arg_string
+        if from_flags is not None:
+            arg_string += f" --from-flags {from_flags}"
+        if to_flags is not None:
+            arg_string += f" --to-flags {to_flags}"
+        if from_options is not None:
+            arg_string += f" --from-options {from_options}"
+        if to_options is not None:
+            arg_string += f" --to-options {to_options}"
 
-    # Make sure the expected error is output, and not the full traceback
-    captured = capsys.readouterr()
-    with subtests.test("security error output to stderr"):
-        assert "ERROR" in captured.err
-        assert "security" in captured.err
-    with subtests.test("no traceback in stdout"):
-        assert "Traceback" not in captured.out
-    with subtests.test("no traceback in stderr"):
-        assert "Traceback" not in captured.err
+        # Run the conversion
+        with pytest.raises(SystemExit):
+            run_with_arg_string(arg_string)
+
+        # Make sure the expected error is output, and not the full traceback
+        captured = capsys.readouterr()
+        assert "ERROR" in captured.err, arg_string
+        assert "security" in captured.err, arg_string
+        assert "Traceback" not in captured.out, arg_string
+        assert "Traceback" not in captured.err, arg_string
