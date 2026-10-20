@@ -7,15 +7,15 @@ Functions and classes related to general filesystem input/output
 
 import glob
 import os
-from pathlib import Path
+from functools import lru_cache
 from shutil import copyfile, make_archive, unpack_archive
 from tempfile import TemporaryDirectory
 
 from psdi_data_conversion import constants as const
-from psdi_data_conversion.testing.constants import TEST_PATH_KEY
 
 
-def get_package_path() -> Path:
+@lru_cache(maxsize=1)
+def get_package_path() -> str:
     """Gets the absolute path to where the `psdi_data_conversion` package is on disk
 
     Returns
@@ -23,14 +23,10 @@ def get_package_path() -> Path:
     str
     """
 
-    # If the envvar to use a test path is set, use that instead
-    if os.environ.get(TEST_PATH_KEY):
-        return Path(os.environ[TEST_PATH_KEY]).resolve() / "psdi_data_conversion"
-
     # For an interactive shell, __file__ won't be defined for this module, so use the constants module instead
-    reference_file = Path(const.__file__).resolve()
+    reference_file = os.path.realpath(const.__file__)
 
-    package_path = reference_file.parent
+    package_path = os.path.dirname(reference_file)
 
     return package_path
 
