@@ -14,9 +14,10 @@ from psdi_data_conversion.database import get_converter_info, get_format_info
 from psdi_data_conversion.testing import constants as tc
 from psdi_data_conversion.testing.conversion_callbacks import (CheckArchiveContents, CheckException, CheckFileStatus,
                                                                CheckLogContents, CheckLogContentsSuccess,
-                                                               CheckStderrContents, CheckStdoutContents,
-                                                               MatchOutputFile)
+                                                               CheckOutputContents, CheckStderrContents,
+                                                               CheckStdoutContents, MatchOutputFile)
 from psdi_data_conversion.testing.conversion_callbacks import MultiCallback as MCB
+from psdi_data_conversion.testing.conversion_setup import JUNK_FILE_CONTENT, BlockOutput
 from psdi_data_conversion.testing.utils import ConversionTestSpec as Spec
 
 l_all_test_specs: list[Spec] = []
@@ -31,7 +32,8 @@ l_all_test_specs.append(Spec(name="Standard Single Test",
                              ))
 """A quick single test, functioning mostly as a smoke test for things going right in the simplest case"""
 
-simple_success_callback = MCB(CheckFileStatus(), CheckLogContentsSuccess())
+simple_success_callback = MCB(CheckFileStatus(), CheckLogContentsSuccess(),
+                              CheckOutputContents(l_strings_to_exclude=JUNK_FILE_CONTENT))
 """A standardised callback which checks that the output file and log exist, and that the log indicates likely success"""
 
 l_all_test_specs.append(Spec(name="Standard Multiple Tests",
@@ -82,6 +84,15 @@ l_all_test_specs.append(Spec(name="Atomsk Formats Tests",
                              to_format=[tc.FORMAT_XYZ_2, tc.FORMAT_XYZ_3,
                                         tc.FORMAT_ATOMSK_EXYZ, tc.FORMAT_ATOMSK_SXYZ],
                              converter_name=const.CONVERTER_ATO,
+                             callback=simple_success_callback,
+                             compatible_with_gui=False,
+                             ))
+"""Test converting with Atomsk to a few different formats which have special filename handling. As before, not run in
+the GUI to save resources."""
+
+l_all_test_specs.append(Spec(name="Clobber Tests",
+                             converter_name=[const.CONVERTER_OB, const.CONVERTER_C2X, const.CONVERTER_ATO],
+                             setup=BlockOutput(),
                              callback=simple_success_callback,
                              compatible_with_gui=False,
                              ))

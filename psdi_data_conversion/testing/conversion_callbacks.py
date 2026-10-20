@@ -326,6 +326,26 @@ class CheckTextContents(abc.ABC):
 
 
 @dataclass
+class CheckOutputContents(CheckTextContents):
+    """Implementation of `CheckTextContents` which checks the contents of the output file of a conversion"""
+
+    def _get_text(self, test_info: ConversionTestInfo) -> str:
+        """Get the text from the output file"""
+
+        # First, check that the file exists
+        qualified_filename = test_info.qualified_out_filename
+        if not os.path.isfile(qualified_filename):
+            raise FileNotFoundError(f"ERROR: Expected output file from conversion '{qualified_filename}' does not "
+                                    "exist")
+
+        return open(qualified_filename, "r").read()
+
+    def _get_text_source_label(self, test_info: ConversionTestInfo) -> str:
+        """Label as coming from the appropriate output file"""
+        return f"output file '{test_info.qualified_log_filename}'"
+
+
+@dataclass
 class CheckLogContents(CheckTextContents):
     """Implementation of `CheckTextContents` which checks the contents of the output log file of a conversion"""
 

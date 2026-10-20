@@ -550,7 +550,7 @@ def _run_single_test_conversion_with_cli(test_spec: SingleConversionTestSpec,
     # Run applicable setup tasks - this isn't contained in a subtest as we don't expect this to normally fail, and if it
     # does, the rest of the test shouldn't be run
     if test_spec.setup:
-        test_spec.setup(test_spec)
+        test_spec.setup(test_spec, input_dir=input_dir, output_dir=output_dir, chain=False)
 
     # Capture stdout and stderr while we run this test. We use a try block to stop capturing as soon as testing finishes
 
