@@ -1,13 +1,14 @@
-# Changelog for PSDI Data Conversion## v0.3.25
-
-## v0.3.26
-
-### Miscellaneous Changes:
-
-- Updated TLS certificate
-- Fixed some syntax errors in GitHub workflows
+# Changelog for PSDI Data Conversion
 
 ## v0.4.1
+
+### New and Changed Functionality
+
+- Added option to prevent clobbering of output files which already exist. This can be set with the `no_clobber=True` kwarg in the `run_converter` and `run_converter_chain` methods, or with `-n/--no-clobber` in the CLI
+
+### Bugfixes
+
+- Resolved issue where it was undefined behaviour what would happen if the output file from a conversion already exists - the file will now be clobbered unless a flag is set to not clobber (see note in "New and Changed Functionality" above)
 
 ### Documentation Changes
 
@@ -104,6 +105,13 @@
 - Various unit tests have been split to better represent one test case per test
 - The subtests feature introduced in `pytest` 9.0 is now used in various tests, primarily to label different aspects of test cases and allow all these aspects to be tested even if one fails. Compatibility with earlier versions of `pytest` is maintained by implementing a fallback of using the `subtests` fixture as an empty context manager, which results in a failure of any subtest immediately failing the whole test if earlier versions of `pytest` are used
   - As subtests are a new feature, they aren't yet well-supported by many tools which interface with `pytest`. Notably, VSCode's test runner will report a test as passed even if subtests are failed. We've implemented a workaround for this in `conftest.py`, though there are reports that this workaround breaks `junit` output of `pytest`. This isn't likely to be an issue for this project, but there may be other unreported side-effects of this workaround, so it can be reconsidered if other issues are found
+
+## v0.3.26
+
+### Miscellaneous Changes:
+
+- Updated TLS certificate
+- Fixed some syntax errors in GitHub workflows
 
 ## v0.3.25
 
