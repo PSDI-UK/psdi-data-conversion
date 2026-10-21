@@ -74,6 +74,7 @@ class ConvertArgs:
         self.to_flags: str = args.to_flags.replace(r"\-", "-")
         self.from_options: str = args.from_options.replace(r"\-", "-")
         self.to_options: str = args.to_options.replace(r"\-", "-")
+        self.no_clobber: bool = args.no_clobber
         self.no_check: bool = args.nc
         self.strict: bool = args.strict
 
@@ -753,6 +754,9 @@ def get_argument_parser():
 
     g_other = parser.add_argument_group("Other arguments", "")
 
+    g_other.add_argument("-n", "--no-clobber", action="store_true",
+                         help="If set, will raise an error not proceed with conversion if a file matching the output "
+                         "filename already exists.")
     g_other.add_argument("--delete-input", action="store_true",
                          help="If set, input files will be deleted after conversion, default they will be kept.")
     g_other.add_argument("-s", "--strict", action="store_true",
@@ -1477,6 +1481,7 @@ def run_from_args(args: ConvertArgs):
                                "log_file": args.log_file,
                                "log_mode": args.log_mode,
                                "log_level": args.log_level,
+                               "no_clobber": args.no_clobber,
                                "delete_input": args.delete_input,
                                "refresh_local_log": False}
         try:
