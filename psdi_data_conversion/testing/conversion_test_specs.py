@@ -18,7 +18,7 @@ from psdi_data_conversion.testing.conversion_callbacks import (CheckArchiveConte
                                                                CheckOutputContents, CheckStderrContents,
                                                                CheckStdoutContents, MatchOutputFile)
 from psdi_data_conversion.testing.conversion_callbacks import MultiCallback as MCB
-from psdi_data_conversion.testing.conversion_setup import JUNK_FILE_CONTENT, BlockOutput
+from psdi_data_conversion.testing.conversion_setup import JUNK_FILE_CONTENT, BlockOutput, BlockOutputExt
 from psdi_data_conversion.testing.utils import ConversionTestSpec as Spec
 
 l_all_test_specs: list[Spec] = []
@@ -81,16 +81,6 @@ l_all_test_specs.append(Spec(name="c2x Formats Tests",
 solely to save on resources, since there are unlikely to be any GUI-specific issues raised by this test that aren't
 caught in others."""
 
-l_all_test_specs.append(Spec(name="Atomsk Formats Tests",
-                             to_format=[tc.FORMAT_XYZ_2, tc.FORMAT_XYZ_3,
-                                        tc.FORMAT_ATOMSK_EXYZ, tc.FORMAT_ATOMSK_SXYZ],
-                             converter_name=const.CONVERTER_ATO,
-                             callback=simple_success_callback,
-                             compatible_with_gui=False,
-                             ))
-"""Test converting with Atomsk to a few different formats which have special filename handling. As before, not run in
-the GUI to save resources."""
-
 l_all_test_specs.append(Spec(name="Clobber Tests",
                              converter_name=[const.CONVERTER_OB, const.CONVERTER_C2X, const.CONVERTER_ATO],
                              setup=BlockOutput(),
@@ -108,6 +98,34 @@ l_all_test_specs.append(Spec(name="No-Clobber Test",
                              compatible_with_gui=False,
                              ))
 """Test when the output file already exists and the no-clobber flag is set that the conversion fails"""
+
+l_all_test_specs.append(Spec(name="Atomsk Formats Tests",
+                             to_format=[tc.FORMAT_XYZ_2, tc.FORMAT_XYZ_3,
+                                        tc.FORMAT_ATOMSK_EXYZ, tc.FORMAT_ATOMSK_SXYZ],
+                             converter_name=const.CONVERTER_ATO,
+                             setup=BlockOutputExt(["xyz", "exyz", "sxyz"]),
+                             callback=simple_success_callback,
+                             compatible_with_gui=False,
+                             ))
+"""Test converting with Atomsk to a few different formats which have special filename handling. This also blocks the
+final and intermediate output files to test that they're properly clobbered"""
+
+l_all_test_specs.append(Spec(name="Atomsk No-Clobber Tests",
+                             to_format=[tc.FORMAT_XYZ_2,
+                                        tc.FORMAT_XYZ_3,
+                                        tc.FORMAT_ATOMSK_EXYZ,
+                                        tc.FORMAT_ATOMSK_SXYZ],
+                             converter_name=const.CONVERTER_ATO,
+                             setup=[BlockOutputExt(["exyz"], ["xyz", "sxyz"]),
+                                    BlockOutputExt(["sxyz"], ["xyz", "exyz"]),
+                                    BlockOutputExt(["xyz"], ["exyz", "sxyz"]),
+                                    BlockOutputExt(["xyz"], ["exyz", "sxyz"])],
+                             conversion_kwargs={"no_clobber": True},
+                             callback=simple_success_callback,
+                             compatible_with_gui=False,
+                             ))
+"""Test converting with Atomsk to a few different formats which have special filename handling, where it's required in
+some cases to convert through a temporary file, that it can do so with no issue"""
 
 l_all_test_specs.append(Spec(name="Converter Name Sensitivity Tests",
                              converter_name=["open babel", "oPeNbaBEL", "C2X", "atomsk"],

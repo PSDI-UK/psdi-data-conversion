@@ -60,12 +60,22 @@ class BlockOutputExt:
     extension replaced by any in the provided list
     """
 
-    def __init__(self, l_ext: str | Iterable[str]):
+    def __init__(self, l_ext: str | Iterable[str], l_ext_free: str | Iterable[str] | None = None):
         if isinstance(l_ext, str):
             self.l_ext = [l_ext]
         else:
             self.l_ext = l_ext
+        if isinstance(l_ext_free, str):
+            self.l_ext_free = [l_ext]
+        elif l_ext_free is None:
+            self.l_ext_free = []
+        else:
+            self.l_ext_free = l_ext_free
 
     def __call__(self, test_spec: SingleConversionTestSpec, output_dir, **_) -> None:
+        for ext in self.l_ext_free:
+            qualified_filename = os.path.join(output_dir, replace_extension(test_spec.filename, ext))
+            if os.path.exists(qualified_filename):
+                os.remove(qualified_filename)
         for ext in self.l_ext:
             write_junk_file(output_dir, replace_extension(test_spec.filename, ext))

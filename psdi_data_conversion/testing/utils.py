@@ -685,7 +685,7 @@ def run_converter_through_cli(filename: str,
                             "command-line interface.")
         elif key == "no_clobber":
             if val:
-                arg_string += "--no-clobber"
+                arg_string += " --no-clobber"
         elif key == "data":
             for subkey, subval in val.items():
                 if subkey == "from_flags":
