@@ -683,6 +683,9 @@ def run_converter_through_cli(filename: str,
             if val != 0:
                 pytest.fail("Test specification imposes a maximum file size, which isn't compatible with the "
                             "command-line interface.")
+        elif key == "no_clobber":
+            if val:
+                arg_string += "--no-clobber"
         elif key == "data":
             for subkey, subval in val.items():
                 if subkey == "from_flags":

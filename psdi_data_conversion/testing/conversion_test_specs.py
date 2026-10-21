@@ -8,7 +8,8 @@ application, and GUI.
 
 from psdi_data_conversion import constants as const
 from psdi_data_conversion.converters.base import (FileConverterAbortException, FileConverterInputException,
-                                                  FileConverterSizeException, FileConverterUnsupportedException)
+                                                  FileConverterOutputFileException, FileConverterSizeException,
+                                                  FileConverterUnsupportedException)
 from psdi_data_conversion.converters.openbabel.converter import COORD_GEN_KEY, COORD_GEN_QUAL_KEY
 from psdi_data_conversion.database import get_converter_info, get_format_info
 from psdi_data_conversion.testing import constants as tc
@@ -96,8 +97,17 @@ l_all_test_specs.append(Spec(name="Clobber Tests",
                              callback=simple_success_callback,
                              compatible_with_gui=False,
                              ))
-"""Test converting with Atomsk to a few different formats which have special filename handling. As before, not run in
-the GUI to save resources."""
+"""Test when the output file already exists that it's properly clobbered by the conversion"""
+
+l_all_test_specs.append(Spec(name="No-Clobber Test",
+                             setup=BlockOutput(),
+                             conversion_kwargs={"no_clobber": True},
+                             expect_success=False,
+                             callback=CheckException(ex_type=FileConverterOutputFileException,
+                                                     ex_message="Output file {} already exists"),
+                             compatible_with_gui=False,
+                             ))
+"""Test when the output file already exists and the no-clobber flag is set that the conversion fails"""
 
 l_all_test_specs.append(Spec(name="Converter Name Sensitivity Tests",
                              converter_name=["open babel", "oPeNbaBEL", "C2X", "atomsk"],
