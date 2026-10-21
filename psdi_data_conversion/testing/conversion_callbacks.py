@@ -18,6 +18,7 @@ from psdi_data_conversion.file_io import unpack_zip_or_tar
 from psdi_data_conversion.log_utility import string_with_placeholders_matches
 from psdi_data_conversion.testing.constants import OUTPUT_TEST_DATA_LOC_IN_PROJECT
 from psdi_data_conversion.testing.utils import ConversionTestInfo, check_file_match
+from psdi_data_conversion.utils import replace_extension
 
 
 class MultiCallback:
@@ -343,6 +344,31 @@ class CheckOutputContents(CheckTextContents):
     def _get_text_source_label(self, test_info: ConversionTestInfo) -> str:
         """Label as coming from the appropriate output file"""
         return f"output file '{test_info.qualified_log_filename}'"
+
+
+@dataclass
+class CheckExtContents(CheckTextContents):
+    """Implementation of `CheckTextContents` which checks the contents of a file in the output directory matching the
+    input filename but with a given different extension"""
+
+    def __init__(self, ext: str, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.ext = ext
+
+    def _get_text(self, test_info: ConversionTestInfo) -> str:
+        """Get the text from the output file"""
+
+        # First, check that the file exists
+        qualified_filename = replace_extension(test_info.qualified_out_filename, self.ext)
+        if not os.path.isfile(qualified_filename):
+            raise FileNotFoundError(f"ERROR: Expected file from '{qualified_filename}' does not exist")
+
+        return open(qualified_filename, "r").read()
+
+    def _get_text_source_label(self, test_info: ConversionTestInfo) -> str:
+        """Label as coming from the appropriate file"""
+        qualified_filename = replace_extension(test_info.qualified_out_filename, self.ext)
+        return f"file '{qualified_filename}'"
 
 
 @dataclass

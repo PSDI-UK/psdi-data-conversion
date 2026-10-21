@@ -13,10 +13,11 @@ from psdi_data_conversion.converters.base import (FileConverterAbortException, F
 from psdi_data_conversion.converters.openbabel.converter import COORD_GEN_KEY, COORD_GEN_QUAL_KEY
 from psdi_data_conversion.database import get_converter_info, get_format_info
 from psdi_data_conversion.testing import constants as tc
-from psdi_data_conversion.testing.conversion_callbacks import (CheckArchiveContents, CheckException, CheckFileStatus,
-                                                               CheckLogContents, CheckLogContentsSuccess,
-                                                               CheckOutputContents, CheckStderrContents,
-                                                               CheckStdoutContents, MatchOutputFile)
+from psdi_data_conversion.testing.conversion_callbacks import (CheckArchiveContents, CheckException, CheckExtContents,
+                                                               CheckFileStatus, CheckLogContents,
+                                                               CheckLogContentsSuccess, CheckOutputContents,
+                                                               CheckStderrContents, CheckStdoutContents,
+                                                               MatchOutputFile)
 from psdi_data_conversion.testing.conversion_callbacks import MultiCallback as MCB
 from psdi_data_conversion.testing.conversion_setup import JUNK_FILE_CONTENT, BlockOutput, BlockOutputExt
 from psdi_data_conversion.testing.utils import ConversionTestSpec as Spec
@@ -121,7 +122,15 @@ l_all_test_specs.append(Spec(name="Atomsk No-Clobber Tests",
                                     BlockOutputExt(["xyz"], ["exyz", "sxyz"]),
                                     BlockOutputExt(["xyz"], ["exyz", "sxyz"])],
                              conversion_kwargs={"no_clobber": True},
-                             callback=simple_success_callback,
+                             callback=[
+                                 MCB(simple_success_callback, CheckExtContents(
+                                     "exyz", l_strings_to_find=JUNK_FILE_CONTENT)),
+                                 MCB(simple_success_callback, CheckExtContents(
+                                     "sxyz", l_strings_to_find=JUNK_FILE_CONTENT)),
+                                 MCB(simple_success_callback, CheckExtContents(
+                                     "xyz", l_strings_to_find=JUNK_FILE_CONTENT)),
+                                 MCB(simple_success_callback, CheckExtContents(
+                                     "xyz", l_strings_to_find=JUNK_FILE_CONTENT))],
                              compatible_with_gui=False,
                              ))
 """Test converting with Atomsk to a few different formats which have special filename handling, where it's required in
