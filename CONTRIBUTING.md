@@ -13,6 +13,61 @@ This project uses a version of [GitLab Flow](https://about.gitlab.com/topics/ver
 
 ## Release Checklist and Procedure
 
+### Approval requirements
+
+How much approval is needed for a release depends on the nature of it, with more extensive changes requiring more significant approval. Determine from the following sections which category the release best fits into, and follow the guidance there on testing and approval.
+
+In all cases, it is assumed that all automated tests will pass for any release, and the deployment workflows are set up to ensure this.
+
+#### Emergency change
+
+In scenarios where the harm from waiting for normal approval for a chance outweighs the risk of a problem occurring as a result of it, the change may be pushed through as an emergency change without upfront approval being needed. Some examples of situations where this might occur:
+
+- Something in the deployed release has broken (perhaps due to an overlooked issue in a previous release, an external dependency changing or failing, etc.) and a fix is required for normal functionality to be restored
+- A demonstration is planned on short notice which requires a new feature or bugfix, and approval isn't possible in time
+
+Depending on the scope of the change, an emergency change may also qualify as a non-local change and require reporting to the Change Advisory Board for consideration.
+
+**Testing required:** All normal automated tests, and manual tests of any changes made
+
+**Approval required:** None upfront. Retroactive approval should be sought as soon as possible afterwards, with a decision made whether to approve or rollback the changes
+
+#### Bugfix or minor change
+
+When a change does not add a significant new feature, it may be classified as a bugfix or minor change, which requires less testing and approval than a full feature release. Some examples:
+
+- A fix for a bug discovered in a previous release
+- Updates to text, design, or documentation
+- Optimisation (if significant enough to require its own release; otherwise it can be included with the next release)
+- Addition of minor features, such as:
+  - New command-line options which alter existing Functionality
+  - A new convenience library method
+  - A new GUI option (e.g. a new type of accessibility control)
+  - Anything else which the team agrees is minor enough to not require the full testing required by a feature release
+
+**Testing required:** All normal automated tests, including new automated tests for the change if applicable and possible, and manual tests of any changes made
+
+**Approval required:** Sign-off from at least one other team member and no objections
+
+#### Major change
+
+Releases of substantial new things that the project can do should require full approval from the team and thorough testing. Some examples:
+
+- A new way to interact with a service, such as adding an API
+- New functionality of a tool or service comparable in scope to existing functionality
+
+**Testing required:** The test plan should be updated to thoroughly cover all new functionality. Automated tests should be added where possible, and all automated tests should pass. Manual testing should be performed initially by the developer, and subsequently by another, following the test plan and paying particular focus to newly-added functionality, with consideration for aspects which may have been overlooked in the test plan
+
+**Approval required:** Approval should be obtained from all team members (excepting those on holiday) with no objections (including objections that it would be best to wait for someone to return from holiday to get their approval)
+
+#### Non-local change
+
+A non-local change is a change which requires approval from the PSDI Change Advisory Board (CAB) before it can go ahead. This should be determined by consulting [the official guidance on determining the type of change](https://stfc365.sharepoint.com/:w:/r/sites/PSDI-Change/Shared%20Documents/General/Guidance%20Documents/Is%20it%20Local,%20Re-occurrent%20or%20Standard.docx?d=w7fb9aee38e0b4431a28858d94c9a3754&csf=1&web=1&e=qKxeff). If the change isn't a local change, it falls into this section.
+
+Non-local changes may overlap with emergency changes, and in that case require the lesser upfront testing and approval requirements of those. Otherwise, they require the same testing and approval as major changes, plus the approval of the CAB and any additional requirements requested by them.
+
+### How to publish a release
+
 The following tasks should be completed before merging a release candidate branch to `release`:
 
 - Determine the target version based on the changes made:
