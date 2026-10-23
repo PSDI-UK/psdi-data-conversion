@@ -31,7 +31,7 @@ from psdi_data_conversion.file_io import is_archive, split_archive_ext
 from psdi_data_conversion.main import main as data_convert_main
 from psdi_data_conversion.testing.constants import (FORMAT_PDB_0, INPUT_TEST_DATA_LOC_IN_PROJECT,
                                                     OUTPUT_TEST_DATA_LOC_IN_PROJECT, TEST_DATA_LOC_IN_PROJECT)
-from psdi_data_conversion.utils import get_project_path, strip_control_codes
+from psdi_data_conversion.utils import get_project_path, replace_extension, strip_control_codes
 
 
 def compress_text(s: str):
@@ -323,7 +323,7 @@ class SingleConversionTestSpec:
             to_format_name = self.conversion_kwargs["path"][-1][-1].name
 
         if not is_archive(self.filename):
-            return f"{os.path.splitext(self.filename)[0]}.{to_format_name}"
+            return replace_extension(self.filename, to_format_name)
         else:
             filename_base, ext = split_archive_ext(os.path.basename(self.filename))
             return f"{filename_base}-{to_format_name}{ext}"
@@ -412,6 +412,11 @@ def _run_single_test_conversion_with_library(test_spec: SingleConversionTestSpec
     except FileExistsError:
         pass
 
+    # Run applicable setup tasks - this isn't contained in a subtest as we don't expect this to normally fail, and if it
+    # does, the rest of the test shouldn't be run
+    if test_spec.setup:
+        test_spec.setup(test_spec, input_dir=input_dir, output_dir=output_dir, chain=chain)
+
     conversion_kwargs = {**test_spec.conversion_kwargs}
     if chain:
         run_func = run_converter_chain
@@ -434,11 +439,6 @@ def _run_single_test_conversion_with_library(test_spec: SingleConversionTestSpec
         run_func = run_converter
         conversion_kwargs["converter"] = test_spec.converter_name
         conversion_kwargs["to_format"] = test_spec.to_format
-
-    # Run applicable setup tasks - this isn't contained in a subtest as we don't expect this to normally fail, and if it
-    # does, the rest of the test shouldn't be run
-    if test_spec.setup:
-        test_spec.setup(test_spec, input_dir=input_dir, output_dir=output_dir, chain=chain)
 
     # Capture stdout and stderr while we run this test. We use a try block to stop capturing as soon as testing finishes
 

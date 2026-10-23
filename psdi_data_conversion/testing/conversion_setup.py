@@ -40,6 +40,19 @@ class MultiSetup:
             setup(test_spec, **kwargs)
 
 
+class RenameInput:
+    """Callable class which renames the input file to a desired filename before the conversion is performed"""
+
+    def __init__(self, new_filename: str):
+        self.new_filename = new_filename
+
+    def __call__(self, test_spec: SingleConversionTestSpec, input_dir, **_):
+        qualified_old_filename = os.path.join(input_dir, test_spec.filename)
+        qualified_new_filename = os.path.join(input_dir, self.new_filename)
+        os.rename(qualified_old_filename, qualified_new_filename)
+        test_spec.filename = self.new_filename
+
+
 class BlockOutput:
     """Callable class which will block the intended output filename of a conversion with a junk file before the
     conversion is performed
