@@ -19,7 +19,10 @@ from psdi_data_conversion.testing.conversion_callbacks import (CheckArchiveConte
                                                                CheckStderrContents, CheckStdoutContents,
                                                                MatchOutputFile)
 from psdi_data_conversion.testing.conversion_callbacks import MultiCallback as MCB
-from psdi_data_conversion.testing.conversion_setup import JUNK_FILE_CONTENT, BlockOutput, BlockOutputExt
+from psdi_data_conversion.testing.conversion_setup import (JUNK_FILE_CONTENT, BlockInputFile, BlockOutput,
+                                                           BlockOutputExt)
+from psdi_data_conversion.testing.conversion_setup import MultiSetup as MS
+from psdi_data_conversion.testing.conversion_setup import RenameInput
 from psdi_data_conversion.testing.utils import ConversionTestSpec as Spec
 
 l_all_test_specs: list[Spec] = []
@@ -63,7 +66,6 @@ Open Babel, Atomsk, and c2x converter"""
 l_all_test_specs.append(Spec(name="Disambiguation Tests",
                              filename="hemoglobin.pdb",
                              to_format=tc.FORMAT_CIF,
-                             from_format=None,
                              converter_name=[const.CONVERTER_OB, const.CONVERTER_ATO, const.CONVERTER_C2X,],
                              callback=simple_success_callback,
                              compatible_with_chain=False,
@@ -71,6 +73,37 @@ l_all_test_specs.append(Spec(name="Disambiguation Tests",
 """Some more test conversions which we expect to succeed without issue, but which require disambiguating the input
 format with each of the Open Babel, Atomsk, and c2x converters. Isn't tested with the chain conversion runner, as that
 requires unambiguous input formats"""
+
+l_all_test_specs.append(Spec(name="Extensionless Input Tests",
+                             from_format=tc.FORMAT_CIF,
+                             converter_name=[const.CONVERTER_OB, const.CONVERTER_C2X, const.CONVERTER_ATO],
+                             setup=RenameInput("test_file"),
+                             callback=MCB(simple_success_callback,
+                                          CheckFileStatus(expect_input_files_not_exist=["test_file.cif"])),
+                             compatible_with_gui=False,
+                             ))
+"""Test that a file can be converted if it's provided without an extension and the input format is provided"""
+
+l_all_test_specs.append(Spec(name="Extensionless Input Test - temp file blocked",
+                             from_format=tc.FORMAT_CIF,
+                             converter_name=const.CONVERTER_C2X,
+                             setup=MS(RenameInput("test_file"), BlockInputFile("test_file.cif")),
+                             callback=MCB(simple_success_callback,
+                                          CheckFileStatus(expect_input_files_exist=["test_file.cif"],
+                                                          expect_input_files_not_exist=["test_file_tmp.cif"])),
+                             compatible_with_gui=False,
+                             ))
+"""Test that a file can be converted if it's provided without an extension and the input format is provided"""
+
+l_all_test_specs.append(Spec(name="Wrong Extension Input Test",
+                             from_format=tc.FORMAT_CIF,
+                             converter_name=const.CONVERTER_C2X,
+                             setup=RenameInput("test_file.pdb"),
+                             callback=MCB(simple_success_callback,
+                                          CheckFileStatus(expect_input_files_not_exist=["test_file.cif"])),
+                             compatible_with_gui=False,
+                             ))
+"""Test that a file can be converted if it's provided with an incorrect extension but the input format is provided"""
 
 l_all_test_specs.append(Spec(name="c2x Formats Tests",
                              to_format=[tc.FORMAT_RES_1, tc.FORMAT_ABI, tc.FORMAT_POSCAR, tc.FORMAT_CML],

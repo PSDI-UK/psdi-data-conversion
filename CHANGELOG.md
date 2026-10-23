@@ -9,6 +9,7 @@
 ### Bugfixes
 
 - Resolved issue where it was undefined behaviour what would happen if the output file from a conversion already exists - the file will now be clobbered unless a flag is set to not clobber (see note in "New and Changed Functionality" above)
+- Resolved issue where c2x and Atomsk converters required input files to have the standard expected filenames for their formats
 
 ### Documentation Changes
 
