@@ -417,6 +417,9 @@ def _run_single_test_conversion_with_library(test_spec: SingleConversionTestSpec
     if test_spec.setup:
         test_spec.setup(test_spec, input_dir=input_dir, output_dir=output_dir, chain=chain)
 
+        # Update the qualified input filename in case it was modified in setup
+        qualified_in_filename = os.path.join(input_dir, test_spec.filename)
+
     conversion_kwargs = {**test_spec.conversion_kwargs}
     if chain:
         run_func = run_converter_chain
@@ -551,6 +554,9 @@ def _run_single_test_conversion_with_cli(test_spec: SingleConversionTestSpec,
     # does, the rest of the test shouldn't be run
     if test_spec.setup:
         test_spec.setup(test_spec, input_dir=input_dir, output_dir=output_dir, chain=False)
+
+        # Update the qualified input filename in case it was modified in setup
+        qualified_in_filename = os.path.join(input_dir, test_spec.filename)
 
     # Capture stdout and stderr while we run this test. We use a try block to stop capturing as soon as testing finishes
 

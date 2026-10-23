@@ -95,6 +95,16 @@ l_all_test_specs.append(Spec(name="Extensionless Input Test - temp file blocked"
                              ))
 """Test that a file can be converted if it's provided without an extension and the input format is provided"""
 
+l_all_test_specs.append(Spec(name="Wrong Extension Input Test",
+                             from_format=tc.FORMAT_CIF,
+                             converter_name=const.CONVERTER_C2X,
+                             setup=RenameInput("test_file.pdb"),
+                             callback=MCB(simple_success_callback,
+                                          CheckFileStatus(expect_input_files_not_exist=["test_file.cif"])),
+                             compatible_with_gui=False,
+                             ))
+"""Test that a file can be converted if it's provided with an incorrect extension but the input format is provided"""
+
 l_all_test_specs.append(Spec(name="c2x Formats Tests",
                              to_format=[tc.FORMAT_RES_1, tc.FORMAT_ABI, tc.FORMAT_POSCAR, tc.FORMAT_CML],
                              converter_name=const.CONVERTER_C2X,
