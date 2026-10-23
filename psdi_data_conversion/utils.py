@@ -201,15 +201,19 @@ def regularize_name(name: str):
     return name.lower().replace(" ", "")
 
 
-def replace_extension(filename: str, new_ext: str):
-    """Replace the extension of a filename with a new extension"""
+def strip_extension(filename: str):
+    """Strip all extensions from a filename"""
 
-    # Strip all extensions from the filename
     last_stripped_filename = filename
     stripped_filename, _ = os.path.splitext(filename)
     while stripped_filename != last_stripped_filename:
         last_stripped_filename = stripped_filename
         stripped_filename, _ = os.path.splitext(stripped_filename)
+    return stripped_filename
+
+
+def replace_extension(filename: str, new_ext: str):
+    """Replace the extension of a filename with a new extension"""
 
     # Get the extension with a full-stop at the beginning
     if new_ext.startswith("."):
@@ -217,7 +221,7 @@ def replace_extension(filename: str, new_ext: str):
     else:
         ext = "." + new_ext
 
-    return stripped_filename + ext
+    return strip_extension(filename) + ext
 
 
 class CustomHelpFormatter(argparse.HelpFormatter):
