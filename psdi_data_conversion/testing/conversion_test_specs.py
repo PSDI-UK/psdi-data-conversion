@@ -19,7 +19,10 @@ from psdi_data_conversion.testing.conversion_callbacks import (CheckArchiveConte
                                                                CheckStderrContents, CheckStdoutContents,
                                                                MatchOutputFile)
 from psdi_data_conversion.testing.conversion_callbacks import MultiCallback as MCB
-from psdi_data_conversion.testing.conversion_setup import JUNK_FILE_CONTENT, BlockOutput, BlockOutputExt, RenameInput
+from psdi_data_conversion.testing.conversion_setup import (JUNK_FILE_CONTENT, BlockInputFile, BlockOutput,
+                                                           BlockOutputExt)
+from psdi_data_conversion.testing.conversion_setup import MultiSetup as MS
+from psdi_data_conversion.testing.conversion_setup import RenameInput
 from psdi_data_conversion.testing.utils import ConversionTestSpec as Spec
 
 l_all_test_specs: list[Spec] = []
@@ -75,7 +78,19 @@ l_all_test_specs.append(Spec(name="Extensionless Input Tests",
                              from_format=tc.FORMAT_CIF,
                              converter_name=[const.CONVERTER_OB, const.CONVERTER_C2X, const.CONVERTER_ATO],
                              setup=RenameInput("test_file"),
-                             callback=simple_success_callback,
+                             callback=MCB(simple_success_callback,
+                                          CheckFileStatus(expect_input_files_not_exist=["test_file.cif"])),
+                             compatible_with_gui=False,
+                             ))
+"""Test that a file can be converted if it's provided without an extension and the input format is provided"""
+
+l_all_test_specs.append(Spec(name="Extensionless Input Test - temp file blocked",
+                             from_format=tc.FORMAT_CIF,
+                             converter_name=const.CONVERTER_C2X,
+                             setup=MS(RenameInput("test_file"), BlockInputFile("test_file.cif")),
+                             callback=MCB(simple_success_callback,
+                                          CheckFileStatus(expect_input_files_exist=["test_file.cif"],
+                                                          expect_input_files_not_exist=["test_file_tmp.cif"])),
                              compatible_with_gui=False,
                              ))
 """Test that a file can be converted if it's provided without an extension and the input format is provided"""

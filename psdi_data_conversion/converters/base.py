@@ -905,6 +905,7 @@ class ScriptFileConverter(FileConverter):
             # Symlink the input file to the temporary location
             os.symlink(self.in_filename, self.tmp_in_filename)
             yield
+
         finally:
             # Clean up the temporary file
             os.remove(self.tmp_in_filename)

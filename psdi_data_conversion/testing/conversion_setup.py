@@ -53,6 +53,21 @@ class RenameInput:
         test_spec.filename = self.new_filename
 
 
+class BlockInputFile:
+    """Callable class which will block a file or files in the input directory with a provided filename
+    """
+
+    def __init__(self, l_filenames: str | list[str]):
+        if isinstance(l_filenames, str):
+            self.l_filenames = [l_filenames]
+        else:
+            self.l_filenames = l_filenames
+
+    def __call__(self, test_spec: SingleConversionTestSpec, input_dir, **_) -> None:
+        for filename in self.l_filenames:
+            write_junk_file(input_dir, filename)
+
+
 class BlockOutput:
     """Callable class which will block the intended output filename of a conversion with a junk file before the
     conversion is performed
