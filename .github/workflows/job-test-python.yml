@@ -16,11 +16,10 @@ permissions:
 jobs:
   tests:
     runs-on: ${{ matrix.os }}
-    continue-on-error: ${{ matrix.secondary }}
     strategy:
+      fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest]
-        secondary: [false, true]
 
     steps:
       - name: Checkout repo
