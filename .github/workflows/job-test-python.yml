@@ -19,13 +19,8 @@ jobs:
     continue-on-error: ${{ matrix.secondary }}
     strategy:
       matrix:
-        os: [ubuntu-latest]
-        secondary: [false]
-        # Temporarily disable MacOS tests due to bug introduced in recent GitHub version update, while we decide how to
-        # address it
-        # include:
-        #   - os: [macos-latest]
-        #     secondary: true
+        os: [ubuntu-latest, macos-latest]
+        secondary: [false, true]
 
     steps:
       - name: Checkout repo
