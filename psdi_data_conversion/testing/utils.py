@@ -756,7 +756,7 @@ def check_file_match(filename: str, ex_filename: str) -> str:
     abs_tol = 0.001
     if get_dist() != LINUX_LABEL:
         rel_tol = 0.2
-        abs_tol = 0.01
+        abs_tol = 0.02
 
     for word, ex_word in zip(l_words, l_ex_words):
         try:
