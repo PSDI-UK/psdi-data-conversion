@@ -13,7 +13,7 @@
 
 ### Dependency Changes
 
-- Updated included atomsk binary to latest master version as of 2026/10/26
+- Recompiled MacOS atomsk binary for latest MacOS versions
 
 ### Documentation Changes
 
