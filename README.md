@@ -251,8 +251,8 @@ format>] [-i/--in <input file location>] [-o/--out <location for output files>] 
 [--from-flags '<flags to be provided to the converter for reading input>'] [--to-flags '<flags to be provided to the
 converter for writing output>'] [--from-options '<options to be provided to the converter for reading input>']
 [--to-options '<options to be provided to the converter for writing output>'] [--coord-gen <coordinate generation
-options] [-s/--strict] [-n/--no-clobber] [--nc/--no-check] [-q/--quiet] [-g/--log-file <log file name] [--log-level
-<level>] [--log-mode <mode>]
+options] [-s/--strict] [-n/--no-clobber] [--nc/--no-check] [-q/--quiet] [--plain] [-g/--log-file <log file name]
+[--log-level <level>] [--log-mode <mode>]
 ```
 
 Call `psdi-data-convert -h` for details on each of these options.
