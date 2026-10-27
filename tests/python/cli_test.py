@@ -220,17 +220,20 @@ def test_fail_bad_logging_mode(subtests):
         assert compressed_match("Unrecognised logging mode: 'max'", e.value)
 
 
-def test_list_args(subtests):
+@pytest.mark.parametrize("flag", ("-l", "--list"))
+def test_list_args(flag, subtests):
     """Test that the parsing works if we just ask for a list, and set log mode to stdout"""
-    args = _get_parsed_args("--list")
+    args = _get_parsed_args(flag)
     with subtests.test("list mode is set"):
         assert args.list
     with subtests.test("log mode is correct"):
         assert args.log_mode == const.LOG_STDOUT
+    with subtests.test("the log file uses the expected default value"):
+        assert args.log_file == const.DEFAULT_LISTING_LOG_FILE
 
 
 @pytest.mark.parametrize("arg_str, conv", (("-l Open Babel", "Open Babel"),
-                                           ("--list 'Open Babel'", "Open Babel"),
+                                           ("-l 'Open Babel'", "Open Babel"),
                                            ("-l Atomsk", "Atomsk")))
 def test_list_converter(arg_str, conv):
     """Test that the parsing works if we ask for info on a specific converter"""
@@ -282,12 +285,6 @@ def test_fail_log_file_not_set(subtests):
         _ = args.log_file
     with subtests.test("correct error message"):
         assert compressed_match(f"Input file '{os.getcwd()}/file1.mmcif' cannot be found", e.value)
-
-
-def test_log_file_list_mode():
-    """Test that the log file uses the expected default value in list mode"""
-    args = _get_parsed_args("--list")
-    assert args.log_file == const.DEFAULT_LISTING_LOG_FILE
 
 
 def _check_no_errors(captured, subtests):
@@ -517,7 +514,7 @@ def test_path_bad_length(subtests):
 def test_list_converters(capsys, subtests):
     """Test the option to list available converters
     """
-    run_with_arg_string("--list")
+    run_with_arg_string("-l")
     captured = capsys.readouterr()
     with subtests.test("correct message header"):
         assert "Available converters" in captured.out
@@ -536,7 +533,7 @@ def test_detail_converter(capsys, converter_name, subtests):
 
     converter_info = get_converter_info(converter_name)
 
-    run_with_arg_string(f"--list {converter_name}")
+    run_with_arg_string(f"-l {converter_name}")
     captured = capsys.readouterr()
 
     with subtests.test("converter name displayed"):
@@ -575,7 +572,7 @@ def test_detail_converter_bad_name(capsys, subtests):
     """Test we do get a simple error for a bad converter name
     """
     with subtests.test("CLI exits"), pytest.raises(SystemExit):
-        run_with_arg_string("--list bad_converter")
+        run_with_arg_string("-l bad_converter")
 
     captured = capsys.readouterr()
     with subtests.test("correct error message"):
