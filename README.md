@@ -64,15 +64,19 @@ This project provides utilities to assist in converting files between the many d
   - (Files used as part of the deployment to STFC infrastructure)
 - `psdi_data_conversion` (Primary source directory)
   - `bin`
+    - `README.md` (Documentation on the files in this directory)
     - (Precompiled binaries for running file format converters)
   - `converters`
     - `base.py` (Base class for converter plugins)
-    - `README.md` (Documentation on the structures of files in this directory)
     - `formats.json` (Source file for database information on file formats)
+    - `README.md` (Documentation on the structures of files in this directory)
     - (Folders for converter plugins, each with the below structure)
     - `example` (Example converter plugin)
       - `converter.py` (Executable code to run the converter)
       - `data.json` (Data on the converter, the formats it supports, and the conversions it can perform)
+  - `scripts`
+    - `README.md` (Documentation on the files in this directory)
+    - (Bash scripts used to call converter binaries)
   - `static` (Static code and assets for the web app)
     - `data`
       - `data.json` (Generated singular database file, read by the library, CLI, and web app for information on converters, formats, and conversions)
