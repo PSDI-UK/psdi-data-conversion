@@ -67,7 +67,7 @@ This project provides utilities to assist in converting files between the many d
     - (Precompiled binaries for running file format converters)
   - `converters`
     - `base.py` (Base class for converter plugins)
-    - `doc.md` (Documentation on the structures of files in this directory)
+    - `README.md` (Documentation on the structures of files in this directory)
     - `formats.json` (Source file for database information on file formats)
     - (Folders for converter plugins, each with the below structure)
     - `example` (Example converter plugin)

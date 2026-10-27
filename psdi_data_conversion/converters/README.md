@@ -12,7 +12,7 @@ This folder contains the following files and directories:
 
 - `__init__.py` (Standard Python package file)
 - `base.py` (Defines the base Python class for converter plugins)
-- `doc.md` (This file)
+- `README.md` (This file)
 - `formats.json` (Source file for database information on file formats)
 
 **Utility Folders:**
