@@ -10,6 +10,7 @@
 
 - Resolved issue where it was undefined behaviour what would happen if the output file from a conversion already exists - the file will now be clobbered unless a flag is set to not clobber (see note in "New and Changed Functionality" above)
 - Resolved issue where c2x and Atomsk converters required input files to have the standard expected filenames for their formats
+- Fixed default binary path in the `c2x.sh` plugin script
 
 ### Dependency Changes
 
@@ -20,6 +21,7 @@
 - Added section on running chained conversions with the Python library to the README
 - Renamed plugin documentation file from `doc.md` to `README.md` so it stands out more to users
 - Added `README.md` file to `psdi_data_conversion/bin` directory to explain the sources of the binaries
+- Added `README.md` file to `psdi_data_conversion/scripts` directory to explain the scripts
 
 ## v0.4.0
 
