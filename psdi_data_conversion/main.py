@@ -725,8 +725,14 @@ def get_argument_parser():
             for arg_name, kwargs, _ in l_converter_args:
                 g_converter.add_argument(arg_name, **kwargs)
 
-    g_logging = parser.add_argument_group("Logging arguments", "")
+    g_logging = parser.add_argument_group("Output and logging arguments", "")
 
+    g_logging.add_argument("-q", "--quiet", action="store_true",
+                           help="If set, all terminal output aside from errors will be suppressed and no log file will "
+                           "be generated.")
+    g_logging.add_argument("--plain", action="store_true",
+                           help="If set, will disable coloured text in output. Useful if storing the output in a file "
+                           f"or piping it to a tool such as {tc.CODE}`less`{tc.OFF}.")
     g_logging.add_argument("-g", "--log-file", type=str, default=None,
                            help="The name of the file to log to. This can be provided relative to the current "
                            f"directory (e.g. {tc.PATH}'../logs/log-file.txt'{tc.OFF}) or fully qualified (e.g. "
@@ -743,9 +749,6 @@ def get_argument_parser():
                            f"{tc.MESSAGE}'simple'{tc.OFF}: Logs saved to one file. "
                            f"{tc.MESSAGE}'stdout'{tc.OFF}: Output logs and errors only to stdout. "
                            f"{tc.MESSAGE}'none'{tc.OFF}: Output only errors to stdout.")
-    g_logging.add_argument("-q", "--quiet", action="store_true",
-                           help="If set, all terminal output aside from errors will be suppressed and no log file will "
-                           "be generated.")
     g_logging.add_argument("--log-level", type=str, default=None,
                            help=f"The desired level to log at. Allowed values are: {tc.MESSAGE}'DEBUG'{tc.OFF}, "
                            f"{tc.MESSAGE}'INFO'{tc.OFF}, {tc.MESSAGE}'WARNING'{tc.OFF}, {tc.MESSAGE}'ERROR'{tc.OFF}, "
@@ -783,8 +786,15 @@ def parse_args():
     """
 
     parser = get_argument_parser()
+    parsed_args = parser.parse_args()
 
-    args = ConvertArgs(parser.parse_args())
+    # Before constructing the arguments class, we check for the "plain" argument, which signifies that we should disable
+    # coloured text in output - errors in constructing the class will use colours if not disabled, hence why we need to
+    # disable first if desired
+    if parsed_args.plain:
+        tc.disable()
+
+    args = ConvertArgs(parsed_args)
 
     return args
 
