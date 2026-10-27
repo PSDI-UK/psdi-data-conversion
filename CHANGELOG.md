@@ -5,6 +5,7 @@
 ### New and Changed Functionality
 
 - Added option to prevent clobbering of output files which already exist. This can be set with the `no_clobber=True` kwarg in the `run_converter` and `run_converter_chain` methods, or with `-n/--no-clobber` in the CLI
+- Added option `--plain` to the CLI, which disables coloured text in output
 
 ### Bugfixes
 
