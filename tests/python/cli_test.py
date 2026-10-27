@@ -25,10 +25,11 @@ from psdi_data_conversion.database import (D_FORMAT_PROPERTY_ATTRS, MSG_CONVERSI
                                            get_possible_conversion_pathways, get_possible_conversions,
                                            get_possible_formats)
 from psdi_data_conversion.main import FileConverterInputException, parse_args
-from psdi_data_conversion.testing.constants import FORMAT_INCHI, FORMAT_MOL, FORMAT_MOLDY, FORMAT_PDB_0
+from psdi_data_conversion.testing.constants import FORMAT_CIF, FORMAT_INCHI, FORMAT_MOL, FORMAT_MOLDY, FORMAT_PDB_0
 from psdi_data_conversion.testing.conversion_test_specs import l_cli_test_specs
-from psdi_data_conversion.testing.utils import compressed_match, run_test_conversion_with_cli, run_with_arg_string
-from psdi_data_conversion.utils import regularize_name
+from psdi_data_conversion.testing.utils import (compressed_match, get_input_test_data_loc,
+                                                run_test_conversion_with_cli, run_with_arg_string)
+from psdi_data_conversion.utils import TextColors, regularize_name
 
 
 def test_unique_args(subtests):
@@ -890,3 +891,39 @@ def test_format_info_out_unrecognised(capsys, subtests):
 
     with subtests.test("unrecognised error present"):
         assert compressed_match(f"ERROR: Format '{out_format}' not recognised", capsys.readouterr().err)
+
+
+@pytest.mark.parametrize("flag", ("-q", "--quiet"))
+def test_quiet_output(flag, capsys, subtests):
+    """Test that the -q/--quiet flag properly disables all output for a conversion
+    """
+    in_filename = os.path.join(get_input_test_data_loc(), "nacl.cif")
+
+    run_with_arg_string(f"{in_filename} -f {FORMAT_CIF} -t {FORMAT_PDB_0} {flag}")
+    captured = capsys.readouterr()
+
+    _check_no_errors(captured, subtests)
+    with subtests.test("stdout is empty"):
+        assert not captured.out
+
+
+def test_plain_output(capsys, subtests):
+    """Test that the --plain flag properly disables text colour in output
+    """
+    in_filename = os.path.join(get_input_test_data_loc(), "nacl.cif")
+
+    run_with_arg_string(f"{in_filename} -f {FORMAT_CIF} -t {FORMAT_PDB_0} --plain")
+    captured = capsys.readouterr()
+
+    _check_no_errors(captured, subtests)
+
+    # Check that there is some output to test here - if not, the test is invalid
+    assert captured.out
+
+    # Check each text color code to see if it shows in stdout. We avoid using the common `tc` variable here, since at
+    # this point colors in it should be disabled
+    for key, val in TextColors().__dict__:
+        if key.startswith("_") or not isinstance(val, str):
+            continue
+        with subtests.test("no text colouring in stdout", key=key):
+            assert val not in captured.out
