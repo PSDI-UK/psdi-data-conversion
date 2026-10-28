@@ -10,6 +10,9 @@
 # arg2 is the fully-qualified input file name (e.g., /path/to/nacl.cif)
 # arg3 is the fully-qualified output file name
 
+# Optional positional argument:
+# arg4 is a string of conversion options preceded by a dash (e.g., -aN)
+
 DEFAULT_DIST=linux
 
 # The ennvar DIST can be used to set the distribution, indicating the subdirectory to search in for the binary
@@ -22,5 +25,5 @@ if [ -z $BIN_PATH ]; then
   BIN_PATH=psdi_data_conversion/bin/$DIST/c2x
 fi
 
-$BIN_PATH $1 $2 $3 $4 $5
+$BIN_PATH -$4 $1 $2 $3 $5
 

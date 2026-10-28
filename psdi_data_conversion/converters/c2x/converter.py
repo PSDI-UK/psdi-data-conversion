@@ -34,8 +34,33 @@ class C2xFileConverter(ScriptFileConverter):
         return l_script_args
 
     def _create_message(self) -> str:
-        """Optional override: Create a log of options passed to the converter"""
-        return ""
+        """Override method to create a log of options passed to the converter"""
+
+        message = ""
+
+        label_length = 19
+
+        for (label, key, multi) in (("Options:", "from_flags", False),
+                                    ("Opts + args:", "read_flags_args", True)):
+            val = self.data.get(key)
+
+            if not val:
+                message += f"{label:<{label_length}}none\n"
+                continue
+
+            if multi:
+                l_items = val
+            else:
+                l_items = (val,)
+
+            for i, item in enumerate(l_items):
+                if i == 0:
+                    line_label = label
+                else:
+                    line_label = ""
+                message += f"{line_label:<{label_length}}{item}\n"
+
+        return message
 
 
 # Assign this converter to the `converter` variable - this lets the psdi_data_conversion.converter module detect and
