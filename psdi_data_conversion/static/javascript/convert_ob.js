@@ -25,10 +25,10 @@ $(document).ready(function () {
     $("#inFlags").change(blurBox);
     $("#outFlags").change(blurBox);
 
-    getFlags("in", in_str);
-    getFlags("out", out_str);
-    getFlags("in_arg", in_str);
-    getFlags("out_arg", out_str);
+    getFlags("ob", "in", in_str);
+    getFlags("ob", "out", out_str);
+    getFlags("ob", "in_arg", in_str);
+    getFlags("ob", "out_arg", out_str);
 });
 
 // On clicking on an option flag, the select box loses focus so that the light font and dark background (Chrome) appears immediately.
@@ -194,18 +194,18 @@ function extractFlags(flags_text) {
 }
 
 // Retrieves read or write option flags associated with a file format
-function getFlags(type, str) {
+function getFlags(converter, type, str) {
 
     try {
         const [ext, note] = str.split(": ");
 
         if (type == "in") {
-            getInputFlags(ext, note).then((flags) => {
+            getInputFlags(converter, ext, note).then((flags) => {
                 populateFlagBox(flags, type);
             });
         }
         else if (type === "out") {
-            getOutputFlags(ext, note).then((flags) => {
+            getOutputFlags(converter, ext, note).then((flags) => {
                 populateFlagBox(flags, type);
             });
         }
@@ -215,7 +215,7 @@ function getFlags(type, str) {
                 in_arg_ext = in_arg_str_array[0],          // e.g. "ins"
                 in_arg_note = in_arg_str_array[1];         // e.g. "ShelX"
 
-            getInputArgFlags(in_arg_ext, in_arg_note).then((argFlags) => {
+            getInputArgFlags(converter, in_arg_ext, in_arg_note).then((argFlags) => {
                 addCheckboxes(argFlags, "in_arg");
             });
         }
@@ -225,7 +225,7 @@ function getFlags(type, str) {
                 out_arg_ext = out_arg_str_array[0],          // e.g. "ins"
                 out_arg_note = out_arg_str_array[1];         // e.g. "ShelX"
 
-            getOutputArgFlags(out_arg_ext, out_arg_note).then((argFlags) => {
+            getOutputArgFlags(converter, out_arg_ext, out_arg_note).then((argFlags) => {
                 addCheckboxes(argFlags, "out_arg");
             });
         }
