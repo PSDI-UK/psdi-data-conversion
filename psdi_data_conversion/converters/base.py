@@ -14,6 +14,7 @@ import subprocess
 import sys
 import traceback
 from collections.abc import Callable
+from contextlib import contextmanager
 from copy import deepcopy
 from dataclasses import dataclass
 from functools import cached_property
@@ -25,7 +26,7 @@ from psdi_data_conversion import log_utility
 from psdi_data_conversion.dist import bin_exists, get_bin_path, get_dist
 from psdi_data_conversion.file_io import get_package_path
 from psdi_data_conversion.security import SAFE_STRING_RE, string_is_safe
-from psdi_data_conversion.utils import replace_extension, tc
+from psdi_data_conversion.utils import replace_extension, strip_extension, tc
 
 try:
     # werkzeug is installed in the optional dependency Flask. It's only used here to recognize an exception type,
@@ -867,6 +868,9 @@ class ScriptFileConverter(FileConverter):
     found.
     """
 
+    tmp_in_filename: str | None = None
+    """A temporary filename used for the input file in case it doesn't have the correct extension"""
+
     @classmethod
     def can_be_registered(cls) -> bool:
         """If a binary is required for this script, check that it exists for the user's OS/distribution. If one isn't
@@ -875,6 +879,37 @@ class ScriptFileConverter(FileConverter):
         if cls.required_bin is None:
             return True
         return bin_exists(cls.required_bin)
+
+    @contextmanager
+    def _setup_input(self):
+        """Perform setup tasks on the input"""
+
+        # Script file converters tend to require the input file to have the correct extension. Check if this is the
+        # case, and handle appropriately if not
+        from_format_ext = self.from_format_info.name
+        if self.in_filename.endswith(f".{from_format_ext}"):
+            # The input file already has the correct filename, so no need to set up a separate file
+            self.tmp_in_filename = self.in_filename
+            yield
+            return
+
+        # We'll need to set up a temporary input file with the correct filename
+        try:
+            # Determine an unused temporary filename
+            tmp_filename_base = strip_extension(self.in_filename)
+            self.tmp_in_filename = f"{tmp_filename_base}.{from_format_ext}"
+            while os.path.exists(self.tmp_in_filename):
+                tmp_filename_base += "_tmp"
+                self.tmp_in_filename = f"{tmp_filename_base}.{from_format_ext}"
+
+            # Symlink the input file to the temporary location
+            os.symlink(self.in_filename, self.tmp_in_filename)
+            yield
+
+        finally:
+            # Clean up the temporary file
+            os.remove(self.tmp_in_filename)
+            return
 
     def _convert(self):
 
@@ -886,8 +921,9 @@ class ScriptFileConverter(FileConverter):
 
         script_abs_path = os.path.join(get_package_path(), "scripts", self.script)
 
-        process = subprocess.run(['sh', script_abs_path, *self._get_script_args()],
-                                 env=env, capture_output=True, text=True)
+        with self._setup_input():
+            process = subprocess.run(['sh', script_abs_path, *self._get_script_args()],
+                                     env=env, capture_output=True, text=True)
 
         self.out = process.stdout
         self.err = process.stderr
@@ -912,5 +948,5 @@ class ScriptFileConverter(FileConverter):
                 raise FileConverterArgException(f"Provided argument '{user_args}' does not pass security check - it "
                                                 f"must match the regex {SAFE_STRING_RE.pattern}.", help=True)
 
-        return ['--' + self.to_format_info.name, self.in_filename, self.out_filename, from_flags, to_flags,
+        return ['--' + self.to_format_info.name, self.tmp_in_filename, self.out_filename, from_flags, to_flags,
                 from_options, to_options]

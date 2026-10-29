@@ -5,15 +5,29 @@
 ### New and Changed Functionality
 
 - Added option to prevent clobbering of output files which already exist. This can be set with the `no_clobber=True` kwarg in the `run_converter` and `run_converter_chain` methods, or with `-n/--no-clobber` in the CLI
+- Added option `--plain` to the CLI, which disables coloured text in output
 
 ### Bugfixes
 
 - Resolved issue where it was undefined behaviour what would happen if the output file from a conversion already exists - the file will now be clobbered unless a flag is set to not clobber (see note in "New and Changed Functionality" above)
+- Resolved issue where c2x and Atomsk converters required input files to have the standard expected filenames for their formats
+- Fixed default binary path in the `c2x.sh` plugin script
+
+### Dependency Changes
+
+- Recompiled MacOS atomsk binary for latest MacOS versions
 
 ### Documentation Changes
 
 - Added section on running chained conversions with the Python library to the README
 - Added guidance on approval for changes to CONTRIBUTING.md
+- Renamed plugin documentation file from `doc.md` to `README.md` so it stands out more to users
+- Added `README.md` file to `psdi_data_conversion/bin` directory to explain the sources of the binaries
+- Added `README.md` file to `psdi_data_conversion/scripts` directory to explain the scripts
+
+### Miscellaneous Changes
+
+- Switched to self-hosting fonts for GDPR compliance
 
 ## v0.4.0
 

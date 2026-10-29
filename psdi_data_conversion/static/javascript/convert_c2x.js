@@ -1,11 +1,13 @@
 /*
-  convertato.js
+  convert_c2x.js
   Version 1.0, 10th January 2025
 
-  This is the JavaScript which makes the convertc2x.htm gui work.
+  This is the JavaScript which makes the convert_c2x.htm gui work.
 */
 
-import { commonConvertReady, convertFile, getExtCheck, splitArchiveExt, isArchiveExt } from "./convert_common.js"
+import { getInputFlags, getOutputFlags, getInputArgFlags, getOutputArgFlags } from "./data.js";
+import { SAFE_CHAR_REGEX, commonConvertReady, convertFile, getExtCheck, splitArchiveExt, isArchiveExt } from "./convert_common.js"
+
 
 var token = "",
     in_ext = "",
@@ -16,12 +18,56 @@ var token = "",
 $(document).ready(function () {
     [token, in_str, in_ext, out_str, out_ext] = commonConvertReady("c2x");
     $("#uploadButton").click(submitFile);
+    $("#inFlags").change(blurBox);
+    getFlags("cx", "in", in_str);
+    getFlags("cx", "out", out_str);
+    getFlags("cx", "in_arg", in_str);
+    getFlags("cx", "out_arg", out_str);
 });
+
+// On clicking on an option flag, the select box loses focus so that the light font and dark background (Chrome) appears immediately.
+function blurBox(event) {
+    this.blur();
+}
+
+// On ticking a checkbox, a text box for entry of an option flag argument appears next to it. On unticking, the text box disappears.
+function enterArgument(event) {
+    var arg_id = this.id.replace('check', 'text'),
+        arg_label_id = this.id.replace('check', 'label');
+
+    if ($('#' + this.id).is(':checked')) {
+        // Show appropriate text box and its label
+        $('#' + arg_id).show();
+        $('#' + arg_label_id).show();
+    }
+    else {
+        // Hide appropriate text box (empty) and its label
+        $('#' + arg_id).val('').hide();
+        $('#' + arg_label_id).hide();
+    }
+}
+
+
+/**
+ * Validate the input for a format option - if invalid, display the error message, if valid, hide it
+ *
+ * @param {*} event 
+ */
+function validateInput(event) {
+    var err_id = this.id.replace('text', 'err')
+    if (this.validity.patternMismatch) {
+        $('#' + err_id).css({ display: "block" })
+    } else {
+        $('#' + err_id).css({ display: "none" })
+    }
+}
 
 // Uploads a user-supplied file
 function submitFile() {
+
     const file = $("#fileToUpload")[0].files[0],
         [fname, ext] = splitArchiveExt(file.name);
+
 
     var quality = sessionStorage.getItem("success"),
         start = quality.indexOf(':') + 2,
@@ -30,13 +76,12 @@ function submitFile() {
     quality = quality.substring(start, finish);
 
     const read_flags_text = $("#inFlags").find(":selected").text(),
-        read_flags = '';
+        read_flags = extractFlags(read_flags_text);
 
     const write_flags_text = $("#outFlags").find(":selected").text(),
-        write_flags = '';
+        write_flags = extractFlags(write_flags_text);
 
-    var count = 0,
-        read_arg_flags = '',
+    var read_arg_flags = '',
         write_arg_flags = '',
         read_args = '',
         write_args = '',
@@ -45,9 +90,16 @@ function submitFile() {
     const checked_in = $('input[name=in_arg_check]:checked'),
         checked_out = $('input[name=out_arg_check]:checked');
 
+    let security_passed = true;
+
     checked_in.each(function () {
         read_arg_flags += $("#" + this.id).val()[0];
-        const arg = $("#in_arg_text" + this.id.substring(this.id.length - 1, this.id.length)).val();
+        const e = $("#in_arg_text" + this.id.substring(this.id.length - 1, this.id.length));
+        const arg = e.val();
+
+        if (e[0].validity.patternMismatch) {
+            security_passed = false;
+        }
 
         if (/\S/.test(arg)) {
             read_args += arg.trim() + '£';
@@ -59,7 +111,12 @@ function submitFile() {
 
     checked_out.each(function () {
         write_arg_flags += $("#" + this.id).val()[0];
-        const arg = $("#out_arg_text" + this.id.substring(this.id.length - 1, this.id.length)).val();
+        const e = $("#out_arg_text" + this.id.substring(this.id.length - 1, this.id.length));
+        const arg = e.val();
+
+        if (e[0].validity.patternMismatch) {
+            security_passed = false;
+        }
 
         if (/\S/.test(arg)) {
             write_args += arg.trim() + '£';
@@ -69,13 +126,25 @@ function submitFile() {
         }
     })
 
-    if (!all_args_entered) {
-        alert('All ticked option flags need additional information to be entered into the associated text box.');
-        return;
+    let alert_msg = '';
+
+    if (!security_passed) {
+        alert_msg += 'ERROR: One or more ticked options contains invalid characters. They must match the regex /' +
+            SAFE_CHAR_REGEX + '/ .\n';
     }
 
-    const coordinates = 'neither', //$('input[name="coordinates"]:checked').val(),
-        coordOption = 'medium'; //$('input[name="coordOptions"]:checked').val();
+    if (!all_args_entered) {
+        alert_msg += 'ERROR: All ticked options need additional information to be entered into the associated ' +
+            'text box.\n';
+    }
+
+    if (alert_msg) {
+        alert(alert_msg);
+        return
+    }
+
+    const coordinates = 'neither',
+        coordOption = 'medium';
 
     // If the uploaded file was an archive, we'll expect to download one too. Otherwise we'll expect to download
     // something with the output extension
@@ -104,3 +173,160 @@ function submitFile() {
 
     convertFile(form_data, download_fname, fname);
 }
+
+// Retrieves option flags from selected text
+function extractFlags(flags_text) {
+    const first_char = flags_text[0];
+
+    var flags = "",
+        regex = /: /g,
+        match = "";
+
+    while ((match = regex.exec(flags_text)) != null) {
+        flags += flags_text[match.index - 1];
+    }
+
+    // Ensures that c2x option '15' is retrieved correctly
+    if (first_char != flags[0]) {
+        flags = first_char + flags;
+    }
+
+    return flags;
+}
+
+// Retrieves read or write option flags associated with a file format
+function getFlags(converter, type, str) {
+
+    try {
+        const [ext, note] = str.split(": ");
+
+        if (type == "in") {
+            getInputFlags(converter, ext, note).then((flags) => {
+                populateFlagBox(flags, type);
+            });
+        }
+        else if (type === "out") {
+            getOutputFlags(converter, ext, note).then((flags) => {
+                populateFlagBox(flags, type);
+            });
+        }
+        else if (type == "in_arg") {
+
+            const in_arg_str_array = str.split(": "),
+                in_arg_ext = in_arg_str_array[0],          // e.g. "ins"
+                in_arg_note = in_arg_str_array[1];         // e.g. "ShelX"
+
+            getInputArgFlags(converter, in_arg_ext, in_arg_note).then((argFlags) => {
+                addCheckboxes(argFlags, "in_arg");
+            });
+        }
+        else if (type == "out_arg") {
+
+            const out_arg_str_array = str.split(": "),
+                out_arg_ext = out_arg_str_array[0],          // e.g. "ins"
+                out_arg_note = out_arg_str_array[1];         // e.g. "ShelX"
+
+            getOutputArgFlags(converter, out_arg_ext, out_arg_note).then((argFlags) => {
+                addCheckboxes(argFlags, "out_arg");
+            });
+        }
+
+        return true;
+    }
+    catch (e) {
+        return false;
+    }
+}
+
+// Adds checkboxes for read or write option flags requiring an argument
+function addCheckboxes(argFlags, type) {
+
+    var container = $(`#${type}Flags`),
+        flagCount = 0;
+
+    if (argFlags.length > 0) {
+
+        $(`#${type}Label`).show();
+
+        for (const argFlag of argFlags) {
+
+            const flag = argFlag.flag;
+            const brief = argFlag.brief.replace(/^N\/A$/, "");
+            const description = argFlag.description.replace(/^N\/A$/, "");
+            const furtherInfo = argFlag.further_info.replace(/^N\/A$/, "");
+
+            container.append(`
+                <tr>
+                    <td><input type='checkbox' id="${type}_check${flagCount}" name=${type}_check value="${flag}"></input></td>
+                    <td><label for="${type}_check${flagCount}">${flag} [${brief}]: ${description}<label></td>
+                    <td><input type='text' id="${type}_text${flagCount}" placeholder='-- type info. here --'
+                         pattern='` + SAFE_CHAR_REGEX + `'></input>
+                         <p class="init-hidden" id="${type}_err${flagCount}"><strong>ERROR:</strong> Input contains
+                         invalid characters; it must match the regex 
+                         <code class="secondary">/` + SAFE_CHAR_REGEX + `/</code></p>
+                    </td>
+                    <td><span id= ${type}_label${flagCount}>${furtherInfo}</span></td>
+                </tr>`);
+
+            $(`#${type}_text${flagCount}`).hide();
+            $(`#${type}_text${flagCount}`).on('input', validateInput);
+            $(`#${type}_label${flagCount}`).hide();
+            $(`#${type}_check${flagCount}`).change(enterArgument);
+
+            flagCount++;
+        }
+
+        container.append(`<br>`);
+    }
+    else {
+        $(`#${type}Label`).hide();
+
+        if (type == 'in_arg') {
+            $("#flag_break").hide();
+        }
+    }
+}
+
+// Populates a read or write option flag box
+function populateFlagBox(entries, type) {
+
+    const el = $("#" + type + "Flags");
+    const disp = $("#" + type + "FlagList");
+    const flagInfo = $("#" + type + "FlagInfo");
+
+    let infoLines = [];
+
+    if (entries.length != 0) {
+
+        disp.css({ display: "inline" });
+
+        for (const entry of entries) {
+
+            el.append(new Option(`${entry.flag}: ${entry.description}`));
+
+            const info = `${entry.flag}: ${entry.further_info}`;
+
+            if (!info.match(/.: N\/A/)) {
+                infoLines.push(info);
+            }
+        }
+
+    } else {
+
+        $("#" + type + "_label").hide();
+        $("#" + type + "_flag_break").hide();
+        el.hide();
+    }
+
+    el.append(new Option(""));
+
+    for (const infoLine of infoLines) {
+
+        const div = $("<div>");
+
+        div.text(infoLine);
+
+        flagInfo.append(div);
+    }
+}
+

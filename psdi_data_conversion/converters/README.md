@@ -12,7 +12,7 @@ This folder contains the following files and directories:
 
 - `__init__.py` (Standard Python package file)
 - `base.py` (Defines the base Python class for converter plugins)
-- `doc.md` (This file)
+- `README.md` (This file)
 - `formats.json` (Source file for database information on file formats)
 
 **Utility Folders:**
@@ -63,7 +63,7 @@ The Atomsk and c2x plugins use prepackaged binaries to perform conversions, each
 
 The `ScriptFileConverter` class by default passes the following arguments to the called script, in order:
 
-- Name of output format
+- Name of output format, prefixed with "--", e.g. "--pdb"
 - Input filename (fully-qualified)
 - Output filename (fully-qualified)
 - Input format flags (concatenated)
