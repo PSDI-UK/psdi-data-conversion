@@ -13,6 +13,7 @@
 ### Documentation Changes
 
 - Added section on running chained conversions with the Python library to the README
+- Added guidance on approval for changes to CONTRIBUTING.md
 
 ## v0.4.0
 
