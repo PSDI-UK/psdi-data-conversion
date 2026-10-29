@@ -24,6 +24,10 @@
 - Added `README.md` file to `psdi_data_conversion/bin` directory to explain the sources of the binaries
 - Added `README.md` file to `psdi_data_conversion/scripts` directory to explain the scripts
 
+### Miscellaneous Changes
+
+- Switched to self-hosting fonts for GDPR compliance
+
 ## v0.4.0
 
 ### **Breaking Changes**
