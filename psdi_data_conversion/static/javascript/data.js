@@ -137,62 +137,100 @@ export async function getAllFormats() {
     return data.formats.sort((a, b) => compare([a.extension, b.extension], [a.note, b.note]));
 }
 
-export async function getInputFlags(extension, note) {
+export async function getInputFlags(converter, extension, note) {
 
     const format = (data.formats.filter(format => (format.extension === extension) && (format.note === note)))[0];
 
     if (format !== undefined) {
+        if (converter === "ob") {
 
-        const obFlagsIn = new Set(data.obformat_to_flags_in.filter(entry => entry.formats_id === format.id).map(entry => entry.obflags_in_id));
+            const obFlagsIn = new Set(data.obformat_to_flags_in.filter(entry => entry.formats_id === format.id).map(entry => entry.obflags_in_id));
 
-        return data.obflags_in.filter(entry => obFlagsIn.has(entry.id)).sort((a, b) => compare([a.flag, b.flag]));
+            return data.obflags_in.filter(entry => obFlagsIn.has(entry.id)).sort((a, b) => compare([a.flag, b.flag]));
+        }
+        else if (converter === "cx") {
+
+            const cxFlagsIn = new Set(data.cxformat_to_flags_in.filter(entry => entry.formats_id === format.id).map(entry => entry.cxflags_in_id));
+
+            return data.cxflags_in.filter(entry => cxFlagsIn.has(entry.id)).sort((a, b) => compare([a.flag, b.flag]));
+        }
     }
 }
 
-export async function getOutputFlags(extension, note) {
+export async function getOutputFlags(converter, extension, note) {
 
     const format = (data.formats.filter(format => (format.extension === extension) && (format.note === note)))[0];
 
     if (format !== undefined) {
+        if (converter === "ob") {
 
-        const obFlagsOut = new Set(data.obformat_to_flags_out.filter(entry => entry.formats_id === format.id).map(entry => entry.obflags_out_id));
+            const obFlagsOut = new Set(data.obformat_to_flags_out.filter(entry => entry.formats_id === format.id).map(entry => entry.obflags_out_id));
 
-        return data.obflags_out.filter(entry => obFlagsOut.has(entry.id)).sort((a, b) => compare([a.flag, b.flag]));
+            return data.obflags_out.filter(entry => obFlagsOut.has(entry.id)).sort((a, b) => compare([a.flag, b.flag]));
+        }
+        else if (converter === "cx") {
+
+            const cxFlagsOut = new Set(data.cxformat_to_flags_out.filter(entry => entry.formats_id === format.id).map(entry => entry.cxflags_out_id));
+
+            return data.cxflags_out.filter(entry => cxFlagsOut.has(entry.id)).sort((a, b) => compare([a.flag, b.flag]));
+        }
     }
 }
 
-export async function getInputArgFlags(extension, note) {
+export async function getInputArgFlags(converter, extension, note) {
 
     const format = await getFormatByExtensionAndNote(extension, note);
+    var argFlags;
 
     if (format === undefined) {
         throw `Can't find format for ${extension} and ${note}`;
     }
 
-    const argFlagEntries = data.obformat_to_argflags_in
-        .filter(entry => entry.formats_id === format.id)
-        .map(entry => entry.obargflags_in_id);
+    if (converter === "ob") {
+        const argFlagEntries = data.obformat_to_argflags_in
+            .filter(entry => entry.formats_id === format.id)
+            .map(entry => entry.obargflags_in_id);
 
-    const argFlags = data.obargflags_in
-        .filter(entry => argFlagEntries.indexOf(entry.id) !== -1);
+        argFlags = data.obargflags_in
+            .filter(entry => argFlagEntries.indexOf(entry.id) !== -1);
+    }
+    else if (converter === "cx") {
+        const argFlagEntries = data.cxformat_to_argflags_in
+            .filter(entry => entry.formats_id === format.id)
+            .map(entry => entry.cxargflags_in_id);
+
+        argFlags = data.cxargflags_in
+            .filter(entry => argFlagEntries.indexOf(entry.id) !== -1);
+    }
 
     return argFlags.sort((a, b) => compare([a.flag, b.flag]));
 }
 
-export async function getOutputArgFlags(extension, note) {
+export async function getOutputArgFlags(converter, extension, note) {
 
     const format = await getFormatByExtensionAndNote(extension, note);
+    var argFlags;
 
     if (format === undefined) {
         throw `Can't find format for ${extension} and ${note}`;
     }
 
-    const argFlagEntries = data.obformat_to_argflags_out
-        .filter(entry => entry.formats_id === format.id)
-        .map(entry => entry.obargflags_out_id);
+    if (converter === "ob") {
+        const argFlagEntries = data.obformat_to_argflags_out
+            .filter(entry => entry.formats_id === format.id)
+            .map(entry => entry.obargflags_out_id);
 
-    const argFlags = data.obargflags_out
-        .filter(entry => argFlagEntries.indexOf(entry.id) !== -1);
+        argFlags = data.obargflags_out
+            .filter(entry => argFlagEntries.indexOf(entry.id) !== -1);
+    }
+    else if (converter === "cx") {
+        const argFlagEntries = data.cxformat_to_argflags_out
+            .filter(entry => entry.formats_id === format.id)
+            .map(entry => entry.cxargflags_out_id);
+
+        argFlags = data.cxargflags_out
+            .filter(entry => argFlagEntries.indexOf(entry.id) !== -1);
+    }
 
     return argFlags.sort((a, b) => compare([a.flag, b.flag]));
 }

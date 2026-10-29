@@ -8,15 +8,21 @@ application, and GUI.
 
 from psdi_data_conversion import constants as const
 from psdi_data_conversion.converters.base import (FileConverterAbortException, FileConverterInputException,
-                                                  FileConverterSizeException, FileConverterUnsupportedException)
+                                                  FileConverterOutputFileException, FileConverterSizeException,
+                                                  FileConverterUnsupportedException)
 from psdi_data_conversion.converters.openbabel.converter import COORD_GEN_KEY, COORD_GEN_QUAL_KEY
 from psdi_data_conversion.database import get_converter_info, get_format_info
 from psdi_data_conversion.testing import constants as tc
-from psdi_data_conversion.testing.conversion_callbacks import (CheckArchiveContents, CheckException, CheckFileStatus,
-                                                               CheckLogContents, CheckLogContentsSuccess,
+from psdi_data_conversion.testing.conversion_callbacks import (CheckArchiveContents, CheckException, CheckExtContents,
+                                                               CheckFileStatus, CheckLogContents,
+                                                               CheckLogContentsSuccess, CheckOutputContents,
                                                                CheckStderrContents, CheckStdoutContents,
                                                                MatchOutputFile)
 from psdi_data_conversion.testing.conversion_callbacks import MultiCallback as MCB
+from psdi_data_conversion.testing.conversion_setup import (JUNK_FILE_CONTENT, BlockInputFile, BlockOutput,
+                                                           BlockOutputExt)
+from psdi_data_conversion.testing.conversion_setup import MultiSetup as MS
+from psdi_data_conversion.testing.conversion_setup import RenameInput
 from psdi_data_conversion.testing.utils import ConversionTestSpec as Spec
 
 l_all_test_specs: list[Spec] = []
@@ -31,7 +37,8 @@ l_all_test_specs.append(Spec(name="Standard Single Test",
                              ))
 """A quick single test, functioning mostly as a smoke test for things going right in the simplest case"""
 
-simple_success_callback = MCB(CheckFileStatus(), CheckLogContentsSuccess())
+simple_success_callback = MCB(CheckFileStatus(), CheckLogContentsSuccess(),
+                              CheckOutputContents(l_strings_to_exclude=JUNK_FILE_CONTENT))
 """A standardised callback which checks that the output file and log exist, and that the log indicates likely success"""
 
 l_all_test_specs.append(Spec(name="Standard Multiple Tests",
@@ -59,7 +66,6 @@ Open Babel, Atomsk, and c2x converter"""
 l_all_test_specs.append(Spec(name="Disambiguation Tests",
                              filename="hemoglobin.pdb",
                              to_format=tc.FORMAT_CIF,
-                             from_format=None,
                              converter_name=[const.CONVERTER_OB, const.CONVERTER_ATO, const.CONVERTER_C2X,],
                              callback=simple_success_callback,
                              compatible_with_chain=False,
@@ -67,6 +73,37 @@ l_all_test_specs.append(Spec(name="Disambiguation Tests",
 """Some more test conversions which we expect to succeed without issue, but which require disambiguating the input
 format with each of the Open Babel, Atomsk, and c2x converters. Isn't tested with the chain conversion runner, as that
 requires unambiguous input formats"""
+
+l_all_test_specs.append(Spec(name="Extensionless Input Tests",
+                             from_format=tc.FORMAT_CIF,
+                             converter_name=[const.CONVERTER_OB, const.CONVERTER_C2X, const.CONVERTER_ATO],
+                             setup=RenameInput("test_file"),
+                             callback=MCB(simple_success_callback,
+                                          CheckFileStatus(expect_input_files_not_exist=["test_file.cif"])),
+                             compatible_with_gui=False,
+                             ))
+"""Test that a file can be converted if it's provided without an extension and the input format is provided"""
+
+l_all_test_specs.append(Spec(name="Extensionless Input Test - temp file blocked",
+                             from_format=tc.FORMAT_CIF,
+                             converter_name=const.CONVERTER_C2X,
+                             setup=MS(RenameInput("test_file"), BlockInputFile("test_file.cif")),
+                             callback=MCB(simple_success_callback,
+                                          CheckFileStatus(expect_input_files_exist=["test_file.cif"],
+                                                          expect_input_files_not_exist=["test_file_tmp.cif"])),
+                             compatible_with_gui=False,
+                             ))
+"""Test that a file can be converted if it's provided without an extension and the input format is provided"""
+
+l_all_test_specs.append(Spec(name="Wrong Extension Input Test",
+                             from_format=tc.FORMAT_CIF,
+                             converter_name=const.CONVERTER_C2X,
+                             setup=RenameInput("test_file.pdb"),
+                             callback=MCB(simple_success_callback,
+                                          CheckFileStatus(expect_input_files_not_exist=["test_file.cif"])),
+                             compatible_with_gui=False,
+                             ))
+"""Test that a file can be converted if it's provided with an incorrect extension but the input format is provided"""
 
 l_all_test_specs.append(Spec(name="c2x Formats Tests",
                              to_format=[tc.FORMAT_RES_1, tc.FORMAT_ABI, tc.FORMAT_POSCAR, tc.FORMAT_CML],
@@ -78,15 +115,59 @@ l_all_test_specs.append(Spec(name="c2x Formats Tests",
 solely to save on resources, since there are unlikely to be any GUI-specific issues raised by this test that aren't
 caught in others."""
 
+l_all_test_specs.append(Spec(name="Clobber Tests",
+                             converter_name=[const.CONVERTER_OB, const.CONVERTER_C2X, const.CONVERTER_ATO],
+                             setup=BlockOutput(),
+                             callback=simple_success_callback,
+                             compatible_with_gui=False,
+                             ))
+"""Test when the output file already exists that it's properly clobbered by the conversion"""
+
+l_all_test_specs.append(Spec(name="No-Clobber Test",
+                             setup=BlockOutput(),
+                             conversion_kwargs={"no_clobber": True},
+                             expect_success=False,
+                             callback=CheckException(ex_type=FileConverterOutputFileException,
+                                                     ex_message="Output file {} already exists"),
+                             compatible_with_gui=False,
+                             ))
+"""Test when the output file already exists and the no-clobber flag is set that the conversion fails"""
+
 l_all_test_specs.append(Spec(name="Atomsk Formats Tests",
                              to_format=[tc.FORMAT_XYZ_2, tc.FORMAT_XYZ_3,
                                         tc.FORMAT_ATOMSK_EXYZ, tc.FORMAT_ATOMSK_SXYZ],
                              converter_name=const.CONVERTER_ATO,
+                             setup=BlockOutputExt(["xyz", "exyz", "sxyz"]),
                              callback=simple_success_callback,
                              compatible_with_gui=False,
                              ))
-"""Test converting with Atomsk to a few different formats which have special filename handling. As before, not run in
-the GUI to save resources."""
+"""Test converting with Atomsk to a few different formats which have special filename handling. This also blocks the
+final and intermediate output files to test that they're properly clobbered"""
+
+l_all_test_specs.append(Spec(name="Atomsk No-Clobber Tests",
+                             to_format=[tc.FORMAT_XYZ_2,
+                                        tc.FORMAT_XYZ_3,
+                                        tc.FORMAT_ATOMSK_EXYZ,
+                                        tc.FORMAT_ATOMSK_SXYZ],
+                             converter_name=const.CONVERTER_ATO,
+                             setup=[BlockOutputExt(["exyz"], ["xyz", "sxyz"]),
+                                    BlockOutputExt(["sxyz"], ["xyz", "exyz"]),
+                                    BlockOutputExt(["xyz"], ["exyz", "sxyz"]),
+                                    BlockOutputExt(["xyz"], ["exyz", "sxyz"])],
+                             conversion_kwargs={"no_clobber": True},
+                             callback=[
+                                 MCB(simple_success_callback, CheckExtContents(
+                                     "exyz", l_strings_to_find=JUNK_FILE_CONTENT)),
+                                 MCB(simple_success_callback, CheckExtContents(
+                                     "sxyz", l_strings_to_find=JUNK_FILE_CONTENT)),
+                                 MCB(simple_success_callback, CheckExtContents(
+                                     "xyz", l_strings_to_find=JUNK_FILE_CONTENT)),
+                                 MCB(simple_success_callback, CheckExtContents(
+                                     "xyz", l_strings_to_find=JUNK_FILE_CONTENT))],
+                             compatible_with_gui=False,
+                             ))
+"""Test converting with Atomsk to a few different formats which have special filename handling, where it's required in
+some cases to convert through a temporary file, that it can do so with no issue"""
 
 l_all_test_specs.append(Spec(name="Converter Name Sensitivity Tests",
                              converter_name=["open babel", "oPeNbaBEL", "C2X", "atomsk"],
@@ -277,7 +358,7 @@ l_all_test_specs.append(Spec(name="Failed conversion - bad input file",
                                                             "file error.")),
                                        MCB(CheckFileStatus(expect_output_exists=True,
                                                            expect_log_exists=True),
-                                           CheckLogContents("ERROR while trying to read atom #9")),
+                                           CheckLogContents(l_regex_to_find="ERROR:? while trying to read atom #9")),
                                        MCB(CheckFileStatus(expect_output_exists=False,
                                                            expect_log_exists=None),
                                            CheckException(ex_type=FileConverterAbortException,

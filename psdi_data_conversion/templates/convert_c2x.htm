@@ -4,3 +4,35 @@
 {{ super() }}
 <script type="module" src="{{url_for('static', filename='javascript/convert_c2x.js')}}"></script>
 {% endblock %}
+
+
+{% block file_upload_display %}
+<div class="flex-panel-display">
+  <div class="flex-panel instructions-panel">
+    <h6>Select flags and options for the file formats</h6>
+    <p>
+      One or more flags may be selected if required (hold command [Mac] or CTRL [Windows] to select multiple
+      options; and use command+click [Mac] or CTRL+click [Windows] to unselect an option). To undo all
+      selections in a box, click just underneath the final option.
+    </p>
+    <p>
+      Zero to one option flag select boxes may be displayed, depending on the conversion and the degree of
+      completion of the database. Further information may be displayed underneath the select boxes if available.
+    </p>
+  </div>
+  <hr class="small-screen-only">
+  <div class="flex-panel">
+    <div id="flags">
+      <div id="inFlagList">
+        <p>
+          <label for="inFlags" id="in_label">Option flags
+            (see accompanying text for guidance on multiple selections):</label>
+          <select id="inFlags" class="large-width" size="4" multiple="multiple"></select>
+        <div id=inFlagInfo></div>
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+{{ super() }}
+{% endblock %}

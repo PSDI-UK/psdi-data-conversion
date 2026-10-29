@@ -16,16 +16,10 @@ permissions:
 jobs:
   tests:
     runs-on: ${{ matrix.os }}
-    continue-on-error: ${{ matrix.secondary }}
     strategy:
+      fail-fast: false
       matrix:
-        os: [ubuntu-latest]
-        secondary: [false]
-        # Temporarily disable MacOS tests due to bug introduced in recent GitHub version update, while we decide how to
-        # address it
-        # include:
-        #   - os: [macos-latest]
-        #     secondary: true
+        os: [ubuntu-latest, macos-latest]
 
     steps:
       - name: Checkout repo

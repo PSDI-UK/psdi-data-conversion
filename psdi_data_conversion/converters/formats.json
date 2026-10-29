@@ -938,12 +938,6 @@
         {
             "extension": "in",
             "note": "Quantum Espresso input (fractional atomic coords)",
-            "id": 235366349304489206067601717435021864779,
-            "cx_format": "qef"
-        },
-        {
-            "extension": "in",
-            "note": "Quantum Espresso input, fractional atomic coords",
             "id": 326377472459096428974266623447465656364,
             "cx_format": "qef"
         },

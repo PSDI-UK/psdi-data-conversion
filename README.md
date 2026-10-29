@@ -32,7 +32,7 @@ This project provides utilities to assist in converting files between the many d
   - [Installation](#installation-1)
   - [Use](#use)
     - [`run_converter`](#run_converter)
-    - [`get_converter`](#get_converter)
+    - [`run_converter_chain`](#run_converter_chain)
     - [`constants`](#constants)
     - [`database`](#database)
   - [Further Information](#further-information)
@@ -64,15 +64,19 @@ This project provides utilities to assist in converting files between the many d
   - (Files used as part of the deployment to STFC infrastructure)
 - `psdi_data_conversion` (Primary source directory)
   - `bin`
+    - `README.md` (Documentation on the files in this directory)
     - (Precompiled binaries for running file format converters)
   - `converters`
     - `base.py` (Base class for converter plugins)
-    - `doc.md` (Documentation on the structures of files in this directory)
     - `formats.json` (Source file for database information on file formats)
+    - `README.md` (Documentation on the structures of files in this directory)
     - (Folders for converter plugins, each with the below structure)
     - `example` (Example converter plugin)
       - `converter.py` (Executable code to run the converter)
       - `data.json` (Data on the converter, the formats it supports, and the conversions it can perform)
+  - `scripts`
+    - `README.md` (Documentation on the files in this directory)
+    - (Bash scripts used to call converter binaries)
   - `static` (Static code and assets for the web app)
     - `data`
       - `data.json` (Generated singular database file, read by the library, CLI, and web app for information on converters, formats, and conversions)
@@ -247,11 +251,13 @@ format>] [-i/--in <input file location>] [-o/--out <location for output files>] 
 [--from-flags '<flags to be provided to the converter for reading input>'] [--to-flags '<flags to be provided to the
 converter for writing output>'] [--from-options '<options to be provided to the converter for reading input>']
 [--to-options '<options to be provided to the converter for writing output>'] [--coord-gen <coordinate generation
-options] [-s/--strict] [--nc/--no-check] [-q/--quiet] [-g/--log-file <log file name] [--log-level <level>] [--log-mode
-<mode>]
+options] [-s/--strict] [-n/--no-clobber] [--nc/--no-check] [-q/--quiet] [--plain] [-g/--log-file <log file name]
+[--log-level <level>] [--log-mode <mode>]
 ```
 
 Call `psdi-data-convert -h` for details on each of these options.
+
+The name of the output file will be determined from the name of the input file (with its extension stripped if applicable) and the name of the output format. E.g. an input file named "file.inchi" or "file" converted to `pdb` will result in an output filename of "file.pdb". In the case that a file by this name already exists, it will be overwritten unless the argument `-n/--no-clobber` is set, in which case an error message will be returned.
 
 Note that some requested conversions may involve ambiguous formats which share the same extension. In this case, the application will print a warning and list possible matching formats, with IDs and disambiguating names that can be used to specify which one. For instance, the `c2x` converter can convert into two variants of the `pdb` format, and if you ask it to convert from `mmcif` to `pdb` without specifying which one, you'll see:
 
@@ -360,9 +366,66 @@ run_converter(filename, to_format, converter=name, data=data)
 
 Where `filename` is the name of the file to convert (either fully-qualified or relative to the current directory), `to_format` is the desired format to convert to (e.g. `"pdb"`), `converter` is the name or ID of the converter to use (default "Open Babel"), and `data` is a dict of any extra information required by the specific converter being used, such as flags for how to read/write input/output files (default empty dict).
 
+The name of the output file will be determined from the name of the input file (with its extension stripped if applicable) and the name of the output format. E.g. an input file named "file.inchi" or "file" converted to `pdb` will result in an output filename of "file.pdb". In the case that a file by this name already exists, it will be overwritten unless the argument `no_clobber=True` is set, in which case a `FileConverterOutputFileException` exception will be raised.
+
 See the method's documentation via `help(run_converter)` after importing it for further details on usage.
 
 Note that as with running the application through the command-line, some extra care may be needed in the case that the input or output format is ambiguous - see the [Data Conversion](#data-conversion) section above for more details on this. As with running through the command-line, a format's ID or disambiguated name must be used in the case of ambiguity.
+
+#### `run_converter_chain`
+
+This is an alternative method to run a file conversion, which allows running multi-step "chain" conversions. It can be used in largely the same way as `run_converter`, with a few notable differences highlighted here. It can be imported via:
+
+```python
+from psdi_data_conversion.converter import run_converter
+```
+
+and used via either:
+
+```python
+run_converter_chain(filename, to_format=to_format, **kwargs)
+```
+
+or
+
+```python
+run_converter_chain(filename, path=l_steps, l_data=l_data, **kwargs)
+```
+
+The former method will automatically determine a conversion pathway based on internal heuristics which prioritise minimising data loss in conversions and perform the conversion using that pathway. The latter method uses a pathway explicitly provided by the user, and also allows for a list of `data` objects for each individual step to customise the conversion (in the same format as used for `run_converter`).
+
+`l_steps` here should be a list of steps, where each step is a tuple of:
+
+- Converter to be used for this step
+- (Optional) Input format for this step
+- Output format for this step
+
+Conversion pathways for a desired conversion may be obtained via the method:
+
+```python
+from psdi_data_conversion.database import get_possible_conversion_pathways
+l_pathways = get_possible_conversion_pathways(in_format=in_format, out_format=out_format, include=("best" OR "shortest"))
+```
+
+where `include="best"` will return all equally-low-weight paths per the internal heuristics used to determine the best paths and `include="shortest"` will return all equally-shortest pathways. These paths can be detailed in a human-friendly manner with the `format_detailed()` method of each, e.g.:
+
+```
+>>> print(l_pathways[0].format_detailed())
+1) inchi to pdb-0 with Open Babel    Weight: 000-00000001-01-01
+2) pdb-0 to mol-1 with Atomsk        Weight: 001-00000001-40-03
+                               Total weight: 001-00000002-41-04
+```
+
+This can be used to select a desired path, which can then be passed to `run_converter_chain`:
+
+```python
+l_pathways = get_possible_conversion_pathways(in_format=in_format, out_format=out_format)
+run_converter_chain(filename, path=l_pathways[0], l_data=l_data, **kwargs)
+```
+
+See the method's documentation via `help(run_converter_chain)` after importing it for further details on usage.
+
+As with `run_converter`, extra care may need to be taken if the input or output format is ambiguous. This is more of an issue with running chain conversions, as the library is unable to use the desired converter to try to disambiguate formats.
 
 #### `constants`
 

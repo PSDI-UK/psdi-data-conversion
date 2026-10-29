@@ -14,6 +14,7 @@ import subprocess
 import sys
 import traceback
 from collections.abc import Callable
+from contextlib import contextmanager
 from copy import deepcopy
 from dataclasses import dataclass
 from functools import cached_property
@@ -25,6 +26,7 @@ from psdi_data_conversion import log_utility
 from psdi_data_conversion.dist import bin_exists, get_bin_path, get_dist
 from psdi_data_conversion.file_io import get_package_path
 from psdi_data_conversion.security import SAFE_STRING_RE, string_is_safe
+from psdi_data_conversion.utils import replace_extension, strip_extension, tc
 
 try:
     # werkzeug is installed in the optional dependency Flask. It's only used here to recognize an exception type,
@@ -92,6 +94,12 @@ class FileConverterInputException(FileConverterException):
 
 class FileConverterInputFileException(FileConverterInputException):
     """Exception class to represent errors encountered with the input file.
+    """
+    pass
+
+
+class FileConverterOutputFileException(FileConverterInputException):
+    """Exception class to represent errors encountered with the output file.
     """
     pass
 
@@ -324,6 +332,7 @@ class FileConverter:
                  use_envvars=False,
                  input_dir=const.DEFAULT_INPUT_DIR,
                  output_dir=const.DEFAULT_OUTPUT_DIR,
+                 no_clobber=False,
                  max_file_size=None,
                  no_check=False,
                  log_file: str | None = None,
@@ -412,6 +421,7 @@ class FileConverter:
             self.to_format = to_format
             self.input_dir = input_dir
             self.output_dir = output_dir
+            self.no_clobber = no_clobber
             self.log_file = log_file
             self.log_mode = log_mode
             self.log_level = log_level
@@ -456,8 +466,8 @@ class FileConverter:
                 os.makedirs(self.output_dir, exist_ok=True)
 
             self.local_filename = os.path.split(self.in_filename)[1]
-            self.filename_base = os.path.splitext(self.local_filename)[0]
-            self.out_filename = f"{self.output_dir}/{self.filename_base}.{self.to_format_info.name}"
+            self.out_filename = os.path.join(self.output_dir,
+                                             replace_extension(self.local_filename, self.to_format_info.name))
 
             # Set up files to log to
             self._setup_loggers()
@@ -560,7 +570,8 @@ class FileConverter:
         if self.log_mode == const.LOG_FULL_FORCE:
             self.output_log = self.log_file
         else:
-            self.output_log = os.path.join(self.output_dir, f"{self.filename_base}{const.OUTPUT_LOG_EXT}")
+            self.output_log = os.path.join(self.output_dir,
+                                           replace_extension(self.local_filename, const.OUTPUT_LOG_EXT))
 
         # If any previous log exists, delete it
         if os.path.exists(self.output_log):
@@ -584,6 +595,22 @@ class FileConverter:
             self.logger.debug("Checking input file size")
             self._check_input_file_size_and_status()
 
+            self.logger.debug(f"Checking if output file {self.out_filename} exists")
+            if os.path.exists(self.out_filename):
+                if self.no_clobber:
+                    self.logger.debug(f"Output file {tc.PATH}'{self.out_filename}'{tc.OFF} exists and no_clobber=True, "
+                                      "so raising exception")
+                    raise FileConverterOutputFileException(f"Output file {tc.PATH}'{self.out_filename}'{tc.OFF} "
+                                                           "already exists", help=True)
+                else:
+                    self.logger.debug(f"Output file {tc.PATH}'{self.out_filename}'{tc.OFF} exists and {tc.CODE}`"
+                                      f"no_clobber=False`{tc.OFF}, so deleting it")
+                    try:
+                        os.remove(self.out_filename)
+                    except OSError:
+                        raise FileConverterOutputFileException(f"Output file {tc.PATH}'{self.out_filename}'{tc.OFF} "
+                                                               "already exists and cannot be removed", help=True)
+
             self.logger.debug("Starting file conversion")
             self._convert()
 
@@ -594,13 +621,13 @@ class FileConverter:
             if isinstance(e, l_abort_exceptions):
                 # Log the error if it hasn't yet been logged
                 if not hasattr(e, "logged") or e.logged is False:
-                    self.logger.error(f"Unexpected exception raised while running the converter, of type '{type(e)}' "
-                                      f"with message: {str(e)}")
+                    self.logger.error(f"Unexpected exception raised while running the converter, of type {tc.CODE}`"
+                                      f"{type(e)}`{tc.OFF} with message: {str(e)}")
                     e.logged = True
                 raise
             if not (isinstance(e, FileConverterException) and e.help):
                 self.logger.error(f"Exception triggering an abort was raised while running the converter. Exception "
-                                  f"was type '{type(e)}', with message: {str(e)}")
+                                  f"was type {tc.CODE}`{type(e)}`{tc.OFF}, with message: {str(e)}")
                 if e:
                     e.logged = True
             self._abort(message="The application encountered an error while running the converter:\n" +
@@ -728,7 +755,7 @@ class FileConverter:
         # We want the entries to all line up, so we need a dummy line at the top to force a newline break - anything
         # empty or whitespace will be stripped by the logger, so we use a lone colon, which looks least obtrusive
         return (":\n"
-                f"File name:         {self.filename_base}\n"
+                f"File name:         {self.local_filename}\n"
                 f"From:              {self.from_format_info.name} ({self.from_format_info.description})\n"
                 f"To:                {self.to_format} ({self.to_format_info.description})\n"
                 f"Converter:         {self.name}\n")
@@ -841,6 +868,9 @@ class ScriptFileConverter(FileConverter):
     found.
     """
 
+    tmp_in_filename: str | None = None
+    """A temporary filename used for the input file in case it doesn't have the correct extension"""
+
     @classmethod
     def can_be_registered(cls) -> bool:
         """If a binary is required for this script, check that it exists for the user's OS/distribution. If one isn't
@@ -849,6 +879,37 @@ class ScriptFileConverter(FileConverter):
         if cls.required_bin is None:
             return True
         return bin_exists(cls.required_bin)
+
+    @contextmanager
+    def _setup_input(self):
+        """Perform setup tasks on the input"""
+
+        # Script file converters tend to require the input file to have the correct extension. Check if this is the
+        # case, and handle appropriately if not
+        from_format_ext = self.from_format_info.name
+        if self.in_filename.endswith(f".{from_format_ext}"):
+            # The input file already has the correct filename, so no need to set up a separate file
+            self.tmp_in_filename = self.in_filename
+            yield
+            return
+
+        # We'll need to set up a temporary input file with the correct filename
+        try:
+            # Determine an unused temporary filename
+            tmp_filename_base = strip_extension(self.in_filename)
+            self.tmp_in_filename = f"{tmp_filename_base}.{from_format_ext}"
+            while os.path.exists(self.tmp_in_filename):
+                tmp_filename_base += "_tmp"
+                self.tmp_in_filename = f"{tmp_filename_base}.{from_format_ext}"
+
+            # Symlink the input file to the temporary location
+            os.symlink(self.in_filename, self.tmp_in_filename)
+            yield
+
+        finally:
+            # Clean up the temporary file
+            os.remove(self.tmp_in_filename)
+            return
 
     def _convert(self):
 
@@ -860,8 +921,9 @@ class ScriptFileConverter(FileConverter):
 
         script_abs_path = os.path.join(get_package_path(), "scripts", self.script)
 
-        process = subprocess.run(['sh', script_abs_path, *self._get_script_args()],
-                                 env=env, capture_output=True, text=True)
+        with self._setup_input():
+            process = subprocess.run(['sh', script_abs_path, *self._get_script_args()],
+                                     env=env, capture_output=True, text=True)
 
         self.out = process.stdout
         self.err = process.stderr
@@ -886,5 +948,5 @@ class ScriptFileConverter(FileConverter):
                 raise FileConverterArgException(f"Provided argument '{user_args}' does not pass security check - it "
                                                 f"must match the regex {SAFE_STRING_RE.pattern}.", help=True)
 
-        return ['--' + self.to_format_info.name, self.in_filename, self.out_filename, from_flags, to_flags,
+        return ['--' + self.to_format_info.name, self.tmp_in_filename, self.out_filename, from_flags, to_flags,
                 from_options, to_options]

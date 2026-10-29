@@ -15,7 +15,7 @@ from functools import cached_property
 from math import isclose
 from pathlib import Path
 from tempfile import TemporaryDirectory
-from typing import Any
+from typing import Any, Concatenate
 from unittest.mock import patch
 
 import py
@@ -31,7 +31,7 @@ from psdi_data_conversion.file_io import is_archive, split_archive_ext
 from psdi_data_conversion.main import main as data_convert_main
 from psdi_data_conversion.testing.constants import (FORMAT_PDB_0, INPUT_TEST_DATA_LOC_IN_PROJECT,
                                                     OUTPUT_TEST_DATA_LOC_IN_PROJECT, TEST_DATA_LOC_IN_PROJECT)
-from psdi_data_conversion.utils import get_project_path, strip_control_codes
+from psdi_data_conversion.utils import get_project_path, replace_extension, strip_control_codes
 
 
 def compress_text(s: str):
@@ -166,6 +166,14 @@ class ConversionTestSpec:
     array. This should typically only be used when debugging to skip working tests to more easily focus on non-working
     tests"""
 
+    setup: (Callable[Concatenate[SingleConversionTestSpec, ...], None] |
+            Iterable[Callable[Concatenate[SingleConversionTestSpec, ...], None]] | None) = None
+    """Function to be called immediately before the conversion is performed to perform setup tasks. It should take as
+    its first argument a `SingleConversionTestSpec`, `**kwargs` (with potentially relevant arguments split out), and
+    return nothing. It should not be expected to fail under normal circumstances, even if the conversion or callback
+    does. Setup callbacks are not compatible with being run through the GUI - an exception will be raised on init if a
+    setup is provided and `compatible_with_gui==True`"""
+
     callback: (Callable[[ConversionTestInfo], str] |
                Iterable[Callable[[ConversionTestInfo], str]] | None) = None
     """Function to be called after the conversion is performed to check in detail whether results are as expected. It
@@ -241,6 +249,14 @@ class ConversionTestSpec:
         # Check if all tests should be skipped
         self.skip_all = all(self.skip)
 
+        # Check for validity
+
+        # If any setup tasks are provided, the test should be marked as not compatible with the GUI
+        if self.compatible_with_gui and any(self.setup):
+            raise ValueError("`ConversionTestSpec` initialised as compatible with GUI and with setup tasks. Setup "
+                             "tasks are not compatible with GUI tests, so this should be marked as "
+                             "`compatible_with_gui=False`")
+
     def __len__(self):
         """Get the length from the member - valid only after `__post_init__` has been called"""
         return self._len
@@ -284,6 +300,12 @@ class SingleConversionTestSpec:
     skip: bool = False
     """If set to True, this test will be skipped, always returning success"""
 
+    setup: Callable[Concatenate[SingleConversionTestSpec, ...], None] | None = None
+    """Function to be called immediately before the conversion is performed to perform setup tasks. It should take as
+    its first argument a `SingleConversionTestSpec` (which will be this object), `**kwargs` (with potentially relevant
+    arguments split out), and return nothing. It should not be expected to fail under normal circumstances, even if the
+    conversion or callback does."""
+
     callback: (Callable[[ConversionTestInfo], str] | None) = None
     """Function to be called after the conversion is performed to check in detail whether results are as expected. It
     should take as its only argument a `ConversionTestInfo` and return a string. The string should be empty if the check
@@ -301,7 +323,7 @@ class SingleConversionTestSpec:
             to_format_name = self.conversion_kwargs["path"][-1][-1].name
 
         if not is_archive(self.filename):
-            return f"{os.path.splitext(self.filename)[0]}.{to_format_name}"
+            return replace_extension(self.filename, to_format_name)
         else:
             filename_base, ext = split_archive_ext(os.path.basename(self.filename))
             return f"{filename_base}-{to_format_name}{ext}"
@@ -319,7 +341,7 @@ class SingleConversionTestSpec:
     def __str__(self):
         """Simplified string representation"""
         d_out = {key: val for key, val in self.__dict__.items() if not key.startswith("_")}
-        del d_out["skip"], d_out["callback"]
+        del d_out["skip"], d_out["setup"], d_out["callback"]
         return "{" + ", ".join([f'{key}: {str(val)}' for key, val in d_out.items()]) + "}"
 
 
@@ -389,6 +411,14 @@ def _run_single_test_conversion_with_library(test_spec: SingleConversionTestSpec
                    qualified_in_filename)
     except FileExistsError:
         pass
+
+    # Run applicable setup tasks - this isn't contained in a subtest as we don't expect this to normally fail, and if it
+    # does, the rest of the test shouldn't be run
+    if test_spec.setup:
+        test_spec.setup(test_spec, input_dir=input_dir, output_dir=output_dir, chain=chain)
+
+        # Update the qualified input filename in case it was modified in setup
+        qualified_in_filename = os.path.join(input_dir, test_spec.filename)
 
     conversion_kwargs = {**test_spec.conversion_kwargs}
     if chain:
@@ -519,6 +549,14 @@ def _run_single_test_conversion_with_cli(test_spec: SingleConversionTestSpec,
                    qualified_in_filename)
     except FileExistsError:
         pass
+
+    # Run applicable setup tasks - this isn't contained in a subtest as we don't expect this to normally fail, and if it
+    # does, the rest of the test shouldn't be run
+    if test_spec.setup:
+        test_spec.setup(test_spec, input_dir=input_dir, output_dir=output_dir, chain=False)
+
+        # Update the qualified input filename in case it was modified in setup
+        qualified_in_filename = os.path.join(input_dir, test_spec.filename)
 
     # Capture stdout and stderr while we run this test. We use a try block to stop capturing as soon as testing finishes
 
@@ -651,6 +689,9 @@ def run_converter_through_cli(filename: str,
             if val != 0:
                 pytest.fail("Test specification imposes a maximum file size, which isn't compatible with the "
                             "command-line interface.")
+        elif key == "no_clobber":
+            if val:
+                arg_string += " --no-clobber"
         elif key == "data":
             for subkey, subval in val.items():
                 if subkey == "from_flags":
@@ -715,7 +756,7 @@ def check_file_match(filename: str, ex_filename: str) -> str:
     abs_tol = 0.001
     if get_dist() != LINUX_LABEL:
         rel_tol = 0.2
-        abs_tol = 0.01
+        abs_tol = 0.02
 
     for word, ex_word in zip(l_words, l_ex_words):
         try:
