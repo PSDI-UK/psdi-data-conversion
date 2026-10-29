@@ -20,6 +20,7 @@
 ### Documentation Changes
 
 - Added section on running chained conversions with the Python library to the README
+- Added guidance on approval for changes to CONTRIBUTING.md
 - Renamed plugin documentation file from `doc.md` to `README.md` so it stands out more to users
 - Added `README.md` file to `psdi_data_conversion/bin` directory to explain the sources of the binaries
 - Added `README.md` file to `psdi_data_conversion/scripts` directory to explain the scripts
