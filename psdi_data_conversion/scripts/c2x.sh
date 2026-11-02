@@ -25,5 +25,7 @@ if [ -z $BIN_PATH ]; then
   BIN_PATH=psdi_data_conversion/bin/$DIST/c2x
 fi
 
-$BIN_PATH -$4 $1 $2 $3 $5
+# $BIN_PATH -$4 $1 $2 $3 $5
+
+$BIN_PATH $1 $2 $3 $4 $5
 
