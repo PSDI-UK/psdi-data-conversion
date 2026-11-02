@@ -1,5 +1,11 @@
 # Changelog for PSDI Data Conversion
 
+## v0.4.3
+
+### Miscellaneous Changes
+
+- Self-hosted Lexend and Open Sans fonts as well
+
 ## v0.4.1
 
 ### New and Changed Functionality
