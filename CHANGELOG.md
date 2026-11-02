@@ -1,5 +1,11 @@
 # Changelog for PSDI Data Conversion
 
+## v0.4.5
+
+### Documentation Changes
+
+- Added instructions to README.md for installing Atomsk and c2x locally if needed
+
 ## v0.4.4
 
 ### Miscellaneous Changes
