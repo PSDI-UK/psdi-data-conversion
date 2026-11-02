@@ -1,0 +1,41 @@
+@font-face {
+  font-family : '../fonts/Open Sans';
+  src         : url('OpenSans-Regular.woff2') format('woff2');
+  font-weight : normal;
+  font-style  : normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family : '../fonts/Open Sans';
+  src         : url('OpenSans-Italic.woff2') format('woff2');
+  font-weight : normal;
+  font-style  : italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family      : "Open Sans Fallback";
+  src              : local("Arial");
+  size-adjust      : 103.2%;
+  ascent-override  : 103.57%;
+  descent-override : 28.39%;
+  line-gap-override: 0%;
+}
+
+@font-face {
+  font-family : 'Lexend';
+  src         : url('../fonts/Lexend-Regular.woff2') format('woff2');
+  font-weight : normal;
+  font-style  : normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family      : "Lexend Fallback";
+  src              : local("Arial");
+  size-adjust      : 101.24%;
+  ascent-override  : 98.78%;
+  descent-override : 24.69%;
+  line-gap-override: 0%;
+}
