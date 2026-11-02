@@ -51,9 +51,19 @@
 
   {% block announcement_banner %}
   {% if service_mode %}
-  <!--<div class="announcementBar_mb4j" role="banner">
-    <div class="max-width-box announcementBarContent_xLdY">Due to maintenance on underlying systems this service will be
-      unavailable from 3rd - 12th July</div>
+  <!-- 'if not' for testing. Override class background-color below with #FF9E18 if not maintenance or error announcement.--> 
+  <div style="background-color:#3d7cc9;" class="announcementBar_mb4j" role="banner">
+    <div class="max-width-box announcementBarContent_xLdY">
+      <strong>Share Your User Experience:</strong> Fill in the <a href="https://forms.cloud.microsoft/e/N1QrmjuGqW">PSDI
+        tools, services and resources feedback form</a> by 20 Nov 2026
+    </div>
+  </div>
+  <!--The following can be used when the PSDI common style assets are updated-->
+  <!--<div class="announcementBar_mb4j mathjax_ignore info" role="banner">
+    <div class="max-width-box announcementBarContent_xLdY">
+      <strong>Share Your User Experience:</strong> Fill in the <a href="https://forms.cloud.microsoft/e/N1QrmjuGqW">PSDI
+        tools, services and resources feedback form</a> by 20 Nov 2026
+    </div>
   </div>-->
   {% endif %}
   {% endblock %}
