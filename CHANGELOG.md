@@ -1,5 +1,11 @@
 # Changelog for PSDI Data Conversion
 
+## v0.4.5
+
+### Miscellaneous Changes
+
+- Self-hosted JS and CSS bundles instead of getting them from CDNs
+
 ## v0.4.4
 
 ### Miscellaneous Changes
