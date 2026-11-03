@@ -2920,8 +2920,6 @@ def calc_conversion_format_weight(converter: str | int | UUID | ConverterInfo,
     """Get the format weight for a conversion from `in_format_info` to `out_format_info` (not including the offset
     applied to it when stored in the total weight)
 
-    TODO: Implement properly
-
     Parameters
     ----------
     converter : str | int | UUID | ConverterInfo

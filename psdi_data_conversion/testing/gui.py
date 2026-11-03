@@ -476,7 +476,6 @@ class GuiSingleTestSpecRunner:
         directory.
         """
         # Check for the presence of the output file
-        # TODO: Ensure output file is created with the properly-indicated extension
         if not os.path.isfile(self._output_file):
             raise FileConverterAbortException("ERROR: No output file was produced at expected location "
                                               f"{self._output_file}. Log contents:\n" +

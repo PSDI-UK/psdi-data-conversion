@@ -28,9 +28,6 @@ class C2xFileConverter(ScriptFileConverter):
         # Update the output format to c2x style
         l_script_args[0] = "--" + self.to_format_name
 
-        # TODO - check if the input file has an extension which will be accepted by c2x for its format, and handle if
-        # not
-
         return l_script_args
 
     def _create_message(self) -> str:
