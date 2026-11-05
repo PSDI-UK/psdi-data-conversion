@@ -10,7 +10,19 @@ from collections.abc import Callable
 from functools import wraps
 from typing import Any
 
+# The current version of Connexion (3.3.0) has deprecation warnings that have since been fixed
+# but no release has been made since that fix. The following deprecation warnings are currently ignored:
+#
+#   * DeprecationWarning: jsonschema.RefResolver is deprecated as of v4.18.0, ...
+#   * DeprecationWarning: jsonschema.exceptions.RefResolutionError is deprecated as of version 4.18.0. ...
+
+import warnings
+
+warnings.filterwarnings("ignore", category=DeprecationWarning, message=r".*jsonschema\.exceptions\.RefResolutionError is deprecated.*")
+warnings.filterwarnings("ignore", category=DeprecationWarning, message=r".*jsonschema\.RefResolver is deprecated.*")
+
 import werkzeug
+import connexion
 from flask import Flask, cli
 
 import psdi_data_conversion
@@ -21,6 +33,7 @@ from psdi_data_conversion.gui.get import init_get
 from psdi_data_conversion.gui.post import init_post
 
 _app: Flask | None = None
+_app_wrapper = None
 
 
 def _patch_flask_warning():
@@ -45,7 +58,20 @@ def _init_app():
     # Suppress Flask's warning, since we're using the dev server as a GUI
     _patch_flask_warning()
 
-    app = Flask(const.APP_NAME)
+    app_wrapper = connexion.FlaskApp(const.APP_NAME, specification_dir="openapi")
+
+    app_wrapper.add_api(
+        "dcs.yaml",
+        strict_validation=True,
+        validate_responses=True,
+        swagger_ui_options=connexion.options.SwaggerUIOptions(
+            swagger_ui=True,
+            swagger_ui_path="/docs",
+        ),
+    )
+
+    # Connexion creates an internal Flask app
+    app = app_wrapper.app
 
     # Set the file upload limit based on env vars
     limit_upload_size(app)
@@ -60,6 +86,9 @@ def _init_app():
     if get_env().service_mode:
         from psdi_data_conversion.gui.authentication import init_authentication
         init_authentication(app)
+
+    global _app_wrapper
+    _app_wrapper = app_wrapper
 
     return app
 
@@ -92,6 +121,15 @@ def get_app() -> Flask:
     return _app
 
 
+def get_app_wrapper():
+    """Get a reference to the global `Connexion` app, creating it if necessary.
+    """
+    global _app_wrapper
+    if not _app_wrapper:
+        _init_app()
+    return _app_wrapper
+
+
 def start_app():
     """Start the Flask app - this requires being run from the base directory of the project, so this changes the
     current directory to there. Anything else which changes it while the app is running may interfere with its proper
@@ -102,7 +140,7 @@ def start_app():
 
     try:
         os.chdir(os.path.join(psdi_data_conversion.__path__[0], ".."))
-        get_app().run(debug=get_env().debug_mode)
+        get_app_wrapper().run()
     finally:
         # Return to the previous directory after running the app
         os.chdir(old_cwd)

@@ -84,7 +84,7 @@ window.addEventListener("load", function () {
   }
 });
 
-refreshAuthCookie(true);
+// refreshAuthCookie(true);
 
 $(document).ready(function () {
 

@@ -1,0 +1,296 @@
+openapi: 3.0.3
+info:
+  title: Data Conversion Service API
+  version: 0.1.0
+  description: This API provides access to the PSDI Data Conversion Service.
+servers:
+  - url: http://localhost:8000/api/v1
+paths:
+  /converters:
+    get:
+      operationId: psdi_data_conversion.api.index_converter
+      summary: Get all converters
+      responses:
+        "200":
+          description: The requested converters
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Converter"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /converters/{converter_id}:
+    get:
+      operationId: psdi_data_conversion.api.read_converter
+      summary: Get a converter by ID
+      parameters:
+        - $ref: "#/components/parameters/ConverterID"
+      responses:
+        "200":
+          description: The requested converter.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Converter"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /converters/{converter_id}/formats:
+    get:
+      operationId: psdi_data_conversion.api.read_converter_formats
+      summary: Get a list of formats supported by a converter
+      parameters:
+        - $ref: "#/components/parameters/ConverterID"
+      responses:
+        "200":
+          description: The requested formats.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - inputFormats
+                  - outputFormats
+                additionalProperties: false
+                properties:
+                  inputFormats:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/FormatReference"
+                  outputFormats:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/FormatReference"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /converters/{converter_id}/formats/{format_id}:
+    get:
+      operationId: psdi_data_conversion.api.read_converter_format
+      summary: Get information about a format with a particular converter
+      parameters:
+        - $ref: "#/components/parameters/ConverterID"
+        - $ref: "#/components/parameters/FormatID"
+      responses:
+        "200":
+          description: The information on the requested format.
+          # content:
+          #   application/json:
+          #     schema:
+          #       type: object
+          #       required:
+          #         - inputFormats
+          #         - outputFormats
+          #       additionalProperties: false
+          #       properties:
+          #         inputFormats:
+          #           type: array
+          #           items:
+          #             $ref: "#/components/schemas/FormatReference"
+          #         outputFormats:
+          #           type: array
+          #           items:
+          #             $ref: "#/components/schemas/FormatReference"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /converters/{converter_id}/conversions/{from_format}/{to_format}:
+    get:
+      operationId: psdi_data_conversion.api.get_conversion_information
+      summary: Get information about a particular conversion
+      parameters:
+        - $ref: "#/components/parameters/ConverterID"
+        - $ref: "#/components/parameters/FromFormat"
+        - $ref: "#/components/parameters/ToFormat"
+      responses:
+        "200":
+          description: The information for the requested conversion.
+          # content:
+          #   application/json:
+          #     schema:
+          #       type: object
+          #       required:
+          #         - inputFormats
+          #         - outputFormats
+          #       additionalProperties: false
+          #       properties:
+          #         inputFormats:
+          #           type: array
+          #           items:
+          #             $ref: "#/components/schemas/FormatReference"
+          #         outputFormats:
+          #           type: array
+          #           items:
+          #             $ref: "#/components/schemas/FormatReference"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /converters/{converter_id}/conversions/{from_format}/{to_format}/convert:
+    post:
+      operationId: psdi_data_conversion.api.perform_conversion
+      summary: Perform a conversion
+      parameters:
+        - $ref: "#/components/parameters/ConverterID"
+        - $ref: "#/components/parameters/FromFormat"
+        - $ref: "#/components/parameters/ToFormat"
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                input_file:
+                  type: string
+                  format: binary
+                args:
+                  type: object
+                  additionalProperties: true
+              required:
+                - input_file
+            encoding:
+              args:
+                contentType: application/json
+      responses:
+        "200":
+          description: The requested formats.
+          content:
+            "*/*":
+              schema:
+                type: string
+                format: binary
+        "404":
+          $ref: "#/components/responses/NotFound"
+  # /formats:
+  #   get:
+  #     operationId: psdi_data_conversion.api.index_format
+  #     summary: Get all formats
+  #     responses:
+  #       "200":
+  #         description: The requested formats
+  #         content:
+  #           application/json:
+  #             schema:
+  #               type: array
+  #               items:
+  #                 $ref: "#/components/schemas/Format"
+  #       "404":
+  #         $ref: "#/components/responses/NotFound"
+  /formats/{format_id}:
+    get:
+      operationId: psdi_data_conversion.api.read_format
+      summary: Get a format by ID
+      parameters:
+        - $ref: "#/components/parameters/FormatID"
+      responses:
+        "200":
+          description: The requested format.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Format"
+        "404":
+          $ref: "#/components/responses/NotFound"
+components:
+  parameters:
+    ConverterID:
+      name: converter_id
+      in: path
+      required: true
+      schema:
+        type: string
+        pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
+    FormatID:
+      name: format_id
+      in: path
+      required: true
+      schema:
+        type: string
+        pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
+    FromFormat:
+      name: from_format
+      in: path
+      required: true
+      schema:
+        type: string
+        pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
+    ToFormat:
+      name: to_format
+      in: path
+      required: true
+      schema:
+        type: string
+        pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
+  responses:
+    BadRequest:
+      description: The request did not match the OpenAPI schema.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    NotFound:
+      description: The requested resource was not found.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+  schemas:
+    Converter:
+      type: object
+      required:
+        - id
+        - name
+      additionalProperties: false
+      properties:
+        id:
+          type: string
+          pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
+        name:
+          type: string
+          minLength: 1
+          maxLength: 80
+        description:
+          type: string
+          maxLength: 2000
+        url:
+          type: string
+          maxLength: 2000
+    Format:
+      type: object
+      required:
+        - id
+        - name
+      additionalProperties: false
+      properties:
+        id:
+          type: string
+          pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
+        name:
+          type: string
+          minLength: 1
+          maxLength: 80
+        note:
+          type: string
+          maxLength: 2000
+        twoDim:
+          type: boolean
+        threeDim:
+          type: boolean
+    FormatReference:
+      type: object
+      required:
+        - id
+        - label
+      additionalProperties: false
+      properties:
+        id:
+          type: string
+          pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
+        label:
+          type: string
+          minLength: 1
+          maxLength: 80
+    Error:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: string
