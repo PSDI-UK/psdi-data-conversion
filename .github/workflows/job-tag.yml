@@ -27,11 +27,11 @@ on:
       container_tag:
         description: "Container Tag"
         value: ${{ jobs.tag.outputs.container_tag }}
-    
+
 jobs:
   tag:
     outputs:
-      container_tag: ${{ steps.tag_version.outputs.new_tag }}
+      container_tag: ${{ steps.get_tag.outputs.tag }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -42,9 +42,17 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           release_branches: release
           pre_release_branches: rc-*
+
+      # Most of the time, the new tag will be the most recent. But in the rare case of redeployment, we'll need to use
+      # the previous tag instead
+      - name: Determine most recent tag
+        id: get_tag
+        run: |
+          echo "tag=${{ steps.tag_version.outputs.new_tag || steps.tag_version.outputs.previous_tag }}" >> $GITHUB_OUTPUT
+
       - name: Create a GitHub release
         uses: ncipollo/release-action@v1
         with:
-          tag: ${{ steps.tag_version.outputs.new_tag }}
-          name: Release ${{ steps.tag_version.outputs.new_tag }}
-          body: ${{ steps.tag_version.outputs.changelog }}
+          tag: ${{ steps.get_tag.outputs.tag }}
+          name: Release ${{ steps.get_tag.outputs.tag }}
+          body: ${{ steps.get_tag.outputs.tag }}
