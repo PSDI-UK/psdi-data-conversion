@@ -25,7 +25,7 @@ In scenarios where the harm from waiting for normal approval for a change outwei
 
 - Something in the deployed release has broken (perhaps due to an overlooked issue in a previous release, an external dependency changing or failing, etc.) and a fix is required for normal functionality to be restored
 - A demonstration is planned on short notice which requires a new feature or bugfix, and approval isn't possible in time
-- TODO: Legal compliance
+- Legal compliance issues, such as GDPR violations which could incur fines based on the number of days in which the violation occurs
 
 Depending on the scope of the change, an emergency change may also qualify as a non-local change and require reporting to the Change Advisory Board for consideration.
 

@@ -10,6 +10,8 @@ This project provides utilities to assist in converting files between the many d
 - Command-line interface, to run conversions from a terminal
 - Python library
 
+**Installation alert:** Some converters packaged with this use their own binaries to run, and the versions we package here may not work on all systems. Please see the [Converter Installation](#converter-installation) section for instructions on installing converters on your system if you face any issues running conversions.
+
 ## Quick Links
 
 - [Online web service](https://data-conversion.psdi.ac.uk/)
@@ -25,6 +27,7 @@ This project provides utilities to assist in converting files between the many d
   - [Other Dependencies](#other-dependencies)
 - [Command-Line Interface](#command-line-interface)
   - [Installation](#installation)
+    - [Converter Installation](#converter-installation)
   - [Execution](#execution)
     - [Data Conversion](#data-conversion)
     - [Requesting Information on Possible Conversions](#requesting-information-on-possible-conversions)
@@ -221,6 +224,61 @@ source .venv/bin/activate
 ```
 
 You should then be able to install this project. When you wish to deactivate the virtual environment, you can do so with the `deactivate` command.
+
+#### Converter Installation
+
+This tool functions by calling different converters as needed to perform conversions, and thus these converters all need to be installed on your system to run properly. We package binaries for common systems, but we cannot prepare binaries for all possible systems. Unpredictable errors may occur if a binary isn't compatible with your system, so the best way to ensure this tool functions properly is to install these converters on your machine, making their binaries available in your path as appropriate. This section provides guidance on installing each supported converter locally.
+
+##### Open Babel
+
+This tool depends on the python package distribution of Open Babel, and thus when this tool is installed, Open Babel will automatically be installed as well, with no further action required.
+
+##### Atomsk
+
+Atomsk provides various Linux and Windows versions of its binary at https://atomsk.univ-lille.fr/dl.php, but can also be compiled from source if none of these is suitable (such as for MacOS systems). Experience has shown that the MacOS binary in particular of Atomsk is not very portable, so it is quite likely it will need to be installed locally on MacOS systems.
+
+To install Atomsk from source:
+
+1. Install required dependencies, BLAS and LAPACK. The specifics of this will vary depending on platform, but some common mechanisms are:
+   - Linux:
+     ```bash
+     sudo apt install libblas-dev liblapack-dev
+     ```
+     These packages are available with most other package managers (e.g. `yum`) as well, for distributions which don't use `apt`
+   - MacOS:
+     ```bash
+     brew install openblas
+     brew install lapack
+     ```
+     It may also be necessary to set up environmental variables pointing to these packages before compiling Atomsk:
+     ```bash
+     export PKG_CONFIG_PATH=$(brew --prefix openblas)/lib/pkgconfig
+     export LDFLAGS=-L$(brew --prefix openblas)/lib
+     export CPPFLAGS=-I$(brew --prefix openblas)/include
+     ```
+
+2. Download the source from https://github.com/pierrehirel/atomsk and enter its root director, e.g. with `git clone git@github.com:pierrehirel/atomsk.git && cd atomsk`
+3. Change to the latest release branch of the source, e.g. `git checkout 0.13`
+4. Run the supplied installation script: `sudo ./install.sh` and follow the prompts
+5. Test that Atomsk was installed successfully. Running `atomsk` should start its interface, and you can exit with `exit()`
+
+If successful, this will install Atomsk on your machine, and this tool will then pick it up and preferentially use it.
+
+##### c2x
+
+c2x provided binaries for various systems from its [Downloads page](https://www.c2x.org.uk/downloads/). These seem to work pretty reliably across different systems, and are packaged with this tool, so it is unlikely that downloading and using a binary from here will be helpful. If you do experience errors with c2x, installing it from source on your system is more likely to be useful. To do this:
+
+1. Install the SPGlib dependency, following the instructions at https://spglib.readthedocs.io/en/stable/install.html. Once it's installed, ensure that its location is added to your `LD_LIBRARY_PATH` environmental variable (e.g. by appending it to this variable in your `.bashrc` file with `export LD_LIBRARY_PATH="/usr/local/lib:$LD_LIBRARY_PATH"`)
+2. Download the latest release version of the c2x may be downloaded from https://www.c2x.org.uk/downloads/c2x.tgz, unpack it, and enter its root directory, e.g. with:
+   ```bash
+   wget https://www.c2x.org.uk/downloads/c2x.tgz
+   tar xf c2x.tgz
+   cd `tar -tf c2x.tgz | head -n 1` # Get the name of the root directory from the tarball, and enter it
+   ```
+3. Build c2x and copy it to your path, e.g. with `make && sudo cp c2x /usr/bin`
+4. Test that c2x was installed successfully. Running `c2x` should display "Aborting: no input file specified."
+
+If successful, this will install c2x on your machine, and this tool will then pick it up and preferentially use it.
 
 ### Execution
 

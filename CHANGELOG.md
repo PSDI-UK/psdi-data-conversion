@@ -6,6 +6,10 @@
 
 - Self-hosted JS and CSS bundles instead of getting them from CDNs
 
+### Documentation Changes
+
+- Added instructions to README.md for installing Atomsk and c2x locally if needed
+
 ## v0.4.4
 
 ### Miscellaneous Changes
